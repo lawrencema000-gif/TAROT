@@ -1,0 +1,8 @@
+export { HomePage } from './HomePage';
+export { ReadingsPage } from './ReadingsPage';
+export { QuizzesPage } from './QuizzesPage';
+export { JournalPage } from './JournalPage';
+export { ProfilePage } from './ProfilePage';
+export { OnboardingPage } from './OnboardingPage';
+export { AuthPage } from './AuthPage';
+export { AdminPage } from './AdminPage';

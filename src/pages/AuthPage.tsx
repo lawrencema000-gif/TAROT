@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +26,20 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorDescription = urlParams.get('error_description');
+    const errorParam = urlParams.get('error');
+
+    if (errorDescription || errorParam) {
+      const decodedError = (errorDescription || errorParam || '').replace(/\+/g, ' ');
+      setError(decodedError);
+      toast(decodedError, 'error');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

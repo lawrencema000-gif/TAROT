@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { Button, Input } from '../components/ui';
+import { Button, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { getAuthErrorMessage } from '../utils/authErrors';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -25,11 +26,9 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     const { error } = await signIn(email, password);
@@ -37,16 +36,15 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      toast(getAuthErrorMessage(error), 'error');
     }
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    setError('');
     const { error } = await signInWithGoogle();
     if (error) {
-      setError(error.message);
+      toast(getAuthErrorMessage(error), 'error');
     }
     setGoogleLoading(false);
   };
@@ -114,10 +112,6 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-
-          {error && (
-            <p className="text-sm text-red-400 text-center">{error}</p>
-          )}
 
           <Button type="submit" variant="gold" fullWidth loading={loading} className="min-h-[52px]">
             Sign In

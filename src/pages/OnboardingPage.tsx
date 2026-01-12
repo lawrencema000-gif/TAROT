@@ -21,6 +21,7 @@ import { Button, Input, Chip, toast } from '../components/ui';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
+import { getAuthErrorMessage } from '../utils/authErrors';
 import type { Goal, TonePreference, OnboardingData } from '../types';
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -77,7 +78,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [birthDateError, setBirthDateError] = useState('');
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [data, setData] = useState<OnboardingData>({
@@ -129,27 +129,24 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
   const handleEmailSignup = () => {
     if (!data.email.includes('@') || data.password.length < 6) {
-      setError('Please enter a valid email and password (min 6 characters).');
+      toast('Please enter a valid email and password (min 6 characters).', 'error');
       return;
     }
     setIsGuestMode(false);
-    setError('');
     setStep(5);
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    setError('');
     const { error } = await signInWithGoogle();
     if (error) {
-      setError(error.message);
+      toast(getAuthErrorMessage(error), 'error');
     }
     setGoogleLoading(false);
   };
 
   const handleCompleteOnboarding = async () => {
     setLoading(true);
-    setError('');
 
     let email: string;
     let password: string;
@@ -168,7 +165,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      toast(getAuthErrorMessage(signUpError), 'error');
       setLoading(false);
       return;
     }
@@ -197,7 +194,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       });
 
       if (profileError) {
-        setError('Failed to save profile. Please try again.');
+        toast('Failed to save profile. Please try again.', 'error');
         setLoading(false);
         return;
       }
@@ -216,14 +213,12 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const nextStep = () => {
     if (step < totalSteps - 1) {
       setStep(s => s + 1);
-      setError('');
     }
   };
 
   const prevStep = () => {
     if (step > 0) {
       setStep(s => s - 1);
-      setError('');
     }
   };
 
@@ -503,10 +498,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       Subscribe to newsletters and promotions. Get cosmic insights, tips, and exclusive offers.
                     </span>
                   </button>
-
-                  {error && (
-                    <p className="text-sm text-coral text-center">{error}</p>
-                  )}
 
                   <Button
                     variant="gold"

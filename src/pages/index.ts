@@ -4,5 +4,6 @@ export { QuizzesPage } from './QuizzesPage';
 export { JournalPage } from './JournalPage';
 export { ProfilePage } from './ProfilePage';
 export { OnboardingPage } from './OnboardingPage';
+export { OAuthOnboardingPage } from './OAuthOnboardingPage';
 export { AuthPage } from './AuthPage';
 export { AdminPage } from './AdminPage';

@@ -13,6 +13,7 @@ import {
   JournalPage,
   ProfilePage,
   OnboardingPage,
+  OAuthOnboardingPage,
   AuthPage,
   AdminPage,
 } from './pages';
@@ -57,7 +58,7 @@ const pageTitles: Record<string, { title: string; subtitle?: string }> = {
 };
 
 function AppContent() {
-  const { user, profile, loading, isAdmin } = useAuth();
+  const { user, profile, loading, isAdmin, refreshProfile } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useApp();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
@@ -109,14 +110,7 @@ function AppContent() {
   }
 
   if (!profile?.onboardingComplete) {
-    return (
-      <div className="min-h-screen flex items-center justify-center constellation-bg">
-        <div className="text-center">
-          <div className="loading-constellation mx-auto mb-4" />
-          <p className="text-mystic-400">Setting up your profile...</p>
-        </div>
-      </div>
-    );
+    return <OAuthOnboardingPage onComplete={refreshProfile} />;
   }
 
   const renderPage = () => {

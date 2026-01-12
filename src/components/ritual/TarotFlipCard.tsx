@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
 import type { TarotCard } from '../../types';
-import { useImageLoader } from '../../hooks/useImageLoader';
-import { imageLoaderService } from '../../services/imageLoader';
+import { useProgressiveImage, useCardBackImage } from '../../hooks/useProgressiveImage';
 
 interface TarotFlipCardProps {
   card: TarotCard;
@@ -26,18 +25,14 @@ export function TarotFlipCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showReversed, setShowReversed] = useState(reversed);
 
-  const { imageUrl: cardImageUrl, isLoading: isCardLoading } = useImageLoader({
-    url: isFlipped ? card.imageUrl : undefined,
-    useCache: true,
-    priority: 'high',
+  const { src: cardImageUrl, isLoading: isCardLoading, isPlaceholder } = useProgressiveImage({
+    cardId: card.id,
+    cardName: card.name,
+    remoteUrl: card.imageUrl,
+    priority: isFlipped ? 'high' : 'normal',
   });
 
-  const { imageUrl: backImageUrl } = useImageLoader({
-    url: !isFlipped ? cardBackUrl : undefined,
-    useCache: true,
-    priority: 'high',
-    fallback: imageLoaderService.getDefaultCardBack(),
-  });
+  const { src: backImageUrl } = useCardBackImage(cardBackUrl);
 
   const handleFlip = () => {
     if (!isFlipped) {
@@ -115,12 +110,12 @@ export function TarotFlipCard({
                   <img
                     src={cardImageUrl}
                     alt={card.name}
-                    className={`w-full h-full object-cover transition-opacity duration-300 ${
-                      isCardLoading ? 'opacity-0' : 'opacity-100'
+                    className={`w-full h-full object-cover transition-opacity duration-500 ${
+                      isCardLoading || isPlaceholder ? 'opacity-60' : 'opacity-100'
                     }`}
                   />
                   {isCardLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-800 to-mystic-900">
+                    <div className="absolute inset-0 flex items-center justify-center">
                       <Sparkles className="w-10 h-10 text-gold animate-pulse" />
                     </div>
                   )}

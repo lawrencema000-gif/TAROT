@@ -1,11 +1,13 @@
 import { imageCacheService } from './imageCache';
+import { hasLocalBundle, LOW_RES_PLACEHOLDER } from '../config/bundledImages';
+import { globalImageQueue, createImageLoadPromise } from '../utils/imageOptimization';
 
 const DEFAULT_CARD_BACK = '/card-backs/default.svg';
-const FALLBACK_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"%3E%3Crect width="200" height="300" fill="%231a1a2e"/%3E%3Cpath d="M100 120l20 40-20 40-20-40z" fill="%23d4af37" opacity="0.3"/%3E%3C/svg%3E';
+const FALLBACK_PLACEHOLDER = LOW_RES_PLACEHOLDER;
 
 interface ImageLoadOptions {
   useCache?: boolean;
-  priority?: 'high' | 'normal' | 'low';
+  priority?: 'critical' | 'high' | 'normal' | 'low';
   onProgress?: (progress: number) => void;
 }
 
@@ -20,11 +22,22 @@ class ImageLoaderService {
   ): Promise<string> {
     const {
       useCache = true,
+      priority = 'normal',
       onProgress,
     } = options;
 
     if (!url) {
       return FALLBACK_PLACEHOLDER;
+    }
+
+    if (hasLocalBundle(url)) {
+      try {
+        await createImageLoadPromise(url);
+        return url;
+      } catch (error) {
+        console.warn('Bundled image failed to load:', url, error);
+        return FALLBACK_PLACEHOLDER;
+      }
     }
 
     if (this.loadingPromises.has(url)) {
@@ -82,12 +95,30 @@ class ImageLoaderService {
     }
   }
 
-  async preloadImages(urls: string[]): Promise<void> {
-    for (const url of urls) {
-      this.preloadQueue.add(url);
-    }
+  async preloadImages(urls: string[], priority: 'critical' | 'high' | 'normal' | 'low' = 'low'): Promise<void> {
+    const bundledUrls: string[] = [];
+    const remoteUrls: string[] = [];
 
-    if (!this.isPreloading) {
+    urls.forEach(url => {
+      if (hasLocalBundle(url)) {
+        bundledUrls.push(url);
+      } else {
+        remoteUrls.push(url);
+      }
+    });
+
+    bundledUrls.forEach(url => {
+      createImageLoadPromise(url).catch(err => {
+        console.warn('Failed to preload bundled image:', url, err);
+      });
+    });
+
+    remoteUrls.forEach(url => {
+      globalImageQueue.add(url, priority);
+      this.preloadQueue.add(url);
+    });
+
+    if (!this.isPreloading && this.preloadQueue.size > 0) {
       this.processPreloadQueue();
     }
   }

@@ -3,6 +3,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
 import { isAdmin as checkIsAdmin } from '../utils/admin';
+import { isNative } from '../utils/platform';
 
 interface AuthContextType {
   user: User | null;
@@ -159,7 +160,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: isNative() ? undefined : window.location.origin,
+        skipBrowserRedirect: isNative(),
       },
     });
     return { error: error ? new Error(error.message) : null };

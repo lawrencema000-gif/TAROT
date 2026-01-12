@@ -126,6 +126,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+    const errorInQuery = urlParams.get('error');
+    const errorInHash = hashParams.get('error');
+    const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
+    const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+
+    if (errorInQuery || errorInHash) {
+      console.error('[OAuth] Authentication error:', {
+        error: errorInQuery || errorInHash,
+        error_code: errorCode,
+        error_description: errorDescription,
+        url: window.location.href
+      });
+      setIsProcessingOAuth(false);
+      setLoading(false);
+      return;
+    }
+
     const hasOAuthParams = window.location.hash.includes('access_token') ||
                            window.location.hash.includes('error');
 
@@ -134,7 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsProcessingOAuth(true);
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('[Auth] Session error:', error);
+      }
       console.log('[Auth] Initial session check:', session ? 'Session found' : 'No session');
       setSession(session);
       setUser(session?.user ?? null);

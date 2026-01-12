@@ -201,21 +201,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('[OAuth] Initiating Google sign-in');
     setIsProcessingOAuth(true);
 
-    const redirectUrl = isNative()
-      ? undefined
-      : `${window.location.origin}/`;
-
-    console.log('[OAuth] Redirect URL:', redirectUrl);
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
-        skipBrowserRedirect: isNative(),
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+        redirectTo: window.location.origin,
+        scopes: 'https://www.googleapis.com/auth/userinfo.email'
       },
     });
 

@@ -11,6 +11,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  isProcessingOAuth: boolean;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
@@ -110,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -124,16 +126,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const hasOAuthParams = window.location.hash.includes('access_token') ||
+                           window.location.hash.includes('error');
+
+    if (hasOAuthParams) {
+      console.log('[OAuth] Detected OAuth callback in URL');
+      setIsProcessingOAuth(true);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[Auth] Initial session check:', session ? 'Session found' : 'No session');
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
       }
       setLoading(false);
+      setIsProcessingOAuth(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] State change event:', event, session ? 'Session exists' : 'No session');
+
+      if (event === 'SIGNED_IN') {
+        setIsProcessingOAuth(false);
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -157,13 +175,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    console.log('[OAuth] Initiating Google sign-in');
+    setIsProcessingOAuth(true);
+
+    const redirectUrl = isNative()
+      ? undefined
+      : `${window.location.origin}/`;
+
+    console.log('[OAuth] Redirect URL:', redirectUrl);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: isNative() ? undefined : window.location.origin,
+        redirectTo: redirectUrl,
         skipBrowserRedirect: isNative(),
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
+
+    if (error) {
+      console.error('[OAuth] Error:', error);
+      setIsProcessingOAuth(false);
+    }
+
     return { error: error ? new Error(error.message) : null };
   };
 
@@ -203,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       loading,
       isAdmin,
+      isProcessingOAuth,
       signUp,
       signIn,
       signInWithGoogle,

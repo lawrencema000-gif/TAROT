@@ -58,7 +58,7 @@ const pageTitles: Record<string, { title: string; subtitle?: string }> = {
 };
 
 function AppContent() {
-  const { user, profile, loading, isAdmin, refreshProfile } = useAuth();
+  const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useApp();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
@@ -85,12 +85,14 @@ function AppContent() {
     setShowOnboarding(false);
   };
 
-  if (loading || checkingOnboarding) {
+  if (loading || checkingOnboarding || isProcessingOAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center constellation-bg">
         <div className="text-center">
           <div className="loading-constellation mx-auto mb-4" />
-          <p className="text-mystic-400">Loading your daily ritual...</p>
+          <p className="text-mystic-400">
+            {isProcessingOAuth ? 'Completing sign in...' : 'Loading your daily ritual...'}
+          </p>
         </div>
       </div>
     );

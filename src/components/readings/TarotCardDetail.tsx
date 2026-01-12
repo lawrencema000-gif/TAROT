@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Heart, Briefcase, Sparkles, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
 import { Card, Button } from '../ui';
 import type { TarotCard } from '../../types';
+import { useImageLoader } from '../../hooks/useImageLoader';
 
 interface TarotCardDetailProps {
   card: TarotCard;
@@ -13,6 +14,12 @@ type DetailTab = 'meaning' | 'love' | 'career' | 'reflect';
 
 export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDetailProps) {
   const [activeTab, setActiveTab] = useState<DetailTab>('meaning');
+
+  const { imageUrl, isLoading } = useImageLoader({
+    url: card.imageUrl,
+    useCache: true,
+    priority: 'high',
+  });
 
   const tabs: { id: DetailTab; label: string; icon: typeof Heart }[] = [
     { id: 'meaning', label: 'Meaning', icon: BookOpen },
@@ -35,10 +42,17 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
           <div className="relative mx-auto w-56 sm:w-64">
             <div className={`relative transition-transform duration-500 ${reversed ? 'rotate-180' : ''}`}>
               <img
-                src={card.imageUrl}
+                src={imageUrl}
                 alt={card.name}
-                className="w-full h-auto rounded-2xl shadow-2xl border-2 border-gold/30"
+                className={`w-full h-auto rounded-2xl shadow-2xl border-2 border-gold/30 transition-opacity duration-300 ${
+                  isLoading ? 'opacity-0' : 'opacity-100'
+                }`}
               />
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl">
+                  <Sparkles className="w-12 h-12 text-gold animate-pulse" />
+                </div>
+              )}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-mystic-900/40 to-transparent pointer-events-none" />
             </div>
             {reversed && (

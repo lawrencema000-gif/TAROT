@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import { useImageLoader } from '../../hooks/useImageLoader';
 
 interface TarotCardFrameProps {
   name: string;
@@ -9,6 +10,7 @@ interface TarotCardFrameProps {
   onReveal?: () => void;
   size?: 'sm' | 'md' | 'lg';
   glowOnHover?: boolean;
+  priority?: 'high' | 'normal' | 'low';
 }
 
 const sizeConfig = {
@@ -25,9 +27,16 @@ export function TarotCardFrame({
   onReveal,
   size = 'md',
   glowOnHover = true,
+  priority = 'normal',
 }: TarotCardFrameProps) {
   const [isFlipping, setIsFlipping] = useState(false);
   const config = sizeConfig[size];
+
+  const { imageUrl, isLoading } = useImageLoader({
+    url: revealed ? image : undefined,
+    useCache: true,
+    priority,
+  });
 
   const handleClick = () => {
     if (!revealed && onReveal) {
@@ -68,11 +77,20 @@ export function TarotCardFrame({
           {revealed ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
               {image ? (
-                <img
-                  src={image}
-                  alt={name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
+                <>
+                  <img
+                    src={imageUrl}
+                    alt={name}
+                    className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+                      isLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  />
+                  {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Sparkles className={`${config.iconSize} text-gold animate-pulse`} />
+                    </div>
+                  )}
+                </>
               ) : (
                 <>
                   <div className="flex-1 flex items-center justify-center">

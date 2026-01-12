@@ -22,6 +22,7 @@ import { TarotCardDetail } from './TarotCardDetail';
 import { generatePremiumReading, tarotCardToReadingCard } from '../../services/readingInterpretation';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
+import { useImagePreloader } from '../../hooks/useImagePreloader';
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
@@ -72,6 +73,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     };
     loadCards();
   }, [tarotRefreshTrigger]);
+
+  const filteredDeck = tarotCards.filter(card => {
+    if (browseFilter === 'all') return true;
+    if (browseFilter === 'major') return card.arcana === 'major';
+    return card.suit === browseFilter;
+  });
+
+  useImagePreloader(
+    filteredDeck.slice(0, 12).map(card => card.imageUrl).filter((url): url is string => !!url),
+    showBrowse
+  );
 
   const handleStartDraw = () => {
     setView('focus');
@@ -217,12 +229,6 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setCurrentSpread(spreadId);
     handleStartDraw();
   };
-
-  const filteredDeck = browseFilter === 'all'
-    ? tarotCards
-    : browseFilter === 'major'
-    ? tarotCards.filter(c => c.arcana === 'major')
-    : tarotCards.filter(c => c.suit === browseFilter);
 
   if (view === 'focus') {
     return (

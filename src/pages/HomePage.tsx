@@ -18,6 +18,7 @@ import { generateDailyHoroscope, getDailyPrompt } from '../data/horoscopes';
 import { drawCards } from '../data/tarotDeck';
 import { getAllTarotCards } from '../services/tarotCards';
 import type { TarotCard, SavedHighlight } from '../types';
+import { useImagePreloader } from '../hooks/useImagePreloader';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -47,6 +48,11 @@ export function HomePage() {
   const today = new Date().toISOString().split('T')[0];
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const dailyPrompt = getDailyPrompt(today);
+
+  useImagePreloader(
+    drawnTarot?.card.imageUrl ? [drawnTarot.card.imageUrl] : [],
+    !!drawnTarot
+  );
 
   const checkRitualStatus = useCallback(async () => {
     if (!user) {

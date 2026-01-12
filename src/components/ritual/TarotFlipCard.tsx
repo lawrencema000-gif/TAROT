@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Sparkles, Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
 import type { TarotCard } from '../../types';
+import { useImageLoader } from '../../hooks/useImageLoader';
+import { imageLoaderService } from '../../services/imageLoader';
 
 interface TarotFlipCardProps {
   card: TarotCard;
@@ -23,6 +25,19 @@ export function TarotFlipCard({
 }: TarotFlipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showReversed, setShowReversed] = useState(reversed);
+
+  const { imageUrl: cardImageUrl, isLoading: isCardLoading } = useImageLoader({
+    url: isFlipped ? card.imageUrl : undefined,
+    useCache: true,
+    priority: 'high',
+  });
+
+  const { imageUrl: backImageUrl } = useImageLoader({
+    url: !isFlipped ? cardBackUrl : undefined,
+    useCache: true,
+    priority: 'high',
+    fallback: imageLoaderService.getDefaultCardBack(),
+  });
 
   const handleFlip = () => {
     if (!isFlipped) {
@@ -67,8 +82,8 @@ export function TarotFlipCard({
         >
           <div className="absolute inset-0 backface-hidden">
             <div className="relative w-full h-full bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/30 shadow-glow overflow-hidden">
-              {cardBackUrl ? (
-                <img src={cardBackUrl} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
+              {cardBackUrl || backImageUrl ? (
+                <img src={backImageUrl} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
               ) : (
                 <>
                   <div className="absolute inset-0 opacity-20">
@@ -97,7 +112,18 @@ export function TarotFlipCard({
             <div className={`w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden ${showReversed ? 'rotate-180' : ''}`}>
               {card.imageUrl ? (
                 <>
-                  <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" />
+                  <img
+                    src={cardImageUrl}
+                    alt={card.name}
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${
+                      isCardLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  />
+                  {isCardLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-800 to-mystic-900">
+                      <Sparkles className="w-10 h-10 text-gold animate-pulse" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/90 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
                     <h4 className="font-display text-sm text-gold mb-0.5">{card.name}</h4>

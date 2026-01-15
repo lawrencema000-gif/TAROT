@@ -28,6 +28,14 @@ const config: CapacitorConfig = {
       splashFullScreen: true,
       splashImmersive: true,
     },
+    AdMob: {
+      appId: 'ca-app-pub-3940256099942544~3347511713',
+      initializeForTesting: true,
+      testingDevices: ['YOUR_DEVICE_ID_HERE'],
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: false,
+      maxAdContentRating: 'G',
+    },
   },
 };
 

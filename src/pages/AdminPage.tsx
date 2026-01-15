@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Smartphone, Calendar } from 'lucide-react';
 import { Button, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
@@ -33,6 +33,18 @@ const SECTIONS: { id: UploadSection; label: string; description: string }[] = [
   { id: 'backgrounds', label: 'Backgrounds', description: 'App background images' },
 ];
 
+interface AdAnalytics {
+  total_impressions: number;
+  total_clicks: number;
+  android_impressions: number;
+  ios_impressions: number;
+  reading_triggers: number;
+  quiz_triggers: number;
+  journal_triggers: number;
+  estimated_revenue: number;
+  date: string;
+}
+
 export function AdminPage() {
   const { user, isAdmin } = useAuth();
   const { refreshTarotCards } = useApp();
@@ -45,6 +57,8 @@ export function AdminPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCard, setSelectedCard] = useState<TarotCardData | null>(null);
   const [uploadType, setUploadType] = useState<'card' | 'cardBack' | 'background'>('card');
+  const [adAnalytics, setAdAnalytics] = useState<AdAnalytics | null>(null);
+  const [showAdStats, setShowAdStats] = useState(true);
 
   useEffect(() => {
     if (isAdmin) {
@@ -58,8 +72,22 @@ export function AdminPage() {
       loadTarotCards(),
       loadCardBacks(),
       loadBackgrounds(),
+      loadAdAnalytics(),
     ]);
     setLoading(false);
+  };
+
+  const loadAdAnalytics = async () => {
+    const { data, error } = await supabase
+      .from('ad_analytics_daily')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) {
+      setAdAnalytics(data as AdAnalytics);
+    }
   };
 
   const loadTarotCards = async () => {
@@ -393,6 +421,118 @@ export function AdminPage() {
         onChange={handleFileSelect}
         className="hidden"
       />
+
+      <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden mb-6">
+        <button
+          onClick={() => setShowAdStats(!showAdStats)}
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-mystic-800/30 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-emerald-500" />
+            </div>
+            <div>
+              <h3 className="font-medium text-mystic-100">Ad Revenue Analytics</h3>
+              <p className="text-sm text-mystic-400">Today's performance metrics</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {adAnalytics && (
+              <span className="text-sm font-medium text-emerald-400">
+                ${adAnalytics.estimated_revenue.toFixed(2)}
+              </span>
+            )}
+            {showAdStats ? (
+              <ChevronUp className="w-5 h-5 text-mystic-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-mystic-400" />
+            )}
+          </div>
+        </button>
+
+        {showAdStats && adAnalytics && (
+          <div className="border-t border-mystic-700/50 p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+              <div className="bg-mystic-800/40 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-4 h-4 text-mystic-400" />
+                  <p className="text-xs text-mystic-400">Total Impressions</p>
+                </div>
+                <p className="text-xl font-semibold text-mystic-100">{adAnalytics.total_impressions}</p>
+              </div>
+
+              <div className="bg-mystic-800/40 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-4 h-4 text-mystic-400" />
+                  <p className="text-xs text-mystic-400">Total Clicks</p>
+                </div>
+                <p className="text-xl font-semibold text-mystic-100">{adAnalytics.total_clicks}</p>
+              </div>
+
+              <div className="bg-mystic-800/40 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                  <p className="text-xs text-mystic-400">Est. Revenue</p>
+                </div>
+                <p className="text-xl font-semibold text-emerald-400">
+                  ${adAnalytics.estimated_revenue.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="bg-mystic-800/40 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-4 h-4 text-mystic-400" />
+                  <p className="text-xs text-mystic-400">CTR</p>
+                </div>
+                <p className="text-xl font-semibold text-mystic-100">
+                  {adAnalytics.total_impressions > 0
+                    ? ((adAnalytics.total_clicks / adAnalytics.total_impressions) * 100).toFixed(1)
+                    : '0.0'}%
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-mystic-800/40 rounded-lg p-3">
+                <p className="text-xs text-mystic-400 mb-2">Platform</p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-mystic-300">Android</span>
+                    <span className="text-mystic-100 font-medium">{adAnalytics.android_impressions}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-mystic-300">iOS</span>
+                    <span className="text-mystic-100 font-medium">{adAnalytics.ios_impressions}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-mystic-800/40 rounded-lg p-3">
+                <p className="text-xs text-mystic-400 mb-2">Triggers</p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-mystic-300">Readings</span>
+                    <span className="text-mystic-100 font-medium">{adAnalytics.reading_triggers}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-mystic-300">Quizzes</span>
+                    <span className="text-mystic-100 font-medium">{adAnalytics.quiz_triggers}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-mystic-300">Journal</span>
+                    <span className="text-mystic-100 font-medium">{adAnalytics.journal_triggers}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-mystic-400">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Last updated: {new Date(adAnalytics.date).toLocaleDateString()}</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-3">
         {SECTIONS.map(section => {

@@ -14,6 +14,7 @@ import {
   Brain,
   Star,
   Moon,
+  Ban,
 } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
@@ -26,6 +27,7 @@ interface SubscriptionSheetProps {
 }
 
 const premiumFeatures = [
+  { icon: Ban, label: 'Ad-Free Experience' },
   { icon: Layers, label: 'All Tarot Spreads' },
   { icon: Infinity, label: 'Unlimited Saves' },
   { icon: Heart, label: 'Full Compatibility' },

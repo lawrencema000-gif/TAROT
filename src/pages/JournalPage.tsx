@@ -30,6 +30,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getDailyPrompt } from '../data/horoscopes';
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
+import { adsService } from '../services/ads';
 
 const moodEmojis = [
   { emoji: '😊', label: 'Happy', value: 'happy' },
@@ -272,6 +273,10 @@ export function JournalPage() {
     setSelectedTemplate(null);
     loadEntries();
     toast.success(lock ? 'Entry saved & locked' : 'Entry saved');
+
+    if (!editingEntry) {
+      await adsService.checkAndShowAd(profile?.is_premium || false, 'journal');
+    }
   };
 
   const deleteEntry = async (entryId: string) => {

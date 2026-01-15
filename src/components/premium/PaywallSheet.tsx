@@ -11,6 +11,7 @@ import {
   Moon,
   Lock,
   RotateCcw,
+  Ban,
 } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
@@ -23,6 +24,7 @@ interface PaywallSheetProps {
 }
 
 const unlocks = [
+  { icon: Ban, label: 'Ad-Free Experience', desc: 'No interruptions, pure focus' },
   { icon: Layers, label: 'All Tarot Spreads', desc: 'Celtic Cross, 3-Card & more' },
   { icon: Infinity, label: 'Unlimited Saves', desc: 'Keep every insight forever' },
   { icon: Heart, label: 'Full Compatibility', desc: 'Deep partner analysis' },

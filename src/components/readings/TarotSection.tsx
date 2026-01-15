@@ -24,6 +24,7 @@ import { generatePremiumReading, tarotCardToReadingCard } from '../../services/r
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
+import { adsService } from '../../services/ads';
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
@@ -175,6 +176,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     } else {
       setIsSaved(true);
       toast('Reading saved', 'success');
+
+      await adsService.checkAndShowAd(profile?.isPremium || false, 'reading');
     }
   };
 

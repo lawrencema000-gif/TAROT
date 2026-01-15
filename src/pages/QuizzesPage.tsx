@@ -36,6 +36,7 @@ import {
 import { Card, Button, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { adsService } from '../services/ads';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -94,7 +95,7 @@ const encouragementMessages = [
 ];
 
 export function QuizzesPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [state, setState] = useState<QuizState>('list');
   const [progress, setProgress] = useState<QuizProgress | null>(null);
   const [result, setResult] = useState<{ quiz: QuizDefinition; result: unknown } | null>(null);
@@ -281,6 +282,8 @@ export function QuizzesPage() {
           label: resultLabel,
         });
         loadPastResults();
+
+        await adsService.checkAndShowAd(profile?.isPremium || false, 'quiz');
       }
 
       setResult({ quiz: progress.quiz, result: calculatedResult });

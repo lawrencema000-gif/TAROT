@@ -19,6 +19,7 @@ import {
 } from './pages';
 import { isNative } from './utils/platform';
 import { initializeBilling } from './services/billing';
+import { adsService } from './services/ads';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 
@@ -39,6 +40,12 @@ async function initializeNativeFeatures() {
     await initializeBilling();
   } catch {
     console.log('Billing initialization skipped');
+  }
+
+  try {
+    await adsService.initialize();
+  } catch {
+    console.log('Ads initialization skipped');
   }
 
   try {
@@ -73,6 +80,12 @@ function AppContent() {
       setShowOnboarding(true);
     }
     setCheckingOnboarding(false);
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      adsService.setUserId(user.id);
+    }
   }, [user]);
 
   const handleOnboardingComplete = () => {

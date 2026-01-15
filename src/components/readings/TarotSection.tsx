@@ -19,6 +19,7 @@ import { supabase } from '../../lib/supabase';
 import { drawCards, spreadTypes } from '../../data/tarotDeck';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { TarotCardDetail } from './TarotCardDetail';
+import { CelticCrossLayout } from './CelticCrossLayout';
 import { generatePremiumReading, tarotCardToReadingCard } from '../../services/readingInterpretation';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
@@ -441,72 +442,82 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           <h2 className="font-display text-xl text-mystic-100">{spread?.name}</h2>
         </div>
 
-        <div className={`flex flex-wrap justify-center gap-4 ${currentSpread === 'celtic-cross' ? 'gap-2' : ''}`}>
-          {drawnCards.map((drawn, i) => (
-            <div key={i} className="relative group">
-              <button
-                onClick={() => drawn.revealed ? setSelectedCard({ card: drawn.card, reversed: drawn.reversed }) : handleRevealCard(i)}
-                className="relative perspective-1000"
-              >
-                <div
-                  className={`
-                    ${currentSpread === 'celtic-cross' ? 'w-16 h-24' : 'w-24 h-36'}
-                    rounded-xl border transition-all duration-700 overflow-hidden
-                    ${drawn.revealed
-                      ? 'border-gold/40 shadow-glow animate-flip-in'
-                      : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
-                    }
-                    flex items-center justify-center relative
-                    ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}
-                  `}
-                  style={{
-                    transformStyle: 'preserve-3d',
-                  }}
+        {currentSpread === 'celtic-cross' ? (
+          <CelticCrossLayout
+            drawnCards={drawnCards}
+            onRevealCard={handleRevealCard}
+            onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
+            getPositionLabel={getPositionLabel}
+            cardBackUrl={profile?.card_back_url}
+          />
+        ) : (
+          <div className="flex flex-wrap justify-center gap-4">
+            {drawnCards.map((drawn, i) => (
+              <div key={i} className="relative group">
+                <button
+                  onClick={() => drawn.revealed ? setSelectedCard({ card: drawn.card, reversed: drawn.reversed }) : handleRevealCard(i)}
+                  className="relative perspective-1000"
                 >
-                  {drawn.revealed ? (
-                    drawn.card.imageUrl ? (
-                      <img
-                        src={drawn.card.imageUrl}
-                        alt={drawn.card.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-gold mx-auto mb-1" />
-                        <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
-                      </div>
-                    )
-                  ) : (
-                    <>
-                      {profile?.card_back_url ? (
-                        <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
+                  <div
+                    className={`
+                      w-24 h-36
+                      rounded-xl border transition-all duration-700 overflow-hidden
+                      ${drawn.revealed
+                        ? 'border-gold/40 shadow-glow animate-flip-in'
+                        : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
+                      }
+                      flex items-center justify-center relative
+                      ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}
+                    `}
+                    style={{
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    {drawn.revealed ? (
+                      drawn.card.imageUrl ? (
+                        <img
+                          src={drawn.card.imageUrl}
+                          alt={drawn.card.name}
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
-                        <div className="text-center">
-                          <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                            <Sparkles className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
-                          </div>
-                          <p className="text-xs text-mystic-500 mt-2">Tap to reveal</p>
+                        <div className="text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center">
+                          <Sparkles className="w-5 h-5 text-gold mx-auto mb-1" />
+                          <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
                         </div>
-                      )}
-                    </>
-                  )}
+                      )
+                    ) : (
+                      <>
+                        {profile?.card_back_url ? (
+                          <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                              <Sparkles className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
+                            </div>
+                            <p className="text-xs text-mystic-500 mt-2">Tap to reveal</p>
+                          </div>
+                        )}
+                      </>
+                    )}
 
-                  {!drawn.revealed && (
-                    <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-all duration-300" />
-                  )}
-                </div>
-                {drawn.revealed && (
-                  <div className="absolute inset-0 bg-black/0 hover:bg-black/20 rounded-xl transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-                    <Info className="w-5 h-5 text-white drop-shadow-lg" />
+                    {!drawn.revealed && (
+                      <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-all duration-300" />
+                    )}
                   </div>
-                )}
-              </button>
-              <p className={`text-xs text-mystic-400 mt-1 text-center ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}`}>
-                {getPositionLabel(i)}
-              </p>
-            </div>
-          ))}
-        </div>
+                  {drawn.revealed && (
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/20 rounded-xl transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                      <Info className="w-5 h-5 text-white drop-shadow-lg" />
+                    </div>
+                  )}
+                </button>
+                <p className={`text-xs text-mystic-400 mt-1 text-center ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}`}>
+                  {getPositionLabel(i)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {!allRevealed && (
           <Button variant="ghost" fullWidth onClick={revealAll} className="min-h-[44px]">

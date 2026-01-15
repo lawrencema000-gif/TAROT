@@ -207,8 +207,8 @@ export function JournalPage() {
   }, []);
 
   const openEditEntry = (entry: JournalEntry) => {
-    if (entry.is_locked && !profile?.is_premium) {
-      toast.error('Unlock premium to view locked entries');
+    if (entry.is_locked && !profile?.isPremium) {
+      toast('Unlock premium to view locked entries', 'error');
       return;
     }
     setEditingEntry(entry);
@@ -238,8 +238,8 @@ export function JournalPage() {
   const saveEntry = async (lock = false) => {
     if (!user || !content.trim()) return;
 
-    if (lock && !profile?.is_premium) {
-      toast.error('Upgrade to premium to lock entries');
+    if (lock && !profile?.isPremium) {
+      toast('Upgrade to premium to lock entries', 'error');
       return;
     }
 
@@ -272,10 +272,10 @@ export function JournalPage() {
     setShowEditor(false);
     setSelectedTemplate(null);
     loadEntries();
-    toast.success(lock ? 'Entry saved & locked' : 'Entry saved');
+    toast(lock ? 'Entry saved & locked' : 'Entry saved', 'success');
 
     if (!editingEntry) {
-      await adsService.checkAndShowAd(profile?.is_premium || false, 'journal');
+      await adsService.checkAndShowAd(profile?.isPremium || false, 'journal');
     }
   };
 
@@ -284,7 +284,7 @@ export function JournalPage() {
 
     await supabase.from('journal_entries').delete().eq('id', entryId);
     loadEntries();
-    toast.success('Entry deleted');
+    toast('Entry deleted', 'success');
   };
 
   const toggleTag = (tagValue: string) => {
@@ -1061,7 +1061,7 @@ export function JournalPage() {
               </Button>
             </div>
 
-            {profile?.is_premium && (
+            {profile?.isPremium && (
               <Button
                 variant="outline"
                 fullWidth

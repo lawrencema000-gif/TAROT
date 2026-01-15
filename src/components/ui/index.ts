@@ -1,6 +1,6 @@
 export { Button } from './Button';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
-export { Progress, ProgressRing } from './Progress';
+export { Progress, ProgressRing, type ProgressProps } from './Progress';
 export { Sheet } from './Sheet';
 export { Input, TextArea } from './Input';
 export { Chip, ChipGroup, InsightChip } from './Chip';

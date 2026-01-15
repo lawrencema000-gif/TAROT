@@ -10,14 +10,14 @@ interface ChipProps {
   onClick?: () => void;
   onRemove?: () => void;
   variant?: 'default' | 'gold' | 'outline';
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 interface InsightChipProps {
   category: InsightCategory;
   selected?: boolean;
   onSelect?: () => void;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const insightConfig: Record<InsightCategory, { label: string; icon: typeof Heart; color: string; bgColor: string; borderColor: string }> = {
@@ -36,6 +36,7 @@ export function InsightChip({ category, selected, onSelect, size = 'md' }: Insig
   const sizeStyles = {
     sm: 'px-2.5 py-1 text-xs gap-1',
     md: 'px-3 py-1.5 text-sm gap-1.5',
+    lg: 'px-4 py-2 text-base gap-2',
   };
 
   return (
@@ -64,6 +65,7 @@ export function Chip({ label, children, selected, onSelect, onClick, onRemove, v
   const sizeStyles = {
     sm: 'px-2.5 py-1 text-xs',
     md: 'px-4 py-2 text-sm',
+    lg: 'px-5 py-2.5 text-base',
   };
 
   const variantStyles = {

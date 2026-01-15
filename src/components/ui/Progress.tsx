@@ -1,9 +1,10 @@
-interface ProgressProps {
+export interface ProgressProps {
   value: number;
   max?: number;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   variant?: 'default' | 'gold' | 'gradient';
+  className?: string;
 }
 
 const sizeStyles = {
@@ -18,11 +19,11 @@ const trackColors = {
   gradient: 'bg-gradient-to-r from-gold-dark via-gold to-gold-light',
 };
 
-export function Progress({ value, max = 100, size = 'md', showLabel, variant = 'default' }: ProgressProps) {
+export function Progress({ value, max = 100, size = 'md', showLabel, variant = 'default', className = '' }: ProgressProps) {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
   return (
-    <div className="w-full">
+    <div className={`w-full ${className}`}>
       <div className={`w-full bg-mystic-800 rounded-full overflow-hidden ${sizeStyles[size]}`}>
         <div
           className={`${sizeStyles[size]} rounded-full transition-all duration-500 ease-out ${trackColors[variant]}`}

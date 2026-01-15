@@ -9,6 +9,10 @@ const goalToSpreadMap: Record<Goal, string> = {
   focus: 'three-card',
   purpose: 'celtic-cross',
   stress: 'single',
+  clarity: 'three-card',
+  growth: 'celtic-cross',
+  wellness: 'single',
+  creativity: 'three-card',
 };
 
 const goalToSectionPriority: Record<Goal, string[]> = {
@@ -19,6 +23,10 @@ const goalToSectionPriority: Record<Goal, string[]> = {
   focus: ['tarot', 'horoscope', 'journal'],
   purpose: ['tarot', 'horoscope', 'compatibility'],
   stress: ['journal', 'horoscope', 'tarot'],
+  clarity: ['tarot', 'journal', 'horoscope'],
+  growth: ['journal', 'tarot', 'horoscope'],
+  wellness: ['horoscope', 'journal', 'tarot'],
+  creativity: ['tarot', 'horoscope', 'journal'],
 };
 
 const toneTemplates: Record<TonePreference, { greeting: string; encouragement: string; style: string }> = {
@@ -219,6 +227,10 @@ export function getRelevantTags(sign: ZodiacSign, goals: Goal[]): string[] {
     focus: ['clarity', 'purpose', 'direction'],
     purpose: ['meaning', 'destiny', 'calling'],
     stress: ['calm', 'balance', 'release'],
+    clarity: ['insight', 'understanding', 'wisdom'],
+    growth: ['development', 'progress', 'evolution'],
+    wellness: ['health', 'balance', 'vitality'],
+    creativity: ['inspiration', 'imagination', 'expression'],
   };
 
   const tags = [...signThemes[sign] || []];

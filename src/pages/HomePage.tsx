@@ -85,8 +85,16 @@ export function HomePage() {
         .eq('date', today);
 
       if (saves) {
-        setSavedToday(saves as SavedHighlight[]);
-        setTarotSaved(saves.some(s => s.highlight_type === 'tarot'));
+        const mappedSaves: SavedHighlight[] = saves.map((s: Record<string, unknown>) => ({
+          id: s.id as string,
+          userId: s.user_id as string,
+          highlightType: s.highlight_type as 'horoscope' | 'tarot' | 'prompt',
+          date: s.date as string,
+          content: s.content as Record<string, unknown>,
+          createdAt: s.created_at as string,
+        }));
+        setSavedToday(mappedSaves);
+        setTarotSaved(mappedSaves.some(s => s.highlightType === 'tarot'));
       }
 
       const { count } = await supabase
@@ -161,7 +169,7 @@ export function HomePage() {
         .eq('date', today)
         .eq('highlight_type', 'tarot');
       setTarotSaved(false);
-      setSavedToday(prev => prev.filter(s => s.highlight_type !== 'tarot'));
+      setSavedToday(prev => prev.filter(s => s.highlightType !== 'tarot'));
       toast('Removed from saved', 'info');
     } else {
       await supabase.from('saved_highlights').insert({

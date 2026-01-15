@@ -211,7 +211,7 @@ export function QuizzesPage() {
         .from('profiles')
         .update(updateData)
         .eq('id', user.id);
-      toast.success('Saved to your profile!');
+      toast('Saved to your profile!', 'success');
     }
     setSaving(false);
   };
@@ -226,11 +226,11 @@ export function QuizzesPage() {
         await navigator.share({ text: shareText });
       } catch {
         await navigator.clipboard.writeText(shareText);
-        toast.success('Copied to clipboard!');
+        toast('Copied to clipboard!', 'success');
       }
     } else {
       await navigator.clipboard.writeText(shareText);
-      toast.success('Copied to clipboard!');
+      toast('Copied to clipboard!', 'success');
     }
   };
 

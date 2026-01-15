@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard } from '../types';
-import { fullDeck, majorArcana } from '../data/tarotDeck';
+import { fullDeck } from '../data/tarotDeck';
 
 export interface TarotCardDB {
   id: number;
@@ -20,6 +20,11 @@ export interface TarotCardDB {
 }
 
 function dbToCard(dbCard: TarotCardDB): TarotCard {
+  const validSuits = ['wands', 'cups', 'swords', 'pentacles'] as const;
+  const suit = dbCard.suit && validSuits.includes(dbCard.suit as typeof validSuits[number])
+    ? dbCard.suit as 'wands' | 'cups' | 'swords' | 'pentacles'
+    : undefined;
+
   return {
     id: dbCard.id,
     name: dbCard.name,
@@ -28,11 +33,11 @@ function dbToCard(dbCard: TarotCardDB): TarotCard {
     meaningUpright: dbCard.meaning_upright,
     meaningReversed: dbCard.meaning_reversed,
     description: dbCard.description,
-    loveMeaning: dbCard.love_meaning,
-    careerMeaning: dbCard.career_meaning,
-    reflectionPrompt: dbCard.reflection_prompt,
-    imageUrl: dbCard.image_url,
-    suit: dbCard.suit,
+    loveMeaning: dbCard.love_meaning || undefined,
+    careerMeaning: dbCard.career_meaning || undefined,
+    reflectionPrompt: dbCard.reflection_prompt || undefined,
+    imageUrl: dbCard.image_url || undefined,
+    suit,
   };
 }
 
@@ -45,10 +50,10 @@ function cardToDb(card: TarotCard): Omit<TarotCardDB, 'created_at' | 'updated_at
     meaning_upright: card.meaningUpright,
     meaning_reversed: card.meaningReversed,
     description: card.description,
-    love_meaning: card.loveMeaning,
-    career_meaning: card.careerMeaning,
-    reflection_prompt: card.reflectionPrompt,
-    image_url: card.imageUrl,
+    love_meaning: card.loveMeaning || '',
+    career_meaning: card.careerMeaning || '',
+    reflection_prompt: card.reflectionPrompt || '',
+    image_url: card.imageUrl || '',
     suit: card.suit,
   };
 }

@@ -1,5 +1,5 @@
 import { AdMob, AdLoadInfo, InterstitialAdPluginEvents, AdMobError } from '@capacitor-community/admob';
-import { isNative, isWeb, isAndroid, isIOS } from '../utils/platform';
+import { isNative, isWeb, isAndroid } from '../utils/platform';
 import { actionCounter, ActionType } from './actionCounter';
 import { supabase } from '../lib/supabase';
 
@@ -35,7 +35,6 @@ class AdsService {
       this.loadLastAdTime();
 
       await AdMob.initialize({
-        requestTrackingAuthorization: true,
         testingDevices: ['YOUR_DEVICE_ID_HERE'],
         initializeForTesting: true,
       });

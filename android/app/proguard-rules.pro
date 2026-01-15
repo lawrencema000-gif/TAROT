@@ -63,3 +63,13 @@
 -keep class kotlin.** { *; }
 -keep class kotlin.Metadata { *; }
 -dontwarn kotlin.Unit
+
+# Google Mobile Ads (AdMob)
+-keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.android.gms.internal.ads.** { *; }
+-dontwarn com.google.android.gms.ads.**
+-dontwarn com.google.android.gms.internal.ads.**
+
+# AdMob Capacitor Plugin
+-keep class com.getcapacitor.community.admob.** { *; }
+-dontwarn com.getcapacitor.community.admob.**

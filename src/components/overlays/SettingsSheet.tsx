@@ -470,7 +470,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   }
 
   if (activeSheet === 'appearance') {
-    const themes = [
+    const themes: { id: 'dark' | 'midnight' | 'celestial'; name: string; desc: string }[] = [
       { id: 'dark', name: 'Dark', desc: 'Easy on the eyes' },
       { id: 'midnight', name: 'Midnight', desc: 'Deep cosmic blue' },
       { id: 'celestial', name: 'Celestial', desc: 'Starry night theme' },

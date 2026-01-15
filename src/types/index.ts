@@ -3,11 +3,11 @@ export type ZodiacSign =
   | 'leo' | 'virgo' | 'libra' | 'scorpio'
   | 'sagittarius' | 'capricorn' | 'aquarius' | 'pisces';
 
-export type Goal = 'love' | 'career' | 'confidence' | 'healing' | 'focus' | 'purpose' | 'stress';
+export type Goal = 'love' | 'career' | 'confidence' | 'healing' | 'focus' | 'purpose' | 'stress' | 'clarity' | 'growth' | 'wellness' | 'creativity';
 
 export type TonePreference = 'gentle' | 'direct' | 'playful';
 
-export type ThemePreference = 'dark' | 'light' | 'auto';
+export type ThemePreference = 'dark' | 'light' | 'auto' | 'midnight' | 'celestial';
 
 export interface UserProfile {
   id: string;

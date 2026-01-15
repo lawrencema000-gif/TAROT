@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Bell,
   Moon,
@@ -15,7 +15,6 @@ import {
   Trash2,
   AlertTriangle,
   Info,
-  Upload,
   Check,
   Loader2,
   Crown,
@@ -29,10 +28,7 @@ import {
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
 import { supabase } from '../../lib/supabase';
-import { uploadSwordsCard } from '../../services/cardImageUpload';
-import { clearDeckCache } from '../../services/search';
 import { PaywallSheet } from '../premium/PaywallSheet';
 import { SubscriptionSheet } from '../premium/SubscriptionSheet';
 
@@ -63,13 +59,9 @@ interface SettingItem {
 
 export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const { profile, user, signOut, updateProfile, refreshProfile } = useAuth();
-  const { refreshTarotCards } = useApp();
   const [activeSheet, setActiveSheet] = useState<SubSheet>('main');
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isUploadingCard, setIsUploadingCard] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [cardBacks, setCardBacks] = useState<CardBackOption[]>([]);
   const [loadingCardBacks, setLoadingCardBacks] = useState(false);
   const [savingCardBack, setSavingCardBack] = useState(false);
@@ -277,35 +269,6 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       console.error('Delete failed:', err);
     } finally {
       setIsDeleting(false);
-      setShowDeleteConfirm(false);
-    }
-  };
-
-  const handleAceOfSwordsUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingCard(true);
-    setUploadMessage('');
-
-    try {
-      const result = await uploadSwordsCard(0, file);
-      setUploadMessage(result.message);
-
-      if (result.success) {
-        clearDeckCache();
-        refreshTarotCards();
-        setTimeout(() => {
-          setUploadMessage('');
-        }, 3000);
-      }
-    } catch (error) {
-      setUploadMessage('Upload failed. Please try again.');
-    } finally {
-      setIsUploadingCard(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -974,47 +937,6 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 Saving...
               </div>
             )}
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-xs font-medium text-mystic-500 uppercase tracking-wider mb-3">
-            Card Management
-          </h3>
-          <div className="space-y-3">
-            <div className="p-4 bg-mystic-800/50 border border-mystic-700 rounded-xl">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h4 className="text-sm font-medium text-mystic-300">Ace of Swords</h4>
-                  <p className="text-xs text-mystic-500 mt-1">Upload card image</p>
-                </div>
-                <Upload className="w-5 h-5 text-mystic-400" />
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAceOfSwordsUpload}
-                className="hidden"
-                id="ace-of-swords-upload"
-              />
-
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploadingCard}
-              >
-                {isUploadingCard ? 'Uploading...' : 'Choose Image'}
-              </Button>
-
-              {uploadMessage && (
-                <div className={`mt-3 text-xs ${uploadMessage.includes('success') ? 'text-green-400' : 'text-coral'}`}>
-                  {uploadMessage}
-                </div>
-              )}
-            </div>
           </div>
         </div>
 

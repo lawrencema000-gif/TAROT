@@ -212,7 +212,26 @@ export function HomePage() {
     return 'Good evening';
   };
 
-  const displayName = profile?.displayName || 'Seeker';
+  const getDisplayName = () => {
+    if (!profile?.displayName || profile.displayName.trim() === '') {
+      return 'Seeker';
+    }
+
+    const name = profile.displayName.trim();
+
+    if (name.includes('@')) {
+      const emailName = name.split('@')[0];
+      const formatted = emailName
+        .split(/[._-]/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+      return formatted || 'Seeker';
+    }
+
+    return name;
+  };
+
+  const displayName = getDisplayName();
 
   if (isLoading) {
     return null;

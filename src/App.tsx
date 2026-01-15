@@ -137,16 +137,18 @@ function AppContent() {
   const currentPage = pageTitles[activeTab] || pageTitles.home;
 
   return (
-    <div className="min-h-screen pb-24 relative">
-      {profile?.background_url && (
+    <div className="min-h-screen pb-24 relative constellation-bg">
+      {profile?.background_url ? (
         <div className="fixed inset-0 z-0">
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-700"
             style={{ backgroundImage: `url(${profile.background_url})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />
           <div className="absolute inset-0 backdrop-blur-[2px]" />
         </div>
+      ) : (
+        <div className="fixed inset-0 z-0 opacity-60" />
       )}
       <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top">
         <Header

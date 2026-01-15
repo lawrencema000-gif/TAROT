@@ -797,14 +797,14 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 No card back designs available yet
               </p>
             ) : (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <button
                   onClick={() => handleSelectCardBack(null)}
                   disabled={savingCardBack}
                   className={`
                     relative aspect-[2/3] rounded-lg border-2 transition-all overflow-hidden
                     bg-gradient-to-br from-mystic-800 to-mystic-900
-                    flex items-center justify-center
+                    flex items-center justify-center min-h-[120px]
                     ${!profile?.card_back_url
                       ? 'border-gold ring-2 ring-gold/30'
                       : 'border-mystic-700 hover:border-mystic-500'
@@ -826,7 +826,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     onClick={() => handleSelectCardBack(cardBack.url)}
                     disabled={savingCardBack}
                     className={`
-                      relative aspect-[2/3] rounded-lg border-2 transition-all overflow-hidden
+                      relative aspect-[2/3] rounded-lg border-2 transition-all overflow-hidden min-h-[120px]
                       ${profile?.card_back_url === cardBack.url
                         ? 'border-gold ring-2 ring-gold/30'
                         : 'border-mystic-700 hover:border-mystic-500'
@@ -876,14 +876,14 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 No backgrounds available yet
               </p>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={() => handleSelectBackground(null)}
                   disabled={savingBackground}
                   className={`
                     relative aspect-video rounded-lg border-2 transition-all overflow-hidden
                     bg-gradient-to-br from-mystic-800 to-mystic-900
-                    flex items-center justify-center
+                    flex items-center justify-center min-h-[100px]
                     ${!profile?.background_url
                       ? 'border-gold ring-2 ring-gold/30'
                       : 'border-mystic-700 hover:border-mystic-500'
@@ -908,7 +908,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     onClick={() => handleSelectBackground(bg.url)}
                     disabled={savingBackground}
                     className={`
-                      relative aspect-video rounded-lg border-2 transition-all overflow-hidden
+                      relative aspect-video rounded-lg border-2 transition-all overflow-hidden min-h-[100px]
                       ${profile?.background_url === bg.url
                         ? 'border-gold ring-2 ring-gold/30'
                         : 'border-mystic-700 hover:border-mystic-500'

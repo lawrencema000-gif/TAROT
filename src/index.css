@@ -308,6 +308,17 @@
     display: none;
   }
 
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  @media (max-width: 640px) {
+    .mobile-optimized-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   .text-scale-sm {
     font-size: calc(0.875rem * var(--font-scale));
   }

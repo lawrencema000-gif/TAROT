@@ -82,7 +82,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   });
 
   useImagePreloader(
-    filteredDeck.slice(0, 12).map(card => card.imageUrl).filter((url): url is string => !!url),
+    filteredDeck.slice(0, 6).map(card => card.imageUrl).filter((url): url is string => !!url),
     showBrowse
   );
 
@@ -355,7 +355,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-20">
-          <div className="grid grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
             {deckCards.map((cardIndex) => {
               const isSelected = selectedIndices.includes(cardIndex);
               const selectionOrder = selectedIndices.indexOf(cardIndex) + 1;
@@ -716,7 +716,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             ))}
           </div>
 
-          <div className="grid grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto pb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[70vh] overflow-y-auto pb-4">
             {filteredDeck.map(card => (
               <button
                 key={card.id}
@@ -724,13 +724,14 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                   setSelectedCard({ card, reversed: false });
                   setShowBrowse(false);
                 }}
-                className="relative aspect-[2/3] rounded-xl border border-mystic-600 hover:border-gold/50 hover:scale-105 active:scale-95 transition-all overflow-hidden group"
+                className="relative aspect-[2/3] rounded-xl border border-mystic-600 hover:border-gold/50 hover:scale-105 active:scale-95 transition-all overflow-hidden group min-h-[140px]"
               >
                 {card.imageUrl ? (
                   <>
                     <img
                       src={card.imageUrl}
                       alt={card.name}
+                      loading="lazy"
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/90 via-transparent to-transparent" />

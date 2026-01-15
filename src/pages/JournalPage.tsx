@@ -1046,7 +1046,7 @@ export function JournalPage() {
             </div>
           </div>
 
-          <div className="border-t border-mystic-800 p-6 space-y-3 bg-mystic-900">
+          <div className="border-t border-mystic-800 p-6 pb-24 space-y-3 bg-mystic-900 safe-bottom">
             <div className="flex gap-3">
               <Button variant="ghost" fullWidth onClick={() => setShowEditor(false)}>
                 Cancel

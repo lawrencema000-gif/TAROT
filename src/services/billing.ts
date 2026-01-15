@@ -16,7 +16,10 @@ export interface Product {
   price: string;
   priceAmount: number;
   currency: string;
-  period?: 'week' | 'month' | 'year';
+  period?: 'month' | 'year' | 'lifetime';
+  isLifetime?: boolean;
+  hasTrial?: boolean;
+  trialDays?: number;
   rcPackage?: PurchasesPackage;
 }
 
@@ -38,9 +41,9 @@ export interface BillingService {
 }
 
 const PRODUCT_IDS = {
-  PREMIUM_WEEKLY: 'celestial_premium_weekly',
-  PREMIUM_MONTHLY: 'celestial_premium_monthly',
-  PREMIUM_YEARLY: 'celestial_premium_yearly',
+  PREMIUM_MONTHLY: 'arcana_premium_monthly',
+  PREMIUM_YEARLY: 'arcana_premium_yearly',
+  PREMIUM_LIFETIME: 'arcana_premium_lifetime',
 };
 
 const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || '';
@@ -99,17 +102,25 @@ class NativeBillingService implements BillingService {
 
       return this.packages.map((pkg) => {
         const product = pkg.product;
-        let period: 'week' | 'month' | 'year' | undefined;
+        let period: 'month' | 'year' | 'lifetime' | undefined;
+        let isLifetime = false;
+        let hasTrial = false;
+        let trialDays = 0;
 
         if (product.subscriptionPeriod) {
           const periodUnit = product.subscriptionPeriod.toLowerCase();
-          if (periodUnit.includes('week') || periodUnit.includes('p1w')) {
-            period = 'week';
-          } else if (periodUnit.includes('month') || periodUnit.includes('p1m')) {
+          if (periodUnit.includes('month') || periodUnit.includes('p1m')) {
             period = 'month';
+            hasTrial = true;
+            trialDays = 3;
           } else if (periodUnit.includes('year') || periodUnit.includes('p1y')) {
             period = 'year';
+            hasTrial = true;
+            trialDays = 3;
           }
+        } else {
+          period = 'lifetime';
+          isLifetime = true;
         }
 
         return {
@@ -120,6 +131,9 @@ class NativeBillingService implements BillingService {
           priceAmount: product.price,
           currency: product.currencyCode,
           period,
+          isLifetime,
+          hasTrial,
+          trialDays,
           rcPackage: pkg,
         };
       });
@@ -132,31 +146,36 @@ class NativeBillingService implements BillingService {
   private getFallbackProducts(): Product[] {
     return [
       {
-        id: PRODUCT_IDS.PREMIUM_WEEKLY,
-        title: 'Premium Weekly',
-        description: 'Full access for one week',
-        price: '$4.99',
-        priceAmount: 4.99,
-        currency: 'USD',
-        period: 'week',
-      },
-      {
         id: PRODUCT_IDS.PREMIUM_MONTHLY,
         title: 'Premium Monthly',
-        description: 'Full access for one month',
+        description: 'Full access with 3-day free trial',
         price: '$9.99',
         priceAmount: 9.99,
         currency: 'USD',
         period: 'month',
+        hasTrial: true,
+        trialDays: 3,
       },
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Full access for one year',
+        description: 'Full access with 3-day free trial',
         price: '$49.99',
         priceAmount: 49.99,
         currency: 'USD',
         period: 'year',
+        hasTrial: true,
+        trialDays: 3,
+      },
+      {
+        id: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase, forever access',
+        price: '$99.99',
+        priceAmount: 99.99,
+        currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
       },
     ];
   }
@@ -285,31 +304,36 @@ class WebBillingService implements BillingService {
   async getProducts(): Promise<Product[]> {
     return [
       {
-        id: PRODUCT_IDS.PREMIUM_WEEKLY,
-        title: 'Premium Weekly',
-        description: 'Full access for one week',
-        price: '$4.99',
-        priceAmount: 4.99,
-        currency: 'USD',
-        period: 'week',
-      },
-      {
         id: PRODUCT_IDS.PREMIUM_MONTHLY,
         title: 'Premium Monthly',
-        description: 'Full access for one month',
+        description: 'Full access with 3-day free trial',
         price: '$9.99',
         priceAmount: 9.99,
         currency: 'USD',
         period: 'month',
+        hasTrial: true,
+        trialDays: 3,
       },
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Full access for one year',
+        description: 'Full access with 3-day free trial',
         price: '$49.99',
         priceAmount: 49.99,
         currency: 'USD',
         period: 'year',
+        hasTrial: true,
+        trialDays: 3,
+      },
+      {
+        id: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase, forever access',
+        price: '$99.99',
+        priceAmount: 99.99,
+        currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
       },
     ];
   }

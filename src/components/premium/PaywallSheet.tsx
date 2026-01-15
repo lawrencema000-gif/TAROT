@@ -31,17 +31,52 @@ const unlocks = [
   { icon: Moon, label: 'Birth Chart', desc: 'Your cosmic blueprint' },
 ];
 
-type PlanId = 'trial' | 'monthly' | 'yearly';
+type PlanId = 'monthly' | 'yearly' | 'lifetime';
 
-const plans: { id: PlanId; label: string; price: string; period: string; badge?: string; productId: string }[] = [
-  { id: 'trial', label: '7-Day Free Trial', price: 'Free', period: 'then $9.99/mo', badge: 'Recommended', productId: PRODUCT_IDS.PREMIUM_MONTHLY },
-  { id: 'monthly', label: 'Monthly', price: '$9.99', period: '/month', productId: PRODUCT_IDS.PREMIUM_MONTHLY },
-  { id: 'yearly', label: 'Yearly', price: '$49.99', period: '/year', badge: 'Save 58%', productId: PRODUCT_IDS.PREMIUM_YEARLY },
+interface Plan {
+  id: PlanId;
+  label: string;
+  price: string;
+  period: string;
+  badge?: string;
+  productId: string;
+  hasTrial?: boolean;
+  trialText?: string;
+}
+
+const plans: Plan[] = [
+  {
+    id: 'monthly',
+    label: 'Monthly',
+    price: '$9.99',
+    period: '/month',
+    productId: PRODUCT_IDS.PREMIUM_MONTHLY,
+    hasTrial: true,
+    trialText: '3-day free trial',
+  },
+  {
+    id: 'yearly',
+    label: 'Yearly',
+    price: '$49.99',
+    period: '/year',
+    badge: 'Best Value',
+    productId: PRODUCT_IDS.PREMIUM_YEARLY,
+    hasTrial: true,
+    trialText: '3-day free trial',
+  },
+  {
+    id: 'lifetime',
+    label: 'Lifetime',
+    price: '$99.99',
+    period: 'one-time',
+    badge: 'Forever Access',
+    productId: PRODUCT_IDS.PREMIUM_LIFETIME,
+  },
 ];
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
   const { updateProfile, refreshProfile } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>('trial');
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
 
@@ -177,7 +212,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               >
                 {plan.badge && (
                   <span className={`absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                    plan.badge === 'Recommended'
+                    plan.badge === 'Best Value'
                       ? 'bg-gold text-mystic-950'
                       : 'bg-emerald-500 text-white'
                   }`}>
@@ -193,9 +228,14 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                         <div className="w-2.5 h-2.5 rounded-full bg-gold" />
                       )}
                     </div>
-                    <span className={`font-medium ${selectedPlan === plan.id ? 'text-mystic-100' : 'text-mystic-300'}`}>
-                      {plan.label}
-                    </span>
+                    <div>
+                      <span className={`font-medium ${selectedPlan === plan.id ? 'text-mystic-100' : 'text-mystic-300'}`}>
+                        {plan.label}
+                      </span>
+                      {plan.hasTrial && (
+                        <p className="text-xs text-emerald-400 mt-0.5">{plan.trialText}</p>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <span className={`text-lg font-display ${selectedPlan === plan.id ? 'text-gold' : 'text-mystic-200'}`}>
@@ -217,7 +257,11 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               loading={purchasing}
               className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
             >
-              {selectedPlan === 'trial' ? 'Start Free Trial' : 'Continue'}
+              {plans.find(p => p.id === selectedPlan)?.hasTrial
+                ? 'Start 3-Day Free Trial'
+                : selectedPlan === 'lifetime'
+                  ? 'Get Lifetime Access'
+                  : 'Continue'}
             </Button>
 
             <button
@@ -237,8 +281,9 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
 
         <div className="px-6 pb-8 pt-4 border-t border-mystic-800/50">
           <p className="text-xs text-mystic-600 text-center leading-relaxed">
-            Cancel anytime. {selectedPlan === 'trial' && 'Free trial converts to paid subscription. '}
-            Payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
+            {selectedPlan === 'lifetime'
+              ? 'One-time purchase. No recurring charges. Lifetime access to all premium features.'
+              : `Cancel anytime. ${plans.find(p => p.id === selectedPlan)?.hasTrial ? 'After your 3-day free trial, ' : ''}payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.`}
           </p>
         </div>
       </div>

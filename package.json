@@ -13,7 +13,8 @@
     "cap:open:android": "npx cap open android",
     "android:build": "npm run build && npx cap sync android",
     "android:run": "npm run build && npx cap sync android && npx cap run android",
-    "android:live": "npm run build && npx cap sync android && npx cap run android --livereload --external"
+    "android:live": "npm run build && npx cap sync android && npx cap run android --livereload --external",
+    "android:release": "npm run build && npx cap sync android && cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",

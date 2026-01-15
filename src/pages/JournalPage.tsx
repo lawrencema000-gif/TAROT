@@ -912,159 +912,163 @@ export function JournalPage() {
       )}
 
       <Sheet open={showEditor} onClose={() => { setShowEditor(false); setSelectedTemplate(null); }} title={editingEntry ? 'Edit Entry' : selectedTemplate ? selectedTemplate.title : 'New Entry'}>
-        <div className="space-y-5">
-          {!editingEntry && selectedTemplate && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-mystic-500 uppercase tracking-wide">
-                  Prompt {currentPromptIndex + 1} of {selectedTemplate.prompts.length}
-                </span>
-                <div className="flex gap-1">
-                  {selectedTemplate.prompts.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPromptIndex(i)}
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        i === currentPromptIndex ? 'bg-gold' : i < currentPromptIndex ? 'bg-emerald-500' : 'bg-mystic-600'
-                      }`}
-                    />
-                  ))}
+        <div className="flex flex-col h-full -m-6">
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            {!editingEntry && selectedTemplate && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-mystic-500 uppercase tracking-wide">
+                    Prompt {currentPromptIndex + 1} of {selectedTemplate.prompts.length}
+                  </span>
+                  <div className="flex gap-1">
+                    {selectedTemplate.prompts.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPromptIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          i === currentPromptIndex ? 'bg-gold' : i < currentPromptIndex ? 'bg-emerald-500' : 'bg-mystic-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 bg-gold/10 border border-gold/20 rounded-xl">
+                  <p className="text-mystic-100">{selectedTemplate.prompts[currentPromptIndex]}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCurrentPromptIndex(Math.max(0, currentPromptIndex - 1))}
+                    disabled={currentPromptIndex === 0}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Prev
+                  </Button>
+                  <div className="flex-1" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCurrentPromptIndex(Math.min(selectedTemplate.prompts.length - 1, currentPromptIndex + 1))}
+                    disabled={currentPromptIndex === selectedTemplate.prompts.length - 1}
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="p-4 bg-gold/10 border border-gold/20 rounded-xl">
-                <p className="text-mystic-100">{selectedTemplate.prompts[currentPromptIndex]}</p>
+            )}
+
+            {!editingEntry && !selectedTemplate && (
+              <div className="p-4 bg-mystic-800/30 rounded-xl">
+                <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Today&apos;s Prompt</p>
+                <p className="text-mystic-200 text-sm">{todayPrompt}</p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentPromptIndex(Math.max(0, currentPromptIndex - 1))}
-                  disabled={currentPromptIndex === 0}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Prev
-                </Button>
-                <div className="flex-1" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentPromptIndex(Math.min(selectedTemplate.prompts.length - 1, currentPromptIndex + 1))}
-                  disabled={currentPromptIndex === selectedTemplate.prompts.length - 1}
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+            )}
 
-          {!editingEntry && !selectedTemplate && (
-            <div className="p-4 bg-mystic-800/30 rounded-xl">
-              <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Today&apos;s Prompt</p>
-              <p className="text-mystic-200 text-sm">{todayPrompt}</p>
-            </div>
-          )}
-
-          <Input
-            label="Title (optional)"
-            placeholder="Give your entry a name..."
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-2">Your Thoughts</label>
-            <textarea
-              placeholder="Write your reflection..."
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              rows={6}
-              className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl px-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50 resize-none"
+            <Input
+              label="Title (optional)"
+              placeholder="Give your entry a name..."
+              value={title}
+              onChange={e => setTitle(e.target.value)}
             />
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-3">How are you feeling?</label>
-            <div className="flex flex-wrap gap-2">
-              {moodEmojis.map(mood => (
-                <button
-                  key={mood.value}
-                  onClick={() => setSelectedMood(selectedMood === mood.value ? '' : mood.value)}
-                  className={`w-12 h-12 rounded-xl text-2xl flex items-center justify-center transition-all ${
-                    selectedMood === mood.value
-                      ? 'bg-gold/20 border-2 border-gold scale-110'
-                      : 'bg-mystic-800/50 border border-mystic-700 hover:border-mystic-500'
-                  }`}
-                  title={mood.label}
-                >
-                  {mood.emoji}
-                </button>
-              ))}
+            <div>
+              <label className="block text-sm font-medium text-mystic-300 mb-2">Your Thoughts</label>
+              <textarea
+                placeholder="Write your reflection..."
+                value={content}
+                onChange={e => setContent(e.target.value)}
+                rows={6}
+                className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl px-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50 resize-none"
+              />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-3">Tags</label>
-            <div className="flex flex-wrap gap-2">
-              {categoryTags.map(tag => (
-                <button
-                  key={tag.value}
-                  onClick={() => toggleTag(tag.value)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                    selectedTags.includes(tag.value) ? tag.color : 'bg-mystic-800/50 text-mystic-400 border-mystic-700'
-                  }`}
-                >
-                  {tag.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-3">Attachments</label>
-            {linkedReadingId ? (
-              <div className="flex items-center gap-3 p-3 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
-                <Link2 className="w-5 h-5 text-cosmic-blue" />
-                <span className="text-sm text-mystic-200 flex-1">Tarot reading linked</span>
-                <button
-                  onClick={() => setLinkedReadingId(null)}
-                  className="p-1 hover:bg-mystic-700 rounded"
-                >
-                  <X className="w-4 h-4 text-mystic-400" />
-                </button>
+            <div>
+              <label className="block text-sm font-medium text-mystic-300 mb-3">How are you feeling?</label>
+              <div className="flex flex-wrap gap-2">
+                {moodEmojis.map(mood => (
+                  <button
+                    key={mood.value}
+                    onClick={() => setSelectedMood(selectedMood === mood.value ? '' : mood.value)}
+                    className={`w-12 h-12 rounded-xl text-2xl flex items-center justify-center transition-all ${
+                      selectedMood === mood.value
+                        ? 'bg-gold/20 border-2 border-gold scale-110'
+                        : 'bg-mystic-800/50 border border-mystic-700 hover:border-mystic-500'
+                    }`}
+                    title={mood.label}
+                  >
+                    {mood.emoji}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <button
-                onClick={() => setShowAttachmentPicker(true)}
-                className="w-full p-3 border border-dashed border-mystic-600 rounded-xl text-mystic-400 hover:border-gold/50 hover:text-gold transition-colors flex items-center justify-center gap-2"
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-mystic-300 mb-3">Tags</label>
+              <div className="flex flex-wrap gap-2">
+                {categoryTags.map(tag => (
+                  <button
+                    key={tag.value}
+                    onClick={() => toggleTag(tag.value)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                      selectedTags.includes(tag.value) ? tag.color : 'bg-mystic-800/50 text-mystic-400 border-mystic-700'
+                    }`}
+                  >
+                    {tag.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-mystic-300 mb-3">Attachments</label>
+              {linkedReadingId ? (
+                <div className="flex items-center gap-3 p-3 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
+                  <Link2 className="w-5 h-5 text-cosmic-blue" />
+                  <span className="text-sm text-mystic-200 flex-1">Tarot reading linked</span>
+                  <button
+                    onClick={() => setLinkedReadingId(null)}
+                    className="p-1 hover:bg-mystic-700 rounded"
+                  >
+                    <X className="w-4 h-4 text-mystic-400" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAttachmentPicker(true)}
+                  className="w-full p-3 border border-dashed border-mystic-600 rounded-xl text-mystic-400 hover:border-gold/50 hover:text-gold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Link2 className="w-4 h-4" />
+                  Link a tarot reading
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="border-t border-mystic-800 p-6 space-y-3 bg-mystic-900">
+            <div className="flex gap-3">
+              <Button variant="ghost" fullWidth onClick={() => setShowEditor(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" fullWidth onClick={() => saveEntry(false)} disabled={!content.trim()}>
+                Save
+              </Button>
+            </div>
+
+            {profile?.is_premium && (
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => saveEntry(true)}
+                disabled={!content.trim()}
+                className="border-gold/30 text-gold"
               >
-                <Link2 className="w-4 h-4" />
-                Link a tarot reading
-              </button>
+                <Lock className="w-4 h-4 mr-2" />
+                Save + Lock
+              </Button>
             )}
           </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button variant="ghost" fullWidth onClick={() => setShowEditor(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" fullWidth onClick={() => saveEntry(false)} disabled={!content.trim()}>
-              Save
-            </Button>
-          </div>
-
-          {profile?.is_premium && (
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => saveEntry(true)}
-              disabled={!content.trim()}
-              className="border-gold/30 text-gold"
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              Save + Lock
-            </Button>
-          )}
         </div>
       </Sheet>
 

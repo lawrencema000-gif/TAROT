@@ -1,4 +1,3 @@
-import { AdMob, AdLoadInfo, InterstitialAdPluginEvents, AdMobError } from '@capacitor-community/admob';
 import { isNative, isWeb, isAndroid } from '../utils/platform';
 import { actionCounter, ActionType } from './actionCounter';
 import { supabase } from '../lib/supabase';
@@ -12,11 +11,29 @@ const TEST_AD_UNIT_IDS = {
 
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
 
+let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
+let InterstitialAdPluginEvents: typeof import('@capacitor-community/admob').InterstitialAdPluginEvents | null = null;
+
+async function loadAdMobPlugin(): Promise<boolean> {
+  if (AdMob) return true;
+
+  try {
+    const admobModule = await import('@capacitor-community/admob');
+    AdMob = admobModule.AdMob;
+    InterstitialAdPluginEvents = admobModule.InterstitialAdPluginEvents;
+    return true;
+  } catch (error) {
+    console.warn('[Ads] AdMob plugin not available:', error);
+    return false;
+  }
+}
+
 class AdsService {
   private initialized = false;
   private lastAdTime = 0;
   private isAdReady = false;
   private currentUserId: string | null = null;
+  private pluginAvailable = false;
 
   async initialize(userId: string | null = null): Promise<void> {
     if (isWeb()) {
@@ -32,6 +49,13 @@ class AdsService {
     this.currentUserId = userId;
 
     try {
+      this.pluginAvailable = await loadAdMobPlugin();
+
+      if (!this.pluginAvailable || !AdMob) {
+        console.log('[Ads] AdMob plugin not available - ads disabled');
+        return;
+      }
+
       this.loadLastAdTime();
 
       await AdMob.initialize({
@@ -47,6 +71,7 @@ class AdsService {
       console.log('[Ads] AdMob initialized successfully');
     } catch (error) {
       console.error('[Ads] Failed to initialize AdMob:', error);
+      this.pluginAvailable = false;
     }
   }
 
@@ -69,12 +94,14 @@ class AdsService {
   }
 
   private setupAdListeners(): void {
-    AdMob.addListener(InterstitialAdPluginEvents.Loaded, (info: AdLoadInfo) => {
-      console.log('[Ads] Interstitial ad loaded:', info);
+    if (!AdMob || !InterstitialAdPluginEvents) return;
+
+    AdMob.addListener(InterstitialAdPluginEvents.Loaded, () => {
+      console.log('[Ads] Interstitial ad loaded');
       this.isAdReady = true;
     });
 
-    AdMob.addListener(InterstitialAdPluginEvents.FailedToLoad, (error: AdMobError) => {
+    AdMob.addListener(InterstitialAdPluginEvents.FailedToLoad, (error) => {
       console.error('[Ads] Failed to load interstitial ad:', error);
       this.isAdReady = false;
       setTimeout(() => this.preloadInterstitial(), 5000);
@@ -92,7 +119,7 @@ class AdsService {
       this.saveLastAdTime();
     });
 
-    AdMob.addListener(InterstitialAdPluginEvents.FailedToShow, (error: AdMobError) => {
+    AdMob.addListener(InterstitialAdPluginEvents.FailedToShow, (error) => {
       console.error('[Ads] Failed to show interstitial ad:', error);
       this.isAdReady = false;
       this.preloadInterstitial();
@@ -100,7 +127,7 @@ class AdsService {
   }
 
   private async preloadInterstitial(): Promise<void> {
-    if (isWeb()) {
+    if (isWeb() || !this.pluginAvailable || !AdMob) {
       return;
     }
 
@@ -157,8 +184,8 @@ class AdsService {
   }
 
   private async showInterstitial(actionType: ActionType): Promise<void> {
-    if (!this.initialized) {
-      console.log('[Ads] Not initialized - skipping ad');
+    if (!this.initialized || !this.pluginAvailable || !AdMob) {
+      console.log('[Ads] Not initialized or plugin unavailable - skipping ad');
       return;
     }
 

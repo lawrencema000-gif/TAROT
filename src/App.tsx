@@ -6,6 +6,7 @@ import { Header } from './components/layout/Header';
 import { DevicePreview } from './components/dev/DevicePreview';
 import { ToastContainer } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
+import { MissingSupabaseConfig } from './components/setup';
 import {
   HomePage,
   ReadingsPage,
@@ -20,6 +21,7 @@ import {
 import { isNative } from './utils/platform';
 import { initializeBilling } from './services/billing';
 import { adsService } from './services/ads';
+import { isSupabaseConfigured } from './lib/supabase';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 
@@ -203,6 +205,10 @@ function AppWithProviders() {
 }
 
 function App() {
+  if (!isSupabaseConfigured) {
+    return <MissingSupabaseConfig />;
+  }
+
   if (isDev) {
     return (
       <DevicePreview>

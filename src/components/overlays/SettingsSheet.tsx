@@ -642,41 +642,120 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     return (
       <Sheet open={open} onClose={onClose} title="Privacy Policy">
         {renderBackButton('Privacy Policy')}
-        <div className="space-y-4">
+        <div className="space-y-4 text-sm text-mystic-300">
+          <p>
+            This Privacy Policy explains how Tarot Life ("we", "us", "our") collects, uses, and shares information when you use our mobile application ("App").
+          </p>
+
           <div className="p-4 bg-mystic-800/30 rounded-xl">
-            <h4 className="font-medium text-mystic-100 mb-2">Your Data</h4>
-            <p className="text-sm text-mystic-400 mb-3">
-              Your personal information is encrypted and stored securely. We never share or sell your data.
-            </p>
-            <ul className="space-y-2 text-sm text-mystic-300">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Profile information stored securely
+            <h4 className="font-medium text-gold mb-3">Information we collect</h4>
+            <ul className="space-y-2 text-mystic-400">
+              <li>
+                <strong className="text-mystic-300">Account information (if you create an account):</strong> email address and basic profile details you provide.
               </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Journal entries encrypted at rest
+              <li>
+                <strong className="text-mystic-300">App content you provide:</strong> journals, notes, preferences, and other content you enter into the App.
               </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Birth data handled with care
+              <li>
+                <strong className="text-mystic-300">Purchase and subscription information:</strong> we use RevenueCat to manage in-app purchases and subscriptions. RevenueCat and the relevant app store may process purchase-related data (for example, subscription status, receipts, and transaction identifiers).
+              </li>
+              <li>
+                <strong className="text-mystic-300">Advertising data:</strong> the App displays ads. Advertising partners may collect device identifiers (such as the Advertising ID), IP address, coarse location (approximate), and ad interaction events to provide and measure ads.
+              </li>
+              <li>
+                <strong className="text-mystic-300">Device and usage information:</strong> basic technical information such as device model, OS version, language, and app events (for performance and troubleshooting).
               </li>
             </ul>
           </div>
 
           <div className="p-4 bg-mystic-800/30 rounded-xl">
-            <h4 className="font-medium text-mystic-100 mb-2">Data Collection</h4>
-            <p className="text-sm text-mystic-400">
-              We only collect data necessary to provide our services. Birth time and location are optional and used solely for personalized readings.
+            <h4 className="font-medium text-gold mb-3">How we use information</h4>
+            <ul className="space-y-2 text-mystic-400">
+              <li>• Provide and operate the App and its features</li>
+              <li>• Sync or store your data (when enabled)</li>
+              <li>• Process purchases and manage subscriptions</li>
+              <li>• Show ads and measure ad performance</li>
+              <li>• Improve performance, fix bugs, and provide support</li>
+              <li>• Comply with legal obligations</li>
+            </ul>
+          </div>
+
+          <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <h4 className="font-medium text-gold mb-3">Third-party services</h4>
+            <p className="text-mystic-400 mb-2">
+              The App may use third-party services to operate core functionality, including:
+            </p>
+            <ul className="space-y-2 text-mystic-400">
+              <li>• <strong className="text-mystic-300">RevenueCat</strong> (subscriptions and purchase management)</li>
+              <li>• <strong className="text-mystic-300">Advertising partners</strong> (to display ads and measure performance)</li>
+              <li>• <strong className="text-mystic-300">Backend/database provider</strong> (to store or sync your app data when enabled)</li>
+            </ul>
+            <p className="text-mystic-400 mt-2">
+              These third parties may process information as described above and under their own privacy policies.
             </p>
           </div>
 
           <div className="p-4 bg-mystic-800/30 rounded-xl">
-            <h4 className="font-medium text-mystic-100 mb-2">Contact</h4>
-            <p className="text-sm text-mystic-400">
-              For questions about your data or privacy, contact us at privacy@arcana.app
+            <h4 className="font-medium text-gold mb-3">Sharing of information</h4>
+            <p className="text-mystic-400 mb-2">
+              We do not sell your personal information. We may share information:
+            </p>
+            <ul className="space-y-2 text-mystic-400">
+              <li>• With service providers (for example, ads and subscriptions) to operate the App</li>
+              <li>• If required by law, legal process, or to protect rights and safety</li>
+              <li>• In connection with a business transfer (merger, acquisition, or sale of assets)</li>
+            </ul>
+          </div>
+
+          <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <h4 className="font-medium text-gold mb-3">Data retention</h4>
+            <p className="text-mystic-400">
+              We retain information for as long as needed to provide the App and for legitimate business purposes (such as compliance and dispute resolution). You may request deletion where applicable.
             </p>
           </div>
+
+          <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <h4 className="font-medium text-gold mb-3">Security</h4>
+            <p className="text-mystic-400">
+              We use reasonable administrative, technical, and organizational safeguards to protect information. No method of transmission or storage is 100% secure.
+            </p>
+          </div>
+
+          <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <h4 className="font-medium text-gold mb-3">Children's privacy</h4>
+            <p className="text-mystic-400">
+              The App is not intended for children under 13 (or the age required by local law). We do not knowingly collect personal information from children.
+            </p>
+          </div>
+
+          <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <h4 className="font-medium text-gold mb-3">Your choices</h4>
+            <ul className="space-y-2 text-mystic-400">
+              <li>
+                <strong className="text-mystic-300">Advertising:</strong> you can limit ad tracking from your device settings (availability varies by device/OS).
+              </li>
+              <li>
+                <strong className="text-mystic-300">Account/data deletion:</strong> contact us to request deletion (where applicable).
+              </li>
+            </ul>
+          </div>
+
+          <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <h4 className="font-medium text-gold mb-3">Contact</h4>
+            <p className="text-mystic-400 mb-2">
+              If you have questions or requests, contact:
+            </p>
+            <a
+              href="mailto:lawrence.ma000@gmail.com"
+              className="text-cosmic-blue hover:text-cosmic-blue/80 transition-colors"
+            >
+              lawrence.ma000@gmail.com
+            </a>
+          </div>
+
+          <Button variant="outline" fullWidth onClick={() => setActiveSheet('main')}>
+            Back to Settings
+          </Button>
         </div>
       </Sheet>
     );

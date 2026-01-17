@@ -202,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsProcessingOAuth(true);
 
     const redirectUrl = isNative()
-      ? 'https://com.arcana.app'
+      ? 'com.arcana.app://auth'
       : window.location.origin;
 
     console.log('[OAuth] Redirect URL:', redirectUrl, 'isNative:', isNative());

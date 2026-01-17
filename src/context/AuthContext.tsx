@@ -201,10 +201,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('[OAuth] Initiating Google sign-in');
     setIsProcessingOAuth(true);
 
+    const redirectUrl = isNative()
+      ? 'https://com.arcana.app'
+      : window.location.origin;
+
+    console.log('[OAuth] Redirect URL:', redirectUrl, 'isNative:', isNative());
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: redirectUrl,
         scopes: 'https://www.googleapis.com/auth/userinfo.email'
       },
     });

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -10,7 +11,17 @@ function initSupabase(): SupabaseClient | null {
     return null;
   }
   try {
-    return createClient(supabaseUrl, supabaseAnonKey);
+    const isNative = Capacitor.isNativePlatform();
+
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        ...(isNative && {
+          storage: window.localStorage,
+        }),
+      },
+    });
   } catch {
     return null;
   }

@@ -1,5 +1,6 @@
 import { Info, Sparkles } from 'lucide-react';
 import type { TarotCard } from '../../types';
+import { getBundledCardPath } from '../../config/bundledImages';
 
 interface CelticCrossLayoutProps {
   drawnCards: { card: TarotCard; reversed: boolean; revealed: boolean }[];
@@ -16,6 +17,11 @@ export function CelticCrossLayout({
   getPositionLabel,
   cardBackUrl,
 }: CelticCrossLayoutProps) {
+  const getCardImage = (card: TarotCard): string | undefined => {
+    const bundledPath = getBundledCardPath(card.id);
+    return bundledPath || card.imageUrl;
+  };
+
   const renderCard = (drawn: { card: TarotCard; reversed: boolean; revealed: boolean }, index: number) => (
     <div key={index} className="relative group">
       <button
@@ -38,9 +44,9 @@ export function CelticCrossLayout({
           }}
         >
           {drawn.revealed ? (
-            drawn.card.imageUrl ? (
+            getCardImage(drawn.card) ? (
               <img
-                src={drawn.card.imageUrl}
+                src={getCardImage(drawn.card)}
                 alt={drawn.card.name}
                 className="w-full h-full object-cover"
               />

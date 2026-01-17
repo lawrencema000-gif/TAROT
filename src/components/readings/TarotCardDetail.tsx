@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Heart, Briefcase, Sparkles, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
 import { Card, Button } from '../ui';
 import type { TarotCard } from '../../types';
-import { useImageLoader } from '../../hooks/useImageLoader';
+import { useProgressiveImage } from '../../hooks/useProgressiveImage';
 
 interface TarotCardDetailProps {
   card: TarotCard;
@@ -15,9 +15,9 @@ type DetailTab = 'meaning' | 'love' | 'career' | 'reflect';
 export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDetailProps) {
   const [activeTab, setActiveTab] = useState<DetailTab>('meaning');
 
-  const { imageUrl, isLoading } = useImageLoader({
-    url: card.imageUrl,
-    useCache: true,
+  const { src: imageUrl, isLoading } = useProgressiveImage({
+    cardId: card.id,
+    remoteUrl: card.imageUrl,
     priority: 'high',
   });
 

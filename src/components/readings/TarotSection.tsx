@@ -25,6 +25,7 @@ import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
 import { adsService } from '../../services/ads';
+import { getBundledCardPath } from '../../config/bundledImages';
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
@@ -65,6 +66,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
+
+  const getCardImage = (card: TarotCard): string | undefined => {
+    const bundledPath = getBundledCardPath(card.id);
+    return bundledPath || card.imageUrl;
+  };
 
   useEffect(() => {
     const loadCards = async () => {
@@ -477,9 +483,9 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                     }}
                   >
                     {drawn.revealed ? (
-                      drawn.card.imageUrl ? (
+                      getCardImage(drawn.card) ? (
                         <img
-                          src={drawn.card.imageUrl}
+                          src={getCardImage(drawn.card)}
                           alt={drawn.card.name}
                           className="w-full h-full object-cover"
                         />
@@ -729,10 +735,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                 }}
                 className="relative aspect-[2/3] rounded-xl border border-mystic-600 hover:border-gold/50 hover:scale-105 active:scale-95 transition-all overflow-hidden group min-h-[140px]"
               >
-                {card.imageUrl ? (
+                {getCardImage(card) ? (
                   <>
                     <img
-                      src={card.imageUrl}
+                      src={getCardImage(card)}
                       alt={card.name}
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"

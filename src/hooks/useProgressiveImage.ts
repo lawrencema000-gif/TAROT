@@ -17,7 +17,7 @@ interface UseProgressiveImageOptions {
 }
 
 export function useProgressiveImage(options: UseProgressiveImageOptions) {
-  const { cardId, cardName, remoteUrl, priority = 'normal', skipCache = false } = options;
+  const { cardId, remoteUrl, priority = 'normal', skipCache = false } = options;
 
   const [state, setState] = useState<ProgressiveImageState>(getInitialImageState);
 
@@ -27,8 +27,8 @@ export function useProgressiveImage(options: UseProgressiveImageOptions) {
     try {
       let bundledUrl: string | null = null;
 
-      if (cardId !== undefined && cardName) {
-        bundledUrl = getBundledCardPath(cardId, cardName);
+      if (cardId !== undefined) {
+        bundledUrl = getBundledCardPath(cardId);
       }
 
       if (bundledUrl) {
@@ -72,7 +72,7 @@ export function useProgressiveImage(options: UseProgressiveImageOptions) {
         highRes: imageLoaderService.getFallbackPlaceholder(),
       }));
     }
-  }, [cardId, cardName, remoteUrl, priority, skipCache]);
+  }, [cardId, remoteUrl, priority, skipCache]);
 
   useEffect(() => {
     loadImages();

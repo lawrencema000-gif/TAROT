@@ -4,41 +4,58 @@
 
 All Stripe infrastructure is deployed and configured:
 - ✅ 3 Edge Functions deployed to Supabase
-- ✅ WebBillingService fully integrated
+- ✅ WebBillingService fully integrated with double billing prevention
 - ✅ Database schema supports subscriptions
 - ✅ Webhook handlers ready
+- ✅ New pricing structure configured
 - ✅ Build successful
 
-## 📋 Next Steps (15 minutes)
+## 💰 Pricing Structure
 
-### 1. Connect Stripe via Bolt.new
+| Product | Price | Type |
+|---------|-------|------|
+| **Premium Lifetime** | **$9.99** | One-time (PRIMARY) |
+| Premium Monthly | $2.99 | Recurring (optional) |
+| Premium Yearly | $19.99 | Recurring (optional) |
 
-Look for Stripe integration options in Bolt.new:
-- Bolt.new will guide you through Stripe OAuth
-- This automatically configures API keys in Supabase
-- Webhook endpoints will be set up for you
+## 📋 Two Ways to Set Up
 
-### 2. Create 3 Products in Stripe
+### Option A: Automated Script (Fastest) ⚡
 
-Once connected, create these products:
+1. **Get your Stripe secret key** from [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys)
 
-| Product | Price | Period | Trial |
-|---------|-------|--------|-------|
-| Premium Monthly | $9.99 | Monthly | 3 days |
-| Premium Yearly | $49.99 | Yearly | 3 days |
-| Premium Lifetime | $99.99 | One-time | None |
-
-### 3. Copy Price IDs to .env
-
-After creating products, Stripe gives you Price IDs (start with `price_`):
-
+2. **Run the product creation script:**
 ```bash
-VITE_STRIPE_PRICE_MONTHLY=price_xxxxxxxxxxxxx
-VITE_STRIPE_PRICE_YEARLY=price_xxxxxxxxxxxxx
-VITE_STRIPE_PRICE_LIFETIME=price_xxxxxxxxxxxxx
+STRIPE_SECRET_KEY=sk_test_xxxxx node scripts/create-stripe-products.mjs
 ```
 
-### 4. Test It!
+3. **Done!** The script will:
+   - Create all 3 products in Stripe
+   - Generate price IDs
+   - Automatically update your `.env` file
+
+### Option B: Manual Setup via Bolt.new
+
+1. **Connect Stripe via Bolt.new**
+   - Bolt.new will guide you through Stripe OAuth
+   - Automatically configures API keys in Supabase
+
+2. **Create 3 products manually:**
+
+| Product | Price | Period |
+|---------|-------|--------|
+| Premium Lifetime | $9.99 | One-time payment |
+| Premium Monthly | $2.99 | Monthly |
+| Premium Yearly | $19.99 | Yearly |
+
+3. **Copy Price IDs to `.env`:**
+```bash
+VITE_STRIPE_PRICE_LIFETIME=price_xxxxxxxxxxxxx
+VITE_STRIPE_PRICE_MONTHLY=price_xxxxxxxxxxxxx
+VITE_STRIPE_PRICE_YEARLY=price_xxxxxxxxxxxxx
+```
+
+## 🧪 Test It!
 
 ```bash
 npm run dev

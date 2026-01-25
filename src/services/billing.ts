@@ -7,6 +7,7 @@ import {
 } from '@revenuecat/purchases-capacitor';
 import { isNative, isAndroid } from '../utils/platform';
 import { supabase } from '../lib/supabase';
+import { preventDoubleBilling } from './billingGuard';
 
 export type BillingProvider = 'google' | 'samsung' | 'web';
 
@@ -125,19 +126,13 @@ class NativeBillingService implements BillingService {
         const product = pkg.product;
         let period: 'month' | 'year' | 'lifetime' | undefined;
         let isLifetime = false;
-        let hasTrial = false;
-        let trialDays = 0;
 
         if (product.subscriptionPeriod) {
           const periodUnit = product.subscriptionPeriod.toLowerCase();
           if (periodUnit.includes('month') || periodUnit.includes('p1m')) {
             period = 'month';
-            hasTrial = true;
-            trialDays = 3;
           } else if (periodUnit.includes('year') || periodUnit.includes('p1y')) {
             period = 'year';
-            hasTrial = true;
-            trialDays = 3;
           }
         } else {
           period = 'lifetime';
@@ -153,8 +148,6 @@ class NativeBillingService implements BillingService {
           currency: product.currencyCode,
           period,
           isLifetime,
-          hasTrial,
-          trialDays,
           rcPackage: pkg,
         };
       });
@@ -167,36 +160,32 @@ class NativeBillingService implements BillingService {
   private getFallbackProducts(): Product[] {
     return [
       {
-        id: PRODUCT_IDS.PREMIUM_MONTHLY,
-        title: 'Premium Monthly',
-        description: 'Full access with 3-day free trial',
+        id: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase, unlock everything + remove ads',
         price: '$9.99',
         priceAmount: 9.99,
         currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
+      },
+      {
+        id: PRODUCT_IDS.PREMIUM_MONTHLY,
+        title: 'Premium Monthly',
+        description: 'Monthly subscription',
+        price: '$2.99',
+        priceAmount: 2.99,
+        currency: 'USD',
         period: 'month',
-        hasTrial: true,
-        trialDays: 3,
       },
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Full access with 3-day free trial',
-        price: '$49.99',
-        priceAmount: 49.99,
+        description: 'Yearly subscription - Best value',
+        price: '$19.99',
+        priceAmount: 19.99,
         currency: 'USD',
         period: 'year',
-        hasTrial: true,
-        trialDays: 3,
-      },
-      {
-        id: PRODUCT_IDS.PREMIUM_LIFETIME,
-        title: 'Premium Lifetime',
-        description: 'One-time purchase, forever access',
-        price: '$99.99',
-        priceAmount: 99.99,
-        currency: 'USD',
-        period: 'lifetime',
-        isLifetime: true,
       },
     ];
   }
@@ -204,6 +193,14 @@ class NativeBillingService implements BillingService {
   async purchase(_productId: string, product?: Product): Promise<PurchaseResult> {
     if (!this.initialized) {
       await this.initialize();
+    }
+
+    const billingCheck = await preventDoubleBilling(this.userId || '', 'mobile');
+    if (!billingCheck.allowed) {
+      return {
+        success: false,
+        error: billingCheck.reason || 'Already have premium',
+      };
     }
 
     try {
@@ -330,36 +327,32 @@ class WebBillingService implements BillingService {
   async getProducts(): Promise<Product[]> {
     return [
       {
-        id: PRODUCT_IDS.PREMIUM_MONTHLY,
-        title: 'Premium Monthly',
-        description: 'Full access with 3-day free trial',
+        id: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase, unlock everything + remove ads',
         price: '$9.99',
         priceAmount: 9.99,
         currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
+      },
+      {
+        id: PRODUCT_IDS.PREMIUM_MONTHLY,
+        title: 'Premium Monthly',
+        description: 'Monthly subscription',
+        price: '$2.99',
+        priceAmount: 2.99,
+        currency: 'USD',
         period: 'month',
-        hasTrial: true,
-        trialDays: 3,
       },
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Full access with 3-day free trial',
-        price: '$49.99',
-        priceAmount: 49.99,
+        description: 'Yearly subscription - Best value',
+        price: '$19.99',
+        priceAmount: 19.99,
         currency: 'USD',
         period: 'year',
-        hasTrial: true,
-        trialDays: 3,
-      },
-      {
-        id: PRODUCT_IDS.PREMIUM_LIFETIME,
-        title: 'Premium Lifetime',
-        description: 'One-time purchase, forever access',
-        price: '$99.99',
-        priceAmount: 99.99,
-        currency: 'USD',
-        period: 'lifetime',
-        isLifetime: true,
       },
     ];
   }
@@ -370,6 +363,14 @@ class WebBillingService implements BillingService {
         return {
           success: false,
           error: 'User not authenticated',
+        };
+      }
+
+      const billingCheck = await preventDoubleBilling(this.userId, 'web');
+      if (!billingCheck.allowed) {
+        return {
+          success: false,
+          error: billingCheck.reason || 'Already have premium',
         };
       }
 

@@ -91,7 +91,6 @@ Deno.serve(async (req: Request) => {
       subscription_data: productId.includes("lifetime")
         ? undefined
         : {
-            trial_period_days: 3,
             metadata: {
               user_id: user.id,
               product_id: productId,

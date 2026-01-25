@@ -6,6 +6,7 @@ import {
   PURCHASES_ERROR_CODE,
 } from '@revenuecat/purchases-capacitor';
 import { isNative, isAndroid } from '../utils/platform';
+import { supabase } from '../lib/supabase';
 
 export type BillingProvider = 'google' | 'samsung' | 'web';
 
@@ -45,6 +46,12 @@ const PRODUCT_IDS = {
   PREMIUM_MONTHLY: 'arcana_premium_monthly',
   PREMIUM_YEARLY: 'arcana_premium_yearly',
   PREMIUM_LIFETIME: 'arcana_premium_lifetime',
+};
+
+const STRIPE_PRICE_IDS = {
+  PREMIUM_MONTHLY: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || '',
+  PREMIUM_YEARLY: import.meta.env.VITE_STRIPE_PRICE_YEARLY || '',
+  PREMIUM_LIFETIME: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || '',
 };
 
 const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || '';
@@ -310,13 +317,14 @@ class NativeBillingService implements BillingService {
 
 class WebBillingService implements BillingService {
   provider: BillingProvider = 'web';
+  private userId?: string;
 
   async initialize(): Promise<boolean> {
     return true;
   }
 
-  async setUserId(_userId: string): Promise<void> {
-    return;
+  async setUserId(userId: string): Promise<void> {
+    this.userId = userId;
   }
 
   async getProducts(): Promise<Product[]> {
@@ -356,11 +364,93 @@ class WebBillingService implements BillingService {
     ];
   }
 
-  async purchase(): Promise<PurchaseResult> {
-    return {
-      success: false,
-      error: 'Purchases are only available in the mobile app',
-    };
+  async purchase(productId: string): Promise<PurchaseResult> {
+    try {
+      if (!this.userId) {
+        return {
+          success: false,
+          error: 'User not authenticated',
+        };
+      }
+
+      const priceId = this.getStripePriceId(productId);
+      if (!priceId) {
+        return {
+          success: false,
+          error: 'Invalid product ID',
+        };
+      }
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        return {
+          success: false,
+          error: 'Not authenticated',
+        };
+      }
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          priceId,
+          productId,
+          userId: this.userId,
+          successUrl: `${window.location.origin}/?payment=success`,
+          cancelUrl: `${window.location.origin}/?payment=cancelled`,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return {
+          success: false,
+          error: error.error || 'Failed to create checkout session',
+        };
+      }
+
+      const { url } = await response.json();
+
+      if (url) {
+        window.location.href = url;
+        return {
+          success: true,
+          productId,
+        };
+      }
+
+      return {
+        success: false,
+        error: 'No checkout URL returned',
+      };
+    } catch (error) {
+      console.error('[Stripe] Purchase error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Purchase failed',
+      };
+    }
+  }
+
+  private getStripePriceId(productId: string): string | null {
+    switch (productId) {
+      case PRODUCT_IDS.PREMIUM_MONTHLY:
+        return STRIPE_PRICE_IDS.PREMIUM_MONTHLY;
+      case PRODUCT_IDS.PREMIUM_YEARLY:
+        return STRIPE_PRICE_IDS.PREMIUM_YEARLY;
+      case PRODUCT_IDS.PREMIUM_LIFETIME:
+        return STRIPE_PRICE_IDS.PREMIUM_LIFETIME;
+      default:
+        return null;
+    }
   }
 
   async restorePurchases(): Promise<PurchaseResult[]> {
@@ -368,11 +458,84 @@ class WebBillingService implements BillingService {
   }
 
   async isPremium(): Promise<boolean> {
-    return false;
+    try {
+      if (!this.userId) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          this.userId = user.id;
+        }
+      }
+
+      if (!this.userId) {
+        return false;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', this.userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[Stripe] Error checking premium status:', error);
+        return false;
+      }
+
+      return data?.is_premium || false;
+    } catch (error) {
+      console.error('[Stripe] Error checking premium status:', error);
+      return false;
+    }
   }
 
   async getCustomerInfo(): Promise<CustomerInfo | null> {
     return null;
+  }
+
+  async openCustomerPortal(): Promise<boolean> {
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.error('[Stripe] Not authenticated');
+        return false;
+      }
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-portal-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          returnUrl: window.location.origin,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('[Stripe] Portal error:', error);
+        return false;
+      }
+
+      const { url } = await response.json();
+
+      if (url) {
+        window.location.href = url;
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('[Stripe] Portal error:', error);
+      return false;
+    }
   }
 }
 

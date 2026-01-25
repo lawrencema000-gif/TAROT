@@ -19,7 +19,7 @@ import {
   AdminPage,
 } from './pages';
 import { isNative } from './utils/platform';
-import { initializeBilling } from './services/billing';
+import { initializeBilling, getBillingService } from './services/billing';
 import { adsService } from './services/ads';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -135,6 +135,8 @@ function AppContent() {
   useEffect(() => {
     if (user) {
       adsService.setUserId(user.id);
+      const billingService = getBillingService();
+      billingService.setUserId(user.id);
     }
   }, [user]);
 

@@ -32,7 +32,8 @@ export interface PurchaseResult {
 
 export interface BillingService {
   provider: BillingProvider;
-  initialize(): Promise<boolean>;
+  initialize(userId?: string): Promise<boolean>;
+  setUserId(userId: string): Promise<void>;
   getProducts(productIds: string[]): Promise<Product[]>;
   purchase(productId: string, product?: Product): Promise<PurchaseResult>;
   restorePurchases(): Promise<PurchaseResult[]>;
@@ -63,7 +64,7 @@ class NativeBillingService implements BillingService {
   private initialized = false;
   private packages: PurchasesPackage[] = [];
 
-  async initialize(): Promise<boolean> {
+  async initialize(userId?: string): Promise<boolean> {
     if (this.initialized) return true;
 
     try {
@@ -72,8 +73,10 @@ class NativeBillingService implements BillingService {
       if (isAndroid() && REVENUECAT_API_KEY) {
         await Purchases.configure({
           apiKey: REVENUECAT_API_KEY,
+          appUserID: userId,
         });
         this.initialized = true;
+        console.log('[RevenueCat] Initialized with user ID:', userId);
         return true;
       }
 
@@ -82,6 +85,17 @@ class NativeBillingService implements BillingService {
     } catch (error) {
       console.error('Failed to initialize RevenueCat:', error);
       return false;
+    }
+  }
+
+  async setUserId(userId: string): Promise<void> {
+    try {
+      if (this.initialized) {
+        await Purchases.logIn({ appUserID: userId });
+        console.log('[RevenueCat] User ID set:', userId);
+      }
+    } catch (error) {
+      console.error('[RevenueCat] Failed to set user ID:', error);
     }
   }
 
@@ -299,6 +313,10 @@ class WebBillingService implements BillingService {
 
   async initialize(): Promise<boolean> {
     return true;
+  }
+
+  async setUserId(_userId: string): Promise<void> {
+    return;
   }
 
   async getProducts(): Promise<Product[]> {

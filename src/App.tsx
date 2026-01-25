@@ -21,9 +21,10 @@ import {
 import { isNative } from './utils/platform';
 import { initializeBilling } from './services/billing';
 import { adsService } from './services/ads';
-import { isSupabaseConfigured } from './lib/supabase';
+import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { App as CapacitorApp } from '@capacitor/app';
 
 const ONBOARDING_KEY = 'arcana_onboarding_complete';
 const isDev = import.meta.env.DEV;
@@ -74,6 +75,53 @@ function AppContent() {
 
   useEffect(() => {
     initializeNativeFeatures();
+
+    if (isNative()) {
+      const handleAppUrlOpen = CapacitorApp.addListener('appUrlOpen', async (data) => {
+        console.log('[OAuth] App URL opened:', data.url);
+
+        try {
+          const url = new URL(data.url);
+
+          if (url.pathname === '//auth' || url.host === 'auth') {
+            console.log('[OAuth] Processing OAuth callback...');
+
+            const hashFragment = url.hash.substring(1);
+            const params = new URLSearchParams(hashFragment);
+
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            const error = params.get('error');
+            const errorDescription = params.get('error_description');
+
+            if (error) {
+              console.error('[OAuth] Error in callback:', error, errorDescription);
+              return;
+            }
+
+            if (accessToken && refreshToken) {
+              console.log('[OAuth] Setting session from tokens...');
+              const { error: sessionError } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
+              if (sessionError) {
+                console.error('[OAuth] Session error:', sessionError);
+              } else {
+                console.log('[OAuth] Session set successfully!');
+              }
+            }
+          }
+        } catch (err) {
+          console.error('[OAuth] Error processing URL:', err);
+        }
+      });
+
+      return () => {
+        handleAppUrlOpen.remove();
+      };
+    }
   }, []);
 
   useEffect(() => {

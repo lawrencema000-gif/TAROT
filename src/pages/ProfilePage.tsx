@@ -17,6 +17,7 @@ import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
+import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
 import type { Goal } from '../types';
 const goalOptions: { label: string; value: Goal }[] = [
   { label: 'Love', value: 'love' },
@@ -35,19 +36,6 @@ const loveLanguageLabels: Record<string, string> = {
   'physical-touch': 'Physical Touch',
 };
 
-const levelTitles: Record<number, string> = {
-  1: 'Seeker',
-  2: 'Apprentice',
-  3: 'Adept',
-  4: 'Mystic',
-  5: 'Oracle',
-  6: 'Sage',
-  7: 'Elder',
-  8: 'Master',
-  9: 'Enlightened',
-  10: 'Transcendent',
-};
-
 interface SavedHighlight {
   id: string;
   highlight_type: string;
@@ -63,6 +51,8 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [savedHighlights, setSavedHighlights] = useState<SavedHighlight[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
+  const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
+  const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
   const [editData, setEditData] = useState({
     displayName: profile?.displayName || '',
     birthTime: profile?.birthTime || '',
@@ -73,9 +63,6 @@ export function ProfilePage() {
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
   const zodiacInfo = zodiacSign ? zodiacData[zodiacSign] : null;
 
-  const levelProgress = profile ? ((profile.level - 1) / 9) * 100 : 0;
-  const levelTitle = profile ? levelTitles[profile.level] || 'Seeker' : 'Seeker';
-
   useEffect(() => {
     if (profile) {
       setEditData({
@@ -85,6 +72,19 @@ export function ProfilePage() {
         goals: profile.goals || [],
       });
     }
+  }, [profile]);
+
+  useEffect(() => {
+    const loadLevelData = async () => {
+      const thresholds = await getLevelThresholds();
+      setLevelThresholds(thresholds);
+
+      if (profile) {
+        const progress = getXPProgress(profile.xp || 0, profile.level || 1, thresholds);
+        setXpProgress(progress);
+      }
+    };
+    loadLevelData();
   }, [profile]);
 
   const loadSavedHighlights = async () => {
@@ -176,21 +176,21 @@ export function ProfilePage() {
           <div className="bg-mystic-800/50 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Star className="w-4 h-4 text-cosmic-blue" />
-              <span className="text-2xl font-display text-mystic-100">Lv.{profile?.level || 1}</span>
+              <span className="text-2xl font-display text-mystic-100">Level {profile?.level || 1}</span>
             </div>
-            <p className="text-xs text-mystic-500">{levelTitle}</p>
+            <p className="text-xs text-mystic-500">{profile?.seekerRank || 'Novice Seeker'}</p>
           </div>
         </div>
 
         <div className="mt-4">
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-mystic-500">Progress to next level</span>
-            <span className="text-gold">{Math.round(levelProgress)}%</span>
+            <span className="text-mystic-500">XP Progress</span>
+            <span className="text-gold">{xpProgress.current} / {xpProgress.required} XP</span>
           </div>
           <div className="h-1.5 bg-mystic-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full transition-all"
-              style={{ width: `${levelProgress}%` }}
+              style={{ width: `${xpProgress.percentage}%` }}
             />
           </div>
         </div>

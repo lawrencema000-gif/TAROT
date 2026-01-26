@@ -42,6 +42,8 @@ interface DbProfile {
   mbti_type?: string;
   love_language?: string;
   level: number;
+  xp?: number;
+  seeker_rank?: string;
   total_readings: number;
   total_journal_entries: number;
   avatar_seed?: string;
@@ -73,6 +75,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     mbtiType: db.mbti_type,
     loveLanguage: db.love_language,
     level: db.level || 1,
+    xp: db.xp || 0,
+    seekerRank: db.seeker_rank || 'Novice Seeker',
     totalReadings: db.total_readings || 0,
     totalJournalEntries: db.total_journal_entries || 0,
     avatarSeed: db.avatar_seed,

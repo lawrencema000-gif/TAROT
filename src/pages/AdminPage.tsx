@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Smartphone, Calendar } from 'lucide-react';
+import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Smartphone, Calendar, Star, Sparkles, Flame } from 'lucide-react';
 import { Button, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
@@ -21,9 +21,10 @@ interface StorageFile {
   createdAt?: string;
 }
 
-type UploadSection = 'major' | 'wands' | 'cups' | 'swords' | 'pentacles' | 'cardBacks' | 'backgrounds';
+type UploadSection = 'major' | 'wands' | 'cups' | 'swords' | 'pentacles' | 'cardBacks' | 'backgrounds' | 'customIcons';
 
 const SECTIONS: { id: UploadSection; label: string; description: string }[] = [
+  { id: 'customIcons', label: 'Custom Icons', description: 'Star, Sparkles, and Flame icons' },
   { id: 'major', label: 'Major Arcana', description: '22 cards (The Fool to The World)' },
   { id: 'wands', label: 'Wands', description: '14 cards (Ace to King)' },
   { id: 'cups', label: 'Cups', description: '14 cards (Ace to King)' },
@@ -51,12 +52,14 @@ export function AdminPage() {
   const [tarotCards, setTarotCards] = useState<TarotCardData[]>([]);
   const [cardBacks, setCardBacks] = useState<StorageFile[]>([]);
   const [backgrounds, setBackgrounds] = useState<StorageFile[]>([]);
+  const [customIcons, setCustomIcons] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
-  const [expandedSection, setExpandedSection] = useState<UploadSection | null>('major');
+  const [expandedSection, setExpandedSection] = useState<UploadSection | null>('customIcons');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCard, setSelectedCard] = useState<TarotCardData | null>(null);
-  const [uploadType, setUploadType] = useState<'card' | 'cardBack' | 'background'>('card');
+  const [uploadType, setUploadType] = useState<'card' | 'cardBack' | 'background' | 'icon'>('card');
+  const [selectedIconType, setSelectedIconType] = useState<'star' | 'sparkles' | 'flame'>('star');
   const [adAnalytics, setAdAnalytics] = useState<AdAnalytics | null>(null);
   const [showAdStats, setShowAdStats] = useState(true);
 
@@ -72,9 +75,29 @@ export function AdminPage() {
       loadTarotCards(),
       loadCardBacks(),
       loadBackgrounds(),
+      loadCustomIcons(),
       loadAdAnalytics(),
     ]);
     setLoading(false);
+  };
+
+  const loadCustomIcons = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['star_icon_url', 'sparkles_icon_url', 'flame_icon_url']);
+
+      if (!error && data) {
+        const icons: Record<string, string> = {};
+        data.forEach((row) => {
+          icons[row.setting_key] = row.setting_value;
+        });
+        setCustomIcons(icons);
+      }
+    } catch (error) {
+      console.error('Failed to load custom icons:', error);
+    }
   };
 
   const loadAdAnalytics = async () => {

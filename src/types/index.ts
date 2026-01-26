@@ -39,6 +39,8 @@ export interface UserProfile {
     neuroticism: number;
   };
   level: number;
+  xp?: number;
+  seekerRank?: string;
   totalReadings: number;
   totalJournalEntries: number;
   avatarSeed?: string;

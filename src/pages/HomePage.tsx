@@ -6,10 +6,12 @@ import {
   Bookmark,
   Star,
   PenLine,
+  TrendingUp,
 } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
+import { LevelUpCelebration } from '../components/celebration/LevelUpCelebration';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
@@ -19,6 +21,7 @@ import { drawCards } from '../data/tarotDeck';
 import { getAllTarotCards } from '../services/tarotCards';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
+import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMilestone } from '../services/levelSystem';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -28,9 +31,13 @@ interface RitualState {
 }
 
 export function HomePage() {
-  const { profile, user, updateProfile } = useAuth();
+  const { profile, user, updateProfile, refreshProfile } = useAuth();
   const { streak, setStreak, setActiveTab, openOverlay, tarotRefreshTrigger } = useApp();
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ newLevel: 1, seekerRank: 'Novice Seeker', xpEarned: 0 });
+  const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
+  const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
   const [ritualState, setRitualState] = useState<RitualState>({
     horoscopeViewed: false,
     tarotViewed: false,
@@ -125,6 +132,19 @@ export function HomePage() {
     }
   }, [profile, setStreak]);
 
+  useEffect(() => {
+    const loadLevelData = async () => {
+      const thresholds = await getLevelThresholds();
+      setLevelThresholds(thresholds);
+
+      if (profile) {
+        const progress = getXPProgress(profile.xp || 0, profile.level || 1, thresholds);
+        setXpProgress(progress);
+      }
+    };
+    loadLevelData();
+  }, [profile]);
+
   const handleStartRitual = () => {
     setRitualStarted(true);
   };
@@ -149,6 +169,28 @@ export function HomePage() {
       await updateProfile({ streak: newStreak });
       setStreak(newStreak);
       setRitualState(prev => ({ ...prev, completed: true }));
+
+      const xpResult = await awardXP(user.id, 'ritual_complete');
+
+      if (xpResult) {
+        toast(`+${xpResult.xp_earned} XP earned!`, 'success');
+
+        if (xpResult.level_up) {
+          setLevelUpData({
+            newLevel: xpResult.new_level,
+            seekerRank: xpResult.seeker_rank,
+            xpEarned: xpResult.xp_earned,
+          });
+          setShowLevelUp(true);
+        }
+
+        await checkAndAwardStreakMilestone(user.id, newStreak);
+        await refreshProfile();
+
+        const progress = getXPProgress(xpResult.total_xp, xpResult.new_level, levelThresholds);
+        setXpProgress(progress);
+      }
+
       setShowCelebration(true);
     }
   };
@@ -273,6 +315,13 @@ export function HomePage() {
         <div>
           <p className="text-mystic-400 text-sm mb-0.5">{greeting()},</p>
           <h1 className="font-display text-2xl text-mystic-100">{displayName}.</h1>
+          {profile?.seekerRank && (
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-gold">Level {profile.level}</span>
+              <span className="text-xs text-mystic-500">•</span>
+              <span className="text-xs text-mystic-400">{profile.seekerRank}</span>
+            </div>
+          )}
         </div>
         <button
           onClick={() => setShowCelebration(true)}
@@ -283,6 +332,26 @@ export function HomePage() {
           <span className="text-mystic-400 text-sm">day streak</span>
         </button>
       </div>
+
+      {profile && xpProgress.required > 0 && (
+        <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-gold" />
+              <span className="text-sm font-medium text-mystic-100">XP Progress</span>
+            </div>
+            <span className="text-xs text-mystic-400">
+              {xpProgress.current} / {xpProgress.required} XP
+            </span>
+          </div>
+          <div className="relative h-2 bg-mystic-800 rounded-full overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold via-gold-light to-gold rounded-full transition-all duration-500"
+              style={{ width: `${xpProgress.percentage}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {!ritualStarted ? (
         <Card variant="glow" padding="lg" className="text-center">
@@ -374,6 +443,14 @@ export function HomePage() {
         streak={streak}
         open={showCelebration}
         onClose={() => setShowCelebration(false)}
+      />
+
+      <LevelUpCelebration
+        open={showLevelUp}
+        onClose={() => setShowLevelUp(false)}
+        newLevel={levelUpData.newLevel}
+        seekerRank={levelUpData.seekerRank}
+        xpEarned={levelUpData.xpEarned}
       />
     </div>
   );

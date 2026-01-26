@@ -320,8 +320,18 @@ export function LibrarySection() {
                         <Trash2 className="w-3.5 h-3.5 text-mystic-400" />
                       </button>
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-                          <Layers className="w-5 h-5 text-gold" />
+                        <div className="w-10 h-10 rounded-lg bg-mystic-800/50 border border-mystic-700/30 overflow-hidden flex-shrink-0">
+                          {profile?.card_back_url ? (
+                            <img
+                              src={profile.card_back_url}
+                              alt="Card back"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gold/10 flex items-center justify-center">
+                              <Layers className="w-5 h-5 text-gold" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
@@ -378,8 +388,18 @@ export function LibrarySection() {
                             <Trash2 className="w-3.5 h-3.5 text-mystic-400" />
                           </button>
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-                              <Sparkles className="w-5 h-5 text-gold" />
+                            <div className="w-10 h-10 rounded-lg bg-mystic-800/50 border border-mystic-700/30 overflow-hidden flex-shrink-0">
+                              {profile?.card_back_url ? (
+                                <img
+                                  src={profile.card_back_url}
+                                  alt="Card back"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gold/10 flex items-center justify-center">
+                                  <Sparkles className="w-5 h-5 text-gold" />
+                                </div>
+                              )}
                             </div>
                             <div className="flex-1">
                               <h4 className="font-medium text-mystic-100 text-sm">
@@ -471,8 +491,18 @@ export function LibrarySection() {
                     className="w-full text-left"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gold/20 to-cosmic-blue/20 flex items-center justify-center flex-shrink-0">
-                        <Brain className="w-5 h-5 text-gold" />
+                      <div className="w-10 h-10 rounded-lg bg-mystic-800/50 border border-gold/20 overflow-hidden flex-shrink-0">
+                        {profile?.card_back_url ? (
+                          <img
+                            src={profile.card_back_url}
+                            alt="Card back"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gold/20 to-cosmic-blue/20 flex items-center justify-center">
+                            <Brain className="w-5 h-5 text-gold" />
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">

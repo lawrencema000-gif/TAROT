@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { Crown, Lock } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Crown, Lock, Play } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaywallSheet } from './PaywallSheet';
+import { WatchAdSheet } from './WatchAdSheet';
 import type { PremiumFeature } from '../../services/premium';
-import { PREMIUM_FEATURES } from '../../services/premium';
+import { PREMIUM_FEATURES, isFeatureUnlockable } from '../../services/premium';
+import { rewardedAdsService } from '../../services/rewardedAds';
+import { isNative } from '../../utils/platform';
 
 interface PremiumGateProps {
   feature: PremiumFeature;
@@ -15,8 +18,19 @@ interface PremiumGateProps {
 export function PremiumGate({ feature, children, fallback, showBadge = true }: PremiumGateProps) {
   const { profile, isAdmin } = useAuth();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showWatchAd, setShowWatchAd] = useState(false);
+  const [hasTemporaryAccess, setHasTemporaryAccess] = useState(false);
 
-  if (profile?.isPremium || isAdmin) {
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (profile?.isPremium || isAdmin) return;
+      const hasAccess = await rewardedAdsService.hasTemporaryAccess(feature);
+      setHasTemporaryAccess(hasAccess);
+    };
+    checkAccess();
+  }, [feature, profile?.isPremium, isAdmin]);
+
+  if (profile?.isPremium || isAdmin || hasTemporaryAccess) {
     return <>{children}</>;
   }
 
@@ -24,12 +38,21 @@ export function PremiumGate({ feature, children, fallback, showBadge = true }: P
     return <>{fallback}</>;
   }
 
+  const handleClick = () => {
+    if (isNative() && isFeatureUnlockable(feature) && rewardedAdsService.canWatchAd()) {
+      setShowWatchAd(true);
+    } else {
+      setShowPaywall(true);
+    }
+  };
+
+  const handleUnlocked = () => {
+    setHasTemporaryAccess(true);
+  };
+
   return (
     <>
-      <div
-        onClick={() => setShowPaywall(true)}
-        className="cursor-pointer"
-      >
+      <div onClick={handleClick} className="cursor-pointer">
         {children}
         {showBadge && (
           <div className="absolute top-2 right-2 px-2 py-1 bg-gold/20 border border-gold/30 rounded-full flex items-center gap-1">
@@ -42,6 +65,16 @@ export function PremiumGate({ feature, children, fallback, showBadge = true }: P
         open={showPaywall}
         onClose={() => setShowPaywall(false)}
         feature={PREMIUM_FEATURES[feature].name}
+      />
+      <WatchAdSheet
+        open={showWatchAd}
+        onClose={() => setShowWatchAd(false)}
+        feature={feature}
+        onUnlocked={handleUnlocked}
+        onShowPaywall={() => {
+          setShowWatchAd(false);
+          setShowPaywall(true);
+        }}
       />
     </>
   );
@@ -64,10 +97,13 @@ export function PremiumBadge({ size = 'sm', className = '' }: PremiumBadgeProps)
 interface PremiumLockOverlayProps {
   feature: PremiumFeature;
   onUnlock: () => void;
+  showAdOption?: boolean;
+  onWatchAd?: () => void;
 }
 
-export function PremiumLockOverlay({ feature, onUnlock }: PremiumLockOverlayProps) {
+export function PremiumLockOverlay({ feature, onUnlock, showAdOption, onWatchAd }: PremiumLockOverlayProps) {
   const featureDef = PREMIUM_FEATURES[feature];
+  const canWatch = isNative() && isFeatureUnlockable(feature) && rewardedAdsService.canWatchAd();
 
   return (
     <div
@@ -79,9 +115,23 @@ export function PremiumLockOverlay({ feature, onUnlock }: PremiumLockOverlayProp
       </div>
       <p className="font-medium text-mystic-100 text-center px-4">{featureDef.name}</p>
       <p className="text-sm text-mystic-400 text-center px-4 mt-1">{featureDef.description}</p>
-      <button className="mt-4 px-4 py-2 bg-gold text-mystic-950 font-medium rounded-lg text-sm hover:bg-gold-dark transition-colors">
-        Unlock Premium
-      </button>
+      <div className="flex flex-col gap-2 mt-4">
+        {showAdOption && canWatch && onWatchAd && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onWatchAd();
+            }}
+            className="px-4 py-2 bg-mystic-800 border border-gold/30 text-gold font-medium rounded-lg text-sm hover:bg-mystic-700 transition-colors flex items-center gap-2"
+          >
+            <Play className="w-4 h-4" />
+            Watch Ad to Try
+          </button>
+        )}
+        <button className="px-4 py-2 bg-gold text-mystic-950 font-medium rounded-lg text-sm hover:bg-gold-dark transition-colors">
+          Unlock Premium
+        </button>
+      </div>
     </div>
   );
 }
@@ -89,23 +139,76 @@ export function PremiumLockOverlay({ feature, onUnlock }: PremiumLockOverlayProp
 interface UsePremiumGateResult {
   isPremium: boolean;
   canAccess: boolean;
+  hasTemporaryAccess: boolean;
   showPaywall: boolean;
+  showWatchAd: boolean;
   openPaywall: () => void;
   closePaywall: () => void;
+  openWatchAd: () => void;
+  closeWatchAd: () => void;
+  handleFeatureAccess: () => void;
+  onUnlocked: () => void;
+  checkTemporaryAccess: () => Promise<boolean>;
+  consumeTemporaryAccess: () => Promise<boolean>;
 }
 
 export function usePremiumGate(feature?: PremiumFeature): UsePremiumGateResult {
   const { profile, isAdmin } = useAuth();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showWatchAd, setShowWatchAd] = useState(false);
+  const [hasTemporaryAccess, setHasTemporaryAccess] = useState(false);
 
   const isPremium = (profile?.isPremium ?? false) || isAdmin;
-  const canAccess = isPremium || !feature;
+  const canAccess = isPremium || !feature || hasTemporaryAccess;
+
+  const checkTemporaryAccess = useCallback(async () => {
+    if (!feature || isPremium) return false;
+    const hasAccess = await rewardedAdsService.hasTemporaryAccess(feature);
+    setHasTemporaryAccess(hasAccess);
+    return hasAccess;
+  }, [feature, isPremium]);
+
+  const consumeTemporaryAccess = useCallback(async () => {
+    if (!feature) return false;
+    const consumed = await rewardedAdsService.consumeTemporaryAccess(feature);
+    if (consumed) {
+      setHasTemporaryAccess(false);
+    }
+    return consumed;
+  }, [feature]);
+
+  useEffect(() => {
+    checkTemporaryAccess();
+  }, [checkTemporaryAccess]);
+
+  const handleFeatureAccess = useCallback(() => {
+    if (isPremium || hasTemporaryAccess) return;
+
+    if (feature && isNative() && isFeatureUnlockable(feature) && rewardedAdsService.canWatchAd()) {
+      setShowWatchAd(true);
+    } else {
+      setShowPaywall(true);
+    }
+  }, [isPremium, hasTemporaryAccess, feature]);
+
+  const onUnlocked = useCallback(() => {
+    setHasTemporaryAccess(true);
+    setShowWatchAd(false);
+  }, []);
 
   return {
     isPremium,
     canAccess,
+    hasTemporaryAccess,
     showPaywall,
+    showWatchAd,
     openPaywall: () => setShowPaywall(true),
     closePaywall: () => setShowPaywall(false),
+    openWatchAd: () => setShowWatchAd(true),
+    closeWatchAd: () => setShowWatchAd(false),
+    handleFeatureAccess,
+    onUnlocked,
+    checkTemporaryAccess,
+    consumeTemporaryAccess,
   };
 }

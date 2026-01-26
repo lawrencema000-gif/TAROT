@@ -11,6 +11,7 @@ import {
   Shuffle,
   Brain,
   Loader2,
+  Play,
 } from 'lucide-react';
 import { Card, Button, Sheet, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
@@ -26,6 +27,10 @@ import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
 import { adsService } from '../../services/ads';
 import { getBundledCardPath } from '../../config/bundledImages';
+import { WatchAdSheet } from '../premium';
+import { rewardedAdsService } from '../../services/rewardedAds';
+import { spreadTypeToFeature, type PremiumFeature } from '../../services/premium';
+import { isNative } from '../../utils/platform';
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
@@ -64,6 +69,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
+  const [showWatchAdSheet, setShowWatchAdSheet] = useState(false);
+  const [pendingFeature, setPendingFeature] = useState<PremiumFeature | null>(null);
+  const [pendingSpreadId, setPendingSpreadId] = useState<string | null>(null);
+  const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -93,6 +102,26 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     showBrowse
   );
 
+  useEffect(() => {
+    const checkTemporaryAccess = async () => {
+      if (profile?.isPremium) return;
+
+      const premiumSpreads = spreadConfigs.filter(s => !s.free);
+      const accessMap: Record<string, boolean> = {};
+
+      for (const spread of premiumSpreads) {
+        const feature = spreadTypeToFeature(spread.id);
+        if (feature) {
+          accessMap[spread.id] = await rewardedAdsService.hasTemporaryAccess(feature);
+        }
+      }
+
+      setHasTemporaryAccess(accessMap);
+    };
+
+    checkTemporaryAccess();
+  }, [profile?.isPremium, showWatchAdSheet]);
+
   const handleStartDraw = () => {
     setView('focus');
     setSelectedFocus(null);
@@ -108,12 +137,29 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
     if (!spread) return;
 
-    if (!spread.free && !profile?.isPremium) {
-      onShowPaywall(spread.name);
+    if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[currentSpread]) {
+      const feature = spreadTypeToFeature(currentSpread);
+      if (feature && isNative() && rewardedAdsService.canWatchAd()) {
+        setPendingFeature(feature);
+        setPendingSpreadId(currentSpread);
+        setShowWatchAdSheet(true);
+      } else {
+        onShowPaywall(spread.name);
+      }
       return;
     }
 
     setView('shuffle');
+  };
+
+  const handleAdUnlocked = async () => {
+    setShowWatchAdSheet(false);
+    if (pendingSpreadId) {
+      setHasTemporaryAccess(prev => ({ ...prev, [pendingSpreadId]: true }));
+      setView('shuffle');
+    }
+    setPendingFeature(null);
+    setPendingSpreadId(null);
   };
 
   const handleShuffleComplete = () => {
@@ -231,8 +277,16 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     const spread = spreadConfigs.find(s => s.id === spreadId);
     if (!spread) return;
 
-    if (!spread.free && !profile?.isPremium) {
-      onShowPaywall(spread.name);
+    if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[spreadId]) {
+      const feature = spreadTypeToFeature(spreadId);
+      if (feature && isNative() && rewardedAdsService.canWatchAd()) {
+        setPendingFeature(feature);
+        setPendingSpreadId(spreadId);
+        setCurrentSpread(spreadId);
+        setShowWatchAdSheet(true);
+      } else {
+        onShowPaywall(spread.name);
+      }
       return;
     }
 
@@ -662,8 +716,20 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
               onClick={() => handleSpreadSelect(spread.id)}
               className="relative active:scale-[0.98] transition-all hover:border-gold/30"
             >
-              {!spread.free && !profile?.isPremium && (
-                <Lock className="absolute top-2 right-2 w-4 h-4 text-gold" />
+              {!spread.free && !profile?.isPremium && !hasTemporaryAccess[spread.id] && (
+                isNative() && rewardedAdsService.canWatchAd() ? (
+                  <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-mystic-800/80 rounded-full">
+                    <Play className="w-3 h-3 text-gold" />
+                    <span className="text-[10px] text-gold">Try</span>
+                  </div>
+                ) : (
+                  <Lock className="absolute top-2 right-2 w-4 h-4 text-gold" />
+                )
+              )}
+              {!spread.free && hasTemporaryAccess[spread.id] && (
+                <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full">
+                  <span className="text-[10px] text-emerald-400">Unlocked</span>
+                </div>
               )}
               <h4 className="font-medium text-mystic-100 text-sm">{spread.name}</h4>
               <p className="text-xs text-mystic-400 mt-1">{spread.description}</p>
@@ -770,6 +836,28 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           />
         )}
       </Sheet>
+
+      {pendingFeature && (
+        <WatchAdSheet
+          open={showWatchAdSheet}
+          onClose={() => {
+            setShowWatchAdSheet(false);
+            setPendingFeature(null);
+            setPendingSpreadId(null);
+          }}
+          feature={pendingFeature}
+          onUnlocked={handleAdUnlocked}
+          onShowPaywall={() => {
+            setShowWatchAdSheet(false);
+            setPendingFeature(null);
+            setPendingSpreadId(null);
+            const spread = spreadConfigs.find(s => s.id === pendingSpreadId);
+            if (spread) {
+              onShowPaywall(spread.name);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

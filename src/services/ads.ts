@@ -1,6 +1,7 @@
 import { isNative, isWeb, isAndroid } from '../utils/platform';
 import { actionCounter, ActionType } from './actionCounter';
 import { supabase } from '../lib/supabase';
+import { rewardedAdsService } from './rewardedAds';
 
 const AD_COOLDOWN_MS = 5 * 60 * 1000;
 
@@ -66,6 +67,8 @@ class AdsService {
       this.setupAdListeners();
 
       await this.preloadInterstitial();
+
+      await rewardedAdsService.initialize(userId);
 
       this.initialized = true;
       console.log('[Ads] AdMob initialized successfully');
@@ -239,6 +242,7 @@ class AdsService {
 
   setUserId(userId: string | null): void {
     this.currentUserId = userId;
+    rewardedAdsService.setUserId(userId);
   }
 
   getActionProgress(): { count: number; threshold: number; percentage: number } {

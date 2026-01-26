@@ -113,3 +113,31 @@ export function getFeatureBlockedMessage(feature: PremiumFeature): string {
   const def = PREMIUM_FEATURES[feature];
   return `${def.name} is a Premium feature. Upgrade to unlock ${def.description.toLowerCase()}.`;
 }
+
+export function spreadTypeToFeature(spreadType: string): PremiumFeature | null {
+  switch (spreadType) {
+    case 'celtic-cross':
+      return 'celtic_cross';
+    case 'three-card':
+      return 'three_card';
+    case 'relationship':
+    case 'career':
+    case 'shadow':
+      return 'deep_interpretations';
+    default:
+      return null;
+  }
+}
+
+export function isFeatureUnlockable(feature: PremiumFeature): boolean {
+  const unlockableFeatures: PremiumFeature[] = [
+    'celtic_cross',
+    'three_card',
+    'compatibility_full',
+    'deep_interpretations',
+    'guided_prompts',
+    'journal_insights',
+    'birth_chart',
+  ];
+  return unlockableFeatures.includes(feature);
+}

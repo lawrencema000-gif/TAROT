@@ -83,14 +83,15 @@ Deno.serve(async (req: Request) => {
 
       console.log(`[RevenueCat] User ${userId} upgraded to premium via ${productId}`);
 
-      const { error: logError } = await supabase.from("audit_logs").insert({
+      const { error: logError } = await supabase.from("audit_events").insert({
         user_id: userId,
-        action: "premium_purchase",
-        details: {
+        event_name: "premium_purchase",
+        payload: {
           product_id: productId,
           transaction_id: webhookData.event.transaction_id,
           environment: webhookData.event.environment,
           store: webhookData.event.store,
+          provider: "revenuecat",
         },
       });
 
@@ -117,12 +118,13 @@ Deno.serve(async (req: Request) => {
 
       console.log(`[RevenueCat] User ${userId} premium expired/cancelled`);
 
-      const { error: logError } = await supabase.from("audit_logs").insert({
+      const { error: logError } = await supabase.from("audit_events").insert({
         user_id: userId,
-        action: "premium_cancelled",
-        details: {
+        event_name: "premium_cancelled",
+        payload: {
           product_id: productId,
           reason: eventType,
+          provider: "revenuecat",
         },
       });
 

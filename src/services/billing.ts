@@ -47,12 +47,14 @@ const PRODUCT_IDS = {
   PREMIUM_MONTHLY: 'arcana_premium_monthly',
   PREMIUM_YEARLY: 'arcana_premium_yearly',
   PREMIUM_LIFETIME: 'arcana_premium_lifetime',
+  AD_REMOVAL: 'arcana_ad_removal',
 };
 
 const STRIPE_PRICE_IDS = {
   PREMIUM_MONTHLY: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || '',
   PREMIUM_YEARLY: import.meta.env.VITE_STRIPE_PRICE_YEARLY || '',
   PREMIUM_LIFETIME: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || '',
+  AD_REMOVAL: import.meta.env.VITE_STRIPE_PRICE_AD_REMOVAL || '',
 };
 
 const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || '';
@@ -160,32 +162,42 @@ class NativeBillingService implements BillingService {
   private getFallbackProducts(): Product[] {
     return [
       {
-        id: PRODUCT_IDS.PREMIUM_LIFETIME,
-        title: 'Premium Lifetime',
-        description: 'One-time purchase, unlock everything + remove ads',
-        price: '$9.99',
-        priceAmount: 9.99,
-        currency: 'USD',
-        period: 'lifetime',
-        isLifetime: true,
-      },
-      {
         id: PRODUCT_IDS.PREMIUM_MONTHLY,
         title: 'Premium Monthly',
-        description: 'Monthly subscription',
-        price: '$2.99',
-        priceAmount: 2.99,
+        description: 'Monthly subscription - Full premium features',
+        price: '$7.99',
+        priceAmount: 7.99,
         currency: 'USD',
         period: 'month',
       },
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Yearly subscription - Best value',
-        price: '$19.99',
-        priceAmount: 19.99,
+        description: 'Yearly subscription - Best value, save 58%',
+        price: '$39.99',
+        priceAmount: 39.99,
         currency: 'USD',
         period: 'year',
+      },
+      {
+        id: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase, unlock everything + remove ads forever',
+        price: '$59.99',
+        priceAmount: 59.99,
+        currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
+      },
+      {
+        id: PRODUCT_IDS.AD_REMOVAL,
+        title: 'Ad Removal',
+        description: 'One-time purchase - Remove all ads (no premium features)',
+        price: '$6.99',
+        priceAmount: 6.99,
+        currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
       },
     ];
   }
@@ -327,32 +339,42 @@ class WebBillingService implements BillingService {
   async getProducts(): Promise<Product[]> {
     return [
       {
-        id: PRODUCT_IDS.PREMIUM_LIFETIME,
-        title: 'Premium Lifetime',
-        description: 'One-time purchase, unlock everything + remove ads',
-        price: '$9.99',
-        priceAmount: 9.99,
-        currency: 'USD',
-        period: 'lifetime',
-        isLifetime: true,
-      },
-      {
         id: PRODUCT_IDS.PREMIUM_MONTHLY,
         title: 'Premium Monthly',
-        description: 'Monthly subscription',
-        price: '$2.99',
-        priceAmount: 2.99,
+        description: 'Monthly subscription - Full premium features',
+        price: '$7.99',
+        priceAmount: 7.99,
         currency: 'USD',
         period: 'month',
       },
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Yearly subscription - Best value',
-        price: '$19.99',
-        priceAmount: 19.99,
+        description: 'Yearly subscription - Best value, save 58%',
+        price: '$39.99',
+        priceAmount: 39.99,
         currency: 'USD',
         period: 'year',
+      },
+      {
+        id: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase, unlock everything + remove ads forever',
+        price: '$59.99',
+        priceAmount: 59.99,
+        currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
+      },
+      {
+        id: PRODUCT_IDS.AD_REMOVAL,
+        title: 'Ad Removal',
+        description: 'One-time purchase - Remove all ads (no premium features)',
+        price: '$6.99',
+        priceAmount: 6.99,
+        currency: 'USD',
+        period: 'lifetime',
+        isLifetime: true,
       },
     ];
   }
@@ -449,6 +471,8 @@ class WebBillingService implements BillingService {
         return STRIPE_PRICE_IDS.PREMIUM_YEARLY;
       case PRODUCT_IDS.PREMIUM_LIFETIME:
         return STRIPE_PRICE_IDS.PREMIUM_LIFETIME;
+      case PRODUCT_IDS.AD_REMOVAL:
+        return STRIPE_PRICE_IDS.AD_REMOVAL;
       default:
         return null;
     }

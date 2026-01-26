@@ -32,9 +32,15 @@ async function updateUserPremiumStatus(
     expiresAt?: string;
   }
 ) {
+  const isAdRemovalOnly = subscriptionData?.productId === "arcana_ad_removal";
+
+  const profileUpdate = isAdRemovalOnly
+    ? { is_ad_free: isPremium }
+    : { is_premium: isPremium };
+
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({ is_premium: isPremium })
+    .update(profileUpdate)
     .eq("id", userId);
 
   if (profileError) {

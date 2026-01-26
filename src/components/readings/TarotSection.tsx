@@ -183,7 +183,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       setIsSaved(true);
       toast('Reading saved', 'success');
 
-      await adsService.checkAndShowAd(profile?.isPremium || false, 'reading');
+      await adsService.checkAndShowAd(profile?.isPremium || profile?.isAdFree || false, 'reading');
     }
   };
 

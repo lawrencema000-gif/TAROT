@@ -28,34 +28,10 @@ console.log('🚀 Creating Stripe products for Arcana...\n');
 
 async function createProducts() {
   try {
-    console.log('📦 Creating Product 1: Premium Lifetime...');
-    const lifetimeProduct = await stripe.products.create({
-      name: 'Arcana Premium Lifetime',
-      description: 'One-time purchase, unlock everything + remove ads forever',
-      metadata: {
-        product_id: 'arcana_premium_lifetime',
-        type: 'lifetime',
-      },
-    });
-
-    const lifetimePrice = await stripe.prices.create({
-      product: lifetimeProduct.id,
-      unit_amount: 999,
-      currency: 'usd',
-      metadata: {
-        product_id: 'arcana_premium_lifetime',
-      },
-    });
-
-    console.log('✅ Lifetime Product created!');
-    console.log(`   Product ID: ${lifetimeProduct.id}`);
-    console.log(`   Price ID: ${lifetimePrice.id}`);
-    console.log('');
-
-    console.log('📦 Creating Product 2: Premium Monthly...');
+    console.log('📦 Creating Product 1: Premium Monthly...');
     const monthlyProduct = await stripe.products.create({
       name: 'Arcana Premium Monthly',
-      description: 'Monthly subscription - Cancel anytime',
+      description: 'Monthly subscription - Full premium features, cancel anytime',
       metadata: {
         product_id: 'arcana_premium_monthly',
         type: 'subscription',
@@ -64,7 +40,7 @@ async function createProducts() {
 
     const monthlyPrice = await stripe.prices.create({
       product: monthlyProduct.id,
-      unit_amount: 299,
+      unit_amount: 799,
       currency: 'usd',
       recurring: {
         interval: 'month',
@@ -79,10 +55,10 @@ async function createProducts() {
     console.log(`   Price ID: ${monthlyPrice.id}`);
     console.log('');
 
-    console.log('📦 Creating Product 3: Premium Yearly...');
+    console.log('📦 Creating Product 2: Premium Yearly (Best Value)...');
     const yearlyProduct = await stripe.products.create({
       name: 'Arcana Premium Yearly',
-      description: 'Yearly subscription - Best value, save 44%',
+      description: 'Yearly subscription - Best value, save 58%',
       metadata: {
         product_id: 'arcana_premium_yearly',
         type: 'subscription',
@@ -91,7 +67,7 @@ async function createProducts() {
 
     const yearlyPrice = await stripe.prices.create({
       product: yearlyProduct.id,
-      unit_amount: 1999,
+      unit_amount: 3999,
       currency: 'usd',
       recurring: {
         interval: 'year',
@@ -106,15 +82,64 @@ async function createProducts() {
     console.log(`   Price ID: ${yearlyPrice.id}`);
     console.log('');
 
+    console.log('📦 Creating Product 3: Premium Lifetime...');
+    const lifetimeProduct = await stripe.products.create({
+      name: 'Arcana Premium Lifetime',
+      description: 'One-time purchase, unlock everything + remove ads forever',
+      metadata: {
+        product_id: 'arcana_premium_lifetime',
+        type: 'lifetime',
+      },
+    });
+
+    const lifetimePrice = await stripe.prices.create({
+      product: lifetimeProduct.id,
+      unit_amount: 5999,
+      currency: 'usd',
+      metadata: {
+        product_id: 'arcana_premium_lifetime',
+      },
+    });
+
+    console.log('✅ Lifetime Product created!');
+    console.log(`   Product ID: ${lifetimeProduct.id}`);
+    console.log(`   Price ID: ${lifetimePrice.id}`);
+    console.log('');
+
+    console.log('📦 Creating Product 4: Ad Removal Only...');
+    const adRemovalProduct = await stripe.products.create({
+      name: 'Arcana Ad Removal',
+      description: 'One-time purchase - Remove all ads (no premium features)',
+      metadata: {
+        product_id: 'arcana_ad_removal',
+        type: 'one_time',
+      },
+    });
+
+    const adRemovalPrice = await stripe.prices.create({
+      product: adRemovalProduct.id,
+      unit_amount: 699,
+      currency: 'usd',
+      metadata: {
+        product_id: 'arcana_ad_removal',
+      },
+    });
+
+    console.log('✅ Ad Removal Product created!');
+    console.log(`   Product ID: ${adRemovalProduct.id}`);
+    console.log(`   Price ID: ${adRemovalPrice.id}`);
+    console.log('');
+
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎉 Success! All products created in Stripe.');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('');
     console.log('📋 Add these to your .env file:');
     console.log('');
-    console.log(`VITE_STRIPE_PRICE_LIFETIME=${lifetimePrice.id}`);
     console.log(`VITE_STRIPE_PRICE_MONTHLY=${monthlyPrice.id}`);
     console.log(`VITE_STRIPE_PRICE_YEARLY=${yearlyPrice.id}`);
+    console.log(`VITE_STRIPE_PRICE_LIFETIME=${lifetimePrice.id}`);
+    console.log(`VITE_STRIPE_PRICE_AD_REMOVAL=${adRemovalPrice.id}`);
     console.log('');
 
     const envPath = join(__dirname, '..', '.env');
@@ -135,16 +160,20 @@ async function createProducts() {
     }
 
     envContent = envContent.replace(
-      /VITE_STRIPE_PRICE_LIFETIME=.*/,
-      `VITE_STRIPE_PRICE_LIFETIME=${lifetimePrice.id}`
-    );
-    envContent = envContent.replace(
       /VITE_STRIPE_PRICE_MONTHLY=.*/,
       `VITE_STRIPE_PRICE_MONTHLY=${monthlyPrice.id}`
     );
     envContent = envContent.replace(
       /VITE_STRIPE_PRICE_YEARLY=.*/,
       `VITE_STRIPE_PRICE_YEARLY=${yearlyPrice.id}`
+    );
+    envContent = envContent.replace(
+      /VITE_STRIPE_PRICE_LIFETIME=.*/,
+      `VITE_STRIPE_PRICE_LIFETIME=${lifetimePrice.id}`
+    );
+    envContent = envContent.replace(
+      /VITE_STRIPE_PRICE_AD_REMOVAL=.*/,
+      `VITE_STRIPE_PRICE_AD_REMOVAL=${adRemovalPrice.id}`
     );
 
     writeFileSync(envPath, envContent);

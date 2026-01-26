@@ -47,14 +47,12 @@ const PRODUCT_IDS = {
   PREMIUM_MONTHLY: 'arcana_premium_monthly',
   PREMIUM_YEARLY: 'arcana_premium_yearly',
   PREMIUM_LIFETIME: 'arcana_premium_lifetime',
-  AD_REMOVAL: 'arcana_ad_removal',
 };
 
 const STRIPE_PRICE_IDS = {
   PREMIUM_MONTHLY: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || '',
   PREMIUM_YEARLY: import.meta.env.VITE_STRIPE_PRICE_YEARLY || '',
   PREMIUM_LIFETIME: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || '',
-  AD_REMOVAL: import.meta.env.VITE_STRIPE_PRICE_AD_REMOVAL || '',
 };
 
 const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || '';
@@ -182,19 +180,9 @@ class NativeBillingService implements BillingService {
       {
         id: PRODUCT_IDS.PREMIUM_LIFETIME,
         title: 'Premium Lifetime',
-        description: 'One-time purchase, unlock everything + remove ads forever',
+        description: 'One-time purchase, unlock everything forever',
         price: '$59.99',
         priceAmount: 59.99,
-        currency: 'USD',
-        period: 'lifetime',
-        isLifetime: true,
-      },
-      {
-        id: PRODUCT_IDS.AD_REMOVAL,
-        title: 'Ad Removal',
-        description: 'One-time purchase - Remove all ads (no premium features)',
-        price: '$6.99',
-        priceAmount: 6.99,
         currency: 'USD',
         period: 'lifetime',
         isLifetime: true,
@@ -359,19 +347,9 @@ class WebBillingService implements BillingService {
       {
         id: PRODUCT_IDS.PREMIUM_LIFETIME,
         title: 'Premium Lifetime',
-        description: 'One-time purchase, unlock everything + remove ads forever',
+        description: 'One-time purchase, unlock everything forever',
         price: '$59.99',
         priceAmount: 59.99,
-        currency: 'USD',
-        period: 'lifetime',
-        isLifetime: true,
-      },
-      {
-        id: PRODUCT_IDS.AD_REMOVAL,
-        title: 'Ad Removal',
-        description: 'One-time purchase - Remove all ads (no premium features)',
-        price: '$6.99',
-        priceAmount: 6.99,
         currency: 'USD',
         period: 'lifetime',
         isLifetime: true,
@@ -471,8 +449,6 @@ class WebBillingService implements BillingService {
         return STRIPE_PRICE_IDS.PREMIUM_YEARLY;
       case PRODUCT_IDS.PREMIUM_LIFETIME:
         return STRIPE_PRICE_IDS.PREMIUM_LIFETIME;
-      case PRODUCT_IDS.AD_REMOVAL:
-        return STRIPE_PRICE_IDS.AD_REMOVAL;
       default:
         return null;
     }

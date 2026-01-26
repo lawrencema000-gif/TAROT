@@ -36,7 +36,6 @@ interface DbProfile {
   notifications_enabled: boolean;
   onboarding_complete: boolean;
   is_premium: boolean;
-  is_ad_free: boolean;
   is_guest: boolean;
   streak: number;
   mbti_type?: string;
@@ -69,7 +68,6 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     notificationsEnabled: db.notifications_enabled ?? true,
     onboardingComplete: db.onboarding_complete,
     isPremium: db.is_premium,
-    isAdFree: db.is_ad_free || false,
     isGuest: db.is_guest || false,
     streak: db.streak,
     mbtiType: db.mbti_type,
@@ -101,7 +99,6 @@ function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> 
   if (profile.notificationsEnabled !== undefined) db.notifications_enabled = profile.notificationsEnabled;
   if (profile.onboardingComplete !== undefined) db.onboarding_complete = profile.onboardingComplete;
   if (profile.isPremium !== undefined) db.is_premium = profile.isPremium;
-  if (profile.isAdFree !== undefined) db.is_ad_free = profile.isAdFree;
   if (profile.isGuest !== undefined) db.is_guest = profile.isGuest;
   if (profile.streak !== undefined) db.streak = profile.streak;
   if (profile.mbtiType !== undefined) db.mbti_type = profile.mbtiType;

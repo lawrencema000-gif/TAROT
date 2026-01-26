@@ -33,7 +33,7 @@ const unlocks = [
   { icon: Moon, label: 'Birth Chart', desc: 'Your cosmic blueprint' },
 ];
 
-type PlanId = 'monthly' | 'yearly' | 'lifetime' | 'ad_removal';
+type PlanId = 'monthly' | 'yearly' | 'lifetime';
 
 interface Plan {
   id: PlanId;
@@ -44,7 +44,6 @@ interface Plan {
   productId: string;
   hasTrial?: boolean;
   trialText?: string;
-  isAdRemovalOnly?: boolean;
 }
 
 const plans: Plan[] = [
@@ -71,14 +70,6 @@ const plans: Plan[] = [
     badge: 'Forever Access',
     productId: PRODUCT_IDS.PREMIUM_LIFETIME,
   },
-  {
-    id: 'ad_removal',
-    label: 'Ad Removal Only',
-    price: '$6.99',
-    period: 'one-time',
-    productId: PRODUCT_IDS.AD_REMOVAL,
-    isAdRemovalOnly: true,
-  },
 ];
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
@@ -99,27 +90,15 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       const result = await billing.purchase(plan.productId);
 
       if (result.success) {
-        if (plan.isAdRemovalOnly) {
-          await updateProfile({ isAdFree: true });
-          await refreshProfile();
-          toast('Ads removed successfully!', 'success');
-        } else {
-          await updateProfile({ isPremium: true });
-          await refreshProfile();
-          toast('Welcome to Premium!', 'success');
-        }
+        await updateProfile({ isPremium: true });
+        await refreshProfile();
+        toast('Welcome to Premium!', 'success');
         onClose();
       } else if (result.error) {
         if (result.error.includes('not configured')) {
-          if (plan.isAdRemovalOnly) {
-            await updateProfile({ isAdFree: true });
-            await refreshProfile();
-            toast('Ads removed (demo mode)', 'success');
-          } else {
-            await updateProfile({ isPremium: true });
-            await refreshProfile();
-            toast('Premium activated (demo mode)', 'success');
-          }
+          await updateProfile({ isPremium: true });
+          await refreshProfile();
+          toast('Premium activated (demo mode)', 'success');
           onClose();
         } else {
           toast(result.error, 'error');
@@ -195,15 +174,15 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
 
           <div className="w-full max-w-sm space-y-3 mb-8">
             <p className="text-xs font-medium text-mystic-500 uppercase tracking-wider text-center mb-4">
-              {selectedPlan === 'ad_removal' ? 'What You Get' : 'What You Unlock'}
+              What You Unlock
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {(selectedPlan === 'ad_removal' ? [unlocks[0]] : unlocks).map((item, i) => {
+              {unlocks.map((item, i) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={i}
-                    className={`flex items-center gap-3 p-3 bg-mystic-800/40 backdrop-blur-sm rounded-xl border border-mystic-700/30 ${selectedPlan === 'ad_removal' ? 'col-span-2' : ''}`}
+                    className="flex items-center gap-3 p-3 bg-mystic-800/40 backdrop-blur-sm rounded-xl border border-mystic-700/30"
                   >
                     <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center flex-shrink-0">
                       <Icon className="w-4 h-4 text-gold" />
@@ -216,11 +195,6 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                 );
               })}
             </div>
-            {selectedPlan === 'ad_removal' && (
-              <p className="text-xs text-mystic-500 text-center mt-3">
-                Want all premium features? Choose a Premium plan above.
-              </p>
-            )}
           </div>
 
           <div className="w-full max-w-sm space-y-3 mb-6">
@@ -281,11 +255,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               loading={purchasing}
               className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
             >
-              {selectedPlan === 'lifetime'
-                ? 'Get Lifetime Access'
-                : selectedPlan === 'ad_removal'
-                  ? 'Remove Ads'
-                  : 'Subscribe Now'}
+              {selectedPlan === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Now'}
             </Button>
 
             <button
@@ -307,9 +277,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           <p className="text-xs text-mystic-600 text-center leading-relaxed">
             {selectedPlan === 'lifetime'
               ? 'One-time purchase. No recurring charges. Lifetime access to all premium features.'
-              : selectedPlan === 'ad_removal'
-                ? 'One-time purchase. No recurring charges. Removes all ads permanently. Does not include premium features.'
-                : 'Cancel anytime. Payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.'}
+              : 'Cancel anytime. Payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.'}
           </p>
         </div>
       </div>

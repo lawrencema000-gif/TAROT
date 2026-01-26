@@ -85,7 +85,7 @@ async function createProducts() {
     console.log('📦 Creating Product 3: Premium Lifetime...');
     const lifetimeProduct = await stripe.products.create({
       name: 'Arcana Premium Lifetime',
-      description: 'One-time purchase, unlock everything + remove ads forever',
+      description: 'One-time purchase, unlock everything forever',
       metadata: {
         product_id: 'arcana_premium_lifetime',
         type: 'lifetime',
@@ -106,30 +106,6 @@ async function createProducts() {
     console.log(`   Price ID: ${lifetimePrice.id}`);
     console.log('');
 
-    console.log('📦 Creating Product 4: Ad Removal Only...');
-    const adRemovalProduct = await stripe.products.create({
-      name: 'Arcana Ad Removal',
-      description: 'One-time purchase - Remove all ads (no premium features)',
-      metadata: {
-        product_id: 'arcana_ad_removal',
-        type: 'one_time',
-      },
-    });
-
-    const adRemovalPrice = await stripe.prices.create({
-      product: adRemovalProduct.id,
-      unit_amount: 699,
-      currency: 'usd',
-      metadata: {
-        product_id: 'arcana_ad_removal',
-      },
-    });
-
-    console.log('✅ Ad Removal Product created!');
-    console.log(`   Product ID: ${adRemovalProduct.id}`);
-    console.log(`   Price ID: ${adRemovalPrice.id}`);
-    console.log('');
-
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎉 Success! All products created in Stripe.');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -139,7 +115,6 @@ async function createProducts() {
     console.log(`VITE_STRIPE_PRICE_MONTHLY=${monthlyPrice.id}`);
     console.log(`VITE_STRIPE_PRICE_YEARLY=${yearlyPrice.id}`);
     console.log(`VITE_STRIPE_PRICE_LIFETIME=${lifetimePrice.id}`);
-    console.log(`VITE_STRIPE_PRICE_AD_REMOVAL=${adRemovalPrice.id}`);
     console.log('');
 
     const envPath = join(__dirname, '..', '.env');
@@ -170,10 +145,6 @@ async function createProducts() {
     envContent = envContent.replace(
       /VITE_STRIPE_PRICE_LIFETIME=.*/,
       `VITE_STRIPE_PRICE_LIFETIME=${lifetimePrice.id}`
-    );
-    envContent = envContent.replace(
-      /VITE_STRIPE_PRICE_AD_REMOVAL=.*/,
-      `VITE_STRIPE_PRICE_AD_REMOVAL=${adRemovalPrice.id}`
     );
 
     writeFileSync(envPath, envContent);

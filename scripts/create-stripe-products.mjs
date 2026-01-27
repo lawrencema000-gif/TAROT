@@ -40,7 +40,7 @@ async function createProducts() {
 
     const monthlyPrice = await stripe.prices.create({
       product: monthlyProduct.id,
-      unit_amount: 799,
+      unit_amount: 299,
       currency: 'usd',
       recurring: {
         interval: 'month',
@@ -58,7 +58,7 @@ async function createProducts() {
     console.log('📦 Creating Product 2: Premium Yearly (Best Value)...');
     const yearlyProduct = await stripe.products.create({
       name: 'Arcana Premium Yearly',
-      description: 'Yearly subscription - Best value, save 58%',
+      description: 'Yearly subscription - Best value, save 44%',
       metadata: {
         product_id: 'arcana_premium_yearly',
         type: 'subscription',
@@ -67,7 +67,7 @@ async function createProducts() {
 
     const yearlyPrice = await stripe.prices.create({
       product: yearlyProduct.id,
-      unit_amount: 3999,
+      unit_amount: 1999,
       currency: 'usd',
       recurring: {
         interval: 'year',
@@ -85,7 +85,7 @@ async function createProducts() {
     console.log('📦 Creating Product 3: Premium Lifetime...');
     const lifetimeProduct = await stripe.products.create({
       name: 'Arcana Premium Lifetime',
-      description: 'One-time purchase, unlock everything forever',
+      description: 'One-time purchase, unlock everything + remove ads forever',
       metadata: {
         product_id: 'arcana_premium_lifetime',
         type: 'lifetime',
@@ -94,7 +94,7 @@ async function createProducts() {
 
     const lifetimePrice = await stripe.prices.create({
       product: lifetimeProduct.id,
-      unit_amount: 5999,
+      unit_amount: 999,
       currency: 'usd',
       metadata: {
         product_id: 'arcana_premium_lifetime',

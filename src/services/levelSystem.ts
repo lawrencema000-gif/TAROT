@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { toast } from '../components/ui';
+import { checkAchievementProgress, type UnlockedAchievement } from './achievements';
 
 export interface XPReward {
   xp_earned: number;
@@ -8,13 +9,16 @@ export interface XPReward {
   new_level: number;
   level_up: boolean;
   seeker_rank: string;
+  unlocked_achievements?: UnlockedAchievement[];
 }
 
 export type ActivityType =
   | 'ritual_complete'
   | 'reading_saved'
+  | 'reading_complete'
   | 'journal_entry'
   | 'quiz_complete'
+  | 'horoscope_viewed'
   | 'streak_milestone_7'
   | 'streak_milestone_30'
   | 'streak_milestone_100'
@@ -23,8 +27,10 @@ export type ActivityType =
 const XP_REWARDS: Record<ActivityType, number> = {
   ritual_complete: 50,
   reading_saved: 10,
+  reading_complete: 5,
   journal_entry: 15,
   quiz_complete: 25,
+  horoscope_viewed: 5,
   streak_milestone_7: 100,
   streak_milestone_30: 500,
   streak_milestone_100: 2000,
@@ -49,7 +55,12 @@ export async function awardXP(
       return null;
     }
 
-    return data as XPReward;
+    const unlockedAchievements = await checkAchievementProgress(userId, activityType);
+
+    return {
+      ...(data as XPReward),
+      unlocked_achievements: unlockedAchievements,
+    };
   } catch (error) {
     console.error('Failed to award XP:', error);
     return null;
@@ -118,12 +129,14 @@ export async function checkAndAwardStreakMilestone(
     { streak: 365, type: 'streak_milestone_365' },
   ];
 
+  await checkAchievementProgress(userId, 'streak_achieved', newStreak);
+
   for (const milestone of milestones) {
     if (newStreak === milestone.streak) {
       const result = await awardXP(userId, milestone.type);
       if (result) {
         toast(
-          `🎉 ${milestone.streak}-day streak milestone! +${result.xp_earned} XP`,
+          `${milestone.streak}-day streak milestone! +${result.xp_earned} XP`,
           'success'
         );
       }
@@ -162,8 +175,10 @@ export function formatActivityType(activityType: string): string {
   const labels: Record<string, string> = {
     ritual_complete: 'Daily Ritual Complete',
     reading_saved: 'Reading Saved',
+    reading_complete: 'Tarot Reading',
     journal_entry: 'Journal Entry',
     quiz_complete: 'Quiz Complete',
+    horoscope_viewed: 'Horoscope Viewed',
     streak_milestone_7: '7-Day Streak Milestone',
     streak_milestone_30: '30-Day Streak Milestone',
     streak_milestone_100: '100-Day Streak Milestone',

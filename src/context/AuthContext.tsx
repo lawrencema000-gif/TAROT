@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
 import { isAdmin as checkIsAdmin } from '../utils/admin';
 import { isNative } from '../utils/platform';
+import { App } from '@capacitor/app';
+import { toast } from '../components/ui/Toast';
 
 interface AuthContextType {
   user: User | null;
@@ -129,51 +131,125 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const handleOAuthCallback = useCallback(async (url: string) => {
+    if (!url) return false;
+
+    const hasCode = url.includes('code=');
+    const hasAccessToken = url.includes('access_token=');
+    const hasError = url.includes('error=');
+
+    if (!hasCode && !hasAccessToken && !hasError) return false;
+
+    console.log('[OAuth] Processing callback URL');
+    setIsProcessingOAuth(true);
+
+    try {
+      if (hasError) {
+        const urlObj = new URL(url);
+        const error = urlObj.searchParams.get('error') || new URLSearchParams(urlObj.hash.substring(1)).get('error');
+        const errorDesc = urlObj.searchParams.get('error_description') || new URLSearchParams(urlObj.hash.substring(1)).get('error_description');
+        console.error('[OAuth] Error in callback:', error, errorDesc);
+        toast(errorDesc || 'Sign in failed', 'error');
+        setIsProcessingOAuth(false);
+        return true;
+      }
+
+      if (hasCode) {
+        console.log('[OAuth] Exchanging code for session (PKCE flow)');
+        const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+
+        if (error) {
+          console.error('[OAuth] Code exchange failed:', error);
+          toast(error.message || 'Could not complete sign-in', 'error');
+          setIsProcessingOAuth(false);
+          return true;
+        }
+
+        if (data?.session?.user) {
+          console.log('[OAuth] Session established successfully');
+          setSession(data.session);
+          setUser(data.session.user);
+          fetchProfile(data.session.user.id);
+        }
+        setIsProcessingOAuth(false);
+        return true;
+      }
+
+      if (hasAccessToken) {
+        console.log('[OAuth] Processing implicit flow tokens');
+        const hashParams = new URLSearchParams(new URL(url).hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            console.error('[OAuth] Session set failed:', error);
+            toast(error.message || 'Could not complete sign-in', 'error');
+          }
+        }
+        setIsProcessingOAuth(false);
+        return true;
+      }
+    } catch (e) {
+      console.error('[OAuth] Callback processing error:', e);
+      toast('Sign in failed. Please try again.', 'error');
+      setIsProcessingOAuth(false);
+    }
+
+    return false;
+  }, [fetchProfile]);
+
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    let appUrlListener: { remove: () => void } | null = null;
 
-    const errorInQuery = urlParams.get('error');
-    const errorInHash = hashParams.get('error');
-    const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
-    const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+    const init = async () => {
+      try {
+        if (isNative()) {
+          const launch = await App.getLaunchUrl();
+          if (launch?.url) {
+            const handled = await handleOAuthCallback(launch.url);
+            if (handled) return;
+          }
+        } else {
+          const handled = await handleOAuthCallback(window.location.href);
+          if (handled) {
+            window.history.replaceState({}, '', window.location.pathname);
+            return;
+          }
+        }
 
-    if (errorInQuery || errorInHash) {
-      console.error('[OAuth] Authentication error:', {
-        error: errorInQuery || errorInHash,
-        error_code: errorCode,
-        error_description: errorDescription,
-        url: window.location.href
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('[Auth] Session error:', error);
+        }
+        console.log('[Auth] Initial session:', session ? 'Found' : 'None');
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        }
+      } finally {
+        setLoading(false);
+        setIsProcessingOAuth(false);
+      }
+    };
+
+    if (isNative()) {
+      appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
+        console.log('[OAuth] App URL opened:', url);
+        await handleOAuthCallback(url);
       });
-      setIsProcessingOAuth(false);
-      setLoading(false);
-      return;
     }
 
-    const hasOAuthParams = window.location.hash.includes('access_token') ||
-                           window.location.hash.includes('error');
-
-    if (hasOAuthParams) {
-      console.log('[OAuth] Detected OAuth callback in URL');
-      setIsProcessingOAuth(true);
-    }
-
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('[Auth] Session error:', error);
-      }
-      console.log('[Auth] Initial session check:', session ? 'Session found' : 'No session');
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
-      setIsProcessingOAuth(false);
-    });
+    init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Auth] State change event:', event, session ? 'Session exists' : 'No session');
+      console.log('[Auth] State change:', event, session ? 'Session exists' : 'No session');
 
       if (event === 'SIGNED_IN') {
         setIsProcessingOAuth(false);
@@ -188,8 +264,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+    return () => {
+      subscription.unsubscribe();
+      appUrlListener?.remove();
+    };
+  }, [fetchProfile, handleOAuthCallback]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({ email, password });

@@ -130,7 +130,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setOAuthProcessing = useCallback((processing: boolean) => {
     clearOAuthTimeout();
-    isProcessingCallbackRef.current = processing;
     setIsProcessingOAuth(processing);
     if (processing) {
       oauthTimeoutRef.current = window.setTimeout(() => {

@@ -187,16 +187,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const code = extractCodeFromUrl(url);
     const dedupKey = code || url;
 
-    if (isProcessingCallbackRef.current && lastProcessedUrlRef.current === dedupKey) {
-      console.log('[OAuth] Duplicate callback ignored (already processing)');
+    if (isProcessingCallbackRef.current) {
+      console.log('[OAuth] Duplicate callback ignored (already processing another callback)');
       return true;
     }
 
     if (lastProcessedUrlRef.current === dedupKey) {
-      console.log('[OAuth] Duplicate callback ignored (already processed)');
+      console.log('[OAuth] Duplicate callback ignored (already processed this URL)');
       return true;
     }
 
+    isProcessingCallbackRef.current = true;
     lastProcessedUrlRef.current = dedupKey;
     console.log('[OAuth] Processing callback:', url.substring(0, 80) + '...');
     setOAuthProcessing(true);
@@ -210,12 +211,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorDesc = searchParams.get('error_description') || hashParams.get('error_description');
         console.error('[OAuth] Error in callback:', error, errorDesc);
 
-        const existingSession = await getSessionWithRetry(2, 200);
+        const existingSession = await getSessionWithRetry(4, 300);
         if (existingSession?.user) {
           console.log('[OAuth] Session exists despite error - using it');
           setSession(existingSession);
           setUser(existingSession.user);
           fetchProfile(existingSession.user.id);
+          isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
           return true;
         }
@@ -230,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         toast(userMessage, 'error');
+        isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
         return true;
       }
@@ -237,12 +240,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (hasCode) {
         console.log('[OAuth] Exchanging code for session (PKCE flow)');
 
-        const existingSession = await getSessionWithRetry(2, 150);
+        const existingSession = await getSessionWithRetry(4, 300);
         if (existingSession?.user) {
           console.log('[OAuth] Session already exists, skipping exchange');
           setSession(existingSession);
           setUser(existingSession.user);
           fetchProfile(existingSession.user.id);
+          isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
           return true;
         }
@@ -259,12 +263,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             error.message.includes('invalid_flow_state');
 
           if (isFlowStateError) {
-            const retrySession = await getSessionWithRetry(3, 300);
+            const retrySession = await getSessionWithRetry(5, 400);
             if (retrySession?.user) {
               console.log('[OAuth] Session found after flow-state error');
               setSession(retrySession);
               setUser(retrySession.user);
               fetchProfile(retrySession.user.id);
+              isProcessingCallbackRef.current = false;
               setOAuthProcessing(false);
               return true;
             }
@@ -272,6 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             toast(error.message || 'Could not complete sign-in', 'error');
           }
+          isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
           return true;
         }
@@ -282,6 +288,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(data.session.user);
           fetchProfile(data.session.user.id);
         }
+        isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
         return true;
       }
@@ -303,12 +310,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             toast(error.message || 'Could not complete sign-in', 'error');
           }
         }
+        isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
         return true;
       }
     } catch (e) {
       console.error('[OAuth] Callback processing error:', e);
       toast('Sign in failed. Please try again.', 'error');
+      isProcessingCallbackRef.current = false;
       setOAuthProcessing(false);
     }
 
@@ -318,6 +327,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let appUrlListener: { remove: () => void } | null = null;
     let mounted = true;
+    let launchUrlHandled = false;
 
     const setupAppUrlListener = () => {
       if (isNative()) {
@@ -325,10 +335,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('[OAuth] App URL opened:', url);
           if (!mounted) return;
 
+          if (launchUrlHandled && lastProcessedUrlRef.current) {
+            const code = extractCodeFromUrl(url);
+            const dedupKey = code || url;
+            if (dedupKey === lastProcessedUrlRef.current) {
+              console.log('[OAuth] appUrlOpen ignored - same as launch URL');
+              return;
+            }
+          }
+
           try {
             await Browser.close();
           } catch {
-            // Browser may already be closed
           }
           await handleOAuthCallback(url);
         });
@@ -336,18 +354,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const init = async () => {
-      setupAppUrlListener();
-
       try {
         if (isNative()) {
           const launch = await App.getLaunchUrl();
           console.log('[Auth] Launch URL:', launch?.url || 'None');
           if (launch?.url) {
             const handled = await handleOAuthCallback(launch.url);
+            launchUrlHandled = handled;
+            setupAppUrlListener();
             if (handled) {
               if (mounted) setLoading(false);
               return;
             }
+          } else {
+            setupAppUrlListener();
           }
         } else {
           const currentUrl = window.location.href;

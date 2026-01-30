@@ -1,14 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 interface WelcomeEmailPayload {
-  email: string;
-  name: string;
+  user_id: string;
 }
 
 const generateWelcomeEmailHtml = (name: string) => `
@@ -142,27 +136,54 @@ const generateWelcomeEmailHtml = (name: string) => `
 `;
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
-
   try {
-    const { email, name }: WelcomeEmailPayload = await req.json();
-
-    if (!email) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: "Email is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const displayName = name || email.split("@")[0];
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid token" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const { user_id }: WelcomeEmailPayload = await req.json();
+
+    if (!user_id || user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - can only send to your own email" }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user_id)
+      .maybeSingle();
+
+    const displayName = profile?.name || user.email?.split("@")[0] || "there";
+    const email = user.email;
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "User has no email" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const htmlContent = generateWelcomeEmailHtml(displayName);
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -171,15 +192,15 @@ Deno.serve(async (req: Request) => {
       console.log("Welcome email would be sent to:", email);
       console.log("No RESEND_API_KEY configured - email not sent");
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: "Email queued (API key not configured)",
           email,
-          name: displayName 
+          name: displayName
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -205,7 +226,7 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: "Failed to send email", details: errorData }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -216,7 +237,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ success: true, id: result.id }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       }
     );
   } catch (error) {
@@ -225,7 +246,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

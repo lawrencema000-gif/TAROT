@@ -35,21 +35,6 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-async function sendWelcomeEmail(email: string, name: string) {
-  try {
-    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`;
-    await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, name }),
-    });
-  } catch {
-    console.error('Failed to send welcome email');
-  }
-}
 
 const goalOptions: { label: string; value: Goal }[] = [
   { label: 'Love', value: 'love' },
@@ -179,10 +164,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         toast('Failed to save profile. Please try again.', 'error');
         setLoading(false);
         return;
-      }
-
-      if (shouldSubscribe) {
-        sendWelcomeEmail(data.email, data.email.split('@')[0]);
       }
 
       toast('Welcome to Arcana!', 'success');

@@ -116,7 +116,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+
   const oauthTimeoutRef = React.useRef<number | null>(null);
+  const isProcessingCallbackRef = React.useRef(false);
+  const lastProcessedUrlRef = React.useRef<string | null>(null);
 
   const clearOAuthTimeout = useCallback(() => {
     if (oauthTimeoutRef.current) {
@@ -127,12 +130,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setOAuthProcessing = useCallback((processing: boolean) => {
     clearOAuthTimeout();
+    isProcessingCallbackRef.current = processing;
     setIsProcessingOAuth(processing);
     if (processing) {
       oauthTimeoutRef.current = window.setTimeout(() => {
         console.warn('[OAuth] Timeout - resetting processing state');
+        isProcessingCallbackRef.current = false;
         setIsProcessingOAuth(false);
-      }, 30000);
+      }, 120000);
     }
   }, [clearOAuthTimeout]);
 
@@ -148,7 +153,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const handleOAuthCallback = useCallback(async (url: string) => {
+  const getSessionWithRetry = useCallback(async (retries = 4, delayMs = 400): Promise<Session | null> => {
+    for (let i = 0; i < retries; i++) {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) return data.session;
+      if (i < retries - 1) {
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+    }
+    return null;
+  }, []);
+
+  const extractCodeFromUrl = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.searchParams.get('code');
+    } catch {
+      const match = url.match(/[?&]code=([^&]+)/);
+      return match ? match[1] : null;
+    }
+  };
+
+  const handleOAuthCallback = useCallback(async (rawUrl: string) => {
+    const url = (rawUrl || '').trim();
     if (!url) return false;
 
     const hasCode = url.includes('code=');
@@ -157,7 +184,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!hasCode && !hasAccessToken && !hasError) return false;
 
-    console.log('[OAuth] Processing callback URL:', url.substring(0, 100) + '...');
+    const code = extractCodeFromUrl(url);
+    const dedupKey = code || url;
+
+    if (isProcessingCallbackRef.current && lastProcessedUrlRef.current === dedupKey) {
+      console.log('[OAuth] Duplicate callback ignored (already processing)');
+      return true;
+    }
+
+    if (lastProcessedUrlRef.current === dedupKey) {
+      console.log('[OAuth] Duplicate callback ignored (already processed)');
+      return true;
+    }
+
+    lastProcessedUrlRef.current = dedupKey;
+    console.log('[OAuth] Processing callback:', url.substring(0, 80) + '...');
     setOAuthProcessing(true);
 
     try {
@@ -169,23 +210,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorDesc = searchParams.get('error_description') || hashParams.get('error_description');
         console.error('[OAuth] Error in callback:', error, errorDesc);
 
-        const clearAuthStorage = () => {
-          try {
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-              if (key.includes('auth') || key.includes('sb-') || key.includes('arcana-auth-')) {
-                localStorage.removeItem(key);
-              }
-            });
-          } catch {
-            console.warn('[OAuth] Could not clear auth storage');
-          }
-        };
+        const existingSession = await getSessionWithRetry(2, 200);
+        if (existingSession?.user) {
+          console.log('[OAuth] Session exists despite error - using it');
+          setSession(existingSession);
+          setUser(existingSession.user);
+          fetchProfile(existingSession.user.id);
+          setOAuthProcessing(false);
+          return true;
+        }
 
         let userMessage = errorDesc || 'Sign in failed';
-        if (error === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
+        if (error === 'access_denied') {
+          userMessage = 'Sign in was cancelled';
+        } else if (error === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
           userMessage = 'Sign in session expired. Please try again.';
-          clearAuthStorage();
+        } else if (errorDesc?.includes('provider')) {
+          userMessage = 'Google sign-in is not configured. Please use email/password.';
         }
 
         toast(userMessage, 'error');
@@ -196,12 +237,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (hasCode) {
         console.log('[OAuth] Exchanging code for session (PKCE flow)');
 
-        const { data: existingSession } = await supabase.auth.getSession();
-        if (existingSession?.session?.user) {
-          console.log('[OAuth] Session already exists, skipping code exchange');
-          setSession(existingSession.session);
-          setUser(existingSession.session.user);
-          fetchProfile(existingSession.session.user.id);
+        const existingSession = await getSessionWithRetry(2, 150);
+        if (existingSession?.user) {
+          console.log('[OAuth] Session already exists, skipping exchange');
+          setSession(existingSession);
+          setUser(existingSession.user);
+          fetchProfile(existingSession.user.id);
           setOAuthProcessing(false);
           return true;
         }
@@ -211,33 +252,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           console.error('[OAuth] Code exchange failed:', error.message);
 
-          const isFlowStateError = error.message.includes('code verifier') ||
+          const isFlowStateError =
+            error.message.includes('code verifier') ||
             error.message.includes('already used') ||
             error.message.includes('flow state') ||
             error.message.includes('invalid_flow_state');
 
           if (isFlowStateError) {
-            const { data: retrySession } = await supabase.auth.getSession();
-            if (retrySession?.session?.user) {
-              console.log('[OAuth] Code already exchanged, using existing session');
-              setSession(retrySession.session);
-              setUser(retrySession.session.user);
-              fetchProfile(retrySession.session.user.id);
+            const retrySession = await getSessionWithRetry(3, 300);
+            if (retrySession?.user) {
+              console.log('[OAuth] Session found after flow-state error');
+              setSession(retrySession);
+              setUser(retrySession.user);
+              fetchProfile(retrySession.user.id);
               setOAuthProcessing(false);
               return true;
             }
-
-            try {
-              const keys = Object.keys(localStorage);
-              keys.forEach(key => {
-                if (key.includes('auth') || key.includes('sb-') || key.includes('arcana-auth-')) {
-                  localStorage.removeItem(key);
-                }
-              });
-            } catch {
-              console.warn('[OAuth] Could not clear auth storage');
-            }
-
             toast('Sign in session expired. Please try again.', 'error');
           } else {
             toast(error.message || 'Could not complete sign-in', 'error');
@@ -283,7 +313,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return false;
-  }, [fetchProfile, setOAuthProcessing]);
+  }, [fetchProfile, setOAuthProcessing, getSessionWithRetry]);
 
   useEffect(() => {
     let appUrlListener: { remove: () => void } | null = null;
@@ -293,10 +323,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (isNative()) {
         appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
           console.log('[OAuth] App URL opened:', url);
-          if (mounted) {
+          if (!mounted) return;
+
+          try {
             await Browser.close();
-            await handleOAuthCallback(url);
+          } catch {
+            // Browser may already be closed
           }
+          await handleOAuthCallback(url);
         });
       }
     };
@@ -357,6 +391,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (event === 'SIGNED_IN') {
         clearOAuthTimeout();
+        isProcessingCallbackRef.current = false;
         setIsProcessingOAuth(false);
       }
 
@@ -390,6 +425,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     console.log('[OAuth] Initiating Google sign-in');
     setOAuthProcessing(true);
+    lastProcessedUrlRef.current = null;
 
     const redirectUrl = isNative()
       ? 'com.arcana.app://auth'
@@ -414,11 +450,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data?.url) {
-          console.log('[OAuth] Opening system browser with OAuth URL');
+          console.log('[OAuth] Opening browser for OAuth:', data.url.substring(0, 80) + '...');
           await Browser.open({
             url: data.url,
-            windowName: '_self',
+            presentationStyle: 'popover',
           });
+        } else {
+          console.error('[OAuth] No URL returned from Supabase');
+          setOAuthProcessing(false);
+          return { error: new Error('Failed to generate sign-in URL') };
         }
       } else {
         const { error } = await supabase.auth.signInWithOAuth({

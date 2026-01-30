@@ -3,7 +3,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
 import { isAdmin as checkIsAdmin } from '../utils/admin';
-import { isNative } from '../utils/platform';
+import { isNative, isAndroid, isIOS } from '../utils/platform';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { toast } from '../components/ui/Toast';
@@ -423,7 +423,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    console.log('[OAuth] Initiating Google sign-in');
+    console.log('[OAuth] Initiating Google sign-in, platform:', isAndroid() ? 'android' : isIOS() ? 'ios' : 'web');
     setOAuthProcessing(true);
     lastProcessedUrlRef.current = null;
 
@@ -431,7 +431,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ? 'com.arcana.app://auth'
       : window.location.origin;
 
-    console.log('[OAuth] Redirect URL:', redirectUrl, 'isNative:', isNative());
+    console.log('[OAuth] Redirect URL:', redirectUrl);
 
     try {
       if (isNative()) {
@@ -450,11 +450,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data?.url) {
-          console.log('[OAuth] Opening browser for OAuth:', data.url.substring(0, 80) + '...');
-          await Browser.open({
-            url: data.url,
-            presentationStyle: 'popover',
-          });
+          console.log('[OAuth] Generated OAuth URL, opening browser...');
+          console.log('[OAuth] URL preview:', data.url.substring(0, 120));
+
+          try {
+            if (isIOS()) {
+              await Browser.open({
+                url: data.url,
+                presentationStyle: 'popover',
+              });
+            } else {
+              await Browser.open({ url: data.url });
+            }
+            console.log('[OAuth] Browser opened successfully');
+          } catch (browserErr) {
+            console.error('[OAuth] Browser.open failed:', browserErr);
+            setOAuthProcessing(false);
+            return { error: new Error('Failed to open sign-in browser') };
+          }
         } else {
           console.error('[OAuth] No URL returned from Supabase');
           setOAuthProcessing(false);

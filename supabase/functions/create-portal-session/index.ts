@@ -10,6 +10,25 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+const ALLOWED_REDIRECT_HOSTS = [
+  "localhost",
+  "127.0.0.1",
+  "arcana.app",
+  "www.arcana.app",
+];
+
+function isAllowedRedirectUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    return ALLOWED_REDIRECT_HOSTS.some(
+      (allowed) => host === allowed || host.endsWith(`.${allowed}`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -58,6 +77,13 @@ Deno.serve(async (req: Request) => {
     if (!returnUrl) {
       return new Response(
         JSON.stringify({ error: "Missing returnUrl" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!isAllowedRedirectUrl(returnUrl)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid redirect URL" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

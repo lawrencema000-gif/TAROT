@@ -121,11 +121,11 @@ export function trackPageView(pageName: string, properties?: Record<string, unkn
   track('page_view', { pageName, ...properties });
 }
 
-export function trackSignUp(method: 'email' | 'guest'): void {
+export function trackSignUp(method: 'email' | 'google'): void {
   track('sign_up', { method });
 }
 
-export function trackSignIn(method: 'email' | 'guest'): void {
+export function trackSignIn(method: 'email' | 'google'): void {
   track('sign_in', { method });
 }
 

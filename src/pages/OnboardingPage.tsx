@@ -79,7 +79,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [birthDateError, setBirthDateError] = useState('');
-  const [isGuestMode, setIsGuestMode] = useState(false);
   const [data, setData] = useState<OnboardingData>({
     goals: [],
     birthDate: '',
@@ -122,17 +121,11 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
     }
   };
 
-  const handleGuestContinue = () => {
-    setIsGuestMode(true);
-    setStep(5);
-  };
-
   const handleEmailSignup = () => {
     if (!data.email.includes('@') || data.password.length < 6) {
       toast('Please enter a valid email and password (min 6 characters).', 'error');
       return;
     }
-    setIsGuestMode(false);
     setStep(5);
   };
 
@@ -148,20 +141,9 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const handleCompleteOnboarding = async () => {
     setLoading(true);
 
-    let email: string;
-    let password: string;
-
-    if (isGuestMode) {
-      email = `guest_${Date.now()}@arcana.local`;
-      password = `guest_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    } else {
-      email = data.email;
-      password = data.password;
-    }
-
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
+      email: data.email,
+      password: data.password,
     });
 
     if (signUpError) {
@@ -171,12 +153,12 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
     }
 
     if (authData.user) {
-      const shouldSubscribe = !isGuestMode && data.subscribedToNewsletter;
+      const shouldSubscribe = data.subscribedToNewsletter;
 
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: authData.user.id,
-        email: isGuestMode ? null : data.email,
-        display_name: isGuestMode ? 'Guest' : data.email.split('@')[0],
+        email: data.email,
+        display_name: data.email.split('@')[0],
         goals: data.goals,
         birth_date: data.birthDate,
         birth_time: data.birthTime || null,
@@ -187,7 +169,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         notification_time: data.notificationTime,
         onboarding_complete: true,
         is_premium: false,
-        is_guest: isGuestMode,
+        is_guest: false,
         streak: 0,
         subscribed_to_newsletter: shouldSubscribe,
         newsletter_subscribed_at: shouldSubscribe ? new Date().toISOString() : null,
@@ -437,15 +419,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   <GoogleIcon className="w-5 h-5" />
                   Continue with Google
                 </Button>
-
-                <button
-                  onClick={handleGuestContinue}
-                  disabled={loading}
-                  className="w-full p-4 rounded-xl border border-mystic-700/50 bg-mystic-800/30 hover:border-mystic-600/50 transition-all text-left active:scale-[0.98] disabled:opacity-50"
-                >
-                  <p className="font-medium text-mystic-200">Continue as guest</p>
-                  <p className="text-sm text-mystic-500">Try it out, sign up later</p>
-                </button>
 
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">

@@ -57,11 +57,32 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const webhookData: RevenueCatEvent = await req.json();
+    const rawBody = await req.text();
+    console.log("[RevenueCat] Raw webhook body:", rawBody);
+
+    let webhookData: RevenueCatEvent;
+    try {
+      webhookData = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error("[RevenueCat] Failed to parse JSON:", parseError);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON payload" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!webhookData.event) {
+      console.log("[RevenueCat] Test webhook received (no event data)");
+      return new Response(
+        JSON.stringify({ success: true, message: "Test webhook received" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const eventType = webhookData.event.type;
     const userId = webhookData.event.app_user_id;
-    const productId = webhookData.event.product_id;
-    const entitlements = webhookData.event.entitlement_ids;
+    const productId = webhookData.event.product_id || "";
+    const entitlements = webhookData.event.entitlement_ids || [];
 
     console.log("[RevenueCat] Webhook received:", {
       type: eventType,

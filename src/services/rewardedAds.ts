@@ -182,9 +182,8 @@ class RewardedAdsService {
     }
 
     if (!this.pluginAvailable || !AdMob) {
-      console.log('[RewardedAds] Plugin not available - granting access in demo mode');
-      await this.grantTemporaryAccess(feature);
-      return true;
+      console.log('[RewardedAds] Plugin not available');
+      return false;
     }
 
     if (!this.isAdReady) {

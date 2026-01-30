@@ -95,14 +95,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         toast('Welcome to Premium!', 'success');
         onClose();
       } else if (result.error) {
-        if (result.error.includes('not configured')) {
-          await updateProfile({ isPremium: true });
-          await refreshProfile();
-          toast('Premium activated (demo mode)', 'success');
-          onClose();
-        } else {
-          toast(result.error, 'error');
-        }
+        toast(result.error, 'error');
       }
     } catch {
       toast('Purchase failed', 'error');

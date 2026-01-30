@@ -71,6 +71,7 @@ class NativeBillingService implements BillingService {
   provider: BillingProvider = 'google';
   private initialized = false;
   private packages: PurchasesPackage[] = [];
+  private userId?: string;
 
   async initialize(userId?: string): Promise<boolean> {
     if (this.initialized) return true;
@@ -79,6 +80,7 @@ class NativeBillingService implements BillingService {
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
 
       if (isAndroid() && REVENUECAT_API_KEY) {
+        this.userId = userId;
         await Purchases.configure({
           apiKey: REVENUECAT_API_KEY,
           appUserID: userId,
@@ -98,6 +100,7 @@ class NativeBillingService implements BillingService {
 
   async setUserId(userId: string): Promise<void> {
     try {
+      this.userId = userId;
       if (this.initialized) {
         await Purchases.logIn({ appUserID: userId });
         console.log('[RevenueCat] User ID set:', userId);

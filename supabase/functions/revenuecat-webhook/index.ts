@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const revenuecatWebhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET") || "";
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const corsHeaders = {
@@ -43,6 +44,19 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    if (revenuecatWebhookSecret) {
+      const authHeader = req.headers.get("Authorization");
+      const expectedAuth = `Bearer ${revenuecatWebhookSecret}`;
+
+      if (!authHeader || authHeader !== expectedAuth) {
+        console.error("[RevenueCat] Invalid or missing authorization header");
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const webhookData: RevenueCatEvent = await req.json();
     const eventType = webhookData.event.type;
     const userId = webhookData.event.app_user_id;
@@ -81,6 +95,35 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      const period = productId.includes("lifetime")
+        ? "lifetime"
+        : productId.includes("yearly")
+        ? "yearly"
+        : "monthly";
+
+      const { error: subError } = await supabase.from("subscriptions").upsert(
+        {
+          user_id: userId,
+          provider: "google",
+          product_id: productId,
+          status: webhookData.event.period_type === "TRIAL" ? "trial" : "active",
+          period,
+          transaction_id: webhookData.event.original_transaction_id,
+          started_at: new Date(webhookData.event.purchased_at_ms).toISOString(),
+          expires_at: webhookData.event.expiration_at_ms
+            ? new Date(webhookData.event.expiration_at_ms).toISOString()
+            : null,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "transaction_id",
+        }
+      );
+
+      if (subError) {
+        console.error("[RevenueCat] Error updating subscription:", subError);
+      }
+
       console.log(`[RevenueCat] User ${userId} upgraded to premium via ${productId}`);
 
       const { error: logError } = await supabase.from("audit_events").insert({
@@ -114,6 +157,22 @@ Deno.serve(async (req: Request) => {
 
       if (error) {
         console.error("[RevenueCat] Error updating profile:", error);
+      }
+
+      const newStatus = eventType === "BILLING_ISSUE" ? "grace_period" : "cancelled";
+      const { error: subError } = await supabase
+        .from("subscriptions")
+        .update({
+          status: newStatus,
+          cancelled_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId)
+        .eq("provider", "google")
+        .in("status", ["active", "trial"]);
+
+      if (subError) {
+        console.error("[RevenueCat] Error updating subscription:", subError);
       }
 
       console.log(`[RevenueCat] User ${userId} premium expired/cancelled`);

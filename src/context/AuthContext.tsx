@@ -168,7 +168,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const error = urlObj.searchParams.get('error') || new URLSearchParams(urlObj.hash.substring(1)).get('error');
         const errorDesc = urlObj.searchParams.get('error_description') || new URLSearchParams(urlObj.hash.substring(1)).get('error_description');
         console.error('[OAuth] Error in callback:', error, errorDesc);
-        toast(errorDesc || 'Sign in failed', 'error');
+
+        let userMessage = errorDesc || 'Sign in failed';
+        if (error === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
+          userMessage = 'Sign in session expired. Please try again.';
+          try {
+            localStorage.removeItem('supabase.auth.token');
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+              if (key.startsWith('sb-') && key.includes('-auth-token')) {
+                localStorage.removeItem(key);
+              }
+            });
+          } catch {
+            console.warn('[OAuth] Could not clear stale auth state');
+          }
+        }
+
+        toast(userMessage, 'error');
         setOAuthProcessing(false);
         return true;
       }
@@ -190,7 +207,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error('[OAuth] Code exchange failed:', error.message);
-          if (error.message.includes('code verifier') || error.message.includes('already used')) {
+
+          if (error.message.includes('code verifier') || error.message.includes('already used') || error.message.includes('flow state')) {
             const { data: retrySession } = await supabase.auth.getSession();
             if (retrySession?.session?.user) {
               console.log('[OAuth] Code already exchanged, using existing session');
@@ -200,8 +218,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setOAuthProcessing(false);
               return true;
             }
+
+            toast('Sign in session expired. Please try again.', 'error');
+          } else {
+            toast(error.message || 'Could not complete sign-in', 'error');
           }
-          toast(error.message || 'Could not complete sign-in', 'error');
           setOAuthProcessing(false);
           return true;
         }

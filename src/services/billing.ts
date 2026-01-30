@@ -320,6 +320,10 @@ class WebBillingService implements BillingService {
   private userId?: string;
 
   async initialize(): Promise<boolean> {
+    if (isNative()) {
+      console.warn('[WebBilling] Should not be used on native platform');
+      return false;
+    }
     return true;
   }
 
@@ -361,6 +365,14 @@ class WebBillingService implements BillingService {
   }
 
   async purchase(productId: string): Promise<PurchaseResult> {
+    if (isNative()) {
+      console.error('[WebBilling] Stripe purchase attempted on native platform - this should not happen');
+      return {
+        success: false,
+        error: 'Web billing is not available on mobile. Please use the app store.',
+      };
+    }
+
     try {
       if (!this.userId) {
         return {
@@ -381,7 +393,7 @@ class WebBillingService implements BillingService {
       if (!priceId) {
         return {
           success: false,
-          error: 'Invalid product ID',
+          error: 'Stripe is not configured. Please contact support.',
         };
       }
 
@@ -499,6 +511,11 @@ class WebBillingService implements BillingService {
   }
 
   async openCustomerPortal(): Promise<boolean> {
+    if (isNative()) {
+      console.error('[WebBilling] Stripe portal attempted on native platform');
+      return false;
+    }
+
     try {
       const {
         data: { session },
@@ -548,10 +565,13 @@ let billingServiceInstance: BillingService | null = null;
 export function getBillingService(): BillingService {
   if (!billingServiceInstance) {
     const provider = detectProvider();
+    console.log('[Billing] Detected provider:', provider, '| isNative:', isNative(), '| isAndroid:', isAndroid());
 
     if (provider === 'google') {
+      console.log('[Billing] Using NativeBillingService (RevenueCat/Google Play)');
       billingServiceInstance = new NativeBillingService();
     } else {
+      console.log('[Billing] Using WebBillingService (Stripe - web only)');
       billingServiceInstance = new WebBillingService();
     }
   }

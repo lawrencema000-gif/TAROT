@@ -166,24 +166,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (hasError) {
         const urlObj = new URL(url);
-        const error = urlObj.searchParams.get('error') || new URLSearchParams(urlObj.hash.substring(1)).get('error');
-        const errorDesc = urlObj.searchParams.get('error_description') || new URLSearchParams(urlObj.hash.substring(1)).get('error_description');
+        const searchParams = urlObj.searchParams;
+        const hashParams = new URLSearchParams(urlObj.hash.substring(1));
+        const error = searchParams.get('error') || hashParams.get('error');
+        const errorDesc = searchParams.get('error_description') || hashParams.get('error_description');
         console.error('[OAuth] Error in callback:', error, errorDesc);
 
-        let userMessage = errorDesc || 'Sign in failed';
-        if (error === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
-          userMessage = 'Sign in session expired. Please try again.';
+        const clearAuthStorage = () => {
           try {
-            localStorage.removeItem('supabase.auth.token');
             const keys = Object.keys(localStorage);
             keys.forEach(key => {
-              if (key.startsWith('sb-') && key.includes('-auth-token')) {
+              if (key.includes('auth') || key.includes('sb-') || key.includes('arcana-auth-')) {
                 localStorage.removeItem(key);
               }
             });
           } catch {
-            console.warn('[OAuth] Could not clear stale auth state');
+            console.warn('[OAuth] Could not clear auth storage');
           }
+        };
+
+        let userMessage = errorDesc || 'Sign in failed';
+        if (error === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
+          userMessage = 'Sign in session expired. Please try again.';
+          clearAuthStorage();
         }
 
         toast(userMessage, 'error');
@@ -209,7 +214,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           console.error('[OAuth] Code exchange failed:', error.message);
 
-          if (error.message.includes('code verifier') || error.message.includes('already used') || error.message.includes('flow state')) {
+          const isFlowStateError = error.message.includes('code verifier') ||
+            error.message.includes('already used') ||
+            error.message.includes('flow state') ||
+            error.message.includes('invalid_flow_state');
+
+          if (isFlowStateError) {
             const { data: retrySession } = await supabase.auth.getSession();
             if (retrySession?.session?.user) {
               console.log('[OAuth] Code already exchanged, using existing session');
@@ -218,6 +228,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               fetchProfile(retrySession.session.user.id);
               setOAuthProcessing(false);
               return true;
+            }
+
+            try {
+              const keys = Object.keys(localStorage);
+              keys.forEach(key => {
+                if (key.includes('auth') || key.includes('sb-') || key.includes('arcana-auth-')) {
+                  localStorage.removeItem(key);
+                }
+              });
+            } catch {
+              console.warn('[OAuth] Could not clear auth storage');
             }
 
             toast('Sign in session expired. Please try again.', 'error');

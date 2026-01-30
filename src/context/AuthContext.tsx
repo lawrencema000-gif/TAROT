@@ -165,16 +165,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const extractCodeFromUrl = (url: string): string | null => {
     try {
-      const urlObj = new URL(url);
-      return urlObj.searchParams.get('code');
+      const u = new URL(url);
+      return u.searchParams.get('code') || new URLSearchParams(u.hash.slice(1)).get('code');
     } catch {
-      const match = url.match(/[?&]code=([^&]+)/);
+      const match = url.match(/[?&#]code=([^&]+)/);
       return match ? match[1] : null;
     }
   };
 
+  const normalizeOAuthCallbackUrl = (raw: string): string => {
+    try {
+      const u = new URL(raw);
+      if (!u.searchParams.get('code') && u.hash) {
+        const hp = new URLSearchParams(u.hash.slice(1));
+        const code = hp.get('code');
+        if (code) {
+          u.searchParams.set('code', code);
+          hp.delete('code');
+          const rest = hp.toString();
+          u.hash = rest ? `#${rest}` : '';
+        }
+      }
+      return u.toString();
+    } catch {
+      return raw;
+    }
+  };
+
   const handleOAuthCallback = useCallback(async (rawUrl: string) => {
-    const url = (rawUrl || '').trim();
+    const url = normalizeOAuthCallbackUrl((rawUrl || '').trim());
     if (!url) return false;
 
     const hasCode = url.includes('code=');

@@ -216,6 +216,13 @@ export function AdminPage() {
     fileInputRef.current?.click();
   };
 
+  const handleIconUploadClick = (iconType: 'star' | 'sparkles' | 'flame') => {
+    setSelectedCard(null);
+    setSelectedIconType(iconType);
+    setUploadType('icon');
+    fileInputRef.current?.click();
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -226,6 +233,8 @@ export function AdminPage() {
       await uploadCardBack(file);
     } else if (uploadType === 'background') {
       await uploadBackground(file);
+    } else if (uploadType === 'icon') {
+      await uploadCustomIcon(file, selectedIconType);
     }
 
     if (fileInputRef.current) {
@@ -318,6 +327,73 @@ export function AdminPage() {
 
       toast('Background uploaded successfully!', 'success');
       await loadBackgrounds();
+    } catch (error) {
+      toast(`Unexpected error: ${error}`, 'error');
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const uploadCustomIcon = async (file: File, iconType: 'star' | 'sparkles' | 'flame') => {
+    if (!user) return;
+    setUploading(`icon_${iconType}`);
+    try {
+      const timestamp = Date.now();
+      const storagePath = `${iconType}_${timestamp}.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('custom-icons')
+        .upload(storagePath, file, { cacheControl: '0', upsert: false });
+
+      if (uploadError) {
+        toast(`Upload failed: ${uploadError.message}`, 'error');
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('custom-icons')
+        .getPublicUrl(storagePath);
+
+      const settingKey = `${iconType}_icon_url`;
+      const { error: settingError } = await supabase
+        .from('app_settings')
+        .upsert(
+          { setting_key: settingKey, setting_value: urlData.publicUrl, updated_at: new Date().toISOString() },
+          { onConflict: 'setting_key' }
+        );
+
+      if (settingError) {
+        toast(`Failed to save setting: ${settingError.message}`, 'error');
+        return;
+      }
+
+      toast(`${iconType.charAt(0).toUpperCase() + iconType.slice(1)} icon uploaded successfully!`, 'success');
+      await loadCustomIcons();
+    } catch (error) {
+      toast(`Unexpected error: ${error}`, 'error');
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const deleteCustomIcon = async (iconType: 'star' | 'sparkles' | 'flame') => {
+    if (!confirm(`Remove the custom ${iconType} icon?`)) return;
+
+    setUploading(`icon_${iconType}`);
+    try {
+      const settingKey = `${iconType}_icon_url`;
+      const { error } = await supabase
+        .from('app_settings')
+        .delete()
+        .eq('setting_key', settingKey);
+
+      if (error) {
+        toast(`Failed to remove: ${error.message}`, 'error');
+        return;
+      }
+
+      toast(`Custom ${iconType} icon removed`, 'success');
+      await loadCustomIcons();
     } catch (error) {
       toast(`Unexpected error: ${error}`, 'error');
     } finally {
@@ -700,7 +776,65 @@ export function AdminPage() {
                         <p className="text-sm text-mystic-500">No card backs uploaded yet</p>
                       )}
                     </div>
-                  ) : (
+                  ) : section.id === 'customIcons' ? (
+                    <div className="space-y-4">
+                      <p className="text-sm text-mystic-400 mb-4">
+                        Upload custom icons to replace the default Star, Sparkles, and Flame icons used throughout the app.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {([
+                          { type: 'star' as const, label: 'Star Icon', Icon: Star },
+                          { type: 'sparkles' as const, label: 'Sparkles Icon', Icon: Sparkles },
+                          { type: 'flame' as const, label: 'Flame Icon', Icon: Flame },
+                        ]).map(({ type, label, Icon }) => {
+                          const iconUrl = customIcons[`${type}_icon_url`];
+                          const isUploading = uploading === `icon_${type}`;
+                          return (
+                            <div key={type} className="bg-mystic-800/40 rounded-lg p-4">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-lg bg-mystic-700/50 flex items-center justify-center">
+                                  {iconUrl ? (
+                                    <img src={iconUrl} alt={label} className="w-6 h-6 object-contain" />
+                                  ) : (
+                                    <Icon className="w-5 h-5 text-gold" />
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-medium text-mystic-100">{label}</h4>
+                                  <p className="text-xs text-mystic-400">
+                                    {iconUrl ? 'Custom' : 'Default'}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleIconUploadClick(type)}
+                                  disabled={isUploading}
+                                  className="flex-1 gap-1.5 text-xs"
+                                >
+                                  <Upload className="w-3.5 h-3.5" />
+                                  {iconUrl ? 'Replace' : 'Upload'}
+                                </Button>
+                                {iconUrl && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteCustomIcon(type)}
+                                    disabled={isUploading}
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : section.id === 'backgrounds' ? (
                     <div className="space-y-4">
                       <Button
                         variant="outline"
@@ -739,7 +873,7 @@ export function AdminPage() {
                         <p className="text-sm text-mystic-500">No backgrounds uploaded yet</p>
                       )}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>

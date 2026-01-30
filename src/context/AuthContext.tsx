@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
@@ -118,6 +118,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  const oauthTimeoutRef = React.useRef<number | null>(null);
+
+  const clearOAuthTimeout = useCallback(() => {
+    if (oauthTimeoutRef.current) {
+      window.clearTimeout(oauthTimeoutRef.current);
+      oauthTimeoutRef.current = null;
+    }
+  }, []);
+
+  const setOAuthProcessing = useCallback((processing: boolean) => {
+    clearOAuthTimeout();
+    setIsProcessingOAuth(processing);
+    if (processing) {
+      oauthTimeoutRef.current = window.setTimeout(() => {
+        console.warn('[OAuth] Timeout - resetting processing state');
+        setIsProcessingOAuth(false);
+      }, 30000);
+    }
+  }, [clearOAuthTimeout]);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -140,8 +159,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!hasCode && !hasAccessToken && !hasError) return false;
 
-    console.log('[OAuth] Processing callback URL');
-    setIsProcessingOAuth(true);
+    console.log('[OAuth] Processing callback URL:', url.substring(0, 100) + '...');
+    setOAuthProcessing(true);
 
     try {
       if (hasError) {
@@ -150,18 +169,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorDesc = urlObj.searchParams.get('error_description') || new URLSearchParams(urlObj.hash.substring(1)).get('error_description');
         console.error('[OAuth] Error in callback:', error, errorDesc);
         toast(errorDesc || 'Sign in failed', 'error');
-        setIsProcessingOAuth(false);
+        setOAuthProcessing(false);
         return true;
       }
 
       if (hasCode) {
         console.log('[OAuth] Exchanging code for session (PKCE flow)');
+
+        const { data: existingSession } = await supabase.auth.getSession();
+        if (existingSession?.session?.user) {
+          console.log('[OAuth] Session already exists, skipping code exchange');
+          setSession(existingSession.session);
+          setUser(existingSession.session.user);
+          fetchProfile(existingSession.session.user.id);
+          setOAuthProcessing(false);
+          return true;
+        }
+
         const { data, error } = await supabase.auth.exchangeCodeForSession(url);
 
         if (error) {
-          console.error('[OAuth] Code exchange failed:', error);
+          console.error('[OAuth] Code exchange failed:', error.message);
+          if (error.message.includes('code verifier') || error.message.includes('already used')) {
+            const { data: retrySession } = await supabase.auth.getSession();
+            if (retrySession?.session?.user) {
+              console.log('[OAuth] Code already exchanged, using existing session');
+              setSession(retrySession.session);
+              setUser(retrySession.session.user);
+              fetchProfile(retrySession.session.user.id);
+              setOAuthProcessing(false);
+              return true;
+            }
+          }
           toast(error.message || 'Could not complete sign-in', 'error');
-          setIsProcessingOAuth(false);
+          setOAuthProcessing(false);
           return true;
         }
 
@@ -171,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(data.session.user);
           fetchProfile(data.session.user.id);
         }
-        setIsProcessingOAuth(false);
+        setOAuthProcessing(false);
         return true;
       }
 
@@ -192,34 +233,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             toast(error.message || 'Could not complete sign-in', 'error');
           }
         }
-        setIsProcessingOAuth(false);
+        setOAuthProcessing(false);
         return true;
       }
     } catch (e) {
       console.error('[OAuth] Callback processing error:', e);
       toast('Sign in failed. Please try again.', 'error');
-      setIsProcessingOAuth(false);
+      setOAuthProcessing(false);
     }
 
     return false;
-  }, [fetchProfile]);
+  }, [fetchProfile, setOAuthProcessing]);
 
   useEffect(() => {
     let appUrlListener: { remove: () => void } | null = null;
+    let mounted = true;
+
+    const setupAppUrlListener = () => {
+      if (isNative()) {
+        appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
+          console.log('[OAuth] App URL opened:', url);
+          if (mounted) {
+            await handleOAuthCallback(url);
+          }
+        });
+      }
+    };
 
     const init = async () => {
+      setupAppUrlListener();
+
       try {
         if (isNative()) {
           const launch = await App.getLaunchUrl();
+          console.log('[Auth] Launch URL:', launch?.url || 'None');
           if (launch?.url) {
             const handled = await handleOAuthCallback(launch.url);
-            if (handled) return;
+            if (handled) {
+              if (mounted) setLoading(false);
+              return;
+            }
           }
         } else {
-          const handled = await handleOAuthCallback(window.location.href);
-          if (handled) {
-            window.history.replaceState({}, '', window.location.pathname);
-            return;
+          const currentUrl = window.location.href;
+          if (currentUrl.includes('code=') || currentUrl.includes('access_token=') || currentUrl.includes('error=')) {
+            console.log('[Auth] Processing web OAuth callback');
+            const handled = await handleOAuthCallback(currentUrl);
+            if (handled) {
+              window.history.replaceState({}, '', window.location.pathname);
+              if (mounted) setLoading(false);
+              return;
+            }
           }
         }
 
@@ -228,30 +292,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('[Auth] Session error:', error);
         }
         console.log('[Auth] Initial session:', session ? 'Found' : 'None');
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchProfile(session.user.id);
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            fetchProfile(session.user.id);
+          }
         }
       } finally {
-        setLoading(false);
-        setIsProcessingOAuth(false);
+        if (mounted) {
+          setLoading(false);
+          clearOAuthTimeout();
+        }
       }
     };
-
-    if (isNative()) {
-      appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
-        console.log('[OAuth] App URL opened:', url);
-        await handleOAuthCallback(url);
-      });
-    }
 
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[Auth] State change:', event, session ? 'Session exists' : 'No session');
 
+      if (!mounted) return;
+
       if (event === 'SIGNED_IN') {
+        clearOAuthTimeout();
         setIsProcessingOAuth(false);
       }
 
@@ -265,10 +329,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       appUrlListener?.remove();
+      clearOAuthTimeout();
     };
-  }, [fetchProfile, handleOAuthCallback]);
+  }, [fetchProfile, handleOAuthCallback, clearOAuthTimeout]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({ email, password });
@@ -282,7 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     console.log('[OAuth] Initiating Google sign-in');
-    setIsProcessingOAuth(true);
+    setOAuthProcessing(true);
 
     const redirectUrl = isNative()
       ? 'com.arcana.app://auth'
@@ -294,13 +360,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
-        scopes: 'https://www.googleapis.com/auth/userinfo.email'
+        skipBrowserRedirect: false,
       },
     });
 
     if (error) {
       console.error('[OAuth] Error:', error);
-      setIsProcessingOAuth(false);
+      setOAuthProcessing(false);
     }
 
     return { error: error ? new Error(error.message) : null };

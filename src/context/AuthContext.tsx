@@ -5,6 +5,7 @@ import type { UserProfile, Goal, TonePreference, ThemePreference } from '../type
 import { isAdmin as checkIsAdmin } from '../utils/admin';
 import { isNative } from '../utils/platform';
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { toast } from '../components/ui/Toast';
 
 interface AuthContextType {
@@ -275,6 +276,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
           console.log('[OAuth] App URL opened:', url);
           if (mounted) {
+            await Browser.close();
             await handleOAuthCallback(url);
           }
         });
@@ -377,20 +379,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     console.log('[OAuth] Redirect URL:', redirectUrl, 'isNative:', isNative());
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl,
-        skipBrowserRedirect: false,
-      },
-    });
+    try {
+      if (isNative()) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            skipBrowserRedirect: true,
+          },
+        });
 
-    if (error) {
-      console.error('[OAuth] Error:', error);
+        if (error) {
+          console.error('[OAuth] Error generating URL:', error);
+          setOAuthProcessing(false);
+          return { error: new Error(error.message) };
+        }
+
+        if (data?.url) {
+          console.log('[OAuth] Opening system browser with OAuth URL');
+          await Browser.open({
+            url: data.url,
+            windowName: '_self',
+          });
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            skipBrowserRedirect: false,
+          },
+        });
+
+        if (error) {
+          console.error('[OAuth] Error:', error);
+          setOAuthProcessing(false);
+          return { error: new Error(error.message) };
+        }
+      }
+
+      return { error: null };
+    } catch (err) {
+      console.error('[OAuth] Unexpected error:', err);
       setOAuthProcessing(false);
+      return { error: err instanceof Error ? err : new Error('Failed to initiate sign-in') };
     }
-
-    return { error: error ? new Error(error.message) : null };
   };
 
   const signOut = async () => {

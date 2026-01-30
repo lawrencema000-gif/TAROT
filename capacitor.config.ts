@@ -6,7 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    allowNavigation: ['*.supabase.co'],
+    allowNavigation: [
+      '*.supabase.co',
+      'accounts.google.com',
+      '*.google.com',
+      '*.googleapis.com',
+    ],
   },
   android: {
     allowMixedContent: false,

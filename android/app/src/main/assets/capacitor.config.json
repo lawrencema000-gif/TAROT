@@ -5,7 +5,10 @@
 	"server": {
 		"androidScheme": "https",
 		"allowNavigation": [
-			"*.supabase.co"
+			"*.supabase.co",
+			"accounts.google.com",
+			"*.google.com",
+			"*.googleapis.com"
 		]
 	},
 	"android": {

@@ -213,6 +213,12 @@ class NativeBillingService implements BillingService {
     ];
   }
 
+  private matchesProductId(productId: string, searchId: string): boolean {
+    const normalizedProductId = productId.split(':')[0].toLowerCase();
+    const normalizedSearchId = searchId.split(':')[0].toLowerCase();
+    return normalizedProductId === normalizedSearchId;
+  }
+
   async purchase(_productId: string, product?: Product): Promise<PurchaseResult> {
     if (!this.initialized) {
       await this.initialize();
@@ -234,7 +240,12 @@ class NativeBillingService implements BillingService {
       if (!packageToPurchase) {
         console.log('[RevenueCat] No rcPackage provided, fetching products...');
         const products = await this.getProducts();
-        const foundProduct = products.find((p) => p.id === _productId);
+        const foundProduct = products.find((p) =>
+          p.id === _productId ||
+          p.id.startsWith(_productId + ':') ||
+          _productId.startsWith(p.id + ':') ||
+          this.matchesProductId(p.id, _productId)
+        );
 
         if (!foundProduct) {
           console.error('[RevenueCat] Product not found in offerings:', _productId);

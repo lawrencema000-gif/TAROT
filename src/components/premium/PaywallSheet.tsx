@@ -53,10 +53,16 @@ const FALLBACK_PRICES: Record<string, string> = {
   [PRODUCT_IDS.PREMIUM_LIFETIME]: '$59.99',
 };
 
+function matchesProductId(productId: string, targetId: string): boolean {
+  const baseId = productId.split(':')[0];
+  return baseId === targetId || productId === targetId;
+}
+
 function mapProductToPlanId(productId: string): PlanId | null {
-  if (productId.includes('monthly') || productId.includes('month')) return 'monthly';
-  if (productId.includes('yearly') || productId.includes('year') || productId.includes('annual')) return 'yearly';
-  if (productId.includes('lifetime')) return 'lifetime';
+  const baseId = productId.split(':')[0].toLowerCase();
+  if (baseId.includes('monthly') || baseId.includes('month')) return 'monthly';
+  if (baseId.includes('yearly') || baseId.includes('year') || baseId.includes('annual')) return 'yearly';
+  if (baseId.includes('lifetime')) return 'lifetime';
   return null;
 }
 
@@ -64,23 +70,26 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
   const plans: DisplayPlan[] = [];
 
   const monthlyProduct = products.find(p =>
-    p.id === PRODUCT_IDS.PREMIUM_MONTHLY ||
+    matchesProductId(p.id, PRODUCT_IDS.PREMIUM_MONTHLY) ||
+    p.id.startsWith(PRODUCT_IDS.PREMIUM_MONTHLY + ':') ||
     p.period === 'month' ||
-    p.id.includes('monthly')
+    p.id.split(':')[0].includes('monthly')
   );
 
   const yearlyProduct = products.find(p =>
-    p.id === PRODUCT_IDS.PREMIUM_YEARLY ||
+    matchesProductId(p.id, PRODUCT_IDS.PREMIUM_YEARLY) ||
+    p.id.startsWith(PRODUCT_IDS.PREMIUM_YEARLY + ':') ||
     p.period === 'year' ||
-    p.id.includes('yearly') ||
-    p.id.includes('annual')
+    p.id.split(':')[0].includes('yearly') ||
+    p.id.split(':')[0].includes('annual')
   );
 
   const lifetimeProduct = products.find(p =>
-    p.id === PRODUCT_IDS.PREMIUM_LIFETIME ||
+    matchesProductId(p.id, PRODUCT_IDS.PREMIUM_LIFETIME) ||
+    p.id.startsWith(PRODUCT_IDS.PREMIUM_LIFETIME + ':') ||
     p.period === 'lifetime' ||
     p.isLifetime ||
-    p.id.includes('lifetime')
+    p.id.split(':')[0].includes('lifetime')
   );
 
   if (monthlyProduct) {
@@ -170,16 +179,31 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         PRODUCT_IDS.PREMIUM_LIFETIME,
       ]);
 
-      console.log('[Paywall] Loaded products:', products);
+      console.log('[Paywall] Loaded products:', products.map(p => ({
+        id: p.id,
+        baseId: p.id.split(':')[0],
+        period: p.period,
+        price: p.price,
+        hasRcPackage: !!p.rcPackage,
+      })));
 
       const plans = buildDisplayPlans(products);
       setDisplayPlans(plans);
+
+      console.log('[Paywall] Built display plans:', plans.map(p => ({
+        id: p.id,
+        productId: p.productId,
+        hasProduct: !!p.product,
+        hasRcPackage: !!p.product?.rcPackage,
+      })));
 
       const hasReal = plans.some(p => p.product?.rcPackage);
       setHasRealProducts(hasReal);
 
       if (!hasReal && products.length > 0) {
         console.warn('[Paywall] Products loaded but no rcPackage found - RevenueCat offerings may not be configured');
+        console.warn('[Paywall] Expected IDs:', [PRODUCT_IDS.PREMIUM_MONTHLY, PRODUCT_IDS.PREMIUM_YEARLY, PRODUCT_IDS.PREMIUM_LIFETIME]);
+        console.warn('[Paywall] Received IDs:', products.map(p => p.id));
       }
     } catch (error) {
       console.error('[Paywall] Failed to load products:', error);

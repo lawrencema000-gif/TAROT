@@ -39,9 +39,25 @@ const nativeStorage = {
   },
 };
 
-function initSupabase(): SupabaseClient | null {
+function createNullClientProxy(): SupabaseClient {
+  const handler: ProxyHandler<object> = {
+    get(_target, prop) {
+      if (prop === 'then' || prop === Symbol.toStringTag) {
+        return undefined;
+      }
+      throw new Error(
+        `Supabase client is not configured. ` +
+        `Attempted to access "${String(prop)}" but VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are missing. ` +
+        `Ensure the app renders MissingSupabaseConfig when isSupabaseConfigured is false.`
+      );
+    },
+  };
+  return new Proxy({}, handler) as SupabaseClient;
+}
+
+function initSupabase(): SupabaseClient {
   if (!isSupabaseConfigured) {
-    return null;
+    return createNullClientProxy();
   }
   try {
     const isNative = Capacitor.isNativePlatform();
@@ -56,8 +72,8 @@ function initSupabase(): SupabaseClient | null {
       },
     });
   } catch {
-    return null;
+    return createNullClientProxy();
   }
 }
 
-export const supabase: SupabaseClient = initSupabase() as SupabaseClient;
+export const supabase: SupabaseClient = initSupabase();

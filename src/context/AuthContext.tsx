@@ -38,6 +38,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
+  cancelOAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -156,6 +157,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setCorrelationId(null);
       }, 120000);
     }
+  }, [clearOAuthTimeout]);
+
+  const cancelOAuth = useCallback(() => {
+    logInfo('auth.oauth.cancelled', 'User cancelled OAuth flow');
+    clearOAuthTimeout();
+    isProcessingCallbackRef.current = false;
+    setIsProcessingOAuth(false);
+    setCorrelationId(null);
   }, [clearOAuthTimeout]);
 
   const fetchProfile = useCallback(async (userId: string) => {
@@ -818,6 +827,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       updateProfile,
       refreshProfile,
+      cancelOAuth,
     }}>
       {children}
     </AuthContext.Provider>

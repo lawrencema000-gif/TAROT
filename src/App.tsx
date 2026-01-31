@@ -95,11 +95,12 @@ function DiagnosticsSync() {
 }
 
 function AppContent() {
-  const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth } = useAuth();
+  const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useApp();
   const { openDiagnostics } = useDiagnostics();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [showOAuthCancel, setShowOAuthCancel] = useState(false);
 
   useEffect(() => {
     initializeNativeFeatures();
@@ -122,6 +123,15 @@ function AppContent() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (isProcessingOAuth) {
+      setShowOAuthCancel(false);
+      const timer = setTimeout(() => setShowOAuthCancel(true), 10000);
+      return () => clearTimeout(timer);
+    }
+    setShowOAuthCancel(false);
+  }, [isProcessingOAuth]);
+
   const handleOnboardingComplete = () => {
     localStorage.setItem(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
@@ -140,6 +150,17 @@ function AppContent() {
           <p className="text-mystic-400">
             {isProcessingOAuth ? 'Completing sign in...' : 'Loading your daily ritual...'}
           </p>
+          {isProcessingOAuth && showOAuthCancel && (
+            <div className="mt-6 space-y-2">
+              <p className="text-mystic-500 text-sm">Taking longer than expected?</p>
+              <button
+                onClick={cancelOAuth}
+                className="px-4 py-2 text-sm text-mystic-300 hover:text-mystic-100 underline underline-offset-2 transition-colors"
+              >
+                Cancel and try again
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

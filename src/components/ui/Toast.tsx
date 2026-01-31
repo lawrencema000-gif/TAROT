@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, X, ChevronRight } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
+
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
 
 interface Toast {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 interface ToastProps extends Toast {
@@ -25,19 +31,36 @@ const colors = {
   info: 'text-gold',
 };
 
-function ToastItem({ id, message, type, onDismiss }: ToastProps) {
+function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
   const Icon = icons[type];
 
   useEffect(() => {
-    const timer = setTimeout(() => onDismiss(id), 4000);
+    const duration = action ? 6000 : 4000;
+    const timer = setTimeout(() => onDismiss(id), duration);
     return () => clearTimeout(timer);
-  }, [id, onDismiss]);
+  }, [id, onDismiss, action]);
+
+  const handleAction = () => {
+    action?.onClick();
+    onDismiss(id);
+  };
 
   return (
     <div className="flex items-center gap-3 bg-mystic-800/95 backdrop-blur-sm border border-mystic-600/50 rounded-xl px-4 py-3 shadow-xl animate-slide-up">
-      <Icon className={`w-5 h-5 ${colors[type]}`} />
-      <p className="text-sm text-mystic-100 flex-1">{message}</p>
-      <button onClick={() => onDismiss(id)} className="text-mystic-400 hover:text-mystic-200">
+      <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-mystic-100">{message}</p>
+        {action && (
+          <button
+            onClick={handleAction}
+            className="mt-1 text-xs text-cosmic-blue hover:text-cosmic-blue/80 transition-colors flex items-center gap-0.5"
+          >
+            {action.label}
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+      <button onClick={() => onDismiss(id)} className="text-mystic-400 hover:text-mystic-200 flex-shrink-0">
         <X className="w-4 h-4" />
       </button>
     </div>
@@ -47,11 +70,12 @@ function ToastItem({ id, message, type, onDismiss }: ToastProps) {
 let toastId = 0;
 const listeners = new Set<(toast: Toast) => void>();
 
-export function toast(message: string, type: ToastType = 'info') {
+export function toast(message: string, type: ToastType = 'info', action?: ToastAction) {
   const newToast: Toast = {
     id: String(++toastId),
     message,
     type,
+    action,
   };
   listeners.forEach(listener => listener(newToast));
 }

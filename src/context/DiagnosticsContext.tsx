@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import {
   getLogs,
   getErrors,
@@ -9,6 +9,14 @@ import {
   LogEntry,
   DiagnosticsReport,
 } from '../utils/telemetry';
+
+let globalOpenDiagnostics: ((correlationId?: string) => void) | null = null;
+
+export function openGlobalDiagnostics(correlationId?: string): void {
+  if (globalOpenDiagnostics) {
+    globalOpenDiagnostics(correlationId);
+  }
+}
 
 interface DiagnosticsContextType {
   isOpen: boolean;
@@ -72,6 +80,13 @@ export function DiagnosticsProvider({ children }: DiagnosticsProviderProps) {
     }
     setIsOpen(true);
   }, [refreshLogs]);
+
+  useEffect(() => {
+    globalOpenDiagnostics = openDiagnostics;
+    return () => {
+      globalOpenDiagnostics = null;
+    };
+  }, [openDiagnostics]);
 
   const closeDiagnostics = useCallback(() => {
     setIsOpen(false);

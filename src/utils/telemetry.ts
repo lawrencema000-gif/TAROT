@@ -381,3 +381,14 @@ export function exportReportAsJson(report: DiagnosticsReport): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export function createDiagnosticsAction(correlationId?: string): { label: string; onClick: () => void } {
+  return {
+    label: 'View details',
+    onClick: () => {
+      import('../context/DiagnosticsContext').then(({ openGlobalDiagnostics }) => {
+        openGlobalDiagnostics(correlationId || currentCorrelationId || undefined);
+      });
+    },
+  };
+}

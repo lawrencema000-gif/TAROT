@@ -17,6 +17,7 @@ import {
   logError,
   captureException,
   sanitizeUrl,
+  createDiagnosticsAction,
 } from '../utils/telemetry';
 import {
   normalizeSupabaseError,
@@ -303,7 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userMessage = 'Google sign-in is not configured. Please use email/password.';
         }
 
-        toast(userMessage, 'error');
+        toast(userMessage, 'error', createDiagnosticsAction());
         isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
         setCorrelationId(null);
@@ -371,9 +372,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               return true;
             }
             endSpan(retrySpan, 'failure');
-            toast('Sign in session expired. Please try again.', 'error');
+            toast('Sign in session expired. Please try again.', 'error', createDiagnosticsAction());
           } else {
-            toast(normalized.message || 'Could not complete sign-in', 'error');
+            toast(normalized.message || 'Could not complete sign-in', 'error', createDiagnosticsAction());
           }
           isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
@@ -418,7 +419,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             logError('auth.callback.setSessionFailed', 'Session set failed', {
               errorCode: normalized.code,
             });
-            toast(normalized.message || 'Could not complete sign-in', 'error');
+            toast(normalized.message || 'Could not complete sign-in', 'error', createDiagnosticsAction());
             endSpan(implicitSpan, 'failure');
           } else {
             endSpan(implicitSpan, 'success');
@@ -434,7 +435,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       captureException('auth.callback.unexpectedError', e, {
         sanitizedUrl: sanitizeUrl(url),
       });
-      toast('Sign in failed. Please try again.', 'error');
+      toast('Sign in failed. Please try again.', 'error', createDiagnosticsAction());
       isProcessingCallbackRef.current = false;
       setOAuthProcessing(false);
       setCorrelationId(null);

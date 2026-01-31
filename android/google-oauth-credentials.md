@@ -1,6 +1,6 @@
 # Google OAuth Credentials for Android
 
-## Android OAuth 2.0 Client
+## Android OAuth 2.0 Client (Debug/Release Keystore)
 
 | Field | Value |
 |-------|-------|
@@ -8,12 +8,30 @@
 | **Project ID** | `tarot-life-485720` |
 | **Type** | Installed Application (Android) |
 
-## Associated Certificate Fingerprints
+### Associated Certificate Fingerprints
 
 | Algorithm | Fingerprint |
 |-----------|-------------|
 | **SHA-1** | `3C:AE:04:22:C3:B4:14:17:90:DF:AE:EF:28:75:66:31:83:92:F8:C6` |
 | **SHA-256** | `B2:89:11:EB:4A:81:29:D2:B7:2E:12:BE:4F:87:38:02:15:B4:05:5B:0F:53:29:F6:97:CC:29:66:26:97:E4:F8` |
+
+---
+
+## Android OAuth 2.0 Client (Play Store Release)
+
+| Field | Value |
+|-------|-------|
+| **Client ID** | `804690093810-qvqh4a4u59vkanlsekqe3k210v7pbch9.apps.googleusercontent.com` |
+| **Project ID** | `gen-lang-client-0997397691` |
+| **Type** | Installed Application (Android) |
+
+### Associated Certificate Fingerprints
+
+| Algorithm | Fingerprint |
+|-----------|-------------|
+| **SHA-1** | `4E:05:4F:EE:6E:2B:D5:13:B5:9A:AC:79:67:F5:D3:8A:BB:2B:EB:F9` |
+
+**Note:** This is the Google Play App Signing SHA-1 key from Play Console.
 
 ## Package Information
 
@@ -37,11 +55,13 @@
 To complete Android Google Sign-In setup, add the following in Supabase Dashboard:
 
 1. Go to **Authentication > Providers > Google**
-2. Add the Android Client ID to the **Authorized Client IDs** field:
+2. Add **BOTH** Android Client IDs to the **Authorized Client IDs** field (comma-separated):
    ```
-   726369845321-21scndirulav3927098rm82e8m8rdl62.apps.googleusercontent.com
+   726369845321-21scndirulav3927098rm82e8m8rdl62.apps.googleusercontent.com,804690093810-qvqh4a4u59vkanlsekqe3k210v7pbch9.apps.googleusercontent.com
    ```
 3. Enable **Skip nonce check** (required for mobile apps)
 4. Ensure redirect URL `com.arcana.app://auth` is in **Redirect URLs**
 
-This Client ID works alongside the web Client ID - no conflicts will occur.
+**Important:** You need both Client IDs:
+- First one for debug/release builds (local keystore)
+- Second one for Play Store releases (Google Play App Signing)

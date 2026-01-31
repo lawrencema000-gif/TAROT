@@ -766,16 +766,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return { error: new Error('Not authenticated') };
 
     const dbUpdates = mapProfileToDb(updates);
-    const { error } = await supabase
-      .from('profiles')
-      .update(dbUpdates)
-      .eq('id', user.id);
 
-    if (!error) {
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
+    const upsertData = {
+      id: user.id,
+      email: user.email,
+      ...dbUpdates,
+    };
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(upsertData, { onConflict: 'id' })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      logError('auth.updateProfile.failed', 'Profile update failed', {
+        errorCode: error.code,
+        errorMessage: error.message,
+      });
+      return { error: new Error(error.message) };
     }
 
-    return { error: error ? new Error(error.message) : null };
+    if (!data) {
+      logError('auth.updateProfile.noData', 'Profile upsert returned no data');
+      return { error: new Error('Failed to save profile - no data returned') };
+    }
+
+    setProfile(mapDbToProfile(data as DbProfile));
+    return { error: null };
   };
 
   const refreshProfile = async () => {

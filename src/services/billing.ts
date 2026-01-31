@@ -116,14 +116,34 @@ class NativeBillingService implements BillingService {
     }
 
     try {
+      console.log('[RevenueCat] Fetching offerings...');
       const offerings = await Purchases.getOfferings();
 
+      console.log('[RevenueCat] Offerings response:', {
+        hasCurrent: !!offerings.current,
+        currentId: offerings.current?.identifier,
+        allOfferingsCount: Object.keys(offerings.all || {}).length,
+        allOfferingIds: Object.keys(offerings.all || {}),
+      });
+
       if (!offerings.current) {
-        console.warn('No current offerings available');
+        console.warn('[RevenueCat] No current offering set. Please configure a "Current" offering in RevenueCat dashboard.');
+        console.warn('[RevenueCat] Available offerings:', Object.keys(offerings.all || {}));
         return this.getFallbackProducts();
       }
 
       this.packages = offerings.current.availablePackages;
+
+      console.log('[RevenueCat] Available packages:', this.packages.map(pkg => ({
+        identifier: pkg.identifier,
+        productId: pkg.product.identifier,
+        price: pkg.product.priceString,
+      })));
+
+      if (this.packages.length === 0) {
+        console.warn('[RevenueCat] Current offering has no packages. Please add packages in RevenueCat dashboard.');
+        return this.getFallbackProducts();
+      }
 
       return this.packages.map((pkg) => {
         const product = pkg.product;
@@ -155,7 +175,7 @@ class NativeBillingService implements BillingService {
         };
       });
     } catch (error) {
-      console.error('Failed to get products:', error);
+      console.error('[RevenueCat] Failed to get products:', error);
       return this.getFallbackProducts();
     }
   }
@@ -198,6 +218,8 @@ class NativeBillingService implements BillingService {
       await this.initialize();
     }
 
+    console.log('[RevenueCat] Starting purchase for:', _productId, 'hasRcPackage:', !!product?.rcPackage);
+
     const billingCheck = await preventDoubleBilling(this.userId || '', 'mobile');
     if (!billingCheck.allowed) {
       return {
@@ -207,35 +229,42 @@ class NativeBillingService implements BillingService {
     }
 
     try {
-      const packageToPurchase = product?.rcPackage;
+      let packageToPurchase = product?.rcPackage;
 
       if (!packageToPurchase) {
+        console.log('[RevenueCat] No rcPackage provided, fetching products...');
         const products = await this.getProducts();
         const foundProduct = products.find((p) => p.id === _productId);
-        if (!foundProduct?.rcPackage) {
+
+        if (!foundProduct) {
+          console.error('[RevenueCat] Product not found in offerings:', _productId);
+          console.error('[RevenueCat] Available product IDs:', products.map(p => p.id));
           return {
             success: false,
-            error: 'Product not found',
+            error: 'Product not available. Please check RevenueCat configuration.',
           };
         }
-        const result = await Purchases.purchasePackage({
-          aPackage: foundProduct.rcPackage,
-        });
 
-        const isPremium = result.customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+        if (!foundProduct.rcPackage) {
+          console.error('[RevenueCat] Product found but no rcPackage:', foundProduct);
+          return {
+            success: false,
+            error: 'Product not configured in RevenueCat. Please set up offerings.',
+          };
+        }
 
-        return {
-          success: isPremium,
-          transactionId: result.customerInfo.originalAppUserId,
-          productId: _productId,
-        };
+        packageToPurchase = foundProduct.rcPackage;
       }
+
+      console.log('[RevenueCat] Purchasing package:', packageToPurchase.identifier);
 
       const result = await Purchases.purchasePackage({
         aPackage: packageToPurchase,
       });
 
       const isPremium = result.customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+
+      console.log('[RevenueCat] Purchase result:', { isPremium, entitlements: Object.keys(result.customerInfo.entitlements.active) });
 
       return {
         success: isPremium,
@@ -252,7 +281,7 @@ class NativeBillingService implements BillingService {
         };
       }
 
-      console.error('Purchase failed:', error);
+      console.error('[RevenueCat] Purchase failed:', error);
       return {
         success: false,
         error: purchaseError.message || 'Purchase failed',

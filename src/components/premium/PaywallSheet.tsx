@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Crown,
   Sparkles,
@@ -12,10 +12,12 @@ import {
   Lock,
   RotateCcw,
   Ban,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { getBillingService, PRODUCT_IDS } from '../../services/billing';
+import { getBillingService, PRODUCT_IDS, Product } from '../../services/billing';
 
 interface PaywallSheetProps {
   open: boolean;
@@ -35,59 +37,181 @@ const unlocks = [
 
 type PlanId = 'monthly' | 'yearly' | 'lifetime';
 
-interface Plan {
+interface DisplayPlan {
   id: PlanId;
   label: string;
   price: string;
   period: string;
   badge?: string;
   productId: string;
-  hasTrial?: boolean;
-  trialText?: string;
+  product?: Product;
 }
 
-const plans: Plan[] = [
-  {
-    id: 'monthly',
-    label: 'Monthly',
-    price: '$7.99',
-    period: '/month',
-    productId: PRODUCT_IDS.PREMIUM_MONTHLY,
-  },
-  {
-    id: 'yearly',
-    label: 'Yearly',
-    price: '$39.99',
-    period: '/year',
-    badge: 'Best Value',
-    productId: PRODUCT_IDS.PREMIUM_YEARLY,
-  },
-  {
-    id: 'lifetime',
-    label: 'Lifetime',
-    price: '$59.99',
-    period: 'one-time',
-    badge: 'Forever Access',
-    productId: PRODUCT_IDS.PREMIUM_LIFETIME,
-  },
-];
+const FALLBACK_PRICES: Record<string, string> = {
+  [PRODUCT_IDS.PREMIUM_MONTHLY]: '$7.99',
+  [PRODUCT_IDS.PREMIUM_YEARLY]: '$39.99',
+  [PRODUCT_IDS.PREMIUM_LIFETIME]: '$59.99',
+};
+
+function mapProductToPlanId(productId: string): PlanId | null {
+  if (productId.includes('monthly') || productId.includes('month')) return 'monthly';
+  if (productId.includes('yearly') || productId.includes('year') || productId.includes('annual')) return 'yearly';
+  if (productId.includes('lifetime')) return 'lifetime';
+  return null;
+}
+
+function buildDisplayPlans(products: Product[]): DisplayPlan[] {
+  const plans: DisplayPlan[] = [];
+
+  const monthlyProduct = products.find(p =>
+    p.id === PRODUCT_IDS.PREMIUM_MONTHLY ||
+    p.period === 'month' ||
+    p.id.includes('monthly')
+  );
+
+  const yearlyProduct = products.find(p =>
+    p.id === PRODUCT_IDS.PREMIUM_YEARLY ||
+    p.period === 'year' ||
+    p.id.includes('yearly') ||
+    p.id.includes('annual')
+  );
+
+  const lifetimeProduct = products.find(p =>
+    p.id === PRODUCT_IDS.PREMIUM_LIFETIME ||
+    p.period === 'lifetime' ||
+    p.isLifetime ||
+    p.id.includes('lifetime')
+  );
+
+  if (monthlyProduct) {
+    plans.push({
+      id: 'monthly',
+      label: 'Monthly',
+      price: monthlyProduct.price,
+      period: '/month',
+      productId: monthlyProduct.id,
+      product: monthlyProduct,
+    });
+  } else {
+    plans.push({
+      id: 'monthly',
+      label: 'Monthly',
+      price: FALLBACK_PRICES[PRODUCT_IDS.PREMIUM_MONTHLY],
+      period: '/month',
+      productId: PRODUCT_IDS.PREMIUM_MONTHLY,
+    });
+  }
+
+  if (yearlyProduct) {
+    plans.push({
+      id: 'yearly',
+      label: 'Yearly',
+      price: yearlyProduct.price,
+      period: '/year',
+      badge: 'Best Value',
+      productId: yearlyProduct.id,
+      product: yearlyProduct,
+    });
+  } else {
+    plans.push({
+      id: 'yearly',
+      label: 'Yearly',
+      price: FALLBACK_PRICES[PRODUCT_IDS.PREMIUM_YEARLY],
+      period: '/year',
+      badge: 'Best Value',
+      productId: PRODUCT_IDS.PREMIUM_YEARLY,
+    });
+  }
+
+  if (lifetimeProduct) {
+    plans.push({
+      id: 'lifetime',
+      label: 'Lifetime',
+      price: lifetimeProduct.price,
+      period: 'one-time',
+      badge: 'Forever Access',
+      productId: lifetimeProduct.id,
+      product: lifetimeProduct,
+    });
+  } else {
+    plans.push({
+      id: 'lifetime',
+      label: 'Lifetime',
+      price: FALLBACK_PRICES[PRODUCT_IDS.PREMIUM_LIFETIME],
+      period: 'one-time',
+      badge: 'Forever Access',
+      productId: PRODUCT_IDS.PREMIUM_LIFETIME,
+    });
+  }
+
+  return plans;
+}
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
   const { updateProfile, refreshProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productError, setProductError] = useState<string | null>(null);
+  const [displayPlans, setDisplayPlans] = useState<DisplayPlan[]>([]);
+  const [hasRealProducts, setHasRealProducts] = useState(false);
+
+  const loadProducts = useCallback(async () => {
+    setLoadingProducts(true);
+    setProductError(null);
+
+    try {
+      const billing = getBillingService();
+      await billing.initialize();
+      const products = await billing.getProducts([
+        PRODUCT_IDS.PREMIUM_MONTHLY,
+        PRODUCT_IDS.PREMIUM_YEARLY,
+        PRODUCT_IDS.PREMIUM_LIFETIME,
+      ]);
+
+      console.log('[Paywall] Loaded products:', products);
+
+      const plans = buildDisplayPlans(products);
+      setDisplayPlans(plans);
+
+      const hasReal = plans.some(p => p.product?.rcPackage);
+      setHasRealProducts(hasReal);
+
+      if (!hasReal && products.length > 0) {
+        console.warn('[Paywall] Products loaded but no rcPackage found - RevenueCat offerings may not be configured');
+      }
+    } catch (error) {
+      console.error('[Paywall] Failed to load products:', error);
+      setProductError('Unable to load pricing. Please check your connection.');
+      setDisplayPlans(buildDisplayPlans([]));
+    } finally {
+      setLoadingProducts(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      loadProducts();
+    }
+  }, [open, loadProducts]);
 
   if (!open) return null;
 
   const handlePurchase = async () => {
-    const plan = plans.find(p => p.id === selectedPlan);
+    const plan = displayPlans.find(p => p.id === selectedPlan);
     if (!plan) return;
+
+    if (!plan.product?.rcPackage && !hasRealProducts) {
+      toast('Products not available. Please try again later.', 'error');
+      console.error('[Paywall] No rcPackage available for purchase. RevenueCat offerings may not be configured.');
+      return;
+    }
 
     setPurchasing(true);
     try {
       const billing = getBillingService();
-      const result = await billing.purchase(plan.productId);
+      const result = await billing.purchase(plan.productId, plan.product);
 
       if (result.success) {
         await updateProfile({ isPremium: true });
@@ -190,53 +314,74 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
             </div>
           </div>
 
-          <div className="w-full max-w-sm space-y-3 mb-6">
-            {plans.map((plan) => (
-              <button
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan.id)}
-                className={`w-full p-4 rounded-2xl border-2 transition-all text-left relative ${
-                  selectedPlan === plan.id
-                    ? 'border-gold bg-gold/10 shadow-lg shadow-gold/10'
-                    : 'border-mystic-700/50 bg-mystic-800/30 hover:border-mystic-600'
-                }`}
-              >
-                {plan.badge && (
-                  <span className={`absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                    plan.badge === 'Best Value'
-                      ? 'bg-gold text-mystic-950'
-                      : 'bg-emerald-500 text-white'
-                  }`}>
-                    {plan.badge}
-                  </span>
-                )}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedPlan === plan.id ? 'border-gold' : 'border-mystic-600'
-                    }`}>
-                      {selectedPlan === plan.id && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-gold" />
-                      )}
-                    </div>
-                    <div>
-                      <span className={`font-medium ${selectedPlan === plan.id ? 'text-mystic-100' : 'text-mystic-300'}`}>
-                        {plan.label}
-                      </span>
-                      {plan.hasTrial && (
-                        <p className="text-xs text-emerald-400 mt-0.5">{plan.trialText}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-lg font-display ${selectedPlan === plan.id ? 'text-gold' : 'text-mystic-200'}`}>
-                      {plan.price}
-                    </span>
-                    <span className="text-mystic-500 text-sm ml-1">{plan.period}</span>
-                  </div>
+          {productError && (
+            <div className="w-full max-w-sm mb-4">
+              <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-red-300">{productError}</p>
                 </div>
-              </button>
-            ))}
+                <button
+                  onClick={loadProducts}
+                  className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4 text-red-400" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="w-full max-w-sm space-y-3 mb-6">
+            {loadingProducts ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mb-3" />
+                <p className="text-sm text-mystic-400">Loading prices...</p>
+              </div>
+            ) : (
+              displayPlans.map((plan) => (
+                <button
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan.id)}
+                  className={`w-full p-4 rounded-2xl border-2 transition-all text-left relative ${
+                    selectedPlan === plan.id
+                      ? 'border-gold bg-gold/10 shadow-lg shadow-gold/10'
+                      : 'border-mystic-700/50 bg-mystic-800/30 hover:border-mystic-600'
+                  }`}
+                >
+                  {plan.badge && (
+                    <span className={`absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      plan.badge === 'Best Value'
+                        ? 'bg-gold text-mystic-950'
+                        : 'bg-emerald-500 text-white'
+                    }`}>
+                      {plan.badge}
+                    </span>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        selectedPlan === plan.id ? 'border-gold' : 'border-mystic-600'
+                      }`}>
+                        {selectedPlan === plan.id && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-gold" />
+                        )}
+                      </div>
+                      <div>
+                        <span className={`font-medium ${selectedPlan === plan.id ? 'text-mystic-100' : 'text-mystic-300'}`}>
+                          {plan.label}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-lg font-display ${selectedPlan === plan.id ? 'text-gold' : 'text-mystic-200'}`}>
+                        {plan.price}
+                      </span>
+                      <span className="text-mystic-500 text-sm ml-1">{plan.period}</span>
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
 
           <div className="w-full max-w-sm space-y-3">
@@ -246,6 +391,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               size="lg"
               onClick={handlePurchase}
               loading={purchasing}
+              disabled={loadingProducts}
               className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
             >
               {selectedPlan === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Now'}

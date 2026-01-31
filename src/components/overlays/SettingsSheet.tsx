@@ -24,6 +24,7 @@ import {
   MapPin,
   ExternalLink,
   ImageIcon,
+  Bug,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
@@ -31,6 +32,9 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { PaywallSheet } from '../premium/PaywallSheet';
 import { SubscriptionSheet } from '../premium/SubscriptionSheet';
+import { DiagnosticsSheet } from '../diagnostics';
+import { useDiagnostics } from '../../context/DiagnosticsContext';
+import { isDevMode } from '../../utils/telemetry';
 
 type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
 
@@ -59,6 +63,7 @@ interface SettingItem {
 
 export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const { profile, user, signOut, updateProfile, refreshProfile } = useAuth();
+  const { openDiagnostics, isOpen: isDiagnosticsOpen, closeDiagnostics, errorCount } = useDiagnostics();
   const [activeSheet, setActiveSheet] = useState<SubSheet>('main');
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -71,6 +76,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [versionTapCount, setVersionTapCount] = useState(0);
 
   const [editForm, setEditForm] = useState({
     displayName: '',
@@ -354,6 +360,12 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         { icon: HelpCircle, label: 'Help Center', action: () => setActiveSheet('help') },
         { icon: FileText, label: 'Terms of Service', action: () => setActiveSheet('terms') },
         { icon: Lock, label: 'Privacy Policy', action: () => setActiveSheet('privacy') },
+        ...(isDevMode() || versionTapCount >= 5 ? [{
+          icon: Bug,
+          label: 'Developer Diagnostics',
+          value: errorCount > 0 ? `${errorCount} errors` : undefined,
+          action: () => openDiagnostics(),
+        }] : []),
       ],
     },
     {
@@ -1036,14 +1048,29 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         </div>
 
         <div className="pt-4 border-t border-mystic-800">
-          <p className="text-center text-xs text-mystic-600">
+          <button
+            onClick={() => {
+              setVersionTapCount(prev => {
+                const next = prev + 1;
+                if (next === 5) {
+                  toast('Developer mode enabled', 'info');
+                }
+                return next;
+              });
+            }}
+            className="w-full text-center text-xs text-mystic-600 hover:text-mystic-500 transition-colors"
+          >
             Arcana v1.0.0
-          </p>
+            {versionTapCount >= 5 && !isDevMode() && (
+              <span className="ml-1 text-gold">(Dev)</span>
+            )}
+          </button>
         </div>
       </div>
 
       <PaywallSheet open={showPaywall} onClose={() => setShowPaywall(false)} />
       <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
+      <DiagnosticsSheet open={isDiagnosticsOpen} onClose={closeDiagnostics} />
     </Sheet>
   );
 }

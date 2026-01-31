@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider, useApp } from './context/AppContext';
+import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
 import { DevicePreview } from './components/dev/DevicePreview';
 import { ToastContainer } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
+import { ErrorBoundary } from './components/error/ErrorBoundary';
+import { DiagnosticsSheet } from './components/diagnostics';
 import {
   HomePage,
   ReadingsPage,
@@ -25,6 +28,7 @@ import { adsService } from './services/ads';
 import { isSupabaseConfigured } from './lib/supabase';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { loadPersistedLogs } from './utils/telemetry';
 
 const ONBOARDING_KEY = 'arcana_onboarding_complete';
 const isDev = import.meta.env.DEV;
@@ -68,14 +72,38 @@ const pageTitles: Record<string, { title: string; subtitle?: string }> = {
   admin: { title: 'Admin', subtitle: 'Manage uploads' },
 };
 
+function DiagnosticsSync() {
+  const { session, user } = useAuth();
+  const { setSessionState, setAuthConfig } = useDiagnostics();
+
+  useEffect(() => {
+    setSessionState({
+      hasSession: !!session,
+      userId: user?.id,
+    });
+  }, [session, user, setSessionState]);
+
+  useEffect(() => {
+    setAuthConfig({
+      flowType: 'pkce',
+      detectSessionInUrl: !isNative(),
+      redirectTo: isNative() ? 'com.arcana.app://auth' : window.location.origin,
+    });
+  }, [setAuthConfig]);
+
+  return null;
+}
+
 function AppContent() {
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useApp();
+  const { openDiagnostics } = useDiagnostics();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   useEffect(() => {
     initializeNativeFeatures();
+    loadPersistedLogs();
   }, []);
 
   useEffect(() => {
@@ -119,19 +147,29 @@ function AppContent() {
 
   if (showOnboarding && !user) {
     return (
-      <OnboardingPage
-        onComplete={handleOnboardingComplete}
-        onSwitchToSignIn={handleSwitchToSignIn}
-      />
+      <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+        <OnboardingPage
+          onComplete={handleOnboardingComplete}
+          onSwitchToSignIn={handleSwitchToSignIn}
+        />
+      </ErrorBoundary>
     );
   }
 
   if (!user) {
-    return <AuthPage onSwitchToOnboarding={() => setShowOnboarding(true)} />;
+    return (
+      <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+        <AuthPage onSwitchToOnboarding={() => setShowOnboarding(true)} />
+      </ErrorBoundary>
+    );
   }
 
   if (!profile?.onboardingComplete) {
-    return <OAuthOnboardingPage onComplete={refreshProfile} />;
+    return (
+      <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+        <OAuthOnboardingPage onComplete={refreshProfile} />
+      </ErrorBoundary>
+    );
   }
 
   const renderPage = () => {
@@ -158,55 +196,66 @@ function AppContent() {
   const currentPage = pageTitles[activeTab] || pageTitles.home;
 
   return (
-    <div className="min-h-screen pb-24 relative constellation-bg">
-      {profile?.background_url ? (
-        <div className="fixed inset-0 z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-700"
-            style={{ backgroundImage: `url(${profile.background_url})` }}
+    <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+      <div className="min-h-screen pb-24 relative constellation-bg">
+        {profile?.background_url ? (
+          <div className="fixed inset-0 z-0">
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-700"
+              style={{ backgroundImage: `url(${profile.background_url})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />
+            <div className="absolute inset-0 backdrop-blur-[2px]" />
+          </div>
+        ) : (
+          <div className="fixed inset-0 z-0 opacity-60" />
+        )}
+        <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top">
+          <Header
+            title={currentPage.title}
+            subtitle={currentPage.subtitle}
+            onSearchClick={() => openOverlay('search')}
+            onSavedClick={() => openOverlay('saved')}
+            onSettingsClick={() => openOverlay('settings')}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />
-          <div className="absolute inset-0 backdrop-blur-[2px]" />
-        </div>
-      ) : (
-        <div className="fixed inset-0 z-0 opacity-60" />
-      )}
-      <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top">
-        <Header
-          title={currentPage.title}
-          subtitle={currentPage.subtitle}
-          onSearchClick={() => openOverlay('search')}
-          onSavedClick={() => openOverlay('saved')}
-          onSettingsClick={() => openOverlay('settings')}
-        />
-        {renderPage()}
-      </main>
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
+          {renderPage()}
+        </main>
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
 
-      <SearchSheet
-        open={activeOverlay === 'search'}
-        onClose={closeOverlay}
-      />
-      <SavedSheet
-        open={activeOverlay === 'saved'}
-        onClose={closeOverlay}
-      />
-      <SettingsSheet
-        open={activeOverlay === 'settings'}
-        onClose={closeOverlay}
-      />
-    </div>
+        <SearchSheet
+          open={activeOverlay === 'search'}
+          onClose={closeOverlay}
+        />
+        <SavedSheet
+          open={activeOverlay === 'saved'}
+          onClose={closeOverlay}
+        />
+        <SettingsSheet
+          open={activeOverlay === 'settings'}
+          onClose={closeOverlay}
+        />
+      </div>
+    </ErrorBoundary>
   );
+}
+
+function GlobalDiagnosticsSheet() {
+  const { isOpen, closeDiagnostics } = useDiagnostics();
+  return <DiagnosticsSheet open={isOpen} onClose={closeDiagnostics} />;
 }
 
 function AppWithProviders() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <AppContent />
-        <ToastContainer />
-      </AppProvider>
-    </AuthProvider>
+    <DiagnosticsProvider>
+      <AuthProvider>
+        <AppProvider>
+          <DiagnosticsSync />
+          <AppContent />
+          <GlobalDiagnosticsSheet />
+          <ToastContainer />
+        </AppProvider>
+      </AuthProvider>
+    </DiagnosticsProvider>
   );
 }
 

@@ -3,10 +3,26 @@ import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
 import { isAdmin as checkIsAdmin } from '../utils/admin';
-import { isNative, isAndroid, isIOS } from '../utils/platform';
+import { isNative, isAndroid, isIOS, getPlatform } from '../utils/platform';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { toast } from '../components/ui/Toast';
+import {
+  generateCorrelationId,
+  setCorrelationId,
+  startSpan,
+  endSpan,
+  logInfo,
+  logWarn,
+  logError,
+  captureException,
+  sanitizeUrl,
+} from '../utils/telemetry';
+import {
+  normalizeSupabaseError,
+  analyzeCallbackUrl,
+  detectOAuthIssues,
+} from '../utils/authErrors';
 
 interface AuthContextType {
   user: User | null;
@@ -133,9 +149,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsProcessingOAuth(processing);
     if (processing) {
       oauthTimeoutRef.current = window.setTimeout(() => {
-        console.warn('[OAuth] Timeout - resetting processing state');
+        logWarn('auth.oauth.timeout', 'OAuth flow timed out after 120s');
         isProcessingCallbackRef.current = false;
         setIsProcessingOAuth(false);
+        setCorrelationId(null);
       }, 120000);
     }
   }, [clearOAuthTimeout]);
@@ -193,57 +210,94 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleOAuthCallback = useCallback(async (rawUrl: string) => {
+    const callbackSpan = startSpan('auth.callback.receive', {
+      platform: getPlatform(),
+      urlLength: rawUrl?.length || 0,
+    });
+
     const url = normalizeOAuthCallbackUrl((rawUrl || '').trim());
-    if (!url) return false;
+    if (!url) {
+      endSpan(callbackSpan, 'failure', { reason: 'empty_url' });
+      return false;
+    }
 
-    const hasCode = url.includes('code=');
-    const hasAccessToken = url.includes('access_token=');
-    const hasError = url.includes('error=');
+    const urlAnalysis = analyzeCallbackUrl(url);
+    const hasCode = urlAnalysis.hasCode;
+    const hasAccessToken = urlAnalysis.hasAccessToken;
+    const hasError = urlAnalysis.hasError;
 
-    if (!hasCode && !hasAccessToken && !hasError) return false;
+    logInfo('auth.callback.analyze', 'Analyzing callback URL', {
+      ...urlAnalysis,
+      sanitizedUrl: sanitizeUrl(url),
+    });
+
+    const issues = detectOAuthIssues(url);
+    if (issues.length > 0) {
+      issues.forEach(issue => logWarn('auth.callback.issue', issue));
+    }
+
+    if (!hasCode && !hasAccessToken && !hasError) {
+      endSpan(callbackSpan, 'failure', { reason: 'no_oauth_params' });
+      return false;
+    }
 
     const code = extractCodeFromUrl(url);
     const dedupKey = code || url;
 
     if (isProcessingCallbackRef.current) {
-      console.log('[OAuth] Duplicate callback ignored (already processing another callback)');
+      logInfo('auth.callback.duplicate', 'Duplicate callback ignored (already processing)');
+      endSpan(callbackSpan, 'success', { reason: 'duplicate_ignored' });
       return true;
     }
 
     if (lastProcessedUrlRef.current === dedupKey) {
-      console.log('[OAuth] Duplicate callback ignored (already processed this URL)');
+      logInfo('auth.callback.duplicate', 'Duplicate callback ignored (already processed this URL)');
+      endSpan(callbackSpan, 'success', { reason: 'duplicate_url' });
       return true;
     }
 
     isProcessingCallbackRef.current = true;
     lastProcessedUrlRef.current = dedupKey;
-    console.log('[OAuth] Processing callback:', url.substring(0, 80) + '...');
     setOAuthProcessing(true);
+
+    logInfo('auth.callback.process', 'Processing OAuth callback', {
+      hasCode,
+      hasAccessToken,
+      hasError,
+      codeLocation: urlAnalysis.codeLocation,
+      scheme: urlAnalysis.scheme,
+      host: urlAnalysis.host,
+    });
 
     try {
       if (hasError) {
-        const urlObj = new URL(url);
-        const searchParams = urlObj.searchParams;
-        const hashParams = new URLSearchParams(urlObj.hash.substring(1));
-        const error = searchParams.get('error') || hashParams.get('error');
-        const errorDesc = searchParams.get('error_description') || hashParams.get('error_description');
-        console.error('[OAuth] Error in callback:', error, errorDesc);
+        const errorSpan = startSpan('auth.callback.handleError');
+        const errorCode = urlAnalysis.errorCode;
+        const errorDesc = urlAnalysis.errorDescription;
+
+        logError('auth.callback.oauthError', 'OAuth error in callback', {
+          errorCode,
+          errorDescription: errorDesc,
+        });
 
         const existingSession = await getSessionWithRetry(4, 300);
         if (existingSession?.user) {
-          console.log('[OAuth] Session exists despite error - using it');
+          logInfo('auth.callback.sessionRecovered', 'Session exists despite error - using it');
           setSession(existingSession);
           setUser(existingSession.user);
           fetchProfile(existingSession.user.id);
           isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
+          setCorrelationId(null);
+          endSpan(errorSpan, 'success', { recovered: true });
+          endSpan(callbackSpan, 'success');
           return true;
         }
 
         let userMessage = errorDesc || 'Sign in failed';
-        if (error === 'access_denied') {
+        if (errorCode === 'access_denied') {
           userMessage = 'Sign in was cancelled';
-        } else if (error === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
+        } else if (errorCode === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
           userMessage = 'Sign in session expired. Please try again.';
         } else if (errorDesc?.includes('provider')) {
           userMessage = 'Google sign-in is not configured. Please use email/password.';
@@ -252,27 +306,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast(userMessage, 'error');
         isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
+        setCorrelationId(null);
+        endSpan(errorSpan, 'failure', { errorCode, userMessage });
+        endSpan(callbackSpan, 'failure');
         return true;
       }
 
       if (hasCode) {
-        console.log('[OAuth] Exchanging code for session (PKCE flow)');
+        const exchangeSpan = startSpan('auth.callback.exchangeCode', {
+          codePresent: true,
+          codeLocation: urlAnalysis.codeLocation,
+        });
 
+        const checkSessionSpan = startSpan('auth.callback.checkExistingSession');
         const existingSession = await getSessionWithRetry(4, 300);
         if (existingSession?.user) {
-          console.log('[OAuth] Session already exists, skipping exchange');
+          logInfo('auth.callback.sessionExists', 'Session already exists, skipping exchange');
           setSession(existingSession);
           setUser(existingSession.user);
           fetchProfile(existingSession.user.id);
           isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
+          setCorrelationId(null);
+          endSpan(checkSessionSpan, 'success', { sessionFound: true });
+          endSpan(exchangeSpan, 'success', { skipped: true });
+          endSpan(callbackSpan, 'success');
           return true;
         }
+        endSpan(checkSessionSpan, 'success', { sessionFound: false });
+
+        logInfo('auth.callback.exchange', 'Exchanging code for session (PKCE flow)');
 
         const { data, error } = await supabase.auth.exchangeCodeForSession(url);
 
         if (error) {
-          console.error('[OAuth] Code exchange failed:', error.message);
+          const normalized = normalizeSupabaseError(error);
+          logError('auth.callback.exchangeFailed', 'Code exchange failed', {
+            errorCode: normalized.code,
+            errorMessage: normalized.message,
+            likelyCause: normalized.likelyCause,
+            isRetryable: normalized.isRetryable,
+          });
 
           const isFlowStateError =
             error.message.includes('code verifier') ||
@@ -281,38 +355,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             error.message.includes('invalid_flow_state');
 
           if (isFlowStateError) {
+            const retrySpan = startSpan('auth.callback.retrySession');
             const retrySession = await getSessionWithRetry(5, 400);
             if (retrySession?.user) {
-              console.log('[OAuth] Session found after flow-state error');
+              logInfo('auth.callback.sessionRecovered', 'Session found after flow-state error');
               setSession(retrySession);
               setUser(retrySession.user);
               fetchProfile(retrySession.user.id);
               isProcessingCallbackRef.current = false;
               setOAuthProcessing(false);
+              setCorrelationId(null);
+              endSpan(retrySpan, 'success');
+              endSpan(exchangeSpan, 'success', { recovered: true });
+              endSpan(callbackSpan, 'success');
               return true;
             }
+            endSpan(retrySpan, 'failure');
             toast('Sign in session expired. Please try again.', 'error');
           } else {
-            toast(error.message || 'Could not complete sign-in', 'error');
+            toast(normalized.message || 'Could not complete sign-in', 'error');
           }
           isProcessingCallbackRef.current = false;
           setOAuthProcessing(false);
+          setCorrelationId(null);
+          endSpan(exchangeSpan, 'failure', { errorCode: normalized.code });
+          endSpan(callbackSpan, 'failure');
           return true;
         }
 
         if (data?.session?.user) {
-          console.log('[OAuth] Session established successfully');
+          logInfo('auth.callback.success', 'Session established successfully', {
+            userId: data.session.user.id.substring(0, 8) + '...',
+          });
           setSession(data.session);
           setUser(data.session.user);
           fetchProfile(data.session.user.id);
         }
         isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
+        setCorrelationId(null);
+        endSpan(exchangeSpan, 'success');
+        endSpan(callbackSpan, 'success');
         return true;
       }
 
       if (hasAccessToken) {
-        console.log('[OAuth] Processing implicit flow tokens');
+        const implicitSpan = startSpan('auth.callback.implicitFlow');
+        logInfo('auth.callback.implicitFlow', 'Processing implicit flow tokens');
+
         const hashParams = new URLSearchParams(new URL(url).hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -324,19 +414,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
 
           if (error) {
-            console.error('[OAuth] Session set failed:', error);
-            toast(error.message || 'Could not complete sign-in', 'error');
+            const normalized = normalizeSupabaseError(error);
+            logError('auth.callback.setSessionFailed', 'Session set failed', {
+              errorCode: normalized.code,
+            });
+            toast(normalized.message || 'Could not complete sign-in', 'error');
+            endSpan(implicitSpan, 'failure');
+          } else {
+            endSpan(implicitSpan, 'success');
           }
         }
         isProcessingCallbackRef.current = false;
         setOAuthProcessing(false);
+        setCorrelationId(null);
+        endSpan(callbackSpan, 'success');
         return true;
       }
     } catch (e) {
-      console.error('[OAuth] Callback processing error:', e);
+      captureException('auth.callback.unexpectedError', e, {
+        sanitizedUrl: sanitizeUrl(url),
+      });
       toast('Sign in failed. Please try again.', 'error');
       isProcessingCallbackRef.current = false;
       setOAuthProcessing(false);
+      setCorrelationId(null);
+      endSpan(callbackSpan, 'failure');
     }
 
     return false;
@@ -350,14 +452,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const setupAppUrlListener = () => {
       if (isNative()) {
         appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
-          console.log('[OAuth] App URL opened:', url);
+          logInfo('auth.deepLink.received', 'App URL opened', {
+            sanitizedUrl: sanitizeUrl(url),
+            platform: getPlatform(),
+          });
           if (!mounted) return;
 
           if (launchUrlHandled && lastProcessedUrlRef.current) {
             const code = extractCodeFromUrl(url);
             const dedupKey = code || url;
             if (dedupKey === lastProcessedUrlRef.current) {
-              console.log('[OAuth] appUrlOpen ignored - same as launch URL');
+              logInfo('auth.deepLink.duplicate', 'appUrlOpen ignored - same as launch URL');
               return;
             }
           }
@@ -372,16 +477,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const init = async () => {
+      const initSpan = startSpan('auth.init', { platform: getPlatform() });
+
       try {
         if (isNative()) {
           const launch = await App.getLaunchUrl();
-          console.log('[Auth] Launch URL:', launch?.url || 'None');
+          logInfo('auth.init.launchUrl', 'Launch URL check', {
+            hasLaunchUrl: !!launch?.url,
+            sanitizedUrl: launch?.url ? sanitizeUrl(launch.url) : undefined,
+          });
+
           if (launch?.url) {
+            generateCorrelationId('oauth');
             const handled = await handleOAuthCallback(launch.url);
             launchUrlHandled = handled;
             setupAppUrlListener();
             if (handled) {
               if (mounted) setLoading(false);
+              endSpan(initSpan, 'success', { handledLaunchUrl: true });
               return;
             }
           } else {
@@ -390,21 +503,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           const currentUrl = window.location.href;
           if (currentUrl.includes('code=') || currentUrl.includes('access_token=') || currentUrl.includes('error=')) {
-            console.log('[Auth] Processing web OAuth callback');
+            logInfo('auth.init.webCallback', 'Processing web OAuth callback');
+            generateCorrelationId('oauth');
             const handled = await handleOAuthCallback(currentUrl);
             if (handled) {
               window.history.replaceState({}, '', window.location.pathname);
               if (mounted) setLoading(false);
+              endSpan(initSpan, 'success', { handledWebCallback: true });
               return;
             }
           }
         }
 
+        const sessionSpan = startSpan('auth.init.getSession');
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('[Auth] Session error:', error);
+          logError('auth.init.sessionError', 'Failed to get initial session', {
+            error: error.message,
+          });
+          endSpan(sessionSpan, 'failure');
+        } else {
+          endSpan(sessionSpan, 'success', { hasSession: !!session });
         }
-        console.log('[Auth] Initial session:', session ? 'Found' : 'None');
+
+        logInfo('auth.init.session', 'Initial session check', {
+          hasSession: !!session,
+        });
+
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
@@ -412,6 +537,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             fetchProfile(session.user.id);
           }
         }
+        endSpan(initSpan, 'success');
       } finally {
         if (mounted) {
           setLoading(false);
@@ -423,7 +549,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Auth] State change:', event, session ? 'Session exists' : 'No session');
+      logInfo('auth.stateChange', 'Auth state changed', {
+        event,
+        hasSession: !!session,
+      });
 
       if (!mounted) return;
 
@@ -431,6 +560,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearOAuthTimeout();
         isProcessingCallbackRef.current = false;
         setIsProcessingOAuth(false);
+        setCorrelationId(null);
       }
 
       setSession(session);
@@ -451,17 +581,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchProfile, handleOAuthCallback, clearOAuthTimeout]);
 
   const signUp = async (email: string, password: string) => {
+    const correlationId = generateCorrelationId('signup');
+    const span = startSpan('auth.signUp', { correlationId });
+
+    logInfo('auth.signUp.start', 'Starting email sign up');
+
     const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error ? new Error(error.message) : null };
+
+    if (error) {
+      const normalized = normalizeSupabaseError(error);
+      logError('auth.signUp.failed', 'Sign up failed', {
+        errorCode: normalized.code,
+      });
+      endSpan(span, 'failure', { errorCode: normalized.code });
+      setCorrelationId(null);
+      return { error: new Error(normalized.message) };
+    }
+
+    logInfo('auth.signUp.success', 'Sign up successful');
+    endSpan(span, 'success');
+    setCorrelationId(null);
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
+    const correlationId = generateCorrelationId('signin');
+    const span = startSpan('auth.signIn', { correlationId });
+
+    logInfo('auth.signIn.start', 'Starting email sign in');
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error ? new Error(error.message) : null };
+
+    if (error) {
+      const normalized = normalizeSupabaseError(error);
+      logError('auth.signIn.failed', 'Sign in failed', {
+        errorCode: normalized.code,
+      });
+      endSpan(span, 'failure', { errorCode: normalized.code });
+      setCorrelationId(null);
+      return { error: new Error(normalized.message) };
+    }
+
+    logInfo('auth.signIn.success', 'Sign in successful');
+    endSpan(span, 'success');
+    setCorrelationId(null);
+    return { error: null };
   };
 
   const signInWithGoogle = async () => {
-    console.log('[OAuth] Initiating Google sign-in, platform:', isAndroid() ? 'android' : isIOS() ? 'ios' : 'web');
+    const correlationId = generateCorrelationId('oauth');
+    const initiateSpan = startSpan('auth.google.initiate', {
+      correlationId,
+      platform: getPlatform(),
+    });
+
+    logInfo('auth.google.start', 'Initiating Google sign-in', {
+      platform: getPlatform(),
+      isNative: isNative(),
+    });
+
     setOAuthProcessing(true);
     lastProcessedUrlRef.current = null;
 
@@ -469,10 +647,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ? 'com.arcana.app://auth'
       : window.location.origin + window.location.pathname;
 
-    console.log('[OAuth] Redirect URL:', redirectUrl);
+    logInfo('auth.google.config', 'OAuth configuration', {
+      redirectUrl,
+      flowType: 'pkce',
+      skipBrowserRedirect: isNative(),
+    });
 
     try {
       if (isNative()) {
+        const generateUrlSpan = startSpan('auth.google.generateUrl');
+
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -482,14 +666,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          console.error('[OAuth] Error generating URL:', error);
+          const normalized = normalizeSupabaseError(error);
+          logError('auth.google.urlGenerationFailed', 'Error generating OAuth URL', {
+            errorCode: normalized.code,
+            errorMessage: normalized.message,
+          });
           setOAuthProcessing(false);
-          return { error: new Error(error.message) };
+          setCorrelationId(null);
+          endSpan(generateUrlSpan, 'failure');
+          endSpan(initiateSpan, 'failure');
+          return { error: new Error(normalized.message) };
         }
 
+        endSpan(generateUrlSpan, 'success', { hasUrl: !!data?.url });
+
         if (data?.url) {
-          console.log('[OAuth] Generated OAuth URL, opening browser...');
-          console.log('[OAuth] URL preview:', data.url.substring(0, 120));
+          logInfo('auth.google.urlGenerated', 'OAuth URL generated', {
+            urlLength: data.url.length,
+          });
+
+          const openBrowserSpan = startSpan('auth.google.openBrowser');
 
           try {
             if (isIOS()) {
@@ -500,18 +696,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else {
               await Browser.open({ url: data.url });
             }
-            console.log('[OAuth] Browser opened successfully');
+            logInfo('auth.google.browserOpened', 'Browser opened successfully');
+            endSpan(openBrowserSpan, 'success');
           } catch (browserErr) {
-            console.error('[OAuth] Browser.open failed:', browserErr);
+            captureException('auth.google.browserFailed', browserErr);
             setOAuthProcessing(false);
+            setCorrelationId(null);
+            endSpan(openBrowserSpan, 'failure');
+            endSpan(initiateSpan, 'failure');
             return { error: new Error('Failed to open sign-in browser') };
           }
         } else {
-          console.error('[OAuth] No URL returned from Supabase');
+          logError('auth.google.noUrl', 'No URL returned from Supabase');
           setOAuthProcessing(false);
+          setCorrelationId(null);
+          endSpan(initiateSpan, 'failure', { reason: 'no_url' });
           return { error: new Error('Failed to generate sign-in URL') };
         }
       } else {
+        const webOAuthSpan = startSpan('auth.google.webOAuth');
+
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -521,23 +725,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          console.error('[OAuth] Error:', error);
+          const normalized = normalizeSupabaseError(error);
+          logError('auth.google.webOAuthFailed', 'Web OAuth failed', {
+            errorCode: normalized.code,
+          });
           setOAuthProcessing(false);
-          return { error: new Error(error.message) };
+          setCorrelationId(null);
+          endSpan(webOAuthSpan, 'failure');
+          endSpan(initiateSpan, 'failure');
+          return { error: new Error(normalized.message) };
         }
+
+        endSpan(webOAuthSpan, 'success');
       }
 
+      endSpan(initiateSpan, 'success');
       return { error: null };
     } catch (err) {
-      console.error('[OAuth] Unexpected error:', err);
+      captureException('auth.google.unexpectedError', err);
       setOAuthProcessing(false);
+      setCorrelationId(null);
+      endSpan(initiateSpan, 'failure');
       return { error: err instanceof Error ? err : new Error('Failed to initiate sign-in') };
     }
   };
 
   const signOut = async () => {
+    const span = startSpan('auth.signOut');
+    logInfo('auth.signOut.start', 'Signing out');
+
     await supabase.auth.signOut();
     setProfile(null);
+
+    logInfo('auth.signOut.complete', 'Sign out complete');
+    endSpan(span, 'success');
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {

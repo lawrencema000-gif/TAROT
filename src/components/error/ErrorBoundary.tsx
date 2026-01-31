@@ -1,38 +1,54 @@
-import { Component, type ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home, Moon } from 'lucide-react';
+import { Component, type ReactNode, useState } from 'react';
+import { AlertTriangle, RefreshCw, Home, Moon, Bug, Copy, CheckCircle } from 'lucide-react';
+import { captureException, generateCorrelationId, getCurrentCorrelationId, isDevMode } from '../../utils/telemetry';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  onOpenDiagnostics?: () => void;
 }
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+  errorInfo: React.ErrorInfo | null;
+  correlationId: string | null;
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null, correlationId: null };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    const correlationId = getCurrentCorrelationId() || generateCorrelationId('render-error');
+
+    captureException('render.error', error, {
+      componentStack: errorInfo.componentStack,
+    });
+
+    this.setState({ errorInfo, correlationId });
+
     console.error('Error caught by boundary:', error, errorInfo);
     this.props.onError?.(error, errorInfo);
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, errorInfo: null, correlationId: null });
   };
 
   handleGoHome = () => {
     window.location.href = '/';
+  };
+
+  handleOpenDiagnostics = () => {
+    this.props.onOpenDiagnostics?.();
   };
 
   render() {
@@ -41,7 +57,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback;
       }
 
-      return <MysticErrorFallback onRetry={this.handleRetry} onGoHome={this.handleGoHome} />;
+      return (
+        <MysticErrorFallback
+          onRetry={this.handleRetry}
+          onGoHome={this.handleGoHome}
+          onOpenDiagnostics={this.props.onOpenDiagnostics ? this.handleOpenDiagnostics : undefined}
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+          correlationId={this.state.correlationId}
+        />
+      );
     }
 
     return this.props.children;
@@ -51,16 +76,45 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 interface MysticErrorFallbackProps {
   onRetry?: () => void;
   onGoHome?: () => void;
+  onOpenDiagnostics?: () => void;
   title?: string;
   message?: string;
+  error?: Error | null;
+  errorInfo?: React.ErrorInfo | null;
+  correlationId?: string | null;
 }
 
 export function MysticErrorFallback({
   onRetry,
   onGoHome,
+  onOpenDiagnostics,
   title = 'The Stars Have Shifted',
   message = 'Something unexpected disrupted your cosmic journey. The universe works in mysterious ways, but we can try again.',
+  error,
+  errorInfo,
+  correlationId,
 }: MysticErrorFallbackProps) {
+  const [showDetails, setShowDetails] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyError = async () => {
+    const errorReport = {
+      timestamp: new Date().toISOString(),
+      correlationId,
+      error: error?.message,
+      stack: error?.stack,
+      componentStack: errorInfo?.componentStack,
+    };
+
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(errorReport, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      console.error('Failed to copy error');
+    }
+  };
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center">
@@ -100,6 +154,66 @@ export function MysticErrorFallback({
             </button>
           )}
         </div>
+
+        <div className="mt-6 flex justify-center gap-3">
+          {onOpenDiagnostics && (
+            <button
+              onClick={onOpenDiagnostics}
+              className="flex items-center gap-1.5 text-xs text-amber-200/50 hover:text-amber-200/80 transition-colors"
+            >
+              <Bug className="w-3.5 h-3.5" />
+              View Diagnostics
+            </button>
+          )}
+          {(isDevMode() || error) && (
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="text-xs text-amber-200/50 hover:text-amber-200/80 transition-colors"
+            >
+              {showDetails ? 'Hide Details' : 'Show Details'}
+            </button>
+          )}
+        </div>
+
+        {showDetails && error && (
+          <div className="mt-4 text-left bg-stone-900/80 border border-amber-900/30 rounded-xl p-4 overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-amber-200/50">Error Details</span>
+              <button
+                onClick={handleCopyError}
+                className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                {copied ? (
+                  <>
+                    <CheckCircle className="w-3 h-3" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+            {correlationId && (
+              <p className="text-xs text-amber-200/40 mb-2 font-mono">
+                ID: {correlationId}
+              </p>
+            )}
+            <p className="text-sm text-coral font-medium mb-2">{error.message}</p>
+            {isDevMode() && error.stack && (
+              <pre className="text-xs text-amber-200/40 overflow-x-auto whitespace-pre-wrap max-h-40">
+                {error.stack}
+              </pre>
+            )}
+            {isDevMode() && errorInfo?.componentStack && (
+              <pre className="mt-2 text-xs text-amber-200/30 overflow-x-auto whitespace-pre-wrap max-h-32">
+                {errorInfo.componentStack}
+              </pre>
+            )}
+          </div>
+        )}
 
         <p className="mt-8 text-xs text-amber-200/30">
           If this continues, the cosmos may need a moment to realign.

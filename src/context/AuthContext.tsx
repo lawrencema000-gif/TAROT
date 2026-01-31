@@ -254,6 +254,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const code = extractCodeFromUrl(url);
     const dedupKey = code || url;
 
+    if (hasCode && !code) {
+      logError('auth.callback.codeExtractionFailed', 'URL indicates code present but extraction failed', {
+        urlLength: url.length,
+        codeLocation: urlAnalysis.codeLocation,
+      });
+    }
+
     if (isProcessingCallbackRef.current) {
       logInfo('auth.callback.duplicate', 'Duplicate callback ignored (already processing)');
       endSpan(callbackSpan, 'success', { reason: 'duplicate_ignored' });
@@ -322,7 +329,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
 
-      if (hasCode) {
+      if (hasCode && code) {
         const exchangeSpan = startSpan('auth.callback.exchangeCode', {
           codePresent: true,
           codeLocation: urlAnalysis.codeLocation,
@@ -347,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         logInfo('auth.callback.exchange', 'Exchanging code for session (PKCE flow)');
 
-        const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
           const normalized = normalizeSupabaseError(error);
@@ -576,7 +583,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        (async () => {
+          await fetchProfile(session.user.id);
+        })();
       } else {
         setProfile(null);
       }

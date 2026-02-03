@@ -98,9 +98,13 @@ function buildPrompt(
   cards.forEach((card, index) => {
     const position = positions[index] || `Position ${index + 1}`;
     const orientation = card.reversed ? "(Reversed)" : "(Upright)";
+    const cardMeaning = card.reversed ? card.meaningReversed : card.meaningUpright;
     prompt += `- ${position}: ${card.name} ${orientation}\n`;
-    if (card.keywords) {
+    if (card.keywords && card.keywords.length > 0) {
       prompt += `  Keywords: ${card.keywords.join(", ")}\n`;
+    }
+    if (cardMeaning) {
+      prompt += `  Card meaning: ${cardMeaning}\n`;
     }
   });
 
@@ -109,10 +113,11 @@ function buildPrompt(
   }
 
   prompt += `\nProvide an interpretation that:
-1. Addresses each card in its position
-2. Weaves the cards together into a cohesive narrative
-3. Offers practical guidance they can apply
-4. Ends with an empowering message
+1. Uses the provided card meanings as the authoritative interpretation - do not contradict them
+2. Addresses each card in its position, building on the provided meaning
+3. Weaves the cards together into a cohesive narrative
+4. Offers practical guidance they can apply
+5. Ends with an empowering message
 
 Write in second person ("you"). Be warm but not overly mystical. Keep the total response under 500 words.`;
 

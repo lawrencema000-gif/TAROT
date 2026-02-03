@@ -80,7 +80,7 @@ export function CelticCrossLayout({
           </div>
         )}
       </button>
-      <p className={`text-[0.65rem] text-mystic-400 mt-1 text-center leading-tight ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}`}>
+      <p className="text-[0.65rem] text-mystic-400 mt-1 text-center leading-tight">
         {getPositionLabel(index)}
       </p>
     </div>

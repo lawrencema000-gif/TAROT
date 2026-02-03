@@ -592,7 +592,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                     </div>
                   )}
                 </button>
-                <p className={`text-xs text-mystic-400 mt-1 text-center ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}`}>
+                <p className="text-xs text-mystic-400 mt-1 text-center">
                   {getPositionLabel(i)}
                 </p>
               </div>

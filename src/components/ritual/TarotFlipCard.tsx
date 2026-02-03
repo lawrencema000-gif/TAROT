@@ -105,7 +105,7 @@ export function TarotFlipCard({
 
           <div className="absolute inset-0 backface-hidden rotate-y-180">
             <div className={`w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden ${showReversed ? 'rotate-180' : ''}`}>
-              {card.imageUrl ? (
+              {cardImageUrl ? (
                 <>
                   <img
                     src={cardImageUrl}

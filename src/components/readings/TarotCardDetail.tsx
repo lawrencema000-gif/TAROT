@@ -38,7 +38,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
       </button>
 
       <div className="relative">
-        {card.imageUrl ? (
+        {imageUrl ? (
           <div className="relative mx-auto w-56 sm:w-64">
             <div className={`relative transition-transform duration-500 ${reversed ? 'rotate-180' : ''}`}>
               <img

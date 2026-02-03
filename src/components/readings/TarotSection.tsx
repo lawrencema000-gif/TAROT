@@ -17,7 +17,7 @@ import { Card, Button, Sheet, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../lib/supabase';
-import { drawCards, spreadTypes } from '../../data/tarotDeck';
+import { spreadTypes } from '../../data/tarotDeck';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { TarotCardDetail } from './TarotCardDetail';
 import { CelticCrossLayout } from './CelticCrossLayout';
@@ -65,7 +65,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [loading, setLoading] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const [deckCards, setDeckCards] = useState<number[]>([]);
+  const [shuffledDeck, setShuffledDeck] = useState<{ card: TarotCard; reversed: boolean }[]>([]);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
@@ -166,8 +166,14 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setIsShuffling(true);
 
     setTimeout(() => {
-      const totalCards = tarotCards.length > 0 ? tarotCards.length : 78;
-      setDeckCards(Array.from({ length: totalCards }, (_, i) => i));
+      const deck = tarotCards.length > 0 ? tarotCards : [];
+      const shuffled = [...deck]
+        .sort(() => Math.random() - 0.5)
+        .map(card => ({
+          card,
+          reversed: Math.random() > 0.5,
+        }));
+      setShuffledDeck(shuffled);
       setSelectedIndices([]);
       setIsShuffling(false);
       setView('select');
@@ -189,8 +195,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
     if (!spread || selectedIndices.length !== spread.count) return;
 
-    const cards = drawCards(spread.count, tarotCards.length > 0 ? tarotCards : undefined);
-    setDrawnCards(cards.map(c => ({ ...c, revealed: false })));
+    const selectedCards = selectedIndices.map(index => ({
+      ...shuffledDeck[index],
+      revealed: false,
+    }));
+    setDrawnCards(selectedCards);
     setView('reveal');
   };
 
@@ -419,14 +428,14 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
         <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-20">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-            {deckCards.map((cardIndex) => {
-              const isSelected = selectedIndices.includes(cardIndex);
-              const selectionOrder = selectedIndices.indexOf(cardIndex) + 1;
+            {shuffledDeck.map((_, deckIndex) => {
+              const isSelected = selectedIndices.includes(deckIndex);
+              const selectionOrder = selectedIndices.indexOf(deckIndex) + 1;
 
               return (
                 <button
-                  key={cardIndex}
-                  onClick={() => handleCardSelect(cardIndex)}
+                  key={deckIndex}
+                  onClick={() => handleCardSelect(deckIndex)}
                   className="relative group"
                 >
                   <div

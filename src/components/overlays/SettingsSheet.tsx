@@ -656,7 +656,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         {renderBackButton('Privacy Policy')}
         <div className="space-y-4 text-sm text-mystic-300">
           <p>
-            This Privacy Policy explains how Tarot Life ("we", "us", "our") collects, uses, and shares information when you use our mobile application ("App").
+            This Privacy Policy explains how Arcana ("we", "us", "our") collects, uses, and shares information when you use our mobile application ("App").
           </p>
 
           <div className="p-4 bg-mystic-800/30 rounded-xl">

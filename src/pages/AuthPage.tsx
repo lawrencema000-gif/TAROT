@@ -137,7 +137,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         </button>
 
         <div className="mt-8 pt-8 border-t border-mystic-800">
-          <p className="text-center text-mystic-400 mb-4">New to Celestial Self?</p>
+          <p className="text-center text-mystic-400 mb-4">New to Arcana?</p>
           <Button
             variant="outline"
             fullWidth

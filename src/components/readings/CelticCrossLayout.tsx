@@ -37,7 +37,6 @@ export function CelticCrossLayout({
               : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
             }
             flex items-center justify-center relative
-            ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}
           `}
           style={{
             transformStyle: 'preserve-3d',
@@ -48,10 +47,10 @@ export function CelticCrossLayout({
               <img
                 src={getCardImage(drawn.card)}
                 alt={drawn.card.name}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
               />
             ) : (
-              <div className="text-center p-1 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center">
+              <div className={`text-center p-1 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
                 <Sparkles className="w-4 h-4 text-gold mx-auto mb-1" />
                 <p className="text-[0.6rem] text-mystic-300 line-clamp-2 px-1">{drawn.card.name}</p>
               </div>
@@ -75,8 +74,8 @@ export function CelticCrossLayout({
           )}
         </div>
         {drawn.revealed && (
-          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 rounded-lg transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-            <Info className="w-4 h-4 text-white drop-shadow-lg" />
+          <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg">
+            <Info className="w-2.5 h-2.5 text-gold" />
           </div>
         )}
       </button>

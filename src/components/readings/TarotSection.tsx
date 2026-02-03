@@ -601,7 +601,6 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                         : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
                       }
                       flex items-center justify-center relative
-                      ${drawn.reversed && drawn.revealed ? 'rotate-180' : ''}
                     `}
                     style={{
                       transformStyle: 'preserve-3d',
@@ -612,10 +611,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                         <img
                           src={getCardImage(drawn.card)}
                           alt={drawn.card.name}
-                          className="w-full h-full object-cover"
+                          className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
                         />
                       ) : (
-                        <div className="text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center">
+                        <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
                           <Sparkles className="w-5 h-5 text-gold mx-auto mb-1" />
                           <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
                         </div>
@@ -640,8 +639,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                     )}
                   </div>
                   {drawn.revealed && (
-                    <div className="absolute inset-0 bg-black/0 hover:bg-black/20 rounded-xl transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-                      <Info className="w-5 h-5 text-white drop-shadow-lg" />
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg">
+                      <Info className="w-3.5 h-3.5 text-gold" />
                     </div>
                   )}
                 </button>

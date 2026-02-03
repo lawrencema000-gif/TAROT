@@ -279,6 +279,15 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     if (currentSpread === 'single') return 'Your Card';
     if (currentSpread === 'three-card') return ['Past', 'Present', 'Future'][index];
     if (currentSpread === 'celtic-cross') return spreadTypes.celticCross.positions[index];
+    if (currentSpread === 'relationship') {
+      return ['Your energy', 'Their energy', 'What brings you together', 'Challenges', 'Path forward'][index];
+    }
+    if (currentSpread === 'career') {
+      return ['Current position', 'Challenges', 'Hidden influences', 'Your strengths', 'External factors', 'Path forward'][index];
+    }
+    if (currentSpread === 'shadow') {
+      return ['What you hide', 'Root cause', 'How it manifests', 'What you fear', 'Hidden strength', 'Integration', 'Transformed self'][index];
+    }
     return `Position ${index + 1}`;
   };
 

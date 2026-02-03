@@ -76,9 +76,30 @@ export function tarotCardToReadingCard(card: TarotCard, reversed: boolean): Read
 const spreadPositions: Record<string, string[]> = {
   single: ['The essence of the situation'],
   'three-card': ['Past influences', 'Present situation', 'Future potential'],
-  relationship: ['Your energy', 'Their energy', 'The connection between you'],
-  career: ['Current position', 'Challenges to overcome', 'Path forward'],
-  shadow: ['What you hide from yourself', 'The root cause', 'How to integrate'],
+  relationship: [
+    'Your energy',
+    'Their energy',
+    'What brings you together',
+    'Challenges in the connection',
+    'Path forward together',
+  ],
+  career: [
+    'Current position',
+    'Challenges to overcome',
+    'Hidden influences',
+    'Your strengths',
+    'External factors',
+    'Path forward',
+  ],
+  shadow: [
+    'What you hide from yourself',
+    'The root cause',
+    'How it manifests',
+    'What you fear to face',
+    'Your hidden strength',
+    'The integration path',
+    'The transformed self',
+  ],
   'celtic-cross': [
     'Present situation',
     'Challenge or obstacle',
@@ -145,8 +166,8 @@ export function getSpreadCardCount(spreadType: string): number {
 export const availableSpreads = [
   { id: 'single', name: 'Single Card', description: 'Quick daily guidance', cardCount: 1 },
   { id: 'three-card', name: 'Three Card', description: 'Past, present, future', cardCount: 3 },
-  { id: 'relationship', name: 'Relationship', description: 'Connection dynamics', cardCount: 3 },
-  { id: 'career', name: 'Career', description: 'Professional guidance', cardCount: 3 },
-  { id: 'shadow', name: 'Shadow Work', description: 'Inner exploration', cardCount: 3 },
+  { id: 'relationship', name: 'Relationship', description: 'Connection dynamics', cardCount: 5 },
+  { id: 'career', name: 'Career', description: 'Professional guidance', cardCount: 6 },
+  { id: 'shadow', name: 'Shadow Work', description: 'Inner exploration', cardCount: 7 },
   { id: 'celtic-cross', name: 'Celtic Cross', description: 'Comprehensive insight', cardCount: 10 },
 ];

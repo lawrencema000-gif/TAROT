@@ -49,9 +49,30 @@ interface UserContext {
 const spreadPositions: Record<string, string[]> = {
   single: ["The essence of the situation"],
   "three-card": ["Past influences", "Present situation", "Future potential"],
-  relationship: ["Your energy", "Their energy", "The connection between you"],
-  career: ["Current position", "Challenges to overcome", "Path forward"],
-  shadow: ["What you hide from yourself", "The root cause", "How to integrate"],
+  relationship: [
+    "Your energy",
+    "Their energy",
+    "What brings you together",
+    "Challenges in the connection",
+    "Path forward together",
+  ],
+  career: [
+    "Current position",
+    "Challenges to overcome",
+    "Hidden influences",
+    "Your strengths",
+    "External factors",
+    "Path forward",
+  ],
+  shadow: [
+    "What you hide from yourself",
+    "The root cause",
+    "How it manifests",
+    "What you fear to face",
+    "Your hidden strength",
+    "The integration path",
+    "The transformed self",
+  ],
   "celtic-cross": [
     "Present situation",
     "Challenge or obstacle",

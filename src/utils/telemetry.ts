@@ -112,9 +112,12 @@ export function sanitizeEmail(email: string): string {
 }
 
 export function sanitizeData(data: Record<string, unknown>): Record<string, unknown> {
-  const sensitiveKeys = [
-    'access_token', 'refresh_token', 'token', 'code', 'code_verifier',
-    'password', 'secret', 'apiKey', 'api_key', 'authorization'
+  const exactMatchSensitiveKeys = [
+    'code', 'token', 'secret'
+  ];
+  const partialMatchSensitiveKeys = [
+    'access_token', 'refresh_token', 'code_verifier', 'authorization_code',
+    'auth_code', 'oauth_code', 'password', 'apikey', 'api_key', 'authorization'
   ];
 
   const sanitized: Record<string, unknown> = {};
@@ -122,7 +125,10 @@ export function sanitizeData(data: Record<string, unknown>): Record<string, unkn
   for (const [key, value] of Object.entries(data)) {
     const lowerKey = key.toLowerCase();
 
-    if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
+    const isExactSensitive = exactMatchSensitiveKeys.includes(lowerKey);
+    const isPartialSensitive = partialMatchSensitiveKeys.some(sk => lowerKey.includes(sk));
+
+    if (isExactSensitive || isPartialSensitive) {
       if (typeof value === 'string' && value.length > 0) {
         sanitized[key] = `[REDACTED:${value.length}chars]`;
       } else {

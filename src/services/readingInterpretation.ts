@@ -8,6 +8,8 @@ export interface ReadingCard {
   keywords?: string[];
   meaningUpright?: string;
   meaningReversed?: string;
+  loveMeaning?: string;
+  careerMeaning?: string;
 }
 
 export interface ReadingRequest {
@@ -70,35 +72,37 @@ export function tarotCardToReadingCard(card: TarotCard, reversed: boolean): Read
     keywords: card.keywords,
     meaningUpright: card.meaningUpright,
     meaningReversed: card.meaningReversed,
+    loveMeaning: card.loveMeaning,
+    careerMeaning: card.careerMeaning,
   };
 }
 
 const spreadPositions: Record<string, string[]> = {
-  single: ['The essence of the situation'],
-  'three-card': ['Past influences', 'Present situation', 'Future potential'],
+  single: ['Your Card'],
+  'three-card': ['Past', 'Present', 'Future'],
   relationship: [
-    'Your energy',
-    'Their energy',
-    'What brings you together',
-    'Challenges in the connection',
-    'Path forward together',
+    'You',
+    'Them',
+    'Strengths of the connection',
+    'Challenges / friction',
+    'Guidance / next step',
   ],
   career: [
-    'Current position',
-    'Challenges to overcome',
-    'Hidden influences',
-    'Your strengths',
-    'External factors',
-    'Path forward',
+    'Where you are now',
+    'What drives you',
+    'Obstacle / pressure point',
+    'What to develop',
+    'Action you can take',
+    'Likely outcome',
   ],
   shadow: [
-    'What you hide from yourself',
-    'The root cause',
-    'How it manifests',
-    'What you fear to face',
-    'Your hidden strength',
-    'The integration path',
-    'The transformed self',
+    'The mask you wear',
+    'The shadow aspect',
+    'Root cause',
+    'Trigger',
+    'Hidden gift',
+    'Integration step',
+    'Support / next step',
   ],
   'celtic-cross': [
     'Present situation',

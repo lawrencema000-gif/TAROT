@@ -30,6 +30,8 @@ interface TarotCard {
   keywords?: string[];
   meaningUpright?: string;
   meaningReversed?: string;
+  loveMeaning?: string;
+  careerMeaning?: string;
 }
 
 interface ReadingRequest {
@@ -47,31 +49,31 @@ interface UserContext {
 }
 
 const spreadPositions: Record<string, string[]> = {
-  single: ["The essence of the situation"],
-  "three-card": ["Past influences", "Present situation", "Future potential"],
+  single: ["Your Card"],
+  "three-card": ["Past", "Present", "Future"],
   relationship: [
-    "Your energy",
-    "Their energy",
-    "What brings you together",
-    "Challenges in the connection",
-    "Path forward together",
+    "You",
+    "Them",
+    "Strengths of the connection",
+    "Challenges / friction",
+    "Guidance / next step",
   ],
   career: [
-    "Current position",
-    "Challenges to overcome",
-    "Hidden influences",
-    "Your strengths",
-    "External factors",
-    "Path forward",
+    "Where you are now",
+    "What drives you",
+    "Obstacle / pressure point",
+    "What to develop",
+    "Action you can take",
+    "Likely outcome",
   ],
   shadow: [
-    "What you hide from yourself",
-    "The root cause",
-    "How it manifests",
-    "What you fear to face",
-    "Your hidden strength",
-    "The integration path",
-    "The transformed self",
+    "The mask you wear",
+    "The shadow aspect",
+    "Root cause",
+    "Trigger",
+    "Hidden gift",
+    "Integration step",
+    "Support / next step",
   ],
   "celtic-cross": [
     "Present situation",
@@ -87,6 +89,15 @@ const spreadPositions: Record<string, string[]> = {
   ],
 };
 
+function excerpt(input: string | undefined, maxChars: number): string {
+  if (!input) return "";
+  const s = input.replace(/\s+/g, " ").trim();
+  if (s.length <= maxChars) return s;
+  const cut = s.slice(0, maxChars);
+  const lastStop = Math.max(cut.lastIndexOf("."), cut.lastIndexOf("!"), cut.lastIndexOf("?"));
+  return (lastStop > 120 ? cut.slice(0, lastStop + 1) : cut).trim();
+}
+
 function buildPrompt(
   request: ReadingRequest,
   userContext?: UserContext
@@ -94,53 +105,72 @@ function buildPrompt(
   const { cards, question, spreadType, zodiacSign, goals, focusArea } = request;
   const positions = spreadPositions[spreadType] || spreadPositions.single;
 
-  let prompt = `You are a wise and compassionate tarot reader. Generate a personalized tarot reading interpretation.
+  let prompt = `You are a skilled, grounded tarot reader. Write a personalized tarot interpretation in second person ("you").
+
+Important rule: the "canonical meaning excerpts" provided for each card are the ground truth. Do not contradict them. You may elaborate, but stay consistent.
 
 `;
 
   if (zodiacSign) {
-    prompt += `The querent is a ${zodiacSign}. Consider their zodiac characteristics in your interpretation.\n`;
+    prompt += `Zodiac: ${zodiacSign}\n`;
   }
 
   if (goals && goals.length > 0) {
-    prompt += `Their current life focus areas are: ${goals.join(", ")}.\n`;
+    prompt += `Life focus areas: ${goals.join(", ")}\n`;
   }
 
   if (focusArea) {
-    prompt += `They specifically want insight about: ${focusArea}.\n`;
+    prompt += `Reading focus: ${focusArea}\n`;
   }
 
   if (question) {
-    prompt += `\nTheir question: "${question}"\n`;
+    prompt += `Question: "${question}"\n`;
   }
 
-  prompt += `\nSpread Type: ${spreadType}\n\nCards drawn:\n`;
+  prompt += `\nSpread: ${spreadType}\n\nCards:\n`;
 
   cards.forEach((card, index) => {
     const position = positions[index] || `Position ${index + 1}`;
-    const orientation = card.reversed ? "(Reversed)" : "(Upright)";
-    const cardMeaning = card.reversed ? card.meaningReversed : card.meaningUpright;
-    prompt += `- ${position}: ${card.name} ${orientation}\n`;
-    if (card.keywords && card.keywords.length > 0) {
+    const orientation = card.reversed ? "Reversed" : "Upright";
+
+    const baseMeaning = card.reversed ? card.meaningReversed : card.meaningUpright;
+
+    const focusMeaning =
+      focusArea === "love"
+        ? card.loveMeaning
+        : focusArea === "career"
+          ? card.careerMeaning
+          : undefined;
+
+    const canonical = focusMeaning || baseMeaning;
+
+    prompt += `\n- ${position}: ${card.name} (${orientation})\n`;
+
+    if (card.keywords?.length) {
       prompt += `  Keywords: ${card.keywords.join(", ")}\n`;
     }
-    if (cardMeaning) {
-      prompt += `  Card meaning: ${cardMeaning}\n`;
+
+    if (canonical) {
+      prompt += `  Canonical meaning excerpt: ${excerpt(canonical, 320)}\n`;
+    } else if (baseMeaning) {
+      prompt += `  Canonical meaning excerpt: ${excerpt(baseMeaning, 320)}\n`;
     }
   });
 
-  if (userContext?.journalThemes && userContext.journalThemes.length > 0) {
-    prompt += `\nRecent themes from their journal entries: ${userContext.journalThemes.join(", ")}\n`;
+  if (userContext?.journalThemes?.length) {
+    prompt += `\nRecent themes: ${userContext.journalThemes.join(", ")}\n`;
   }
 
-  prompt += `\nProvide an interpretation that:
-1. Uses the provided card meanings as the authoritative interpretation - do not contradict them
-2. Addresses each card in its position, building on the provided meaning
-3. Weaves the cards together into a cohesive narrative
-4. Offers practical guidance they can apply
-5. Ends with an empowering message
+  prompt += `
 
-Write in second person ("you"). Be warm but not overly mystical. Keep the total response under 500 words.`;
+Write:
+1) A short overview tying the spread together (2-4 sentences)
+2) A section for each position (1 short paragraph each)
+3) 3 practical actions (bullets)
+4) A calm, empowering closing (1-2 sentences)
+
+Tone: warm, clear, practical. Not overly mystical. Avoid medical/legal/financial certainty.
+Keep under 500 words.`;
 
   return prompt;
 }
@@ -160,7 +190,7 @@ async function callGemini(prompt: string): Promise<string> {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.8,
+          temperature: 0.7,
           maxOutputTokens: 1024,
         },
       }),

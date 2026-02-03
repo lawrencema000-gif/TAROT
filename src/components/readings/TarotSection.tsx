@@ -21,11 +21,10 @@ import { Card, Button, Sheet, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../lib/supabase';
-import { spreadTypes } from '../../data/tarotDeck';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { TarotCardDetail } from './TarotCardDetail';
 import { CelticCrossLayout } from './CelticCrossLayout';
-import { generatePremiumReading, tarotCardToReadingCard } from '../../services/readingInterpretation';
+import { generatePremiumReading, tarotCardToReadingCard, getSpreadPositions } from '../../services/readingInterpretation';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
@@ -69,7 +68,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [loading, setLoading] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const [shuffledDeck, setShuffledDeck] = useState<{ card: TarotCard; reversed: boolean }[]>([]);
+  const [deckCards, setDeckCards] = useState<number[]>([]);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
@@ -127,6 +126,15 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     checkTemporaryAccess();
   }, [profile?.isPremium, showWatchAdSheet]);
 
+  const shuffleArray = <T,>(input: T[]): T[] => {
+    const arr = [...input];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
   const handleStartDraw = () => {
     setView('focus');
     setSelectedFocus(null);
@@ -174,40 +182,62 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setIsShuffling(true);
 
     setTimeout(() => {
-      const deck = tarotCards.length > 0 ? tarotCards : [];
-      const shuffled = [...deck]
-        .sort(() => Math.random() - 0.5)
-        .map(card => ({
-          card,
-          reversed: Math.random() > 0.5,
-        }));
-      setShuffledDeck(shuffled);
+      const baseIds =
+        tarotCards.length > 0
+          ? tarotCards.map(c => c.id)
+          : Array.from({ length: 78 }, (_, i) => i);
+
+      const shuffledIds = shuffleArray(baseIds);
+
+      setDeckCards(shuffledIds);
       setSelectedIndices([]);
+      setAiInterpretation(null);
+      setShowAIInterpretation(false);
+      setIsSaved(false);
+
       setIsShuffling(false);
       setView('select');
     }, 2000);
   };
 
-  const handleCardSelect = (index: number) => {
+  const handleCardSelect = (cardId: number) => {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
     if (!spread) return;
 
-    if (selectedIndices.includes(index)) {
-      setSelectedIndices(prev => prev.filter(i => i !== index));
+    if (selectedIndices.includes(cardId)) {
+      setSelectedIndices(prev => prev.filter(id => id !== cardId));
     } else if (selectedIndices.length < spread.count) {
-      setSelectedIndices(prev => [...prev, index]);
+      setSelectedIndices(prev => [...prev, cardId]);
     }
   };
 
   const handleRevealSelected = () => {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
     if (!spread || selectedIndices.length !== spread.count) return;
+    if (tarotCards.length === 0) return;
 
-    const selectedCards = selectedIndices.map(index => ({
-      ...shuffledDeck[index],
-      revealed: false,
-    }));
-    setDrawnCards(selectedCards);
+    const cardById = new Map(tarotCards.map(c => [c.id, c]));
+    const selectedCards = selectedIndices
+      .map(id => cardById.get(id))
+      .filter((c): c is TarotCard => !!c);
+
+    if (selectedCards.length !== spread.count) {
+      toast('Some selected cards could not be found. Please reshuffle and try again.', 'error');
+      return;
+    }
+
+    const reversedChance = 0.35;
+
+    setDrawnCards(
+      selectedCards.map(card => ({
+        card,
+        reversed: Math.random() < reversedChance,
+        revealed: false,
+      }))
+    );
+
+    setAiInterpretation(null);
+    setShowAIInterpretation(false);
     setView('reveal');
   };
 
@@ -263,10 +293,13 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       const readingCards = drawnCards.map(d => tarotCardToReadingCard(d.card, d.reversed));
       const zodiacSign = profile.birthDate ? getZodiacSign(profile.birthDate) : undefined;
 
+      const focusForAI: 'love' | 'career' | 'general' =
+        selectedFocus === 'Love' ? 'love' : selectedFocus === 'Career' ? 'career' : 'general';
+
       const result = await generatePremiumReading({
         cards: readingCards,
         spreadType: currentSpread,
-        focusArea: selectedFocus?.toLowerCase() as 'love' | 'career' | 'general',
+        focusArea: focusForAI,
         zodiacSign: zodiacSign,
         goals: profile.goals,
       });
@@ -285,18 +318,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
   const getPositionLabel = (index: number): string => {
     if (currentSpread === 'single') return 'Your Card';
-    if (currentSpread === 'three-card') return ['Past', 'Present', 'Future'][index];
-    if (currentSpread === 'celtic-cross') return spreadTypes.celticCross.positions[index];
-    if (currentSpread === 'relationship') {
-      return ['Your energy', 'Their energy', 'What brings you together', 'Challenges', 'Path forward'][index];
-    }
-    if (currentSpread === 'career') {
-      return ['Current position', 'Challenges', 'Hidden influences', 'Your strengths', 'External factors', 'Path forward'][index];
-    }
-    if (currentSpread === 'shadow') {
-      return ['What you hide', 'Root cause', 'How it manifests', 'What you fear', 'Hidden strength', 'Integration', 'Transformed self'][index];
-    }
-    return `Position ${index + 1}`;
+    if (currentSpread === 'three-card') return ['Past', 'Present', 'Future'][index] || `Position ${index + 1}`;
+
+    const positions = getSpreadPositions(currentSpread);
+    return positions[index] || `Position ${index + 1}`;
   };
 
   const getFocusInterpretation = (card: TarotCard, focus: FocusArea | null, reversed: boolean): { content: string; icon: typeof Heart; label: string; color: string } | null => {
@@ -465,14 +490,14 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
         <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-20">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-            {shuffledDeck.map((_, deckIndex) => {
-              const isSelected = selectedIndices.includes(deckIndex);
-              const selectionOrder = selectedIndices.indexOf(deckIndex) + 1;
+            {deckCards.map((cardId) => {
+              const isSelected = selectedIndices.includes(cardId);
+              const selectionOrder = selectedIndices.indexOf(cardId) + 1;
 
               return (
                 <button
-                  key={deckIndex}
-                  onClick={() => handleCardSelect(deckIndex)}
+                  key={cardId}
+                  onClick={() => handleCardSelect(cardId)}
                   className="relative group"
                 >
                   <div
@@ -759,8 +784,24 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                                 {drawn.reversed ? 'Reversed' : 'Upright'}
                               </span>
                             </div>
-                            <p className="text-sm text-mystic-300 leading-relaxed">
-                              {drawn.reversed ? drawn.card.meaningReversed : drawn.card.meaningUpright}
+                            <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">
+                              {(() => {
+                                const focus = selectedFocus;
+                                const focusMeaning =
+                                  focus === 'Love'
+                                    ? drawn.card.loveMeaning
+                                    : focus === 'Career'
+                                      ? drawn.card.careerMeaning
+                                      : undefined;
+                                const mainText =
+                                  focusMeaning ||
+                                  (drawn.reversed ? drawn.card.meaningReversed : drawn.card.meaningUpright);
+                                const reversalAddon =
+                                  focusMeaning && drawn.reversed
+                                    ? `\n\nReversal note: ${drawn.card.meaningReversed}`
+                                    : '';
+                                return `${mainText}${reversalAddon}`;
+                              })()}
                             </p>
                           </div>
                         )}

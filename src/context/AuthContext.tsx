@@ -776,6 +776,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
 
+    const { getBillingService } = await import('../services/billing');
+    const billingService = getBillingService();
+    await billingService.logOut();
+
     logInfo('auth.signOut.complete', 'Sign out complete');
     endSpan(span, 'success');
   };

@@ -36,6 +36,7 @@ export interface BillingService {
   provider: BillingProvider;
   initialize(userId?: string): Promise<boolean>;
   setUserId(userId: string): Promise<void>;
+  logOut(): Promise<void>;
   getProducts(productIds: string[]): Promise<Product[]>;
   purchase(productId: string, product?: Product): Promise<PurchaseResult>;
   restorePurchases(): Promise<PurchaseResult[]>;
@@ -107,6 +108,18 @@ class NativeBillingService implements BillingService {
       }
     } catch (error) {
       console.error('[RevenueCat] Failed to set user ID:', error);
+    }
+  }
+
+  async logOut(): Promise<void> {
+    try {
+      if (this.initialized) {
+        await Purchases.logOut();
+        this.userId = undefined;
+        console.log('[RevenueCat] User logged out');
+      }
+    } catch (error) {
+      console.error('[RevenueCat] Failed to log out:', error);
     }
   }
 
@@ -307,9 +320,9 @@ class NativeBillingService implements BillingService {
 
     try {
       const result = await Purchases.restorePurchases();
-      const entitlements = result.customerInfo.entitlements.active;
+      const isPremium = !!result.customerInfo.entitlements.active[ENTITLEMENT_ID];
 
-      if (Object.keys(entitlements).length > 0) {
+      if (isPremium) {
         return [
           {
             success: true,
@@ -332,8 +345,8 @@ class NativeBillingService implements BillingService {
     }
 
     try {
-      const customerInfo = await Purchases.getCustomerInfo();
-      return customerInfo.customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      return !!customerInfo.entitlements.active[ENTITLEMENT_ID];
     } catch (error) {
       console.error('Failed to check premium status:', error);
       return false;
@@ -369,6 +382,10 @@ class WebBillingService implements BillingService {
 
   async setUserId(userId: string): Promise<void> {
     this.userId = userId;
+  }
+
+  async logOut(): Promise<void> {
+    this.userId = undefined;
   }
 
   async getProducts(): Promise<Product[]> {

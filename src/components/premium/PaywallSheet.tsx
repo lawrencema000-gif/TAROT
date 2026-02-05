@@ -48,9 +48,9 @@ interface DisplayPlan {
 }
 
 const FALLBACK_PRICES: Record<string, string> = {
-  [PRODUCT_IDS.PREMIUM_MONTHLY]: '$7.99',
-  [PRODUCT_IDS.PREMIUM_YEARLY]: '$39.99',
-  [PRODUCT_IDS.PREMIUM_LIFETIME]: '$59.99',
+  [PRODUCT_IDS.PREMIUM_MONTHLY]: '$4.99',
+  [PRODUCT_IDS.PREMIUM_YEARLY]: '$24.99',
+  [PRODUCT_IDS.PREMIUM_LIFETIME]: '$29.99',
 };
 
 function matchesProductId(productId: string, targetId: string): boolean {

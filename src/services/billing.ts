@@ -239,14 +239,6 @@ class NativeBillingService implements BillingService {
 
     console.log('[RevenueCat] Starting purchase for:', _productId, 'hasRcPackage:', !!product?.rcPackage);
 
-    const billingCheck = await preventDoubleBilling(this.userId || '', 'mobile');
-    if (!billingCheck.allowed) {
-      return {
-        success: false,
-        error: billingCheck.reason || 'Already have premium',
-      };
-    }
-
     try {
       let packageToPurchase = product?.rcPackage;
 
@@ -287,12 +279,24 @@ class NativeBillingService implements BillingService {
       });
 
       const isPremium = result.customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+      const transactionId = result.transaction?.transactionIdentifier || result.productIdentifier;
 
-      console.log('[RevenueCat] Purchase result:', { isPremium, entitlements: Object.keys(result.customerInfo.entitlements.active) });
+      console.log('[RevenueCat] Purchase result:', {
+        isPremium,
+        transactionId,
+        entitlements: Object.keys(result.customerInfo.entitlements.active),
+      });
+
+      if (isPremium) {
+        const billingCheck = await preventDoubleBilling(this.userId || '', 'mobile');
+        if (!billingCheck.allowed) {
+          console.warn('[RevenueCat] DB billing guard warning (purchase succeeded):', billingCheck.reason);
+        }
+      }
 
       return {
         success: isPremium,
-        transactionId: result.customerInfo.originalAppUserId,
+        transactionId,
         productId: _productId,
       };
     } catch (error: unknown) {
@@ -322,11 +326,16 @@ class NativeBillingService implements BillingService {
       const result = await Purchases.restorePurchases();
       const isPremium = !!result.customerInfo.entitlements.active[ENTITLEMENT_ID];
 
+      console.log('[RevenueCat] Restore result:', {
+        isPremium,
+        entitlements: Object.keys(result.customerInfo.entitlements.active),
+      });
+
       if (isPremium) {
         return [
           {
             success: true,
-            transactionId: result.customerInfo.originalAppUserId,
+            transactionId: `restored-${result.customerInfo.originalAppUserId}`,
             productId: ENTITLEMENT_ID,
           },
         ];
@@ -334,7 +343,7 @@ class NativeBillingService implements BillingService {
 
       return [];
     } catch (error) {
-      console.error('Failed to restore purchases:', error);
+      console.error('[RevenueCat] Failed to restore purchases:', error);
       return [];
     }
   }

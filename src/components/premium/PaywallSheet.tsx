@@ -355,6 +355,18 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
             </div>
           )}
 
+          {!loadingProducts && !hasRealProducts && !productError && (
+            <div className="w-full max-w-sm mb-4">
+              <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-amber-300 font-medium mb-1">Premium Not Available</p>
+                  <p className="text-xs text-amber-400/80">RevenueCat offerings need to be configured. Purchases are disabled until setup is complete.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="w-full max-w-sm space-y-3 mb-6">
             {loadingProducts ? (
               <div className="flex flex-col items-center justify-center py-8">
@@ -415,10 +427,14 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               size="lg"
               onClick={handlePurchase}
               loading={purchasing}
-              disabled={loadingProducts}
+              disabled={loadingProducts || !hasRealProducts}
               className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
             >
-              {selectedPlan === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Now'}
+              {!hasRealProducts && !loadingProducts
+                ? 'Premium Not Available'
+                : selectedPlan === 'lifetime'
+                ? 'Get Lifetime Access'
+                : 'Subscribe Now'}
             </Button>
 
             <button

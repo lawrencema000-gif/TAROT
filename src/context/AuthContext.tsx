@@ -57,6 +57,7 @@ interface DbProfile {
   notifications_enabled: boolean;
   onboarding_complete: boolean;
   is_premium: boolean;
+  is_ad_free: boolean;
   streak: number;
   mbti_type?: string;
   love_language?: string;
@@ -88,6 +89,7 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     notificationsEnabled: db.notifications_enabled ?? true,
     onboardingComplete: db.onboarding_complete,
     isPremium: db.is_premium,
+    isAdFree: db.is_ad_free ?? false,
     streak: db.streak,
     mbtiType: db.mbti_type,
     loveLanguage: db.love_language,

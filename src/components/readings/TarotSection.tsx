@@ -32,8 +32,37 @@ import { adsService } from '../../services/ads';
 import { getBundledCardPath } from '../../config/bundledImages';
 import { WatchAdSheet } from '../premium';
 import { rewardedAdsService } from '../../services/rewardedAds';
-import { spreadTypeToFeature, type PremiumFeature } from '../../services/premium';
+import { spreadTypeToFeature, FREE_TIER, type PremiumFeature } from '../../services/premium';
 import { isNative } from '../../utils/platform';
+
+const DAILY_READINGS_KEY = 'arcana_daily_readings';
+const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
+
+function getDailyReadingCount(): number {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const storedDate = localStorage.getItem(DAILY_READINGS_DATE_KEY);
+    if (storedDate !== today) {
+      localStorage.setItem(DAILY_READINGS_DATE_KEY, today);
+      localStorage.setItem(DAILY_READINGS_KEY, '0');
+      return 0;
+    }
+    return parseInt(localStorage.getItem(DAILY_READINGS_KEY) || '0', 10);
+  } catch {
+    return 0;
+  }
+}
+
+function incrementDailyReadingCount(): void {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(DAILY_READINGS_DATE_KEY, today);
+    const current = getDailyReadingCount();
+    localStorage.setItem(DAILY_READINGS_KEY, (current + 1).toString());
+  } catch {
+    // silent
+  }
+}
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
@@ -77,8 +106,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [pendingFeature, setPendingFeature] = useState<PremiumFeature | null>(null);
   const [pendingSpreadId, setPendingSpreadId] = useState<string | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
+  const [dailyReadingCount, setDailyReadingCount] = useState(getDailyReadingCount);
 
   const today = new Date().toISOString().split('T')[0];
+  const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
 
   const getCardImage = (card: TarotCard): string | undefined => {
     const bundledPath = getBundledCardPath(card.id);
@@ -136,6 +167,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   const handleStartDraw = () => {
+    if (isAtDailyLimit) {
+      if (isNative() && rewardedAdsService.canWatchAd()) {
+        setPendingFeature('extra_reading');
+        setPendingSpreadId(null);
+        setShowWatchAdSheet(true);
+      } else {
+        onShowPaywall('Unlimited Readings');
+      }
+      return;
+    }
+
     setView('focus');
     setSelectedFocus(null);
     setIsSaved(false);
@@ -170,10 +212,19 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
   const handleAdUnlocked = async () => {
     setShowWatchAdSheet(false);
-    if (pendingSpreadId) {
+
+    if (pendingFeature === 'extra_reading') {
+      setView('focus');
+      setSelectedFocus(null);
+      setIsSaved(false);
+      setInterpretationView('focus');
+      setShowAIInterpretation(false);
+      setAiInterpretation(null);
+    } else if (pendingSpreadId) {
       setHasTemporaryAccess(prev => ({ ...prev, [pendingSpreadId]: true }));
       setView('shuffle');
     }
+
     setPendingFeature(null);
     setPendingSpreadId(null);
   };
@@ -236,6 +287,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       }))
     );
 
+    incrementDailyReadingCount();
+    setDailyReadingCount(getDailyReadingCount());
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setView('reveal');
@@ -276,7 +329,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       setIsSaved(true);
       toast('Reading saved', 'success');
 
-      await adsService.checkAndShowAd(profile?.isPremium || false, 'reading');
+      await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
     }
   };
 

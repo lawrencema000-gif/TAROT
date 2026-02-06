@@ -23,6 +23,7 @@ export interface UserProfile {
   notificationsEnabled: boolean;
   onboardingComplete: boolean;
   isPremium: boolean;
+  isAdFree: boolean;
   streak: number;
   mbtiType?: string;
   loveLanguage?: string;

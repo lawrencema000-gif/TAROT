@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, X, Gift, Clock, Crown } from 'lucide-react';
+import { Play, X, Gift, Clock, Crown, Sparkles, BookOpen } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { PREMIUM_FEATURES, type PremiumFeature } from '../../services/premium';
@@ -12,6 +12,19 @@ interface WatchAdSheetProps {
   onShowPaywall: () => void;
 }
 
+const FEATURE_CONTEXT: Partial<Record<PremiumFeature, { title: string; subtitle: string; icon: typeof Gift }>> = {
+  extra_reading: {
+    title: 'Get an Extra Reading',
+    subtitle: 'Watch a short ad to unlock one more tarot reading today',
+    icon: Sparkles,
+  },
+  deep_interpretations: {
+    title: 'Unlock Extended Interpretation',
+    subtitle: 'Watch a short ad for a deeper look into your cards',
+    icon: BookOpen,
+  },
+};
+
 export function WatchAdSheet({
   open,
   onClose,
@@ -22,8 +35,13 @@ export function WatchAdSheet({
   const [loading, setLoading] = useState(false);
   const remainingUnlocks = rewardedAdsService.getRemainingUnlocks();
   const featureDef = PREMIUM_FEATURES[feature];
+  const context = FEATURE_CONTEXT[feature];
 
   if (!open) return null;
+
+  const title = context?.title || `Try ${featureDef.name}`;
+  const subtitle = context?.subtitle || 'Watch a short ad to unlock this premium feature for one use';
+  const Icon = context?.icon || Gift;
 
   const handleWatchAd = async () => {
     setLoading(true);
@@ -70,16 +88,16 @@ export function WatchAdSheet({
         <div className="relative px-6 pt-8 pb-6">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-              <Gift className="w-8 h-8 text-gold" />
+              <Icon className="w-8 h-8 text-gold" />
             </div>
           </div>
 
           <h2 className="font-display text-xl text-center text-mystic-100 mb-2">
-            Try {featureDef.name}
+            {title}
           </h2>
 
           <p className="text-sm text-mystic-400 text-center mb-4">
-            Watch a short ad to unlock this premium feature for one use
+            {subtitle}
           </p>
 
           <div className="flex items-center justify-center gap-2 px-3 py-2 bg-mystic-800/50 rounded-full mb-6">

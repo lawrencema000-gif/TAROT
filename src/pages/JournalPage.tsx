@@ -275,7 +275,7 @@ export function JournalPage() {
     toast(lock ? 'Entry saved & locked' : 'Entry saved', 'success');
 
     if (!editingEntry) {
-      await adsService.checkAndShowAd(profile?.isPremium || false, 'journal');
+      await adsService.checkAndShowAd(profile?.isPremium || false, 'journal', profile?.isAdFree || false);
     }
   };
 

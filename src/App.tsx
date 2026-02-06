@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
+import { BannerAd } from './components/ads';
 import { DevicePreview } from './components/dev/DevicePreview';
 import { ToastContainer } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
@@ -216,6 +217,12 @@ function AppContent() {
 
   const currentPage = pageTitles[activeTab] || pageTitles.home;
 
+  const BANNER_TABS = new Set(['readings', 'journal', 'achievements', 'profile']);
+  const showBanner = useMemo(
+    () => BANNER_TABS.has(activeTab) && !activeOverlay,
+    [activeTab, activeOverlay]
+  );
+
   return (
     <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
       <div className="min-h-screen pb-24 relative constellation-bg">
@@ -231,6 +238,11 @@ function AppContent() {
         ) : (
           <div className="fixed inset-0 z-0 opacity-60" />
         )}
+        <BannerAd
+          visible={showBanner}
+          isPremium={profile?.isPremium || false}
+          isAdFree={profile?.isAdFree || false}
+        />
         <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top">
           <Header
             title={currentPage.title}

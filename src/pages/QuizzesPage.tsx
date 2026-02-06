@@ -283,7 +283,7 @@ export function QuizzesPage() {
         });
         loadPastResults();
 
-        await adsService.checkAndShowAd(profile?.isPremium || false, 'quiz');
+        await adsService.checkAndShowAd(profile?.isPremium || false, 'quiz', profile?.isAdFree || false);
       }
 
       setResult({ quiz: progress.quiz, result: calculatedResult });

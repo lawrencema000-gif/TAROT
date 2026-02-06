@@ -7,7 +7,8 @@ export type PremiumFeature =
   | 'guided_prompts'
   | 'journal_insights'
   | 'personalization'
-  | 'birth_chart';
+  | 'birth_chart'
+  | 'extra_reading';
 
 export interface FeatureDefinition {
   id: PremiumFeature;
@@ -63,11 +64,18 @@ export const PREMIUM_FEATURES: Record<PremiumFeature, FeatureDefinition> = {
     name: 'Birth Chart Analysis',
     description: 'Complete astrological birth chart breakdown',
   },
+  extra_reading: {
+    id: 'extra_reading',
+    name: 'Extra Reading',
+    description: 'One additional tarot reading beyond your daily limit',
+    freeLimit: 3,
+  },
 };
 
 export const FREE_TIER = {
   saves: 10,
   spreads: ['single'] as const,
+  dailyReadings: 3,
   quizBasicResults: true,
   dailyHoroscope: true,
   dailyTarot: true,
@@ -138,6 +146,7 @@ export function isFeatureUnlockable(feature: PremiumFeature): boolean {
     'guided_prompts',
     'journal_insights',
     'birth_chart',
+    'extra_reading',
   ];
   return unlockableFeatures.includes(feature);
 }

@@ -2,27 +2,17 @@ import { useState } from 'react';
 import {
   Sparkles,
   ChevronRight,
-  ChevronLeft,
-  Calendar,
-  Clock,
-  MapPin,
-  Bell,
   Mail,
   Lock,
   Eye,
   EyeOff,
-  User,
-  Heart,
-  Feather,
-  Zap,
   Check,
+  ArrowLeft,
 } from 'lucide-react';
-import { Button, Input, Chip, toast } from '../components/ui';
+import { Button, Input, toast } from '../components/ui';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { validateBirthDate } from '../utils/validation';
 import { getAuthErrorMessage } from '../utils/authErrors';
-import type { Goal, TonePreference, OnboardingData } from '../types';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -35,23 +25,6 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-
-const goalOptions: { label: string; value: Goal }[] = [
-  { label: 'Love', value: 'love' },
-  { label: 'Career', value: 'career' },
-  { label: 'Confidence', value: 'confidence' },
-  { label: 'Healing', value: 'healing' },
-  { label: 'Focus', value: 'focus' },
-  { label: 'Purpose', value: 'purpose' },
-  { label: 'Stress', value: 'stress' },
-];
-
-const toneOptions: { value: TonePreference; label: string; description: string; icon: typeof Heart }[] = [
-  { value: 'gentle', label: 'Gentle & supportive', description: 'Warm, nurturing guidance', icon: Heart },
-  { value: 'direct', label: 'Direct & honest', description: 'Clear, straightforward insights', icon: Zap },
-  { value: 'playful', label: 'Playful & mystical', description: 'Whimsical, enchanting wisdom', icon: Feather },
-];
-
 interface OnboardingPageProps {
   onComplete: () => void;
   onSwitchToSignIn: () => void;
@@ -63,56 +36,9 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [birthDateError, setBirthDateError] = useState('');
-  const [data, setData] = useState<OnboardingData>({
-    goals: [],
-    birthDate: '',
-    birthTime: '',
-    birthPlace: '',
-    tonePreference: 'gentle',
-    notificationsEnabled: true,
-    notificationTime: '09:00',
-    email: '',
-    password: '',
-    subscribedToNewsletter: true,
-  });
-
-  const totalSteps = 6;
-
-  const canProceed = () => {
-    switch (step) {
-      case 0: return true;
-      case 1: return data.goals.length > 0;
-      case 2: return data.birthDate !== '' && !birthDateError;
-      case 3: return true;
-      case 4: return true;
-      case 5: return true;
-      default: return false;
-    }
-  };
-
-  const handleBirthDateChange = (value: string) => {
-    setData(d => ({ ...d, birthDate: value }));
-
-    if (value) {
-      const validation = validateBirthDate(value);
-      if (!validation.valid) {
-        setBirthDateError(validation.error || 'Invalid birth date');
-      } else {
-        setBirthDateError('');
-      }
-    } else {
-      setBirthDateError('');
-    }
-  };
-
-  const handleEmailSignup = () => {
-    if (!data.email.includes('@') || data.password.length < 6) {
-      toast('Please enter a valid email and password (min 6 characters).', 'error');
-      return;
-    }
-    setStep(5);
-  };
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(true);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -123,41 +49,45 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
     setGoogleLoading(false);
   };
 
-  const handleCompleteOnboarding = async () => {
+  const handleEmailSignup = async () => {
+    if (!email.includes('@') || password.length < 6) {
+      toast('Please enter a valid email and password (min 6 characters).', 'error');
+      return;
+    }
+
     setLoading(true);
 
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
+      email,
+      password,
     });
 
     if (signUpError) {
-      toast(getAuthErrorMessage(signUpError), 'error');
+      const message = getAuthErrorMessage(signUpError);
+      const isUserExists = signUpError.message?.toLowerCase().includes('already') ||
+        signUpError.message?.toLowerCase().includes('duplicate');
+
+      if (isUserExists) {
+        toast(message + ' Try signing in instead.', 'error');
+      } else {
+        toast(message, 'error');
+      }
       setLoading(false);
       return;
     }
 
     if (authData.user) {
-      const shouldSubscribe = data.subscribedToNewsletter;
-
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: authData.user.id,
-        email: data.email,
-        display_name: data.email.split('@')[0],
-        goals: data.goals,
-        birth_date: data.birthDate,
-        birth_time: data.birthTime || null,
-        birth_place: data.birthPlace || null,
+        email,
+        display_name: email.split('@')[0],
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        tone_preference: data.tonePreference,
-        notifications_enabled: data.notificationsEnabled,
-        notification_time: data.notificationTime,
-        onboarding_complete: true,
+        onboarding_complete: false,
         is_premium: false,
         is_guest: false,
         streak: 0,
-        subscribed_to_newsletter: shouldSubscribe,
-        newsletter_subscribed_at: shouldSubscribe ? new Date().toISOString() : null,
+        subscribed_to_newsletter: subscribedToNewsletter,
+        newsletter_subscribed_at: subscribedToNewsletter ? new Date().toISOString() : null,
       });
 
       if (profileError) {
@@ -166,33 +96,18 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         return;
       }
 
-      toast('Welcome to Arcana!', 'success');
+      toast('Account created! Let\'s personalize your experience.', 'success');
       onComplete();
     }
 
     setLoading(false);
   };
 
-  const nextStep = () => {
-    if (step < totalSteps - 1) {
-      setStep(s => s + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (step > 0) {
-      setStep(s => s - 1);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
-      {step > 0 && (
+      {step === 1 && (
         <div className="h-1 bg-mystic-800/50">
-          <div
-            className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-500 ease-out"
-            style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
-          />
+          <div className="h-full bg-gradient-to-r from-gold/80 to-gold w-full transition-all duration-500 ease-out" />
         </div>
       )}
 
@@ -214,7 +129,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   Your daily ritual starts here.
                 </h1>
                 <p className="text-mystic-400 text-lg leading-relaxed">
-                  Tarot, astrology, and personality insights—beautifully combined.
+                  Tarot, astrology, and personality insights -- beautifully combined.
                 </p>
               </div>
 
@@ -222,10 +137,10 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 <Button
                   variant="gold"
                   fullWidth
-                  onClick={nextStep}
+                  onClick={() => setStep(1)}
                   className="min-h-[52px]"
                 >
-                  Continue
+                  Get Started
                   <ChevronRight className="w-4 h-4" />
                 </Button>
 
@@ -242,143 +157,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
           {step === 1 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  What do you want help with?
-                </h2>
-                <p className="text-mystic-400">Select all that apply</p>
-              </div>
-
-              <div className="flex flex-wrap gap-3 justify-center">
-                {goalOptions.map(option => (
-                  <Chip
-                    key={option.value}
-                    label={option.label}
-                    selected={data.goals.includes(option.value)}
-                    onSelect={() => {
-                      setData(d => ({
-                        ...d,
-                        goals: d.goals.includes(option.value)
-                          ? d.goals.filter(g => g !== option.value)
-                          : [...d.goals, option.value],
-                      }));
-                    }}
-                    size="lg"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <Calendar className="w-8 h-8 text-gold" />
-                </div>
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Your cosmic basics
-                </h2>
-                <p className="text-mystic-400">This determines your zodiac sign</p>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-mystic-300 mb-2">
-                    Birth date <span className="text-coral">*</span>
-                  </label>
-                  <Input
-                    type="date"
-                    value={data.birthDate}
-                    onChange={e => handleBirthDateChange(e.target.value)}
-                    min={(() => {
-                      const date = new Date();
-                      date.setFullYear(date.getFullYear() - 120);
-                      return date.toISOString().split('T')[0];
-                    })()}
-                    max={new Date().toISOString().split('T')[0]}
-                  />
-                  {birthDateError && (
-                    <p className="text-sm text-coral mt-2">{birthDateError}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
-                    <Clock className="w-4 h-4 text-mystic-500" />
-                    Birth time
-                    <span className="text-xs text-mystic-500 font-normal">(optional)</span>
-                  </label>
-                  <Input
-                    type="time"
-                    value={data.birthTime}
-                    onChange={e => setData(d => ({ ...d, birthTime: e.target.value }))}
-                  />
-                  <p className="text-xs text-mystic-500 mt-1.5">For deeper chart accuracy</p>
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
-                    <MapPin className="w-4 h-4 text-mystic-500" />
-                    Birth place
-                    <span className="text-xs text-mystic-500 font-normal">(optional)</span>
-                  </label>
-                  <Input
-                    value={data.birthPlace}
-                    onChange={e => setData(d => ({ ...d, birthPlace: e.target.value }))}
-                    placeholder="City, Country"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="text-center">
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Pick your vibe
-                </h2>
-                <p className="text-mystic-400">How should we speak to you?</p>
-              </div>
-
-              <div className="space-y-3">
-                {toneOptions.map(option => {
-                  const Icon = option.icon;
-                  const isSelected = data.tonePreference === option.value;
-
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => setData(d => ({ ...d, tonePreference: option.value }))}
-                      className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] flex items-center gap-4 ${
-                        isSelected
-                          ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
-                          : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                        isSelected ? 'bg-gold/20' : 'bg-mystic-700/30'
-                      }`}>
-                        <Icon className={`w-6 h-6 ${isSelected ? 'text-gold' : 'text-mystic-400'}`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className={`font-medium ${isSelected ? 'text-gold' : 'text-mystic-200'}`}>
-                          {option.label}
-                        </p>
-                        <p className="text-sm text-mystic-500">{option.description}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <User className="w-8 h-8 text-gold" />
+                  <Sparkles className="w-8 h-8 text-gold" />
                 </div>
                 <h2 className="font-display text-2xl text-mystic-100 mb-2">
                   Create your account
@@ -413,8 +193,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 <div className="space-y-4">
                   <Input
                     type="email"
-                    value={data.email}
-                    onChange={e => setData(d => ({ ...d, email: e.target.value }))}
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
                     placeholder="Email address"
                     icon={<Mail className="w-5 h-5" />}
                   />
@@ -422,8 +202,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   <div className="relative">
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      value={data.password}
-                      onChange={e => setData(d => ({ ...d, password: e.target.value }))}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
                       placeholder="Password (min 6 characters)"
                       icon={<Lock className="w-5 h-5" />}
                     />
@@ -438,15 +218,15 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
                   <button
                     type="button"
-                    onClick={() => setData(d => ({ ...d, subscribedToNewsletter: !d.subscribedToNewsletter }))}
+                    onClick={() => setSubscribedToNewsletter(!subscribedToNewsletter)}
                     className="w-full flex items-start gap-3 text-left py-2"
                   >
                     <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                      data.subscribedToNewsletter
+                      subscribedToNewsletter
                         ? 'bg-gold border-gold'
                         : 'border-mystic-600 hover:border-mystic-500'
                     }`}>
-                      {data.subscribedToNewsletter && <Check className="w-3 h-3 text-mystic-900" />}
+                      {subscribedToNewsletter && <Check className="w-3 h-3 text-mystic-900" />}
                     </div>
                     <span className="text-sm text-mystic-400 leading-snug">
                       Subscribe to newsletters and promotions. Get cosmic insights, tips, and exclusive offers.
@@ -457,100 +237,30 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     variant="gold"
                     fullWidth
                     onClick={handleEmailSignup}
-                    disabled={loading || !data.email || data.password.length < 6}
+                    disabled={loading || !email || password.length < 6}
                     loading={loading}
                     className="min-h-[48px]"
                   >
-                    Sign up with email
+                    Create Account
                   </Button>
                 </div>
               </div>
-            </div>
-          )}
 
-          {step === 5 && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <Bell className="w-8 h-8 text-gold" />
-                </div>
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Daily reminder?
-                </h2>
-                <p className="text-mystic-400">
-                  We'll remind you once per day. No spam.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <button
-                  onClick={() => setData(d => ({ ...d, notificationsEnabled: true }))}
-                  className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
-                    data.notificationsEnabled
-                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
-                      : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
-                  }`}
-                >
-                  <span className={`font-medium ${data.notificationsEnabled ? 'text-gold' : 'text-mystic-200'}`}>
-                    Yes, remind me daily
-                  </span>
-                </button>
-
-                {data.notificationsEnabled && (
-                  <div className="px-4 animate-fade-in">
-                    <label className="block text-sm text-mystic-400 mb-2">Reminder time</label>
-                    <Input
-                      type="time"
-                      value={data.notificationTime}
-                      onChange={e => setData(d => ({ ...d, notificationTime: e.target.value }))}
-                    />
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setData(d => ({ ...d, notificationsEnabled: false }))}
-                  className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
-                    !data.notificationsEnabled
-                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
-                      : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
-                  }`}
-                >
-                  <span className={`font-medium ${!data.notificationsEnabled ? 'text-gold' : 'text-mystic-200'}`}>
-                    No thanks
-                  </span>
-                </button>
-              </div>
+              <button
+                onClick={onSwitchToSignIn}
+                className="w-full text-center text-sm text-mystic-400 hover:text-gold transition-colors py-2"
+              >
+                Already have an account? Sign in
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      {step > 0 && step !== 4 && (
-        <div className="p-6 flex gap-3 safe-bottom">
-          {step !== 5 && (
-            <Button variant="ghost" onClick={prevStep} className="min-h-[52px]">
-              <ChevronLeft className="w-4 h-4" />
-              Back
-            </Button>
-          )}
-          <Button
-            variant="gold"
-            fullWidth
-            onClick={step === 5 ? handleCompleteOnboarding : nextStep}
-            disabled={!canProceed() || loading}
-            loading={loading}
-            className="min-h-[52px]"
-          >
-            {step === 5 ? 'Begin Your Journey' : 'Next'}
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
-
-      {step === 4 && (
+      {step === 1 && (
         <div className="p-6 safe-bottom">
-          <Button variant="ghost" onClick={prevStep} className="min-h-[52px] w-full">
-            <ChevronLeft className="w-4 h-4" />
+          <Button variant="ghost" onClick={() => setStep(0)} className="min-h-[52px] w-full">
+            <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
         </div>

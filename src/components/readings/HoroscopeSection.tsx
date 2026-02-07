@@ -28,6 +28,8 @@ import {
 } from '../../data/horoscopes';
 import { fullDeck } from '../../data/tarotDeck';
 import { shareToNative, copyToClipboard } from '../../services/share';
+import { awardXP } from '../../services/levelSystem';
+import { checkAchievementProgress } from '../../services/achievements';
 
 type TimePeriod = 'today' | 'week' | 'month';
 
@@ -62,6 +64,15 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   const planetaryTransit = getPlanetaryTransit(today);
   const affirmation = getDailyAffirmation(zodiacSign, today);
   const luckyNumbers = getLuckyNumbers(today, 6);
+
+  useEffect(() => {
+    if (!user) return;
+    const key = `arcana_horoscope_xp_${today}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    awardXP(user.id, 'horoscope_viewed');
+    checkAchievementProgress(user.id, 'horoscope_viewed');
+  }, [user, today]);
 
   const getDailyTarotCard = () => {
     const dateNum = new Date(today).getTime();

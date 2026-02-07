@@ -1,8 +1,19 @@
 import { useState } from 'react';
-import { ChevronRight, ChevronLeft, Calendar, Clock, MapPin } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronLeft,
+  Calendar,
+  Clock,
+  MapPin,
+  Heart,
+  Feather,
+  Zap,
+  Bell,
+} from 'lucide-react';
 import { Button, Input, Chip, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
+import { supabase } from '../lib/supabase';
 import type { Goal, TonePreference } from '../types';
 
 const goalOptions: { label: string; value: Goal }[] = [
@@ -15,14 +26,66 @@ const goalOptions: { label: string; value: Goal }[] = [
   { label: 'Stress', value: 'stress' },
 ];
 
-const toneOptions: { value: TonePreference; label: string; description: string }[] = [
-  { value: 'gentle', label: 'Gentle & supportive', description: 'Warm guidance' },
-  { value: 'direct', label: 'Direct & honest', description: 'Clear insights' },
-  { value: 'playful', label: 'Playful & mystical', description: 'Whimsical wisdom' },
+const toneOptions: { value: TonePreference; label: string; description: string; icon: typeof Heart }[] = [
+  { value: 'gentle', label: 'Gentle & supportive', description: 'Warm, nurturing guidance', icon: Heart },
+  { value: 'direct', label: 'Direct & honest', description: 'Clear, straightforward insights', icon: Zap },
+  { value: 'playful', label: 'Playful & mystical', description: 'Whimsical, enchanting wisdom', icon: Feather },
 ];
 
 interface OAuthOnboardingPageProps {
   onComplete: () => void;
+}
+
+async function assignRandomVisuals(userId: string) {
+  try {
+    const backgrounds: string[] = [];
+    const { data: bgFolders } = await supabase.storage.from('backgrounds').list('', { limit: 100 });
+    if (bgFolders) {
+      for (const folder of bgFolders) {
+        if (folder.id) continue;
+        const { data: files } = await supabase.storage.from('backgrounds').list(folder.name, { limit: 100 });
+        if (files) {
+          for (const file of files) {
+            if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) {
+              const { data: urlData } = supabase.storage.from('backgrounds').getPublicUrl(`${folder.name}/${file.name}`);
+              if (urlData?.publicUrl) backgrounds.push(urlData.publicUrl);
+            }
+          }
+        }
+      }
+    }
+
+    const cardBacks: string[] = [];
+    const { data: cbFolders } = await supabase.storage.from('card-backs').list('', { limit: 100 });
+    if (cbFolders) {
+      for (const folder of cbFolders) {
+        if (folder.id) continue;
+        const { data: files } = await supabase.storage.from('card-backs').list(folder.name, { limit: 100 });
+        if (files) {
+          for (const file of files) {
+            if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) {
+              const { data: urlData } = supabase.storage.from('card-backs').getPublicUrl(`${folder.name}/${file.name}`);
+              if (urlData?.publicUrl) cardBacks.push(urlData.publicUrl);
+            }
+          }
+        }
+      }
+    }
+
+    const updates: Record<string, string> = {};
+    if (backgrounds.length > 0) {
+      updates.background_url = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+    }
+    if (cardBacks.length > 0) {
+      updates.card_back_url = cardBacks[Math.floor(Math.random() * cardBacks.length)];
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await supabase.from('profiles').update(updates).eq('id', userId);
+    }
+  } catch (err) {
+    console.error('Failed to assign random visuals:', err);
+  }
 }
 
 export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
@@ -36,15 +99,18 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     birthTime: '',
     birthPlace: '',
     tonePreference: 'gentle' as TonePreference,
+    notificationsEnabled: true,
+    notificationTime: '09:00',
   });
 
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const canProceed = () => {
     switch (step) {
       case 0: return data.goals.length > 0;
       case 1: return data.birthDate !== '' && !birthDateError;
       case 2: return true;
+      case 3: return true;
       default: return false;
     }
   };
@@ -73,17 +139,23 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
       birthTime: data.birthTime || undefined,
       birthPlace: data.birthPlace || undefined,
       tonePreference: data.tonePreference,
+      notificationsEnabled: data.notificationsEnabled,
+      notificationTime: data.notificationTime,
       onboardingComplete: true,
     });
 
-    setLoading(false);
-
     if (error) {
       toast('Failed to save profile. Please try again.', 'error');
+      setLoading(false);
       return;
     }
 
+    if (user) {
+      await assignRandomVisuals(user.id);
+    }
+
     toast('Welcome to Arcana!', 'success');
+    setLoading(false);
     onComplete();
   };
 
@@ -104,7 +176,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
       <div className="h-1 bg-mystic-800/50">
         <div
           className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-500 ease-out"
-          style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
+          style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
         />
       </div>
 
@@ -114,7 +186,9 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <span className="text-2xl">👋</span>
+                  <span className="text-2xl">
+                    <Heart className="w-8 h-8 text-gold" />
+                  </span>
                 </div>
                 <h2 className="font-display text-2xl text-mystic-100 mb-2">
                   Welcome, {profile?.displayName || user?.email?.split('@')[0]}!
@@ -223,25 +297,88 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
               <div className="space-y-3">
                 {toneOptions.map(option => {
+                  const Icon = option.icon;
                   const isSelected = data.tonePreference === option.value;
 
                   return (
                     <button
                       key={option.value}
                       onClick={() => setData(d => ({ ...d, tonePreference: option.value }))}
-                      className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
+                      className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] flex items-center gap-4 ${
                         isSelected
                           ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
                           : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
                       }`}
                     >
-                      <p className={`font-medium ${isSelected ? 'text-gold' : 'text-mystic-200'}`}>
-                        {option.label}
-                      </p>
-                      <p className="text-sm text-mystic-500">{option.description}</p>
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                        isSelected ? 'bg-gold/20' : 'bg-mystic-700/30'
+                      }`}>
+                        <Icon className={`w-6 h-6 ${isSelected ? 'text-gold' : 'text-mystic-400'}`} />
+                      </div>
+                      <div className="flex-1">
+                        <p className={`font-medium ${isSelected ? 'text-gold' : 'text-mystic-200'}`}>
+                          {option.label}
+                        </p>
+                        <p className="text-sm text-mystic-500">{option.description}</p>
+                      </div>
                     </button>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-8 animate-fade-in">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
+                  <Bell className="w-8 h-8 text-gold" />
+                </div>
+                <h2 className="font-display text-2xl text-mystic-100 mb-2">
+                  Daily reminder?
+                </h2>
+                <p className="text-mystic-400">
+                  We'll remind you once per day. No spam.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => setData(d => ({ ...d, notificationsEnabled: true }))}
+                  className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
+                    data.notificationsEnabled
+                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
+                      : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
+                  }`}
+                >
+                  <span className={`font-medium ${data.notificationsEnabled ? 'text-gold' : 'text-mystic-200'}`}>
+                    Yes, remind me daily
+                  </span>
+                </button>
+
+                {data.notificationsEnabled && (
+                  <div className="px-4 animate-fade-in">
+                    <label className="block text-sm text-mystic-400 mb-2">Reminder time</label>
+                    <Input
+                      type="time"
+                      value={data.notificationTime}
+                      onChange={e => setData(d => ({ ...d, notificationTime: e.target.value }))}
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setData(d => ({ ...d, notificationsEnabled: false }))}
+                  className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
+                    !data.notificationsEnabled
+                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
+                      : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
+                  }`}
+                >
+                  <span className={`font-medium ${!data.notificationsEnabled ? 'text-gold' : 'text-mystic-200'}`}>
+                    No thanks
+                  </span>
+                </button>
               </div>
             </div>
           )}

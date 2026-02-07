@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { toast } from '../components/ui';
-import { checkAchievementProgress, type UnlockedAchievement } from './achievements';
+import { checkAchievementProgress, checkLevelMilestones, type UnlockedAchievement } from './achievements';
 
 export interface XPReward {
   xp_earned: number;
@@ -55,11 +55,19 @@ export async function awardXP(
       return null;
     }
 
+    const result = data as XPReward;
     const unlockedAchievements = await checkAchievementProgress(userId, activityType);
 
+    const milestoneAchievements = await checkLevelMilestones(
+      userId,
+      result.new_level,
+      result.total_xp,
+      result.seeker_rank
+    );
+
     return {
-      ...(data as XPReward),
-      unlocked_achievements: unlockedAchievements,
+      ...result,
+      unlocked_achievements: [...unlockedAchievements, ...milestoneAchievements],
     };
   } catch (error) {
     console.error('Failed to award XP:', error);

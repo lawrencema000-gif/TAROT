@@ -3,6 +3,12 @@ import type { Tab, DailyHoroscope, TarotReading, JournalEntry } from '../types';
 
 export type OverlayType = 'search' | 'saved' | 'settings' | null;
 
+export interface LevelUpEvent {
+  newLevel: number;
+  seekerRank: string;
+  xpEarned: number;
+}
+
 interface AppContextType {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
@@ -21,6 +27,9 @@ interface AppContextType {
   closeOverlay: () => void;
   tarotRefreshTrigger: number;
   refreshTarotCards: () => void;
+  levelUpEvent: LevelUpEvent | null;
+  triggerLevelUp: (event: LevelUpEvent) => void;
+  dismissLevelUp: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -34,6 +43,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ritualCompleted, setRitualCompleted] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<OverlayType>(null);
   const [tarotRefreshTrigger, setTarotRefreshTrigger] = useState(0);
+  const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
 
   const completeRitual = useCallback(() => {
     setRitualCompleted(true);
@@ -49,6 +59,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refreshTarotCards = useCallback(() => {
     setTarotRefreshTrigger(prev => prev + 1);
+  }, []);
+
+  const triggerLevelUp = useCallback((event: LevelUpEvent) => {
+    setLevelUpEvent(event);
+  }, []);
+
+  const dismissLevelUp = useCallback(() => {
+    setLevelUpEvent(null);
   }, []);
 
   return (
@@ -70,6 +88,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       closeOverlay,
       tarotRefreshTrigger,
       refreshTarotCards,
+      levelUpEvent,
+      triggerLevelUp,
+      dismissLevelUp,
     }}>
       {children}
     </AppContext.Provider>

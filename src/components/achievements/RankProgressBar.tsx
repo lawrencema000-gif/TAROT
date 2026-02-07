@@ -7,10 +7,10 @@ interface RankProgressBarProps {
 
 const RANKS = [
   { name: 'Novice Seeker', minXP: 0, icon: Star },
-  { name: 'Apprentice Seeker', minXP: 500, icon: Sparkles },
-  { name: 'Adept Seeker', minXP: 2500, icon: Eye },
-  { name: 'Master Seeker', minXP: 10000, icon: Crown },
-  { name: 'Oracle Seeker', minXP: 25000, icon: Sun },
+  { name: 'Apprentice Seeker', minXP: 2930, icon: Sparkles },
+  { name: 'Adept Seeker', minXP: 10700, icon: Eye },
+  { name: 'Master Seeker', minXP: 47350, icon: Crown },
+  { name: 'Oracle Seeker', minXP: 182790, icon: Sun },
 ];
 
 export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps) {

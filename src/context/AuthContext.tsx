@@ -59,6 +59,7 @@ interface DbProfile {
   is_premium: boolean;
   is_ad_free: boolean;
   streak: number;
+  last_ritual_date?: string;
   mbti_type?: string;
   love_language?: string;
   level: number;
@@ -91,6 +92,7 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     isPremium: db.is_premium,
     isAdFree: db.is_ad_free ?? false,
     streak: db.streak,
+    lastRitualDate: db.last_ritual_date,
     mbtiType: db.mbti_type,
     loveLanguage: db.love_language,
     level: db.level || 1,
@@ -121,6 +123,7 @@ function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> 
   if (profile.onboardingComplete !== undefined) db.onboarding_complete = profile.onboardingComplete;
   if (profile.isPremium !== undefined) db.is_premium = profile.isPremium;
   if (profile.streak !== undefined) db.streak = profile.streak;
+  if (profile.lastRitualDate !== undefined) db.last_ritual_date = profile.lastRitualDate;
   if (profile.mbtiType !== undefined) db.mbti_type = profile.mbtiType;
   if (profile.loveLanguage !== undefined) db.love_language = profile.loveLanguage;
   if (profile.theme !== undefined) db.theme = profile.theme;

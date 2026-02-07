@@ -29,6 +29,8 @@ import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
 import { adsService } from '../../services/ads';
+import { awardXP } from '../../services/levelSystem';
+import { checkAchievementProgress } from '../../services/achievements';
 import { getBundledCardPath } from '../../config/bundledImages';
 import { WatchAdSheet } from '../premium';
 import { rewardedAdsService } from '../../services/rewardedAds';
@@ -292,6 +294,15 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setView('reveal');
+
+    if (user) {
+      awardXP(user.id, 'reading_complete');
+      checkAchievementProgress(user.id, 'reading_complete');
+      if (currentSpread === 'celtic-cross') {
+        checkAchievementProgress(user.id, 'celtic_cross_complete');
+      }
+      checkAchievementProgress(user.id, 'spread_types_used');
+    }
   };
 
   const handleRevealCard = (index: number) => {
@@ -329,6 +340,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       setIsSaved(true);
       toast('Reading saved', 'success');
 
+      awardXP(user.id, 'reading_saved');
+      checkAchievementProgress(user.id, 'reading_saved');
       await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
     }
   };

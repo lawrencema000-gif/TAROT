@@ -25,6 +25,7 @@ export interface UserProfile {
   isPremium: boolean;
   isAdFree: boolean;
   streak: number;
+  lastRitualDate?: string;
   mbtiType?: string;
   loveLanguage?: string;
   enneagramType?: number;

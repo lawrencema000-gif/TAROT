@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AppProvider, useApp } from './context/AppContext';
+import { AppProvider, useApp, type LevelUpEvent } from './context/AppContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
@@ -27,6 +27,8 @@ import { isNative } from './utils/platform';
 import { initializeBilling, getBillingService } from './services/billing';
 import { adsService } from './services/ads';
 import { isSupabaseConfigured } from './lib/supabase';
+import { LevelUpCelebration } from './components/celebration/LevelUpCelebration';
+import { initializeUserAchievements } from './services/achievements';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { loadPersistedLogs } from './utils/telemetry';
@@ -97,7 +99,7 @@ function DiagnosticsSync() {
 
 function AppContent() {
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
-  const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useApp();
+  const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay, levelUpEvent, dismissLevelUp } = useApp();
   const { openDiagnostics } = useDiagnostics();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
@@ -127,6 +129,7 @@ function AppContent() {
       adsService.setUserId(user.id);
       const billingService = getBillingService();
       billingService.setUserId(user.id);
+      initializeUserAchievements(user.id);
     }
   }, [user]);
 
@@ -267,6 +270,15 @@ function AppContent() {
           open={activeOverlay === 'settings'}
           onClose={closeOverlay}
         />
+        {levelUpEvent && (
+          <LevelUpCelebration
+            open={!!levelUpEvent}
+            onClose={dismissLevelUp}
+            newLevel={levelUpEvent.newLevel}
+            seekerRank={levelUpEvent.seekerRank}
+            xpEarned={levelUpEvent.xpEarned}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );

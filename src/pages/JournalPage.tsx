@@ -27,10 +27,12 @@ import {
 } from 'lucide-react';
 import { Card, Button, Sheet, Input, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { getDailyPrompt } from '../data/horoscopes';
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
 import { adsService } from '../services/ads';
+import { awardXP } from '../services/levelSystem';
 
 const moodEmojis = [
   { emoji: '😊', label: 'Happy', value: 'happy' },
@@ -107,6 +109,7 @@ const categoryIcons: Record<string, typeof Sun> = {
 
 export function JournalPage() {
   const { user, profile } = useAuth();
+  const { triggerLevelUp } = useApp();
   const [activeTab, setActiveTab] = useState<JournalTab>('entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -275,6 +278,17 @@ export function JournalPage() {
     toast(lock ? 'Entry saved & locked' : 'Entry saved', 'success');
 
     if (!editingEntry) {
+      const xpResult = await awardXP(user.id, 'journal_entry');
+      if (xpResult) {
+        toast(`+${xpResult.xp_earned} XP earned!`, 'success');
+        if (xpResult.level_up) {
+          triggerLevelUp({
+            newLevel: xpResult.new_level,
+            seekerRank: xpResult.seeker_rank,
+            xpEarned: xpResult.xp_earned,
+          });
+        }
+      }
       await adsService.checkAndShowAd(profile?.isPremium || false, 'journal', profile?.isAdFree || false);
     }
   };

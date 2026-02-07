@@ -35,8 +35,10 @@ import {
 } from 'lucide-react';
 import { Card, Button, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { adsService } from '../services/ads';
+import { awardXP } from '../services/levelSystem';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -96,6 +98,7 @@ const encouragementMessages = [
 
 export function QuizzesPage() {
   const { user, profile } = useAuth();
+  const { triggerLevelUp } = useApp();
   const [state, setState] = useState<QuizState>('list');
   const [progress, setProgress] = useState<QuizProgress | null>(null);
   const [result, setResult] = useState<{ quiz: QuizDefinition; result: unknown } | null>(null);
@@ -282,6 +285,18 @@ export function QuizzesPage() {
           label: resultLabel,
         });
         loadPastResults();
+
+        const xpResult = await awardXP(user.id, 'quiz_complete');
+        if (xpResult) {
+          toast(`+${xpResult.xp_earned} XP earned!`, 'success');
+          if (xpResult.level_up) {
+            triggerLevelUp({
+              newLevel: xpResult.new_level,
+              seekerRank: xpResult.seeker_rank,
+              xpEarned: xpResult.xp_earned,
+            });
+          }
+        }
 
         await adsService.checkAndShowAd(profile?.isPremium || false, 'quiz', profile?.isAdFree || false);
       }

@@ -216,6 +216,32 @@ export async function checkAchievementProgress(
   }
 }
 
+export async function checkLevelMilestones(
+  userId: string,
+  newLevel: number,
+  totalXp: number,
+  seekerRank: string
+): Promise<UnlockedAchievement[]> {
+  try {
+    const { data, error } = await supabase.rpc('check_level_milestones', {
+      p_user_id: userId,
+      p_new_level: newLevel,
+      p_total_xp: totalXp,
+      p_seeker_rank: seekerRank,
+    });
+
+    if (error) {
+      console.error('Error checking level milestones:', error);
+      return [];
+    }
+
+    return (data || []).filter((a: UnlockedAchievement) => a.newly_unlocked);
+  } catch (error) {
+    console.error('Failed to check level milestones:', error);
+    return [];
+  }
+}
+
 export async function unlockAchievement(
   userId: string,
   achievementId: string

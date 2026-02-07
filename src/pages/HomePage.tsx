@@ -11,7 +11,6 @@ import {
 import { Card, Button, toast } from '../components/ui';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
-import { LevelUpCelebration } from '../components/celebration/LevelUpCelebration';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
@@ -32,10 +31,8 @@ interface RitualState {
 
 export function HomePage() {
   const { profile, user, updateProfile, refreshProfile } = useAuth();
-  const { streak, setStreak, setActiveTab, openOverlay, tarotRefreshTrigger } = useApp();
+  const { streak, setStreak, setActiveTab, openOverlay, tarotRefreshTrigger, triggerLevelUp } = useApp();
   const [showCelebration, setShowCelebration] = useState(false);
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const [levelUpData, setLevelUpData] = useState({ newLevel: 1, seekerRank: 'Novice Seeker', xpEarned: 0 });
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
   const [ritualState, setRitualState] = useState<RitualState>({
@@ -165,8 +162,21 @@ export function HomePage() {
     });
 
     if (newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed && !ritualState.completed) {
-      const newStreak = (profile?.streak || 0) + 1;
-      await updateProfile({ streak: newStreak });
+      const lastRitualDate = profile?.lastRitualDate;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      let newStreak: number;
+      if (lastRitualDate === today) {
+        newStreak = profile?.streak || 1;
+      } else if (lastRitualDate === yesterdayStr) {
+        newStreak = (profile?.streak || 0) + 1;
+      } else {
+        newStreak = 1;
+      }
+
+      await updateProfile({ streak: newStreak, lastRitualDate: today });
       setStreak(newStreak);
       setRitualState(prev => ({ ...prev, completed: true }));
 
@@ -176,12 +186,11 @@ export function HomePage() {
         toast(`+${xpResult.xp_earned} XP earned!`, 'success');
 
         if (xpResult.level_up) {
-          setLevelUpData({
+          triggerLevelUp({
             newLevel: xpResult.new_level,
             seekerRank: xpResult.seeker_rank,
             xpEarned: xpResult.xp_earned,
           });
-          setShowLevelUp(true);
         }
 
         await checkAndAwardStreakMilestone(user.id, newStreak);
@@ -445,13 +454,6 @@ export function HomePage() {
         onClose={() => setShowCelebration(false)}
       />
 
-      <LevelUpCelebration
-        open={showLevelUp}
-        onClose={() => setShowLevelUp(false)}
-        newLevel={levelUpData.newLevel}
-        seekerRank={levelUpData.seekerRank}
-        xpEarned={levelUpData.xpEarned}
-      />
     </div>
   );
 }

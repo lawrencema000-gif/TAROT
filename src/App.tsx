@@ -103,6 +103,12 @@ function AppContent() {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [showOAuthCancel, setShowOAuthCancel] = useState(false);
 
+  const BANNER_TABS = useMemo(() => new Set(['readings', 'journal', 'achievements', 'profile']), []);
+  const showBanner = useMemo(
+    () => BANNER_TABS.has(activeTab) && !activeOverlay,
+    [BANNER_TABS, activeTab, activeOverlay]
+  );
+
   useEffect(() => {
     initializeNativeFeatures();
     loadPersistedLogs();
@@ -216,12 +222,6 @@ function AppContent() {
   };
 
   const currentPage = pageTitles[activeTab] || pageTitles.home;
-
-  const BANNER_TABS = new Set(['readings', 'journal', 'achievements', 'profile']);
-  const showBanner = useMemo(
-    () => BANNER_TABS.has(activeTab) && !activeOverlay,
-    [activeTab, activeOverlay]
-  );
 
   return (
     <ErrorBoundary onOpenDiagnostics={openDiagnostics}>

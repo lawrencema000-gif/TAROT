@@ -25,6 +25,7 @@ import {
   ExternalLink,
   ImageIcon,
   Bug,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
@@ -221,6 +222,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     onClose();
   };
 
+  const handleSwitchAccount = async () => {
+    await signOut();
+    onClose();
+  };
+
   const handleExportData = async () => {
     if (!user) return;
     setIsExporting(true);
@@ -337,6 +343,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           value: profile?.isPremium ? 'Premium' : 'Free',
           action: handleSubscriptionClick,
         },
+        { icon: ArrowLeftRight, label: 'Switch Account', action: handleSwitchAccount },
       ],
     },
     {

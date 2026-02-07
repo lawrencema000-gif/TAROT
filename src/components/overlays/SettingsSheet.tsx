@@ -383,7 +383,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     },
   ];
 
-  const renderBackButton = (title: string) => (
+  const renderBackButton = () => (
     <button
       onClick={() => setActiveSheet('main')}
       className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors mb-4"
@@ -396,7 +396,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (activeSheet === 'editProfile') {
     return (
       <Sheet open={open} onClose={onClose} title="Edit Profile">
-        {renderBackButton('Edit Profile')}
+        {renderBackButton()}
         <div className="space-y-5">
           <Input
             label="Display Name"
@@ -454,7 +454,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (activeSheet === 'notifications') {
     return (
       <Sheet open={open} onClose={onClose} title="Notifications">
-        {renderBackButton('Notifications')}
+        {renderBackButton()}
         <div className="space-y-4">
           <div className="p-4 bg-mystic-800/50 rounded-xl">
             <div className="flex items-center justify-between">
@@ -497,7 +497,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
     return (
       <Sheet open={open} onClose={onClose} title="Appearance">
-        {renderBackButton('Appearance')}
+        {renderBackButton()}
         <div className="space-y-3">
           {themes.map(theme => (
             <button
@@ -539,7 +539,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
     return (
       <Sheet open={open} onClose={onClose} title="Language">
-        {renderBackButton('Language')}
+        {renderBackButton()}
         <div className="space-y-3">
           {languages.map(lang => (
             <button
@@ -573,7 +573,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (activeSheet === 'help') {
     return (
       <Sheet open={open} onClose={onClose} title="Help Center">
-        {renderBackButton('Help Center')}
+        {renderBackButton()}
         <div className="space-y-4">
           <a
             href="mailto:support@arcana.app"
@@ -623,7 +623,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (activeSheet === 'terms') {
     return (
       <Sheet open={open} onClose={onClose} title="Terms of Service">
-        {renderBackButton('Terms of Service')}
+        {renderBackButton()}
         <div className="space-y-4 text-sm text-mystic-300">
           <div className="p-4 bg-mystic-800/30 rounded-xl">
             <h4 className="font-medium text-gold mb-2">Entertainment Disclaimer</h4>
@@ -660,7 +660,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (activeSheet === 'privacy') {
     return (
       <Sheet open={open} onClose={onClose} title="Privacy Policy">
-        {renderBackButton('Privacy Policy')}
+        {renderBackButton()}
         <div className="space-y-4 text-sm text-mystic-300">
           <p>
             This Privacy Policy explains how Arcana ("we", "us", "our") collects, uses, and shares information when you use our mobile application ("App").
@@ -783,7 +783,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (activeSheet === 'deleteConfirm') {
     return (
       <Sheet open={open} onClose={onClose} title="Delete Account">
-        {renderBackButton('Delete Account')}
+        {renderBackButton()}
         <div className="space-y-6">
           <div className="flex items-start gap-4 p-4 bg-coral/10 border border-coral/20 rounded-xl">
             <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-0.5" />

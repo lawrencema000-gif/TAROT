@@ -39,7 +39,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: chart, error: chartError } = await supabase
-      .from("natal_charts")
+      .from("astrology_natal_charts")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
@@ -67,14 +67,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const natalChart = chart.chart_data;
+    const natalChart = {
+      ...(chart.natal_json || {}),
+      bigThree: chart.big_three_json || null,
+      dominants: chart.dominants_json || null,
+      aspects: chart.aspects_json || [],
+    };
 
     return new Response(
       JSON.stringify({
         natalChart,
-        bigThree: natalChart?.bigThree || null,
-        dominants: natalChart?.dominants || null,
-        aspects: natalChart?.aspects || null,
+        bigThree: chart.big_three_json || null,
+        dominants: chart.dominants_json || null,
+        aspects: chart.aspects_json || [],
       }),
       {
         headers: {

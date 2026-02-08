@@ -1,19 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
-import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles } from 'lucide-react';
+import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button, Card, Input } from '../ui';
-import { useGeocode, useNatalChart } from '../../hooks/useAstrology';
+import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { SIGN_SYMBOLS } from '../../types/astrology';
 import type { ZodiacSign, ChartMode } from '../../types/astrology';
 
 interface Props {
   onComplete: () => void;
+  computeChart: (params: {
+    birthDate: string;
+    birthTime: string | null;
+    lat: number;
+    lon: number;
+    timezone: string;
+    chartMode: string;
+  }) => Promise<unknown>;
 }
 
-export function HoroscopeOnboarding({ onComplete }: Props) {
+export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
   const { profile, updateProfile } = useAuth();
   const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
-  const { computeChart } = useNatalChart();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const hasBirthDate = !!profile?.birthDate;
@@ -248,7 +255,46 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
     );
   }
 
-  return null;
+  return (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <AlertCircle className="w-7 h-7 text-red-400" />
+        </div>
+        <h2 className="font-display text-xl font-semibold text-mystic-100">Chart Computation Failed</h2>
+        <p className="text-mystic-400 text-sm max-w-sm mx-auto">
+          {computeError || 'We could not compute your natal chart. Please try again or update your birth location.'}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <Button
+          variant="gold"
+          fullWidth
+          onClick={() => {
+            setAutoComputeAttempted(false);
+            setComputeError('');
+          }}
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </Button>
+        <Button
+          variant="ghost"
+          fullWidth
+          onClick={() => {
+            setSelectedLocation(null);
+            setComputeError('');
+            setAutoComputeAttempted(true);
+            updateProfile({ birthLat: undefined, birthLon: undefined });
+          }}
+        >
+          <MapPin className="w-4 h-4" />
+          Change Birth Location
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export function BigThreeDisplay({ bigThree }: { bigThree: { sun: { sign: ZodiacSign }; moon: { sign: ZodiacSign }; rising: { sign: ZodiacSign } | null } }) {

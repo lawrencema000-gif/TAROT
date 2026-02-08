@@ -83,7 +83,7 @@ function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShow
 }
 
 function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise<void> }) {
-  const { chart, loading: chartLoading } = useNatalChart();
+  const { chart, loading: chartLoading, computeChart, fetchChart } = useNatalChart();
   const [activeTab, setActiveTab] = useState<HoroscopeSubTab>('today');
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const { profile } = useAuth();
@@ -94,8 +94,9 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
     }
   }, [chart, chartLoading]);
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = async () => {
     setNeedsOnboarding(false);
+    await fetchChart();
     refreshProfile();
   };
 
@@ -110,7 +111,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   }
 
   if (needsOnboarding) {
-    return <HoroscopeOnboarding onComplete={handleOnboardingComplete} />;
+    return <HoroscopeOnboarding onComplete={handleOnboardingComplete} computeChart={computeChart} />;
   }
 
   const handleTabChange = (tab: HoroscopeSubTab) => {

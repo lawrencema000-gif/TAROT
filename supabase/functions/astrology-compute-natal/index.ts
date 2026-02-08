@@ -330,17 +330,15 @@ Deno.serve(async (req: Request) => {
     };
 
     const { error: insertError } = await supabase
-      .from("natal_charts")
+      .from("astrology_natal_charts")
       .upsert(
         {
           user_id: user.id,
-          birth_date: birthDate,
-          birth_time: birthTime,
-          birth_lat: lat,
-          birth_lon: lon,
-          timezone: tz,
-          chart_mode: chartMode || (hasBirthTime ? "exact" : "unknown"),
-          chart_data: natalChart,
+          chart_version: 1,
+          natal_json: natalChart,
+          big_three_json: bigThree,
+          dominants_json: dominants,
+          aspects_json: aspects,
           computed_at: new Date().toISOString(),
         },
         { onConflict: "user_id" }

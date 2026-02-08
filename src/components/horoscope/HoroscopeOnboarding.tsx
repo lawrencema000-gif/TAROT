@@ -31,6 +31,7 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
   const [computing, setComputing] = useState(false);
   const [computeError, setComputeError] = useState('');
   const [autoComputeAttempted, setAutoComputeAttempted] = useState(false);
+  const initialSearchDone = useRef(false);
 
   useEffect(() => {
     if (canAutoCompute && !autoComputeAttempted) {
@@ -40,10 +41,18 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
   }, [canAutoCompute, autoComputeAttempted]);
 
   useEffect(() => {
-    if (hasBirthPlace && !hasCoordinates && !autoComputeAttempted) {
-      geoSearch(profile!.birthPlace!);
+    if (profile?.birthPlace && locationQuery !== profile.birthPlace) {
+      setLocationQuery(profile.birthPlace);
     }
-  }, []);
+  }, [profile?.birthPlace]);
+
+  useEffect(() => {
+    if (initialSearchDone.current) return;
+    if (profile?.birthPlace && !profile?.birthLat && !profile?.birthLon) {
+      initialSearchDone.current = true;
+      geoSearch(profile.birthPlace);
+    }
+  }, [profile?.birthPlace, profile?.birthLat, profile?.birthLon]);
 
   const handleAutoCompute = async () => {
     if (!profile?.birthDate || !profile?.birthLat || !profile?.birthLon) return;

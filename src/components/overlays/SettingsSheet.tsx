@@ -89,7 +89,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     birthLat: undefined as number | undefined,
     birthLon: undefined as number | undefined,
   });
-  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [showGeoResults, setShowGeoResults] = useState(false);
 
@@ -499,6 +499,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
             {cityQuery.length > 0 && cityQuery.length < 2 && (
               <p className="text-xs text-mystic-500">Type at least 2 characters to search</p>
+            )}
+
+            {!geoLoading && geoError && editForm.birthLat === undefined && (
+              <p className="text-xs text-amber-400/80">{geoError}</p>
             )}
           </div>
 

@@ -12,14 +12,12 @@ interface Props {
 
 export function HoroscopeOnboarding({ onComplete }: Props) {
   const { profile, updateProfile } = useAuth();
-  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
   const { computeChart } = useNatalChart();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const hasBirthDate = !!profile?.birthDate;
-  const hasBirthTime = !!profile?.birthTime;
   const hasCoordinates = !!(profile?.birthLat && profile?.birthLon);
-  const hasBirthPlace = !!profile?.birthPlace;
 
   const needsLocation = !hasCoordinates;
   const canAutoCompute = hasBirthDate && hasCoordinates;
@@ -31,7 +29,7 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
   const [computing, setComputing] = useState(false);
   const [computeError, setComputeError] = useState('');
   const [autoComputeAttempted, setAutoComputeAttempted] = useState(false);
-  const initialSearchDone = useRef(false);
+  const autoResolveAttempted = useRef(false);
 
   useEffect(() => {
     if (canAutoCompute && !autoComputeAttempted) {
@@ -41,18 +39,37 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
   }, [canAutoCompute, autoComputeAttempted]);
 
   useEffect(() => {
-    if (profile?.birthPlace && locationQuery !== profile.birthPlace) {
-      setLocationQuery(profile.birthPlace);
-    }
-  }, [profile?.birthPlace]);
-
-  useEffect(() => {
-    if (initialSearchDone.current) return;
+    if (autoResolveAttempted.current) return;
     if (profile?.birthPlace && !profile?.birthLat && !profile?.birthLon) {
-      initialSearchDone.current = true;
-      geoSearch(profile.birthPlace);
+      autoResolveAttempted.current = true;
+      handleAutoResolveLocation(profile.birthPlace);
     }
   }, [profile?.birthPlace, profile?.birthLat, profile?.birthLon]);
+
+  const handleAutoResolveLocation = async (place: string) => {
+    setComputing(true);
+    setComputeError('');
+    try {
+      await geoSearch(place);
+    } catch {
+      setComputing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!autoResolveAttempted.current || !computing) return;
+    if (geoLoading) return;
+
+    if (geoResults.length > 0 && !selectedLocation && profile?.birthDate) {
+      const best = geoResults[0];
+      setSelectedLocation(best);
+      setLocationQuery(best.displayName);
+      doCompute(best);
+    } else if (!geoLoading && geoResults.length === 0 && computing) {
+      setComputing(false);
+      setComputeError('Could not find your birth location. Please search below.');
+    }
+  }, [geoResults, geoLoading]);
 
   const handleAutoCompute = async () => {
     if (!profile?.birthDate || !profile?.birthLat || !profile?.birthLon) return;
@@ -76,15 +93,8 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
     }
   };
 
-  const handleLocationInput = (value: string) => {
-    setLocationQuery(value);
-    setSelectedLocation(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
-  };
-
-  const handleCompute = async () => {
-    if (!selectedLocation || !profile?.birthDate) return;
+  const doCompute = async (loc: { lat: number; lon: number; displayName: string }) => {
+    if (!profile?.birthDate) return;
     setComputing(true);
     setComputeError('');
     try {
@@ -92,25 +102,39 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
       const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
 
       await updateProfile({
-        birthPlace: selectedLocation.displayName,
-        birthLat: selectedLocation.lat,
-        birthLon: selectedLocation.lon,
+        birthPlace: loc.displayName,
+        birthLat: loc.lat,
+        birthLon: loc.lon,
       });
 
       await computeChart({
         birthDate: profile.birthDate,
         birthTime: chartMode === 'unknown' ? null : (profile.birthTime || null),
-        lat: selectedLocation.lat,
-        lon: selectedLocation.lon,
+        lat: loc.lat,
+        lon: loc.lon,
         timezone: tz,
         chartMode,
       });
       onComplete();
     } catch {
       setComputeError('Could not compute your chart. Please try a different location.');
-    } finally {
       setComputing(false);
     }
+  };
+
+  const handleLocationInput = (value: string) => {
+    setLocationQuery(value);
+    setSelectedLocation(null);
+    setComputeError('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (value.trim().length >= 2) {
+      debounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
+    }
+  };
+
+  const handleCompute = () => {
+    if (!selectedLocation) return;
+    doCompute(selectedLocation);
   };
 
   if (computing && !computeError) {
@@ -178,7 +202,7 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
           )}
 
           {!selectedLocation && geoResults.length > 0 && (
-            <div className="space-y-1 max-h-48 overflow-y-auto">
+            <div className="rounded-xl border border-mystic-700/60 bg-mystic-900/80 overflow-hidden max-h-48 overflow-y-auto">
               {geoResults.map((r, i) => (
                 <button
                   key={i}
@@ -186,12 +210,17 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
                     setSelectedLocation(r);
                     setLocationQuery(r.displayName);
                   }}
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 truncate cursor-pointer"
+                  className="w-full text-left px-3 py-3 hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 cursor-pointer flex items-start gap-2 border-b border-mystic-800/40 last:border-b-0"
                 >
-                  {r.displayName}
+                  <MapPin className="w-3.5 h-3.5 text-mystic-500 mt-0.5 flex-shrink-0" />
+                  <span className="line-clamp-2">{r.displayName}</span>
                 </button>
               ))}
             </div>
+          )}
+
+          {!selectedLocation && !geoLoading && geoError && (
+            <p className="text-xs text-amber-400/80">{geoError}</p>
           )}
 
           {computeError && (
@@ -211,6 +240,10 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
           Compute My Chart
           <ChevronRight className="w-4 h-4" />
         </Button>
+
+        {!selectedLocation && !computing && (
+          <p className="text-center text-xs text-mystic-500">Select a location above to continue</p>
+        )}
       </div>
     );
   }

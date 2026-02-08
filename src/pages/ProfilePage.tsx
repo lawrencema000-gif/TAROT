@@ -50,7 +50,7 @@ interface SavedHighlight {
 
 export function ProfilePage() {
   const { profile, user, updateProfile } = useAuth();
-  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -393,6 +393,10 @@ export function ProfilePage() {
                   </button>
                 ))}
               </div>
+            )}
+
+            {!selectedLocation && !geoLoading && geoError && (
+              <p className="text-xs text-amber-400/80 mt-1">{geoError}</p>
             )}
           </div>
 

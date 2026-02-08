@@ -34,24 +34,54 @@ interface GeoResult {
   displayName: string;
 }
 
+async function geocodeClientFallback(query: string): Promise<GeoResult[]> {
+  const encoded = encodeURIComponent(query);
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1`,
+    { headers: { 'User-Agent': 'Arcana-Astrology-App/1.0' } }
+  );
+  if (!res.ok) return [];
+  const data: { lat: string; lon: string; display_name: string }[] = await res.json();
+  return data.map(item => ({
+    lat: parseFloat(item.lat),
+    lon: parseFloat(item.lon),
+    displayName: item.display_name,
+  }));
+}
+
 export function useGeocode() {
   const [results, setResults] = useState<GeoResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const search = useCallback(async (birthPlace: string) => {
     if (!birthPlace.trim()) { setResults([]); return; }
     setLoading(true);
+    setError(null);
     try {
       const data = await callFn<{ results: GeoResult[] }>('astrology-geocode', { birthPlace });
-      setResults(data.results || []);
+      if (data.results?.length) {
+        setResults(data.results);
+        setLoading(false);
+        return;
+      }
+    } catch { /* fall through to client-side */ }
+
+    try {
+      const fallbackResults = await geocodeClientFallback(birthPlace);
+      setResults(fallbackResults);
+      if (!fallbackResults.length) {
+        setError('No locations found. Try a different search term.');
+      }
     } catch {
       setResults([]);
+      setError('Location search unavailable. Please try again.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { results, loading, search };
+  return { results, loading, error, search };
 }
 
 interface ChartResponse {

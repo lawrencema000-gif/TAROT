@@ -1,6 +1,7 @@
 export { HomePage } from './HomePage';
 export { ReadingsPage } from './ReadingsPage';
 export { QuizzesPage } from './QuizzesPage';
+export { HoroscopePage } from './HoroscopePage';
 export { AchievementsPage } from './AchievementsPage';
 export { JournalPage } from './JournalPage';
 export { ProfilePage } from './ProfilePage';

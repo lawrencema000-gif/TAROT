@@ -15,6 +15,7 @@ import {
   HomePage,
   ReadingsPage,
   QuizzesPage,
+  HoroscopePage,
   AchievementsPage,
   JournalPage,
   ProfilePage,
@@ -69,6 +70,7 @@ const pageTitles: Record<string, { title: string; subtitle?: string }> = {
   home: { title: 'Today', subtitle: 'Your daily ritual awaits' },
   readings: { title: 'Readings', subtitle: 'Explore the cards' },
   quizzes: { title: 'Quizzes', subtitle: 'Discover yourself' },
+  horoscope: { title: 'Horoscope', subtitle: 'Your cosmic blueprint' },
   achievements: { title: 'Achievements', subtitle: 'Track your progress' },
   journal: { title: 'Journal', subtitle: 'Reflect and grow' },
   profile: { title: 'Profile' },
@@ -211,6 +213,8 @@ function AppContent() {
         return <ReadingsPage />;
       case 'quizzes':
         return <QuizzesPage />;
+      case 'horoscope':
+        return <HoroscopePage />;
       case 'achievements':
         return <AchievementsPage />;
       case 'journal':

@@ -99,7 +99,7 @@ const encouragementMessages = [
 ];
 
 export function QuizzesPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp } = useApp();
   const [state, setState] = useState<QuizState>('list');
   const [progress, setProgress] = useState<QuizProgress | null>(null);
@@ -299,6 +299,7 @@ export function QuizzesPage() {
             });
           }
         }
+        await refreshProfile();
 
         await adsService.checkAndShowAd(profile?.isPremium || false, 'quiz', profile?.isAdFree || false);
       }

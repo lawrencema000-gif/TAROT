@@ -21,23 +21,27 @@ import {
   getCategoryDisplayName,
 } from '../services/achievements';
 import { Skeleton } from '../components/ui';
+import { supabase } from '../lib/supabase';
 
 type FilterCategory = 'all' | AchievementCategory;
 
 const CATEGORIES: FilterCategory[] = ['all', 'exploration', 'mastery', 'dedication', 'milestones', 'special'];
 
 export function AchievementsPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
   const [stats, setStats] = useState<AchievementStatsType | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [loading, setLoading] = useState(true);
   const [celebrationAchievement, setCelebrationAchievement] = useState<AchievementWithProgress | null>(null);
   const [unnotifiedQueue, setUnnotifiedQueue] = useState<AchievementWithProgress[]>([]);
+  const [quizzesCompleted, setQuizzesCompleted] = useState(0);
 
   useEffect(() => {
     if (user?.id) {
+      refreshProfile();
       loadAchievements();
+      loadQuizCount();
     }
   }, [user?.id]);
 
@@ -52,6 +56,15 @@ export function AchievementsPage() {
       }
     }
   }, [unnotifiedQueue, celebrationAchievement, user?.id]);
+
+  async function loadQuizCount() {
+    if (!user?.id) return;
+    const { count } = await supabase
+      .from('quiz_results')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    setQuizzesCompleted(count || 0);
+  }
 
   async function loadAchievements() {
     if (!user?.id) return;
@@ -211,7 +224,7 @@ export function AchievementsPage() {
             streak={profile?.streak || 0}
             totalReadings={profile?.totalReadings || 0}
             totalJournalEntries={profile?.totalJournalEntries || 0}
-            quizzesCompleted={0}
+            quizzesCompleted={quizzesCompleted}
           />
 
           {recentUnlocks.length > 0 && (

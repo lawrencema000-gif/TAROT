@@ -85,7 +85,7 @@ const spreadConfigs = [
 ];
 
 export function TarotSection({ onShowPaywall }: TarotSectionProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { tarotRefreshTrigger } = useApp();
   const [view, setView] = useState<TarotView>('home');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea | null>(null);
@@ -296,7 +296,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setView('reveal');
 
     if (user) {
-      awardXP(user.id, 'reading_complete');
+      awardXP(user.id, 'reading_complete').then(() => refreshProfile());
       checkAchievementProgress(user.id, 'reading_complete');
       if (currentSpread === 'celtic-cross') {
         checkAchievementProgress(user.id, 'celtic_cross_complete');
@@ -340,7 +340,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       setIsSaved(true);
       toast('Reading saved', 'success');
 
-      awardXP(user.id, 'reading_saved');
+      awardXP(user.id, 'reading_saved').then(() => refreshProfile());
       checkAchievementProgress(user.id, 'reading_saved');
       await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
     }

@@ -55,7 +55,7 @@ const monthlyThemes = [
 ];
 
 export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { setActiveTab } = useApp();
   const [period, setPeriod] = useState<TimePeriod>('today');
   const [isSaved, setIsSaved] = useState(false);
@@ -75,7 +75,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
     const key = `arcana_horoscope_xp_${today}`;
     if (localStorage.getItem(key)) return;
     localStorage.setItem(key, '1');
-    awardXP(user.id, 'horoscope_viewed');
+    awardXP(user.id, 'horoscope_viewed').then(() => refreshProfile());
     checkAchievementProgress(user.id, 'horoscope_viewed');
   }, [user, today]);
 

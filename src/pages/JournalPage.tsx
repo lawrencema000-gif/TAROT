@@ -108,7 +108,7 @@ const categoryIcons: Record<string, typeof Sun> = {
 };
 
 export function JournalPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp } = useApp();
   const [activeTab, setActiveTab] = useState<JournalTab>('entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -289,6 +289,7 @@ export function JournalPage() {
           });
         }
       }
+      await refreshProfile();
       await adsService.checkAndShowAd(profile?.isPremium || false, 'journal', profile?.isAdFree || false);
     }
   };

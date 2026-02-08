@@ -3,11 +3,11 @@ import { actionCounter, type ActionType } from './actionCounter';
 import { supabase } from '../lib/supabase';
 import { rewardedAdsService } from './rewardedAds';
 
-const AD_COOLDOWN_MS = 8 * 60 * 1000;
+const AD_COOLDOWN_MS = 10 * 60 * 1000;
 
 const AD_UNIT_IDS = {
   interstitial: {
-    android: 'ca-app-pub-3940256099942544/1033173712',
+    android: 'ca-app-pub-9489106590476826/1903436420',
     ios: 'ca-app-pub-3940256099942544/4411468910',
   },
   banner: {

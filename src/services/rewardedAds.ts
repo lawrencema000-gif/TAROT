@@ -6,8 +6,8 @@ const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
 
-const TEST_REWARDED_AD_UNIT_IDS = {
-  android: 'ca-app-pub-3940256099942544/5224354917',
+const REWARDED_AD_UNIT_IDS = {
+  android: 'ca-app-pub-9489106590476826/7730478171',
   ios: 'ca-app-pub-3940256099942544/1712485313',
 };
 
@@ -116,8 +116,8 @@ class RewardedAdsService {
 
     try {
       const adUnitId = isAndroid()
-        ? TEST_REWARDED_AD_UNIT_IDS.android
-        : TEST_REWARDED_AD_UNIT_IDS.ios;
+        ? REWARDED_AD_UNIT_IDS.android
+        : REWARDED_AD_UNIT_IDS.ios;
 
       await AdMob.prepareRewardVideoAd({
         adId: adUnitId,
@@ -214,8 +214,8 @@ class RewardedAdsService {
     this.incrementDailyCount();
 
     const adUnitId = isAndroid()
-      ? TEST_REWARDED_AD_UNIT_IDS.android
-      : TEST_REWARDED_AD_UNIT_IDS.ios;
+      ? REWARDED_AD_UNIT_IDS.android
+      : REWARDED_AD_UNIT_IDS.ios;
 
     try {
       const { error } = await supabase.from('rewarded_ad_unlocks').insert({

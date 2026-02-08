@@ -16,6 +16,8 @@ export interface UserProfile {
   birthDate: string;
   birthTime?: string;
   birthPlace?: string;
+  birthLat?: number;
+  birthLon?: number;
   timezone: string;
   goals: Goal[];
   tonePreference: TonePreference;

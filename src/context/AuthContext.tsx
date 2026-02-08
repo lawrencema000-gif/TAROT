@@ -50,6 +50,8 @@ interface DbProfile {
   birth_date: string;
   birth_time?: string;
   birth_place?: string;
+  birth_lat?: number;
+  birth_lon?: number;
   timezone: string;
   goals: Goal[];
   tone_preference: TonePreference;
@@ -83,6 +85,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     birthDate: db.birth_date,
     birthTime: db.birth_time,
     birthPlace: db.birth_place,
+    birthLat: db.birth_lat,
+    birthLon: db.birth_lon,
     timezone: db.timezone,
     goals: db.goals || [],
     tonePreference: db.tone_preference || 'gentle',
@@ -115,6 +119,8 @@ function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> 
   if (profile.birthDate !== undefined) db.birth_date = profile.birthDate;
   if (profile.birthTime !== undefined) db.birth_time = profile.birthTime;
   if (profile.birthPlace !== undefined) db.birth_place = profile.birthPlace;
+  if (profile.birthLat !== undefined) db.birth_lat = profile.birthLat;
+  if (profile.birthLon !== undefined) db.birth_lon = profile.birthLon;
   if (profile.timezone !== undefined) db.timezone = profile.timezone;
   if (profile.goals !== undefined) db.goals = profile.goals;
   if (profile.tonePreference !== undefined) db.tone_preference = profile.tonePreference;

@@ -1,4 +1,4 @@
-export type ActionType = 'reading' | 'quiz' | 'journal';
+export type ActionType = 'reading' | 'quiz' | 'journal' | 'horoscope';
 
 const STORAGE_KEYS = {
   sessionCount: 'arcana_session_count',

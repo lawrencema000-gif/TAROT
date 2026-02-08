@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
-import { Calendar, Clock, MapPin, ChevronRight, ChevronLeft, Search, Check, Loader2, HelpCircle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles } from 'lucide-react';
 import { Button, Card, Input } from '../ui';
 import { useGeocode, useNatalChart } from '../../hooks/useAstrology';
+import { useAuth } from '../../context/AuthContext';
 import { SIGN_SYMBOLS } from '../../types/astrology';
 import type { ZodiacSign, ChartMode } from '../../types/astrology';
 
@@ -9,24 +10,62 @@ interface Props {
   onComplete: () => void;
 }
 
-type Step = 'date' | 'time' | 'location' | 'confirm';
-const STEPS: Step[] = ['date', 'time', 'location', 'confirm'];
-
 export function HoroscopeOnboarding({ onComplete }: Props) {
-  const [step, setStep] = useState<Step>('date');
-  const [birthDate, setBirthDate] = useState('');
-  const [birthTime, setBirthTime] = useState('');
-  const [chartMode, setChartMode] = useState<ChartMode>('exact');
-  const [locationQuery, setLocationQuery] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; displayName: string } | null>(null);
-  const [computing, setComputing] = useState(false);
-  const [computeError, setComputeError] = useState('');
-
+  const { profile, updateProfile } = useAuth();
   const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
   const { computeChart } = useNatalChart();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const stepIndex = STEPS.indexOf(step);
+  const hasBirthDate = !!profile?.birthDate;
+  const hasBirthTime = !!profile?.birthTime;
+  const hasCoordinates = !!(profile?.birthLat && profile?.birthLon);
+  const hasBirthPlace = !!profile?.birthPlace;
+
+  const needsLocation = !hasCoordinates;
+  const canAutoCompute = hasBirthDate && hasCoordinates;
+
+  const [locationQuery, setLocationQuery] = useState(profile?.birthPlace || '');
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; displayName: string } | null>(
+    hasCoordinates ? { lat: profile!.birthLat!, lon: profile!.birthLon!, displayName: profile?.birthPlace || '' } : null
+  );
+  const [computing, setComputing] = useState(false);
+  const [computeError, setComputeError] = useState('');
+  const [autoComputeAttempted, setAutoComputeAttempted] = useState(false);
+
+  useEffect(() => {
+    if (canAutoCompute && !autoComputeAttempted) {
+      setAutoComputeAttempted(true);
+      handleAutoCompute();
+    }
+  }, [canAutoCompute, autoComputeAttempted]);
+
+  useEffect(() => {
+    if (hasBirthPlace && !hasCoordinates && !autoComputeAttempted) {
+      geoSearch(profile!.birthPlace!);
+    }
+  }, []);
+
+  const handleAutoCompute = async () => {
+    if (!profile?.birthDate || !profile?.birthLat || !profile?.birthLon) return;
+    setComputing(true);
+    setComputeError('');
+    try {
+      const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
+      await computeChart({
+        birthDate: profile.birthDate,
+        birthTime: chartMode === 'unknown' ? null : (profile.birthTime || null),
+        lat: profile.birthLat,
+        lon: profile.birthLon,
+        timezone: tz,
+        chartMode,
+      });
+      onComplete();
+    } catch {
+      setComputeError('Could not compute your chart automatically. Please confirm your birth location below.');
+      setComputing(false);
+    }
+  };
 
   const handleLocationInput = (value: string) => {
     setLocationQuery(value);
@@ -35,25 +74,23 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
     debounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
   };
 
-  const handleNext = () => {
-    const next = STEPS[stepIndex + 1];
-    if (next) setStep(next);
-  };
-
-  const handleBack = () => {
-    const prev = STEPS[stepIndex - 1];
-    if (prev) setStep(prev);
-  };
-
   const handleCompute = async () => {
-    if (!selectedLocation) return;
+    if (!selectedLocation || !profile?.birthDate) return;
     setComputing(true);
     setComputeError('');
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
+
+      await updateProfile({
+        birthPlace: selectedLocation.displayName,
+        birthLat: selectedLocation.lat,
+        birthLon: selectedLocation.lon,
+      });
+
       await computeChart({
-        birthDate,
-        birthTime: chartMode === 'unknown' ? null : birthTime,
+        birthDate: profile.birthDate,
+        birthTime: chartMode === 'unknown' ? null : (profile.birthTime || null),
         lat: selectedLocation.lat,
         lon: selectedLocation.lon,
         timezone: tz,
@@ -61,99 +98,54 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
       });
       onComplete();
     } catch {
-      setComputeError('Could not compute your chart. Please check your details and try again.');
+      setComputeError('Could not compute your chart. Please try a different location.');
     } finally {
       setComputing(false);
     }
   };
 
-  const canProceed = () => {
-    switch (step) {
-      case 'date': return !!birthDate;
-      case 'time': return chartMode === 'unknown' || !!birthTime;
-      case 'location': return !!selectedLocation;
-      case 'confirm': return true;
-      default: return false;
-    }
-  };
-
-  return (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-2">
-        <h2 className="font-display text-2xl font-semibold text-mystic-100">Your Cosmic Blueprint</h2>
-        <p className="text-mystic-400 text-sm">Enter your birth details for a personalized chart</p>
+  if (computing && !computeError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-pulse">
+          <Sparkles className="w-8 h-8 text-gold" />
+        </div>
+        <p className="text-mystic-300 text-sm">Computing your natal chart...</p>
+        <Loader2 className="w-5 h-5 text-gold animate-spin" />
       </div>
+    );
+  }
 
-      <div className="flex gap-2 justify-center">
-        {STEPS.map((s, i) => (
-          <div
-            key={s}
-            className={`h-1.5 w-10 rounded-full transition-all ${
-              i <= stepIndex ? 'bg-gold' : 'bg-mystic-700'
-            }`}
-          />
-        ))}
-      </div>
+  if (needsLocation) {
+    return (
+      <div className="space-y-6 py-4">
+        <div className="text-center space-y-2">
+          <h2 className="font-display text-2xl font-semibold text-mystic-100">One More Detail</h2>
+          <p className="text-mystic-400 text-sm">
+            We need your birth location to compute an accurate natal chart.
+            {hasBirthDate && (
+              <span className="block mt-1 text-mystic-500">
+                Your other birth details are already saved from your profile.
+              </span>
+            )}
+          </p>
+        </div>
 
-      {step === 'date' && (
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center gap-3 text-gold">
-            <Calendar className="w-5 h-5" />
-            <span className="font-display text-lg font-semibold text-mystic-100">Birth Date</span>
-          </div>
-          <Input
-            type="date"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            label="When were you born?"
-          />
-        </Card>
-      )}
-
-      {step === 'time' && (
-        <Card padding="lg" className="space-y-4">
-          <div className="flex items-center gap-3 text-gold">
-            <Clock className="w-5 h-5" />
-            <span className="font-display text-lg font-semibold text-mystic-100">Birth Time</span>
-          </div>
-
-          <div className="flex gap-2">
-            {(['exact', 'approximate', 'unknown'] as ChartMode[]).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setChartMode(mode)}
-                className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                  chartMode === mode
-                    ? 'bg-gold/15 text-gold border border-gold/25'
-                    : 'bg-mystic-800/60 text-mystic-400 border border-mystic-700/40'
-                }`}
-              >
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {chartMode !== 'unknown' && (
-            <Input
-              type="time"
-              value={birthTime}
-              onChange={(e) => setBirthTime(e.target.value)}
-              label={chartMode === 'approximate' ? 'Best guess' : 'Exact time'}
-            />
-          )}
-
-          {chartMode === 'unknown' && (
-            <div className="flex items-start gap-3 p-3 bg-mystic-800/40 rounded-xl">
-              <HelpCircle className="w-4 h-4 text-mystic-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-mystic-400">
-                Without birth time, your Rising sign and house placements won't be available. You can add it later.
-              </p>
+        {profile?.birthDate && (
+          <div className="flex gap-3 justify-center text-xs">
+            <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
+              <span className="text-mystic-500">Date:</span>{' '}
+              <span className="text-mystic-200">{profile.birthDate}</span>
             </div>
-          )}
-        </Card>
-      )}
+            {profile.birthTime && (
+              <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
+                <span className="text-mystic-500">Time:</span>{' '}
+                <span className="text-mystic-200">{profile.birthTime}</span>
+              </div>
+            )}
+          </div>
+        )}
 
-      {step === 'location' && (
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center gap-3 text-gold">
             <MapPin className="w-5 h-5" />
@@ -192,33 +184,6 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
               ))}
             </div>
           )}
-        </Card>
-      )}
-
-      {step === 'confirm' && (
-        <Card padding="lg" className="space-y-4">
-          <div className="text-center space-y-1">
-            <span className="font-display text-lg font-semibold text-mystic-100">Confirm Details</span>
-          </div>
-
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between py-2 border-b border-mystic-800/50">
-              <span className="text-mystic-400">Date</span>
-              <span className="text-mystic-200">{birthDate}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-mystic-800/50">
-              <span className="text-mystic-400">Time</span>
-              <span className="text-mystic-200">
-                {chartMode === 'unknown' ? 'Unknown' : `${birthTime} (${chartMode})`}
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-mystic-800/50">
-              <span className="text-mystic-400">Location</span>
-              <span className="text-mystic-200 text-right max-w-[200px] truncate">
-                {selectedLocation?.displayName}
-              </span>
-            </div>
-          </div>
 
           {computeError && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
@@ -226,29 +191,22 @@ export function HoroscopeOnboarding({ onComplete }: Props) {
             </div>
           )}
         </Card>
-      )}
 
-      <div className="flex gap-3">
-        {stepIndex > 0 && (
-          <Button variant="ghost" onClick={handleBack} className="flex-shrink-0">
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </Button>
-        )}
-        <div className="flex-1" />
-        {step === 'confirm' ? (
-          <Button variant="gold" onClick={handleCompute} loading={computing} disabled={!canProceed()}>
-            Compute My Chart
-          </Button>
-        ) : (
-          <Button variant="primary" onClick={handleNext} disabled={!canProceed()}>
-            Continue
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        )}
+        <Button
+          variant="gold"
+          fullWidth
+          onClick={handleCompute}
+          loading={computing}
+          disabled={!selectedLocation}
+        >
+          Compute My Chart
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 }
 
 export function BigThreeDisplay({ bigThree }: { bigThree: { sun: { sign: ZodiacSign }; moon: { sign: ZodiacSign }; rising: { sign: ZodiacSign } | null } }) {

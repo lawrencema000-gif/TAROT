@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Bell,
   Moon,
@@ -26,6 +26,7 @@ import {
   ImageIcon,
   Bug,
   ArrowLeftRight,
+  Search,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
@@ -36,6 +37,7 @@ import { SubscriptionSheet } from '../premium/SubscriptionSheet';
 import { DiagnosticsSheet } from '../diagnostics';
 import { useDiagnostics } from '../../context/DiagnosticsContext';
 import { isDevMode } from '../../utils/telemetry';
+import { useGeocode } from '../../hooks/useAstrology';
 
 type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
 
@@ -84,7 +86,12 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     birthDate: '',
     birthTime: '',
     birthPlace: '',
+    birthLat: undefined as number | undefined,
+    birthLon: undefined as number | undefined,
   });
+  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const geoDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const [showGeoResults, setShowGeoResults] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -93,6 +100,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         birthDate: profile.birthDate || '',
         birthTime: profile.birthTime || '',
         birthPlace: profile.birthPlace || '',
+        birthLat: profile.birthLat,
+        birthLon: profile.birthLon,
       });
     }
   }, [profile]);
@@ -292,15 +301,31 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     }
   };
 
+  const handleBirthPlaceInput = (value: string) => {
+    setEditForm(f => ({ ...f, birthPlace: value, birthLat: undefined, birthLon: undefined }));
+    setShowGeoResults(true);
+    if (geoDebounceRef.current) clearTimeout(geoDebounceRef.current);
+    geoDebounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
+  };
+
+  const handleSelectGeoResult = (result: { lat: number; lon: number; displayName: string }) => {
+    setEditForm(f => ({ ...f, birthPlace: result.displayName, birthLat: result.lat, birthLon: result.lon }));
+    setShowGeoResults(false);
+  };
+
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      const { error } = await updateProfile({
+      const updates: Record<string, unknown> = {
         displayName: editForm.displayName || undefined,
         birthDate: editForm.birthDate || undefined,
         birthTime: editForm.birthTime || undefined,
         birthPlace: editForm.birthPlace || undefined,
-      });
+      };
+      if (editForm.birthLat !== undefined) updates.birthLat = editForm.birthLat;
+      if (editForm.birthLon !== undefined) updates.birthLon = editForm.birthLon;
+
+      const { error } = await updateProfile(updates);
 
       if (error) {
         toast(error.message, 'error');
@@ -422,13 +447,34 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             icon={<Clock className="w-4 h-4" />}
           />
 
-          <Input
-            label="Birth Place (optional)"
-            value={editForm.birthPlace}
-            onChange={e => setEditForm(f => ({ ...f, birthPlace: e.target.value }))}
-            placeholder="City, Country"
-            icon={<MapPin className="w-4 h-4" />}
-          />
+          <div className="space-y-2">
+            <Input
+              label="Birth Place (optional)"
+              value={editForm.birthPlace}
+              onChange={e => handleBirthPlaceInput(e.target.value)}
+              placeholder="Search city or town..."
+              icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            />
+            {editForm.birthLat && editForm.birthLon && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
+                <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                <span className="text-xs text-mystic-300">Location verified</span>
+              </div>
+            )}
+            {showGeoResults && !editForm.birthLat && geoResults.length > 0 && (
+              <div className="space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-lg border border-mystic-700/40">
+                {geoResults.map((r, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSelectGeoResult(r)}
+                    className="w-full text-left px-3 py-2 hover:bg-mystic-700/40 transition-colors text-sm text-mystic-300 truncate cursor-pointer"
+                  >
+                    {r.displayName}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="p-3 bg-mystic-800/50 rounded-lg">
             <div className="flex items-center gap-2 text-mystic-400">

@@ -1,6 +1,9 @@
+import { useEffect, useRef } from 'react';
 import { RefreshCw, Moon, Zap, Heart, Briefcase, DollarSign, Flame, Check, X, Sparkles, BookOpen } from 'lucide-react';
 import { Card, Skeleton } from '../ui';
 import { useDailyHoroscope } from '../../hooks/useAstrology';
+import { useAuth } from '../../context/AuthContext';
+import { adsService } from '../../services/ads';
 import { SIGN_SYMBOLS } from '../../types/astrology';
 import type { AspectType, ZodiacSign } from '../../types/astrology';
 
@@ -28,6 +31,15 @@ const CATEGORY_COLORS = {
 
 export function TodayForYou() {
   const { content, loading, error, refresh } = useDailyHoroscope();
+  const { profile } = useAuth();
+  const adShownRef = useRef(false);
+
+  useEffect(() => {
+    if (content && !adShownRef.current) {
+      adShownRef.current = true;
+      adsService.checkAndShowAd(profile?.isPremium || false, 'horoscope', profile?.isAdFree || false);
+    }
+  }, [content]);
 
   if (loading) {
     return (

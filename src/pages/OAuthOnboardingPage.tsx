@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   ChevronRight,
   ChevronLeft,
@@ -9,10 +9,14 @@ import {
   Feather,
   Zap,
   Bell,
+  Search,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import { Button, Input, Chip, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
+import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
 import type { Goal, TonePreference } from '../types';
 
@@ -93,11 +97,16 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [birthDateError, setBirthDateError] = useState('');
+  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const [showGeoResults, setShowGeoResults] = useState(false);
+  const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [data, setData] = useState({
     goals: [] as Goal[],
     birthDate: '',
     birthTime: '',
     birthPlace: '',
+    birthLat: undefined as number | undefined,
+    birthLon: undefined as number | undefined,
     tonePreference: 'gentle' as TonePreference,
     notificationsEnabled: true,
     notificationTime: '09:00',
@@ -130,10 +139,22 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     }
   };
 
+  const handleBirthPlaceInput = (value: string) => {
+    setData(d => ({ ...d, birthPlace: value, birthLat: undefined, birthLon: undefined }));
+    setShowGeoResults(true);
+    if (geoDebounceRef.current) clearTimeout(geoDebounceRef.current);
+    geoDebounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
+  };
+
+  const handleSelectGeoResult = (result: { lat: number; lon: number; displayName: string }) => {
+    setData(d => ({ ...d, birthPlace: result.displayName, birthLat: result.lat, birthLon: result.lon }));
+    setShowGeoResults(false);
+  };
+
   const handleComplete = async () => {
     setLoading(true);
 
-    const { error } = await updateProfile({
+    const profileUpdate: Record<string, unknown> = {
       goals: data.goals,
       birthDate: data.birthDate,
       birthTime: data.birthTime || undefined,
@@ -142,7 +163,11 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
       notificationsEnabled: data.notificationsEnabled,
       notificationTime: data.notificationTime,
       onboardingComplete: true,
-    });
+    };
+    if (data.birthLat !== undefined) profileUpdate.birthLat = data.birthLat;
+    if (data.birthLon !== undefined) profileUpdate.birthLon = data.birthLon;
+
+    const { error } = await updateProfile(profileUpdate);
 
     if (error) {
       toast('Failed to save profile. Please try again.', 'error');
@@ -278,9 +303,30 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   </label>
                   <Input
                     value={data.birthPlace}
-                    onChange={e => setData(d => ({ ...d, birthPlace: e.target.value }))}
-                    placeholder="City, Country"
+                    onChange={e => handleBirthPlaceInput(e.target.value)}
+                    placeholder="Search city or town..."
+                    icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   />
+                  {data.birthLat && data.birthLon && (
+                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
+                      <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                      <span className="text-xs text-mystic-300">Location verified</span>
+                    </div>
+                  )}
+                  {showGeoResults && !data.birthLat && geoResults.length > 0 && (
+                    <div className="mt-1 space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-lg border border-mystic-700/40">
+                      {geoResults.map((r, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleSelectGeoResult(r)}
+                          className="w-full text-left px-3 py-2 hover:bg-mystic-700/40 transition-colors text-sm text-mystic-300 truncate cursor-pointer"
+                        >
+                          {r.displayName}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-mystic-500 mt-1.5">Helps compute your natal chart later</p>
                 </div>
               </div>
             </div>

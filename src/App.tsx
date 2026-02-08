@@ -107,7 +107,7 @@ function AppContent() {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [showOAuthCancel, setShowOAuthCancel] = useState(false);
 
-  const BANNER_TABS = useMemo(() => new Set(['readings', 'journal', 'achievements', 'profile']), []);
+  const BANNER_TABS = useMemo(() => new Set(['readings', 'journal', 'achievements', 'profile', 'horoscope']), []);
   const showBanner = useMemo(
     () => BANNER_TABS.has(activeTab) && !activeOverlay,
     [BANNER_TABS, activeTab, activeOverlay]

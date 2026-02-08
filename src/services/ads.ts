@@ -5,13 +5,13 @@ import { rewardedAdsService } from './rewardedAds';
 
 const AD_COOLDOWN_MS = 8 * 60 * 1000;
 
-const TEST_AD_UNIT_IDS = {
+const AD_UNIT_IDS = {
   interstitial: {
     android: 'ca-app-pub-3940256099942544/1033173712',
     ios: 'ca-app-pub-3940256099942544/4411468910',
   },
   banner: {
-    android: 'ca-app-pub-3940256099942544/6300978111',
+    android: 'ca-app-pub-9489106590476826/2642443652',
     ios: 'ca-app-pub-3940256099942544/2934735716',
   },
 };
@@ -71,7 +71,7 @@ class AdsService {
 
       await AdMob.initialize({
         testingDevices: [],
-        initializeForTesting: true,
+        initializeForTesting: false,
       });
 
       this.setupInterstitialListeners();
@@ -137,8 +137,8 @@ class AdsService {
 
     try {
       const adId = isAndroid()
-        ? TEST_AD_UNIT_IDS.interstitial.android
-        : TEST_AD_UNIT_IDS.interstitial.ios;
+        ? AD_UNIT_IDS.interstitial.android
+        : AD_UNIT_IDS.interstitial.ios;
 
       await AdMob.prepareInterstitial({ adId });
     } catch (error) {
@@ -192,15 +192,15 @@ class AdsService {
 
     try {
       const adId = isAndroid()
-        ? TEST_AD_UNIT_IDS.banner.android
-        : TEST_AD_UNIT_IDS.banner.ios;
+        ? AD_UNIT_IDS.banner.android
+        : AD_UNIT_IDS.banner.ios;
 
       await AdMob.showBanner({
         adId,
         adSize: BannerAdSize.ADAPTIVE_BANNER,
         position: BannerAdPosition.TOP_CENTER,
         margin: 0,
-        isTesting: true,
+        isTesting: false,
       });
 
       this.isBannerVisible = true;
@@ -242,8 +242,8 @@ class AdsService {
     try {
       const platform = isAndroid() ? 'android' : 'ios';
       const adUnitId = adType === 'banner'
-        ? (isAndroid() ? TEST_AD_UNIT_IDS.banner.android : TEST_AD_UNIT_IDS.banner.ios)
-        : (isAndroid() ? TEST_AD_UNIT_IDS.interstitial.android : TEST_AD_UNIT_IDS.interstitial.ios);
+        ? (isAndroid() ? AD_UNIT_IDS.banner.android : AD_UNIT_IDS.banner.ios)
+        : (isAndroid() ? AD_UNIT_IDS.interstitial.android : AD_UNIT_IDS.interstitial.ios);
 
       await supabase.from('ad_impressions').insert({
         user_id: this.currentUserId,

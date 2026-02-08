@@ -34,9 +34,9 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     AdMob: {
-      appId: 'ca-app-pub-3940256099942544~3347511713',
-      initializeForTesting: true,
-      testingDevices: ['YOUR_DEVICE_ID_HERE'],
+      appId: 'ca-app-pub-9489106590476826~4064386281',
+      initializeForTesting: false,
+      testingDevices: [],
       tagForChildDirectedTreatment: false,
       tagForUnderAgeOfConsent: false,
       maxAdContentRating: 'G',

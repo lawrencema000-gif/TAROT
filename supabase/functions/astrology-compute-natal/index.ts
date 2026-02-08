@@ -255,7 +255,7 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    const authClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
       global: { headers: { Authorization: authHeader } },
     });
@@ -263,8 +263,12 @@ Deno.serve(async (req: Request) => {
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = await authClient.auth.getUser();
     if (userError || !user) throw new Error("Unauthorized");
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false },
+    });
 
     const { birthDate, birthTime, lat, lon, timezone, chartMode } =
       await req.json();

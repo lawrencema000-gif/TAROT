@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   User,
   Target,
@@ -11,10 +11,15 @@ import {
   Heart,
   Brain,
   Zap,
+  MapPin,
+  Search,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useAuth } from '../context/AuthContext';
+import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
@@ -45,6 +50,8 @@ interface SavedHighlight {
 
 export function ProfilePage() {
   const { profile, user, updateProfile } = useAuth();
+  const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -53,6 +60,8 @@ export function ProfilePage() {
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
+  const [locationQuery, setLocationQuery] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; displayName: string } | null>(null);
   const [editData, setEditData] = useState({
     displayName: profile?.displayName || '',
     birthTime: profile?.birthTime || '',
@@ -71,6 +80,16 @@ export function ProfilePage() {
         birthPlace: profile.birthPlace || '',
         goals: profile.goals || [],
       });
+      setLocationQuery(profile.birthPlace || '');
+      if (profile.birthLat && profile.birthLon) {
+        setSelectedLocation({
+          lat: profile.birthLat,
+          lon: profile.birthLon,
+          displayName: profile.birthPlace || '',
+        });
+      } else {
+        setSelectedLocation(null);
+      }
     }
   }, [profile]);
 
@@ -102,14 +121,43 @@ export function ProfilePage() {
     setLoadingSaved(false);
   };
 
+  const handleLocationInput = (value: string) => {
+    setLocationQuery(value);
+    setEditData(d => ({ ...d, birthPlace: value }));
+    setSelectedLocation(null);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    if (value.trim().length > 2) {
+      debounceRef.current = setTimeout(() => {
+        geoSearch(value);
+      }, 500);
+    }
+  };
+
+  const handleSelectLocation = (location: { lat: number; lon: number; displayName: string }) => {
+    setSelectedLocation(location);
+    setLocationQuery(location.displayName);
+    setEditData(d => ({ ...d, birthPlace: location.displayName }));
+  };
+
   const handleSaveProfile = async () => {
     setSaving(true);
-    const { error } = await updateProfile({
+    const updateData: Record<string, unknown> = {
       displayName: editData.displayName,
       birthTime: editData.birthTime || undefined,
       birthPlace: editData.birthPlace || undefined,
       goals: editData.goals,
-    });
+    };
+
+    if (selectedLocation) {
+      updateData.birthLat = selectedLocation.lat;
+      updateData.birthLon = selectedLocation.lon;
+    }
+
+    const { error } = await updateProfile(updateData);
 
     setSaving(false);
     if (error) {
@@ -314,12 +362,39 @@ export function ProfilePage() {
             onChange={e => setEditData(d => ({ ...d, birthTime: e.target.value }))}
           />
 
-          <Input
-            label="Birth Place (optional)"
-            value={editData.birthPlace}
-            onChange={e => setEditData(d => ({ ...d, birthPlace: e.target.value }))}
-            placeholder="City, Country"
-          />
+          <div>
+            <label className="block text-sm font-medium text-mystic-300 mb-2">Birth Place (optional)</label>
+            <div className="relative">
+              <Input
+                value={locationQuery}
+                onChange={e => handleLocationInput(e.target.value)}
+                placeholder="Search city or town..."
+                icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              />
+            </div>
+
+            {selectedLocation && (
+              <div className="flex items-center gap-2 p-3 mt-2 bg-gold/10 border border-gold/20 rounded-xl">
+                <Check className="w-4 h-4 text-gold flex-shrink-0" />
+                <span className="text-sm text-mystic-200 truncate">{selectedLocation.displayName}</span>
+              </div>
+            )}
+
+            {!selectedLocation && geoResults.length > 0 && (
+              <div className="space-y-1 mt-2 max-h-48 overflow-y-auto border border-mystic-700 rounded-xl bg-mystic-900">
+                {geoResults.map((r, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSelectLocation(r)}
+                    className="w-full text-left px-3 py-2.5 hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 truncate cursor-pointer first:rounded-t-xl last:rounded-b-xl"
+                  >
+                    <MapPin className="w-3.5 h-3.5 inline mr-2 text-mystic-500" />
+                    {r.displayName}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-mystic-300 mb-3">Your Goals</label>

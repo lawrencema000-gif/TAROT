@@ -26,8 +26,9 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
   const hasBirthDate = !!profile?.birthDate;
   const hasCoordinates = !!(profile?.birthLat && profile?.birthLon);
 
-  const needsLocation = !hasCoordinates;
-  const canAutoCompute = hasBirthDate && hasCoordinates;
+  const [forceLocationEntry, setForceLocationEntry] = useState(false);
+  const needsLocation = !hasCoordinates || forceLocationEntry;
+  const canAutoCompute = hasBirthDate && hasCoordinates && !forceLocationEntry;
 
   const [locationQuery, setLocationQuery] = useState(profile?.birthPlace || '');
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; displayName: string } | null>(
@@ -284,9 +285,10 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           fullWidth
           onClick={() => {
             setSelectedLocation(null);
+            setLocationQuery('');
             setComputeError('');
             setAutoComputeAttempted(true);
-            updateProfile({ birthLat: undefined, birthLon: undefined });
+            setForceLocationEntry(true);
           }}
         >
           <MapPin className="w-4 h-4" />

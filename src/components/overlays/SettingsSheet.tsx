@@ -301,14 +301,26 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     }
   };
 
-  const handleBirthPlaceInput = (value: string) => {
+  const [cityQuery, setCityQuery] = useState('');
+
+  useEffect(() => {
+    if (activeSheet === 'editProfile' && profile) {
+      setCityQuery(profile.birthPlace || '');
+    }
+  }, [activeSheet, profile]);
+
+  const handleCityInput = (value: string) => {
+    setCityQuery(value);
     setEditForm(f => ({ ...f, birthPlace: value, birthLat: undefined, birthLon: undefined }));
     setShowGeoResults(true);
     if (geoDebounceRef.current) clearTimeout(geoDebounceRef.current);
-    geoDebounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
+    if (value.trim().length >= 2) {
+      geoDebounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
+    }
   };
 
   const handleSelectGeoResult = (result: { lat: number; lon: number; displayName: string }) => {
+    setCityQuery(result.displayName);
     setEditForm(f => ({ ...f, birthPlace: result.displayName, birthLat: result.lat, birthLon: result.lon }));
     setShowGeoResults(false);
   };
@@ -447,32 +459,46 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             icon={<Clock className="w-4 h-4" />}
           />
 
-          <div className="space-y-2">
-            <Input
-              label="Birth Place (optional)"
-              value={editForm.birthPlace}
-              onChange={e => handleBirthPlaceInput(e.target.value)}
-              placeholder="Search city or town..."
-              icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            />
-            {editForm.birthLat && editForm.birthLon && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
-                <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                <span className="text-xs text-mystic-300">Location verified</span>
+          <div className="p-4 bg-mystic-800/40 rounded-xl border border-mystic-700/50 space-y-3">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-gold" />
+              <span className="text-sm font-medium text-mystic-200">Birth City</span>
+              <span className="text-xs text-mystic-500">(optional)</span>
+            </div>
+
+            <div className="relative">
+              <Input
+                value={cityQuery}
+                onChange={e => handleCityInput(e.target.value)}
+                placeholder="Search city or town..."
+                icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              />
+            </div>
+
+            {editForm.birthLat !== undefined && editForm.birthLon !== undefined && (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-gold/10 border border-gold/20 rounded-lg">
+                <Check className="w-4 h-4 text-gold flex-shrink-0" />
+                <span className="text-sm text-mystic-200 truncate">{editForm.birthPlace}</span>
               </div>
             )}
-            {showGeoResults && !editForm.birthLat && geoResults.length > 0 && (
-              <div className="space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-lg border border-mystic-700/40">
+
+            {showGeoResults && editForm.birthLat === undefined && geoResults.length > 0 && (
+              <div className="max-h-48 overflow-y-auto rounded-lg border border-mystic-700/60 bg-mystic-900 divide-y divide-mystic-800/60">
                 {geoResults.map((r, i) => (
                   <button
                     key={i}
                     onClick={() => handleSelectGeoResult(r)}
-                    className="w-full text-left px-3 py-2 hover:bg-mystic-700/40 transition-colors text-sm text-mystic-300 truncate cursor-pointer"
+                    className="w-full text-left px-3 py-3 hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 cursor-pointer flex items-start gap-2"
                   >
-                    {r.displayName}
+                    <MapPin className="w-3.5 h-3.5 text-mystic-500 mt-0.5 flex-shrink-0" />
+                    <span className="line-clamp-2">{r.displayName}</span>
                   </button>
                 ))}
               </div>
+            )}
+
+            {cityQuery.length > 0 && cityQuery.length < 2 && (
+              <p className="text-xs text-mystic-500">Type at least 2 characters to search</p>
             )}
           </div>
 

@@ -207,17 +207,13 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
 
-    const authClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: userError } = await authClient.auth.getUser();
-    if (userError || !user) throw new Error("Unauthorized");
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) throw new Error("Unauthorized");
 
     const now = new Date();
     const weekStart = getWeekStart(now);

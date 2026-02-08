@@ -255,18 +255,50 @@ function PlacementDetail({ placement }: { placement: PlanetPlacement }) {
               ))}
             </div>
           </div>
+          {signInterp.underStress && signInterp.underStress.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-cosmic-rose mb-1.5">Under Stress</h4>
+              <ul className="space-y-1">
+                {signInterp.underStress.map((s, i) => (
+                  <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-cosmic-rose/20">{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {signInterp.growthPath && signInterp.growthPath.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-gold mb-1.5">Growth Path</h4>
+              <ul className="space-y-1">
+                {signInterp.growthPath.map((s, i) => (
+                  <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-gold/20">{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
       {houseInterp && (
-        <div className="p-3 bg-mystic-800/30 rounded-xl space-y-1">
+        <div className="p-3 bg-mystic-800/30 rounded-xl space-y-2">
           <h4 className="text-xs font-medium text-gold">In House {placement.house}</h4>
           <p className="text-xs text-mystic-300 leading-relaxed">{houseInterp.expression}</p>
-          <div className="flex flex-wrap gap-1.5 mt-2">
+          <div className="flex flex-wrap gap-1.5">
             {houseInterp.themes.map((t, i) => (
               <span key={i} className="text-[10px] px-2 py-0.5 bg-gold/10 text-gold rounded-full">{t}</span>
             ))}
           </div>
+          {houseInterp.healthy && (
+            <div className="pt-1">
+              <h5 className="text-[10px] font-medium text-teal mb-0.5">At Its Best</h5>
+              <p className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-teal/20">{houseInterp.healthy}</p>
+            </div>
+          )}
+          {houseInterp.unhealthy && (
+            <div className="pt-1">
+              <h5 className="text-[10px] font-medium text-coral mb-0.5">Shadow Side</h5>
+              <p className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-coral/20">{houseInterp.unhealthy}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

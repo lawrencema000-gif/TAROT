@@ -4,7 +4,7 @@ export const attachmentQuiz: QuizDefinition = {
   id: 'attachment-v1',
   type: 'big-five',
   title: 'Attachment Style Assessment',
-  description: 'Understand your attachment style and how it influences your relationships and connections with others.',
+  description: 'This assessment maps your relationship wiring across two axes: anxiety (fear of abandonment) and avoidance (discomfort with closeness). Your attachment style is not a permanent label—it is a pattern you developed to stay safe in early relationships, and it can shift over time with awareness and intention. You will receive your primary attachment pattern, your specific triggers and protective behaviors, what you need from a partner to feel safe, and a practical path toward secure attachment.',
   questions: [
     { id: 'at1', text: 'I find it easy to get close to others.', dimension: 'avoidance', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'at2', text: 'I worry that romantic partners won\'t care about me as much as I care about them.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -120,6 +120,12 @@ export interface AttachmentStyleInfo {
   healingPractices: string[];
   partnerTips: string[];
   journalPrompts: string[];
+  deactivationBehaviors: string[];
+  activationBehaviors: string[];
+  pathToSecure: string;
+  whatYouNeedFromPartner: string[];
+  miniRitual: string;
+  tarotArchetype: { card: string; reason: string };
 }
 
 export const attachmentDescriptions: Record<AttachmentStyle, AttachmentStyleInfo> = {
@@ -165,6 +171,12 @@ export const attachmentDescriptions: Record<AttachmentStyle, AttachmentStyleInfo
       'How can I continue to grow and support my partner\'s growth?',
       'What healthy relationship patterns have I developed?',
     ],
+    deactivationBehaviors: ['Occasionally pulling back when a partner shows insecure patterns', 'May become overly accommodating to avoid triggering a partner'],
+    activationBehaviors: ['Able to express needs calmly without escalation', 'Can tolerate temporary distance without catastrophizing'],
+    pathToSecure: 'You are already operating from a secure base. Your growth work is maintaining this pattern under stress, supporting partners who may be less secure without losing yourself, and continuing to practice the communication skills that keep your relationships healthy.',
+    whatYouNeedFromPartner: ['Honest, direct communication about feelings and needs', 'A willingness to work through conflict rather than avoid it', 'Respect for your boundaries and autonomy', 'Emotional availability and follow-through on commitments'],
+    miniRitual: 'At the end of each day, name one thing your partner (or a loved one) did that made you feel connected. Tell them. This simple practice reinforces the security you naturally create.',
+    tarotArchetype: { card: 'The Star', reason: 'The Star represents hope, healing, and calm trust in the future. Your secure attachment mirrors this energy—a steady, open presence that makes others feel safe enough to be themselves.' },
   },
   anxious: {
     name: 'Anxious Attachment',
@@ -214,6 +226,12 @@ export const attachmentDescriptions: Record<AttachmentStyle, AttachmentStyleInfo
       'What evidence shows that I am loved and valued?',
       'How can I build my sense of self outside of relationships?',
     ],
+    deactivationBehaviors: ['Rarely deactivate—may instead hyper-activate by seeking more contact', 'May withdraw briefly but quickly return to seeking reassurance'],
+    activationBehaviors: ['Frequent checking of phone for messages or responses', 'Analyzing partner\'s tone, word choice, and response time', 'Creating tests or situations to confirm partner\'s feelings', 'Excessive reassurance-seeking that feels compulsive', 'Difficulty concentrating on anything else when relationship feels uncertain'],
+    pathToSecure: 'Your path to secure attachment involves building a strong sense of self outside your relationships. The anxiety you feel is not evidence that something is wrong—it is your nervous system replaying old patterns. Learning to self-soothe, tolerating uncertainty without acting on it, and building evidence that you are safe even when your partner is temporarily unavailable are the core practices that will shift your baseline over time.',
+    whatYouNeedFromPartner: ['Consistent, predictable communication patterns', 'Clear verbal reassurance that is specific, not generic', 'Proactive check-ins, not just reactive responses', 'A partner who names their feelings and needs directly', 'Physical presence and touch during moments of uncertainty'],
+    miniRitual: 'When you feel the urge to reach out for reassurance, set a 10-minute timer. During those 10 minutes, place your hand on your chest and breathe slowly. Say to yourself: "I am safe. This feeling is temporary. I do not need to act on it right now." After 10 minutes, decide if you still need to reach out.',
+    tarotArchetype: { card: 'The Moon', reason: 'The Moon reflects the deep emotional tides and fears that drive anxious attachment—the pull toward the unknown, the difficulty distinguishing intuition from anxiety, and the eventual clarity that comes from learning to sit with uncertainty.' },
   },
   avoidant: {
     name: 'Avoidant Attachment',
@@ -263,6 +281,12 @@ export const attachmentDescriptions: Record<AttachmentStyle, AttachmentStyleInfo
       'What would it feel like to let someone truly know me?',
       'How might vulnerability actually strengthen my relationships?',
     ],
+    deactivationBehaviors: ['Feeling suffocated when a partner wants more closeness', 'Mentally listing a partner\'s flaws when the relationship gets serious', 'Keeping emotional distance through humor, intellectualizing, or staying busy', 'Idealizing past relationships or imagining "the one" who would not trigger discomfort', 'Pulling away after moments of genuine vulnerability or intimacy'],
+    activationBehaviors: ['Rarely activate—may instead shut down or withdraw further', 'Occasionally experience anxiety when a partner pulls away, but suppress it'],
+    pathToSecure: 'Your path to secure attachment involves learning that closeness does not equal loss of self. The independence you prize is real, but it may also be a defense against the vulnerability that true intimacy requires. Small, deliberate steps toward sharing your inner world—naming a feeling, admitting a need, staying present when you want to leave—build the trust muscle that avoidance has been protecting you from developing.',
+    whatYouNeedFromPartner: ['Space and autonomy that is given freely, not grudgingly', 'A partner who does not chase or pressure when you withdraw', 'Low-pressure invitations to connect rather than demands for closeness', 'Consistency and patience without expectation of immediate emotional reciprocity', 'Respect for your process and timeline for opening up'],
+    miniRitual: 'Once a day, pause and name one emotion you are feeling without judging or explaining it. Just name it: "I feel uneasy." "I feel warm." "I feel closed off." This builds the emotional vocabulary that avoidant patterns tend to suppress.',
+    tarotArchetype: { card: 'The Hermit', reason: 'The Hermit walks alone with a lantern, seeking truth through solitude. Your avoidant pattern mirrors this energy—the strength of independence and the growth that comes from learning that carrying your own light does not mean you must walk in the dark alone.' },
   },
   'fearful-avoidant': {
     name: 'Fearful-Avoidant Attachment',
@@ -312,6 +336,12 @@ export const attachmentDescriptions: Record<AttachmentStyle, AttachmentStyleInfo
       'What would a safe, healthy relationship look like for me?',
       'How can I be more consistent in showing up for myself and others?',
     ],
+    deactivationBehaviors: ['Shutting down emotionally after moments of closeness', 'Sabotaging relationships when they start to feel real', 'Oscillating between clinging and withdrawing in the same conversation', 'Dissociating or going numb during intense emotional exchanges'],
+    activationBehaviors: ['Intense anxiety when a partner pulls away or seems disinterested', 'Testing partner\'s commitment through conflict or provocation', 'Seeking closeness urgently and then pushing it away when it arrives', 'Hypervigilance about partner\'s mood, tone, and availability'],
+    pathToSecure: 'Your path to secure attachment is the most complex but also the most transformative. You carry both the anxiety of wanting love and the avoidance of fearing it, often in the same moment. Healing often requires professional support—not because something is wrong with you, but because the patterns you developed were intelligent survival strategies that now need updating. Small steps include noticing the push-pull without acting on it, building one consistent safe relationship, and learning to regulate your nervous system before making relationship decisions.',
+    whatYouNeedFromPartner: ['Extreme patience and consistency without taking your push-pull personally', 'A partner who can stay calm when you are emotionally dysregulated', 'Clear boundaries that are held kindly, not punitively', 'Reassurance that is offered freely, not as a response to testing', 'A willingness to name dynamics openly without blame'],
+    miniRitual: 'When you notice the push-pull happening, pause. Place both feet flat on the floor. Name what you feel without acting on it: "I want to get closer. I want to run." Hold both truths at once. Breathe. You do not have to choose in this moment. Just notice.',
+    tarotArchetype: { card: 'The Tower', reason: 'The Tower represents the breaking down of structures that no longer serve you. Your fearful-avoidant pattern is often born from early disruption, and your healing path mirrors the Tower—the courage to let old defenses crumble so something more real can be built in their place.' },
   },
 };
 

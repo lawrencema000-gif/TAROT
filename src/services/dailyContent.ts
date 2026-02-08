@@ -9,6 +9,9 @@ import {
   careerInsights,
   wellnessInsights,
   reflectionPrompts,
+  shadowInsights,
+  cautionInsights,
+  miniRitualTemplates,
 } from '../data/zodiacContent';
 
 export interface DailyReading {
@@ -24,6 +27,11 @@ export interface DailyReading {
   energy: number;
   focusArea: string;
   planetaryInfluence: string;
+  shadow: string;
+  caution: string;
+  miniRitual: string;
+  mood: string;
+  actionStep: string;
 }
 
 export interface ReadingContext {
@@ -80,6 +88,29 @@ const selfCareActivities = [
 const careerActions = [
   'taking initiative', 'building connections', 'showcasing expertise',
   'strategic planning', 'collaborative projects', 'skill development',
+];
+
+const moodDescriptors = [
+  'Quietly powerful', 'Restless but purposeful', 'Open and receptive',
+  'Tender and raw', 'Grounded and resolute', 'Playful and light',
+  'Contemplative and wise', 'Energized and magnetic', 'Clear-headed and decisive',
+  'Protective and fierce', 'Hopeful and forward-looking', 'Patient and steady',
+  'Emotionally honest', 'Resilient and recovering', 'Creative and inspired',
+];
+
+const actionStepPool = [
+  'Take 5 minutes to journal about what you are grateful for today.',
+  'Reach out to someone you have been thinking about.',
+  'Set one clear intention for the day and write it down.',
+  'Spend 10 minutes in quiet meditation or reflection.',
+  'Do one thing that scares you a little.',
+  'Name one emotion you are carrying right now without judging it.',
+  'Tell someone what you appreciate about them, with one specific example.',
+  'Make one decision you have been postponing.',
+  'Do something physical for 10 minutes—walk, stretch, dance.',
+  'Before bed tonight, write one sentence about what today taught you.',
+  'Replace one complaint today with a request for what you need.',
+  'Choose one relationship and invest 10 minutes of genuine attention.',
 ];
 
 function interpolateTemplate(
@@ -150,6 +181,9 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
   const careerTemplate = selectFromArray(careerInsights, random);
   const wellnessTemplate = selectFromArray(wellnessInsights, random);
   const reflectionTemplate = selectFromArray(reflectionPrompts, random);
+  const shadowTemplate = selectFromArray(shadowInsights, random);
+  const cautionTemplate = selectFromArray(cautionInsights, random);
+  const ritualTemplate = selectFromArray(miniRitualTemplates, random);
 
   let focusArea = dayTheme.focus;
   if (goals.includes('love')) focusArea = 'relationships and connection';
@@ -172,6 +206,11 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
     energy: Math.floor(random() * 5) + 1,
     focusArea,
     planetaryInfluence: planet.positive,
+    shadow: interpolateTemplate(shadowTemplate, context),
+    caution: interpolateTemplate(cautionTemplate, context),
+    miniRitual: interpolateTemplate(ritualTemplate, context),
+    mood: selectFromArray(moodDescriptors, random),
+    actionStep: selectFromArray(actionStepPool, random),
   };
 }
 

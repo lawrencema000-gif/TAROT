@@ -32,6 +32,8 @@ import {
   ArrowRight,
   Shield,
   Lightbulb,
+  Compass,
+  BookOpen,
 } from 'lucide-react';
 import { Card, Button, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -445,6 +447,33 @@ export function QuizzesPage() {
             <p className="text-mystic-300">{moodResult.suggestion}</p>
           </Card>
 
+          {moodInfo.recommendation && (
+            <Card padding="lg">
+              <h3 className="font-medium text-mystic-200 mb-3">What to Do Today</h3>
+              <p className="text-mystic-300 text-sm leading-relaxed">{moodInfo.recommendation}</p>
+            </Card>
+          )}
+
+          {moodInfo.journalPrompt && (
+            <Card padding="lg">
+              <div className="flex items-center gap-3 mb-3">
+                <BookOpen className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-mystic-200">Reflection</h3>
+              </div>
+              <p className="text-mystic-300 text-sm italic leading-relaxed">{moodInfo.journalPrompt}</p>
+            </Card>
+          )}
+
+          {moodInfo.tarotSuggestion && (
+            <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Tarot Energy</h3>
+              </div>
+              <p className="text-mystic-300 text-sm leading-relaxed">{moodInfo.tarotSuggestion}</p>
+            </Card>
+          )}
+
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             Take Another Quiz
           </Button>
@@ -599,6 +628,58 @@ export function QuizzesPage() {
             </div>
           </CollapsibleSection>
 
+          {typeInfo?.stressSignature && (
+            <CollapsibleSection title="Stress Signature" icon={Zap} sectionKey="stressSignature">
+              <p className="text-mystic-300 text-sm leading-relaxed">{typeInfo.stressSignature}</p>
+              {typeInfo.recoveryPath && (
+                <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/20 rounded-xl">
+                  <p className="text-xs text-emerald-400 uppercase tracking-wide mb-2">Recovery Path</p>
+                  <p className="text-mystic-300 text-sm">{typeInfo.recoveryPath}</p>
+                </div>
+              )}
+            </CollapsibleSection>
+          )}
+
+          {typeInfo?.realLifeExamples && typeInfo.realLifeExamples.length > 0 && (
+            <CollapsibleSection title="Real Life Examples" icon={Compass} sectionKey="realLife">
+              <ul className="space-y-2">
+                {typeInfo.realLifeExamples.map((example, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0 mt-2" />
+                    <span className="text-mystic-300 text-sm">{example}</span>
+                  </li>
+                ))}
+              </ul>
+            </CollapsibleSection>
+          )}
+
+          {typeInfo?.tarotArchetype && (
+            <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Tarot Archetype</h3>
+              </div>
+              <p className="text-lg font-display text-mystic-100 mb-2">{typeInfo.tarotArchetype.card}</p>
+              <p className="text-mystic-400 text-sm leading-relaxed">{typeInfo.tarotArchetype.reason}</p>
+            </Card>
+          )}
+
+          {typeInfo?.miniRitual && (
+            <Card padding="lg" className="bg-gold/5 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <BookOpen className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Mini Ritual</h3>
+              </div>
+              <p className="text-mystic-300 text-sm leading-relaxed italic">{typeInfo.miniRitual}</p>
+              {typeInfo.journalPrompt && (
+                <div className="mt-4 p-3 bg-mystic-800/50 rounded-lg">
+                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Journal Prompt</p>
+                  <p className="text-mystic-300 text-sm italic">{typeInfo.journalPrompt}</p>
+                </div>
+              )}
+            </Card>
+          )}
+
           <Card padding="lg">
             <div className="flex items-center gap-3 mb-4">
               <Users className="w-5 h-5 text-gold" />
@@ -688,6 +769,19 @@ export function QuizzesPage() {
                     </div>
                   ))}
                 </div>
+                {info.growthLever && (
+                  <div className="mt-4 p-3 bg-gold/5 border border-gold/20 rounded-lg">
+                    <p className="text-xs text-gold uppercase tracking-wide mb-1">Growth Lever</p>
+                    <p className="text-mystic-300 text-sm">{isHigh ? info.growthLever.high : info.growthLever.low}</p>
+                  </div>
+                )}
+                {info.tarotArchetype && (
+                  <div className="mt-4 p-3 bg-mystic-800/50 rounded-lg">
+                    <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Tarot Archetype</p>
+                    <p className="text-sm text-gold font-medium">{isHigh ? info.tarotArchetype.high.card : info.tarotArchetype.low.card}</p>
+                    <p className="text-mystic-400 text-xs mt-1">{isHigh ? info.tarotArchetype.high.reason : info.tarotArchetype.low.reason}</p>
+                  </div>
+                )}
               </Card>
             );
           })}
@@ -822,6 +916,50 @@ export function QuizzesPage() {
               ))}
             </ul>
           </Card>
+
+          {typeInfo.realLifeExamples && typeInfo.realLifeExamples.length > 0 && (
+            <Card padding="lg">
+              <div className="flex items-center gap-3 mb-4">
+                <Compass className="w-5 h-5 text-mystic-300" />
+                <h3 className="font-medium text-mystic-200">Real Life Examples</h3>
+              </div>
+              <ul className="space-y-2">
+                {typeInfo.realLifeExamples.map((example, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0 mt-2" />
+                    <span className="text-mystic-300 text-sm">{example}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {typeInfo.tarotArchetype && (
+            <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Tarot Archetype</h3>
+              </div>
+              <p className="text-lg font-display text-mystic-100 mb-2">{typeInfo.tarotArchetype.card}</p>
+              <p className="text-mystic-400 text-sm leading-relaxed">{typeInfo.tarotArchetype.reason}</p>
+            </Card>
+          )}
+
+          {typeInfo.miniRitual && (
+            <Card padding="lg" className="bg-gold/5 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <BookOpen className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Mini Ritual</h3>
+              </div>
+              <p className="text-mystic-300 text-sm leading-relaxed italic">{typeInfo.miniRitual}</p>
+              {typeInfo.journalPrompt && (
+                <div className="mt-4 p-3 bg-mystic-800/50 rounded-lg">
+                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Journal Prompt</p>
+                  <p className="text-mystic-300 text-sm italic">{typeInfo.journalPrompt}</p>
+                </div>
+              )}
+            </Card>
+          )}
 
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             Take Another Quiz
@@ -963,6 +1101,37 @@ export function QuizzesPage() {
             </div>
           </Card>
 
+          {styleInfo.pathToSecure && (
+            <Card padding="lg">
+              <div className="flex items-center gap-3 mb-4">
+                <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-medium text-mystic-200">Path to Secure</h3>
+              </div>
+              <p className="text-mystic-300 text-sm leading-relaxed">{styleInfo.pathToSecure}</p>
+            </Card>
+          )}
+
+          {styleInfo.miniRitual && (
+            <Card padding="lg" className="bg-gold/5 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <BookOpen className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Mini Ritual</h3>
+              </div>
+              <p className="text-mystic-300 text-sm leading-relaxed italic">{styleInfo.miniRitual}</p>
+            </Card>
+          )}
+
+          {styleInfo.tarotArchetype && (
+            <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles className="w-5 h-5 text-gold" />
+                <h3 className="font-medium text-gold">Tarot Archetype</h3>
+              </div>
+              <p className="text-lg font-display text-mystic-100 mb-2">{styleInfo.tarotArchetype.card}</p>
+              <p className="text-mystic-400 text-sm leading-relaxed">{styleInfo.tarotArchetype.reason}</p>
+            </Card>
+          )}
+
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             Take Another Quiz
           </Button>
@@ -1097,6 +1266,47 @@ export function QuizzesPage() {
             ))}
           </div>
         </Card>
+
+        {primaryInfo?.whenHealthy && (
+          <Card padding="lg">
+            <h3 className="font-medium text-emerald-400 mb-3">When This Language Is Well-Fed</h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{primaryInfo.whenHealthy}</p>
+          </Card>
+        )}
+
+        {primaryInfo?.whenDeprived && (
+          <Card padding="lg">
+            <h3 className="font-medium text-orange-400 mb-3">When This Language Goes Unmet</h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{primaryInfo.whenDeprived}</p>
+          </Card>
+        )}
+
+        {primaryInfo?.howToAskForIt && primaryInfo.howToAskForIt.length > 0 && (
+          <Card padding="lg">
+            <div className="flex items-center gap-3 mb-4">
+              <Heart className="w-5 h-5 text-cosmic-rose" />
+              <h3 className="font-medium text-mystic-200">How to Ask for It</h3>
+            </div>
+            <div className="space-y-3">
+              {primaryInfo.howToAskForIt.map((phrase, i) => (
+                <div key={i} className="p-3 bg-mystic-800/50 rounded-lg">
+                  <p className="text-mystic-300 text-sm italic">&ldquo;{phrase}&rdquo;</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {primaryInfo?.tarotArchetype && (
+          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+            <div className="flex items-center gap-3 mb-3">
+              <Sparkles className="w-5 h-5 text-gold" />
+              <h3 className="font-medium text-gold">Tarot Archetype</h3>
+            </div>
+            <p className="text-lg font-display text-mystic-100 mb-2">{primaryInfo.tarotArchetype.card}</p>
+            <p className="text-mystic-400 text-sm leading-relaxed">{primaryInfo.tarotArchetype.reason}</p>
+          </Card>
+        )}
 
         <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
           Take Another Quiz

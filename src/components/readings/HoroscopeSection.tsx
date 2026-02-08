@@ -14,6 +14,9 @@ import {
   Zap,
   Gift,
   Globe,
+  Shield,
+  Flame,
+  AlertTriangle,
 } from 'lucide-react';
 import { Card, Button, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
@@ -26,6 +29,7 @@ import {
   getDailyAffirmation,
   getLuckyNumbers
 } from '../../data/horoscopes';
+import { generateDailyReading } from '../../services/dailyContent';
 import { fullDeck } from '../../data/tarotDeck';
 import { shareToNative, copyToClipboard } from '../../services/share';
 import { awardXP } from '../../services/levelSystem';
@@ -61,6 +65,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const zodiacInfo = zodiacData[zodiacSign];
   const horoscope = generateDailyHoroscope(zodiacSign, today);
+  const dailyReading = generateDailyReading({ sign: zodiacSign, date: today });
   const planetaryTransit = getPlanetaryTransit(today);
   const affirmation = getDailyAffirmation(zodiacSign, today);
   const luckyNumbers = getLuckyNumbers(today, 6);
@@ -246,6 +251,30 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                 </div>
               </div>
 
+              <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
+                <Sparkles className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium text-mystic-200 mb-1">Today's Mood</h4>
+                  <p className="text-sm text-mystic-400">{dailyReading.mood}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
+                <Shield className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium text-mystic-200 mb-1">Shadow Insight</h4>
+                  <p className="text-sm text-mystic-400">{dailyReading.shadow}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-orange-900/10 border border-orange-500/20 rounded-xl">
+                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium text-mystic-200 mb-1">Caution</h4>
+                  <p className="text-xs text-mystic-400">{dailyReading.caution}</p>
+                </div>
+              </div>
+
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-xl">
                 <Globe className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
@@ -277,22 +306,40 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
 
               {showExtras && (
-                <div className="flex items-start gap-3 p-4 bg-gold/5 border border-gold/20 rounded-xl">
-                  <Gift className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-mystic-200 mb-2">Lucky Numbers</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {luckyNumbers.map((num, i) => (
-                        <div
-                          key={i}
-                          className="w-10 h-10 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center"
-                        >
-                          <span className="text-sm font-bold text-gold">{num}</span>
-                        </div>
-                      ))}
+                <>
+                  <div className="flex items-start gap-3 p-4 bg-gold/5 border border-gold/20 rounded-xl">
+                    <Gift className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-mystic-200 mb-2">Lucky Numbers</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {luckyNumbers.map((num, i) => (
+                          <div
+                            key={i}
+                            className="w-10 h-10 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center"
+                          >
+                            <span className="text-sm font-bold text-gold">{num}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/5 to-mystic-800/30 border border-gold/10 rounded-xl">
+                    <Flame className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-mystic-200 mb-1">Mini Ritual</h4>
+                      <p className="text-xs text-mystic-400 leading-relaxed">{dailyReading.miniRitual}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
+                    <TrendingUp className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-mystic-200 mb-1">Action Step</h4>
+                      <p className="text-xs text-mystic-400 leading-relaxed">{dailyReading.actionStep}</p>
+                    </div>
+                  </div>
+                </>
               )}
 
               <button
@@ -314,7 +361,8 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
 
             <div className="grid grid-cols-7 gap-1">
               {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
-                const energy = Math.floor(Math.random() * 5) + 1;
+                const daySeed = new Date(today).getTime() + zodiacSign.charCodeAt(0) + i * 7919;
+                const energy = (daySeed % 5) + 1;
                 return (
                   <div key={i} className="text-center">
                     <p className="text-xs text-mystic-500 mb-1">{day}</p>

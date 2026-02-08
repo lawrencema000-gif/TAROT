@@ -4,7 +4,7 @@ export const mbtiQuiz: QuizDefinition = {
   id: 'mbti-v1',
   type: 'mbti',
   title: 'Personality Type Assessment',
-  description: 'Discover your Myers-Briggs personality type through this comprehensive 48-question assessment.',
+  description: 'This assessment explores the way you naturally process information, make decisions, and move through the world. Instead of judging personality as right or wrong, it highlights your default strengths, your blind spots under stress, and what you tend to need from relationships and environments to thrive. You will receive a personality profile with a stress signature, recovery strategies, relationship style notes, and a tarot archetype alignment for narrative depth.',
   questions: [
     { id: 'ei1', text: 'At a party, you tend to interact with many people, including strangers.', dimension: 'EI', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'ei2', text: 'You feel drained after spending time in large groups.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
@@ -64,7 +64,7 @@ export const loveLanguageQuiz: QuizDefinition = {
   id: 'love-language-v1',
   type: 'love-language',
   title: 'Love Language Assessment',
-  description: 'Discover how you prefer to give and receive love.',
+  description: 'This assessment helps you discover how you most naturally give and receive love. Many relationship conflicts are not a lack of love\u2014they are a mismatch of expression. One person is offering time, the other is needing words. You will receive a primary and secondary love language, what it looks like when healthy versus deprived, clear ways to ask for what you need, and partner tips so the people who love you do not have to guess.',
   questions: [
     { id: 'll1', text: 'I feel most loved when someone gives me a thoughtful gift.', dimension: 'gifts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll2', text: 'Hearing "I love you" and other words of affirmation means the world to me.', dimension: 'words', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -151,6 +151,12 @@ export interface MBTITypeInfo {
   atWork: string[];
   growthQuests: { title: string; description: string }[];
   compatibility: string[];
+  realLifeExamples: string[];
+  stressSignature: string;
+  recoveryPath: string;
+  miniRitual: string;
+  journalPrompt: string;
+  tarotArchetype: { card: string; reason: string };
 }
 
 export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
@@ -168,7 +174,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Embrace Imperfection', description: 'Complete a project at 80% instead of waiting for perfection' },
       { title: 'Connect Without Agenda', description: 'Have a conversation purely for enjoyment, not to solve anything' }
     ],
-    compatibility: ['ENFP', 'ENTP', 'INTJ', 'ENTJ']
+    compatibility: ['ENFP', 'ENTP', 'INTJ', 'ENTJ'],
+    realLifeExamples: ['You plan vacations with spreadsheets and still enjoy them', 'You are the friend people call when they need a strategy, not a pep talk', 'You can spend an entire weekend deep in a project and feel recharged', 'You mentally redesign systems everywhere you go\u2014restaurants, workflows, apps'],
+    stressSignature: 'Under stress, INTJs catastrophize and fixate on worst-case scenarios. The normally calm strategist becomes hyper-critical, withdrawn, and may indulge in uncharacteristic sensory escapes (binge-watching, overeating, impulsive purchases) to silence the mental noise.',
+    recoveryPath: 'Return to solitude with a single clear problem to solve. Physical movement (walking, lifting) helps break the rumination loop. Write down the worst-case scenario, then write three realistic alternatives. Reconnect with your long-term vision.',
+    miniRitual: 'Write down the one thing you can control today. Circle it. Let everything else wait.',
+    journalPrompt: 'Where am I confusing perfectionism with standards? What would "good enough to move forward" look like?',
+    tarotArchetype: { card: 'The Hermit', reason: 'The Hermit mirrors your gift for solitary insight and your power to illuminate what others overlook through quiet, focused wisdom.' },
   },
   INTP: {
     title: 'The Logician',
@@ -184,7 +196,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Feel First', description: 'When someone shares a problem, respond with empathy before solutions' },
       { title: 'Body Check', description: 'Set 3 daily reminders to notice how your body feels' }
     ],
-    compatibility: ['ENTJ', 'ESTJ', 'INTP', 'INTJ']
+    compatibility: ['ENTJ', 'ESTJ', 'INTP', 'INTJ'],
+    realLifeExamples: ['You have 47 browser tabs open and can justify every one', 'You correct people not to be rude but because the wrong answer genuinely bothers you', 'You can explain quantum physics but struggle to explain why you are upset', 'You start more projects than you finish but each one taught you something valuable'],
+    stressSignature: 'Under stress, INTPs become scattered, lose confidence in their usually sharp thinking, and may lash out emotionally in ways that surprise everyone, including themselves. The inner world that normally feels like a playground starts to feel like a trap.',
+    recoveryPath: 'Give yourself permission to stop analyzing. Move your body, build something tangible with your hands, or explain a complex idea to someone who will listen. The goal is to reconnect thinking with the physical world.',
+    miniRitual: 'Pick up something physical (a pen, a tool, a cup) and describe it in as much detail as possible for 60 seconds. Get out of your head and into your senses.',
+    journalPrompt: 'What idea have I been perfecting in my head that would benefit from being imperfect in the real world?',
+    tarotArchetype: { card: 'The Magician', reason: 'The Magician reflects your ability to transform raw ideas into reality when you focus your scattered brilliance into deliberate action.' },
   },
   ENTJ: {
     title: 'The Commander',
@@ -200,7 +218,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Delegate Fully', description: 'Assign a task and resist checking in for 48 hours' },
       { title: 'Celebrate Others', description: 'Publicly acknowledge a team member\'s contribution this week' }
     ],
-    compatibility: ['INTP', 'ISTP', 'ENTJ', 'INTJ']
+    compatibility: ['INTP', 'ISTP', 'ENTJ', 'INTJ'],
+    realLifeExamples: ['You run meetings even when you are not in charge', 'You have a 5-year plan and update it quarterly', 'People either find you inspiring or intimidating\u2014rarely anything in between', 'You show love by solving problems and building a future together'],
+    stressSignature: 'Under stress, ENTJs become controlling, make decisions too quickly, and feel isolated by the weight of leadership. They may push people away precisely when they need support most, confusing vulnerability with weakness.',
+    recoveryPath: 'Delegate something meaningful and resist checking in. Take a full day off without a productivity agenda. Talk to someone you respect as an equal\u2014not to strategize, just to be heard.',
+    miniRitual: 'Close your eyes and ask: "What would I do today if I had nothing to prove?" Sit with the answer for 60 seconds.',
+    journalPrompt: 'Am I leading from vision or from a need to control? What would trusting others more actually look like?',
+    tarotArchetype: { card: 'The Emperor', reason: 'The Emperor embodies your natural authority and the challenge of wielding power with wisdom rather than force.' },
   },
   ENTP: {
     title: 'The Debater',
@@ -216,7 +240,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Argue the Other Side', description: 'In your next debate, genuinely try to understand the opposing view' },
       { title: 'Consistency Challenge', description: 'Do one small task at the same time for 7 days straight' }
     ],
-    compatibility: ['INFJ', 'INTJ', 'ENTP', 'ENFP']
+    compatibility: ['INFJ', 'INTJ', 'ENTP', 'ENFP'],
+    realLifeExamples: ['You play devil\'s advocate even when you agree with the other person', 'You have started at least 3 businesses, side projects, or "big ideas" this year', 'You can charm a room and then forget everyone\'s name', 'You get bored the moment something stops being intellectually stimulating'],
+    stressSignature: 'Under stress, ENTPs become argumentative, scattered, and start questioning their own competence. The normally confident debater turns inward with self-doubt, may start and abandon projects rapidly, and loses the thread of what actually matters.',
+    recoveryPath: 'Pick one thing and finish it\u2014however small. Reconnect with a person who makes you laugh without performing. Write down what you actually believe (not what you can argue) about something that matters to you.',
+    miniRitual: 'Set a 5-minute timer. Work on one single thing without switching. When it rings, notice how it felt to focus.',
+    journalPrompt: 'What am I debating externally that is actually an internal question I have not answered yet?',
+    tarotArchetype: { card: 'The Fool', reason: 'The Fool captures your gift for leaping into the unknown with enthusiasm and your ongoing lesson of balancing adventure with follow-through.' },
   },
   INFJ: {
     title: 'The Advocate',
@@ -232,7 +262,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Good Enough', description: 'Complete something and share it before it feels perfect' },
       { title: 'Self-Care First', description: 'Put your own needs first for one full day this week' }
     ],
-    compatibility: ['ENTP', 'ENFP', 'INFJ', 'INTJ']
+    compatibility: ['ENTP', 'ENFP', 'INFJ', 'INTJ'],
+    realLifeExamples: ['You know something is wrong with a friend before they tell you', 'You have a rich inner world that very few people have full access to', 'You often feel like you do not quite fit anywhere but are needed everywhere', 'You take on others\' emotions and need hours alone to decompress'],
+    stressSignature: 'Under stress, INFJs become overwhelmed by absorbed emotions, lose their sense of purpose, and may withdraw completely or become uncharacteristically sharp and critical. The "door slam"\u2014cutting someone off entirely\u2014is a last-resort protection mechanism.',
+    recoveryPath: 'Solitude is medicine, but isolation is not. Find one person who understands you and let them in. Journal to separate your feelings from others\' feelings. Return to your sense of purpose\u2014even re-reading your own past writing can help.',
+    miniRitual: 'Place both hands on your chest. Breathe in and say silently: "This is mine." Breathe out and say: "That is theirs." Repeat 5 times.',
+    journalPrompt: 'Whose feelings am I carrying right now that are not mine? What would I feel if I set them down?',
+    tarotArchetype: { card: 'The High Priestess', reason: 'The High Priestess mirrors your deep intuition, your access to hidden knowledge, and the power you hold when you trust what you sense over what you are told.' },
   },
   INFP: {
     title: 'The Mediator',
@@ -248,7 +284,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Embrace Feedback', description: 'Ask for honest feedback and find one useful insight in it' },
       { title: 'Speak Your Mind', description: 'Share an unpopular opinion in a safe space' }
     ],
-    compatibility: ['ENFJ', 'ENTJ', 'INFP', 'INFJ']
+    compatibility: ['ENFJ', 'ENTJ', 'INFP', 'INFJ'],
+    realLifeExamples: ['You have cried during a commercial and felt no shame about it', 'You replay conversations in your head to understand them more deeply', 'You would rather be authentic and uncomfortable than fake and accepted', 'You have a creative project that means everything to you and terrifies you equally'],
+    stressSignature: 'Under stress, INFPs become hypersensitive to criticism, spiral into self-doubt, and may withdraw from the world entirely. They can become uncharacteristically harsh\u2014the shadow of their normally gentle nature emerges as sharp judgment aimed at themselves or others.',
+    recoveryPath: 'Create something\u2014anything\u2014without showing it to anyone. Spend time in nature. Re-read words that have moved you. Reconnect with the values that make you who you are, not the expectations that don\'t.',
+    miniRitual: 'Write one sentence that is true about how you feel right now. Do not edit it. Do not judge it. Just let it exist.',
+    journalPrompt: 'What dream am I protecting by keeping it private? What would happen if I shared it with one person I trust?',
+    tarotArchetype: { card: 'The Star', reason: 'The Star reflects your gift for hope and healing\u2014your ability to hold onto beauty even in darkness and to remind others that vulnerability is strength.' },
   },
   ENFJ: {
     title: 'The Protagonist',
@@ -264,7 +306,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Receive Without Giving', description: 'Accept help or a gift without immediately reciprocating' },
       { title: 'Sit With Discomfort', description: 'When someone is struggling, be present without trying to fix it' }
     ],
-    compatibility: ['INFP', 'ISFP', 'ENFJ', 'INFJ']
+    compatibility: ['INFP', 'ISFP', 'ENFJ', 'INFJ'],
+    realLifeExamples: ['You remember what people told you months ago and check in on it', 'You organize group events and then forget to take care of yourself afterward', 'You can sense when someone is struggling before they say a word', 'You have been called "too much" by people who needed exactly what you offered'],
+    stressSignature: 'Under stress, ENFJs take on everyone\'s problems, become controlling in their attempts to help, and may feel deeply unappreciated. The helper burns out and may become manipulative when direct communication fails.',
+    recoveryPath: 'Say no to one request. Receive care without immediately reciprocating. Ask yourself: "Am I helping because they need it, or because I need to feel needed?" Let someone else lead for a day.',
+    miniRitual: 'Sit quietly and ask: "What do I need right now\u2014not what does anyone else need?" Wait for the honest answer.',
+    journalPrompt: 'When I help others, am I giving from overflow or from a well that is running dry? What refills me?',
+    tarotArchetype: { card: 'The Empress', reason: 'The Empress reflects your nurturing power, your creative generosity, and the lesson of receiving as abundantly as you give.' },
   },
   ENFP: {
     title: 'The Campaigner',
@@ -280,7 +328,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Embrace Routine', description: 'Create and stick to a simple morning routine for one week' },
       { title: 'Depth Over Breadth', description: 'Spend quality time with one person instead of a group' }
     ],
-    compatibility: ['INTJ', 'INFJ', 'ENFP', 'ENTP']
+    compatibility: ['INTJ', 'INFJ', 'ENFP', 'ENTP'],
+    realLifeExamples: ['You have made a best friend in a grocery store checkout line', 'You have 12 hobbies and genuinely love all of them', 'You can go from deeply philosophical to hilariously goofy in the same sentence', 'You feel everything at full volume and would not trade it for anything'],
+    stressSignature: 'Under stress, ENFPs become scattered, seek external validation frantically, and lose touch with their own values. The normally enthusiastic explorer becomes anxious, people-pleasing, and may make commitments they cannot keep.',
+    recoveryPath: 'Finish one thing before starting anything new. Spend unstructured time with one person who sees you clearly. Return to a creative practice that is just for you\u2014not for an audience.',
+    miniRitual: 'Name three things you are grateful for that have nothing to do with other people\'s opinions of you.',
+    journalPrompt: 'What am I chasing right now\u2014and is it something I actually want, or something I think will make people love me?',
+    tarotArchetype: { card: 'The Sun', reason: 'The Sun captures your radiant energy, your genuine joy, and the warmth you bring to every room\u2014along with the lesson of shining without burning out.' },
   },
   ISTJ: {
     title: 'The Logistician',
@@ -296,7 +350,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Express Appreciation', description: 'Tell someone how you feel about them in words' },
       { title: 'Embrace Uncertainty', description: 'Make a decision without all the information' }
     ],
-    compatibility: ['ESFP', 'ESTP', 'ISTJ', 'ISFJ']
+    compatibility: ['ESFP', 'ESTP', 'ISTJ', 'ISFJ'],
+    realLifeExamples: ['You have a system for everything and it actually works', 'You remember details about conversations from years ago', 'You show love by being reliable, not by being dramatic', 'You feel genuinely stressed when plans change last minute'],
+    stressSignature: 'Under stress, ISTJs become rigid, controlling, and catastrophize about the future. The normally steady planner loses trust in the process and may become pessimistic or withdraw emotionally, unable to express what they need.',
+    recoveryPath: 'Do something with a clear, immediate result\u2014clean a room, complete a task, organize something tangible. Then talk to someone you trust about what is actually worrying you, even if it feels inefficient.',
+    miniRitual: 'Write down three things that are working well in your life right now. Let the evidence of stability calm the anxiety.',
+    journalPrompt: 'What am I trying to control that might benefit from flexibility? Where would "good enough" actually be enough?',
+    tarotArchetype: { card: 'The Hierophant', reason: 'The Hierophant reflects your devotion to proven systems and your role as someone others rely on for steadiness and trustworthy guidance.' },
   },
   ISFJ: {
     title: 'The Defender',
@@ -312,7 +372,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Voice a Need', description: 'Ask for something you want without apologizing' },
       { title: 'Welcome Change', description: 'Intentionally change one small routine this week' }
     ],
-    compatibility: ['ESFP', 'ESTP', 'ISFJ', 'ISTJ']
+    compatibility: ['ESFP', 'ESTP', 'ISFJ', 'ISTJ'],
+    realLifeExamples: ['You remember everyone\'s coffee order and birthdate', 'You will sacrifice sleep to make sure someone you love is okay', 'You hold grudges quietly because you gave too many chances before speaking up', 'You feel invisible sometimes despite being the person holding everything together'],
+    stressSignature: 'Under stress, ISFJs become overly self-sacrificing, passive-aggressive, and deeply worried. They feel unappreciated but struggle to ask for what they need directly, building resentment beneath a caring exterior.',
+    recoveryPath: 'Do something purely for yourself with zero benefit to anyone else. Voice one need without apologizing for having it. Let something be imperfect and notice that the world does not end.',
+    miniRitual: 'Look in a mirror and say: "My needs matter as much as anyone else\'s." Mean it.',
+    journalPrompt: 'What am I doing for others that I wish someone would do for me? Can I ask for it directly?',
+    tarotArchetype: { card: 'The Empress', reason: 'The Empress reflects your deep nurturing nature and the essential lesson that you deserve the same care and abundance you pour into others.' },
   },
   ESTJ: {
     title: 'The Executive',
@@ -328,7 +394,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Ask Questions', description: 'In your next conversation, only ask questions' },
       { title: 'Embrace Emotion', description: 'Share how you\'re really feeling with someone close' }
     ],
-    compatibility: ['ISTP', 'INTP', 'ESTJ', 'ENTJ']
+    compatibility: ['ISTP', 'INTP', 'ESTJ', 'ENTJ'],
+    realLifeExamples: ['You are the person who takes charge when nobody else will', 'You have strong opinions about the "right way" to do most things', 'You show love through providing structure and stability', 'You feel personally offended by inefficiency'],
+    stressSignature: 'Under stress, ESTJs become controlling, rigid, and may lash out at what they perceive as incompetence. The organized leader becomes a micromanager, struggling to trust anyone else to do things "correctly."',
+    recoveryPath: 'Let something go that does not actually matter. Ask questions instead of giving instructions. Do something purely for fun with no productive outcome. Remind yourself that connection is not a project to manage.',
+    miniRitual: 'Take 60 seconds to do absolutely nothing. No planning, no fixing, no organizing. Just breathe.',
+    journalPrompt: 'Am I managing my life or living it? What would happen if I let go of control for one afternoon?',
+    tarotArchetype: { card: 'The Emperor', reason: 'The Emperor mirrors your natural authority and organizational power, with the reminder that the strongest leaders know when to yield.' },
   },
   ESFJ: {
     title: 'The Consul',
@@ -344,7 +416,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Embrace Criticism', description: 'Ask for feedback and find the growth opportunity' },
       { title: 'Comfortable Alone', description: 'Spend an evening alone doing something you enjoy' }
     ],
-    compatibility: ['ISFP', 'ISTP', 'ESFJ', 'ENFJ']
+    compatibility: ['ISFP', 'ISTP', 'ESFJ', 'ENFJ'],
+    realLifeExamples: ['You know when something is wrong in a group before anyone speaks', 'You keep track of everyone\'s preferences and make sure they feel included', 'You take it personally when someone does not appreciate your effort', 'You are the social glue that holds friend groups and families together'],
+    stressSignature: 'Under stress, ESFJs become needy, seek validation compulsively, and may gossip or become judgmental. The normally warm caretaker feels rejected and may try to control social dynamics to feel safe.',
+    recoveryPath: 'Make a decision based solely on what you want, without considering anyone else\'s reaction. Spend an evening alone doing something you genuinely enjoy. Practice accepting that not everyone needs to like you for you to be valuable.',
+    miniRitual: 'Put your hand on your heart and say: "I am enough without anyone\'s approval today."',
+    journalPrompt: 'Whose opinion am I shaping my choices around? What would I choose if only my own opinion mattered?',
+    tarotArchetype: { card: 'The Lovers', reason: 'The Lovers reflects your deep relational wisdom and the ongoing challenge of choosing authenticity over harmony when the two conflict.' },
   },
   ISTP: {
     title: 'The Virtuoso',
@@ -360,7 +438,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Express Feelings', description: 'Tell someone how you feel about them using words' },
       { title: 'Commit to One Thing', description: 'Make a commitment and stick to it for 30 days' }
     ],
-    compatibility: ['ESTJ', 'ESFJ', 'ISTP', 'ESTP']
+    compatibility: ['ESTJ', 'ESFJ', 'ISTP', 'ESTP'],
+    realLifeExamples: ['You fix things nobody asked you to fix just because you saw how', 'You prefer action over conversation in almost every situation', 'You need space the way other people need affection', 'You are calm in a crisis and restless when things are too predictable'],
+    stressSignature: 'Under stress, ISTPs withdraw emotionally, may act recklessly, and shut down all communication. The normally cool-headed problem solver becomes hypersensitive, reactive, or disappears entirely without explanation.',
+    recoveryPath: 'Work with your hands\u2014build, repair, create something physical. Spend time alone but not isolated. When you are ready, express what you felt in simple, direct terms. You do not have to explain everything, just name it.',
+    miniRitual: 'Pick up a tool or object and use it for its purpose for 60 seconds. Let the simplicity of doing ground you.',
+    journalPrompt: 'What emotion have I been avoiding by staying busy? What would happen if I just sat with it for 5 minutes?',
+    tarotArchetype: { card: 'The Chariot', reason: 'The Chariot reflects your mastery of practical challenges and the power that comes from directed, focused action over scattered reaction.' },
   },
   ISFP: {
     title: 'The Adventurer',
@@ -376,7 +460,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Set a Goal', description: 'Create a concrete 3-month goal and track progress' },
       { title: 'Face Conflict', description: 'Address a small disagreement directly instead of avoiding it' }
     ],
-    compatibility: ['ENFJ', 'ESFJ', 'ISFP', 'INFP']
+    compatibility: ['ENFJ', 'ESFJ', 'ISFP', 'INFP'],
+    realLifeExamples: ['You notice beauty in places other people walk right past', 'You would rather show someone how you feel than tell them', 'You shut down in conflict but feel everything intensely afterward', 'You have a creative gift that you probably undervalue'],
+    stressSignature: 'Under stress, ISFPs become withdrawn, moody, and overly self-critical. They may lose confidence in their creative gifts and become passive-aggressive rather than addressing conflict directly.',
+    recoveryPath: 'Create something\u2014art, music, food, a walk through a beautiful space. Reconnect with sensory experiences that remind you who you are. When you are ready, share one honest feeling with someone safe.',
+    miniRitual: 'Touch something beautiful\u2014a fabric, a flower, warm water\u2014and let the sensation remind you that you are alive and present.',
+    journalPrompt: 'What am I feeling that I have not given myself permission to express? What would it look like to honor it?',
+    tarotArchetype: { card: 'The Moon', reason: 'The Moon reflects your deep sensitivity and rich inner world\u2014the beauty and mystery of experiencing life through feeling rather than logic.' },
   },
   ESTP: {
     title: 'The Entrepreneur',
@@ -392,7 +482,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Consider Feelings', description: 'Before responding, ask how the other person might feel' },
       { title: 'Long-Term Vision', description: 'Create a 1-year plan for one area of your life' }
     ],
-    compatibility: ['ISTJ', 'ISFJ', 'ESTP', 'ISTP']
+    compatibility: ['ISTJ', 'ISFJ', 'ESTP', 'ISTP'],
+    realLifeExamples: ['You are the first person to act and the last person to sit still', 'You learn by doing, not by reading about doing', 'You can talk to anyone and make it feel natural', 'You get bored in about 10 seconds if something is not stimulating'],
+    stressSignature: 'Under stress, ESTPs become impulsive, blame others, and lose patience with anything that requires slowing down. The action-oriented problem solver becomes reckless and may make decisions they regret later.',
+    recoveryPath: 'Wait 24 hours before making any significant decision. Do something physically challenging to burn off the restless energy. Then sit with one person and actually listen\u2014not to fix, just to hear.',
+    miniRitual: 'Stand still for 60 seconds. Feel your feet on the ground. Count your breaths. That is it.',
+    journalPrompt: 'What am I running from by staying in constant motion? What would I find if I stopped long enough to look?',
+    tarotArchetype: { card: 'The Tower', reason: 'The Tower reflects your relationship with sudden change and disruption\u2014your ability to thrive in chaos and the growth that comes from letting structures break when they need to.' },
   },
   ESFP: {
     title: 'The Entertainer',
@@ -408,7 +504,13 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
       { title: 'Delayed Gratification', description: 'Save up for something instead of buying it now' },
       { title: 'Alone Time', description: 'Spend a quiet evening reflecting on your goals' }
     ],
-    compatibility: ['ISTJ', 'ISFJ', 'ESFP', 'ESTP']
+    compatibility: ['ISTJ', 'ISFJ', 'ESFP', 'ESTP'],
+    realLifeExamples: ['You turn a boring Tuesday into something people remember', 'You feel things at full intensity and want everyone to feel alive too', 'You avoid heavy conversations but feel deeply when no one is watching', 'You are generous with your time, energy, and presence\u2014sometimes too generous'],
+    stressSignature: 'Under stress, ESFPs become scattered, anxious, and may overindulge in pleasures to avoid painful feelings. The normally joyful entertainer becomes uncharacteristically negative and may feel trapped by commitments.',
+    recoveryPath: 'Have one deep, meaningful conversation about feelings\u2014yours. Delay one gratification and notice that you survived. Spend a quiet evening reflecting on what brings you lasting joy versus temporary excitement.',
+    miniRitual: 'Name one thing you feel grateful for that requires no audience. Let that gratitude be private and real.',
+    journalPrompt: 'What am I performing for others that I could replace with something more honestly me?',
+    tarotArchetype: { card: 'The Sun', reason: 'The Sun reflects your radiant, life-affirming energy and the lesson that true joy comes from depth of experience, not just breadth.' },
   },
 };
 
@@ -420,6 +522,11 @@ export interface LoveLanguageInfo {
   whatToAvoid: string[];
   weeklyChecklist: { task: string; frequency: string }[];
   tips: string[];
+  whenHealthy: string;
+  whenDeprived: string;
+  howToAskForIt: string[];
+  partnerGuide: string;
+  tarotArchetype: { card: string; reason: string };
 }
 
 export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
@@ -447,7 +554,12 @@ export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
       { task: 'Create or make something by hand for someone', frequency: '1x' },
       { task: 'Plan a thoughtful gift for an upcoming occasion', frequency: '1x' }
     ],
-    tips: ['Keep a wishlist', 'Notice small things your partner mentions', 'Value the thought behind gifts']
+    tips: ['Keep a wishlist', 'Notice small things your partner mentions', 'Value the thought behind gifts'],
+    whenHealthy: 'When your gift-giving love language is well-nourished, you feel deeply seen and valued. Each thoughtful token confirms that someone noticed you, remembered you, and chose to act on it. You become more generous yourself, finding joy in the ritual of selecting and presenting meaningful objects. Gifts become a love language that flows both ways.',
+    whenDeprived: 'When this love language goes unmet, you start to feel invisible. Forgotten birthdays or generic, last-minute presents feel like evidence that nobody is paying attention. You may withdraw, test others by hinting, or develop resentment that looks irrational to people who don\'t understand the symbolic weight objects carry for you.',
+    howToAskForIt: ['I feel really loved when someone picks out something that reminds them of me, even if it is small.', 'It is not about expensive things. It is about knowing you thought of me when I was not there.', 'I would love it if we could start a tradition of small surprises for each other.'],
+    partnerGuide: 'Keep a running list of things they mention wanting or admiring. Small, frequent, thoughtful gifts beat large, rare, expensive ones. Bring something back from a trip. Wrap it. The presentation matters because it signals effort. Never call their love language materialistic.',
+    tarotArchetype: { card: 'Ace of Pentacles', reason: 'The Ace of Pentacles represents new beginnings in the material world, the tangible expression of care and intention that resonates with your need for symbolic tokens of love.' }
   },
   words: {
     title: 'Words of Affirmation',
@@ -473,7 +585,12 @@ export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
       { task: 'Send an unexpected encouraging text', frequency: '2-3x' },
       { task: 'Write a heartfelt note or letter', frequency: '1x' }
     ],
-    tips: ['Express gratitude daily', 'Give specific compliments', 'Leave encouraging notes']
+    tips: ['Express gratitude daily', 'Give specific compliments', 'Leave encouraging notes'],
+    whenHealthy: 'When your words of affirmation love language is well-fed, you feel confident, valued, and emotionally safe. Hearing genuine appreciation and encouragement fuels your ability to show up fully in relationships. You become more articulate about your own feelings and more generous with your words toward others.',
+    whenDeprived: 'When this language goes unmet, silence feels deafening. You start reading tone, analyzing texts for hidden meaning, and interpreting the absence of praise as criticism. Harsh words cut deeper for you than for most people, and a single critical comment can undo weeks of feeling good about yourself.',
+    howToAskForIt: ['When things are good between us, I would love to hear you say it out loud.', 'Words land really deeply for me. A short text saying you appreciate me can carry me through a whole day.', 'I would love more specific compliments rather than generic ones. Tell me what specifically you noticed.'],
+    partnerGuide: 'Be specific and frequent. "You are amazing" is less powerful than "I noticed how patient you were with your mother today, and I admire that about you." Leave notes. Send texts. Say it out loud. Never use the silent treatment as punishment and avoid sarcasm that cuts too deep.',
+    tarotArchetype: { card: 'The Magician', reason: 'The Magician wields the power of deliberate, focused speech. Your love language recognizes the truth that words are spells—they shape how we feel about ourselves and each other.' }
   },
   acts: {
     title: 'Acts of Service',
@@ -499,7 +616,12 @@ export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
       { task: 'Handle a task they\'ve been dreading', frequency: '1x' },
       { task: 'Follow through on a commitment you made', frequency: 'Always' }
     ],
-    tips: ['Notice what needs doing', 'Offer help proactively', 'Complete tasks without being asked']
+    tips: ['Notice what needs doing', 'Offer help proactively', 'Complete tasks without being asked'],
+    whenHealthy: 'When your acts of service love language is well-met, you feel supported and free. Knowing someone shares the weight of life with you creates deep trust. You feel like a team, and the practical care translates directly into emotional security. You reciprocate by anticipating others\' needs effortlessly.',
+    whenDeprived: 'When this language goes unmet, you feel alone in the work of living. Unkept promises hit harder than broken words. You may become resentful, keeping a mental scorecard of who did what. The exhaustion of carrying everything alone eventually shows up as anger, withdrawal, or emotional shutdown.',
+    howToAskForIt: ['It really means a lot when you handle something without me having to ask.', 'I feel most loved when we share the load. Can we split tasks in a way that feels fair to both of us?', 'When you follow through on something you promised, that is one of the most loving things you can do for me.'],
+    partnerGuide: 'Actions speak louder than words for this person. Do not promise and forget. Notice what weighs on them and handle it without being asked. Follow through reliably. The quality and consistency of your actions are how they measure your love—not your words, not your gifts.',
+    tarotArchetype: { card: 'Knight of Pentacles', reason: 'The Knight of Pentacles embodies reliable, steady devotion through action. Your love language values the person who shows up consistently and does the work of love without needing applause.' }
   },
   touch: {
     title: 'Physical Touch',
@@ -525,7 +647,12 @@ export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
       { task: 'Initiate a physical gesture of affection', frequency: 'Daily' },
       { task: 'Give a massage or back rub', frequency: '1-2x' }
     ],
-    tips: ['Initiate physical affection', 'Be present and attentive', 'Create moments for closeness']
+    tips: ['Initiate physical affection', 'Be present and attentive', 'Create moments for closeness'],
+    whenHealthy: 'When your physical touch love language is well-met, you feel grounded, safe, and connected. Physical closeness is how your nervous system regulates. A hand on your back, a long hug, or sitting close together communicates what words sometimes cannot. You feel fully present and emotionally available.',
+    whenDeprived: 'When this language goes unmet, you feel disconnected and anxious even if everything else in the relationship seems fine. You may become clingy, withdrawing, or irritable without understanding why. Physical distance creates emotional distance for you, and you can feel genuinely touch-starved.',
+    howToAskForIt: ['I need more physical closeness. Can we sit together on the couch tonight?', 'A hug when I come home would make my whole day better.', 'Physical touch is how I feel connected. It does not have to be elaborate—just close.'],
+    partnerGuide: 'Initiate touch regularly. A hand on the small of their back, holding hands while walking, a long embrace when reuniting—these small gestures have enormous emotional weight. Never withhold physical affection as punishment. Make physical connection a daily habit, not a special occasion.',
+    tarotArchetype: { card: 'The Empress', reason: 'The Empress represents embodied, sensory love—the warmth of presence and physical nurturing that your love language craves and naturally extends to others.' }
   },
   time: {
     title: 'Quality Time',
@@ -551,7 +678,12 @@ export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
       { task: 'Schedule a dedicated date or quality time block', frequency: '1x' },
       { task: 'Practice active listening without interrupting', frequency: 'Daily' }
     ],
-    tips: ['Put away distractions', 'Plan dedicated time together', 'Be fully present']
+    tips: ['Put away distractions', 'Plan dedicated time together', 'Be fully present'],
+    whenHealthy: 'When your quality time love language is well-met, you feel deeply connected and valued. Undivided attention tells you that you are the priority. Shared experiences create the emotional memories you return to when life gets hard. You feel known, heard, and genuinely important to the people you love.',
+    whenDeprived: 'When this language goes unmet, you feel like a footnote in someone else\'s busy schedule. Canceled plans, distracted conversations, and phone-checking during dinner all translate to the same message: you are not important enough. You may become clingy or, conversely, withdraw completely to protect yourself.',
+    howToAskForIt: ['Can we have one evening a week that is just for us, with phones put away?', 'I feel most loved when you are fully present. Even 20 minutes of real attention means more than a whole distracted day together.', 'I would love to do more activities together where we are both engaged.'],
+    partnerGuide: 'Put the phone away. Make eye contact. Listen without planning your response. Schedule regular one-on-one time and protect it like you would a work meeting. Quality matters more than quantity, but consistency matters most. Being physically present while mentally elsewhere is worse than being apart.',
+    tarotArchetype: { card: 'The Lovers', reason: 'The Lovers card represents the choice to be truly present with another person, the sacred act of giving your full attention that your love language recognizes as the highest form of devotion.' }
   },
 };
 
@@ -559,7 +691,7 @@ export const moodCheckQuiz: QuizDefinition = {
   id: 'mood-check-v1',
   type: 'big-five',
   title: 'Quick Mood Check',
-  description: 'A 30-second check-in to understand how you\'re feeling right now.',
+  description: 'A fast emotional weather report to help you name what you are carrying today. Instead of judging your mood as good or bad, this check-in focuses on patterns: stress load, energy level, emotional sensitivity, and what your nervous system is asking for right now. You will get a mood profile, a best-next-step recommendation, and a journal prompt so you can turn today\'s mood into insight instead of rumination.',
   questions: [
     {
       id: 'mood1',
@@ -677,48 +809,48 @@ export function calculateMoodCheck(scores: Record<string, number>): {
   };
 }
 
-export const moodDescriptions: Record<string, { emoji: string; color: string; message: string }> = {
-  Thriving: { emoji: '1f31f', color: 'text-emerald-400', message: 'You\'re in a great place! Use this energy wisely.' },
-  Good: { emoji: '1f60a', color: 'text-green-400', message: 'Things are going well. Keep nurturing what\'s working.' },
-  Okay: { emoji: '1f610', color: 'text-yellow-400', message: 'You\'re managing. Small acts of self-care can help.' },
-  Struggling: { emoji: '1f614', color: 'text-orange-400', message: 'It\'s okay to not be okay. Be gentle with yourself.' },
-  Depleted: { emoji: '1f62d', color: 'text-red-400', message: 'You need care right now. Prioritize rest and support.' },
+export const moodDescriptions: Record<string, { emoji: string; color: string; message: string; recommendation: string; journalPrompt: string; tarotSuggestion: string }> = {
+  Thriving: { emoji: '1f31f', color: 'text-emerald-400', message: 'You\'re in a great place! Use this energy wisely.', recommendation: 'Channel this energy into something meaningful. Start that project, have that conversation, or make that decision you have been putting off. High-energy days are rare—use them intentionally.', journalPrompt: 'What am I most proud of about the way I am showing up right now? How can I sustain this?', tarotSuggestion: 'The Sun – radiance, vitality, and clarity. This is your moment to shine.' },
+  Good: { emoji: '1f60a', color: 'text-green-400', message: 'Things are going well. Keep nurturing what\'s working.', recommendation: 'Maintain your current rhythm. Notice what is contributing to this good feeling and do more of it. A good day is a great day to invest in the people and habits that sustain you.', journalPrompt: 'What three things are working well in my life right now? How can I protect and nurture them?', tarotSuggestion: 'The Star – hope, calm, and steady renewal. You are on the right path.' },
+  Okay: { emoji: '1f610', color: 'text-yellow-400', message: 'You\'re managing. Small acts of self-care can help.', recommendation: 'Do one small thing for yourself that requires no effort to enjoy—a warm drink, a favorite song, a 10-minute walk. You do not need to feel great to take care of yourself. Small acts of kindness toward yourself add up.', journalPrompt: 'What is one thing I can do in the next hour that is just for me? What would feel genuinely nourishing right now?', tarotSuggestion: 'Temperance – balance and patience. This is a day for moderation, not big moves.' },
+  Struggling: { emoji: '1f614', color: 'text-orange-400', message: 'It\'s okay to not be okay. Be gentle with yourself.', recommendation: 'Lower the bar for today. Cancel what you can. Eat something nourishing. Reach out to one person who makes you feel safe. You are not behind—you are processing. Give yourself permission to do the minimum.', journalPrompt: 'What am I carrying right now that feels heavy? Is there one piece of it I could set down, even temporarily?', tarotSuggestion: 'The Moon – uncertainty and hidden depths. Trust that clarity will return. Rest in the not-knowing.' },
+  Depleted: { emoji: '1f62d', color: 'text-red-400', message: 'You need care right now. Prioritize rest and support.', recommendation: 'This is not a day for productivity. Your only job is to get through it gently. Sleep if you can. Eat something. Drink water. If you can, tell one person how you feel—you do not have to do this alone. Everything else can wait.', journalPrompt: 'What do I need most right now that I am not giving myself? Who in my life feels safe enough to ask for help?', tarotSuggestion: 'The Hermit – withdrawal and inner light. Even in your lowest moments, there is wisdom gathering inside you.' },
 };
 
 export const quizMetadata = {
   mbti: {
     timeEstimate: '10-15 min',
-    whatYouGet: ['Your personality type', 'Cognitive functions', 'Strengths & growth areas', 'Compatibility insights'],
+    whatYouGet: ['Your type profile with strengths + blind spots', 'Stress mode patterns + recovery strategies', 'Relationship style notes + communication tips', 'Tarot archetype alignment'],
     icon: 'brain',
     color: 'cosmic-blue',
   },
   'love-language': {
     timeEstimate: '5-7 min',
-    whatYouGet: ['Primary love language', 'Ranked preferences', 'Relationship tips', 'Communication guide'],
+    whatYouGet: ['Primary + secondary love language', '"When healthy" vs "when deprived" insight', 'Clear ways to ask for love in your language', 'Partner tips for supporting you'],
     icon: 'heart',
     color: 'cosmic-rose',
   },
   'mood-check': {
     timeEstimate: '30 sec',
-    whatYouGet: ['Current mood snapshot', 'Energy level', 'Personalized suggestion', 'Quick insight'],
+    whatYouGet: ['A mood profile (calm/charged/drained/steady)', 'A "best next step" recommendation', 'A journal prompt for your current state', 'Optional tarot archetype suggestion'],
     icon: 'smile',
     color: 'gold',
   },
   'big-five': {
     timeEstimate: '8-10 min',
-    whatYouGet: ['Five personality dimensions', 'Trait percentiles', 'Facet breakdown', 'Growth recommendations'],
+    whatYouGet: ['Five trait scores with real-life interpretation', 'Strengths + potential pitfalls for each trait', 'Lifestyle and relationship suggestions', 'A "growth lever" for meaningful change'],
     icon: 'pentagon',
     color: 'emerald-400',
   },
   enneagram: {
     timeEstimate: '10-12 min',
-    whatYouGet: ['Your Enneagram type', 'Wing identification', 'Growth & stress paths', 'Relationship insights'],
+    whatYouGet: ['Your Enneagram type + wing', 'Growth and stress direction paths', 'Core motivation, fear, and desire', 'Tarot archetype alignment'],
     icon: 'target',
     color: 'gold',
   },
   attachment: {
     timeEstimate: '5-7 min',
-    whatYouGet: ['Attachment style', 'Anxiety & avoidance scores', 'Relationship patterns', 'Healing practices'],
+    whatYouGet: ['Your primary attachment pattern', 'Triggers + deactivation/activation behaviors', 'What you need from a partner to feel safe', 'A path toward secure attachment'],
     icon: 'link',
     color: 'pink-400',
   },

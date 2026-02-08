@@ -4,7 +4,7 @@ export const bigFiveQuiz: QuizDefinition = {
   id: 'big-five-v1',
   type: 'big-five',
   title: 'Big Five Personality Assessment',
-  description: 'Discover your scores across the five major dimensions of personality: Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism.',
+  description: 'This assessment maps your personality across the five most scientifically validated dimensions of human personality. Rather than assigning a single type, the Big Five gives you a spectrum for each trait, revealing how you naturally process experiences, relate to others, manage responsibilities, and handle stress. You will receive a real-world interpretation of each trait score, specific strengths and pitfalls, lifestyle suggestions, and a growth lever for meaningful change.',
   questions: [
     { id: 'o1', text: 'I enjoy trying new and different experiences.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'o2', text: 'I have a vivid imagination.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -126,6 +126,10 @@ export interface BigFiveDimensionInfo {
   careers: { high: string[]; low: string[] };
   relationships: { high: string; low: string };
   growthTips: { high: string[]; low: string[] };
+  realLifeExamples: { high: string[]; low: string[] };
+  growthLever: { high: string; low: string };
+  lifestyleSuggestion: { high: string; low: string };
+  tarotArchetype: { high: { card: string; reason: string }; low: { card: string; reason: string } };
 }
 
 export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
@@ -155,6 +159,22 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       high: ['Ground your ideas in practical action', 'Appreciate the value of routine', 'Focus on finishing projects'],
       low: ['Try one new experience per month', 'Read books outside your comfort zone', 'Practice brainstorming without judgment'],
     },
+    realLifeExamples: {
+      high: ['You rearrange furniture for fun because the room "needed a new energy"', 'You can spend an hour down a Wikipedia rabbit hole and call it a good afternoon', 'You have strong opinions about art, music, or film that most people find surprising', 'You dream about living in another country at least once a month'],
+      low: ['You have a favorite restaurant and you order the same thing every time', 'You find comfort in routine and feel unsettled when plans change', 'You trust experience over theory and prefer proven approaches', 'You value tradition and find meaning in the familiar'],
+    },
+    growthLever: {
+      high: 'Your growth edge is grounding. You generate ideas effortlessly but may struggle to execute them. The practice of finishing what you start, even when the novelty fades, is where your real power lives.',
+      low: 'Your growth edge is intentional experimentation. You do not need to become someone you are not, but choosing one new experience per month, no matter how small, expands your world in ways that compound over time.',
+    },
+    lifestyleSuggestion: {
+      high: 'Build creative rituals with structure: a weekly writing session, a monthly museum visit, a quarterly solo adventure. Your openness thrives when it has containers to fill rather than unlimited space.',
+      low: 'Try a "new thing Friday" where you do one small thing differently. A new recipe, a different route, a genre of music you normally skip. Small experiments build comfort with the unfamiliar.',
+    },
+    tarotArchetype: {
+      high: { card: 'The Fool', reason: 'The Fool steps into the unknown with curiosity and trust, embodying your natural openness to experience and your willingness to explore without a map.' },
+      low: { card: 'The Hierophant', reason: 'The Hierophant values tradition, structure, and proven wisdom, reflecting your preference for what is known and your strength in maintaining what works.' },
+    },
   },
   conscientiousness: {
     name: 'C',
@@ -181,6 +201,22 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     growthTips: {
       high: ['Learn to relax and be spontaneous', 'Accept imperfection', 'Delegate more to others'],
       low: ['Use a calendar or planner', 'Set small, achievable goals', 'Create simple routines'],
+    },
+    realLifeExamples: {
+      high: ['You make your bed every morning and it actually affects your mood', 'You have a to-do list system that other people find either impressive or exhausting', 'You feel physical discomfort when deadlines are approaching and work is unfinished', 'You are the person people trust to follow through, and you rarely disappoint'],
+      low: ['You work in creative bursts and your best ideas come at unusual hours', 'Your desk is messy but you know where everything is', 'You adapt easily when plans change because you never over-planned in the first place', 'You are the person who says "we will figure it out" and usually does'],
+    },
+    growthLever: {
+      high: 'Your growth edge is flexibility. You are masterful at executing plans, but life does not always follow plans. Learning to improvise, accept imperfection, and release control when it is not serving you will make your discipline even more powerful.',
+      low: 'Your growth edge is small, consistent habits. You do not need to become rigid, but building one reliable routine, even something tiny like making your bed, creates a foundation that supports your spontaneous nature.',
+    },
+    lifestyleSuggestion: {
+      high: 'Schedule unstructured time. Literally block off time in your calendar for "nothing." Your productivity will actually increase when you give your discipline regular rest.',
+      low: 'Use a single simple list. Not an app, not a system. One piece of paper with three things to do today. Finish them before adding more. Build the muscle before building the system.',
+    },
+    tarotArchetype: {
+      high: { card: 'The Hermit', reason: 'The Hermit moves with discipline and purpose through life, reflecting your methodical approach and your ability to achieve through steady, focused effort.' },
+      low: { card: 'The Fool', reason: 'The Fool moves through life with spontaneous trust, reflecting your adaptable, go-with-the-flow nature and your ability to thrive without rigid plans.' },
     },
   },
   extraversion: {
@@ -209,6 +245,22 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       high: ['Practice active listening', 'Enjoy quiet activities', 'Give others space to talk'],
       low: ['Push yourself to attend one social event monthly', 'Practice small talk', 'Share your thoughts more openly'],
     },
+    realLifeExamples: {
+      high: ['You have texted three people before getting out of bed today', 'You genuinely enjoy small talk because every stranger is a potential connection', 'You feel restless and low when you spend too much time alone', 'You process your thoughts by talking them through with other people'],
+      low: ['You need at least an hour of silence to feel like yourself after socializing', 'You have declined plans you genuinely wanted to attend because your social battery was empty', 'You prefer deep one-on-one conversations over group activities', 'You do your best thinking alone and sometimes resent being interrupted'],
+    },
+    growthLever: {
+      high: 'Your growth edge is depth. You connect easily and widely, but your most meaningful relationships will come from slowing down and going deeper with fewer people rather than spreading your energy thin.',
+      low: 'Your growth edge is selective visibility. You do not need to become an extrovert, but allowing yourself to be seen, sharing your thoughts, and initiating contact with people you value will prevent the isolation that introverts sometimes mistake for preference.',
+    },
+    lifestyleSuggestion: {
+      high: 'Designate one quiet evening per week where you do not make plans. Use this time for reflection, reading, or creative work. Your social energy is a gift, but it needs a counterweight.',
+      low: 'Commit to initiating one social contact per week that goes beyond obligation. A coffee with a friend, a phone call, a message that says "I was thinking about you." Small reaches prevent long retreats.',
+    },
+    tarotArchetype: {
+      high: { card: 'The Sun', reason: 'The Sun radiates warmth, visibility, and joy, reflecting your natural ability to energize others and your need for social connection to feel alive.' },
+      low: { card: 'The Hermit', reason: 'The Hermit carries a lantern of inner wisdom, reflecting your rich inner world and the strength you draw from solitude and reflection.' },
+    },
   },
   agreeableness: {
     name: 'A',
@@ -236,6 +288,22 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       high: ['Practice saying no', 'Express your own needs', 'Set healthy boundaries'],
       low: ['Practice empathy exercises', 'Consider others\' feelings before speaking', 'Look for compromise'],
     },
+    realLifeExamples: {
+      high: ['You apologize even when it is not your fault because you would rather keep the peace', 'You have said "I am fine" when you were not, more times than you can count', 'You can feel what someone else is feeling before they tell you', 'You are the friend everyone calls when they need to be heard without judgment'],
+      low: ['You have been called "intimidating" by people who later said they respected you', 'You give honest feedback even when it makes people uncomfortable', 'You would rather be respected than liked', 'You see through flattery and politeness to what people actually want'],
+    },
+    growthLever: {
+      high: 'Your growth edge is assertiveness. Your empathy is a genuine superpower, but it becomes self-destructive when you cannot say no, express disagreement, or put your own needs first. Learning to be kind and direct is the most compassionate thing you can do.',
+      low: 'Your growth edge is empathic listening. You are right more often than people give you credit for, but being right while making others feel dismissed is a losing strategy. Pausing to consider how your message lands will make your directness far more effective.',
+    },
+    lifestyleSuggestion: {
+      high: 'Practice saying no to one thing per week that you would normally agree to out of obligation. Notice that the relationship survives. Build evidence that your boundaries do not destroy connection.',
+      low: 'Before giving feedback or a strong opinion, ask one question first. "How are you feeling about this?" or "What do you think?" Making space for others before inserting yourself changes the entire dynamic.',
+    },
+    tarotArchetype: {
+      high: { card: 'The Empress', reason: 'The Empress nurtures and supports with unconditional warmth, reflecting your natural compassion and the challenge of giving without depleting yourself.' },
+      low: { card: 'Justice', reason: 'Justice values truth, fairness, and direct accountability, reflecting your commitment to honesty over harmony and your strength in seeing things clearly.' },
+    },
   },
   neuroticism: {
     name: 'N',
@@ -262,6 +330,22 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     growthTips: {
       high: ['Practice mindfulness daily', 'Build a self-care routine', 'Challenge negative thought patterns'],
       low: ['Allow yourself to feel emotions', 'Practice vulnerability', 'Check in with your emotional state'],
+    },
+    realLifeExamples: {
+      high: ['You replay conversations in your head to check if you said something wrong', 'You feel your emotions at full volume and sometimes wish you could turn down the dial', 'A vague text from someone you care about can ruin your whole afternoon', 'You notice potential problems before anyone else does, which is both a gift and a burden'],
+      low: ['People have called you "unflappable" or "steady" in a crisis', 'You recover quickly from setbacks and rarely dwell on mistakes', 'You sometimes wonder if you should feel more than you do', 'You are the calm one in the room when everything goes wrong'],
+    },
+    growthLever: {
+      high: 'Your growth edge is emotional regulation, not suppression. You feel deeply and that is a real gift. The practice is not to feel less but to create space between feeling and reacting. Naming your emotions precisely reduces their intensity by up to 50 percent.',
+      low: 'Your growth edge is emotional access. Your stability is genuine but may sometimes mask emotions you have learned to bypass. Periodically checking in with yourself by asking "what am I actually feeling right now?" prevents emotional buildup.',
+    },
+    lifestyleSuggestion: {
+      high: 'Build a daily 5-minute grounding practice: box breathing, progressive muscle relaxation, or simply sitting with your hands on your lap and naming what you feel. This does not cure anxiety. It builds the muscle of returning to center.',
+      low: 'Set a weekly emotional check-in with yourself. Write down three feelings you noticed this week, even small ones. This builds the awareness that prevents emotional distance from becoming emotional avoidance.',
+    },
+    tarotArchetype: {
+      high: { card: 'The Moon', reason: 'The Moon reflects deep emotional sensitivity, the power of intuition, and the challenge of navigating uncertainty without losing yourself in the darkness.' },
+      low: { card: 'The Emperor', reason: 'The Emperor embodies emotional stability and composure, reflecting your ability to remain grounded and the quiet authority that comes from inner calm.' },
     },
   },
 };

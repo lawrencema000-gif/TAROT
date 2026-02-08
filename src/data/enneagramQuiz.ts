@@ -4,7 +4,7 @@ export const enneagramQuiz: QuizDefinition = {
   id: 'enneagram-v1',
   type: 'enneagram',
   title: 'Enneagram Assessment',
-  description: 'Discover your Enneagram type and understand your core motivations, fears, and path to growth.',
+  description: 'The Enneagram maps nine fundamental patterns of thinking, feeling, and behaving. Unlike personality quizzes that describe what you do, the Enneagram reveals why you do it—your core motivation, your deepest fear, and the automatic strategies you developed to navigate the world. You will receive your primary type, your wing, growth and stress paths, and a tarot archetype alignment that adds narrative depth to your pattern.',
   questions: [
     { id: 'en1', text: 'I strive for perfection and have high standards for myself and others.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en2', text: 'I often put others\' needs before my own and enjoy helping people.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -139,6 +139,10 @@ export interface EnneagramTypeInfo {
   careers: string[];
   famousExamples: string[];
   growthPractices: string[];
+  realLifeExamples: string[];
+  miniRitual: string;
+  journalPrompt: string;
+  tarotArchetype: { card: string; reason: string };
 }
 
 export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
@@ -163,6 +167,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Teacher', 'Judge', 'Quality Control', 'Editor', 'Ethical Consultant', 'Nonprofit Leader'],
     famousExamples: ['Mahatma Gandhi', 'Michelle Obama', 'Martha Stewart', 'Al Gore'],
     growthPractices: ['Practice self-compassion', 'Embrace imperfection', 'Allow yourself to play', 'Notice your inner critic'],
+    realLifeExamples: ['You notice the crooked picture frame before you notice the painting', 'You have rewritten an email five times because the tone was not exactly right', 'You feel physically tense when things are disorganized or unfair', 'Your inner critic is louder than any external criticism you have ever received'],
+    miniRitual: 'Place your hand on your chest and say: "I am allowed to be imperfect today. My worth is not measured by my correctness."',
+    journalPrompt: 'Where is my inner critic being loudest right now? What would compassion say to me instead?',
+    tarotArchetype: { card: 'Justice', reason: 'Justice reflects your deep commitment to fairness, integrity, and doing what is right. Your challenge is learning that mercy and imperfection are not the enemies of justice—they are its companions.' },
   },
   2: {
     number: 2,
@@ -185,6 +193,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Nurse', 'Teacher', 'Counselor', 'Social Worker', 'Customer Service', 'Hospitality'],
     famousExamples: ['Mother Teresa', 'Dolly Parton', 'Bishop Desmond Tutu', 'Eleanor Roosevelt'],
     growthPractices: ['Identify your own needs', 'Practice receiving without giving back', 'Set healthy boundaries', 'Ask yourself why you\'re helping'],
+    realLifeExamples: ['You know what everyone in the room needs before they ask', 'You have said "I am fine" while actively falling apart because someone else needed you', 'You feel anxious when you have nothing to give or no one to help', 'You remember small details about people that they have forgotten telling you'],
+    miniRitual: 'Sit quietly and ask: "What do I need right now?" Do not answer with what someone else needs. Wait for your own answer. Honor it.',
+    journalPrompt: 'When was the last time I did something purely for myself without justifying it as being "for someone else"?',
+    tarotArchetype: { card: 'The Empress', reason: 'The Empress embodies nurturing abundance and unconditional care. Your challenge is learning to receive the love you so naturally give and to nourish yourself with the same devotion.' },
   },
   3: {
     number: 3,
@@ -207,6 +219,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Executive', 'Sales', 'Marketing', 'Entrepreneur', 'Politician', 'Actor'],
     famousExamples: ['Oprah Winfrey', 'Tony Robbins', 'Tom Cruise', 'Taylor Swift'],
     growthPractices: ['Connect with your true feelings', 'Practice being rather than doing', 'Value yourself apart from achievements', 'Be authentic, not what others want'],
+    realLifeExamples: ['You have achieved something impressive and immediately started planning the next achievement', 'You adjust your personality depending on who you are with to be what they value', 'You struggle to answer "who are you when you are not performing?"', 'You feel genuinely anxious when you are not productive, even on vacation'],
+    miniRitual: 'Set a 5-minute timer and do nothing. No phone, no planning, no optimizing. Just exist. Notice the discomfort and sit with it.',
+    journalPrompt: 'If no one was watching and no one would ever know, what would I spend my time doing? Is that different from what I do now?',
+    tarotArchetype: { card: 'The Magician', reason: 'The Magician transforms intention into reality with skill and focus. Your challenge is learning that you are the magician, not the trick—your value exists before the performance begins.' },
   },
   4: {
     number: 4,
@@ -229,6 +245,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Artist', 'Writer', 'Therapist', 'Designer', 'Musician', 'Actor'],
     famousExamples: ['Prince', 'Amy Winehouse', 'Frida Kahlo', 'Johnny Depp'],
     growthPractices: ['Practice gratitude for what you have', 'Take action despite feelings', 'Connect with others\' experiences', 'Balance emotion with reason'],
+    realLifeExamples: ['You have felt homesick for a place you have never been', 'You are drawn to sad music even when you are happy because it feels more real', 'You have been told you are "too much" and "not enough" by the same person', 'You would rather feel pain than feel nothing at all'],
+    miniRitual: 'Write one true sentence about how you feel right now. Do not make it beautiful. Do not edit it. Let it be raw and real and enough.',
+    journalPrompt: 'What am I longing for that I already have but have not recognized? What would it feel like to want what I have?',
+    tarotArchetype: { card: 'The Moon', reason: 'The Moon reflects the deep emotional landscape, the beauty of darkness, and the power of feeling what others avoid. Your challenge is learning that ordinary moments contain as much meaning as extraordinary ones.' },
   },
   5: {
     number: 5,
@@ -251,6 +271,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Researcher', 'Scientist', 'Engineer', 'Professor', 'Analyst', 'Writer'],
     famousExamples: ['Albert Einstein', 'Bill Gates', 'Stephen Hawking', 'Tim Burton'],
     growthPractices: ['Share knowledge with others', 'Take action before feeling ready', 'Connect with your body', 'Express emotions to trusted people'],
+    realLifeExamples: ['You have chosen to study a topic instead of attending a social event, and felt relieved', 'You mentally calculate how much energy a situation will cost before entering it', 'You know more about a subject than most experts but would never call yourself an expert', 'You feel drained by small talk but can discuss a topic you love for hours'],
+    miniRitual: 'Share one thing you learned today with another person. Not to teach. Just to connect through something you care about.',
+    journalPrompt: 'What am I preparing for that I am already ready for? What would it look like to act before I feel fully prepared?',
+    tarotArchetype: { card: 'The Hermit', reason: 'The Hermit carries a lantern of knowledge into the darkness, seeking truth through solitude and contemplation. Your challenge is learning that sharing your light does not diminish it.' },
   },
   6: {
     number: 6,
@@ -273,6 +297,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Security Analyst', 'Lawyer', 'Administrator', 'Teacher', 'Detective', 'Risk Manager'],
     famousExamples: ['Mark Twain', 'Princess Diana', 'Bruce Springsteen', 'Ellen DeGeneres'],
     growthPractices: ['Trust your own judgment', 'Take action despite fear', 'Challenge worst-case thinking', 'Build internal authority'],
+    realLifeExamples: ['You have a backup plan for your backup plan', 'You can spot what could go wrong in any situation within 30 seconds', 'You test people\'s loyalty before trusting them, sometimes without realizing it', 'You oscillate between questioning authority and desperately wanting someone trustworthy to follow'],
+    miniRitual: 'Name one thing you are afraid of right now. Then name one thing you would do if you were not afraid. Take one small step toward the second thing.',
+    journalPrompt: 'What would I do today if I trusted myself completely? What is one decision I have been outsourcing to others that I could make on my own?',
+    tarotArchetype: { card: 'The Chariot', reason: 'The Chariot moves forward through opposing forces with willpower and determination. Your challenge is learning that courage is not the absence of fear but the decision to act despite it.' },
   },
   7: {
     number: 7,
@@ -295,6 +323,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Entrepreneur', 'Travel Writer', 'Event Planner', 'Marketing', 'Comedian', 'Chef'],
     famousExamples: ['Robin Williams', 'Jim Carrey', 'Richard Branson', 'Elton John'],
     growthPractices: ['Sit with uncomfortable feelings', 'Finish what you start', 'Practice gratitude for what you have', 'Develop depth over breadth'],
+    realLifeExamples: ['You have started planning your next vacation while still on the current one', 'You reframe every negative experience as a "learning opportunity" sometimes before you have actually felt the pain', 'You have more tabs open in your brain than most people have on their browser', 'You are the person who keeps the energy up in any room but sometimes wonder who you are when the room is empty'],
+    miniRitual: 'Sit with one uncomfortable feeling for 60 seconds without reframing, distracting, or planning. Just feel it. Notice that it does not destroy you.',
+    journalPrompt: 'What am I running toward right now, and what am I running from? Are they the same thing?',
+    tarotArchetype: { card: 'The Fool', reason: 'The Fool leaps into the unknown with joy and trust, embodying your love of possibility and adventure. Your challenge is learning that depth is not the opposite of joy—it is where the real joy lives.' },
   },
   8: {
     number: 8,
@@ -317,6 +349,10 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['CEO', 'Entrepreneur', 'Trial Lawyer', 'Military Leader', 'Politician', 'Coach'],
     famousExamples: ['Martin Luther King Jr.', 'Serena Williams', 'Winston Churchill', 'Pink'],
     growthPractices: ['Practice vulnerability', 'Let others lead sometimes', 'Notice and soften your impact', 'Connect with tender emotions'],
+    realLifeExamples: ['You have been called "intimidating" by people who later said they felt safe with you', 'You can sense weakness or dishonesty in a room within minutes', 'You protect people fiercely and then dismiss your own vulnerability as unimportant', 'You would rather be disliked for being real than liked for being fake'],
+    miniRitual: 'Tell one person something you need help with today. Not because you cannot handle it alone. Because letting someone in is the bravest thing a protector can do.',
+    journalPrompt: 'What am I protecting myself from by staying strong? What would happen if I let someone see the part of me I keep hidden?',
+    tarotArchetype: { card: 'Strength', reason: 'Strength shows a figure gently taming a lion with compassion rather than force. Your challenge is learning that true power is not domination—it is the courage to be vulnerable.' },
   },
   9: {
     number: 9,
@@ -339,5 +375,9 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     careers: ['Counselor', 'Diplomat', 'Human Resources', 'Mediator', 'Librarian', 'Editor'],
     famousExamples: ['Abraham Lincoln', 'Keanu Reeves', 'Queen Elizabeth II', 'Mr. Rogers'],
     growthPractices: ['Identify and express your own desires', 'Take action on your own behalf', 'Stay awake to conflict rather than numbing', 'Set and maintain priorities'],
+    realLifeExamples: ['You have said "I do not mind, whatever you want" so many times you forgot what you actually want', 'You avoid conflict by going numb rather than by resolving it', 'People describe you as "easy-going" but do not realize how much you are holding back', 'You have merged so completely with someone else\'s preferences that you lost track of your own'],
+    miniRitual: 'Name one thing you want today. Not what would be nice. Not what would make someone else happy. What you actually want. Then do it.',
+    journalPrompt: 'What opinion, preference, or desire have I been suppressing to keep the peace? What would happen if I voiced it?',
+    tarotArchetype: { card: 'Temperance', reason: 'Temperance represents balance, moderation, and the integration of opposing forces. Your challenge is learning that true peace is not the absence of conflict—it is the presence of your full, honest self.' },
   },
 };

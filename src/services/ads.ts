@@ -14,6 +14,10 @@ const AD_UNIT_IDS = {
     android: 'ca-app-pub-9489106590476826/2642443652',
     ios: 'ca-app-pub-3940256099942544/2934735716',
   },
+  appOpen: {
+    android: 'ca-app-pub-9489106590476826/5765789123',
+    ios: 'ca-app-pub-3940256099942544/5575463023',
+  },
 };
 
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
@@ -23,6 +27,7 @@ let InterstitialAdPluginEvents: typeof import('@capacitor-community/admob').Inte
 let BannerAdSize: typeof import('@capacitor-community/admob').BannerAdSize | null = null;
 let BannerAdPosition: typeof import('@capacitor-community/admob').BannerAdPosition | null = null;
 let BannerAdPluginEvents: typeof import('@capacitor-community/admob').BannerAdPluginEvents | null = null;
+let AppOpenAdPluginEvents: typeof import('@capacitor-community/admob').AppOpenAdPluginEvents | null = null;
 
 async function loadAdMobPlugin(): Promise<boolean> {
   if (AdMob) return true;
@@ -34,6 +39,7 @@ async function loadAdMobPlugin(): Promise<boolean> {
     BannerAdSize = admobModule.BannerAdSize;
     BannerAdPosition = admobModule.BannerAdPosition;
     BannerAdPluginEvents = admobModule.BannerAdPluginEvents;
+    AppOpenAdPluginEvents = admobModule.AppOpenAdPluginEvents;
     return true;
   } catch (error) {
     console.warn('[Ads] AdMob plugin not available:', error);
@@ -48,6 +54,8 @@ class AdsService {
   private isBannerVisible = false;
   private currentUserId: string | null = null;
   private pluginAvailable = false;
+  private isAppOpenAdReady = false;
+  private coldStartAdShown = false;
 
   async initialize(userId: string | null = null): Promise<void> {
     if (isWeb()) {
@@ -75,8 +83,10 @@ class AdsService {
       });
 
       this.setupInterstitialListeners();
+      this.setupAppOpenAdListeners();
 
       await this.preloadInterstitial();
+      await this.preloadAppOpenAd();
       await rewardedAdsService.initialize(userId);
 
       this.initialized = true;
@@ -143,6 +153,74 @@ class AdsService {
       await AdMob.prepareInterstitial({ adId });
     } catch (error) {
       console.error('[Ads] Failed to preload interstitial:', error);
+    }
+  }
+
+  private setupAppOpenAdListeners(): void {
+    if (!AdMob || !AppOpenAdPluginEvents) return;
+
+    AdMob.addListener(AppOpenAdPluginEvents.Loaded, () => {
+      this.isAppOpenAdReady = true;
+      console.log('[Ads] App open ad loaded');
+    });
+
+    AdMob.addListener(AppOpenAdPluginEvents.FailedToLoad, () => {
+      this.isAppOpenAdReady = false;
+      console.log('[Ads] App open ad failed to load');
+    });
+
+    AdMob.addListener(AppOpenAdPluginEvents.Dismissed, () => {
+      this.isAppOpenAdReady = false;
+    });
+
+    AdMob.addListener(AppOpenAdPluginEvents.FailedToShow, () => {
+      this.isAppOpenAdReady = false;
+    });
+  }
+
+  private async preloadAppOpenAd(): Promise<void> {
+    if (isWeb() || !this.pluginAvailable || !AdMob) return;
+
+    try {
+      const adId = isAndroid()
+        ? AD_UNIT_IDS.appOpen.android
+        : AD_UNIT_IDS.appOpen.ios;
+
+      await AdMob.prepareAppOpenAd({ adId });
+    } catch (error) {
+      console.error('[Ads] Failed to preload app open ad:', error);
+    }
+  }
+
+  async showAppOpenAdOnColdStart(isPremium: boolean, isAdFree: boolean): Promise<void> {
+    if (isWeb() || !isNative()) return;
+    if (isPremium || isAdFree) {
+      console.log('[Ads] Premium/ad-free user - skipping app open ad');
+      return;
+    }
+    if (this.coldStartAdShown) {
+      console.log('[Ads] Cold start ad already shown this session');
+      return;
+    }
+
+    this.coldStartAdShown = true;
+
+    if (!this.initialized || !this.pluginAvailable || !AdMob) {
+      console.log('[Ads] Not initialized for app open ad');
+      return;
+    }
+
+    if (!this.isAppOpenAdReady) {
+      console.log('[Ads] App open ad not ready');
+      return;
+    }
+
+    try {
+      await this.trackImpression('app_open', 'app_open');
+      await AdMob.showAppOpenAd();
+      console.log('[Ads] App open ad shown');
+    } catch (error) {
+      console.error('[Ads] Failed to show app open ad:', error);
     }
   }
 
@@ -236,14 +314,19 @@ class AdsService {
     return this.isBannerVisible;
   }
 
-  private async trackImpression(actionType: ActionType | 'banner', adType: string): Promise<void> {
+  private async trackImpression(actionType: ActionType | 'banner' | 'app_open', adType: string): Promise<void> {
     if (!this.currentUserId) return;
 
     try {
       const platform = isAndroid() ? 'android' : 'ios';
-      const adUnitId = adType === 'banner'
-        ? (isAndroid() ? AD_UNIT_IDS.banner.android : AD_UNIT_IDS.banner.ios)
-        : (isAndroid() ? AD_UNIT_IDS.interstitial.android : AD_UNIT_IDS.interstitial.ios);
+      let adUnitId: string;
+      if (adType === 'banner') {
+        adUnitId = isAndroid() ? AD_UNIT_IDS.banner.android : AD_UNIT_IDS.banner.ios;
+      } else if (adType === 'app_open') {
+        adUnitId = isAndroid() ? AD_UNIT_IDS.appOpen.android : AD_UNIT_IDS.appOpen.ios;
+      } else {
+        adUnitId = isAndroid() ? AD_UNIT_IDS.interstitial.android : AD_UNIT_IDS.interstitial.ios;
+      }
 
       await supabase.from('ad_impressions').insert({
         user_id: this.currentUserId,

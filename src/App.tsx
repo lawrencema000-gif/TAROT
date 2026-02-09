@@ -136,6 +136,15 @@ function AppContent() {
   }, [user]);
 
   useEffect(() => {
+    if (profile?.onboardingComplete) {
+      adsService.showAppOpenAdOnColdStart(
+        profile?.isPremium || false,
+        profile?.isAdFree || false
+      );
+    }
+  }, [profile?.onboardingComplete, profile?.isPremium, profile?.isAdFree]);
+
+  useEffect(() => {
     if (isProcessingOAuth) {
       setShowOAuthCancel(false);
       const timer = setTimeout(() => setShowOAuthCancel(true), 10000);

@@ -38,6 +38,7 @@ class RewardedAdsService {
   private isAdReady = false;
   private currentUserId: string | null = null;
   private pendingFeature: PremiumFeature | null = null;
+  private pendingSpreadType: string | null = null;
   private resolveAdWatch: ((success: boolean) => void) | null = null;
 
   async initialize(userId: string | null = null): Promise<void> {
@@ -83,11 +84,12 @@ class RewardedAdsService {
     AdMob.addListener(RewardAdPluginEvents.Rewarded, async () => {
       console.log('[RewardedAds] User earned reward');
       if (this.pendingFeature) {
-        await this.grantTemporaryAccess(this.pendingFeature);
+        await this.grantTemporaryAccess(this.pendingFeature, this.pendingSpreadType);
       }
       this.resolveAdWatch?.(true);
       this.resolveAdWatch = null;
       this.pendingFeature = null;
+      this.pendingSpreadType = null;
     });
 
     AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
@@ -99,6 +101,7 @@ class RewardedAdsService {
         this.resolveAdWatch = null;
       }
       this.pendingFeature = null;
+      this.pendingSpreadType = null;
     });
 
     AdMob.addListener(RewardAdPluginEvents.FailedToShow, (error) => {
@@ -108,6 +111,7 @@ class RewardedAdsService {
       this.resolveAdWatch?.(false);
       this.resolveAdWatch = null;
       this.pendingFeature = null;
+      this.pendingSpreadType = null;
     });
   }
 
@@ -175,7 +179,7 @@ class RewardedAdsService {
     this.currentUserId = userId;
   }
 
-  async showRewardedAd(feature: PremiumFeature): Promise<boolean> {
+  async showRewardedAd(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
     if (!this.canWatchAd()) {
       console.log('[RewardedAds] Daily limit reached');
       return false;
@@ -193,6 +197,7 @@ class RewardedAdsService {
     }
 
     this.pendingFeature = feature;
+    this.pendingSpreadType = spreadType || null;
 
     return new Promise((resolve) => {
       this.resolveAdWatch = resolve;
@@ -200,12 +205,13 @@ class RewardedAdsService {
         console.error('[RewardedAds] Failed to show ad:', error);
         this.resolveAdWatch = null;
         this.pendingFeature = null;
+        this.pendingSpreadType = null;
         resolve(false);
       });
     });
   }
 
-  private async grantTemporaryAccess(feature: PremiumFeature): Promise<void> {
+  private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<void> {
     if (!this.currentUserId) {
       console.error('[RewardedAds] No user ID set');
       return;
@@ -221,32 +227,36 @@ class RewardedAdsService {
       const { error } = await supabase.from('rewarded_ad_unlocks').insert({
         user_id: this.currentUserId,
         feature,
+        spread_type: spreadType,
         ad_unit_id: adUnitId,
       });
 
       if (error) {
         console.error('[RewardedAds] Failed to save unlock:', error);
       } else {
-        console.log(`[RewardedAds] Granted temporary access to ${feature}`);
+        console.log(`[RewardedAds] Granted temporary access to ${feature}${spreadType ? ` (spread: ${spreadType})` : ''}`);
       }
     } catch (error) {
       console.error('[RewardedAds] Failed to grant access:', error);
     }
   }
 
-  async hasTemporaryAccess(feature: PremiumFeature): Promise<boolean> {
+  async hasTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
     if (!this.currentUserId) return false;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('rewarded_ad_unlocks')
         .select('id')
         .eq('user_id', this.currentUserId)
         .eq('feature', feature)
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString())
-        .limit(1)
-        .maybeSingle();
+        .eq('used', false);
+
+      if (spreadType) {
+        query = query.eq('spread_type', spreadType);
+      }
+
+      const { data, error } = await query.limit(1).maybeSingle();
 
       if (error) {
         console.error('[RewardedAds] Failed to check access:', error);
@@ -260,17 +270,22 @@ class RewardedAdsService {
     }
   }
 
-  async consumeTemporaryAccess(feature: PremiumFeature): Promise<boolean> {
+  async consumeTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
     if (!this.currentUserId) return false;
 
     try {
-      const { data, error: selectError } = await supabase
+      let query = supabase
         .from('rewarded_ad_unlocks')
         .select('id')
         .eq('user_id', this.currentUserId)
         .eq('feature', feature)
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString())
+        .eq('used', false);
+
+      if (spreadType) {
+        query = query.eq('spread_type', spreadType);
+      }
+
+      const { data, error: selectError } = await query
         .order('unlocked_at', { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -289,7 +304,7 @@ class RewardedAdsService {
         return false;
       }
 
-      console.log(`[RewardedAds] Consumed temporary access for ${feature}`);
+      console.log(`[RewardedAds] Consumed temporary access for ${feature}${spreadType ? ` (spread: ${spreadType})` : ''}`);
       return true;
     } catch (error) {
       console.error('[RewardedAds] Failed to consume access:', error);

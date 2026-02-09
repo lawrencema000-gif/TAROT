@@ -150,9 +150,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       for (const spread of premiumSpreads) {
         const feature = spreadTypeToFeature(spread.id);
         if (feature) {
-          accessMap[spread.id] = await rewardedAdsService.hasTemporaryAccess(feature);
+          accessMap[spread.id] = await rewardedAdsService.hasTemporaryAccess(feature, spread.id);
         }
       }
+
+      accessMap['extra_reading'] = await rewardedAdsService.hasTemporaryAccess('extra_reading');
 
       setHasTemporaryAccess(accessMap);
     };
@@ -171,6 +173,15 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
   const handleStartDraw = () => {
     if (isAtDailyLimit) {
+      if (hasTemporaryAccess['extra_reading']) {
+        setView('focus');
+        setSelectedFocus(null);
+        setIsSaved(false);
+        setInterpretationView('focus');
+        setShowAIInterpretation(false);
+        setAiInterpretation(null);
+        return;
+      }
       if (isNative() && rewardedAdsService.canWatchAd()) {
         setPendingFeature('extra_reading');
         setPendingSpreadId(null);
@@ -217,6 +228,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setShowWatchAdSheet(false);
 
     if (pendingFeature === 'extra_reading') {
+      setHasTemporaryAccess(prev => ({ ...prev, extra_reading: true }));
       setView('focus');
       setSelectedFocus(null);
       setIsSaved(false);
@@ -265,7 +277,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     }
   };
 
-  const handleRevealSelected = () => {
+  const handleRevealSelected = async () => {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
     if (!spread || selectedIndices.length !== spread.count) return;
     if (tarotCards.length === 0) return;
@@ -292,6 +304,22 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
     incrementDailyReadingCount();
     setDailyReadingCount(getDailyReadingCount());
+
+    if (!profile?.isPremium) {
+      if (!spread.free && hasTemporaryAccess[currentSpread]) {
+        const feature = spreadTypeToFeature(currentSpread);
+        if (feature) {
+          await rewardedAdsService.consumeTemporaryAccess(feature, currentSpread);
+          setHasTemporaryAccess(prev => ({ ...prev, [currentSpread]: false }));
+        }
+      }
+
+      if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
+        await rewardedAdsService.consumeTemporaryAccess('extra_reading');
+        setHasTemporaryAccess(prev => ({ ...prev, extra_reading: false }));
+      }
+    }
+
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setView('reveal');
@@ -1079,6 +1107,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             setPendingSpreadId(null);
           }}
           feature={pendingFeature}
+          spreadType={pendingSpreadId || undefined}
           onUnlocked={handleAdUnlocked}
           onShowPaywall={() => {
             setShowWatchAdSheet(false);

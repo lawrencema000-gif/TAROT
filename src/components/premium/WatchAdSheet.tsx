@@ -8,6 +8,7 @@ interface WatchAdSheetProps {
   open: boolean;
   onClose: () => void;
   feature: PremiumFeature;
+  spreadType?: string;
   onUnlocked: () => void;
   onShowPaywall: () => void;
 }
@@ -29,6 +30,7 @@ export function WatchAdSheet({
   open,
   onClose,
   feature,
+  spreadType,
   onUnlocked,
   onShowPaywall,
 }: WatchAdSheetProps) {
@@ -46,7 +48,7 @@ export function WatchAdSheet({
   const handleWatchAd = async () => {
     setLoading(true);
     try {
-      const success = await rewardedAdsService.showRewardedAd(feature);
+      const success = await rewardedAdsService.showRewardedAd(feature, spreadType);
 
       if (success) {
         toast('Feature unlocked! Enjoy your free trial.', 'success');

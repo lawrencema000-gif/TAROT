@@ -289,13 +289,14 @@ class AdsService {
   }
 
   async hideBanner(): Promise<void> {
-    if (!this.pluginAvailable || !AdMob || !this.isBannerVisible) return;
+    if (!this.pluginAvailable || !AdMob) return;
 
     try {
       await AdMob.hideBanner();
-      this.isBannerVisible = false;
     } catch (error) {
       console.error('[Ads] Failed to hide banner:', error);
+    } finally {
+      this.isBannerVisible = false;
     }
   }
 
@@ -304,9 +305,10 @@ class AdsService {
 
     try {
       await AdMob.removeBanner();
-      this.isBannerVisible = false;
     } catch (error) {
       console.error('[Ads] Failed to remove banner:', error);
+    } finally {
+      this.isBannerVisible = false;
     }
   }
 

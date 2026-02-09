@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { adsService } from '../../services/ads';
 import { isNative } from '../../utils/platform';
 
@@ -9,28 +9,27 @@ interface BannerAdProps {
 }
 
 export function BannerAd({ visible, isPremium, isAdFree }: BannerAdProps) {
-  const isShowingRef = useRef(false);
+  const shouldShow = useMemo(
+    () => isNative() && visible && !isPremium && !isAdFree,
+    [visible, isPremium, isAdFree]
+  );
 
   useEffect(() => {
     if (!isNative()) return;
 
-    const shouldShow = visible && !isPremium && !isAdFree;
-
-    if (shouldShow && !isShowingRef.current) {
-      isShowingRef.current = true;
+    if (shouldShow) {
       adsService.showBanner();
-    } else if (!shouldShow && isShowingRef.current) {
-      isShowingRef.current = false;
+    } else {
       adsService.hideBanner();
     }
+  }, [shouldShow]);
 
+  useEffect(() => {
+    if (!isNative()) return;
     return () => {
-      if (isShowingRef.current) {
-        isShowingRef.current = false;
-        adsService.hideBanner();
-      }
+      adsService.hideBanner();
     };
-  }, [visible, isPremium, isAdFree]);
+  }, []);
 
   return null;
 }

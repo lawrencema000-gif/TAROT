@@ -30,6 +30,9 @@ interface AppContextType {
   levelUpEvent: LevelUpEvent | null;
   triggerLevelUp: (event: LevelUpEvent) => void;
   dismissLevelUp: () => void;
+  showRatePrompt: boolean;
+  openRatePrompt: () => void;
+  closeRatePrompt: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -44,6 +47,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeOverlay, setActiveOverlay] = useState<OverlayType>(null);
   const [tarotRefreshTrigger, setTarotRefreshTrigger] = useState(0);
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
+  const [showRatePrompt, setShowRatePrompt] = useState(false);
 
   const completeRitual = useCallback(() => {
     setRitualCompleted(true);
@@ -69,6 +73,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLevelUpEvent(null);
   }, []);
 
+  const openRatePrompt = useCallback(() => {
+    setShowRatePrompt(true);
+  }, []);
+
+  const closeRatePrompt = useCallback(() => {
+    setShowRatePrompt(false);
+  }, []);
+
   return (
     <AppContext.Provider value={{
       activeTab,
@@ -91,6 +103,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       levelUpEvent,
       triggerLevelUp,
       dismissLevelUp,
+      showRatePrompt,
+      openRatePrompt,
+      closeRatePrompt,
     }}>
       {children}
     </AppContext.Provider>

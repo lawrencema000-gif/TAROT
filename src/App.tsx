@@ -29,6 +29,7 @@ import { initializeBilling, getBillingService } from './services/billing';
 import { adsService } from './services/ads';
 import { isSupabaseConfigured } from './lib/supabase';
 import { LevelUpCelebration } from './components/celebration/LevelUpCelebration';
+import { RateAppSheet } from './components/feedback';
 import { initializeUserAchievements } from './services/achievements';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -101,7 +102,7 @@ function DiagnosticsSync() {
 
 function AppContent() {
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
-  const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay, levelUpEvent, dismissLevelUp } = useApp();
+  const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay, levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useApp();
   const { openDiagnostics } = useDiagnostics();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
@@ -290,6 +291,13 @@ function AppContent() {
             newLevel={levelUpEvent.newLevel}
             seekerRank={levelUpEvent.seekerRank}
             xpEarned={levelUpEvent.xpEarned}
+          />
+        )}
+        {user && (
+          <RateAppSheet
+            open={showRatePrompt}
+            onClose={closeRatePrompt}
+            userId={user.id}
           />
         )}
       </div>

@@ -36,6 +36,7 @@ import { WatchAdSheet } from '../premium';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { spreadTypeToFeature, FREE_TIER, type PremiumFeature } from '../../services/premium';
 import { isNative } from '../../utils/platform';
+import { ratePromptService } from '../../services/ratePrompt';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
@@ -86,7 +87,7 @@ const spreadConfigs = [
 
 export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const { user, profile, refreshProfile } = useAuth();
-  const { tarotRefreshTrigger } = useApp();
+  const { tarotRefreshTrigger, openRatePrompt } = useApp();
   const [view, setView] = useState<TarotView>('home');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea | null>(null);
   const [drawnCards, setDrawnCards] = useState<{ card: TarotCard; reversed: boolean; revealed: boolean }[]>([]);
@@ -343,6 +344,13 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       awardXP(user.id, 'reading_saved').then(() => refreshProfile());
       checkAchievementProgress(user.id, 'reading_saved');
       await adsService.checkAndShowAd(profile?.isPremium || false, 'reading', profile?.isAdFree || false);
+
+      await ratePromptService.incrementPositiveActions(user.id);
+      const shouldShow = await ratePromptService.shouldShowPrompt(user.id);
+      if (shouldShow) {
+        await ratePromptService.recordPromptShown(user.id);
+        openRatePrompt();
+      }
     }
   };
 

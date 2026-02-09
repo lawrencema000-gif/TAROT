@@ -41,6 +41,7 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
+import { ratePromptService } from '../services/ratePrompt';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -100,7 +101,7 @@ const encouragementMessages = [
 
 export function QuizzesPage() {
   const { user, profile, refreshProfile } = useAuth();
-  const { triggerLevelUp } = useApp();
+  const { triggerLevelUp, openRatePrompt } = useApp();
   const [state, setState] = useState<QuizState>('list');
   const [progress, setProgress] = useState<QuizProgress | null>(null);
   const [result, setResult] = useState<{ quiz: QuizDefinition; result: unknown } | null>(null);
@@ -302,6 +303,13 @@ export function QuizzesPage() {
         await refreshProfile();
 
         await adsService.checkAndShowAd(profile?.isPremium || false, 'quiz', profile?.isAdFree || false);
+
+        await ratePromptService.incrementPositiveActions(user.id);
+        const shouldShowRate = await ratePromptService.shouldShowPrompt(user.id);
+        if (shouldShowRate) {
+          await ratePromptService.recordPromptShown(user.id);
+          openRatePrompt();
+        }
       }
 
       setResult({ quiz: progress.quiz, result: calculatedResult });

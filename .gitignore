@@ -25,3 +25,6 @@ dist-ssr
 # Credential documentation — should not be in repo
 android/google-oauth-credentials.md
 android/keystore-fingerprints.md
+
+# Local Netlify folder
+.netlify

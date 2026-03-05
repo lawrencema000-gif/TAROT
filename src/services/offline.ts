@@ -7,6 +7,7 @@ const CACHE_KEYS = {
   LAST_READING: 'stellara_last_reading',
   USER_PROFILE: 'stellara_user_profile',
   CACHE_TIMESTAMP: 'stellara_cache_timestamp',
+  DAILY_RITUAL: 'stellara_daily_ritual',
 };
 
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
@@ -107,6 +108,26 @@ export async function cacheUserProfile(profile: CachedProfile): Promise<void> {
 
 export async function getCachedUserProfile(): Promise<CachedProfile | null> {
   return getCache(CACHE_KEYS.USER_PROFILE);
+}
+
+export interface CachedRitualState {
+  horoscopeViewed: boolean;
+  tarotViewed: boolean;
+  promptViewed: boolean;
+  completed: boolean;
+  date: string;
+}
+
+export async function cacheDailyRitual(userId: string, state: CachedRitualState): Promise<void> {
+  const key = `${CACHE_KEYS.DAILY_RITUAL}_${userId}`;
+  await setCache(key, state);
+}
+
+export async function getCachedDailyRitual(userId: string, date: string): Promise<CachedRitualState | null> {
+  const key = `${CACHE_KEYS.DAILY_RITUAL}_${userId}`;
+  const cached = await getCache<CachedRitualState>(key);
+  if (cached && cached.date === date) return cached;
+  return null;
 }
 
 export async function clearUserCache(): Promise<void> {

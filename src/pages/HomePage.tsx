@@ -21,6 +21,7 @@ import { getAllTarotCards } from '../services/tarotCards';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMilestone } from '../services/levelSystem';
+import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -64,6 +65,14 @@ export function HomePage() {
       return;
     }
 
+    // Show cached ritual state instantly while network loads
+    const cached = await getCachedDailyRitual(user.id, today);
+    if (cached) {
+      setRitualState(cached);
+      setRitualStarted(cached.horoscopeViewed || cached.tarotViewed || cached.promptViewed);
+      setIsLoading(false);
+    }
+
     try {
       const { data: ritual } = await supabase
         .from('daily_rituals')
@@ -73,13 +82,16 @@ export function HomePage() {
         .maybeSingle();
 
       if (ritual) {
-        setRitualState({
+        const state = {
           horoscopeViewed: ritual.horoscope_viewed,
           tarotViewed: ritual.tarot_viewed,
           promptViewed: ritual.prompt_viewed,
           completed: ritual.completed,
-        });
+        };
+        setRitualState(state);
         setRitualStarted(ritual.horoscope_viewed || ritual.tarot_viewed || ritual.prompt_viewed);
+        // Cache for offline use
+        cacheDailyRitual(user.id, { ...state, date: today });
       }
 
       const { data: saves } = await supabase
@@ -119,6 +131,7 @@ export function HomePage() {
       const seed = `${user?.id || 'anonymous'}_${today}`;
       const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);
+      cacheLastViewedCard(drawn.card, drawn.reversed);
     };
     loadAndDrawCard();
     checkRitualStatus();
@@ -152,6 +165,7 @@ export function HomePage() {
 
     const newState = { ...ritualState, [field]: true };
     setRitualState(newState);
+    cacheDailyRitual(user.id, { ...newState, completed: newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed, date: today });
 
     await supabase.from('daily_rituals').upsert({
       user_id: user.id,

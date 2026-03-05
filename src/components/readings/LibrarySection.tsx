@@ -168,6 +168,8 @@ export function LibrarySection() {
   useEffect(() => {
     if (user) {
       loadSavedItems();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
@@ -176,38 +178,42 @@ export function LibrarySection() {
 
     setLoading(true);
 
-    const [highlightsRes, readingsRes, premiumRes] = await Promise.all([
-      supabase
-        .from('saved_highlights')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('tarot_readings')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('saved', true)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('premium_readings')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }),
-    ]);
+    try {
+      const [highlightsRes, readingsRes, premiumRes] = await Promise.all([
+        supabase
+          .from('saved_highlights')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('tarot_readings')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('saved', true)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('premium_readings')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-    if (highlightsRes.data) {
-      setSavedHighlights(highlightsRes.data as SavedItem[]);
+      if (highlightsRes.data) {
+        setSavedHighlights(highlightsRes.data as SavedItem[]);
+      }
+
+      if (readingsRes.data) {
+        setTarotReadings(readingsRes.data as TarotReading[]);
+      }
+
+      if (premiumRes.data) {
+        setPremiumReadings(premiumRes.data as PremiumReading[]);
+      }
+    } catch {
+      toast('Could not load saved items — you may be offline', 'error');
+    } finally {
+      setLoading(false);
     }
-
-    if (readingsRes.data) {
-      setTarotReadings(readingsRes.data as TarotReading[]);
-    }
-
-    if (premiumRes.data) {
-      setPremiumReadings(premiumRes.data as PremiumReading[]);
-    }
-
-    setLoading(false);
   };
 
   const handleDelete = async (type: 'highlight' | 'reading' | 'premium', id: string) => {

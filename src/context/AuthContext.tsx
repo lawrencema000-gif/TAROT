@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
-import { isAdmin as checkIsAdmin } from '../utils/admin';
+import { isAdmin as checkIsAdmin, verifyAdminStatus } from '../utils/admin';
 import { isNative, isAndroid, isIOS, getPlatform } from '../utils/platform';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
@@ -127,7 +127,7 @@ function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> 
   if (profile.notificationTime !== undefined) db.notification_time = profile.notificationTime;
   if (profile.notificationsEnabled !== undefined) db.notifications_enabled = profile.notificationsEnabled;
   if (profile.onboardingComplete !== undefined) db.onboarding_complete = profile.onboardingComplete;
-  if (profile.isPremium !== undefined) db.is_premium = profile.isPremium;
+  // is_premium is protected server-side — only set by subscription webhooks
   if (profile.streak !== undefined) db.streak = profile.streak;
   if (profile.lastRitualDate !== undefined) db.last_ritual_date = profile.lastRitualDate;
   if (profile.mbtiType !== undefined) db.mbti_type = profile.mbtiType;
@@ -145,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  const [isAdminVerified, setIsAdminVerified] = useState(false);
 
   const oauthTimeoutRef = React.useRef<number | null>(null);
   const isProcessingCallbackRef = React.useRef(false);
@@ -835,7 +836,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isAdmin = checkIsAdmin(user);
+  // Verify admin status from the database whenever user changes
+  useEffect(() => {
+    if (user) {
+      // Optimistic: use email check for immediate UI rendering
+      setIsAdminVerified(checkIsAdmin(user));
+      // Then verify against the user_roles table via RPC
+      verifyAdminStatus().then((verified) => {
+        setIsAdminVerified(verified);
+      });
+    } else {
+      setIsAdminVerified(false);
+    }
+  }, [user]);
+
+  const isAdmin = isAdminVerified;
 
   return (
     <AuthContext.Provider value={{

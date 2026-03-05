@@ -270,6 +270,50 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // --- Rate limiting: count today's readings for this user ---
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const { count: todayCount, error: countError } = await supabase
+      .from("premium_readings")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", todayStart.toISOString());
+
+    if (countError) {
+      console.error("Error checking rate limit:", countError);
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isPremium = profileData?.is_premium === true;
+    const dailyLimit = isPremium ? 20 : 3;
+    const readingsToday = todayCount ?? 0;
+
+    if (readingsToday >= dailyLimit) {
+      return new Response(
+        JSON.stringify({
+          error: "Daily reading limit reached",
+          limit: dailyLimit,
+          used: readingsToday,
+          isPremium,
+          resetsAt: new Date(todayStart.getTime() + 86400000).toISOString(),
+        }),
+        {
+          status: 429,
+          headers: {
+            ...getCorsHeaders(req),
+            "Content-Type": "application/json",
+            "Retry-After": "3600",
+          },
+        }
+      );
+    }
+
     const request: ReadingRequest = await req.json();
 
     if (!request.cards || request.cards.length === 0) {

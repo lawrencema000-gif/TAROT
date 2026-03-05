@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Sun, Moon, Star, Sparkles, Crown, Circle, TrendingUp, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Button, Card, Skeleton } from '../components/ui';
+import { Button, Card, HoroscopePageSkeleton } from '../components/ui';
 import { PaywallSheet } from '../components/premium';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
@@ -101,13 +101,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   };
 
   if (chartLoading) {
-    return (
-      <div className="space-y-4 pt-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
+    return <HoroscopePageSkeleton />;
   }
 
   if (needsOnboarding) {

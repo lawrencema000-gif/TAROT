@@ -25,6 +25,8 @@ export type AnalyticsEvent =
   | 'search_performed'
   | 'share_completed'
   | 'streak_achieved'
+  | 'onboarding_step_viewed'
+  | 'onboarding_step_completed'
   | 'error_occurred';
 
 export interface AnalyticsPayload {
@@ -130,7 +132,19 @@ export function trackSignIn(method: 'email' | 'google'): void {
   track('sign_in', { method });
 }
 
-export function trackOnboardingComplete(data: { goals: string[]; sign: string }): void {
+export function trackOnboardingStepViewed(data: { step: number; stepName: string }): void {
+  track('onboarding_step_viewed', data);
+}
+
+export function trackOnboardingStepCompleted(data: {
+  step: number;
+  stepName: string;
+  durationMs: number;
+}): void {
+  track('onboarding_step_completed', data);
+}
+
+export function trackOnboardingComplete(data: { goals?: string[]; sign?: string; totalDurationMs: number }): void {
   track('onboarding_complete', data);
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useImageLoader } from '../../hooks/useImageLoader';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface TarotCardFrameProps {
   name: string;
@@ -40,8 +41,10 @@ export function TarotCardFrame({
 
   const handleClick = () => {
     if (!revealed && onReveal) {
+      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
       setIsFlipping(true);
       setTimeout(() => {
+        Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
         onReveal();
         setIsFlipping(false);
       }, 300);

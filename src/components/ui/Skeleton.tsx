@@ -162,6 +162,110 @@ export function ListSkeleton({ count = 3 }: { count?: number }) {
   );
 }
 
+export function HomePageSkeleton() {
+  return (
+    <div className="space-y-4">
+      {/* Streak / greeting area */}
+      <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+        <div className="flex items-center gap-3 mb-4">
+          <Skeleton variant="circular" width={48} height={48} />
+          <div className="flex-1">
+            <Skeleton height={20} width="50%" className="mb-2" />
+            <Skeleton height={14} width="70%" />
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Skeleton height={32} width={80} className="rounded-full" />
+          <Skeleton height={32} width={80} className="rounded-full" />
+          <Skeleton height={32} width={80} className="rounded-full" />
+        </div>
+      </div>
+
+      {/* Tarot card area */}
+      <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-3xl p-6 border border-amber-900/30">
+        <Skeleton height={16} width={80} className="mb-2" />
+        <Skeleton height={20} width={140} className="mb-6" />
+        <div className="flex justify-center">
+          <Skeleton width={180} height={288} className="rounded-xl" />
+        </div>
+      </div>
+
+      {/* Horoscope card */}
+      <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+        <div className="flex items-center gap-3 mb-3">
+          <Skeleton variant="circular" width={40} height={40} />
+          <Skeleton height={18} width={120} />
+        </div>
+        <Skeleton height={14} width="100%" className="mb-2" />
+        <Skeleton height={14} width="85%" className="mb-2" />
+        <Skeleton height={14} width="60%" />
+      </div>
+
+      {/* Prompt card */}
+      <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+        <Skeleton height={14} width={100} className="mb-3" />
+        <Skeleton height={16} width="90%" className="mb-2" />
+        <Skeleton height={16} width="75%" />
+      </div>
+    </div>
+  );
+}
+
+export function ReadingsPageSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 mb-4">
+        <Skeleton height={36} width={80} className="rounded-full" />
+        <Skeleton height={36} width={100} className="rounded-full" />
+        <Skeleton height={36} width={90} className="rounded-full" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="flex flex-col items-center">
+            <Skeleton width={100} height={160} className="rounded-xl mb-2" />
+            <Skeleton height={12} width={70} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function HoroscopePageSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 mb-4">
+        <Skeleton height={36} width={80} className="rounded-full" />
+        <Skeleton height={36} width={80} className="rounded-full" />
+        <Skeleton height={36} width={100} className="rounded-full" />
+      </div>
+      <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-2xl p-6 border border-amber-900/20">
+        <div className="flex items-center gap-3 mb-4">
+          <Skeleton variant="circular" width={48} height={48} />
+          <div>
+            <Skeleton height={20} width={100} className="mb-2" />
+            <Skeleton height={14} width={80} />
+          </div>
+        </div>
+        <div className="space-y-3">
+          <Skeleton height={16} width="100%" />
+          <Skeleton height={16} width="95%" />
+          <Skeleton height={16} width="80%" />
+          <Skeleton height={16} width="90%" />
+        </div>
+        <div className="mt-4 pt-4 border-t border-amber-900/10 grid grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="text-center">
+              <Skeleton height={28} width={40} className="mx-auto mb-2" />
+              <Skeleton height={12} width={50} className="mx-auto" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function RitualCardSkeleton() {
   return (
     <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-3xl p-6 border border-amber-900/30 min-h-[400px]">

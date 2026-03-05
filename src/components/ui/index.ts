@@ -17,4 +17,7 @@ export {
   ProfileSkeleton,
   ListSkeleton,
   RitualCardSkeleton,
+  HomePageSkeleton,
+  ReadingsPageSkeleton,
+  HoroscopePageSkeleton,
 } from './Skeleton';

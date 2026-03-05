@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage, useCardBackImage } from '../../hooks/useProgressiveImage';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface TarotFlipCardProps {
   card: TarotCard;
@@ -36,13 +37,21 @@ export function TarotFlipCard({
 
   const handleFlip = () => {
     if (!isFlipped) {
+      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
       setIsFlipped(true);
+      setTimeout(() => {
+        Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+      }, 350);
     }
   };
 
   const toggleReversed = () => {
     setShowReversed(prev => !prev);
   };
+
+  const cardDescription = isFlipped
+    ? `${card.name}, ${showReversed ? 'reversed' : 'upright'}`
+    : 'Tarot card face down. Tap to reveal';
 
   return (
     <div className="space-y-4">
@@ -54,6 +63,7 @@ export function TarotFlipCard({
         {isFlipped && (
           <button
             onClick={toggleReversed}
+            aria-label={`Switch to ${showReversed ? 'upright' : 'reversed'} orientation`}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
               showReversed
                 ? 'bg-mystic-700 text-mystic-200'
@@ -69,6 +79,11 @@ export function TarotFlipCard({
       <div
         className="relative w-full aspect-[2.5/4] max-w-[180px] mx-auto perspective-1000 cursor-pointer"
         onClick={handleFlip}
+        role="button"
+        tabIndex={0}
+        aria-label={cardDescription}
+        aria-live="polite"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleFlip(); } }}
       >
         <div
           className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${
@@ -156,6 +171,11 @@ export function TarotFlipCard({
         </div>
       </div>
 
+      {/* Screen reader announcement for card reveal */}
+      <div className="sr-only" aria-live="assertive" role="status">
+        {isFlipped && `Card revealed: ${card.name}, ${showReversed ? 'reversed' : 'upright'}. ${showReversed ? card.meaningReversed : card.meaningUpright}`}
+      </div>
+
       {isFlipped && (
         <div className="space-y-4 animate-fade-in">
           <div className="text-center">
@@ -178,6 +198,7 @@ export function TarotFlipCard({
           <div className="flex items-center justify-center gap-2 pt-2">
             <button
               onClick={(e) => { e.stopPropagation(); onSave(); }}
+              aria-label={saved ? `Unsave ${card.name}` : `Save ${card.name}`}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all active:scale-95 ${
                 saved
                   ? 'bg-gold/20 text-gold border border-gold/30'
@@ -189,6 +210,7 @@ export function TarotFlipCard({
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onShare(); }}
+              aria-label={`Share ${card.name}`}
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-all active:scale-95"
             >
               <Share2 className="w-4 h-4" />
@@ -196,6 +218,7 @@ export function TarotFlipCard({
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onMeaning(); }}
+              aria-label={`View meaning of ${card.name}`}
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-all active:scale-95"
             >
               <HelpCircle className="w-4 h-4" />

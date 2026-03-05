@@ -1,4 +1,5 @@
 import type { TarotCard, ZodiacSign } from '../types';
+import { generateShareUrl } from './deepLink';
 
 export interface ShareContent {
   type: 'tarot' | 'horoscope' | 'spread';
@@ -256,7 +257,7 @@ export async function generateHoroscopeShareImage(
   });
 }
 
-export function generateShareCaption(content: ShareContent): string {
+export function generateShareCaption(content: ShareContent & { deepLinkId?: string }): string {
   const lines: string[] = [];
 
   lines.push(content.title);
@@ -269,6 +270,12 @@ export function generateShareCaption(content: ShareContent): string {
     const truncated = content.body.length > 150 ? content.body.slice(0, 147) + '...' : content.body;
     lines.push('');
     lines.push(`"${truncated}"`);
+  }
+
+  if (content.deepLinkId) {
+    const linkType = content.type === 'tarot' ? 'card' : content.type === 'spread' ? 'reading' : content.type;
+    lines.push('');
+    lines.push(generateShareUrl(linkType, content.deepLinkId));
   }
 
   lines.push('');

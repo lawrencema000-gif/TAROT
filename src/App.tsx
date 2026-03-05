@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import { useUI } from './context/UIContext';
@@ -8,7 +9,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
 import { BannerAd } from './components/ads';
 import { DevicePreview } from './components/dev/DevicePreview';
-import { ToastContainer } from './components/ui';
+import { ToastContainer, ListSkeleton } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -29,6 +30,8 @@ const JournalPage = lazy(() => import('./pages/JournalPage').then(m => ({ defaul
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 import { isNative } from './utils/platform';
+import { parseDeepLink } from './services/deepLink';
+import { App as CapApp } from '@capacitor/app';
 import { initializeBilling, getBillingService } from './services/billing';
 import { adsService } from './services/ads';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -161,6 +164,27 @@ function AppContent() {
     setShowOAuthCancel(false);
   }, [isProcessingOAuth]);
 
+  // Deep link routing for shared content URLs
+  useEffect(() => {
+    if (!isNative()) return;
+    const listener = CapApp.addListener('appUrlOpen', ({ url }) => {
+      const route = parseDeepLink(url);
+      if (!route || route.type === 'unknown') return;
+      switch (route.type) {
+        case 'reading':
+          setActiveTab('readings');
+          break;
+        case 'card':
+          setActiveTab('readings');
+          break;
+        case 'horoscope':
+          setActiveTab('horoscope');
+          break;
+      }
+    });
+    return () => { listener.then(l => l.remove()); };
+  }, [setActiveTab]);
+
   const handleOnboardingComplete = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
@@ -267,7 +291,7 @@ function AppContent() {
           isPremium={profile?.isPremium || false}
           isAdFree={profile?.isAdFree || false}
         />
-        <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top">
+        <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top" aria-label={currentPage.title}>
           <Header
             title={currentPage.title}
             subtitle={currentPage.subtitle}
@@ -275,13 +299,18 @@ function AppContent() {
             onSavedClick={() => openOverlay('saved')}
             onSettingsClick={() => openOverlay('settings')}
           />
-          <Suspense fallback={
-            <div className="text-center py-12">
-              <div className="loading-constellation mx-auto mb-4" />
-              <p className="text-mystic-400">Loading...</p>
-            </div>
-          }>
-            {renderPage()}
+          <Suspense fallback={<ListSkeleton count={3} />}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {renderPage()}
+              </motion.div>
+            </AnimatePresence>
           </Suspense>
         </main>
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />

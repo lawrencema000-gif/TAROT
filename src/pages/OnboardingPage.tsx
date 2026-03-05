@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
   ChevronRight,
@@ -13,6 +13,11 @@ import { Button, Input, toast } from '../components/ui';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
+import {
+  trackOnboardingStepViewed,
+  trackOnboardingStepCompleted,
+  trackOnboardingComplete,
+} from '../services/analytics';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -40,11 +45,29 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [password, setPassword] = useState('');
   const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(true);
 
+  const stepNames = ['welcome', 'create_account'] as const;
+  const onboardingStartTime = useRef(Date.now());
+  const stepStartTime = useRef(Date.now());
+
+  useEffect(() => {
+    trackOnboardingStepViewed({ step, stepName: stepNames[step] });
+    stepStartTime.current = Date.now();
+  }, [step]);
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const { error } = await signInWithGoogle();
     if (error) {
       toast(getAuthErrorMessage(error), 'error');
+    } else {
+      trackOnboardingStepCompleted({
+        step: 1,
+        stepName: 'create_account',
+        durationMs: Date.now() - stepStartTime.current,
+      });
+      trackOnboardingComplete({
+        totalDurationMs: Date.now() - onboardingStartTime.current,
+      });
     }
     setGoogleLoading(false);
   };
@@ -96,6 +119,14 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         return;
       }
 
+      trackOnboardingStepCompleted({
+        step: 1,
+        stepName: 'create_account',
+        durationMs: Date.now() - stepStartTime.current,
+      });
+      trackOnboardingComplete({
+        totalDurationMs: Date.now() - onboardingStartTime.current,
+      });
       toast('Account created! Let\'s personalize your experience.', 'success');
       onComplete();
     }
@@ -137,7 +168,14 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 <Button
                   variant="gold"
                   fullWidth
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    trackOnboardingStepCompleted({
+                      step: 0,
+                      stepName: 'welcome',
+                      durationMs: Date.now() - stepStartTime.current,
+                    });
+                    setStep(1);
+                  }}
                   className="min-h-[52px]"
                 >
                   Get Started

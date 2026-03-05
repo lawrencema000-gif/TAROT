@@ -11,6 +11,7 @@ interface SheetProps {
 
 export function Sheet({ open, onClose, title, children, variant = 'default' }: SheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -20,6 +21,8 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
     if (open) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      // Focus the close button when sheet opens for keyboard/screen reader users
+      setTimeout(() => closeRef.current?.focus(), 100);
     }
 
     return () => {
@@ -35,10 +38,11 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
     : 'bg-mystic-900 border-t border-mystic-700/50';
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title || 'Sheet'}>
       <div
         className="absolute inset-0 bg-gradient-to-t from-mystic-950/95 via-mystic-950/80 to-mystic-900/60 backdrop-blur-md animate-fade-in"
         onClick={onClose}
+        aria-hidden="true"
       />
       <div
         ref={sheetRef}
@@ -51,7 +55,9 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
           <div className="flex items-center justify-between px-6 pb-4 border-b border-mystic-800/50">
             <h2 className="font-display text-xl font-semibold text-mystic-100">{title}</h2>
             <button
+              ref={closeRef}
               onClick={onClose}
+              aria-label="Close"
               className="p-2 rounded-full hover:bg-mystic-800 transition-colors"
             >
               <X className="w-5 h-5 text-mystic-400" />

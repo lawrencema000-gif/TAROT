@@ -8,7 +8,7 @@ import {
   PenLine,
   TrendingUp,
 } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
 import { useAuth } from '../context/AuthContext';
@@ -316,7 +316,7 @@ export function HomePage() {
   const displayName = getDisplayName();
 
   if (isLoading) {
-    return null;
+    return <HomePageSkeleton />;
   }
 
   if (!ritualStarted && isFirstTime) {

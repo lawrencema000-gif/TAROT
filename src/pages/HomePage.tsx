@@ -16,7 +16,7 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign } from '../utils/zodiac';
 import { generateDailyHoroscope, getDailyPrompt } from '../data/horoscopes';
-import { drawCards } from '../data/tarotDeck';
+import { drawSeededCards } from '../data/tarotDeck';
 import { getAllTarotCards } from '../services/tarotCards';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
@@ -116,7 +116,8 @@ export function HomePage() {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
       setTarotCards(cards);
-      const [drawn] = drawCards(1, cards);
+      const seed = `${user?.id || 'anonymous'}_${today}`;
+      const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);
     };
     loadAndDrawCard();

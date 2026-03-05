@@ -113,29 +113,37 @@ function mapDbToProfile(db: DbProfile): UserProfile {
   };
 }
 
+// Strict allowlist of fields the client is permitted to write.
+// Server-managed fields (is_premium, is_ad_free, level, streak,
+// total_readings, total_journal_entries) are excluded here AND
+// protected by a DB trigger as defense-in-depth.
+const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
+  displayName: 'display_name',
+  birthDate: 'birth_date',
+  birthTime: 'birth_time',
+  birthPlace: 'birth_place',
+  birthLat: 'birth_lat',
+  birthLon: 'birth_lon',
+  timezone: 'timezone',
+  goals: 'goals',
+  tonePreference: 'tone_preference',
+  notificationTime: 'notification_time',
+  notificationsEnabled: 'notifications_enabled',
+  onboardingComplete: 'onboarding_complete',
+  mbtiType: 'mbti_type',
+  loveLanguage: 'love_language',
+  theme: 'theme',
+  card_back_url: 'card_back_url',
+  background_url: 'background_url',
+  subscribedToNewsletter: 'subscribed_to_newsletter',
+};
+
 function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> {
   const db: Record<string, unknown> = {};
-  if (profile.displayName !== undefined) db.display_name = profile.displayName;
-  if (profile.birthDate !== undefined) db.birth_date = profile.birthDate;
-  if (profile.birthTime !== undefined) db.birth_time = profile.birthTime;
-  if (profile.birthPlace !== undefined) db.birth_place = profile.birthPlace;
-  if (profile.birthLat !== undefined) db.birth_lat = profile.birthLat;
-  if (profile.birthLon !== undefined) db.birth_lon = profile.birthLon;
-  if (profile.timezone !== undefined) db.timezone = profile.timezone;
-  if (profile.goals !== undefined) db.goals = profile.goals;
-  if (profile.tonePreference !== undefined) db.tone_preference = profile.tonePreference;
-  if (profile.notificationTime !== undefined) db.notification_time = profile.notificationTime;
-  if (profile.notificationsEnabled !== undefined) db.notifications_enabled = profile.notificationsEnabled;
-  if (profile.onboardingComplete !== undefined) db.onboarding_complete = profile.onboardingComplete;
-  // is_premium is protected server-side — only set by subscription webhooks
-  if (profile.streak !== undefined) db.streak = profile.streak;
-  if (profile.lastRitualDate !== undefined) db.last_ritual_date = profile.lastRitualDate;
-  if (profile.mbtiType !== undefined) db.mbti_type = profile.mbtiType;
-  if (profile.loveLanguage !== undefined) db.love_language = profile.loveLanguage;
-  if (profile.theme !== undefined) db.theme = profile.theme;
-  if (profile.card_back_url !== undefined) db.card_back_url = profile.card_back_url;
-  if (profile.background_url !== undefined) db.background_url = profile.background_url;
-  if (profile.subscribedToNewsletter !== undefined) db.subscribed_to_newsletter = profile.subscribedToNewsletter;
+  for (const [key, col] of Object.entries(PROFILE_WRITABLE_FIELDS)) {
+    const val = (profile as Record<string, unknown>)[key];
+    if (val !== undefined) db[col] = val;
+  }
   return db;
 }
 

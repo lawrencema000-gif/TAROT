@@ -12,11 +12,12 @@ import { Card, Button, toast } from '../components/ui';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
+import { useUI } from '../context/UIContext';
+import { useRitual } from '../context/RitualContext';
+import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign } from '../utils/zodiac';
-import { generateDailyHoroscope, getDailyPrompt } from '../data/horoscopes';
-import { drawSeededCards } from '../data/tarotDeck';
+// horoscopes + tarotDeck loaded lazily to keep main bundle small
 import { getAllTarotCards } from '../services/tarotCards';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
@@ -32,7 +33,9 @@ interface RitualState {
 
 export function HomePage() {
   const { profile, user, updateProfile, refreshProfile } = useAuth();
-  const { streak, setStreak, setActiveTab, openOverlay, tarotRefreshTrigger, triggerLevelUp } = useApp();
+  const { setActiveTab, openOverlay } = useUI();
+  const { streak, setStreak, tarotRefreshTrigger } = useRitual();
+  const { triggerLevelUp } = useGamification();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
@@ -50,9 +53,9 @@ export function HomePage() {
   const [tarotCards, setTarotCards] = useState<TarotCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [dailyPrompt, setDailyPrompt] = useState('');
   const today = new Date().toISOString().split('T')[0];
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
-  const dailyPrompt = getDailyPrompt(today);
 
   useImagePreloader(
     drawnTarot?.card.imageUrl ? [drawnTarot.card.imageUrl] : [],
@@ -125,9 +128,14 @@ export function HomePage() {
   }, [user, today]);
 
   useEffect(() => {
+    import('../data/horoscopes').then(m => setDailyPrompt(m.getDailyPrompt(today)));
+  }, [today]);
+
+  useEffect(() => {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
       setTarotCards(cards);
+      const { drawSeededCards } = await import('../data/tarotDeck');
       const seed = `${user?.id || 'anonymous'}_${today}`;
       const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);

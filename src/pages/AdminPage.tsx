@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Smartphone, Calendar, Star, Sparkles, Flame } from 'lucide-react';
 import { Button, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
+import { useRitual } from '../context/RitualContext';
 import { supabase } from '../lib/supabase';
 
 interface TarotCardData {
@@ -48,7 +48,7 @@ interface AdAnalytics {
 
 export function AdminPage() {
   const { user, isAdmin } = useAuth();
-  const { refreshTarotCards } = useApp();
+  const { refreshTarotCards } = useRitual();
   const [tarotCards, setTarotCards] = useState<TarotCardData[]>([]);
   const [cardBacks, setCardBacks] = useState<StorageFile[]>([]);
   const [backgrounds, setBackgrounds] = useState<StorageFile[]>([]);

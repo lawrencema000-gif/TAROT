@@ -1,7 +1,12 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard } from '../types';
-import { fullDeck } from '../data/tarotDeck';
 import { getBundledCardPath } from '../config/bundledImages';
+
+// Lazy-load the 915-line tarot deck only when needed as fallback
+async function getFullDeck(): Promise<TarotCard[]> {
+  const { fullDeck } = await import('../data/tarotDeck');
+  return fullDeck;
+}
 
 export interface TarotCardDB {
   id: number;
@@ -71,9 +76,10 @@ export async function seedTarotCards(): Promise<void> {
       return;
     }
 
-    console.log(`Seeding ${fullDeck.length} tarot cards...`);
+    const deck = await getFullDeck();
+    console.log(`Seeding ${deck.length} tarot cards...`);
 
-    const cardsToInsert = fullDeck.map(card => {
+    const cardsToInsert = deck.map(card => {
       const bundledPath = getBundledCardPath(card.id, card.name, card.suit);
 
       return {
@@ -91,7 +97,7 @@ export async function seedTarotCards(): Promise<void> {
       return;
     }
 
-    console.log(`Successfully seeded ${fullDeck.length} tarot cards`);
+    console.log(`Successfully seeded ${deck.length} tarot cards`);
   } catch (error) {
     console.error('Error seeding tarot cards:', error);
   }
@@ -106,18 +112,18 @@ export async function getAllTarotCards(): Promise<TarotCard[]> {
 
     if (error) {
       console.error('Error fetching tarot cards:', error);
-      return fullDeck;
+      return getFullDeck();
     }
 
     if (!data || data.length === 0) {
       await seedTarotCards();
-      return fullDeck;
+      return getFullDeck();
     }
 
     return data.map(dbToCard);
   } catch (error) {
     console.error('Error fetching tarot cards:', error);
-    return fullDeck;
+    return getFullDeck();
   }
 }
 
@@ -130,15 +136,15 @@ export async function getTarotCardById(id: number): Promise<TarotCard | null> {
       .maybeSingle();
 
     if (error || !data) {
-      const fallback = fullDeck.find(card => card.id === id);
-      return fallback || null;
+      const deck = await getFullDeck();
+      return deck.find(card => card.id === id) || null;
     }
 
     return dbToCard(data);
   } catch (error) {
     console.error('Error fetching tarot card:', error);
-    const fallback = fullDeck.find(card => card.id === id);
-    return fallback || null;
+    const deck = await getFullDeck();
+    return deck.find(card => card.id === id) || null;
   }
 }
 
@@ -151,13 +157,15 @@ export async function getTarotCardsByArcana(arcana: 'major' | 'minor'): Promise<
       .order('id');
 
     if (error || !data || data.length === 0) {
-      return fullDeck.filter(card => card.arcana === arcana);
+      const deck = await getFullDeck();
+      return deck.filter(card => card.arcana === arcana);
     }
 
     return data.map(dbToCard);
   } catch (error) {
     console.error('Error fetching tarot cards by arcana:', error);
-    return fullDeck.filter(card => card.arcana === arcana);
+    const deck = await getFullDeck();
+    return deck.filter(card => card.arcana === arcana);
   }
 }
 
@@ -170,18 +178,20 @@ export async function searchTarotCards(query: string): Promise<TarotCard[]> {
       .order('id');
 
     if (error || !data) {
-      return fullDeck.filter(card =>
+      const deck = await getFullDeck();
+      return deck.filter(card =>
         card.name.toLowerCase().includes(query.toLowerCase()) ||
-        card.keywords.some(k => k.toLowerCase().includes(query.toLowerCase()))
+        card.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
       );
     }
 
     return data.map(dbToCard);
   } catch (error) {
     console.error('Error searching tarot cards:', error);
-    return fullDeck.filter(card =>
+    const deck = await getFullDeck();
+    return deck.filter(card =>
       card.name.toLowerCase().includes(query.toLowerCase()) ||
-      card.keywords.some(k => k.toLowerCase().includes(query.toLowerCase()))
+      card.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
     );
   }
 }

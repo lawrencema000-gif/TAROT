@@ -1,121 +1,41 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-import type { Tab, DailyHoroscope, TarotReading, JournalEntry } from '../types';
+import { UIProvider, useUI } from './UIContext';
+import { RitualProvider, useRitual } from './RitualContext';
+import { GamificationProvider, useGamification } from './GamificationContext';
 
-export type OverlayType = 'search' | 'saved' | 'settings' | null;
+// Re-export types for backwards compatibility
+export type { OverlayType } from './UIContext';
+export type { LevelUpEvent } from './GamificationContext';
 
-export interface LevelUpEvent {
-  newLevel: number;
-  seekerRank: string;
-  xpEarned: number;
-}
-
-interface AppContextType {
-  activeTab: Tab;
-  setActiveTab: (tab: Tab) => void;
-  todayHoroscope: DailyHoroscope | null;
-  setTodayHoroscope: (horoscope: DailyHoroscope | null) => void;
-  todayTarot: TarotReading | null;
-  setTodayTarot: (reading: TarotReading | null) => void;
-  todayJournalEntry: JournalEntry | null;
-  setTodayJournalEntry: (entry: JournalEntry | null) => void;
-  streak: number;
-  setStreak: (streak: number) => void;
-  ritualCompleted: boolean;
-  completeRitual: () => void;
-  activeOverlay: OverlayType;
-  openOverlay: (overlay: OverlayType) => void;
-  closeOverlay: () => void;
-  tarotRefreshTrigger: number;
-  refreshTarotCards: () => void;
-  levelUpEvent: LevelUpEvent | null;
-  triggerLevelUp: (event: LevelUpEvent) => void;
-  dismissLevelUp: () => void;
-  showRatePrompt: boolean;
-  openRatePrompt: () => void;
-  closeRatePrompt: () => void;
-}
-
-const AppContext = createContext<AppContextType | null>(null);
-
+/**
+ * Composed provider — wraps UIContext + RitualContext + GamificationContext.
+ * Each context re-renders only its own consumers, avoiding the "everything
+ * re-renders on any state change" problem of the old monolithic context.
+ */
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [activeTab, setActiveTab] = useState<Tab>('home');
-  const [todayHoroscope, setTodayHoroscope] = useState<DailyHoroscope | null>(null);
-  const [todayTarot, setTodayTarot] = useState<TarotReading | null>(null);
-  const [todayJournalEntry, setTodayJournalEntry] = useState<JournalEntry | null>(null);
-  const [streak, setStreak] = useState(0);
-  const [ritualCompleted, setRitualCompleted] = useState(false);
-  const [activeOverlay, setActiveOverlay] = useState<OverlayType>(null);
-  const [tarotRefreshTrigger, setTarotRefreshTrigger] = useState(0);
-  const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
-  const [showRatePrompt, setShowRatePrompt] = useState(false);
-
-  const completeRitual = useCallback(() => {
-    setRitualCompleted(true);
-  }, []);
-
-  const openOverlay = useCallback((overlay: OverlayType) => {
-    setActiveOverlay(overlay);
-  }, []);
-
-  const closeOverlay = useCallback(() => {
-    setActiveOverlay(null);
-  }, []);
-
-  const refreshTarotCards = useCallback(() => {
-    setTarotRefreshTrigger(prev => prev + 1);
-  }, []);
-
-  const triggerLevelUp = useCallback((event: LevelUpEvent) => {
-    setLevelUpEvent(event);
-  }, []);
-
-  const dismissLevelUp = useCallback(() => {
-    setLevelUpEvent(null);
-  }, []);
-
-  const openRatePrompt = useCallback(() => {
-    setShowRatePrompt(true);
-  }, []);
-
-  const closeRatePrompt = useCallback(() => {
-    setShowRatePrompt(false);
-  }, []);
-
   return (
-    <AppContext.Provider value={{
-      activeTab,
-      setActiveTab,
-      todayHoroscope,
-      setTodayHoroscope,
-      todayTarot,
-      setTodayTarot,
-      todayJournalEntry,
-      setTodayJournalEntry,
-      streak,
-      setStreak,
-      ritualCompleted,
-      completeRitual,
-      activeOverlay,
-      openOverlay,
-      closeOverlay,
-      tarotRefreshTrigger,
-      refreshTarotCards,
-      levelUpEvent,
-      triggerLevelUp,
-      dismissLevelUp,
-      showRatePrompt,
-      openRatePrompt,
-      closeRatePrompt,
-    }}>
-      {children}
-    </AppContext.Provider>
+    <UIProvider>
+      <RitualProvider>
+        <GamificationProvider>
+          {children}
+        </GamificationProvider>
+      </RitualProvider>
+    </UIProvider>
   );
 }
 
+/**
+ * Backwards-compatible hook — merges all three contexts.
+ * Prefer using useUI(), useRitual(), or useGamification() directly
+ * in new code for more granular re-render control.
+ */
 export function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
+  const ui = useUI();
+  const ritual = useRitual();
+  const gamification = useGamification();
+
+  return {
+    ...ui,
+    ...ritual,
+    ...gamification,
+  };
 }

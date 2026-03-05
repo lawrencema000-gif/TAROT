@@ -19,7 +19,8 @@ import {
 } from 'lucide-react';
 import { Card, Button, Sheet, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { useRitual } from '../../context/RitualContext';
+import { useGamification } from '../../context/GamificationContext';
 import { supabase } from '../../lib/supabase';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { TarotCardDetail } from './TarotCardDetail';
@@ -88,7 +89,8 @@ const spreadConfigs = [
 
 export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const { user, profile, refreshProfile } = useAuth();
-  const { tarotRefreshTrigger, openRatePrompt } = useApp();
+  const { tarotRefreshTrigger } = useRitual();
+  const { openRatePrompt } = useGamification();
   const [view, setView] = useState<TarotView>('home');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea | null>(null);
   const [drawnCards, setDrawnCards] = useState<{ card: TarotCard; reversed: boolean; revealed: boolean }[]>([]);

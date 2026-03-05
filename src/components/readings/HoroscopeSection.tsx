@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import { useUI } from '../../context/UIContext';
 import { supabase } from '../../lib/supabase';
 import { getZodiacSign, zodiacData, getElementColor } from '../../utils/zodiac';
 import {
@@ -57,7 +57,7 @@ const monthlyThemes = [
 
 export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   const { user, profile, refreshProfile } = useAuth();
-  const { setActiveTab } = useApp();
+  const { setActiveTab } = useUI();
   const [period, setPeriod] = useState<TimePeriod>('today');
   const [isSaved, setIsSaved] = useState(false);
   const [showExtras, setShowExtras] = useState(false);

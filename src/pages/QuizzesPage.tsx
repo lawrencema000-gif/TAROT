@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
+import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
@@ -101,7 +101,7 @@ const encouragementMessages = [
 
 export function QuizzesPage() {
   const { user, profile, refreshProfile } = useAuth();
-  const { triggerLevelUp, openRatePrompt } = useApp();
+  const { triggerLevelUp, openRatePrompt } = useGamification();
   const [state, setState] = useState<QuizState>('list');
   const [progress, setProgress] = useState<QuizProgress | null>(null);
   const [result, setResult] = useState<{ quiz: QuizDefinition; result: unknown } | null>(null);

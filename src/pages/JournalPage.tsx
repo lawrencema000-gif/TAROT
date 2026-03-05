@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Sheet, Input, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
+import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase';
 import { getDailyPrompt } from '../data/horoscopes';
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
@@ -109,7 +109,7 @@ const categoryIcons: Record<string, typeof Sun> = {
 
 export function JournalPage() {
   const { user, profile, refreshProfile } = useAuth();
-  const { triggerLevelUp } = useApp();
+  const { triggerLevelUp } = useGamification();
   const [activeTab, setActiveTab] = useState<JournalTab>('entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

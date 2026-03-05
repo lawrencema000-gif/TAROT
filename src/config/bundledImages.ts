@@ -124,3 +124,17 @@ export function hasLocalBundle(url: string | undefined): boolean {
 
   return url.startsWith('/bundled-cards/') || url.startsWith('/card-backs/');
 }
+
+/** 150px thumbnail for grid views */
+export function getBundledThumbPath(cardId: number): string | null {
+  const path = getBundledCardPath(cardId);
+  if (!path) return null;
+  return path.replace('/bundled-cards/', '/bundled-cards/thumb/');
+}
+
+/** 400px full-size for detail views */
+export function getBundledFullPath(cardId: number): string | null {
+  const path = getBundledCardPath(cardId);
+  if (!path) return null;
+  return path.replace('/bundled-cards/', '/bundled-cards/full/');
+}

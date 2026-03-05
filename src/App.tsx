@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AppProvider, useApp, type LevelUpEvent } from './context/AppContext';
+import { AppProvider } from './context/AppContext';
+import { useUI } from './context/UIContext';
+import { useGamification } from './context/GamificationContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
@@ -105,7 +107,8 @@ function DiagnosticsSync() {
 
 function AppContent() {
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
-  const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay, levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useApp();
+  const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
+  const { levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useGamification();
   const { openDiagnostics } = useDiagnostics();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);

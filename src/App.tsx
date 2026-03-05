@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
@@ -246,29 +247,6 @@ function AppContent() {
     );
   }
 
-  const renderPage = () => {
-    switch (activeTab) {
-      case 'home':
-        return <HomePage />;
-      case 'readings':
-        return <ReadingsPage />;
-      case 'quizzes':
-        return <QuizzesPage />;
-      case 'horoscope':
-        return <HoroscopePage />;
-      case 'achievements':
-        return <AchievementsPage />;
-      case 'journal':
-        return <JournalPage />;
-      case 'profile':
-        return <ProfilePage />;
-      case 'admin':
-        return <AdminPage />;
-      default:
-        return <HomePage />;
-    }
-  };
-
   const currentPage = pageTitles[activeTab] || pageTitles.home;
 
   return (
@@ -308,7 +286,17 @@ function AppContent() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                {renderPage()}
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/readings" element={<ReadingsPage />} />
+                  <Route path="/quizzes" element={<QuizzesPage />} />
+                  <Route path="/horoscope" element={<HoroscopePage />} />
+                  <Route path="/achievements" element={<AchievementsPage />} />
+                  <Route path="/journal" element={<JournalPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/admin" element={<AdminPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
               </motion.div>
             </AnimatePresence>
           </Suspense>
@@ -355,16 +343,18 @@ function GlobalDiagnosticsSheet() {
 
 function AppWithProviders() {
   return (
-    <DiagnosticsProvider>
-      <AuthProvider>
-        <AppProvider>
-          <DiagnosticsSync />
-          <AppContent />
-          <GlobalDiagnosticsSheet />
-          <ToastContainer />
-        </AppProvider>
-      </AuthProvider>
-    </DiagnosticsProvider>
+    <BrowserRouter>
+      <DiagnosticsProvider>
+        <AuthProvider>
+          <AppProvider>
+            <DiagnosticsSync />
+            <AppContent />
+            <GlobalDiagnosticsSheet />
+            <ToastContainer />
+          </AppProvider>
+        </AuthProvider>
+      </DiagnosticsProvider>
+    </BrowserRouter>
   );
 }
 

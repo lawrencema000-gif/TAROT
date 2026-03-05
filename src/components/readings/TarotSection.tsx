@@ -37,31 +37,32 @@ import { rewardedAdsService } from '../../services/rewardedAds';
 import { spreadTypeToFeature, FREE_TIER, type PremiumFeature } from '../../services/premium';
 import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
+import { appStorage } from '../../lib/appStorage';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
 
-function getDailyReadingCount(): number {
+async function getDailyReadingCount(): Promise<number> {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const storedDate = localStorage.getItem(DAILY_READINGS_DATE_KEY);
+    const storedDate = await appStorage.get(DAILY_READINGS_DATE_KEY);
     if (storedDate !== today) {
-      localStorage.setItem(DAILY_READINGS_DATE_KEY, today);
-      localStorage.setItem(DAILY_READINGS_KEY, '0');
+      await appStorage.set(DAILY_READINGS_DATE_KEY, today);
+      await appStorage.set(DAILY_READINGS_KEY, '0');
       return 0;
     }
-    return parseInt(localStorage.getItem(DAILY_READINGS_KEY) || '0', 10);
+    return parseInt((await appStorage.get(DAILY_READINGS_KEY)) || '0', 10);
   } catch {
     return 0;
   }
 }
 
-function incrementDailyReadingCount(): void {
+async function incrementDailyReadingCount(): Promise<void> {
   try {
     const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem(DAILY_READINGS_DATE_KEY, today);
-    const current = getDailyReadingCount();
-    localStorage.setItem(DAILY_READINGS_KEY, (current + 1).toString());
+    await appStorage.set(DAILY_READINGS_DATE_KEY, today);
+    const current = await getDailyReadingCount();
+    await appStorage.set(DAILY_READINGS_KEY, (current + 1).toString());
   } catch {
     // silent
   }
@@ -109,7 +110,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [pendingFeature, setPendingFeature] = useState<PremiumFeature | null>(null);
   const [pendingSpreadId, setPendingSpreadId] = useState<string | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
-  const [dailyReadingCount, setDailyReadingCount] = useState(getDailyReadingCount);
+  const [dailyReadingCount, setDailyReadingCount] = useState(0);
+
+  useEffect(() => {
+    getDailyReadingCount().then(setDailyReadingCount);
+  }, []);
 
   const today = new Date().toISOString().split('T')[0];
   const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
@@ -302,8 +307,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       }))
     );
 
-    incrementDailyReadingCount();
-    setDailyReadingCount(getDailyReadingCount());
+    await incrementDailyReadingCount();
+    setDailyReadingCount(await getDailyReadingCount());
 
     if (!profile?.isPremium) {
       if (!spread.free && hasTemporaryAccess[currentSpread]) {

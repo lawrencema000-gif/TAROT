@@ -1,4 +1,5 @@
 import type { EnhancedHoroscope, TarotCard, ZodiacSign } from '../types';
+import { appStorage } from '../lib/appStorage';
 
 const CACHE_KEYS = {
   DAILY_HOROSCOPE: 'stellara_daily_horoscope',
@@ -16,27 +17,27 @@ interface CachedData<T> {
   expiresAt: number;
 }
 
-function setCache<T>(key: string, data: T, duration = CACHE_DURATION): void {
+async function setCache<T>(key: string, data: T, duration = CACHE_DURATION): Promise<void> {
   try {
     const cached: CachedData<T> = {
       data,
       timestamp: Date.now(),
       expiresAt: Date.now() + duration,
     };
-    localStorage.setItem(key, JSON.stringify(cached));
+    await appStorage.set(key, JSON.stringify(cached));
   } catch (err) {
     console.warn('Failed to cache data:', err);
   }
 }
 
-function getCache<T>(key: string): T | null {
+async function getCache<T>(key: string): Promise<T | null> {
   try {
-    const stored = localStorage.getItem(key);
+    const stored = await appStorage.get(key);
     if (!stored) return null;
 
     const cached: CachedData<T> = JSON.parse(stored);
     if (Date.now() > cached.expiresAt) {
-      localStorage.removeItem(key);
+      await appStorage.remove(key);
       return null;
     }
 
@@ -46,9 +47,9 @@ function getCache<T>(key: string): T | null {
   }
 }
 
-function getCacheWithMeta<T>(key: string): CachedData<T> | null {
+async function getCacheWithMeta<T>(key: string): Promise<CachedData<T> | null> {
   try {
-    const stored = localStorage.getItem(key);
+    const stored = await appStorage.get(key);
     if (!stored) return null;
 
     const cached: CachedData<T> = JSON.parse(stored);
@@ -58,25 +59,21 @@ function getCacheWithMeta<T>(key: string): CachedData<T> | null {
   }
 }
 
-function clearCache(key: string): void {
-  localStorage.removeItem(key);
-}
-
-export function cacheDailyHoroscope(sign: ZodiacSign, horoscope: EnhancedHoroscope): void {
+export async function cacheDailyHoroscope(sign: ZodiacSign, horoscope: EnhancedHoroscope): Promise<void> {
   const key = `${CACHE_KEYS.DAILY_HOROSCOPE}_${sign}`;
-  setCache(key, horoscope);
+  await setCache(key, horoscope);
 }
 
-export function getCachedDailyHoroscope(sign: ZodiacSign): EnhancedHoroscope | null {
+export async function getCachedDailyHoroscope(sign: ZodiacSign): Promise<EnhancedHoroscope | null> {
   const key = `${CACHE_KEYS.DAILY_HOROSCOPE}_${sign}`;
   return getCache<EnhancedHoroscope>(key);
 }
 
-export function cacheLastViewedCard(card: TarotCard, reversed: boolean): void {
-  setCache(CACHE_KEYS.LAST_CARD, { card, reversed });
+export async function cacheLastViewedCard(card: TarotCard, reversed: boolean): Promise<void> {
+  await setCache(CACHE_KEYS.LAST_CARD, { card, reversed });
 }
 
-export function getCachedLastViewedCard(): { card: TarotCard; reversed: boolean } | null {
+export async function getCachedLastViewedCard(): Promise<{ card: TarotCard; reversed: boolean } | null> {
   return getCache(CACHE_KEYS.LAST_CARD);
 }
 
@@ -88,11 +85,11 @@ export interface CachedReading {
   date: string;
 }
 
-export function cacheLastReading(reading: CachedReading): void {
-  setCache(CACHE_KEYS.LAST_READING, reading);
+export async function cacheLastReading(reading: CachedReading): Promise<void> {
+  await setCache(CACHE_KEYS.LAST_READING, reading);
 }
 
-export function getCachedLastReading(): CachedReading | null {
+export async function getCachedLastReading(): Promise<CachedReading | null> {
   return getCache(CACHE_KEYS.LAST_READING);
 }
 
@@ -104,27 +101,27 @@ export interface CachedProfile {
   isPremium: boolean;
 }
 
-export function cacheUserProfile(profile: CachedProfile): void {
-  setCache(CACHE_KEYS.USER_PROFILE, profile, 7 * 24 * 60 * 60 * 1000);
+export async function cacheUserProfile(profile: CachedProfile): Promise<void> {
+  await setCache(CACHE_KEYS.USER_PROFILE, profile, 7 * 24 * 60 * 60 * 1000);
 }
 
-export function getCachedUserProfile(): CachedProfile | null {
+export async function getCachedUserProfile(): Promise<CachedProfile | null> {
   return getCache(CACHE_KEYS.USER_PROFILE);
 }
 
-export function clearUserCache(): void {
-  Object.values(CACHE_KEYS).forEach(key => {
+export async function clearUserCache(): Promise<void> {
+  for (const key of Object.values(CACHE_KEYS)) {
     if (key.startsWith('stellara_')) {
-      localStorage.removeItem(key);
+      await appStorage.remove(key);
     }
-  });
+  }
 
-  const allKeys = Object.keys(localStorage);
-  allKeys.forEach(key => {
+  const allKeys = await appStorage.keys();
+  for (const key of allKeys) {
     if (key.startsWith('stellara_daily_horoscope_')) {
-      localStorage.removeItem(key);
+      await appStorage.remove(key);
     }
-  });
+  }
 }
 
 export function isOnline(): boolean {
@@ -141,14 +138,14 @@ export function addOfflineListener(callback: () => void): () => void {
   return () => window.removeEventListener('offline', callback);
 }
 
-export function getCacheAge(key: string): number | null {
-  const cached = getCacheWithMeta(key);
+export async function getCacheAge(key: string): Promise<number | null> {
+  const cached = await getCacheWithMeta(key);
   if (!cached) return null;
   return Date.now() - cached.timestamp;
 }
 
-export function isCacheStale(key: string, maxAge = CACHE_DURATION): boolean {
-  const age = getCacheAge(key);
+export async function isCacheStale(key: string, maxAge = CACHE_DURATION): Promise<boolean> {
+  const age = await getCacheAge(key);
   if (age === null) return true;
   return age > maxAge;
 }
@@ -159,7 +156,7 @@ export async function withOfflineFallback<T>(
   cacheDuration = CACHE_DURATION
 ): Promise<{ data: T; fromCache: boolean }> {
   if (!isOnline()) {
-    const cached = getCache<T>(cacheKey);
+    const cached = await getCache<T>(cacheKey);
     if (cached) {
       return { data: cached, fromCache: true };
     }
@@ -168,10 +165,10 @@ export async function withOfflineFallback<T>(
 
   try {
     const data = await fetchFn();
-    setCache(cacheKey, data, cacheDuration);
+    await setCache(cacheKey, data, cacheDuration);
     return { data, fromCache: false };
   } catch (err) {
-    const cached = getCache<T>(cacheKey);
+    const cached = await getCache<T>(cacheKey);
     if (cached) {
       return { data: cached, fromCache: true };
     }
@@ -179,39 +176,38 @@ export async function withOfflineFallback<T>(
   }
 }
 
-export function preloadEssentialData(sign: ZodiacSign): void {
+export async function preloadEssentialData(sign: ZodiacSign): Promise<void> {
   const horoscopeKey = `${CACHE_KEYS.DAILY_HOROSCOPE}_${sign}`;
-  const horoscope = getCache(horoscopeKey);
+  const horoscope = await getCache(horoscopeKey);
 
   if (!horoscope && isOnline()) {
     console.log('Preloading horoscope data for offline use');
   }
 }
 
-export function getOfflineStatus(): {
+export async function getOfflineStatus(): Promise<{
   isOnline: boolean;
   hasCachedHoroscope: boolean;
   hasCachedCard: boolean;
   hasCachedProfile: boolean;
   cacheSize: number;
-} {
+}> {
   let cacheSize = 0;
-  Object.keys(localStorage).forEach(key => {
+  const allKeys = await appStorage.keys();
+  for (const key of allKeys) {
     if (key.startsWith('stellara_')) {
-      const value = localStorage.getItem(key);
+      const value = await appStorage.get(key);
       if (value) {
         cacheSize += value.length * 2;
       }
     }
-  });
+  }
 
   return {
     isOnline: isOnline(),
-    hasCachedHoroscope: Object.keys(localStorage).some(k =>
-      k.startsWith('stellara_daily_horoscope_')
-    ),
-    hasCachedCard: !!getCache(CACHE_KEYS.LAST_CARD),
-    hasCachedProfile: !!getCache(CACHE_KEYS.USER_PROFILE),
+    hasCachedHoroscope: allKeys.some(k => k.startsWith('stellara_daily_horoscope_')),
+    hasCachedCard: !!(await getCache(CACHE_KEYS.LAST_CARD)),
+    hasCachedProfile: !!(await getCache(CACHE_KEYS.USER_PROFILE)),
     cacheSize,
   };
 }

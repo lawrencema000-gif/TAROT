@@ -1,3 +1,5 @@
+import { appStorage } from '../lib/appStorage';
+
 export type ActionType = 'reading' | 'quiz' | 'journal' | 'horoscope';
 
 const STORAGE_KEYS = {
@@ -11,54 +13,38 @@ const SESSION_THRESHOLD = 2;
 const DAILY_INTERSTITIAL_CAP = 3;
 const GRACE_PERIOD_COMPLETIONS = 2;
 
-function storageGet(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function storageSet(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // silent
-  }
-}
-
 class ActionCounterService {
   private sessionCount: number = 0;
   private lifetimeCompletions: number = 0;
   private dailyInterstitialCount: number = 0;
   private dailyInterstitialDate: string = '';
+  private loaded = false;
 
-  constructor() {
-    this.loadFromStorage();
-  }
-
-  private loadFromStorage(): void {
-    this.sessionCount = parseInt(storageGet(STORAGE_KEYS.sessionCount) || '0', 10);
-    this.lifetimeCompletions = parseInt(storageGet(STORAGE_KEYS.lifetimeCompletions) || '0', 10);
+  async init(): Promise<void> {
+    if (this.loaded) return;
+    this.sessionCount = parseInt((await appStorage.get(STORAGE_KEYS.sessionCount)) || '0', 10);
+    this.lifetimeCompletions = parseInt((await appStorage.get(STORAGE_KEYS.lifetimeCompletions)) || '0', 10);
 
     const today = new Date().toISOString().split('T')[0];
-    const storedDate = storageGet(STORAGE_KEYS.dailyInterstitialDate) || '';
+    const storedDate = (await appStorage.get(STORAGE_KEYS.dailyInterstitialDate)) || '';
 
     if (storedDate === today) {
-      this.dailyInterstitialCount = parseInt(storageGet(STORAGE_KEYS.dailyInterstitialCount) || '0', 10);
+      this.dailyInterstitialCount = parseInt((await appStorage.get(STORAGE_KEYS.dailyInterstitialCount)) || '0', 10);
     } else {
       this.dailyInterstitialCount = 0;
-      storageSet(STORAGE_KEYS.dailyInterstitialDate, today);
-      storageSet(STORAGE_KEYS.dailyInterstitialCount, '0');
+      appStorage.set(STORAGE_KEYS.dailyInterstitialDate, today);
+      appStorage.set(STORAGE_KEYS.dailyInterstitialCount, '0');
     }
     this.dailyInterstitialDate = today;
+    this.loaded = true;
   }
 
   private save(): void {
-    storageSet(STORAGE_KEYS.sessionCount, this.sessionCount.toString());
-    storageSet(STORAGE_KEYS.lifetimeCompletions, this.lifetimeCompletions.toString());
-    storageSet(STORAGE_KEYS.dailyInterstitialCount, this.dailyInterstitialCount.toString());
-    storageSet(STORAGE_KEYS.dailyInterstitialDate, this.dailyInterstitialDate);
+    // Fire-and-forget — in-memory state is the source of truth
+    appStorage.set(STORAGE_KEYS.sessionCount, this.sessionCount.toString());
+    appStorage.set(STORAGE_KEYS.lifetimeCompletions, this.lifetimeCompletions.toString());
+    appStorage.set(STORAGE_KEYS.dailyInterstitialCount, this.dailyInterstitialCount.toString());
+    appStorage.set(STORAGE_KEYS.dailyInterstitialDate, this.dailyInterstitialDate);
   }
 
   private refreshDailyIfNeeded(): void {

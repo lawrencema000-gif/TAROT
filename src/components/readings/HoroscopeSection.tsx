@@ -34,6 +34,7 @@ import { fullDeck } from '../../data/tarotDeck';
 import { shareToNative, copyToClipboard } from '../../services/share';
 import { awardXP } from '../../services/levelSystem';
 import { checkAchievementProgress } from '../../services/achievements';
+import { appStorage } from '../../lib/appStorage';
 
 type TimePeriod = 'today' | 'week' | 'month';
 
@@ -73,9 +74,11 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   useEffect(() => {
     if (!user) return;
     const key = `arcana_horoscope_xp_${today}`;
-    if (localStorage.getItem(key)) return;
-    localStorage.setItem(key, '1');
-    awardXP(user.id, 'horoscope_viewed').then(() => refreshProfile());
+    appStorage.get(key).then((val) => {
+      if (val) return;
+      appStorage.set(key, '1');
+      awardXP(user.id, 'horoscope_viewed').then(() => refreshProfile());
+    });
     checkAchievementProgress(user.id, 'horoscope_viewed');
   }, [user, today]);
 

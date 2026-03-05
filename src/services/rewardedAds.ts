@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { isNative, isAndroid } from '../utils/platform';
 import type { PremiumFeature } from './premium';
+import { appStorage } from '../lib/appStorage';
 
 const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
@@ -133,18 +134,18 @@ class RewardedAdsService {
     }
   }
 
-  private getDailyCount(): DailyCount {
+  private async getDailyCount(): Promise<DailyCount> {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const storedDate = localStorage.getItem(DAILY_DATE_KEY);
-      const storedCount = localStorage.getItem(DAILY_COUNT_KEY);
+      const storedDate = await appStorage.get(DAILY_DATE_KEY);
+      const storedCount = await appStorage.get(DAILY_COUNT_KEY);
 
       if (storedDate === today && storedCount) {
         return { count: parseInt(storedCount, 10), date: today };
       }
 
-      localStorage.setItem(DAILY_DATE_KEY, today);
-      localStorage.setItem(DAILY_COUNT_KEY, '0');
+      await appStorage.set(DAILY_DATE_KEY, today);
+      await appStorage.set(DAILY_COUNT_KEY, '0');
       return { count: 0, date: today };
     } catch (error) {
       console.error('[RewardedAds] Failed to get daily count:', error);
@@ -152,23 +153,23 @@ class RewardedAdsService {
     }
   }
 
-  private incrementDailyCount(): void {
+  private async incrementDailyCount(): Promise<void> {
     try {
-      const { count, date } = this.getDailyCount();
-      localStorage.setItem(DAILY_DATE_KEY, date);
-      localStorage.setItem(DAILY_COUNT_KEY, (count + 1).toString());
+      const { count, date } = await this.getDailyCount();
+      await appStorage.set(DAILY_DATE_KEY, date);
+      await appStorage.set(DAILY_COUNT_KEY, (count + 1).toString());
     } catch (error) {
       console.error('[RewardedAds] Failed to increment daily count:', error);
     }
   }
 
-  getRemainingUnlocks(): number {
-    const { count } = this.getDailyCount();
+  async getRemainingUnlocks(): Promise<number> {
+    const { count } = await this.getDailyCount();
     return Math.max(0, DAILY_LIMIT - count);
   }
 
-  canWatchAd(): boolean {
-    return this.getRemainingUnlocks() > 0;
+  async canWatchAd(): Promise<boolean> {
+    return (await this.getRemainingUnlocks()) > 0;
   }
 
   isReady(): boolean {
@@ -180,7 +181,7 @@ class RewardedAdsService {
   }
 
   async showRewardedAd(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
-    if (!this.canWatchAd()) {
+    if (!(await this.canWatchAd())) {
       console.log('[RewardedAds] Daily limit reached');
       return false;
     }

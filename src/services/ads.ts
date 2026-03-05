@@ -2,6 +2,7 @@ import { isNative, isWeb, isAndroid } from '../utils/platform';
 import { actionCounter, type ActionType } from './actionCounter';
 import { supabase } from '../lib/supabase';
 import { rewardedAdsService } from './rewardedAds';
+import { appStorage } from '../lib/appStorage';
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 
@@ -66,6 +67,7 @@ class AdsService {
     if (this.initialized) return;
 
     this.currentUserId = userId;
+    await actionCounter.init();
 
     try {
       this.pluginAvailable = await loadAdMobPlugin();
@@ -75,7 +77,7 @@ class AdsService {
         return;
       }
 
-      this.loadLastAdTime();
+      await this.loadLastAdTime();
 
       await AdMob.initialize({
         testingDevices: [],
@@ -97,9 +99,9 @@ class AdsService {
     }
   }
 
-  private loadLastAdTime(): void {
+  private async loadLastAdTime(): Promise<void> {
     try {
-      const stored = localStorage.getItem(LAST_AD_TIME_KEY);
+      const stored = await appStorage.get(LAST_AD_TIME_KEY);
       this.lastAdTime = stored ? parseInt(stored, 10) : 0;
     } catch {
       this.lastAdTime = 0;
@@ -107,11 +109,7 @@ class AdsService {
   }
 
   private saveLastAdTime(): void {
-    try {
-      localStorage.setItem(LAST_AD_TIME_KEY, this.lastAdTime.toString());
-    } catch {
-      // silent
-    }
+    appStorage.set(LAST_AD_TIME_KEY, this.lastAdTime.toString());
   }
 
   private setupInterstitialListeners(): void {

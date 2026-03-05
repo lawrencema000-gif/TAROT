@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard, TarotReading } from '../types';
+import { appStorage } from '../lib/appStorage';
 
 export type SavedItemType = 'reading' | 'card' | 'spread' | 'horoscope' | 'prompt';
 
@@ -328,8 +329,8 @@ const LOCAL_STORAGE_KEYS = {
   GUEST_FAVORITES: 'stellara_guest_favorites',
 };
 
-export function saveItemLocally(item: Omit<SavedItem, 'id' | 'userId' | 'createdAt'>): void {
-  const saved = getLocalSavedItems();
+export async function saveItemLocally(item: Omit<SavedItem, 'id' | 'userId' | 'createdAt'>): Promise<void> {
+  const saved = await getLocalSavedItems();
   const newItem: SavedItem = {
     ...item,
     id: `local_${Date.now()}`,
@@ -337,26 +338,26 @@ export function saveItemLocally(item: Omit<SavedItem, 'id' | 'userId' | 'created
     createdAt: new Date().toISOString(),
   };
   saved.unshift(newItem);
-  localStorage.setItem(LOCAL_STORAGE_KEYS.GUEST_SAVED, JSON.stringify(saved.slice(0, 100)));
+  await appStorage.set(LOCAL_STORAGE_KEYS.GUEST_SAVED, JSON.stringify(saved.slice(0, 100)));
 }
 
-export function unsaveItemLocally(itemType: SavedItemType, itemId: string): void {
-  const saved = getLocalSavedItems();
+export async function unsaveItemLocally(itemType: SavedItemType, itemId: string): Promise<void> {
+  const saved = await getLocalSavedItems();
   const filtered = saved.filter(item => !(item.itemType === itemType && item.itemId === itemId));
-  localStorage.setItem(LOCAL_STORAGE_KEYS.GUEST_SAVED, JSON.stringify(filtered));
+  await appStorage.set(LOCAL_STORAGE_KEYS.GUEST_SAVED, JSON.stringify(filtered));
 }
 
-export function getLocalSavedItems(): SavedItem[] {
+export async function getLocalSavedItems(): Promise<SavedItem[]> {
   try {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GUEST_SAVED);
+    const stored = await appStorage.get(LOCAL_STORAGE_KEYS.GUEST_SAVED);
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-export function addToLocalHistory(item: Omit<HistoryItem, 'id' | 'userId' | 'viewedAt'>): void {
-  const history = getLocalHistory();
+export async function addToLocalHistory(item: Omit<HistoryItem, 'id' | 'userId' | 'viewedAt'>): Promise<void> {
+  const history = await getLocalHistory();
   const newItem: HistoryItem = {
     ...item,
     id: `local_${Date.now()}`,
@@ -373,20 +374,20 @@ export function addToLocalHistory(item: Omit<HistoryItem, 'id' | 'userId' | 'vie
   }
 
   history.unshift(newItem);
-  localStorage.setItem(LOCAL_STORAGE_KEYS.GUEST_HISTORY, JSON.stringify(history.slice(0, 100)));
+  await appStorage.set(LOCAL_STORAGE_KEYS.GUEST_HISTORY, JSON.stringify(history.slice(0, 100)));
 }
 
-export function getLocalHistory(): HistoryItem[] {
+export async function getLocalHistory(): Promise<HistoryItem[]> {
   try {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GUEST_HISTORY);
+    const stored = await appStorage.get(LOCAL_STORAGE_KEYS.GUEST_HISTORY);
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-export function clearLocalStorage(): void {
-  Object.values(LOCAL_STORAGE_KEYS).forEach(key => {
-    localStorage.removeItem(key);
-  });
+export async function clearLocalStorage(): Promise<void> {
+  for (const key of Object.values(LOCAL_STORAGE_KEYS)) {
+    await appStorage.remove(key);
+  }
 }

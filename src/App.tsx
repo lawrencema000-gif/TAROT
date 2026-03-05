@@ -34,6 +34,7 @@ import { initializeUserAchievements } from './services/achievements';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { loadPersistedLogs } from './utils/telemetry';
+import { appStorage } from './lib/appStorage';
 
 const ONBOARDING_KEY = 'arcana_onboarding_complete';
 const isDev = import.meta.env.DEV;
@@ -120,11 +121,12 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem(ONBOARDING_KEY);
-    if (!user && !hasCompletedOnboarding) {
-      setShowOnboarding(true);
-    }
-    setCheckingOnboarding(false);
+    appStorage.get(ONBOARDING_KEY).then((val) => {
+      if (!user && !val) {
+        setShowOnboarding(true);
+      }
+      setCheckingOnboarding(false);
+    });
   }, [user]);
 
   useEffect(() => {
@@ -155,12 +157,12 @@ function AppContent() {
   }, [isProcessingOAuth]);
 
   const handleOnboardingComplete = () => {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
+    appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
   };
 
   const handleSwitchToSignIn = () => {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
+    appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
   };
 

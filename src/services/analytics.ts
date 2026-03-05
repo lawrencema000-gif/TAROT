@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { appStorage } from '../lib/appStorage';
 
 export type AnalyticsEvent =
   | 'page_view'
@@ -247,12 +248,12 @@ export function initAnalytics(): void {
   });
 }
 
-export function getAnalyticsConsent(): boolean {
-  return localStorage.getItem('stellara_analytics_consent') === 'true';
+export async function getAnalyticsConsent(): Promise<boolean> {
+  return (await appStorage.get('stellara_analytics_consent')) === 'true';
 }
 
-export function setAnalyticsConsent(consent: boolean): void {
-  localStorage.setItem('stellara_analytics_consent', consent ? 'true' : 'false');
+export async function setAnalyticsConsent(consent: boolean): Promise<void> {
+  await appStorage.set('stellara_analytics_consent', consent ? 'true' : 'false');
 }
 
 export function clearAnalyticsData(): void {

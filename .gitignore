@@ -21,3 +21,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Credential documentation — should not be in repo
+android/google-oauth-credentials.md
+android/keystore-fingerprints.md

@@ -6,20 +6,29 @@ import { appStorage } from '../lib/appStorage';
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 
-const AD_UNIT_IDS = {
-  interstitial: {
-    android: 'ca-app-pub-9489106590476826/1903436420',
-    ios: 'ca-app-pub-3940256099942544/4411468910',
-  },
-  banner: {
-    android: 'ca-app-pub-9489106590476826/2642443652',
-    ios: 'ca-app-pub-3940256099942544/2934735716',
-  },
-  appOpen: {
-    android: 'ca-app-pub-9489106590476826/5765789123',
-    ios: 'ca-app-pub-3940256099942544/5575463023',
-  },
+// Google test ad unit IDs — used in dev builds or when env vars are missing
+const TEST_AD_IDS = {
+  interstitial: { android: 'ca-app-pub-3940256099942544/1033173712', ios: 'ca-app-pub-3940256099942544/4411468910' },
+  banner: { android: 'ca-app-pub-3940256099942544/6300978111', ios: 'ca-app-pub-3940256099942544/2934735716' },
+  appOpen: { android: 'ca-app-pub-3940256099942544/9257395921', ios: 'ca-app-pub-3940256099942544/5575463023' },
 };
+
+const AD_UNIT_IDS = import.meta.env.PROD
+  ? {
+      interstitial: {
+        android: import.meta.env.VITE_ADMOB_INTERSTITIAL_ANDROID || TEST_AD_IDS.interstitial.android,
+        ios: import.meta.env.VITE_ADMOB_INTERSTITIAL_IOS || TEST_AD_IDS.interstitial.ios,
+      },
+      banner: {
+        android: import.meta.env.VITE_ADMOB_BANNER_ANDROID || TEST_AD_IDS.banner.android,
+        ios: import.meta.env.VITE_ADMOB_BANNER_IOS || TEST_AD_IDS.banner.ios,
+      },
+      appOpen: {
+        android: import.meta.env.VITE_ADMOB_APPOPEN_ANDROID || TEST_AD_IDS.appOpen.android,
+        ios: import.meta.env.VITE_ADMOB_APPOPEN_IOS || TEST_AD_IDS.appOpen.ios,
+      },
+    }
+  : TEST_AD_IDS;
 
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
 

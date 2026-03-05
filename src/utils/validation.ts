@@ -154,10 +154,21 @@ export function validateNotes(notes: string): ValidationResult {
 }
 
 export function sanitizeInput(input: string): string {
-  return input
+  // Decode URL-encoded variants before stripping
+  let s = input;
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    // ignore invalid sequences
+  }
+  return s
     .replace(/[<>]/g, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+=/gi, '')
+    .replace(/javascript\s*:/gi, '')
+    .replace(/vbscript\s*:/gi, '')
+    .replace(/data\s*:\s*text\/html/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/&#\d+;?/g, '')
+    .replace(/&#x[\da-f]+;?/gi, '')
     .trim();
 }
 

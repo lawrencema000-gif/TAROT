@@ -6,10 +6,9 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const revenuecatWebhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET") || "";
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+// No CORS headers — this is a server-to-server webhook, not called from browsers
+const responseHeaders = {
+  "Content-Type": "application/json",
 };
 
 interface RevenueCatEvent {
@@ -40,7 +39,7 @@ interface RevenueCatEvent {
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
+    return new Response(null, { status: 204 });
   }
 
   try {
@@ -48,7 +47,7 @@ Deno.serve(async (req: Request) => {
       console.error("[RevenueCat] REVENUECAT_WEBHOOK_SECRET is not configured — rejecting all requests");
       return new Response(
         JSON.stringify({ error: "Webhook secret not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: responseHeaders }
       );
     }
 
@@ -59,7 +58,7 @@ Deno.serve(async (req: Request) => {
       console.error("[RevenueCat] Invalid or missing authorization header");
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 401, headers: responseHeaders }
       );
     }
 
@@ -73,7 +72,7 @@ Deno.serve(async (req: Request) => {
       console.error("[RevenueCat] Failed to parse JSON:", parseError);
       return new Response(
         JSON.stringify({ error: "Invalid JSON payload" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: responseHeaders }
       );
     }
 
@@ -81,7 +80,7 @@ Deno.serve(async (req: Request) => {
       console.log("[RevenueCat] Test webhook received (no event data)");
       return new Response(
         JSON.stringify({ success: true, message: "Test webhook received" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: responseHeaders }
       );
     }
 
@@ -117,7 +116,7 @@ Deno.serve(async (req: Request) => {
           JSON.stringify({ error: "Failed to update profile" }),
           {
             status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: responseHeaders,
           }
         );
       }
@@ -221,7 +220,7 @@ Deno.serve(async (req: Request) => {
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: responseHeaders,
     });
   } catch (err) {
     console.error("[RevenueCat] Webhook error:", err);
@@ -229,7 +228,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: responseHeaders,
       }
     );
   }

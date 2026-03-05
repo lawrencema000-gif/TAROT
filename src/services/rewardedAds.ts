@@ -7,10 +7,17 @@ const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
 
-const REWARDED_AD_UNIT_IDS = {
-  android: 'ca-app-pub-9489106590476826/7730478171',
+const TEST_REWARDED_IDS = {
+  android: 'ca-app-pub-3940256099942544/5224354917',
   ios: 'ca-app-pub-3940256099942544/1712485313',
 };
+
+const REWARDED_AD_UNIT_IDS = import.meta.env.PROD
+  ? {
+      android: import.meta.env.VITE_ADMOB_REWARDED_ANDROID || TEST_REWARDED_IDS.android,
+      ios: import.meta.env.VITE_ADMOB_REWARDED_IOS || TEST_REWARDED_IDS.ios,
+    }
+  : TEST_REWARDED_IDS;
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
 let RewardAdPluginEvents: typeof import('@capacitor-community/admob').RewardAdPluginEvents | null = null;

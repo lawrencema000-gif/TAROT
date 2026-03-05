@@ -150,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const oauthTimeoutRef = React.useRef<number | null>(null);
   const isProcessingCallbackRef = React.useRef(false);
   const lastProcessedUrlRef = React.useRef<string | null>(null);
+  const mountedRef = React.useRef(true);
 
   const clearOAuthTimeout = useCallback(() => {
     if (oauthTimeoutRef.current) {
@@ -163,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsProcessingOAuth(processing);
     if (processing) {
       oauthTimeoutRef.current = window.setTimeout(() => {
+        if (!mountedRef.current) return;
         logWarn('auth.oauth.timeout', 'OAuth flow timed out after 120s');
         isProcessingCallbackRef.current = false;
         setIsProcessingOAuth(false);
@@ -473,6 +475,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, [fetchProfile, setOAuthProcessing, getSessionWithRetry]);
 
+  // Stable ref for handleOAuthCallback so the listener effect doesn't churn
+  const handleOAuthCallbackRef = React.useRef(handleOAuthCallback);
+  useEffect(() => {
+    handleOAuthCallbackRef.current = handleOAuthCallback;
+  });
+
   useEffect(() => {
     let appUrlListener: { remove: () => void } | null = null;
     let mounted = true;
@@ -500,7 +508,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await Browser.close();
           } catch {
           }
-          await handleOAuthCallback(url);
+          await handleOAuthCallbackRef.current(url);
         });
       }
     };
@@ -518,7 +526,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (launch?.url) {
             generateCorrelationId('oauth');
-            const handled = await handleOAuthCallback(launch.url);
+            const handled = await handleOAuthCallbackRef.current(launch.url);
             launchUrlHandled = handled;
             setupAppUrlListener();
             if (handled) {
@@ -534,7 +542,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (currentUrl.includes('code=') || currentUrl.includes('access_token=') || currentUrl.includes('error=')) {
             logInfo('auth.init.webCallback', 'Processing web OAuth callback');
             generateCorrelationId('oauth');
-            const handled = await handleOAuthCallback(currentUrl);
+            const handled = await handleOAuthCallbackRef.current(currentUrl);
             if (handled) {
               window.history.replaceState({}, '', window.location.pathname);
               if (mounted) setLoading(false);
@@ -605,11 +613,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      mountedRef.current = false;
       subscription.unsubscribe();
       appUrlListener?.remove();
       clearOAuthTimeout();
     };
-  }, [fetchProfile, handleOAuthCallback, clearOAuthTimeout]);
+  }, [fetchProfile, clearOAuthTimeout]);
 
   const signUp = async (email: string, password: string) => {
     const correlationId = generateCorrelationId('signup');

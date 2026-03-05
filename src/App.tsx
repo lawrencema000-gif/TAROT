@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider, useApp, type LevelUpEvent } from './context/AppContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
@@ -11,19 +11,21 @@ import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
 import { DiagnosticsSheet } from './components/diagnostics';
-import {
-  HomePage,
-  ReadingsPage,
-  QuizzesPage,
-  HoroscopePage,
-  AchievementsPage,
-  JournalPage,
-  ProfilePage,
-  OnboardingPage,
-  OAuthOnboardingPage,
-  AuthPage,
-  AdminPage,
-} from './pages';
+
+// Eager imports — critical path (shown on first load)
+import { HomePage } from './pages/HomePage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
+import { AuthPage } from './pages/AuthPage';
+
+// Lazy imports — loaded on demand when user navigates
+const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
+const QuizzesPage = lazy(() => import('./pages/QuizzesPage').then(m => ({ default: m.QuizzesPage })));
+const HoroscopePage = lazy(() => import('./pages/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
+const AchievementsPage = lazy(() => import('./pages/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
+const JournalPage = lazy(() => import('./pages/JournalPage').then(m => ({ default: m.JournalPage })));
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 import { isNative } from './utils/platform';
 import { initializeBilling, getBillingService } from './services/billing';
 import { adsService } from './services/ads';
@@ -270,7 +272,14 @@ function AppContent() {
             onSavedClick={() => openOverlay('saved')}
             onSettingsClick={() => openOverlay('settings')}
           />
-          {renderPage()}
+          <Suspense fallback={
+            <div className="text-center py-12">
+              <div className="loading-constellation mx-auto mb-4" />
+              <p className="text-mystic-400">Loading...</p>
+            </div>
+          }>
+            {renderPage()}
+          </Suspense>
         </main>
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
 

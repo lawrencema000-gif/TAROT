@@ -44,17 +44,23 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    if (revenuecatWebhookSecret) {
-      const authHeader = req.headers.get("Authorization");
-      const expectedAuth = `Bearer ${revenuecatWebhookSecret}`;
+    if (!revenuecatWebhookSecret) {
+      console.error("[RevenueCat] REVENUECAT_WEBHOOK_SECRET is not configured — rejecting all requests");
+      return new Response(
+        JSON.stringify({ error: "Webhook secret not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-      if (!authHeader || authHeader !== expectedAuth) {
-        console.error("[RevenueCat] Invalid or missing authorization header");
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    const authHeader = req.headers.get("Authorization");
+    const expectedAuth = `Bearer ${revenuecatWebhookSecret}`;
+
+    if (!authHeader || authHeader !== expectedAuth) {
+      console.error("[RevenueCat] Invalid or missing authorization header");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const rawBody = await req.text();

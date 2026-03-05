@@ -103,14 +103,15 @@ export async function isItemSaved(
 export async function getSavedItems(
   userId: string,
   itemType?: SavedItemType,
-  limit = 50
+  limit = 50,
+  offset = 0
 ): Promise<SavedItem[]> {
   let query = supabase
     .from('saved_highlights')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit - 1);
 
   if (itemType) {
     query = query.eq('highlight_type', itemType);
@@ -197,7 +198,7 @@ export async function getHistory(
     .eq('interaction_type', 'view')
     .gte('created_at', since.toISOString())
     .order('created_at', { ascending: false })
-    .limit(100);
+    .range(0, 99);
 
   if (itemType) {
     query = query.eq('content_type', itemType);
@@ -251,13 +252,13 @@ export async function saveReading(
   return { success: true, id: data.id };
 }
 
-export async function getReadingHistory(userId: string, limit = 30): Promise<TarotReading[]> {
+export async function getReadingHistory(userId: string, limit = 30, offset = 0): Promise<TarotReading[]> {
   const { data, error } = await supabase
     .from('tarot_readings')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit - 1);
 
   if (error || !data) {
     return [];

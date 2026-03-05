@@ -98,6 +98,8 @@ interface TarotReading {
 
 type JournalTab = 'entries' | 'templates' | 'insights';
 
+const ENTRIES_PAGE_SIZE = 20;
+
 const categoryIcons: Record<string, typeof Sun> = {
   daily: Sun,
   weekly: Calendar,
@@ -117,6 +119,8 @@ export function JournalPage() {
   const [showEditor, setShowEditor] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreEntries, setHasMoreEntries] = useState(false);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -149,12 +153,33 @@ export function JournalPage() {
       .from('journal_entries')
       .select('*')
       .eq('user_id', user.id)
-      .order('date', { ascending: false });
+      .order('date', { ascending: false })
+      .range(0, ENTRIES_PAGE_SIZE - 1);
 
     if (data) {
       setEntries(data as JournalEntry[]);
+      setHasMoreEntries(data.length === ENTRIES_PAGE_SIZE);
     }
     setLoading(false);
+  };
+
+  const loadMoreEntries = async () => {
+    if (!user || loadingMore) return;
+    setLoadingMore(true);
+
+    const offset = entries.length;
+    const { data } = await supabase
+      .from('journal_entries')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
+      .range(offset, offset + ENTRIES_PAGE_SIZE - 1);
+
+    if (data) {
+      setEntries(prev => [...prev, ...(data as JournalEntry[])]);
+      setHasMoreEntries(data.length === ENTRIES_PAGE_SIZE);
+    }
+    setLoadingMore(false);
   };
 
   const loadRecentReadings = async () => {
@@ -656,6 +681,17 @@ export function JournalPage() {
                   </div>
                 </Card>
               ))}
+              {hasMoreEntries && !searchQuery && !selectedTagFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={loadMoreEntries}
+                  disabled={loadingMore}
+                  className="w-full"
+                >
+                  {loadingMore ? 'Loading...' : 'Load more entries'}
+                </Button>
+              )}
             </div>
           )}
         </>

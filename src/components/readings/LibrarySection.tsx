@@ -17,6 +17,8 @@ import { supabase } from '../../lib/supabase';
 type LibraryTab = 'saved' | 'guides' | 'ai-readings';
 type SavedFilter = 'all' | 'tarot' | 'horoscope' | 'spreads';
 
+const PAGE_SIZE = 20;
+
 interface SavedItem {
   id: string;
   date: string;
@@ -164,6 +166,10 @@ export function LibrarySection() {
   const [selectedGuide, setSelectedGuide] = useState<typeof guides[0] | null>(null);
   const [selectedReading, setSelectedReading] = useState<PremiumReading | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreHighlights, setHasMoreHighlights] = useState(false);
+  const [hasMoreReadings, setHasMoreReadings] = useState(false);
+  const [hasMorePremium, setHasMorePremium] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -184,35 +190,91 @@ export function LibrarySection() {
           .from('saved_highlights')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, PAGE_SIZE - 1),
         supabase
           .from('tarot_readings')
           .select('*')
           .eq('user_id', user.id)
           .eq('saved', true)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, PAGE_SIZE - 1),
         supabase
           .from('premium_readings')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, PAGE_SIZE - 1),
       ]);
 
       if (highlightsRes.data) {
         setSavedHighlights(highlightsRes.data as SavedItem[]);
+        setHasMoreHighlights(highlightsRes.data.length === PAGE_SIZE);
       }
 
       if (readingsRes.data) {
         setTarotReadings(readingsRes.data as TarotReading[]);
+        setHasMoreReadings(readingsRes.data.length === PAGE_SIZE);
       }
 
       if (premiumRes.data) {
         setPremiumReadings(premiumRes.data as PremiumReading[]);
+        setHasMorePremium(premiumRes.data.length === PAGE_SIZE);
       }
     } catch {
       toast('Could not load saved items — you may be offline', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = async (type: 'highlights' | 'readings' | 'premium') => {
+    if (!user) return;
+    setLoadingMore(true);
+
+    try {
+      if (type === 'highlights') {
+        const offset = savedHighlights.length;
+        const { data } = await supabase
+          .from('saved_highlights')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE_SIZE - 1);
+        if (data) {
+          setSavedHighlights(prev => [...prev, ...(data as SavedItem[])]);
+          setHasMoreHighlights(data.length === PAGE_SIZE);
+        }
+      } else if (type === 'readings') {
+        const offset = tarotReadings.length;
+        const { data } = await supabase
+          .from('tarot_readings')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('saved', true)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE_SIZE - 1);
+        if (data) {
+          setTarotReadings(prev => [...prev, ...(data as TarotReading[])]);
+          setHasMoreReadings(data.length === PAGE_SIZE);
+        }
+      } else {
+        const offset = premiumReadings.length;
+        const { data } = await supabase
+          .from('premium_readings')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE_SIZE - 1);
+        if (data) {
+          setPremiumReadings(prev => [...prev, ...(data as PremiumReading[])]);
+          setHasMorePremium(data.length === PAGE_SIZE);
+        }
+      }
+    } catch {
+      toast('Failed to load more items', 'error');
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -371,6 +433,17 @@ export function LibrarySection() {
                       </div>
                     </Card>
                   ))}
+                  {hasMoreReadings && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => loadMore('readings')}
+                      disabled={loadingMore}
+                      className="w-full"
+                    >
+                      {loadingMore ? 'Loading...' : 'Load more spreads'}
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -461,6 +534,18 @@ export function LibrarySection() {
                       );
                     })}
                 </div>
+              )}
+
+              {hasMoreHighlights && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => loadMore('highlights')}
+                  disabled={loadingMore}
+                  className="w-full"
+                >
+                  {loadingMore ? 'Loading...' : 'Load more saved items'}
+                </Button>
               )}
 
               {filteredHighlights.length === 0 && tarotReadings.length === 0 && (
@@ -554,6 +639,17 @@ export function LibrarySection() {
                   </button>
                 </Card>
               ))}
+              {hasMorePremium && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => loadMore('premium')}
+                  disabled={loadingMore}
+                  className="w-full"
+                >
+                  {loadingMore ? 'Loading...' : 'Load more readings'}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="text-center py-12">

@@ -280,7 +280,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       await supabase.from('journal_entries').delete().eq('user_id', user.id);
       await supabase.from('tarot_readings').delete().eq('user_id', user.id);
       await supabase.from('quiz_results').delete().eq('user_id', user.id);
-      await supabase.from('saved_items').delete().eq('user_id', user.id);
+      await supabase.from('saved_highlights').delete().eq('user_id', user.id);
       await supabase.from('content_interactions').delete().eq('user_id', user.id);
       await supabase.from('profiles').delete().eq('id', user.id);
 

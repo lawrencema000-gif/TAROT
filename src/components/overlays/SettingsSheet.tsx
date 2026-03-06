@@ -277,12 +277,14 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     setIsDeleting(true);
 
     try {
-      await supabase.from('journal_entries').delete().eq('user_id', user.id);
-      await supabase.from('tarot_readings').delete().eq('user_id', user.id);
-      await supabase.from('quiz_results').delete().eq('user_id', user.id);
-      await supabase.from('saved_highlights').delete().eq('user_id', user.id);
-      await supabase.from('content_interactions').delete().eq('user_id', user.id);
-      await supabase.from('profiles').delete().eq('id', user.id);
+      const { error } = await supabase.rpc('delete_user_account', {
+        p_user_id: user.id,
+      });
+
+      if (error) {
+        console.error('Delete account RPC failed:', error);
+        return;
+      }
 
       await signOut();
       onClose();

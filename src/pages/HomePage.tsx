@@ -17,8 +17,9 @@ import { useRitual } from '../context/RitualContext';
 import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign } from '../utils/zodiac';
-// horoscopes + tarotDeck loaded lazily to keep main bundle small
+// horoscopes loaded lazily to keep main bundle small
 import { getAllTarotCards } from '../services/tarotCards';
+import { drawSeededCards } from '../utils/cardDraw';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMilestone } from '../services/levelSystem';
@@ -135,7 +136,6 @@ export function HomePage() {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
       setTarotCards(cards);
-      const { drawSeededCards } = await import('../data/tarotDeck');
       const seed = `${user?.id || 'anonymous'}_${today}`;
       const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);

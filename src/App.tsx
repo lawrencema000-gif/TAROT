@@ -186,6 +186,23 @@ function AppContent() {
     return () => { listener.then(l => l.remove()); };
   }, [setActiveTab]);
 
+  // Android hardware back button: close overlay → go home → exit app
+  useEffect(() => {
+    if (!isNative()) return;
+    const listener = CapApp.addListener('backButton', () => {
+      if (activeOverlay) {
+        closeOverlay();
+        return;
+      }
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        return;
+      }
+      CapApp.exitApp();
+    });
+    return () => { listener.then(l => l.remove()); };
+  }, [activeOverlay, closeOverlay, activeTab, setActiveTab]);
+
   const handleOnboardingComplete = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);

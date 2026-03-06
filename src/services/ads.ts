@@ -94,6 +94,7 @@ class AdsService {
       });
 
       this.setupInterstitialListeners();
+      this.setupBannerListeners();
       this.setupAppOpenAdListeners();
 
       await this.preloadInterstitial();
@@ -161,6 +162,30 @@ class AdsService {
     } catch (error) {
       console.error('[Ads] Failed to preload interstitial:', error);
     }
+  }
+
+  private setupBannerListeners(): void {
+    if (!AdMob || !BannerAdPluginEvents) return;
+
+    AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
+      this.isBannerVisible = true;
+    });
+
+    AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
+      this.isBannerVisible = false;
+    });
+
+    AdMob.addListener(BannerAdPluginEvents.Opened, () => {
+      this.isBannerVisible = true;
+    });
+
+    AdMob.addListener(BannerAdPluginEvents.Closed, () => {
+      this.isBannerVisible = false;
+    });
+
+    AdMob.addListener(BannerAdPluginEvents.AdImpression, () => {
+      this.trackImpression('banner', 'banner');
+    });
   }
 
   private setupAppOpenAdListeners(): void {
@@ -273,9 +298,14 @@ class AdsService {
 
   async showBanner(): Promise<void> {
     if (isWeb() || !this.pluginAvailable || !AdMob || !BannerAdSize || !BannerAdPosition) return;
-    if (this.isBannerVisible) return;
 
     try {
+      // Remove any stale banner before showing a fresh one
+      if (this.isBannerVisible) {
+        try { await AdMob.removeBanner(); } catch { /* ignore */ }
+        this.isBannerVisible = false;
+      }
+
       const adId = isAndroid()
         ? AD_UNIT_IDS.banner.android
         : AD_UNIT_IDS.banner.ios;
@@ -292,6 +322,7 @@ class AdsService {
       console.log('[Ads] Banner shown');
     } catch (error) {
       console.error('[Ads] Failed to show banner:', error);
+      this.isBannerVisible = false;
     }
   }
 
@@ -299,7 +330,7 @@ class AdsService {
     if (!this.pluginAvailable || !AdMob) return;
 
     try {
-      await AdMob.hideBanner();
+      await AdMob.removeBanner();
     } catch (error) {
       console.error('[Ads] Failed to hide banner:', error);
     } finally {

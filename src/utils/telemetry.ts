@@ -249,6 +249,18 @@ export function captureException(step: string, error: unknown, data?: Record<str
     errorMessage: err.message,
   };
   addLog(createLogEntry('error', step, err.message, errorData, err.stack));
+
+  // Forward to Sentry if initialized
+  try {
+    import('@sentry/react').then(Sentry => {
+      if (Sentry.isInitialized()) {
+        Sentry.captureException(err, {
+          tags: { step },
+          extra: data,
+        });
+      }
+    }).catch(() => { /* Sentry not available */ });
+  } catch { /* ignore */ }
 }
 
 export function startSpan(name: string, data?: Record<string, unknown>): Span {

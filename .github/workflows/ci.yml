@@ -52,6 +52,9 @@ jobs:
       - run: npm run build
       - run: npx cap sync android
 
+      - name: Set versionCode from run number
+        run: sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" android/app/build.gradle
+
       - name: Build AAB
         working-directory: android
         run: ./gradlew bundleRelease

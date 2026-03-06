@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
@@ -112,6 +112,7 @@ function DiagnosticsSync() {
 function AppContent() {
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
+  const location = useLocation();
   const { levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useGamification();
   const { openDiagnostics } = useDiagnostics();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -297,13 +298,13 @@ function AppContent() {
           <Suspense fallback={<ListSkeleton count={3} />}>
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeTab}
+                key={location.pathname}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <Routes>
+                <Routes location={location}>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/readings" element={<ReadingsPage />} />
                   <Route path="/quizzes" element={<QuizzesPage />} />

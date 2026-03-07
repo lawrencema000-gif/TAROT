@@ -5,6 +5,9 @@ const ALLOWED_ORIGINS = [
   "http://127.0.0.1:4173",
   "https://arcana.app",
   "https://www.arcana.app",
+  "https://tarotlife.app",
+  "https://www.tarotlife.app",
+  "https://arcana-ritual-app.netlify.app",
   "capacitor://localhost",
   "http://localhost",
 ];

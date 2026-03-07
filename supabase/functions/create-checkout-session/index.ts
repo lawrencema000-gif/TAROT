@@ -17,6 +17,9 @@ const ALLOWED_ORIGINS = [
   "http://127.0.0.1:4173",
   "https://arcana.app",
   "https://www.arcana.app",
+  "https://tarotlife.app",
+  "https://www.tarotlife.app",
+  "https://arcana-ritual-app.netlify.app",
   "capacitor://localhost",
   "http://localhost",
 ];
@@ -36,7 +39,7 @@ function isAllowedRedirectUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();
-    const allowedHosts = ["localhost", "127.0.0.1", "arcana.app", "www.arcana.app"];
+    const allowedHosts = ["localhost", "127.0.0.1", "arcana.app", "www.arcana.app", "tarotlife.app", "www.tarotlife.app", "arcana-ritual-app.netlify.app"];
     return allowedHosts.some(
       (allowed) => host === allowed || host.endsWith(`.${allowed}`)
     );

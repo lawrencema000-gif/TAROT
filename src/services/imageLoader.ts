@@ -23,7 +23,6 @@ class ImageLoaderService {
   ): Promise<string> {
     const {
       useCache = true,
-      priority = 'normal',
       onProgress,
     } = options;
 

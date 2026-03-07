@@ -44,6 +44,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(true);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const stepNames = ['welcome', 'create_account'] as const;
   const onboardingStartTime = useRef(Date.now());
@@ -271,11 +272,28 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     </span>
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => setAgeConfirmed(!ageConfirmed)}
+                    className="w-full flex items-start gap-3 text-left py-2"
+                  >
+                    <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      ageConfirmed
+                        ? 'bg-gold border-gold'
+                        : 'border-mystic-600 hover:border-mystic-500'
+                    }`}>
+                      {ageConfirmed && <Check className="w-3 h-3 text-mystic-900" />}
+                    </div>
+                    <span className="text-sm text-mystic-400 leading-snug">
+                      I confirm I am at least 13 years old and agree to the Terms of Service.
+                    </span>
+                  </button>
+
                   <Button
                     variant="gold"
                     fullWidth
                     onClick={handleEmailSignup}
-                    disabled={loading || !email || password.length < 6}
+                    disabled={loading || !email || password.length < 6 || !ageConfirmed}
                     loading={loading}
                     className="min-h-[48px]"
                   >

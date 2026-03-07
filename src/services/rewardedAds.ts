@@ -30,8 +30,7 @@ async function loadAdMobPlugin(): Promise<boolean> {
     AdMob = admobModule.AdMob;
     RewardAdPluginEvents = admobModule.RewardAdPluginEvents;
     return true;
-  } catch (error) {
-    console.warn('[RewardedAds] AdMob plugin not available:', error);
+  } catch {
     return false;
   }
 }
@@ -52,25 +51,16 @@ class RewardedAdsService {
   async initialize(userId: string | null = null): Promise<void> {
     this.currentUserId = userId;
 
-    if (!isNative()) {
-      console.log('[RewardedAds] Not native platform - disabled');
-      return;
-    }
+    if (!isNative()) return;
 
     try {
       this.pluginAvailable = await loadAdMobPlugin();
 
-      if (!this.pluginAvailable || !AdMob) {
-        console.log('[RewardedAds] AdMob plugin not available');
-        return;
-      }
+      if (!this.pluginAvailable || !AdMob) return;
 
       this.setupAdListeners();
       await this.preloadRewardedAd();
-
-      console.log('[RewardedAds] Initialized successfully');
-    } catch (error) {
-      console.error('[RewardedAds] Failed to initialize:', error);
+    } catch {
       this.pluginAvailable = false;
     }
   }
@@ -79,18 +69,15 @@ class RewardedAdsService {
     if (!AdMob || !RewardAdPluginEvents) return;
 
     AdMob.addListener(RewardAdPluginEvents.Loaded, () => {
-      console.log('[RewardedAds] Ad loaded');
       this.isAdReady = true;
     });
 
-    AdMob.addListener(RewardAdPluginEvents.FailedToLoad, (error) => {
-      console.error('[RewardedAds] Failed to load:', error);
+    AdMob.addListener(RewardAdPluginEvents.FailedToLoad, () => {
       this.isAdReady = false;
       setTimeout(() => this.preloadRewardedAd(), 5000);
     });
 
     AdMob.addListener(RewardAdPluginEvents.Rewarded, async () => {
-      console.log('[RewardedAds] User earned reward');
       if (this.pendingFeature) {
         await this.grantTemporaryAccess(this.pendingFeature, this.pendingSpreadType);
       }
@@ -101,7 +88,6 @@ class RewardedAdsService {
     });
 
     AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
-      console.log('[RewardedAds] Ad dismissed');
       this.isAdReady = false;
       this.preloadRewardedAd();
       if (this.resolveAdWatch) {
@@ -112,8 +98,7 @@ class RewardedAdsService {
       this.pendingSpreadType = null;
     });
 
-    AdMob.addListener(RewardAdPluginEvents.FailedToShow, (error) => {
-      console.error('[RewardedAds] Failed to show:', error);
+    AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => {
       this.isAdReady = false;
       this.preloadRewardedAd();
       this.resolveAdWatch?.(false);
@@ -135,9 +120,7 @@ class RewardedAdsService {
         adId: adUnitId,
       });
 
-      console.log('[RewardedAds] Ad preloaded');
-    } catch (error) {
-      console.error('[RewardedAds] Failed to preload:', error);
+    } catch {
     }
   }
 
@@ -154,8 +137,7 @@ class RewardedAdsService {
       await appStorage.set(DAILY_DATE_KEY, today);
       await appStorage.set(DAILY_COUNT_KEY, '0');
       return { count: 0, date: today };
-    } catch (error) {
-      console.error('[RewardedAds] Failed to get daily count:', error);
+    } catch {
       return { count: 0, date: new Date().toISOString().split('T')[0] };
     }
   }
@@ -165,8 +147,7 @@ class RewardedAdsService {
       const { count, date } = await this.getDailyCount();
       await appStorage.set(DAILY_DATE_KEY, date);
       await appStorage.set(DAILY_COUNT_KEY, (count + 1).toString());
-    } catch (error) {
-      console.error('[RewardedAds] Failed to increment daily count:', error);
+    } catch {
     }
   }
 
@@ -188,18 +169,11 @@ class RewardedAdsService {
   }
 
   async showRewardedAd(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
-    if (!(await this.canWatchAd())) {
-      console.log('[RewardedAds] Daily limit reached');
-      return false;
-    }
+    if (!(await this.canWatchAd())) return false;
 
-    if (!this.pluginAvailable || !AdMob) {
-      console.log('[RewardedAds] Plugin not available');
-      return false;
-    }
+    if (!this.pluginAvailable || !AdMob) return false;
 
     if (!this.isAdReady) {
-      console.log('[RewardedAds] Ad not ready');
       await this.preloadRewardedAd();
       return false;
     }
@@ -209,8 +183,7 @@ class RewardedAdsService {
 
     return new Promise((resolve) => {
       this.resolveAdWatch = resolve;
-      AdMob!.showRewardVideoAd().catch((error) => {
-        console.error('[RewardedAds] Failed to show ad:', error);
+      AdMob!.showRewardVideoAd().catch(() => {
         this.resolveAdWatch = null;
         this.pendingFeature = null;
         this.pendingSpreadType = null;
@@ -220,10 +193,7 @@ class RewardedAdsService {
   }
 
   private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<void> {
-    if (!this.currentUserId) {
-      console.error('[RewardedAds] No user ID set');
-      return;
-    }
+    if (!this.currentUserId) return;
 
     this.incrementDailyCount();
 
@@ -239,13 +209,8 @@ class RewardedAdsService {
         ad_unit_id: adUnitId,
       });
 
-      if (error) {
-        console.error('[RewardedAds] Failed to save unlock:', error);
-      } else {
-        console.log(`[RewardedAds] Granted temporary access to ${feature}${spreadType ? ` (spread: ${spreadType})` : ''}`);
-      }
-    } catch (error) {
-      console.error('[RewardedAds] Failed to grant access:', error);
+      if (error) { /* save failed */ }
+    } catch {
     }
   }
 
@@ -266,14 +231,10 @@ class RewardedAdsService {
 
       const { data, error } = await query.limit(1).maybeSingle();
 
-      if (error) {
-        console.error('[RewardedAds] Failed to check access:', error);
-        return false;
-      }
+      if (error) return false;
 
       return !!data;
-    } catch (error) {
-      console.error('[RewardedAds] Failed to check access:', error);
+    } catch {
       return false;
     }
   }
@@ -307,15 +268,10 @@ class RewardedAdsService {
         .update({ used: true })
         .eq('id', data.id);
 
-      if (updateError) {
-        console.error('[RewardedAds] Failed to consume access:', updateError);
-        return false;
-      }
+      if (updateError) return false;
 
-      console.log(`[RewardedAds] Consumed temporary access for ${feature}${spreadType ? ` (spread: ${spreadType})` : ''}`);
       return true;
-    } catch (error) {
-      console.error('[RewardedAds] Failed to consume access:', error);
+    } catch {
       return false;
     }
   }

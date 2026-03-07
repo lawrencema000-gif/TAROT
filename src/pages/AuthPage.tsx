@@ -27,7 +27,6 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
@@ -44,7 +43,6 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
 
     if (errorDescription || errorParam) {
       const decodedError = (errorDescription || errorParam || '').replace(/\+/g, ' ');
-      setError(decodedError);
       toast(decodedError, 'error');
       window.history.replaceState({}, document.title, window.location.pathname);
     }

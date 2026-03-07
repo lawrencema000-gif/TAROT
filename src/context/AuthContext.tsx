@@ -3,7 +3,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { UserProfile, Goal, TonePreference, ThemePreference } from '../types';
 import { isAdmin as checkIsAdmin, verifyAdminStatus } from '../utils/admin';
-import { isNative, isAndroid, isIOS, getPlatform } from '../utils/platform';
+import { isNative, isIOS, getPlatform } from '../utils/platform';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { toast } from '../components/ui/Toast';

@@ -113,9 +113,13 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [pendingSpreadId, setPendingSpreadId] = useState<string | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
   const [dailyReadingCount, setDailyReadingCount] = useState(0);
+  const [canWatchAd, setCanWatchAd] = useState(false);
 
   useEffect(() => {
     getDailyReadingCount().then(setDailyReadingCount);
+    if (isNative()) {
+      rewardedAdsService.canWatchAd().then(setCanWatchAd);
+    }
   }, []);
 
   const today = new Date().toISOString().split('T')[0];
@@ -189,7 +193,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         setAiInterpretation(null);
         return;
       }
-      if (isNative() && rewardedAdsService.canWatchAd()) {
+      if (isNative() && canWatchAd) {
         setPendingFeature('extra_reading');
         setPendingSpreadId(null);
         setShowWatchAdSheet(true);
@@ -218,7 +222,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
     if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[currentSpread]) {
       const feature = spreadTypeToFeature(currentSpread);
-      if (feature && isNative() && rewardedAdsService.canWatchAd()) {
+      if (feature && isNative() && canWatchAd) {
         setPendingFeature(feature);
         setPendingSpreadId(currentSpread);
         setShowWatchAdSheet(true);
@@ -459,7 +463,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
     if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[spreadId]) {
       const feature = spreadTypeToFeature(spreadId);
-      if (feature && isNative() && rewardedAdsService.canWatchAd()) {
+      if (feature && isNative() && canWatchAd) {
         setPendingFeature(feature);
         setPendingSpreadId(spreadId);
         setCurrentSpread(spreadId);
@@ -985,7 +989,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
               className="relative active:scale-[0.98] transition-all hover:border-gold/30"
             >
               {!spread.free && !profile?.isPremium && !hasTemporaryAccess[spread.id] && (
-                isNative() && rewardedAdsService.canWatchAd() ? (
+                isNative() && canWatchAd ? (
                   <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-mystic-800/80 rounded-full">
                     <Play className="w-3 h-3 text-gold" />
                     <span className="text-[10px] text-gold">Try</span>

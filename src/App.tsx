@@ -136,6 +136,8 @@ function AppContent() {
         setShowOnboarding(true);
       }
       setCheckingOnboarding(false);
+    }).catch(() => {
+      setCheckingOnboarding(false);
     });
   }, [user]);
 
@@ -184,7 +186,7 @@ function AppContent() {
           break;
       }
     });
-    return () => { listener.then(l => l.remove()); };
+    return () => { listener.then(l => l.remove()).catch(() => {}); };
   }, [setActiveTab]);
 
   // Android hardware back button: close overlay → go home → exit app
@@ -201,7 +203,7 @@ function AppContent() {
       }
       CapApp.exitApp();
     });
-    return () => { listener.then(l => l.remove()); };
+    return () => { listener.then(l => l.remove()).catch(() => {}); };
   }, [activeOverlay, closeOverlay, activeTab, setActiveTab]);
 
   const handleOnboardingComplete = () => {

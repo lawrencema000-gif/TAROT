@@ -24,6 +24,7 @@ import {
   analyzeCallbackUrl,
   detectOAuthIssues,
 } from '../utils/authErrors';
+import { migrateGuestData } from '../services/storage';
 
 interface AuthContextType {
   user: User | null;
@@ -190,11 +191,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearOAuthTimeout]);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
+
+    if (error) {
+      logError('auth.fetchProfile.failed', 'Failed to fetch profile', {
+        errorCode: error.code,
+        errorMessage: error.message,
+      });
+      toast('Failed to load your profile. Please try refreshing.', 'error');
+      return;
+    }
 
     if (data) {
       setProfile(mapDbToProfile(data as DbProfile));
@@ -613,6 +623,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         (async () => {
           await fetchProfile(session.user.id);
+          if (event === 'SIGNED_IN') {
+            migrateGuestData(session.user.id).catch(() => {});
+          }
         })();
       } else {
         setProfile(null);

@@ -119,26 +119,26 @@ export function MysticErrorFallback({
     <div className="min-h-[60vh] flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center">
         <div className="relative mb-8">
-          <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-3xl" />
-          <div className="relative bg-gradient-to-br from-stone-900 to-stone-950 rounded-full w-32 h-32 mx-auto flex items-center justify-center border border-amber-900/30">
+          <div className="absolute inset-0 bg-gold/10 rounded-full blur-3xl" />
+          <div className="relative bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-full w-32 h-32 mx-auto flex items-center justify-center border border-mystic-700/30">
             <div className="relative">
-              <Moon className="w-12 h-12 text-amber-500/50 absolute -top-2 -right-2" />
-              <AlertTriangle className="w-14 h-14 text-amber-400" />
+              <Moon className="w-12 h-12 text-gold/50 absolute -top-2 -right-2" />
+              <AlertTriangle className="w-14 h-14 text-gold" />
             </div>
           </div>
-          <div className="absolute top-0 left-1/4 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-          <div className="absolute bottom-4 right-1/4 w-1.5 h-1.5 bg-amber-300 rounded-full animate-pulse delay-300" />
-          <div className="absolute top-1/3 right-1/5 w-1 h-1 bg-amber-200 rounded-full animate-pulse delay-700" />
+          <div className="absolute top-0 left-1/4 w-2 h-2 bg-gold rounded-full animate-pulse" />
+          <div className="absolute bottom-4 right-1/4 w-1.5 h-1.5 bg-gold/70 rounded-full animate-pulse delay-300" />
+          <div className="absolute top-1/3 right-1/5 w-1 h-1 bg-gold/60 rounded-full animate-pulse delay-700" />
         </div>
 
-        <h2 className="text-2xl font-serif text-amber-100 mb-3">{title}</h2>
-        <p className="text-amber-200/60 mb-8 leading-relaxed">{message}</p>
+        <h2 className="text-2xl font-serif text-mystic-100 mb-3">{title}</h2>
+        <p className="text-mystic-400 mb-8 leading-relaxed">{message}</p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {onRetry && (
             <button
               onClick={onRetry}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 text-stone-900 rounded-xl font-medium hover:bg-amber-400 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gold text-mystic-950 rounded-xl font-medium hover:bg-gold transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               Try Again
@@ -147,7 +147,7 @@ export function MysticErrorFallback({
           {onGoHome && (
             <button
               onClick={onGoHome}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-stone-800 text-amber-100 rounded-xl font-medium hover:bg-stone-700 transition-colors border border-amber-900/30"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-mystic-800 text-mystic-100 rounded-xl font-medium hover:bg-mystic-700 transition-colors border border-mystic-700/30"
             >
               <Home className="w-4 h-4" />
               Return Home
@@ -159,7 +159,7 @@ export function MysticErrorFallback({
           {onOpenDiagnostics && (
             <button
               onClick={onOpenDiagnostics}
-              className="flex items-center gap-1.5 text-xs text-amber-200/50 hover:text-amber-200/80 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-mystic-500 hover:text-mystic-300 transition-colors"
             >
               <Bug className="w-3.5 h-3.5" />
               View Diagnostics
@@ -168,7 +168,7 @@ export function MysticErrorFallback({
           {(isDevMode() || error) && (
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className="text-xs text-amber-200/50 hover:text-amber-200/80 transition-colors"
+              className="text-xs text-mystic-500 hover:text-mystic-300 transition-colors"
             >
               {showDetails ? 'Hide Details' : 'Show Details'}
             </button>
@@ -176,12 +176,12 @@ export function MysticErrorFallback({
         </div>
 
         {showDetails && error && (
-          <div className="mt-4 text-left bg-stone-900/80 border border-amber-900/30 rounded-xl p-4 overflow-hidden">
+          <div className="mt-4 text-left bg-mystic-900/80 border border-mystic-700/30 rounded-xl p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-amber-200/50">Error Details</span>
+              <span className="text-xs text-mystic-500">Error Details</span>
               <button
                 onClick={handleCopyError}
-                className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                className="flex items-center gap-1 text-xs text-gold hover:text-gold transition-colors"
               >
                 {copied ? (
                   <>
@@ -197,25 +197,25 @@ export function MysticErrorFallback({
               </button>
             </div>
             {correlationId && (
-              <p className="text-xs text-amber-200/40 mb-2 font-mono">
+              <p className="text-xs text-mystic-500 mb-2 font-mono">
                 ID: {correlationId}
               </p>
             )}
             <p className="text-sm text-coral font-medium mb-2">{error.message}</p>
             {isDevMode() && error.stack && (
-              <pre className="text-xs text-amber-200/40 overflow-x-auto whitespace-pre-wrap max-h-40">
+              <pre className="text-xs text-mystic-500 overflow-x-auto whitespace-pre-wrap max-h-40">
                 {error.stack}
               </pre>
             )}
             {isDevMode() && errorInfo?.componentStack && (
-              <pre className="mt-2 text-xs text-amber-200/30 overflow-x-auto whitespace-pre-wrap max-h-32">
+              <pre className="mt-2 text-xs text-mystic-600 overflow-x-auto whitespace-pre-wrap max-h-32">
                 {errorInfo.componentStack}
               </pre>
             )}
           </div>
         )}
 
-        <p className="mt-8 text-xs text-amber-200/30">
+        <p className="mt-8 text-xs text-mystic-600">
           If this continues, the cosmos may need a moment to realign.
         </p>
       </div>
@@ -251,16 +251,16 @@ export function ContentErrorFallback({
   contentType?: string;
 }) {
   return (
-    <div className="bg-stone-900/50 rounded-2xl p-6 border border-amber-900/20 text-center">
-      <AlertTriangle className="w-10 h-10 text-amber-400/60 mx-auto mb-3" />
-      <h3 className="text-amber-100 font-medium mb-2">Unable to Load {contentType}</h3>
-      <p className="text-amber-200/50 text-sm mb-4">
+    <div className="bg-mystic-900/50 rounded-2xl p-6 border border-mystic-700/20 text-center">
+      <AlertTriangle className="w-10 h-10 text-gold/60 mx-auto mb-3" />
+      <h3 className="text-mystic-100 font-medium mb-2">Unable to Load {contentType}</h3>
+      <p className="text-mystic-500 text-sm mb-4">
         The {contentType.toLowerCase()} is temporarily hidden from view.
       </p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="text-amber-400 text-sm hover:text-amber-300 flex items-center gap-1.5 mx-auto"
+          className="text-gold text-sm hover:text-gold flex items-center gap-1.5 mx-auto"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Retry

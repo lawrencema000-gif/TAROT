@@ -392,3 +392,47 @@ export async function clearLocalStorage(): Promise<void> {
     await appStorage.remove(key);
   }
 }
+
+export async function migrateGuestData(userId: string): Promise<{ migrated: number }> {
+  let migrated = 0;
+
+  const savedItems = await getLocalSavedItems();
+  if (savedItems.length > 0) {
+    const rows = savedItems.map(item => ({
+      user_id: userId,
+      highlight_type: item.itemType,
+      date: item.createdAt.split('T')[0],
+      content: { itemId: item.itemId, title: item.title, ...item.content, notes: item.notes, tags: item.tags },
+    }));
+
+    const { error } = await supabase
+      .from('saved_highlights')
+      .upsert(rows, { onConflict: 'user_id,highlight_type,date' })
+      .select('id');
+
+    if (!error) migrated += savedItems.length;
+  }
+
+  const history = await getLocalHistory();
+  if (history.length > 0) {
+    const rows = history.map(item => ({
+      user_id: userId,
+      interaction_type: item.itemType,
+      content_id: item.itemId,
+      metadata: { title: item.title, ...item.metadata },
+      created_at: item.viewedAt,
+    }));
+
+    const { error } = await supabase
+      .from('content_interactions')
+      .insert(rows);
+
+    if (!error) migrated += history.length;
+  }
+
+  if (migrated > 0) {
+    await clearLocalStorage();
+  }
+
+  return { migrated };
+}

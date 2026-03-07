@@ -15,6 +15,7 @@ class ImageLoaderService {
   private loadingPromises: Map<string, Promise<string>> = new Map();
   private preloadQueue: Set<string> = new Set();
   private isPreloading = false;
+  private blobUrls: Map<string, string> = new Map();
 
   async loadImage(
     url: string | undefined,
@@ -67,7 +68,7 @@ class ImageLoaderService {
         const cachedBlob = await imageCacheService.getCachedImage(url);
         if (cachedBlob) {
           onProgress?.(1);
-          return URL.createObjectURL(cachedBlob);
+          return this.trackBlobUrl(url, URL.createObjectURL(cachedBlob));
         }
       }
 
@@ -88,7 +89,7 @@ class ImageLoaderService {
       }
 
       onProgress?.(1);
-      return URL.createObjectURL(blob);
+      return this.trackBlobUrl(url, URL.createObjectURL(blob));
     } catch (error) {
       console.warn('Failed to load image from URL:', url, error);
       return FALLBACK_PLACEHOLDER;
@@ -140,6 +141,15 @@ class ImageLoaderService {
     if (this.preloadQueue.size > 0) {
       setTimeout(() => this.processPreloadQueue(), 100);
     }
+  }
+
+  private trackBlobUrl(sourceUrl: string, blobUrl: string): string {
+    const existing = this.blobUrls.get(sourceUrl);
+    if (existing && existing !== blobUrl) {
+      URL.revokeObjectURL(existing);
+    }
+    this.blobUrls.set(sourceUrl, blobUrl);
+    return blobUrl;
   }
 
   getDefaultCardBack(): string {

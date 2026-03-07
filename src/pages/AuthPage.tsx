@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
+import { supabase } from '../lib/supabase';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -27,6 +28,14 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [showVerifyEmail, setShowVerifyEmail] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -50,8 +59,50 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     setLoading(false);
 
     if (error) {
-      toast(getAuthErrorMessage(error), 'error');
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        setVerifyEmail(email);
+        setShowVerifyEmail(true);
+      } else {
+        toast(getAuthErrorMessage(error), 'error');
+      }
     }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email: verifyEmail });
+      if (error) {
+        toast(getAuthErrorMessage(error), 'error');
+      } else {
+        setResendSent(true);
+      }
+    } catch {
+      toast('Failed to resend verification email.', 'error');
+    }
+    setResendLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail.trim()) {
+      toast('Please enter your email address.', 'error');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/`,
+      });
+      if (error) {
+        toast(getAuthErrorMessage(error), 'error');
+      } else {
+        setResetSent(true);
+      }
+    } catch {
+      toast('Failed to send reset email. Please try again.', 'error');
+    }
+    setResetLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
@@ -62,6 +113,120 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     }
     setGoogleLoading(false);
   };
+
+  if (showVerifyEmail) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+        <div className="w-full max-w-sm">
+          <button
+            onClick={() => { setShowVerifyEmail(false); setResendSent(false); }}
+            className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to sign in
+          </button>
+
+          <div className="text-center mb-10">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
+              <Mail className="w-10 h-10 text-gold" />
+              <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
+            </div>
+            <h1 className="font-display text-3xl text-mystic-100 mb-2">Verify Your Email</h1>
+            <p className="text-mystic-400">
+              We sent a verification link to <span className="text-mystic-200">{verifyEmail}</span>. Please check your inbox.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {resendSent ? (
+              <div className="flex items-center justify-center gap-2 text-gold py-3">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-medium">Verification email sent!</span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={handleResendVerification}
+                loading={resendLoading}
+                className="min-h-[52px]"
+              >
+                Resend Verification Email
+              </Button>
+            )}
+            <p className="text-sm text-mystic-500 text-center">
+              Check your spam folder if you don't see it.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+        <div className="w-full max-w-sm">
+          <button
+            onClick={() => { setShowResetPassword(false); setResetSent(false); }}
+            className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to sign in
+          </button>
+
+          <div className="text-center mb-10">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
+              {resetSent ? (
+                <CheckCircle className="w-10 h-10 text-gold" />
+              ) : (
+                <Mail className="w-10 h-10 text-gold" />
+              )}
+              <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
+            </div>
+            <h1 className="font-display text-3xl text-mystic-100 mb-2">
+              {resetSent ? 'Check Your Email' : 'Reset Password'}
+            </h1>
+            <p className="text-mystic-400">
+              {resetSent
+                ? `We've sent a reset link to ${resetEmail}`
+                : 'Enter your email to receive a password reset link'}
+            </p>
+          </div>
+
+          {!resetSent ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <Input
+                type="email"
+                value={resetEmail}
+                onChange={e => setResetEmail(e.target.value)}
+                placeholder="Email address"
+                icon={<Mail className="w-5 h-5" />}
+                required
+              />
+              <Button type="submit" variant="gold" fullWidth loading={resetLoading} className="min-h-[52px]">
+                Send Reset Link
+              </Button>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-mystic-400 text-center">
+                Didn't receive the email? Check your spam folder or try again.
+              </p>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => setResetSent(false)}
+                className="min-h-[52px]"
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
@@ -132,7 +297,11 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
           </Button>
         </form>
 
-        <button className="w-full mt-4 text-sm text-mystic-400 hover:text-gold transition-colors py-2">
+        <button
+          type="button"
+          onClick={() => { setShowResetPassword(true); setResetEmail(email); }}
+          className="w-full mt-4 text-sm text-mystic-400 hover:text-gold transition-colors py-2"
+        >
           Forgot your password?
         </button>
 

@@ -1,4 +1,4 @@
-import { Home, Sparkles, Brain, Sun, Trophy, BookOpen, User, Shield } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield } from 'lucide-react';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
@@ -11,8 +11,6 @@ const baseTabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'readings', label: 'Readings', icon: Sparkles },
   { id: 'quizzes', label: 'Quizzes', icon: Brain },
-  { id: 'horoscope', label: 'Horoscope', icon: Sun },
-  { id: 'achievements', label: 'Trophies', icon: Trophy },
   { id: 'journal', label: 'Journal', icon: BookOpen },
   { id: 'profile', label: 'Profile', icon: User },
 ];

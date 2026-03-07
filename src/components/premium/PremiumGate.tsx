@@ -20,12 +20,17 @@ export function PremiumGate({ feature, children, fallback, showBadge = true }: P
   const [showPaywall, setShowPaywall] = useState(false);
   const [showWatchAd, setShowWatchAd] = useState(false);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState(false);
+  const [canWatch, setCanWatch] = useState(false);
 
   useEffect(() => {
     const checkAccess = async () => {
       if (profile?.isPremium || isAdmin) return;
       const hasAccess = await rewardedAdsService.hasTemporaryAccess(feature);
       setHasTemporaryAccess(hasAccess);
+      if (isNative() && isFeatureUnlockable(feature)) {
+        const watchable = await rewardedAdsService.canWatchAd();
+        setCanWatch(watchable);
+      }
     };
     checkAccess();
   }, [feature, profile?.isPremium, isAdmin]);
@@ -39,7 +44,7 @@ export function PremiumGate({ feature, children, fallback, showBadge = true }: P
   }
 
   const handleClick = () => {
-    if (isNative() && isFeatureUnlockable(feature) && rewardedAdsService.canWatchAd()) {
+    if (isNative() && isFeatureUnlockable(feature) && canWatch) {
       setShowWatchAd(true);
     } else {
       setShowPaywall(true);
@@ -103,7 +108,13 @@ interface PremiumLockOverlayProps {
 
 export function PremiumLockOverlay({ feature, onUnlock, showAdOption, onWatchAd }: PremiumLockOverlayProps) {
   const featureDef = PREMIUM_FEATURES[feature];
-  const canWatch = isNative() && isFeatureUnlockable(feature) && rewardedAdsService.canWatchAd();
+  const [canWatch, setCanWatch] = useState(false);
+
+  useEffect(() => {
+    if (isNative() && isFeatureUnlockable(feature)) {
+      rewardedAdsService.canWatchAd().then(setCanWatch);
+    }
+  }, [feature]);
 
   return (
     <div
@@ -177,19 +188,24 @@ export function usePremiumGate(feature?: PremiumFeature): UsePremiumGateResult {
     return consumed;
   }, [feature]);
 
+  const [canWatch, setCanWatch] = useState(false);
+
   useEffect(() => {
     checkTemporaryAccess();
-  }, [checkTemporaryAccess]);
+    if (!isPremium && feature && isNative() && isFeatureUnlockable(feature)) {
+      rewardedAdsService.canWatchAd().then(setCanWatch);
+    }
+  }, [checkTemporaryAccess, isPremium, feature]);
 
   const handleFeatureAccess = useCallback(() => {
     if (isPremium || hasTemporaryAccess) return;
 
-    if (feature && isNative() && isFeatureUnlockable(feature) && rewardedAdsService.canWatchAd()) {
+    if (feature && isNative() && isFeatureUnlockable(feature) && canWatch) {
       setShowWatchAd(true);
     } else {
       setShowPaywall(true);
     }
-  }, [isPremium, hasTemporaryAccess, feature]);
+  }, [isPremium, hasTemporaryAccess, feature, canWatch]);
 
   const onUnlocked = useCallback(() => {
     setHasTemporaryAccess(true);

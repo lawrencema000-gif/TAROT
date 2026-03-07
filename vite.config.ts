@@ -14,7 +14,15 @@ export default defineConfig((): UserConfig => {
       sourcemap: false,
       rollupOptions: {
         output: {
-          manualChunks: undefined,
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('framer-motion')) return 'vendor-motion';
+              if (id.includes('@supabase')) return 'vendor-supabase';
+              if (id.includes('react-router') || id.includes('react-dom')) return 'vendor-react';
+              if (id.includes('lucide-react')) return 'vendor-icons';
+              return 'vendor';
+            }
+          },
         },
       },
     },

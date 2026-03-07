@@ -13,7 +13,7 @@ export function Skeleton({
   height,
   animate = true,
 }: SkeletonProps) {
-  const baseClasses = 'bg-amber-900/20';
+  const baseClasses = 'bg-mystic-800/20';
   const animateClasses = animate ? 'animate-pulse' : '';
   const variantClasses = {
     text: 'rounded',
@@ -35,7 +35,7 @@ export function Skeleton({
 
 export function CardSkeleton() {
   return (
-    <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+    <div className="bg-mystic-900/50 rounded-2xl p-5 border border-amber-900/20">
       <div className="flex items-center gap-3 mb-4">
         <Skeleton variant="circular" width={40} height={40} />
         <div className="flex-1">
@@ -68,7 +68,7 @@ export function TarotCardSkeleton() {
 
 export function HoroscopeSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-2xl p-6 border border-amber-900/20">
+    <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-2xl p-6 border border-amber-900/20">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Skeleton variant="circular" width={48} height={48} />
@@ -84,7 +84,7 @@ export function HoroscopeSkeleton() {
         <Skeleton height={16} width="95%" />
         <Skeleton height={16} width="80%" />
       </div>
-      <div className="mt-4 pt-4 border-t border-amber-900/10">
+      <div className="mt-4 pt-4 border-t border-mystic-700/10">
         <div className="flex justify-between">
           <Skeleton height={14} width={80} />
           <Skeleton height={14} width={80} />
@@ -97,7 +97,7 @@ export function HoroscopeSkeleton() {
 
 export function JournalEntrySkeleton() {
   return (
-    <div className="bg-stone-900/40 rounded-xl p-4 border border-amber-900/10">
+    <div className="bg-mystic-900/40 rounded-xl p-4 border border-mystic-700/10">
       <div className="flex justify-between items-start mb-3">
         <Skeleton height={16} width={100} />
         <Skeleton height={14} width={60} />
@@ -117,7 +117,7 @@ export function JournalEntrySkeleton() {
 
 export function QuizCardSkeleton() {
   return (
-    <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+    <div className="bg-mystic-900/50 rounded-2xl p-5 border border-amber-900/20">
       <Skeleton height={120} className="rounded-xl mb-4" />
       <Skeleton height={20} width="70%" className="mb-2" />
       <Skeleton height={14} width="90%" className="mb-1" />
@@ -137,7 +137,7 @@ export function ProfileSkeleton() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-stone-900/40 rounded-xl p-4 text-center">
+          <div key={i} className="bg-mystic-900/40 rounded-xl p-4 text-center">
             <Skeleton height={28} width={40} className="mx-auto mb-2" />
             <Skeleton height={12} width={60} className="mx-auto" />
           </div>
@@ -166,7 +166,7 @@ export function HomePageSkeleton() {
   return (
     <div className="space-y-4">
       {/* Streak / greeting area */}
-      <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+      <div className="bg-mystic-900/50 rounded-2xl p-5 border border-amber-900/20">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton variant="circular" width={48} height={48} />
           <div className="flex-1">
@@ -182,7 +182,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Tarot card area */}
-      <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-3xl p-6 border border-amber-900/30">
+      <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-3xl p-6 border border-mystic-700/30">
         <Skeleton height={16} width={80} className="mb-2" />
         <Skeleton height={20} width={140} className="mb-6" />
         <div className="flex justify-center">
@@ -191,7 +191,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Horoscope card */}
-      <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+      <div className="bg-mystic-900/50 rounded-2xl p-5 border border-amber-900/20">
         <div className="flex items-center gap-3 mb-3">
           <Skeleton variant="circular" width={40} height={40} />
           <Skeleton height={18} width={120} />
@@ -202,7 +202,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Prompt card */}
-      <div className="bg-stone-900/50 rounded-2xl p-5 border border-amber-900/20">
+      <div className="bg-mystic-900/50 rounded-2xl p-5 border border-amber-900/20">
         <Skeleton height={14} width={100} className="mb-3" />
         <Skeleton height={16} width="90%" className="mb-2" />
         <Skeleton height={16} width="75%" />
@@ -239,7 +239,7 @@ export function HoroscopePageSkeleton() {
         <Skeleton height={36} width={80} className="rounded-full" />
         <Skeleton height={36} width={100} className="rounded-full" />
       </div>
-      <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-2xl p-6 border border-amber-900/20">
+      <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-2xl p-6 border border-amber-900/20">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton variant="circular" width={48} height={48} />
           <div>
@@ -253,7 +253,7 @@ export function HoroscopePageSkeleton() {
           <Skeleton height={16} width="80%" />
           <Skeleton height={16} width="90%" />
         </div>
-        <div className="mt-4 pt-4 border-t border-amber-900/10 grid grid-cols-3 gap-4">
+        <div className="mt-4 pt-4 border-t border-mystic-700/10 grid grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
             <div key={i} className="text-center">
               <Skeleton height={28} width={40} className="mx-auto mb-2" />
@@ -268,7 +268,7 @@ export function HoroscopePageSkeleton() {
 
 export function RitualCardSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-stone-900 to-stone-950 rounded-3xl p-6 border border-amber-900/30 min-h-[400px]">
+    <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-3xl p-6 border border-mystic-700/30 min-h-[400px]">
       <div className="flex items-center justify-between mb-6">
         <Skeleton height={24} width={120} />
         <Skeleton variant="circular" width={32} height={32} />

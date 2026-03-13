@@ -11,6 +11,7 @@ const TAB_ROUTES: Record<Tab, string> = {
   horoscope: '/horoscope',
   achievements: '/achievements',
   journal: '/journal',
+  blog: '/blog',
   profile: '/profile',
   admin: '/admin',
 };
@@ -33,13 +34,19 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const tabFromUrl = ROUTE_TO_TAB[location.pathname] || 'home';
+  const resolveTab = (pathname: string): Tab => {
+    if (ROUTE_TO_TAB[pathname]) return ROUTE_TO_TAB[pathname];
+    if (pathname.startsWith('/blog/')) return 'blog';
+    return 'home';
+  };
+
+  const tabFromUrl = resolveTab(location.pathname);
   const [activeTab, setActiveTabState] = useState<Tab>(tabFromUrl);
   const [activeOverlay, setActiveOverlay] = useState<OverlayType>(null);
 
   // Sync tab state when browser back/forward changes URL
   useEffect(() => {
-    const tab = ROUTE_TO_TAB[location.pathname] || 'home';
+    const tab = resolveTab(location.pathname);
     setActiveTabState(tab);
   }, [location.pathname]);
 

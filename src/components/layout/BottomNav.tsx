@@ -1,4 +1,5 @@
-import { Home, Sparkles, Brain, BookOpen, User, Shield } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper } from 'lucide-react';
+import { isWeb } from '../../utils/platform';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
@@ -15,10 +16,13 @@ const baseTabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'profile', label: 'Profile', icon: User },
 ];
 
+const blogTab = { id: 'blog' as Tab, label: 'News', icon: Newspaper };
 const adminTab = { id: 'admin' as Tab, label: 'Admin', icon: Shield };
 
 export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNavProps) {
-  const tabs = isAdmin ? [...baseTabs, adminTab] : baseTabs;
+  let tabs = [...baseTabs];
+  if (isWeb()) tabs.push(blogTab);
+  if (isAdmin) tabs.push(adminTab);
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom" aria-label="Main navigation" role="tablist">
       <div className="bg-gradient-to-t from-mystic-900 via-mystic-900/98 to-mystic-900/95 backdrop-blur-lg border-t border-mystic-700/30">

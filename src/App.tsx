@@ -30,6 +30,8 @@ const AchievementsPage = lazy(() => import('./pages/AchievementsPage').then(m =>
 const JournalPage = lazy(() => import('./pages/JournalPage').then(m => ({ default: m.JournalPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
+const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
+const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -84,6 +86,7 @@ const pageTitles: Record<string, { title: string; subtitle?: string }> = {
   achievements: { title: 'Achievements', subtitle: 'Track your progress' },
   journal: { title: 'Journal', subtitle: 'Reflect and grow' },
   profile: { title: 'Profile' },
+  blog: { title: 'News', subtitle: 'Insights & articles' },
   admin: { title: 'Admin', subtitle: 'Manage uploads' },
 };
 
@@ -314,6 +317,8 @@ function AppContent() {
                   <Route path="/achievements" element={<AchievementsPage />} />
                   <Route path="/journal" element={<JournalPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/blog/:slug" element={<BlogPostPage />} />
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

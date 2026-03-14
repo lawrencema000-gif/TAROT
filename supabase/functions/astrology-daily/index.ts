@@ -302,12 +302,32 @@ Deno.serve(async (req: Request) => {
     if (userError || !user) throw new Error("Unauthorized");
 
     let requestDate: string | undefined;
+    let timezone: string | undefined;
     try {
       const body = await req.json();
       requestDate = body.date;
+      timezone = body.timezone;
     } catch { /* empty body is fine */ }
 
-    const today = requestDate || new Date().toISOString().split("T")[0];
+    let today: string;
+    if (requestDate) {
+      today = requestDate;
+    } else if (timezone) {
+      try {
+        const formatter = new Intl.DateTimeFormat("en-CA", {
+          timeZone: timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+        today = formatter.format(new Date());
+      } catch {
+        // Invalid timezone, fall back to UTC
+        today = new Date().toISOString().split("T")[0];
+      }
+    } else {
+      today = new Date().toISOString().split("T")[0];
+    }
 
     const { data: cached } = await supabase
       .from("astrology_horoscope_cache")
@@ -319,7 +339,7 @@ Deno.serve(async (req: Request) => {
 
     if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
       return new Response(JSON.stringify(cached.content_json), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" },
       });
     }
 
@@ -412,7 +432,7 @@ Deno.serve(async (req: Request) => {
     );
 
     return new Response(JSON.stringify(content), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" },
     });
   } catch (error) {
     console.error("Daily horoscope error:", error);

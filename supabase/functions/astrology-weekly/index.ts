@@ -231,7 +231,7 @@ Deno.serve(async (req: Request) => {
 
     if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
       return new Response(JSON.stringify(cached.content_json), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" },
       });
     }
 
@@ -333,7 +333,7 @@ Deno.serve(async (req: Request) => {
     );
 
     return new Response(JSON.stringify(content), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" },
     });
   } catch (error) {
     console.error("Weekly forecast error:", error);

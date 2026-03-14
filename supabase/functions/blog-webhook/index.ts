@@ -39,7 +39,14 @@ Deno.serve(async (req) => {
   }
 
   const webhookSecret = Deno.env.get('BLOG_WEBHOOK_SECRET')
-  const providedSecret = req.headers.get('x-webhook-secret')
+
+  // Accept secret from multiple sources: header, query param, or Authorization bearer
+  const url = new URL(req.url)
+  const providedSecret =
+    req.headers.get('x-webhook-secret') ||
+    url.searchParams.get('secret') ||
+    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+    null
 
   if (!webhookSecret || providedSecret !== webhookSecret) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

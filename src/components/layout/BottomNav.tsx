@@ -1,4 +1,4 @@
-import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy } from 'lucide-react';
 import { isWeb } from '../../utils/platform';
 import type { Tab } from '../../types';
 
@@ -13,6 +13,7 @@ const baseTabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'readings', label: 'Readings', icon: Sparkles },
   { id: 'horoscope', label: 'Horoscope', icon: Star },
   { id: 'quizzes', label: 'Quizzes', icon: Brain },
+  { id: 'achievements', label: 'Trophies', icon: Trophy },
   { id: 'journal', label: 'Journal', icon: BookOpen },
   { id: 'profile', label: 'Profile', icon: User },
 ];
@@ -40,7 +41,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 aria-selected={isActive}
                 aria-label={tab.label}
                 className={`
-                  relative flex flex-col items-center gap-1 py-3 px-4 min-w-[64px] min-h-[60px]
+                  relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                   transition-all duration-300 touch-manipulation
                   active:scale-90
                   ${isActive ? 'text-gold' : 'text-mystic-500 hover:text-mystic-300'}

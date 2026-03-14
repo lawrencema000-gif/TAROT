@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, X, Gift, Clock, Crown, Sparkles, BookOpen } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { rewardedAdsService } from '../../services/rewardedAds';
@@ -35,7 +35,13 @@ export function WatchAdSheet({
   onShowPaywall,
 }: WatchAdSheetProps) {
   const [loading, setLoading] = useState(false);
-  const remainingUnlocks = rewardedAdsService.getRemainingUnlocks();
+  const [remainingUnlocks, setRemainingUnlocks] = useState(0);
+
+  useEffect(() => {
+    if (open) {
+      rewardedAdsService.getRemainingUnlocks().then(setRemainingUnlocks);
+    }
+  }, [open]);
   const featureDef = PREMIUM_FEATURES[feature];
   const context = FEATURE_CONTEXT[feature];
 

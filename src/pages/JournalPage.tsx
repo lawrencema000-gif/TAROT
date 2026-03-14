@@ -25,7 +25,7 @@ import {
   Users,
   Moon,
 } from 'lucide-react';
-import { Card, Button, Sheet, Input, Progress, toast } from '../components/ui';
+import { Card, Button, Sheet, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase';
@@ -875,7 +875,7 @@ export function JournalPage() {
                 <h3 className="font-medium text-mystic-200">Mood Distribution</h3>
               </div>
               <div className="space-y-3">
-                {insights.moodDistribution.map(({ mood, count, percentage }) => {
+                {insights.moodDistribution.map(({ mood, percentage }) => {
                   const moodInfo = moodEmojis.find(m => m.value === mood);
                   return (
                     <div key={mood}>

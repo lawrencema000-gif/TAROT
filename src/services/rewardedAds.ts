@@ -121,6 +121,7 @@ class RewardedAdsService {
       });
 
     } catch {
+      /* empty */
     }
   }
 
@@ -148,6 +149,7 @@ class RewardedAdsService {
       await appStorage.set(DAILY_DATE_KEY, date);
       await appStorage.set(DAILY_COUNT_KEY, (count + 1).toString());
     } catch {
+      /* empty */
     }
   }
 
@@ -211,6 +213,7 @@ class RewardedAdsService {
 
       if (error) { /* save failed */ }
     } catch {
+      /* empty */
     }
   }
 

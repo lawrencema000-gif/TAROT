@@ -51,7 +51,7 @@ export function HomePage() {
   const [savedToday, setSavedToday] = useState<SavedHighlight[]>([]);
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [ritualStarted, setRitualStarted] = useState(false);
-  const [tarotCards, setTarotCards] = useState<TarotCard[]>([]);
+  const [, setTarotCards] = useState<TarotCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [dailyPrompt, setDailyPrompt] = useState('');

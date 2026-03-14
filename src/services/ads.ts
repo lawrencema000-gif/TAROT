@@ -178,6 +178,7 @@ class AdsService {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async showAppOpenAdOnColdStart(_isPremium: boolean, _isAdFree: boolean): Promise<void> {
     // App open ads not supported by current @capacitor-community/admob version — no-op
   }

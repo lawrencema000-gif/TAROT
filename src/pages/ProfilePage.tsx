@@ -59,7 +59,7 @@ export function ProfilePage() {
   const [savedHighlights, setSavedHighlights] = useState<SavedHighlight[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
-  const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
+  const [, setLevelThresholds] = useState<Map<number, number>>(new Map());
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; displayName: string } | null>(null);
   const [editData, setEditData] = useState({

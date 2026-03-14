@@ -91,7 +91,7 @@ export function AchievementsPage() {
   }
 
   const filteredAchievements = useMemo(() => {
-    let filtered = selectedCategory === 'all'
+    const filtered = selectedCategory === 'all'
       ? achievements
       : achievements.filter(a => a.category === selectedCategory);
 

@@ -56,7 +56,7 @@ export async function generatePremiumReading(
     try {
       const errorJson = JSON.parse(errorText);
       throw new Error(errorJson.error || `Failed to generate reading: ${response.status}`);
-    } catch (parseError) {
+    } catch {
       throw new Error(`Failed to generate reading: ${response.status} - ${errorText}`);
     }
   }

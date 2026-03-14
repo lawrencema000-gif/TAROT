@@ -11,7 +11,7 @@ import {
   PenLine,
   Share2,
   TrendingUp,
-  Zap,
+
   Gift,
   Globe,
   Shield,

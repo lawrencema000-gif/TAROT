@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { Card, Sheet, Skeleton } from '../ui';
 import { ChartWheel } from './ChartWheel';

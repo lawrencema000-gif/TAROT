@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Heart, Briefcase, Sparkles, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
-import { Card, Button } from '../ui';
+import { Card } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
 

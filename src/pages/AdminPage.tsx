@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Smartphone, Calendar, Star, Sparkles, Flame } from 'lucide-react';
+import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Calendar, Star, Sparkles, Flame } from 'lucide-react';
 import { Button, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useRitual } from '../context/RitualContext';

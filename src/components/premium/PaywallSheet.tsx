@@ -5,7 +5,7 @@ import {
   Heart,
   Star,
   X,
-  Infinity,
+  Infinity as InfinityIcon,
   Layers,
   Brain,
   Moon,
@@ -28,7 +28,7 @@ interface PaywallSheetProps {
 const unlocks = [
   { icon: Ban, label: 'Ad-Free Experience', desc: 'No interruptions, pure focus' },
   { icon: Layers, label: 'All Tarot Spreads', desc: 'Celtic Cross, 3-Card & more' },
-  { icon: Infinity, label: 'Unlimited Saves', desc: 'Keep every insight forever' },
+  { icon: InfinityIcon, label: 'Unlimited Saves', desc: 'Keep every insight forever' },
   { icon: Heart, label: 'Full Compatibility', desc: 'Deep partner analysis' },
   { icon: Brain, label: 'Deep Interpretations', desc: 'Personalized guidance' },
   { icon: Star, label: 'Guided Prompts', desc: 'AI-crafted reflections' },
@@ -56,14 +56,6 @@ const FALLBACK_PRICES: Record<string, string> = {
 function matchesProductId(productId: string, targetId: string): boolean {
   const baseId = productId.split(':')[0];
   return baseId === targetId || productId === targetId;
-}
-
-function mapProductToPlanId(productId: string): PlanId | null {
-  const baseId = productId.split(':')[0].toLowerCase();
-  if (baseId.includes('monthly') || baseId.includes('month')) return 'monthly';
-  if (baseId.includes('yearly') || baseId.includes('year') || baseId.includes('annual')) return 'yearly';
-  if (baseId.includes('lifetime')) return 'lifetime';
-  return null;
 }
 
 function buildDisplayPlans(products: Product[]): DisplayPlan[] {

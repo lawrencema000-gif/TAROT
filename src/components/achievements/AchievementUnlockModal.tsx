@@ -15,8 +15,8 @@ function getIcon(iconName: string): React.ElementType {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 
-  const IconComponent = (LucideIcons as Record<string, React.ElementType>)[pascalCase];
-  return IconComponent || LucideIcons.Award;
+  const icons: Record<string, React.ElementType> = LucideIcons;
+  return icons[pascalCase] || LucideIcons.Award;
 }
 
 function getRarityGradient(rarity: AchievementRarity): string {

@@ -55,10 +55,6 @@ function findHouse(lon: number, cusps: number[]): number | null {
   return 1;
 }
 
-function formatDate(d: Date): string {
-  return d.toISOString().split("T")[0];
-}
-
 function formatShort(d: Date): string {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[d.getUTCMonth()]} ${d.getUTCDate()}`;
@@ -304,13 +300,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const signIngresses = ["Mercury", "Venus", "Mars"] as const;
-    const startOfMonth = new Date(Date.UTC(year, month, 1));
     const endOfMonth = new Date(Date.UTC(year, month + 1, 0));
     for (const pName of signIngresses) {
       const body = Astronomy.Body[pName];
-      const startLon = Astronomy.EclipticLongitude(body, startOfMonth);
-      const startSign = lonToSign(startLon).sign;
-
       for (let day = 1; day <= endOfMonth.getUTCDate(); day++) {
         const d = new Date(Date.UTC(year, month, day));
         const lon = Astronomy.EclipticLongitude(body, d);

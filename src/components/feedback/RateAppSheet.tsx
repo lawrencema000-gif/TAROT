@@ -1,6 +1,6 @@
 import { Heart, Star, MessageCircle, X } from 'lucide-react';
 import { Button } from '../ui';
-import { ratePromptService, RatePromptResponse } from '../../services/ratePrompt';
+import { ratePromptService } from '../../services/ratePrompt';
 
 interface RateAppSheetProps {
   open: boolean;

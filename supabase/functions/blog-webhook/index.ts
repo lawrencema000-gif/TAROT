@@ -6,6 +6,26 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+/** Wraps content in a consistent tarot-themed HTML structure unless already structured */
+function formatContent(post: { content: string; excerpt?: string; raw?: boolean }): string {
+  if (post.raw || post.content.includes('<article') || post.content.includes('class="blog-')) {
+    return post.content;
+  }
+  return `<article class="blog-post">\n${post.excerpt ? `<p class="lead"><em>${post.excerpt}</em></p>\n` : ''}${post.content}\n</article>`;
+}
+
+/** Auto-generate URL slug from title */
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 120);
+}
+
+/** Auto-generate excerpt by stripping HTML */
+function autoExcerpt(content: string, max = 160): string {
+  const text = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (text.length <= max) return text;
+  return text.substring(0, max).replace(/\s\S*$/, '') + '\u2026';
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -18,7 +38,6 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Verify webhook secret
   const webhookSecret = Deno.env.get('BLOG_WEBHOOK_SECRET')
   const providedSecret = req.headers.get('x-webhook-secret')
 
@@ -31,8 +50,6 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-
-    // Support single post or array of posts
     const posts = Array.isArray(body) ? body : [body]
 
     const supabase = createClient(
@@ -43,12 +60,20 @@ Deno.serve(async (req) => {
     const results = []
 
     for (const post of posts) {
-      const { slug, title, excerpt, content, cover_image, author, tags, published } = post
+      const { title, content, cover_image, author, tags, published, raw } = post
+      let { slug, excerpt } = post
 
-      if (!slug || !title || !content) {
-        results.push({ slug: slug || 'unknown', error: 'Missing required fields: slug, title, content' })
+      if (!title || !content) {
+        results.push({ slug: slug || 'unknown', error: 'Missing required fields: title, content' })
         continue
       }
+
+      // Auto-generate slug & excerpt if not provided
+      if (!slug) slug = slugify(title)
+      if (!excerpt) excerpt = autoExcerpt(content)
+
+      const formattedContent = formatContent({ content, excerpt, raw })
+      const finalTags = tags && tags.length > 0 ? tags : ['tarot', 'spirituality']
 
       const { data, error } = await supabase
         .from('blog_posts')
@@ -56,11 +81,11 @@ Deno.serve(async (req) => {
           {
             slug,
             title,
-            excerpt: excerpt || null,
-            content,
+            excerpt,
+            content: formattedContent,
             cover_image: cover_image || null,
             author: author || 'Arcana',
-            tags: tags || [],
+            tags: finalTags,
             published: published ?? true,
             published_at: published !== false ? new Date().toISOString() : null,
             updated_at: new Date().toISOString(),

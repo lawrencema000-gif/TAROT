@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   X,
   Layers,
-  Infinity,
+  Infinity as InfinityIcon,
   Heart,
   Brain,
   Star,
@@ -29,7 +29,7 @@ interface SubscriptionSheetProps {
 const premiumFeatures = [
   { icon: Ban, label: 'Ad-Free Experience' },
   { icon: Layers, label: 'All Tarot Spreads' },
-  { icon: Infinity, label: 'Unlimited Saves' },
+  { icon: InfinityIcon, label: 'Unlimited Saves' },
   { icon: Heart, label: 'Full Compatibility' },
   { icon: Brain, label: 'Deep Interpretations' },
   { icon: Star, label: 'Guided Prompts' },

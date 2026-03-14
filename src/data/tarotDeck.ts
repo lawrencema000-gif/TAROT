@@ -806,6 +806,7 @@ function buildMinorArcana(): TarotCard[] {
   const cards: TarotCard[] = [];
   let id = 22;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const suits: Array<{ suit: 'wands' | 'cups' | 'swords' | 'pentacles'; meanings: Record<number, any> }> = [
     { suit: 'wands', meanings: wandsMeanings },
     { suit: 'cups', meanings: cupsMeanings },

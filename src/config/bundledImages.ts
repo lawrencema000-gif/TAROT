@@ -101,7 +101,8 @@ export function isMinorArcana(cardId: number): boolean {
   return cardId >= 22 && cardId <= 77;
 }
 
-export function getBundledCardPath(cardId: number, cardName?: string, suit?: string | null): string | null {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function getBundledCardPath(cardId: number, _cardName?: string, _suit?: string | null): string | null {
   if (isMajorArcana(cardId)) {
     const card = MAJOR_ARCANA_CARDS.find(c => c.id === cardId);
     if (card) {

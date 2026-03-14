@@ -57,7 +57,7 @@ import {
 import { bigFiveQuiz, calculateBigFive, bigFiveDescriptions } from '../data/bigFiveQuiz';
 import { enneagramQuiz, calculateEnneagram, enneagramDescriptions } from '../data/enneagramQuiz';
 import { attachmentQuiz, calculateAttachment, attachmentDescriptions } from '../data/attachmentQuiz';
-import { cognitiveFunctions, mbtiCognitiveStacks, mbtiExtendedDescriptions } from '../data/mbtiCognitiveFunctions';
+
 import type { QuizDefinition } from '../types';
 
 type QuizState = 'list' | 'taking' | 'results';

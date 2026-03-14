@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { TarotCard, TarotReading } from '../types';
+import type { TarotReading } from '../types';
 import { appStorage } from '../lib/appStorage';
 
 export type SavedItemType = 'reading' | 'card' | 'spread' | 'horoscope' | 'prompt';

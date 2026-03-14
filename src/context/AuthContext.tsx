@@ -525,6 +525,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             await Browser.close();
           } catch {
+            /* empty */
           }
           await handleOAuthCallbackRef.current(url);
         });

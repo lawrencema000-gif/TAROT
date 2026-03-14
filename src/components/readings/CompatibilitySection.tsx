@@ -10,8 +10,7 @@ import {
   Info,
   Brain,
   Zap,
-  MessageCircle,
-  Shield,
+
   Star,
   TrendingUp,
 } from 'lucide-react';

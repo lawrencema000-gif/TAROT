@@ -12,11 +12,6 @@ const corsHeaders = {
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const SIGNS = [
-  "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
-  "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
-] as const;
-type ZodiacSign = typeof SIGNS[number];
 type Planet = "Sun" | "Moon" | "Mercury" | "Venus" | "Mars" | "Jupiter" | "Saturn" | "Uranus" | "Neptune" | "Pluto";
 type AspectType = "conjunction" | "opposition" | "trine" | "square" | "sextile";
 
@@ -27,16 +22,6 @@ const SIGN_ELEMENTS: Record<string, string> = {
 };
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function normDeg(d: number): number {
-  return ((d % 360) + 360) % 360;
-}
-
-function lonToSign(lon: number): { sign: ZodiacSign; degree: number } {
-  const n = normDeg(lon);
-  const idx = Math.floor(n / 30);
-  return { sign: SIGNS[idx], degree: Math.round((n % 30) * 100) / 100 };
-}
 
 function getPlanetLongitude(body: Astronomy.Body | "Sun" | "Moon", date: Date): number {
   if (body === "Sun") return Astronomy.SunPosition(date).elon;

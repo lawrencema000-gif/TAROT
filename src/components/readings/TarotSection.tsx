@@ -100,7 +100,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [showBrowse, setShowBrowse] = useState(false);
   const [browseFilter, setBrowseFilter] = useState<'all' | 'major' | 'swords' | 'cups' | 'wands' | 'pentacles'>('all');
   const [tarotCards, setTarotCards] = useState<TarotCard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [deckCards, setDeckCards] = useState<number[]>([]);
@@ -437,7 +437,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     return positions[index] || `Position ${index + 1}`;
   };
 
-  const getFocusInterpretation = (card: TarotCard, focus: FocusArea | null, reversed: boolean): { content: string; icon: typeof Heart; label: string; color: string } | null => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getFocusInterpretation = (card: TarotCard, focus: FocusArea | null, _reversed: boolean): { content: string; icon: typeof Heart; label: string; color: string } | null => {
     if (focus === 'Love' && card.loveMeaning) {
       return {
         content: card.loveMeaning,

@@ -175,7 +175,6 @@ export function getToneContent(tone: TonePreference): { greeting: string; encour
 }
 
 export function getPersonalizedGreeting(tone: TonePreference, displayName?: string): string {
-  const templates = toneTemplates[tone];
   const name = displayName?.split(' ')[0] || '';
 
   if (tone === 'gentle') {

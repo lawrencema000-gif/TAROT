@@ -8,6 +8,7 @@ export interface BlogPost {
   author: string;
   tags: string[];
   published: boolean;
+  archived: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;

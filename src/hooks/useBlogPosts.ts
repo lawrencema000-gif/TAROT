@@ -21,6 +21,7 @@ export function useBlogPosts(page = 1) {
       .from('blog_posts')
       .select('*', { count: 'exact' })
       .eq('published', true)
+      .neq('archived', true)
       .order('published_at', { ascending: false })
       .range(from, to);
 

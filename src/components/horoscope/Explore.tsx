@@ -1,12 +1,56 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Orbit, Home, Triangle, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { Card, Chip, Skeleton } from '../ui';
 import { useTransitCalendar, useNatalChart } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS, PLANETS, HOUSE_THEMES } from '../../types/astrology';
 import type { Planet, AspectType, PlanetPlacement, Aspect } from '../../types/astrology';
-import { getTransitInterp, getGenericTransitInterp } from '../../data/transits';
-import { getPlanetInHouse, getGenericHouseInterp } from '../../data/planetInHouse';
-import { getAspectInterp, getGenericAspectInterp } from '../../data/aspects';
+
+// Lazy-loaded data modules
+type TransitsModule = typeof import('../../data/transits');
+type PlanetInHouseModule = typeof import('../../data/planetInHouse');
+type AspectsModule = typeof import('../../data/aspects');
+
+interface LazyExploreData {
+  loaded: boolean;
+  getTransitInterp: TransitsModule['getTransitInterp'] | null;
+  getGenericTransitInterp: TransitsModule['getGenericTransitInterp'] | null;
+  getPlanetInHouse: PlanetInHouseModule['getPlanetInHouse'] | null;
+  getGenericHouseInterp: PlanetInHouseModule['getGenericHouseInterp'] | null;
+  getAspectInterp: AspectsModule['getAspectInterp'] | null;
+  getGenericAspectInterp: AspectsModule['getGenericAspectInterp'] | null;
+}
+
+function useExploreData(): LazyExploreData {
+  const [loaded, setLoaded] = useState(false);
+  const modulesRef = useRef<Omit<LazyExploreData, 'loaded'>>({
+    getTransitInterp: null, getGenericTransitInterp: null,
+    getPlanetInHouse: null, getGenericHouseInterp: null,
+    getAspectInterp: null, getGenericAspectInterp: null,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      import('../../data/transits'),
+      import('../../data/planetInHouse'),
+      import('../../data/aspects'),
+    ]).then(([transitMod, houseMod, aspectMod]) => {
+      if (cancelled) return;
+      modulesRef.current = {
+        getTransitInterp: transitMod.getTransitInterp,
+        getGenericTransitInterp: transitMod.getGenericTransitInterp,
+        getPlanetInHouse: houseMod.getPlanetInHouse,
+        getGenericHouseInterp: houseMod.getGenericHouseInterp,
+        getAspectInterp: aspectMod.getAspectInterp,
+        getGenericAspectInterp: aspectMod.getGenericAspectInterp,
+      };
+      setLoaded(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  return { loaded, ...modulesRef.current };
+}
 
 type ExploreTab = 'transits' | 'houses' | 'aspects';
 
@@ -20,6 +64,7 @@ const ASPECT_COLORS: Record<AspectType, string> = {
 
 export function Explore() {
   const [tab, setTab] = useState<ExploreTab>('transits');
+  const data = useExploreData();
 
   return (
     <div className="p-4 space-y-4">
@@ -47,14 +92,14 @@ export function Explore() {
         })}
       </div>
 
-      {tab === 'transits' && <TransitExplorer />}
-      {tab === 'houses' && <HouseExplorer />}
-      {tab === 'aspects' && <AspectExplorer />}
+      {tab === 'transits' && <TransitExplorer data={data} />}
+      {tab === 'houses' && <HouseExplorer data={data} />}
+      {tab === 'aspects' && <AspectExplorer data={data} />}
     </div>
   );
 }
 
-function TransitExplorer() {
+function TransitExplorer({ data }: { data: LazyExploreData }) {
   const { events, loading, error, load } = useTransitCalendar();
   const [filter, setFilter] = useState<string>('');
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -103,8 +148,8 @@ function TransitExplorer() {
       ) : (
         events.map((ev, i) => {
           const isOpen = expanded === i;
-          const interp = getTransitInterp(ev.transitPlanet, ev.natalPlanet, ev.aspectType) ||
-            getGenericTransitInterp(ev.transitPlanet, ev.natalPlanet, ev.aspectType);
+          const interp = data.getTransitInterp?.(ev.transitPlanet, ev.natalPlanet, ev.aspectType) ||
+            data.getGenericTransitInterp?.(ev.transitPlanet, ev.natalPlanet, ev.aspectType);
 
           return (
             <Card key={i} padding="sm" interactive onClick={() => setExpanded(isOpen ? null : i)}>
@@ -144,8 +189,32 @@ function TransitExplorer() {
   );
 }
 
-function HouseExplorer() {
+function HouseExplorer({ data }: { data: LazyExploreData }) {
   const { chart, loading } = useNatalChart();
+
+  // Memoize planet-by-house grouping and interpretation lookups
+  const { planetsByHouse, houseInterps } = useMemo(() => {
+    const grouped: Record<number, PlanetPlacement[]> = {};
+    const interps: Record<string, { expression: string } | null> = {};
+
+    if (!chart) return { planetsByHouse: grouped, houseInterps: interps };
+
+    chart.natalChart.planets.forEach((p) => {
+      if (p.house) {
+        if (!grouped[p.house]) grouped[p.house] = [];
+        grouped[p.house].push(p);
+
+        // Pre-compute interpretation for each planet-house combo
+        if (data.getPlanetInHouse && data.getGenericHouseInterp) {
+          const key = `${p.planet}-${p.house}`;
+          interps[key] = data.getPlanetInHouse(p.planet as Planet, p.house) ||
+            data.getGenericHouseInterp(p.planet as Planet, p.house);
+        }
+      }
+    });
+
+    return { planetsByHouse: grouped, houseInterps: interps };
+  }, [chart, data.loaded]);
 
   if (loading) {
     return (
@@ -160,15 +229,6 @@ function HouseExplorer() {
   if (!chart) {
     return <p className="text-mystic-400 text-sm text-center py-8">Chart data not available</p>;
   }
-
-  const { natalChart } = chart;
-  const planetsByHouse: Record<number, PlanetPlacement[]> = {};
-  natalChart.planets.forEach((p) => {
-    if (p.house) {
-      if (!planetsByHouse[p.house]) planetsByHouse[p.house] = [];
-      planetsByHouse[p.house].push(p);
-    }
-  });
 
   return (
     <div className="space-y-2">
@@ -185,8 +245,7 @@ function HouseExplorer() {
                 {residents.length > 0 ? (
                   <div className="mt-1.5 space-y-1">
                     {residents.map((p) => {
-                      const interp = getPlanetInHouse(p.planet as Planet, house) ||
-                        getGenericHouseInterp(p.planet as Planet, house);
+                      const interp = houseInterps[`${p.planet}-${house}`];
                       return (
                         <div key={p.planet} className="text-xs">
                           <span style={{ fontFamily: 'serif' }} className="mr-1">
@@ -214,7 +273,7 @@ function HouseExplorer() {
   );
 }
 
-function AspectExplorer() {
+function AspectExplorer({ data }: { data: LazyExploreData }) {
   const { chart, loading } = useNatalChart();
   const [aspectFilter, setAspectFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -261,8 +320,8 @@ function AspectExplorer() {
       ) : (
         filtered.map((a: Aspect, i: number) => {
           const isOpen = expanded === i;
-          const interp = getAspectInterp(a.planet1 as Planet, a.planet2 as Planet, a.type) ||
-            getGenericAspectInterp(a.planet1 as Planet, a.planet2 as Planet, a.type);
+          const interp = data.getAspectInterp?.(a.planet1 as Planet, a.planet2 as Planet, a.type) ||
+            data.getGenericAspectInterp?.(a.planet1 as Planet, a.planet2 as Planet, a.type);
 
           return (
             <Card key={i} padding="sm" interactive onClick={() => setExpanded(isOpen ? null : i)}>

@@ -1,13 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { Card, Sheet, Skeleton } from '../ui';
 import { ChartWheel } from './ChartWheel';
 import { useNatalChart } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS, HOUSE_THEMES } from '../../types/astrology';
 import type { ZodiacSign, Planet, Element, Modality, PlanetPlacement, Aspect } from '../../types/astrology';
-import { getPlanetInSign } from '../../data/planetInSign';
-import { getGenericHouseInterp } from '../../data/planetInHouse';
-import { getAspectInterp, getGenericAspectInterp } from '../../data/aspects';
+
+// Lazy-loaded interpretation data modules
+type PlanetInSignModule = typeof import('../../data/planetInSign');
+type PlanetInHouseModule = typeof import('../../data/planetInHouse');
+type AspectsModule = typeof import('../../data/aspects');
+
+function useInterpData() {
+  const [loaded, setLoaded] = useState(false);
+  const modulesRef = useRef<{
+    getPlanetInSign: PlanetInSignModule['getPlanetInSign'] | null;
+    getGenericHouseInterp: PlanetInHouseModule['getGenericHouseInterp'] | null;
+    getAspectInterp: AspectsModule['getAspectInterp'] | null;
+    getGenericAspectInterp: AspectsModule['getGenericAspectInterp'] | null;
+  }>({ getPlanetInSign: null, getGenericHouseInterp: null, getAspectInterp: null, getGenericAspectInterp: null });
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      import('../../data/planetInSign'),
+      import('../../data/planetInHouse'),
+      import('../../data/aspects'),
+    ]).then(([signMod, houseMod, aspectMod]) => {
+      if (cancelled) return;
+      modulesRef.current = {
+        getPlanetInSign: signMod.getPlanetInSign,
+        getGenericHouseInterp: houseMod.getGenericHouseInterp,
+        getAspectInterp: aspectMod.getAspectInterp,
+        getGenericAspectInterp: aspectMod.getGenericAspectInterp,
+      };
+      setLoaded(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  return { loaded, ...modulesRef.current };
+}
 
 const ELEMENT_COLORS: Record<Element, string> = {
   Fire: 'bg-coral/20 text-coral',
@@ -26,6 +59,7 @@ const ASPECT_LABELS: Record<string, { symbol: string; color: string }> = {
 
 export function BirthChart() {
   const { chart, loading, error } = useNatalChart();
+  const interp = useInterpData();
   const [expandedBigThree, setExpandedBigThree] = useState(false);
   const [selectedPlacement, setSelectedPlacement] = useState<PlanetPlacement | null>(null);
   const [selectedAspect, setSelectedAspect] = useState<Aspect | null>(null);
@@ -84,12 +118,12 @@ export function BirthChart() {
               { planet: 'Moon' as const, sign: bigThree.moon.sign },
               ...(bigThree.rising ? [{ planet: 'Rising' as const, sign: bigThree.rising.sign }] : []),
             ].map(({ planet, sign }) => {
-              const interp = getPlanetInSign(planet, sign);
-              if (!interp) return null;
+              const signInterp = interp.getPlanetInSign?.(planet, sign);
+              if (!signInterp) return null;
               return (
                 <div key={planet} className="p-3 bg-mystic-800/30 rounded-xl">
                   <div className="text-xs font-medium text-gold mb-1">{planet} in {sign}</div>
-                  <p className="text-xs text-mystic-300 leading-relaxed">{interp.core}</p>
+                  <p className="text-xs text-mystic-300 leading-relaxed">{signInterp.core}</p>
                 </div>
               );
             })}
@@ -199,7 +233,7 @@ export function BirthChart() {
         onClose={() => setSelectedPlacement(null)}
         title={selectedPlacement ? `${selectedPlacement.planet} in ${selectedPlacement.sign}` : ''}
       >
-        {selectedPlacement && <PlacementDetail placement={selectedPlacement} />}
+        {selectedPlacement && interp.loaded && <PlacementDetail placement={selectedPlacement} getPlanetInSign={interp.getPlanetInSign!} getGenericHouseInterp={interp.getGenericHouseInterp!} />}
       </Sheet>
 
       <Sheet
@@ -207,13 +241,17 @@ export function BirthChart() {
         onClose={() => setSelectedAspect(null)}
         title={selectedAspect ? `${selectedAspect.planet1} ${selectedAspect.type} ${selectedAspect.planet2}` : ''}
       >
-        {selectedAspect && <AspectDetail aspect={selectedAspect} />}
+        {selectedAspect && interp.loaded && <AspectDetail aspect={selectedAspect} getAspectInterp={interp.getAspectInterp!} getGenericAspectInterp={interp.getGenericAspectInterp!} />}
       </Sheet>
     </div>
   );
 }
 
-function PlacementDetail({ placement }: { placement: PlanetPlacement }) {
+function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: {
+  placement: PlanetPlacement;
+  getPlanetInSign: PlanetInSignModule['getPlanetInSign'];
+  getGenericHouseInterp: PlanetInHouseModule['getGenericHouseInterp'];
+}) {
   const signInterp = getPlanetInSign(placement.planet as Planet, placement.sign as ZodiacSign);
   const houseInterp = placement.house ? getGenericHouseInterp(placement.planet as Planet, placement.house) : null;
 
@@ -305,7 +343,11 @@ function PlacementDetail({ placement }: { placement: PlanetPlacement }) {
   );
 }
 
-function AspectDetail({ aspect }: { aspect: Aspect }) {
+function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
+  aspect: Aspect;
+  getAspectInterp: AspectsModule['getAspectInterp'];
+  getGenericAspectInterp: AspectsModule['getGenericAspectInterp'];
+}) {
   const interp = getAspectInterp(aspect.planet1 as Planet, aspect.planet2 as Planet, aspect.type) ||
     getGenericAspectInterp(aspect.planet1 as Planet, aspect.planet2 as Planet, aspect.type);
 

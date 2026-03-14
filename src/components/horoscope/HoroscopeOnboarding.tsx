@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles, RefreshCw, AlertCircle, Globe, Home, Triangle, Star } from 'lucide-react';
 import { Button, Card, Input } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
@@ -146,15 +146,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
   };
 
   if (computing && !computeError) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 space-y-4">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-pulse">
-          <Sparkles className="w-8 h-8 text-gold" />
-        </div>
-        <p className="text-mystic-300 text-sm">Computing your natal chart...</p>
-        <Loader2 className="w-5 h-5 text-gold animate-spin" />
-      </div>
-    );
+    return <ChartComputeProgress />;
   }
 
   if (needsLocation) {
@@ -294,6 +286,88 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           <MapPin className="w-4 h-4" />
           Change Birth Location
         </Button>
+      </div>
+    </div>
+  );
+}
+
+const COMPUTE_STEPS = [
+  { label: 'Calculating planetary positions...', icon: Globe },
+  { label: 'Computing house cusps...', icon: Home },
+  { label: 'Analyzing aspects...', icon: Triangle },
+  { label: 'Preparing your chart...', icon: Star },
+] as const;
+
+function ChartComputeProgress() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((prev) => (prev < COMPUTE_STEPS.length - 1 ? prev + 1 : prev));
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center py-12 space-y-8">
+      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-pulse">
+        <Sparkles className="w-8 h-8 text-gold" />
+      </div>
+
+      <div className="w-full max-w-xs space-y-3">
+        {COMPUTE_STEPS.map((s, i) => {
+          const StepIcon = s.icon;
+          const isActive = i === step;
+          const isDone = i < step;
+
+          return (
+            <div
+              key={i}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
+                isActive
+                  ? 'bg-gold/10 border border-gold/25'
+                  : isDone
+                  ? 'bg-mystic-800/20 border border-transparent'
+                  : 'border border-transparent opacity-40'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                isActive
+                  ? 'bg-gold/20'
+                  : isDone
+                  ? 'bg-teal/20'
+                  : 'bg-mystic-800/40'
+              }`}>
+                {isDone ? (
+                  <Check className="w-3.5 h-3.5 text-teal" />
+                ) : isActive ? (
+                  <Loader2 className="w-3.5 h-3.5 text-gold animate-spin" />
+                ) : (
+                  <StepIcon className="w-3.5 h-3.5 text-mystic-500" />
+                )}
+              </div>
+              <span className={`text-sm transition-all duration-500 ${
+                isActive
+                  ? 'text-gold font-medium'
+                  : isDone
+                  ? 'text-mystic-400'
+                  : 'text-mystic-500'
+              }`}>
+                {s.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full max-w-xs">
+        <div className="h-1 bg-mystic-800/40 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-gold to-teal rounded-full transition-all duration-1000 ease-out"
+            style={{ width: `${((step + 1) / COMPUTE_STEPS.length) * 100}%` }}
+          />
+        </div>
       </div>
     </div>
   );

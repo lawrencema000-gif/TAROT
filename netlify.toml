@@ -12,6 +12,17 @@
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
     X-XSS-Protection = "1; mode=block"
 
+# Let static files through (app-ads.txt, privacy-policy, etc.)
+[[redirects]]
+  from = "/app-ads.txt"
+  to = "/app-ads.txt"
+  status = 200
+
+[[redirects]]
+  from = "/privacy-policy.html"
+  to = "/privacy-policy.html"
+  status = 200
+
 # SPA fallback — all routes serve index.html for react-router
 [[redirects]]
   from = "/*"

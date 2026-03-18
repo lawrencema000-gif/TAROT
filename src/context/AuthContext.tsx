@@ -559,15 +559,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           const currentUrl = window.location.href;
           if (currentUrl.includes('code=') || currentUrl.includes('access_token=') || currentUrl.includes('error=')) {
-            logInfo('auth.init.webCallback', 'Processing web OAuth callback');
+            logInfo('auth.init.webCallback', 'Web OAuth callback detected — letting detectSessionInUrl handle exchange');
             generateCorrelationId('oauth');
-            const handled = await handleOAuthCallbackRef.current(currentUrl);
-            if (handled) {
-              window.history.replaceState({}, '', window.location.pathname);
-              if (mounted) setLoading(false);
-              endSpan(initSpan, 'success', { handledWebCallback: true });
-              return;
-            }
+            // Don't manually exchange — detectSessionInUrl: true already handles PKCE exchange.
+            // Manual exchange causes PKCE_VERIFIER_MISSING because the verifier is consumed by auto-detect.
+            // Just clean up the URL and let onAuthStateChange pick up the session.
+            window.history.replaceState({}, '', window.location.pathname);
           }
         }
 

@@ -45,6 +45,9 @@ function useExploreData(): LazyExploreData {
         getGenericAspectInterp: aspectMod.getGenericAspectInterp,
       };
       setLoaded(true);
+    }).catch((err) => {
+      console.warn('[Explore] Failed to load interpretation modules:', err);
+      if (!cancelled) setLoaded(true);
     });
     return () => { cancelled = true; };
   }, []);

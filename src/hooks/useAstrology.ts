@@ -16,16 +16,28 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 
 async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<T> {
   const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE}/${name}`, {
-    method: 'POST',
-    headers,
-    body: body ? JSON.stringify(body) : JSON.stringify({}),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(`${API_BASE}/${name}`, {
+      method: 'POST',
+      headers,
+      body: body ? JSON.stringify(body) : JSON.stringify({}),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text);
+    }
+    return res.json();
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new Error(`Request to ${name} timed out. Please try again.`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
   }
-  return res.json();
 }
 
 interface GeoResult {

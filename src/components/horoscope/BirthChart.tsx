@@ -35,6 +35,9 @@ function useInterpData() {
         getGenericAspectInterp: aspectMod.getGenericAspectInterp,
       };
       setLoaded(true);
+    }).catch((err) => {
+      console.warn('[BirthChart] Failed to load interpretation modules:', err);
+      if (!cancelled) setLoaded(true);
     });
     return () => { cancelled = true; };
   }, []);

@@ -40,12 +40,25 @@ Deno.serve(async (req) => {
 
   const webhookSecret = Deno.env.get('BLOG_WEBHOOK_SECRET')
 
-  // Accept secret from multiple sources: header, query param, or Authorization bearer
+  // Parse body first so we can check secret from body too
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Accept secret from: header, query param, Authorization bearer, or request body
   const url = new URL(req.url)
+  const bodyObj = (body && typeof body === 'object' && !Array.isArray(body)) ? body as Record<string, unknown> : null
   const providedSecret =
     req.headers.get('x-webhook-secret') ||
     url.searchParams.get('secret') ||
     req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+    (bodyObj?.secret as string) ||
     null
 
   if (!webhookSecret || providedSecret !== webhookSecret) {
@@ -56,8 +69,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json()
-    const posts = Array.isArray(body) ? body : [body]
+    const posts = Array.isArray(body) ? body : [body as Record<string, unknown>]
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,

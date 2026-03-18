@@ -10,6 +10,7 @@ const ALLOWED_ORIGINS = [
   "https://arcana-ritual-app.netlify.app",
   "capacitor://localhost",
   "http://localhost",
+  "https://localhost",
 ];
 
 /**

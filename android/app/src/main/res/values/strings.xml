@@ -5,4 +5,6 @@
     <string name="package_name">com.arcana.app</string>
     <string name="custom_url_scheme">com.arcana.app</string>
     <string name="admob_app_id">ca-app-pub-9489106590476826~4064386281</string>
+    <!-- Google Web Client ID for native sign-in (same as Supabase Google provider) -->
+    <string name="server_client_id">YOUR_WEB_CLIENT_ID.apps.googleusercontent.com</string>
 </resources>

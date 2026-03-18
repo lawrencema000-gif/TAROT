@@ -6,6 +6,7 @@ import { isAdmin as checkIsAdmin, verifyAdminStatus } from '../utils/admin';
 import { isNative, isIOS, getPlatform } from '../utils/platform';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { toast } from '../components/ui/Toast';
 import {
   generateCorrelationId,
@@ -702,78 +703,99 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setOAuthProcessing(true);
     lastProcessedUrlRef.current = null;
 
-    const redirectUrl = isNative()
-      ? 'com.arcana.app://auth'
-      : window.location.origin + window.location.pathname;
-
-    logInfo('auth.google.config', 'OAuth configuration', {
-      redirectUrl,
-      flowType: 'pkce',
-      skipBrowserRedirect: isNative(),
-    });
-
     try {
       if (isNative()) {
-        const generateUrlSpan = startSpan('auth.google.generateUrl');
+        // Native: use Google's native SDK for account picker (no browser redirect)
+        const nativeSpan = startSpan('auth.google.nativeSignIn');
 
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: redirectUrl,
-            skipBrowserRedirect: true,
-          },
-        });
+        try {
+          await GoogleAuth.initialize();
+          const googleUser = await GoogleAuth.signIn();
 
-        if (error) {
-          const normalized = normalizeSupabaseError(error);
-          logError('auth.google.urlGenerationFailed', 'Error generating OAuth URL', {
-            errorCode: normalized.code,
-            errorMessage: normalized.message,
-          });
-          setOAuthProcessing(false);
-          setCorrelationId(null);
-          endSpan(generateUrlSpan, 'failure');
-          endSpan(initiateSpan, 'failure');
-          return { error: new Error(normalized.message) };
-        }
-
-        endSpan(generateUrlSpan, 'success', { hasUrl: !!data?.url });
-
-        if (data?.url) {
-          logInfo('auth.google.urlGenerated', 'OAuth URL generated', {
-            urlLength: data.url.length,
+          logInfo('auth.google.nativeSuccess', 'Native Google sign-in succeeded', {
+            hasIdToken: !!googleUser.authentication.idToken,
+            email: googleUser.email,
           });
 
-          const openBrowserSpan = startSpan('auth.google.openBrowser');
+          endSpan(nativeSpan, 'success');
 
-          try {
-            if (isIOS()) {
-              await Browser.open({
-                url: data.url,
-                presentationStyle: 'popover',
-              });
-            } else {
-              await Browser.open({ url: data.url });
-            }
-            logInfo('auth.google.browserOpened', 'Browser opened successfully');
-            endSpan(openBrowserSpan, 'success');
-          } catch (browserErr) {
-            captureException('auth.google.browserFailed', browserErr);
+          // Exchange Google ID token with Supabase
+          const exchangeSpan = startSpan('auth.google.exchangeIdToken');
+
+          const { data, error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: googleUser.authentication.idToken,
+            access_token: googleUser.authentication.accessToken,
+          });
+
+          if (error) {
+            const normalized = normalizeSupabaseError(error);
+            logError('auth.google.idTokenExchangeFailed', 'Supabase ID token exchange failed', {
+              errorCode: normalized.code,
+              errorMessage: normalized.message,
+            });
             setOAuthProcessing(false);
             setCorrelationId(null);
-            endSpan(openBrowserSpan, 'failure');
+            endSpan(exchangeSpan, 'failure');
             endSpan(initiateSpan, 'failure');
-            return { error: new Error('Failed to open sign-in browser') };
+            return { error: new Error(normalized.message) };
           }
-        } else {
-          logError('auth.google.noUrl', 'No URL returned from Supabase');
-          setOAuthProcessing(false);
-          setCorrelationId(null);
-          endSpan(initiateSpan, 'failure', { reason: 'no_url' });
-          return { error: new Error('Failed to generate sign-in URL') };
+
+          logInfo('auth.google.idTokenExchangeSuccess', 'Supabase session created', {
+            hasSession: !!data.session,
+            userId: data.user?.id,
+          });
+          endSpan(exchangeSpan, 'success');
+
+        } catch (nativeErr) {
+          const errMsg = nativeErr instanceof Error ? nativeErr.message : String(nativeErr);
+
+          // User cancelled the sign-in
+          if (errMsg.includes('canceled') || errMsg.includes('cancelled') || errMsg.includes('12501')) {
+            logInfo('auth.google.nativeCancelled', 'User cancelled native Google sign-in');
+            setOAuthProcessing(false);
+            setCorrelationId(null);
+            endSpan(nativeSpan, 'cancelled');
+            endSpan(initiateSpan, 'cancelled');
+            return { error: null };
+          }
+
+          // Native sign-in failed — fall back to browser OAuth
+          logWarn('auth.google.nativeFallback', 'Native sign-in failed, falling back to browser OAuth', {
+            error: errMsg,
+          });
+          endSpan(nativeSpan, 'failure', { fallback: true });
+
+          const redirectUrl = 'com.arcana.app://auth';
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectUrl,
+              skipBrowserRedirect: true,
+            },
+          });
+
+          if (error) {
+            const normalized = normalizeSupabaseError(error);
+            setOAuthProcessing(false);
+            setCorrelationId(null);
+            endSpan(initiateSpan, 'failure');
+            return { error: new Error(normalized.message) };
+          }
+
+          if (data?.url) {
+            await Browser.open({ url: data.url });
+          } else {
+            setOAuthProcessing(false);
+            setCorrelationId(null);
+            endSpan(initiateSpan, 'failure');
+            return { error: new Error('Failed to generate sign-in URL') };
+          }
         }
       } else {
+        // Web: standard OAuth redirect flow
         const webOAuthSpan = startSpan('auth.google.webOAuth');
+        const redirectUrl = window.location.origin + window.location.pathname;
 
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
@@ -812,6 +834,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     const span = startSpan('auth.signOut');
     logInfo('auth.signOut.start', 'Signing out');
+
+    // Sign out of native Google SDK if on native platform
+    if (isNative()) {
+      try { await GoogleAuth.signOut(); } catch { /* ignore if not signed in via native */ }
+    }
 
     await supabase.auth.signOut();
     setProfile(null);

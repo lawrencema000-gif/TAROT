@@ -31,6 +31,14 @@
 			"tagForChildDirectedTreatment": false,
 			"tagForUnderAgeOfConsent": false,
 			"maxAdContentRating": "G"
+		},
+		"GoogleAuth": {
+			"scopes": [
+				"email",
+				"profile"
+			],
+			"clientId": "",
+			"forceCodeForRefreshToken": true
 		}
 	}
 }

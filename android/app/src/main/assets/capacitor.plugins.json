@@ -12,6 +12,10 @@
 		"classpath": "com.capacitorjs.plugins.browser.BrowserPlugin"
 	},
 	{
+		"pkg": "@capacitor/haptics",
+		"classpath": "com.capacitorjs.plugins.haptics.HapticsPlugin"
+	},
+	{
 		"pkg": "@capacitor/preferences",
 		"classpath": "com.capacitorjs.plugins.preferences.PreferencesPlugin"
 	},
@@ -22,6 +26,10 @@
 	{
 		"pkg": "@capacitor/status-bar",
 		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
+	},
+	{
+		"pkg": "@codetrix-studio/capacitor-google-auth",
+		"classpath": "com.codetrixstudio.capacitor.GoogleAuth.GoogleAuth"
 	},
 	{
 		"pkg": "@revenuecat/purchases-capacitor",

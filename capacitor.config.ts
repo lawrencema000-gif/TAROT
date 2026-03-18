@@ -41,6 +41,13 @@ const config: CapacitorConfig = {
       tagForUnderAgeOfConsent: false,
       maxAdContentRating: 'G',
     },
+    GoogleAuth: {
+      scopes: ['email', 'profile'],
+      // This must be the Web Application OAuth Client ID from Google Cloud Console
+      // (same one configured in Supabase Auth > Providers > Google)
+      clientId: '',
+      forceCodeForRefreshToken: true,
+    },
   },
 };
 

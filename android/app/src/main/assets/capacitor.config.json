@@ -38,8 +38,8 @@
 				"profile"
 			],
 			"clientId": "804690093810-kb7q1v06or3dffgk0a0nv6vnr1lnc70o.apps.googleusercontent.com",
-			"androidClientId": "804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d.apps.googleusercontent.com",
-			"iosClientId": "804690093810-qvqh4a4u59vkanlsekqe3k210v7pbch9.apps.googleusercontent.com",
+			"androidClientId": "804690093810-qvqh4a4u59vkanlsekqe3k210v7pbch9.apps.googleusercontent.com",
+			"iosClientId": "804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d.apps.googleusercontent.com",
 			"forceCodeForRefreshToken": true
 		}
 	}

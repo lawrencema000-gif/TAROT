@@ -5,6 +5,7 @@ import { Button, Card, HoroscopePageSkeleton } from '../components/ui';
 import { PaywallSheet } from '../components/premium';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
+import { preloadInterpModules } from '../data/preloadInterpModules';
 import type { HoroscopeSubTab } from '../types/astrology';
 
 const TABS: { id: HoroscopeSubTab; label: string; icon: typeof Sun; premiumOnly?: boolean }[] = [
@@ -88,6 +89,9 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const { profile } = useAuth();
 
+  // Start loading interpretation data modules immediately
+  useEffect(() => { preloadInterpModules(); }, []);
+
   useEffect(() => {
     if (!chartLoading && !chart) {
       setNeedsOnboarding(true);
@@ -100,11 +104,8 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
     refreshProfile();
   };
 
-  if (chartLoading) {
-    return <HoroscopePageSkeleton />;
-  }
-
-  if (needsOnboarding) {
+  // Only block for onboarding (no chart at all) — not for loading
+  if (needsOnboarding && !chartLoading) {
     return <HoroscopeOnboarding onComplete={handleOnboardingComplete} computeChart={computeChart} />;
   }
 

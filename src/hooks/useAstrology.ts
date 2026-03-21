@@ -5,6 +5,19 @@ import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEv
 const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// ── In-memory cache (survives tab switches, clears on page reload) ──
+const cache: Record<string, { data: unknown; ts: number }> = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCached<T>(key: string): T | null {
+  const entry = cache[key];
+  if (entry && Date.now() - entry.ts < CACHE_TTL) return entry.data as T;
+  return null;
+}
+function setCache(key: string, data: unknown) {
+  cache[key] = { data, ts: Date.now() };
+}
+
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
   return {
@@ -105,8 +118,8 @@ interface ChartResponse {
 }
 
 export function useNatalChart() {
-  const [chart, setChart] = useState<ChartResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [chart, setChart] = useState<ChartResponse | null>(() => getCached<ChartResponse>('chart'));
+  const [loading, setLoading] = useState(!getCached('chart'));
   const [error, setError] = useState<string | null>(null);
 
   const fetchChart = useCallback(async () => {
@@ -118,6 +131,7 @@ export function useNatalChart() {
         setChart(null);
       } else {
         setChart(data);
+        setCache('chart', data);
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load chart';
@@ -131,7 +145,11 @@ export function useNatalChart() {
     }
   }, []);
 
-  useEffect(() => { fetchChart(); }, [fetchChart]);
+  useEffect(() => {
+    // If we already have cached data, skip the initial fetch
+    if (getCached('chart')) return;
+    fetchChart();
+  }, [fetchChart]);
 
   const computeChart = useCallback(async (params: {
     birthDate: string;
@@ -146,6 +164,7 @@ export function useNatalChart() {
     try {
       const data = await callFn<ChartResponse>('astrology-compute-natal', params);
       setChart(data);
+      setCache('chart', data);
       return data;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to compute chart');
@@ -159,16 +178,22 @@ export function useNatalChart() {
 }
 
 export function useDailyHoroscope() {
-  const [content, setContent] = useState<DailyContent | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = 'daily';
+  const [content, setContent] = useState<DailyContent | null>(() => getCached<DailyContent>(cacheKey));
+  const [loading, setLoading] = useState(!getCached(cacheKey));
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async (date?: string) => {
+    const key = date ? `daily-${date}` : cacheKey;
+    const cached = getCached<DailyContent>(key);
+    if (cached) { setContent(cached); setLoading(false); return; }
+
     setLoading(true);
     setError(null);
     try {
       const data = await callFn<DailyContent>('astrology-daily', date ? { date } : {});
       setContent(data);
+      setCache(key, data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load daily horoscope');
     } finally {
@@ -176,22 +201,30 @@ export function useDailyHoroscope() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (getCached(cacheKey)) return;
+    load();
+  }, [load]);
 
   return { content, loading, error, refresh: load };
 }
 
 export function useWeeklyForecast() {
-  const [content, setContent] = useState<WeeklyContent | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = 'weekly';
+  const [content, setContent] = useState<WeeklyContent | null>(() => getCached<WeeklyContent>(cacheKey));
+  const [loading, setLoading] = useState(!getCached(cacheKey));
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const cached = getCached<WeeklyContent>(cacheKey);
+    if (cached) { setContent(cached); setLoading(false); return; }
+
     setLoading(true);
     setError(null);
     try {
       const data = await callFn<WeeklyContent>('astrology-weekly');
       setContent(data);
+      setCache(cacheKey, data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load weekly forecast');
     } finally {
@@ -199,22 +232,30 @@ export function useWeeklyForecast() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (getCached(cacheKey)) return;
+    load();
+  }, [load]);
 
   return { content, loading, error, refresh: load };
 }
 
 export function useMonthlyForecast() {
-  const [content, setContent] = useState<MonthlyContent | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = 'monthly';
+  const [content, setContent] = useState<MonthlyContent | null>(() => getCached<MonthlyContent>(cacheKey));
+  const [loading, setLoading] = useState(!getCached(cacheKey));
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const cached = getCached<MonthlyContent>(cacheKey);
+    if (cached) { setContent(cached); setLoading(false); return; }
+
     setLoading(true);
     setError(null);
     try {
       const data = await callFn<MonthlyContent>('astrology-monthly');
       setContent(data);
+      setCache(cacheKey, data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load monthly forecast');
     } finally {
@@ -222,7 +263,10 @@ export function useMonthlyForecast() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (getCached(cacheKey)) return;
+    load();
+  }, [load]);
 
   return { content, loading, error, refresh: load };
 }
@@ -233,6 +277,10 @@ export function useTransitCalendar() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async (natalPlanet?: string) => {
+    const cacheKey = `transits-${natalPlanet || 'all'}`;
+    const cached = getCached<{ events: TransitEvent[] }>(cacheKey);
+    if (cached) { setEvents(cached.events || []); return; }
+
     setLoading(true);
     setError(null);
     try {
@@ -240,6 +288,7 @@ export function useTransitCalendar() {
       if (natalPlanet) params.natalPlanet = natalPlanet;
       const data = await callFn<{ events: TransitEvent[] }>('astrology-transit-calendar', params);
       setEvents(data.events || []);
+      setCache(cacheKey, data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load transits');
     } finally {

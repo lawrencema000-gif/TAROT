@@ -1,8 +1,17 @@
 import { isNative, isWeb, isAndroid } from '../utils/platform';
+import { registerPlugin } from '@capacitor/core';
 import { actionCounter, type ActionType } from './actionCounter';
 import { supabase } from '../lib/supabase';
 import { rewardedAdsService } from './rewardedAds';
 import { appStorage } from '../lib/appStorage';
+
+// Custom Capacitor plugin for App Open Ads (native Android only)
+interface AppOpenAdPlugin {
+  load(options: { adUnitId: string }): Promise<void>;
+  show(): Promise<void>;
+  isLoaded(): Promise<{ loaded: boolean }>;
+}
+const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 
@@ -10,7 +19,12 @@ const AD_COOLDOWN_MS = 10 * 60 * 1000;
 const TEST_AD_IDS = {
   interstitial: { android: 'ca-app-pub-3940256099942544/1033173712', ios: 'ca-app-pub-3940256099942544/4411468910' },
   banner: { android: 'ca-app-pub-3940256099942544/6300978111', ios: 'ca-app-pub-3940256099942544/2934735716' },
+  appOpen: { android: 'ca-app-pub-3940256099942544/9257395921' },
 };
+
+const APP_OPEN_AD_ID = import.meta.env.PROD
+  ? (import.meta.env.VITE_ADMOB_APPOPEN_ANDROID || TEST_AD_IDS.appOpen.android)
+  : TEST_AD_IDS.appOpen.android;
 
 const AD_UNIT_IDS = import.meta.env.PROD
   ? {
@@ -57,7 +71,6 @@ class AdsService {
   private isBannerVisible = false;
   private currentUserId: string | null = null;
   private pluginAvailable = false;
-  // App open ads not supported by current @capacitor-community/admob version
 
   async initialize(userId: string | null = null): Promise<void> {
     if (isWeb()) {
@@ -178,9 +191,18 @@ class AdsService {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async showAppOpenAdOnColdStart(_isPremium: boolean, _isAdFree: boolean): Promise<void> {
-    // App open ads not supported by current @capacitor-community/admob version — no-op
+  async showAppOpenAdOnColdStart(isPremium: boolean, isAdFree: boolean): Promise<void> {
+    if (isWeb() || !isNative() || !isAndroid()) return;
+    if (isPremium || isAdFree) return;
+
+    try {
+      await AppOpenAd.load({ adUnitId: APP_OPEN_AD_ID });
+      await AppOpenAd.show();
+      await this.trackImpression('banner', 'appopen');
+      console.log('[Ads] App open ad shown');
+    } catch (error) {
+      console.warn('[Ads] App open ad failed:', error);
+    }
   }
 
   private isInCooldown(): boolean {

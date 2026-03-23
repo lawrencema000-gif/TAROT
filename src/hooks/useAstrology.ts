@@ -25,9 +25,12 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
     const { data } = await supabase.auth.refreshSession();
     session = data.session;
   }
+  if (!session?.access_token) {
+    throw new Error('You must be signed in to view horoscopes. Please log in and try again.');
+  }
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${session?.access_token || ANON_KEY}`,
+    'Authorization': `Bearer ${session.access_token}`,
     'apikey': ANON_KEY,
   };
 }

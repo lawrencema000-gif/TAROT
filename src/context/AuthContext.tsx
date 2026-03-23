@@ -564,27 +564,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             generateCorrelationId('oauth');
             setOAuthProcessing(true);
 
-            // Extract and exchange the code manually.
-            // detectSessionInUrl may have already handled this — exchangeCodeForSession
-            // will return an error if the code was already used, which we handle gracefully.
             const code = extractCodeFromUrl(currentUrl);
+            // Clean up URL immediately — we've captured the code
+            window.history.replaceState({}, '', window.location.pathname);
+
             if (code) {
               logInfo('auth.init.exchangeCode', 'Exchanging PKCE code for session');
               const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
               if (exchangeError) {
-                // If code was already consumed by detectSessionInUrl, session should exist
-                logWarn('auth.init.exchangeCodeError', exchangeError.message);
+                logError('auth.init.exchangeCodeError', 'Code exchange failed', {
+                  error: exchangeError.message,
+                });
+                toast('Sign in failed: ' + exchangeError.message, 'error');
               } else if (data?.session?.user) {
                 logInfo('auth.init.exchangeSuccess', 'Session established from code exchange');
                 if (mounted) {
                   setSession(data.session);
                   setUser(data.session.user);
                   fetchProfile(data.session.user.id);
+                  setOAuthProcessing(false);
+                  setLoading(false);
+                  endSpan(initSpan, 'success', { handledWebCallback: true });
+                  return; // Session established, skip getSession below
                 }
               }
             }
-            // Clean up the URL
-            window.history.replaceState({}, '', window.location.pathname);
+            setOAuthProcessing(false);
           }
         }
 

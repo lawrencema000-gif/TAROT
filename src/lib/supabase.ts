@@ -65,7 +65,7 @@ function initSupabase(): SupabaseClient {
     return createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         flowType: 'pkce',
-        detectSessionInUrl: !isNative,
+        detectSessionInUrl: false,
         persistSession: true,
         autoRefreshToken: true,
         storage: isNative ? nativeStorage : undefined,

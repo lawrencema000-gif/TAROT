@@ -18,12 +18,14 @@ function setCache(key: string, data: unknown) {
   cache[key] = { data, ts: Date.now() };
 }
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  // getSession returns the cached session; if expired, refreshSession gets a fresh one
-  let { data: { session } } = await supabase.auth.getSession();
+async function getFreshHeaders(): Promise<Record<string, string>> {
+  // Always refresh to ensure we have a non-expired token
+  const { data } = await supabase.auth.refreshSession();
+  let session = data.session;
   if (!session?.access_token) {
-    const { data } = await supabase.auth.refreshSession();
-    session = data.session;
+    // Fallback: try cached session (might still be valid)
+    const cached = await supabase.auth.getSession();
+    session = cached.data.session;
   }
   if (!session?.access_token) {
     throw new Error('You must be signed in to view horoscopes. Please log in and try again.');
@@ -36,7 +38,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 }
 
 async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<T> {
-  const headers = await getAuthHeaders();
+  const headers = await getFreshHeaders();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
@@ -47,6 +49,28 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
       signal: controller.signal,
     });
     if (!res.ok) {
+      // On 401, try once more with a forced refresh
+      if (res.status === 401) {
+        clearTimeout(timeout);
+        const retryHeaders = await getFreshHeaders();
+        const controller2 = new AbortController();
+        const timeout2 = setTimeout(() => controller2.abort(), 15000);
+        try {
+          const retry = await fetch(`${API_BASE}/${name}`, {
+            method: 'POST',
+            headers: retryHeaders,
+            body: body ? JSON.stringify(body) : JSON.stringify({}),
+            signal: controller2.signal,
+          });
+          if (!retry.ok) {
+            const text = await retry.text();
+            throw new Error(text);
+          }
+          return retry.json();
+        } finally {
+          clearTimeout(timeout2);
+        }
+      }
       const text = await res.text();
       throw new Error(text);
     }

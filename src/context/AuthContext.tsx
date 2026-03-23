@@ -562,10 +562,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (currentUrl.includes('code=') || currentUrl.includes('access_token=') || currentUrl.includes('error=')) {
             logInfo('auth.init.webCallback', 'Web OAuth callback detected — letting detectSessionInUrl handle exchange');
             generateCorrelationId('oauth');
+            setOAuthProcessing(true);
             // Don't manually exchange — detectSessionInUrl: true already handles PKCE exchange.
-            // Manual exchange causes PKCE_VERIFIER_MISSING because the verifier is consumed by auto-detect.
-            // Just clean up the URL and let onAuthStateChange pick up the session.
-            window.history.replaceState({}, '', window.location.pathname);
+            // Don't strip the URL here — the Supabase client needs the code= parameter
+            // to complete the async PKCE exchange. URL cleanup happens in onAuthStateChange.
           }
         }
 
@@ -615,6 +615,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isProcessingCallbackRef.current = false;
         setIsProcessingOAuth(false);
         setCorrelationId(null);
+        // Clean up OAuth params from URL bar after successful sign-in
+        if (!isNative() && (window.location.search.includes('code=') || window.location.hash.includes('access_token'))) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
       }
 
       setSession(session);

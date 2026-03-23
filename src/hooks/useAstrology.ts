@@ -19,10 +19,15 @@ function setCache(key: string, data: unknown) {
 }
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
+  // getSession returns the cached session; if expired, refreshSession gets a fresh one
+  let { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    const { data } = await supabase.auth.refreshSession();
+    session = data.session;
+  }
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${session?.access_token || ''}`,
+    'Authorization': `Bearer ${session?.access_token || ANON_KEY}`,
     'apikey': ANON_KEY,
   };
 }

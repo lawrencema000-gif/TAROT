@@ -116,9 +116,10 @@ function mapDbToProfile(db: DbProfile): UserProfile {
 }
 
 // Strict allowlist of fields the client is permitted to write.
-// Server-managed fields (is_premium, is_ad_free, level, streak,
+// Server-managed fields (is_premium, is_ad_free, level,
 // total_readings, total_journal_entries) are excluded here AND
 // protected by a DB trigger as defense-in-depth.
+// streak and lastRitualDate are client-writable (updated on ritual completion).
 const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   displayName: 'display_name',
   birthDate: 'birth_date',
@@ -138,6 +139,8 @@ const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   card_back_url: 'card_back_url',
   background_url: 'background_url',
   subscribedToNewsletter: 'subscribed_to_newsletter',
+  streak: 'streak',
+  lastRitualDate: 'last_ritual_date',
 };
 
 function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> {

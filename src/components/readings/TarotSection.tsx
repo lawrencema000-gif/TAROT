@@ -31,7 +31,8 @@ import type { TarotCard } from '../../types';
 import { useImagePreloader } from '../../hooks/useImagePreloader';
 import { adsService } from '../../services/ads';
 import { awardXP } from '../../services/levelSystem';
-import { checkAchievementProgress } from '../../services/achievements';
+import { checkAchievementProgress, checkSpecificCardAchievement } from '../../services/achievements';
+import { isFullMoon } from '../../utils/moonPhase';
 import { getBundledCardPath } from '../../config/bundledImages';
 import { WatchAdSheet } from '../premium';
 import { rewardedAdsService } from '../../services/rewardedAds';
@@ -342,6 +343,18 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         checkAchievementProgress(user.id, 'celtic_cross_complete');
       }
       checkAchievementProgress(user.id, 'spread_types_used');
+
+      // Calendar/time achievements
+      const now = new Date();
+      if (isFullMoon(now)) checkAchievementProgress(user.id, 'full_moon_reading');
+      if (now.getMonth() === 0 && now.getDate() === 1) checkAchievementProgress(user.id, 'new_year_reading');
+      const hour = now.getHours();
+      if (hour >= 0 && hour < 3) checkAchievementProgress(user.id, 'witching_hour_reading');
+
+      // Specific card achievements
+      for (const drawn of selectedCards) {
+        checkSpecificCardAchievement(user.id, drawn.name);
+      }
     }
   };
 
@@ -1071,6 +1084,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                 onClick={() => {
                   setSelectedCard({ card, reversed: false });
                   setShowBrowse(false);
+                  // Track card exploration for achievements
+                  if (user) checkAchievementProgress(user.id, 'cards_explored');
                 }}
                 className="relative aspect-[2/3] rounded-xl border border-mystic-600 hover:border-gold/50 hover:scale-105 active:scale-95 transition-all overflow-hidden group min-h-[140px]"
               >

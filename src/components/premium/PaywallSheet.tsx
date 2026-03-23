@@ -149,7 +149,7 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
 }
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
-  const { updateProfile, refreshProfile } = useAuth();
+  const { user, updateProfile, refreshProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -232,6 +232,11 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       if (result.success) {
         await updateProfile({ isPremium: true });
         await refreshProfile();
+        if (user) {
+          import('../../services/achievements').then(({ checkAchievementProgress }) => {
+            checkAchievementProgress(user.id, 'premium_upgrade');
+          });
+        }
         toast('Welcome to Premium!', 'success');
         onClose();
       } else if (result.error) {

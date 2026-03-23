@@ -211,7 +211,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data) {
-      setProfile(mapDbToProfile(data as DbProfile));
+      const profile = mapDbToProfile(data as DbProfile);
+      setProfile(profile);
+
+      // Update streak on app open
+      const today = new Date().toISOString().split('T')[0];
+      const lastDate = profile.lastRitualDate;
+      if (lastDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const newStreak = lastDate === yesterdayStr ? (profile.streak || 0) + 1 : 1;
+
+        await supabase
+          .from('profiles')
+          .update({ streak: newStreak, last_ritual_date: today })
+          .eq('id', userId);
+
+        setProfile(prev => prev ? { ...prev, streak: newStreak, lastRitualDate: today } : prev);
+
+        // Check birthday achievement
+        if (profile.birthDate) {
+          const birthParts = profile.birthDate.split('-');
+          const todayParts = today.split('-');
+          if (birthParts[1] === todayParts[1] && birthParts[2] === todayParts[2]) {
+            import('../services/achievements').then(({ checkAchievementProgress }) => {
+              checkAchievementProgress(userId, 'birthday_login');
+            });
+          }
+        }
+      }
     }
   }, []);
 

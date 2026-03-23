@@ -264,6 +264,57 @@ export async function unlockAchievement(
   }
 }
 
+// Card-specific achievement tracking
+const CARD_ACHIEVEMENTS: Record<string, { name: string; target: number }> = {
+  'The Chariot': { name: 'Lucky Seven', target: 7 },
+  'The Tower': { name: 'Tower Moment', target: 1 },
+  'The Fool': { name: 'Fools Journey', target: 3 },
+};
+
+export async function checkSpecificCardAchievement(userId: string, cardName: string): Promise<void> {
+  const mapping = CARD_ACHIEVEMENTS[cardName];
+  if (!mapping) return;
+  try {
+    const { data: achievement } = await supabase
+      .from('achievements')
+      .select('id')
+      .eq('name', mapping.name)
+      .maybeSingle();
+
+    if (!achievement) {
+      // Fallback: try via activity_type
+      await checkAchievementProgress(userId, 'specific_card_drawn');
+      return;
+    }
+
+    const { data: userAch } = await supabase
+      .from('user_achievements')
+      .select('progress, unlocked_at')
+      .eq('user_id', userId)
+      .eq('achievement_id', achievement.id)
+      .maybeSingle();
+
+    if (userAch?.unlocked_at) return; // Already unlocked
+
+    const newProgress = (userAch?.progress || 0) + 1;
+    const nowUnlocked = newProgress >= mapping.target;
+
+    if (userAch) {
+      await supabase
+        .from('user_achievements')
+        .update({ progress: newProgress, unlocked_at: nowUnlocked ? new Date().toISOString() : null })
+        .eq('user_id', userId)
+        .eq('achievement_id', achievement.id);
+    } else {
+      await supabase
+        .from('user_achievements')
+        .insert({ user_id: userId, achievement_id: achievement.id, progress: newProgress, target: mapping.target, unlocked_at: nowUnlocked ? new Date().toISOString() : null });
+    }
+  } catch (e) {
+    console.error('Failed to check specific card achievement:', e);
+  }
+}
+
 export async function getAchievementStats(userId: string): Promise<AchievementStats | null> {
   try {
     const { data, error } = await supabase.rpc('get_user_achievement_stats', {

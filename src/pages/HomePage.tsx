@@ -23,6 +23,7 @@ import { drawSeededCards } from '../utils/cardDraw';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMilestone } from '../services/levelSystem';
+import { checkAchievementProgress } from '../services/achievements';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 
 interface RitualState {
@@ -185,22 +186,6 @@ export function HomePage() {
     });
 
     if (newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed && !ritualState.completed) {
-      const lastRitualDate = profile?.lastRitualDate;
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-      let newStreak: number;
-      if (lastRitualDate === today) {
-        newStreak = profile?.streak || 1;
-      } else if (lastRitualDate === yesterdayStr) {
-        newStreak = (profile?.streak || 0) + 1;
-      } else {
-        newStreak = 1;
-      }
-
-      await updateProfile({ streak: newStreak, lastRitualDate: today });
-      setStreak(newStreak);
       setRitualState(prev => ({ ...prev, completed: true }));
 
       const xpResult = await awardXP(user.id, 'ritual_complete');
@@ -216,7 +201,17 @@ export function HomePage() {
           });
         }
 
-        await checkAndAwardStreakMilestone(user.id, newStreak);
+        // Streak is updated on app open; use current profile streak for milestone check
+        const currentStreak = profile?.streak || 1;
+        await checkAndAwardStreakMilestone(user.id, currentStreak);
+
+        // Time-based achievements
+        const hour = new Date().getHours();
+        if (hour < 7) checkAchievementProgress(user.id, 'morning_ritual');
+        if (hour >= 22) checkAchievementProgress(user.id, 'evening_ritual');
+        const dayOfWeek = new Date().getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) checkAchievementProgress(user.id, 'weekend_ritual');
+
         await refreshProfile();
 
         const progress = getXPProgress(xpResult.total_xp, xpResult.new_level, levelThresholds);

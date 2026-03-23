@@ -560,12 +560,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           const currentUrl = window.location.href;
           if (currentUrl.includes('code=') || currentUrl.includes('access_token=') || currentUrl.includes('error=')) {
-            logInfo('auth.init.webCallback', 'Web OAuth callback detected — letting detectSessionInUrl handle exchange');
+            logInfo('auth.init.webCallback', 'Web OAuth callback detected');
             generateCorrelationId('oauth');
             setOAuthProcessing(true);
-            // Don't manually exchange — detectSessionInUrl: true already handles PKCE exchange.
-            // Don't strip the URL here — the Supabase client needs the code= parameter
-            // to complete the async PKCE exchange. URL cleanup happens in onAuthStateChange.
+
+            // Extract and exchange the code manually.
+            // detectSessionInUrl may have already handled this — exchangeCodeForSession
+            // will return an error if the code was already used, which we handle gracefully.
+            const code = extractCodeFromUrl(currentUrl);
+            if (code) {
+              logInfo('auth.init.exchangeCode', 'Exchanging PKCE code for session');
+              const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+              if (exchangeError) {
+                // If code was already consumed by detectSessionInUrl, session should exist
+                logWarn('auth.init.exchangeCodeError', exchangeError.message);
+              } else if (data?.session?.user) {
+                logInfo('auth.init.exchangeSuccess', 'Session established from code exchange');
+                if (mounted) {
+                  setSession(data.session);
+                  setUser(data.session.user);
+                  fetchProfile(data.session.user.id);
+                }
+              }
+            }
+            // Clean up the URL
+            window.history.replaceState({}, '', window.location.pathname);
           }
         }
 

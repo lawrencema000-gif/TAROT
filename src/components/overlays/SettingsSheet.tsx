@@ -227,13 +227,23 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    onClose();
+    try {
+      await signOut();
+    } catch (e) {
+      console.error('[Settings] Sign out error:', e);
+    } finally {
+      onClose();
+    }
   };
 
   const handleSwitchAccount = async () => {
-    await signOut();
-    onClose();
+    try {
+      await signOut();
+    } catch (e) {
+      console.error('[Settings] Switch account error:', e);
+    } finally {
+      onClose();
+    }
   };
 
   const handleExportData = async () => {

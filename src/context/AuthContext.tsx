@@ -895,17 +895,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const span = startSpan('auth.signOut');
     logInfo('auth.signOut.start', 'Signing out');
 
-    // Sign out of native Google SDK if on native platform
-    if (isNative()) {
-      try { await GoogleAuth.signOut(); } catch { /* ignore if not signed in via native */ }
+    try {
+      // 1. Clear persisted Supabase session FIRST so even if native
+      //    plugins crash the app, re-opening lands on the sign-in screen.
+      await supabase.auth.signOut();
+    } catch (e) {
+      logError('auth.signOut.supabase', 'Supabase sign out error', { error: e });
     }
 
-    await supabase.auth.signOut();
+    // 2. Clear UI state immediately
+    setSession(null);
+    setUser(null);
     setProfile(null);
 
-    const { getBillingService } = await import('../services/billing');
-    const billingService = getBillingService();
-    await billingService.logOut();
+    // 3. Sign out of native Google SDK (isolated — if this crashes,
+    //    the session is already cleared above)
+    if (isNative()) {
+      try { await GoogleAuth.signOut(); } catch { /* ignore */ }
+    }
+
+    // 4. Sign out of RevenueCat
+    try {
+      const { getBillingService } = await import('../services/billing');
+      const billingService = getBillingService();
+      await billingService.logOut();
+    } catch (e) {
+      logError('auth.signOut.billing', 'Billing sign out error', { error: e });
+    }
 
     logInfo('auth.signOut.complete', 'Sign out complete');
     endSpan(span, 'success');

@@ -15,29 +15,19 @@ const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 
-// Google test ad unit IDs — used in dev builds or when env vars are missing
-const TEST_AD_IDS = {
-  interstitial: { android: 'ca-app-pub-3940256099942544/1033173712', ios: 'ca-app-pub-3940256099942544/4411468910' },
-  banner: { android: 'ca-app-pub-3940256099942544/6300978111', ios: 'ca-app-pub-3940256099942544/2934735716' },
-  appOpen: { android: 'ca-app-pub-3940256099942544/9257395921' },
+// Production ad unit IDs from environment variables
+const APP_OPEN_AD_ID = import.meta.env.VITE_ADMOB_APPOPEN_ANDROID || '';
+
+const AD_UNIT_IDS = {
+  interstitial: {
+    android: import.meta.env.VITE_ADMOB_INTERSTITIAL_ANDROID || '',
+    ios: import.meta.env.VITE_ADMOB_INTERSTITIAL_IOS || '',
+  },
+  banner: {
+    android: import.meta.env.VITE_ADMOB_BANNER_ANDROID || '',
+    ios: import.meta.env.VITE_ADMOB_BANNER_IOS || '',
+  },
 };
-
-const APP_OPEN_AD_ID = import.meta.env.PROD
-  ? (import.meta.env.VITE_ADMOB_APPOPEN_ANDROID || TEST_AD_IDS.appOpen.android)
-  : TEST_AD_IDS.appOpen.android;
-
-const AD_UNIT_IDS = import.meta.env.PROD
-  ? {
-      interstitial: {
-        android: import.meta.env.VITE_ADMOB_INTERSTITIAL_ANDROID || TEST_AD_IDS.interstitial.android,
-        ios: import.meta.env.VITE_ADMOB_INTERSTITIAL_IOS || TEST_AD_IDS.interstitial.ios,
-      },
-      banner: {
-        android: import.meta.env.VITE_ADMOB_BANNER_ANDROID || TEST_AD_IDS.banner.android,
-        ios: import.meta.env.VITE_ADMOB_BANNER_IOS || TEST_AD_IDS.banner.ios,
-      },
-    }
-  : TEST_AD_IDS;
 
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
 

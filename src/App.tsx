@@ -124,8 +124,8 @@ function AppContent() {
 
   const BANNER_TABS = useMemo(() => new Set(['readings', 'journal', 'achievements', 'profile', 'horoscope']), []);
   const showBanner = useMemo(
-    () => BANNER_TABS.has(activeTab) && !activeOverlay,
-    [BANNER_TABS, activeTab, activeOverlay]
+    () => BANNER_TABS.has(activeTab) && !activeOverlay && !profile?.isPremium && !profile?.isAdFree,
+    [BANNER_TABS, activeTab, activeOverlay, profile?.isPremium, profile?.isAdFree]
   );
 
   useEffect(() => {

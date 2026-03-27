@@ -166,6 +166,8 @@ class AdsService {
 
     AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
       this.isBannerVisible = false;
+      // Remove the native view so it doesn't leave empty space
+      AdMob?.removeBanner().catch(() => {});
     });
 
     AdMob.addListener(BannerAdPluginEvents.Opened, () => {

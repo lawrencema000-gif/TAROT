@@ -118,8 +118,8 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      fractionalSecondDigits: 3 as const,
-    });
+      fractionalSecondDigits: 3,
+    } as Intl.DateTimeFormatOptions);
   };
 
   const correlationIds = useMemo(() => {

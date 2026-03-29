@@ -299,7 +299,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-mystic-200 mb-2">Card of the Day</h4>
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl">{tarotCard.suit === 'major' ? '🌟' : tarotCard.suit === 'wands' ? '🔥' : tarotCard.suit === 'cups' ? '💧' : tarotCard.suit === 'swords' ? '⚔️' : '🌍'}</div>
+                    <div className="text-2xl">{tarotCard.arcana === 'major' ? '🌟' : tarotCard.suit === 'wands' ? '🔥' : tarotCard.suit === 'cups' ? '💧' : tarotCard.suit === 'swords' ? '⚔️' : '🌍'}</div>
                     <div>
                       <p className="text-sm text-gold font-medium">{tarotCard.name}</p>
                       <p className="text-xs text-mystic-400 mt-0.5">{tarotCard.keywords.slice(0, 3).join(', ')}</p>

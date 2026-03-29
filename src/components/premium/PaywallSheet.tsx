@@ -149,7 +149,7 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
 }
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
-  const { user, updateProfile, refreshProfile } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -230,7 +230,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       const result = await billing.purchase(plan.productId, plan.product);
 
       if (result.success) {
-        await updateProfile({ isPremium: true });
+        // Premium status is set server-side by RevenueCat webhook — just refresh
         await refreshProfile();
         if (user) {
           import('../../services/achievements').then(({ checkAchievementProgress }) => {
@@ -256,7 +256,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       const purchases = await billing.restorePurchases();
 
       if (purchases.some(p => p.success)) {
-        await updateProfile({ isPremium: true });
+        // Premium status is set server-side by RevenueCat webhook — just refresh
         await refreshProfile();
         toast('Purchases restored!', 'success');
         onClose();

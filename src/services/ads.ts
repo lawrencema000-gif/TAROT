@@ -1,8 +1,8 @@
 import { isNative, isWeb, isAndroid } from '../utils/platform';
 import { registerPlugin } from '@capacitor/core';
 import { actionCounter, type ActionType } from './actionCounter';
-import { supabase } from '../lib/supabase';
 import { rewardedAdsService } from './rewardedAds';
+import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';
 
 // Custom Capacitor plugin for App Open Ads (native Android only)
@@ -14,21 +14,6 @@ interface AppOpenAdPlugin {
 const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
-
-// Production ad unit IDs from environment variables
-const APP_OPEN_AD_ID = import.meta.env.VITE_ADMOB_APPOPEN_ANDROID || '';
-
-const AD_UNIT_IDS = {
-  interstitial: {
-    android: import.meta.env.VITE_ADMOB_INTERSTITIAL_ANDROID || '',
-    ios: import.meta.env.VITE_ADMOB_INTERSTITIAL_IOS || '',
-  },
-  banner: {
-    android: import.meta.env.VITE_ADMOB_BANNER_ANDROID || '',
-    ios: import.meta.env.VITE_ADMOB_BANNER_IOS || '',
-  },
-};
-
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
@@ -82,6 +67,9 @@ class AdsService {
       }
 
       await this.loadLastAdTime();
+
+      // Fetch ad config from backend (non-blocking — uses env fallbacks if it fails)
+      adConfigService.fetchConfig().catch(() => {});
 
       await AdMob.initialize({
         testingDevices: [],
@@ -147,10 +135,7 @@ class AdsService {
     if (isWeb() || !this.pluginAvailable || !AdMob) return;
 
     try {
-      const adId = isAndroid()
-        ? AD_UNIT_IDS.interstitial.android
-        : AD_UNIT_IDS.interstitial.ios;
-
+      const adId = adConfigService.getAdUnitId('interstitial');
       await AdMob.prepareInterstitial({ adId });
     } catch (error) {
       console.error('[Ads] Failed to preload interstitial:', error);
@@ -166,7 +151,6 @@ class AdsService {
 
     AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
       this.isBannerVisible = false;
-      // Remove the native view so it doesn't leave empty space
       AdMob?.removeBanner().catch(() => {});
     });
 
@@ -179,7 +163,8 @@ class AdsService {
     });
 
     AdMob.addListener(BannerAdPluginEvents.AdImpression, () => {
-      this.trackImpression('banner', 'banner');
+      // Track banner impression via backend
+      adConfigService.trackEvent('banner', 'navigation');
     });
   }
 
@@ -188,9 +173,13 @@ class AdsService {
     if (isPremium || isAdFree) return;
 
     try {
-      await AppOpenAd.load({ adUnitId: APP_OPEN_AD_ID });
+      const adUnitId = adConfigService.getAdUnitId('app_open');
+      if (!adUnitId) return;
+
+      await AppOpenAd.load({ adUnitId });
       await AppOpenAd.show();
-      await this.trackImpression('banner', 'appopen');
+      // Track as app_open type with app_launch trigger
+      await adConfigService.trackEvent('app_open', 'app_launch');
       console.log('[Ads] App open ad shown');
     } catch (error) {
       console.warn('[Ads] App open ad failed:', error);
@@ -199,6 +188,16 @@ class AdsService {
 
   private isInCooldown(): boolean {
     return Date.now() - this.lastAdTime < AD_COOLDOWN_MS;
+  }
+
+  private mapActionToTrigger(actionType: ActionType): 'reading' | 'quiz' | 'journal' | 'navigation' {
+    const map: Record<ActionType, 'reading' | 'quiz' | 'journal' | 'navigation'> = {
+      reading: 'reading',
+      quiz: 'quiz',
+      journal: 'journal',
+      horoscope: 'navigation',
+    };
+    return map[actionType] || 'navigation';
   }
 
   async checkAndShowAd(isPremium: boolean, actionType: ActionType, isAdFree = false): Promise<void> {
@@ -227,8 +226,9 @@ class AdsService {
     }
 
     try {
-      await this.trackImpression(actionType, 'interstitial');
       await AdMob.showInterstitial();
+      // Track impression AFTER successful display
+      await adConfigService.trackEvent('interstitial', this.mapActionToTrigger(actionType));
       actionCounter.recordAdShown();
     } catch (error) {
       console.error('[Ads] Failed to show interstitial:', error);
@@ -241,15 +241,12 @@ class AdsService {
     if (isWeb() || !this.pluginAvailable || !AdMob || !BannerAdSize || !BannerAdPosition) return;
 
     try {
-      // Remove any stale banner before showing a fresh one
       if (this.isBannerVisible) {
         try { await AdMob.removeBanner(); } catch { /* ignore */ }
         this.isBannerVisible = false;
       }
 
-      const adId = isAndroid()
-        ? AD_UNIT_IDS.banner.android
-        : AD_UNIT_IDS.banner.ios;
+      const adId = adConfigService.getAdUnitId('banner');
 
       await AdMob.showBanner({
         adId,
@@ -295,32 +292,14 @@ class AdsService {
     return this.isBannerVisible;
   }
 
-  private async trackImpression(actionType: ActionType | 'banner', adType: string): Promise<void> {
-    if (!this.currentUserId) return;
-
-    try {
-      const platform = isAndroid() ? 'android' : 'ios';
-      let adUnitId: string;
-      if (adType === 'banner') {
-        adUnitId = isAndroid() ? AD_UNIT_IDS.banner.android : AD_UNIT_IDS.banner.ios;
-      } else {
-        adUnitId = isAndroid() ? AD_UNIT_IDS.interstitial.android : AD_UNIT_IDS.interstitial.ios;
-      }
-
-      await supabase.from('ad_impressions').insert({
-        user_id: this.currentUserId,
-        platform,
-        action_trigger: actionType,
-        ad_unit_id: adUnitId,
-      });
-    } catch (error) {
-      console.error('[Ads] Failed to track impression:', error);
-    }
-  }
-
   setUserId(userId: string | null): void {
     this.currentUserId = userId;
     rewardedAdsService.setUserId(userId);
+    // Refresh config now that we have a user (gets premium status + daily stats)
+    if (userId) {
+      adConfigService.invalidate();
+      adConfigService.fetchConfig().catch(() => {});
+    }
   }
 
   getActionProgress(): { count: number; threshold: number; percentage: number } {

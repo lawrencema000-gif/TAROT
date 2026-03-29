@@ -1,17 +1,12 @@
-import { supabase } from '../lib/supabase';
 import { isNative, isAndroid } from '../utils/platform';
 import type { PremiumFeature } from './premium';
+import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';
+import { supabase } from '../lib/supabase';
 
 const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
-
-// Production ad unit IDs from environment variables
-const REWARDED_AD_UNIT_IDS = {
-  android: import.meta.env.VITE_ADMOB_REWARDED_ANDROID || '',
-  ios: import.meta.env.VITE_ADMOB_REWARDED_IOS || '',
-};
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
 let RewardAdPluginEvents: typeof import('@capacitor-community/admob').RewardAdPluginEvents | null = null;
@@ -27,11 +22,6 @@ async function loadAdMobPlugin(): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-interface DailyCount {
-  count: number;
-  date: string;
 }
 
 class RewardedAdsService {
@@ -106,49 +96,28 @@ class RewardedAdsService {
     if (!this.pluginAvailable || !AdMob) return;
 
     try {
-      const adUnitId = isAndroid()
-        ? REWARDED_AD_UNIT_IDS.android
-        : REWARDED_AD_UNIT_IDS.ios;
-
-      await AdMob.prepareRewardVideoAd({
-        adId: adUnitId,
-      });
-
+      const adUnitId = adConfigService.getAdUnitId('rewarded');
+      await AdMob.prepareRewardVideoAd({ adId: adUnitId });
     } catch {
       /* empty */
     }
   }
 
-  private async getDailyCount(): Promise<DailyCount> {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const storedDate = await appStorage.get(DAILY_DATE_KEY);
-      const storedCount = await appStorage.get(DAILY_COUNT_KEY);
-
-      if (storedDate === today && storedCount) {
-        return { count: parseInt(storedCount, 10), date: today };
-      }
-
-      await appStorage.set(DAILY_DATE_KEY, today);
-      await appStorage.set(DAILY_COUNT_KEY, '0');
-      return { count: 0, date: today };
-    } catch {
-      return { count: 0, date: new Date().toISOString().split('T')[0] };
-    }
-  }
-
-  private async incrementDailyCount(): Promise<void> {
-    try {
-      const { count, date } = await this.getDailyCount();
-      await appStorage.set(DAILY_DATE_KEY, date);
-      await appStorage.set(DAILY_COUNT_KEY, (count + 1).toString());
-    } catch {
-      /* empty */
-    }
-  }
-
+  /**
+   * Get remaining rewarded ad watches for today.
+   * Uses server stats first (authoritative), falls back to local storage.
+   */
   async getRemainingUnlocks(): Promise<number> {
-    const { count } = await this.getDailyCount();
+    // Try server-authoritative count first
+    const serverRemaining = adConfigService.getRewardedRemaining();
+    const stats = adConfigService.getDailyStats();
+
+    if (stats) {
+      return serverRemaining;
+    }
+
+    // Fallback to local storage if no server data yet
+    const { count } = await this.getLocalDailyCount();
     return Math.max(0, DAILY_LIMIT - count);
   }
 
@@ -191,13 +160,13 @@ class RewardedAdsService {
   private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<void> {
     if (!this.currentUserId) return;
 
-    this.incrementDailyCount();
+    // Track locally as backup
+    this.incrementLocalDailyCount();
 
-    const adUnitId = isAndroid()
-      ? REWARDED_AD_UNIT_IDS.android
-      : REWARDED_AD_UNIT_IDS.ios;
+    const adUnitId = adConfigService.getAdUnitId('rewarded');
 
     try {
+      // Insert unlock record (server-side)
       const { error } = await supabase.from('rewarded_ad_unlocks').insert({
         user_id: this.currentUserId,
         feature,
@@ -205,7 +174,20 @@ class RewardedAdsService {
         ad_unit_id: adUnitId,
       });
 
-      if (error) { /* save failed */ }
+      if (error) {
+        console.error('[RewardedAds] Failed to save unlock:', error);
+      }
+
+      // Track rewarded ad event via backend
+      await adConfigService.trackEvent('rewarded', 'feature_unlock', {
+        completed: true,
+        rewardAmount: 1,
+        rewardType: feature,
+      });
+
+      // Refresh config to get updated daily stats from server
+      adConfigService.invalidate();
+      adConfigService.fetchConfig().catch(() => {});
     } catch {
       /* empty */
     }
@@ -270,6 +252,36 @@ class RewardedAdsService {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  // --- Local storage fallback for daily count ---
+
+  private async getLocalDailyCount(): Promise<{ count: number; date: string }> {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const storedDate = await appStorage.get(DAILY_DATE_KEY);
+      const storedCount = await appStorage.get(DAILY_COUNT_KEY);
+
+      if (storedDate === today && storedCount) {
+        return { count: parseInt(storedCount, 10), date: today };
+      }
+
+      await appStorage.set(DAILY_DATE_KEY, today);
+      await appStorage.set(DAILY_COUNT_KEY, '0');
+      return { count: 0, date: today };
+    } catch {
+      return { count: 0, date: new Date().toISOString().split('T')[0] };
+    }
+  }
+
+  private async incrementLocalDailyCount(): Promise<void> {
+    try {
+      const { count, date } = await this.getLocalDailyCount();
+      await appStorage.set(DAILY_DATE_KEY, date);
+      await appStorage.set(DAILY_COUNT_KEY, (count + 1).toString());
+    } catch {
+      /* empty */
     }
   }
 }

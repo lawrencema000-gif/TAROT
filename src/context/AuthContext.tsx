@@ -537,9 +537,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     let launchUrlHandled = false;
 
-    const setupAppUrlListener = () => {
+    const setupAppUrlListener = async () => {
       if (isNative()) {
-        appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
+        appUrlListener = await App.addListener('appUrlOpen', async ({ url }) => {
           logInfo('auth.deepLink.received', 'App URL opened', {
             sanitizedUrl: sanitizeUrl(url),
             platform: getPlatform(),
@@ -815,8 +815,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             logInfo('auth.google.nativeCancelled', 'User cancelled native Google sign-in');
             setOAuthProcessing(false);
             setCorrelationId(null);
-            endSpan(nativeSpan, 'cancelled');
-            endSpan(initiateSpan, 'cancelled');
+            endSpan(nativeSpan, 'failure');
+            endSpan(initiateSpan, 'failure');
             return { error: null };
           }
 

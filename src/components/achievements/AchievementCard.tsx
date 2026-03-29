@@ -20,7 +20,7 @@ function getIcon(iconName: string): React.ElementType {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 
-  const icons: Record<string, React.ElementType> = LucideIcons;
+  const icons = LucideIcons as unknown as Record<string, React.ElementType>;
   return icons[pascalCase] || LucideIcons.Award;
 }
 

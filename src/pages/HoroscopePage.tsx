@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Sun, Moon, Star, Sparkles, Crown, Circle, TrendingUp, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Button, Card, HoroscopePageSkeleton } from '../components/ui';
+import { Button, Card } from '../components/ui';
 import { PaywallSheet } from '../components/premium';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';

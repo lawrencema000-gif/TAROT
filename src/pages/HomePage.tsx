@@ -34,7 +34,7 @@ interface RitualState {
 }
 
 export function HomePage() {
-  const { profile, user, updateProfile, refreshProfile } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const { setActiveTab, openOverlay } = useUI();
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
   const { triggerLevelUp } = useGamification();

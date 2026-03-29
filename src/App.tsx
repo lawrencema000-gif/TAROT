@@ -52,6 +52,7 @@ const isDev = import.meta.env.DEV;
 async function initializeNativeFeatures() {
   if (!isNative()) return;
 
+  // Critical: status bar + splash (fast, visible immediately)
   try {
     await StatusBar.setStyle({ style: Style.Dark });
     await StatusBar.setBackgroundColor({ color: '#0a0a0f' });
@@ -60,22 +61,14 @@ async function initializeNativeFeatures() {
   }
 
   try {
-    await initializeBilling();
-  } catch {
-    console.log('Billing initialization skipped');
-  }
-
-  try {
-    await adsService.initialize();
-  } catch {
-    console.log('Ads initialization skipped');
-  }
-
-  try {
     await SplashScreen.hide();
   } catch {
     console.log('SplashScreen not available');
   }
+
+  // Non-critical: billing + ads init (deferred, don't block UI)
+  initializeBilling().catch(() => console.log('Billing initialization skipped'));
+  adsService.initialize().catch(() => console.log('Ads initialization skipped'));
 }
 
 const pageTitles: Record<string, { title: string; subtitle?: string }> = {

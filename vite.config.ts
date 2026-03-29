@@ -20,7 +20,16 @@ export default defineConfig((): UserConfig => {
               if (id.includes('@supabase')) return 'vendor-supabase';
               if (id.includes('react-router') || id.includes('react-dom')) return 'vendor-react';
               if (id.includes('lucide-react')) return 'vendor-icons';
+              if (id.includes('@capacitor-community/admob') || id.includes('@revenuecat')) return 'vendor-monetization';
+              if (id.includes('@sentry')) return 'vendor-sentry';
               return 'vendor';
+            }
+            // Split large data files into their own chunks
+            if (id.includes('src/data/')) {
+              if (id.includes('tarotDeck')) return 'data-tarot';
+              if (id.includes('horoscopes')) return 'data-horoscopes';
+              if (id.includes('planetInSign') || id.includes('planetInHouse') || id.includes('aspects') || id.includes('transits')) return 'data-astrology';
+              if (id.includes('Quiz') || id.includes('quiz') || id.includes('mbtiCognitive') || id.includes('zodiacContent')) return 'data-quizzes';
             }
           },
         },

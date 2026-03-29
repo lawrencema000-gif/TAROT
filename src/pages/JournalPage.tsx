@@ -29,7 +29,7 @@ import { Card, Button, Sheet, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase';
-import { getDailyPrompt } from '../data/horoscopes';
+// horoscopes loaded lazily to keep journal chunk small
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
@@ -136,7 +136,11 @@ export function JournalPage() {
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
 
   const today = new Date().toISOString().split('T')[0];
-  const todayPrompt = getDailyPrompt(today);
+  const [todayPrompt, setTodayPrompt] = useState('What are you reflecting on today?');
+
+  useEffect(() => {
+    import('../data/horoscopes').then(m => setTodayPrompt(m.getDailyPrompt(today)));
+  }, [today]);
 
   useEffect(() => {
     loadEntries();

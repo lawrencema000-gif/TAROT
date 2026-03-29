@@ -79,14 +79,27 @@ export function HomePage() {
     }
 
     try {
-      const { data: ritual } = await supabase
-        .from('daily_rituals')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .maybeSingle();
+      // Run all 3 queries in parallel instead of sequentially
+      const [ritualResult, savesResult, countResult] = await Promise.all([
+        supabase
+          .from('daily_rituals')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .maybeSingle(),
+        supabase
+          .from('saved_highlights')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today),
+        supabase
+          .from('daily_rituals')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+      ]);
 
-      if (ritual) {
+      if (ritualResult.data) {
+        const ritual = ritualResult.data;
         const state = {
           horoscopeViewed: ritual.horoscope_viewed,
           tarotViewed: ritual.tarot_viewed,
@@ -95,18 +108,11 @@ export function HomePage() {
         };
         setRitualState(state);
         setRitualStarted(ritual.horoscope_viewed || ritual.tarot_viewed || ritual.prompt_viewed);
-        // Cache for offline use
         cacheDailyRitual(user.id, { ...state, date: today });
       }
 
-      const { data: saves } = await supabase
-        .from('saved_highlights')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('date', today);
-
-      if (saves) {
-        const mappedSaves: SavedHighlight[] = saves.map((s: Record<string, unknown>) => ({
+      if (savesResult.data) {
+        const mappedSaves: SavedHighlight[] = savesResult.data.map((s: Record<string, unknown>) => ({
           id: s.id as string,
           userId: s.user_id as string,
           highlightType: s.highlight_type as 'horoscope' | 'tarot' | 'prompt',
@@ -118,12 +124,7 @@ export function HomePage() {
         setTarotSaved(mappedSaves.some(s => s.highlightType === 'tarot'));
       }
 
-      const { count } = await supabase
-        .from('daily_rituals')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      setIsFirstTime(count === 0);
+      setIsFirstTime(countResult.count === 0);
     } finally {
       setIsLoading(false);
     }

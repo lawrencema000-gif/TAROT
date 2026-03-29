@@ -44,7 +44,6 @@ class AdsService {
   private lastAdTime = 0;
   private isInterstitialReady = false;
   private isBannerVisible = false;
-  private currentUserId: string | null = null;
   private pluginAvailable = false;
 
   async initialize(userId: string | null = null): Promise<void> {
@@ -55,7 +54,6 @@ class AdsService {
 
     if (this.initialized) return;
 
-    this.currentUserId = userId;
     await actionCounter.init();
 
     try {
@@ -293,7 +291,6 @@ class AdsService {
   }
 
   setUserId(userId: string | null): void {
-    this.currentUserId = userId;
     rewardedAdsService.setUserId(userId);
     // Refresh config now that we have a user (gets premium status + daily stats)
     if (userId) {

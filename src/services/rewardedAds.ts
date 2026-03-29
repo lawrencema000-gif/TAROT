@@ -1,4 +1,4 @@
-import { isNative, isAndroid } from '../utils/platform';
+import { isNative } from '../utils/platform';
 import type { PremiumFeature } from './premium';
 import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';

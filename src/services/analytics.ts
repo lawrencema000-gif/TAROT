@@ -263,11 +263,14 @@ export function initAnalytics(): void {
 }
 
 export async function getAnalyticsConsent(): Promise<boolean> {
+  // Check new key first, fall back to old key for existing users
+  const consent = await appStorage.get('arcana_analytics_consent');
+  if (consent !== null) return consent === 'true';
   return (await appStorage.get('stellara_analytics_consent')) === 'true';
 }
 
 export async function setAnalyticsConsent(consent: boolean): Promise<void> {
-  await appStorage.set('stellara_analytics_consent', consent ? 'true' : 'false');
+  await appStorage.set('arcana_analytics_consent', consent ? 'true' : 'false');
 }
 
 export function clearAnalyticsData(): void {

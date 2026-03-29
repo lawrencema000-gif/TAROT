@@ -2,12 +2,12 @@ import type { EnhancedHoroscope, TarotCard, ZodiacSign } from '../types';
 import { appStorage } from '../lib/appStorage';
 
 const CACHE_KEYS = {
-  DAILY_HOROSCOPE: 'stellara_daily_horoscope',
-  LAST_CARD: 'stellara_last_card',
-  LAST_READING: 'stellara_last_reading',
-  USER_PROFILE: 'stellara_user_profile',
-  CACHE_TIMESTAMP: 'stellara_cache_timestamp',
-  DAILY_RITUAL: 'stellara_daily_ritual',
+  DAILY_HOROSCOPE: 'arcana_daily_horoscope',
+  LAST_CARD: 'arcana_last_card',
+  LAST_READING: 'arcana_last_reading',
+  USER_PROFILE: 'arcana_user_profile',
+  CACHE_TIMESTAMP: 'arcana_cache_timestamp',
+  DAILY_RITUAL: 'arcana_daily_ritual',
 };
 
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
@@ -132,14 +132,14 @@ export async function getCachedDailyRitual(userId: string, date: string): Promis
 
 export async function clearUserCache(): Promise<void> {
   for (const key of Object.values(CACHE_KEYS)) {
-    if (key.startsWith('stellara_')) {
+    if (key.startsWith('arcana_')) {
       await appStorage.remove(key);
     }
   }
 
   const allKeys = await appStorage.keys();
   for (const key of allKeys) {
-    if (key.startsWith('stellara_daily_horoscope_')) {
+    if (key.startsWith('arcana_daily_horoscope_')) {
       await appStorage.remove(key);
     }
   }
@@ -216,7 +216,7 @@ export async function getOfflineStatus(): Promise<{
   let cacheSize = 0;
   const allKeys = await appStorage.keys();
   for (const key of allKeys) {
-    if (key.startsWith('stellara_')) {
+    if (key.startsWith('arcana_')) {
       const value = await appStorage.get(key);
       if (value) {
         cacheSize += value.length * 2;
@@ -226,7 +226,7 @@ export async function getOfflineStatus(): Promise<{
 
   return {
     isOnline: isOnline(),
-    hasCachedHoroscope: allKeys.some(k => k.startsWith('stellara_daily_horoscope_')),
+    hasCachedHoroscope: allKeys.some(k => k.startsWith('arcana_daily_horoscope_')),
     hasCachedCard: !!(await getCache(CACHE_KEYS.LAST_CARD)),
     hasCachedProfile: !!(await getCache(CACHE_KEYS.USER_PROFILE)),
     cacheSize,

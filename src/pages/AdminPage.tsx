@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, DollarSign, TrendingUp, Calendar, Star, Sparkles, Flame, Newspaper, Archive, Eye, EyeOff } from 'lucide-react';
+import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, Star, Sparkles, Flame } from 'lucide-react';
 import { Button, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useRitual } from '../context/RitualContext';
 import { supabase } from '../lib/supabase';
+import { AdAnalyticsPanel } from '../components/admin/AdAnalyticsPanel';
+import { BlogManager } from '../components/admin/BlogManager';
 import type { BlogPost } from '../types/blog';
 
 interface TarotCardData {
@@ -62,10 +64,7 @@ export function AdminPage() {
   const [uploadType, setUploadType] = useState<'card' | 'cardBack' | 'background' | 'icon'>('card');
   const [selectedIconType, setSelectedIconType] = useState<'star' | 'sparkles' | 'flame'>('star');
   const [adAnalytics, setAdAnalytics] = useState<AdAnalytics | null>(null);
-  const [showAdStats, setShowAdStats] = useState(true);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [showBlogManager, setShowBlogManager] = useState(false);
-  const [blogFilter, setBlogFilter] = useState<'all' | 'published' | 'archived'>('all');
 
   useEffect(() => {
     if (isAdmin) {
@@ -93,53 +92,6 @@ export function AdminPage() {
       .order('published_at', { ascending: false });
     if (data) setBlogPosts(data);
   };
-
-  const toggleArchive = async (post: BlogPost) => {
-    const { error } = await supabase
-      .from('blog_posts')
-      .update({ archived: !post.archived, updated_at: new Date().toISOString() })
-      .eq('id', post.id);
-    if (error) {
-      toast('Failed to update post', 'error');
-    } else {
-      toast(post.archived ? 'Post restored' : 'Post archived', 'success');
-      loadBlogPosts();
-    }
-  };
-
-  const togglePublish = async (post: BlogPost) => {
-    const { error } = await supabase
-      .from('blog_posts')
-      .update({
-        published: !post.published,
-        published_at: !post.published ? new Date().toISOString() : post.published_at,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', post.id);
-    if (error) {
-      toast('Failed to update post', 'error');
-    } else {
-      toast(post.published ? 'Post unpublished' : 'Post published', 'success');
-      loadBlogPosts();
-    }
-  };
-
-  const deletePost = async (post: BlogPost) => {
-    if (!confirm(`Delete "${post.title}" permanently? This cannot be undone.`)) return;
-    const { error } = await supabase.from('blog_posts').delete().eq('id', post.id);
-    if (error) {
-      toast('Failed to delete post', 'error');
-    } else {
-      toast('Post deleted', 'success');
-      loadBlogPosts();
-    }
-  };
-
-  const filteredBlogPosts = blogPosts.filter(p => {
-    if (blogFilter === 'published') return p.published && !p.archived;
-    if (blogFilter === 'archived') return p.archived;
-    return true;
-  });
 
   const loadCustomIcons = async () => {
     try {
@@ -581,209 +533,9 @@ export function AdminPage() {
         className="hidden"
       />
 
-      <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden mb-6">
-        <button
-          onClick={() => setShowAdStats(!showAdStats)}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-mystic-800/30 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-emerald-500" />
-            </div>
-            <div>
-              <h3 className="font-medium text-mystic-100">Ad Revenue Analytics</h3>
-              <p className="text-sm text-mystic-400">Today's performance metrics</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {adAnalytics && (
-              <span className="text-sm font-medium text-emerald-400">
-                ${adAnalytics.estimated_revenue.toFixed(2)}
-              </span>
-            )}
-            {showAdStats ? (
-              <ChevronUp className="w-5 h-5 text-mystic-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-mystic-400" />
-            )}
-          </div>
-        </button>
+      <AdAnalyticsPanel analytics={adAnalytics} />
 
-        {showAdStats && adAnalytics && (
-          <div className="border-t border-mystic-700/50 p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-              <div className="bg-mystic-800/40 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-4 h-4 text-mystic-400" />
-                  <p className="text-xs text-mystic-400">Total Impressions</p>
-                </div>
-                <p className="text-xl font-semibold text-mystic-100">{adAnalytics.total_impressions}</p>
-              </div>
-
-              <div className="bg-mystic-800/40 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-4 h-4 text-mystic-400" />
-                  <p className="text-xs text-mystic-400">Total Clicks</p>
-                </div>
-                <p className="text-xl font-semibold text-mystic-100">{adAnalytics.total_clicks}</p>
-              </div>
-
-              <div className="bg-mystic-800/40 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
-                  <p className="text-xs text-mystic-400">Est. Revenue</p>
-                </div>
-                <p className="text-xl font-semibold text-emerald-400">
-                  ${adAnalytics.estimated_revenue.toFixed(2)}
-                </p>
-              </div>
-
-              <div className="bg-mystic-800/40 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-4 h-4 text-mystic-400" />
-                  <p className="text-xs text-mystic-400">CTR</p>
-                </div>
-                <p className="text-xl font-semibold text-mystic-100">
-                  {adAnalytics.total_impressions > 0
-                    ? ((adAnalytics.total_clicks / adAnalytics.total_impressions) * 100).toFixed(1)
-                    : '0.0'}%
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-mystic-800/40 rounded-lg p-3">
-                <p className="text-xs text-mystic-400 mb-2">Platform</p>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-mystic-300">Android</span>
-                    <span className="text-mystic-100 font-medium">{adAnalytics.android_impressions}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-mystic-300">iOS</span>
-                    <span className="text-mystic-100 font-medium">{adAnalytics.ios_impressions}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-mystic-800/40 rounded-lg p-3">
-                <p className="text-xs text-mystic-400 mb-2">Triggers</p>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-mystic-300">Readings</span>
-                    <span className="text-mystic-100 font-medium">{adAnalytics.reading_triggers}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-mystic-300">Quizzes</span>
-                    <span className="text-mystic-100 font-medium">{adAnalytics.quiz_triggers}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-mystic-300">Journal</span>
-                    <span className="text-mystic-100 font-medium">{adAnalytics.journal_triggers}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-mystic-400">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Last updated: {new Date(adAnalytics.date).toLocaleDateString()}</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Blog Manager */}
-      <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden">
-        <button
-          onClick={() => setShowBlogManager(!showBlogManager)}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-mystic-800/30 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center">
-              <Newspaper className="w-5 h-5 text-gold" />
-            </div>
-            <div>
-              <h3 className="font-medium text-mystic-100">Blog Manager</h3>
-              <p className="text-xs text-mystic-500">{blogPosts.length} posts total</p>
-            </div>
-          </div>
-          {showBlogManager ? <ChevronUp className="w-5 h-5 text-mystic-400" /> : <ChevronDown className="w-5 h-5 text-mystic-400" />}
-        </button>
-
-        {showBlogManager && (
-          <div className="p-4 pt-0 space-y-3">
-            <div className="flex gap-2">
-              {(['all', 'published', 'archived'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setBlogFilter(f)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    blogFilter === f
-                      ? 'bg-gold/20 text-gold'
-                      : 'bg-mystic-800/50 text-mystic-400 hover:text-mystic-300'
-                  }`}
-                >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {filteredBlogPosts.length === 0 ? (
-              <p className="text-sm text-mystic-500 py-4 text-center">No posts found</p>
-            ) : (
-              <div className="space-y-2">
-                {filteredBlogPosts.map(post => (
-                  <div
-                    key={post.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                      post.archived
-                        ? 'border-mystic-700/30 bg-mystic-900/30 opacity-60'
-                        : 'border-mystic-700/50 bg-mystic-800/30'
-                    }`}
-                  >
-                    {post.cover_image && (
-                      <img src={post.cover_image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-mystic-100 truncate">{post.title}</h4>
-                      <div className="flex items-center gap-2 text-xs text-mystic-500">
-                        <span>{post.published_at ? new Date(post.published_at).toLocaleDateString() : 'Draft'}</span>
-                        {post.archived && <span className="text-amber-400">Archived</span>}
-                        {!post.published && <span className="text-red-400">Unpublished</span>}
-                        {post.tags.length > 0 && <span>· {post.tags.slice(0, 2).join(', ')}</span>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => togglePublish(post)}
-                        title={post.published ? 'Unpublish' : 'Publish'}
-                        className="p-2 rounded-lg hover:bg-mystic-700/50 transition-colors"
-                      >
-                        {post.published ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-mystic-500" />}
-                      </button>
-                      <button
-                        onClick={() => toggleArchive(post)}
-                        title={post.archived ? 'Restore' : 'Archive'}
-                        className="p-2 rounded-lg hover:bg-mystic-700/50 transition-colors"
-                      >
-                        <Archive className={`w-4 h-4 ${post.archived ? 'text-amber-400' : 'text-mystic-500'}`} />
-                      </button>
-                      <button
-                        onClick={() => deletePost(post)}
-                        title="Delete permanently"
-                        className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <BlogManager posts={blogPosts} onRefresh={loadBlogPosts} />
 
       <div className="space-y-3">
         {SECTIONS.map(section => {

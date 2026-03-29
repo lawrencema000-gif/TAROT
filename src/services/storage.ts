@@ -325,9 +325,9 @@ export async function getFavoriteCards(userId: string): Promise<number[]> {
 }
 
 const LOCAL_STORAGE_KEYS = {
-  GUEST_SAVED: 'stellara_guest_saved',
-  GUEST_HISTORY: 'stellara_guest_history',
-  GUEST_FAVORITES: 'stellara_guest_favorites',
+  GUEST_SAVED: 'arcana_guest_saved',
+  GUEST_HISTORY: 'arcana_guest_history',
+  GUEST_FAVORITES: 'arcana_guest_favorites',
 };
 
 export async function saveItemLocally(item: Omit<SavedItem, 'id' | 'userId' | 'createdAt'>): Promise<void> {

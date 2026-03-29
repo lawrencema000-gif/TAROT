@@ -134,7 +134,7 @@ export async function generateTarotShareImage(
   drawBorder(ctx, width, height, 24);
 
   if (options.includeAppName) {
-    drawText(ctx, 'STELLARA', width / 2, 60, width - 60, {
+    drawText(ctx, 'ARCANA', width / 2, 60, width - 60, {
       font: '14px sans-serif',
       color: 'rgba(217, 119, 6, 0.6)',
     });
@@ -215,7 +215,7 @@ export async function generateHoroscopeShareImage(
   drawBorder(ctx, width, height, 24);
 
   if (options.includeAppName) {
-    drawText(ctx, 'STELLARA', width / 2, 50, width - 60, {
+    drawText(ctx, 'ARCANA', width / 2, 50, width - 60, {
       font: '14px sans-serif',
       color: 'rgba(217, 119, 6, 0.6)',
     });
@@ -279,7 +279,7 @@ export function generateShareCaption(content: ShareContent & { deepLinkId?: stri
   }
 
   lines.push('');
-  lines.push('#Stellara #Tarot #Astrology');
+  lines.push('#Arcana #Tarot #Astrology');
 
   return lines.join('\n');
 }
@@ -297,7 +297,7 @@ export async function shareToNative(
     const shareData: ShareData = { title, text };
 
     if (imageBlob && navigator.canShare) {
-      const file = new File([imageBlob], 'stellara-share.png', { type: 'image/png' });
+      const file = new File([imageBlob], 'arcana-share.png', { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
         shareData.files = [file];
       }

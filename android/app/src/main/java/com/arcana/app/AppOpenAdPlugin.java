@@ -16,7 +16,9 @@ import com.google.android.gms.ads.appopen.AppOpenAd;
 @CapacitorPlugin(name = "AppOpenAd")
 public class AppOpenAdPlugin extends Plugin {
     private static final String TAG = "AppOpenAd";
+    private static final long MAX_AD_AGE_MS = 4 * 60 * 60 * 1000; // 4 hours
     private AppOpenAd appOpenAd;
+    private long adLoadTime = 0;
     private boolean isShowingAd = false;
     private boolean isLoading = false;
 
@@ -43,6 +45,7 @@ public class AppOpenAdPlugin extends Plugin {
                     @Override
                     public void onAdLoaded(AppOpenAd ad) {
                         appOpenAd = ad;
+                        adLoadTime = System.currentTimeMillis();
                         isLoading = false;
                         Log.d(TAG, "App open ad loaded");
                         call.resolve();
@@ -63,6 +66,15 @@ public class AppOpenAdPlugin extends Plugin {
     public void show(PluginCall call) {
         if (appOpenAd == null) {
             call.reject("No ad loaded");
+            return;
+        }
+
+        // Discard ads older than 4 hours (AdMob best practice)
+        if (System.currentTimeMillis() - adLoadTime > MAX_AD_AGE_MS) {
+            appOpenAd = null;
+            adLoadTime = 0;
+            Log.w(TAG, "App open ad expired (>4h), discarding");
+            call.reject("Ad expired");
             return;
         }
 
@@ -104,6 +116,12 @@ public class AppOpenAdPlugin extends Plugin {
 
     @PluginMethod()
     public void isLoaded(PluginCall call) {
-        call.resolve(new com.getcapacitor.JSObject().put("loaded", appOpenAd != null));
+        boolean isValid = appOpenAd != null
+            && (System.currentTimeMillis() - adLoadTime <= MAX_AD_AGE_MS);
+        if (appOpenAd != null && !isValid) {
+            appOpenAd = null;
+            adLoadTime = 0;
+        }
+        call.resolve(new com.getcapacitor.JSObject().put("loaded", isValid));
     }
 }

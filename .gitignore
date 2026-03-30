@@ -28,3 +28,4 @@ android/keystore-fingerprints.md
 
 # Local Netlify folder
 .netlify
+.vercel

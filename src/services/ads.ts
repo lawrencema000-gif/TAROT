@@ -15,6 +15,15 @@ const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
+const IS_DEBUG = import.meta.env.DEV;
+
+// Google's official test ad unit IDs — always return test ads
+const TEST_AD_UNITS: Record<string, string> = {
+  banner: 'ca-app-pub-3940256099942544/6300978111',
+  interstitial: 'ca-app-pub-3940256099942544/1033173712',
+  rewarded: 'ca-app-pub-3940256099942544/5224354917',
+  app_open: 'ca-app-pub-3940256099942544/9257395921',
+};
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
 let InterstitialAdPluginEvents: typeof import('@capacitor-community/admob').InterstitialAdPluginEvents | null = null;
@@ -71,8 +80,12 @@ class AdsService {
 
       await AdMob.initialize({
         testingDevices: [],
-        initializeForTesting: false,
+        initializeForTesting: IS_DEBUG,
       });
+
+      if (IS_DEBUG) {
+        console.log('[Ads] Running in DEBUG mode — using Google test ad units');
+      }
 
       this.setupInterstitialListeners();
       this.setupBannerListeners();
@@ -86,6 +99,14 @@ class AdsService {
       console.error('[Ads] Failed to initialize:', error);
       this.pluginAvailable = false;
     }
+  }
+
+  /** Get ad unit ID — test IDs in debug builds, production IDs in release */
+  private getAdId(adType: string): string {
+    if (IS_DEBUG) {
+      return TEST_AD_UNITS[adType] || '';
+    }
+    return adConfigService.getAdUnitId(adType as 'banner' | 'interstitial' | 'rewarded' | 'app_open');
   }
 
   private async loadLastAdTime(): Promise<void> {
@@ -133,7 +154,7 @@ class AdsService {
     if (isWeb() || !this.pluginAvailable || !AdMob) return;
 
     try {
-      const adId = adConfigService.getAdUnitId('interstitial');
+      const adId = this.getAdId('interstitial');
       await AdMob.prepareInterstitial({ adId });
     } catch (error) {
       console.error('[Ads] Failed to preload interstitial:', error);
@@ -173,7 +194,7 @@ class AdsService {
     if (isPremium || isAdFree) return;
 
     try {
-      const adUnitId = adConfigService.getAdUnitId('app_open');
+      const adUnitId = this.getAdId('app_open');
       if (!adUnitId) return;
 
       await AppOpenAd.load({ adUnitId });
@@ -246,7 +267,7 @@ class AdsService {
         this.isBannerVisible = false;
       }
 
-      const adId = adConfigService.getAdUnitId('banner');
+      const adId = this.getAdId('banner');
 
       await AdMob.showBanner({
         adId,

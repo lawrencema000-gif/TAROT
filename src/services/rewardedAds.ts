@@ -7,6 +7,8 @@ import { supabase } from '../lib/supabase';
 const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
+const IS_DEBUG = import.meta.env.DEV;
+const TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
 let RewardAdPluginEvents: typeof import('@capacitor-community/admob').RewardAdPluginEvents | null = null;
@@ -96,7 +98,7 @@ class RewardedAdsService {
     if (!this.pluginAvailable || !AdMob) return;
 
     try {
-      const adUnitId = adConfigService.getAdUnitId('rewarded');
+      const adUnitId = IS_DEBUG ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
       await AdMob.prepareRewardVideoAd({ adId: adUnitId });
     } catch {
       /* empty */
@@ -163,7 +165,7 @@ class RewardedAdsService {
     // Track locally as backup
     this.incrementLocalDailyCount();
 
-    const adUnitId = adConfigService.getAdUnitId('rewarded');
+    const adUnitId = IS_DEBUG ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
 
     try {
       // Insert unlock record (server-side)

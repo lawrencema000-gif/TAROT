@@ -14,6 +14,7 @@ export function BannerAd({ visible, isPremium, isAdFree }: BannerAdProps) {
     [visible, isPremium, isAdFree]
   );
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasShowing = useRef(false);
 
   useEffect(() => {
     if (!isNative()) return;
@@ -27,15 +28,22 @@ export function BannerAd({ visible, isPremium, isAdFree }: BannerAdProps) {
       const attemptShow = async (attempt = 1) => {
         try {
           await adsService.showBanner();
+          wasShowing.current = true;
         } catch {
           if (attempt < 3) {
             retryTimer.current = setTimeout(() => attemptShow(attempt + 1), attempt * 2000);
+          } else {
+            // All retries failed — make sure native banner view is fully removed
+            adsService.removeBanner();
+            wasShowing.current = false;
           }
         }
       };
       attemptShow();
-    } else {
-      adsService.hideBanner();
+    } else if (wasShowing.current) {
+      // Only remove if we previously showed a banner
+      adsService.removeBanner();
+      wasShowing.current = false;
     }
 
     return () => {
@@ -46,10 +54,12 @@ export function BannerAd({ visible, isPremium, isAdFree }: BannerAdProps) {
     };
   }, [shouldShow]);
 
+  // Cleanup on unmount
   useEffect(() => {
     if (!isNative()) return;
     return () => {
-      adsService.hideBanner();
+      adsService.removeBanner();
+      wasShowing.current = false;
     };
   }, []);
 

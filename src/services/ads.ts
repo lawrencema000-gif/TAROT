@@ -147,8 +147,10 @@ class AdsService {
       this.isBannerVisible = true;
     });
 
-    AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
+    AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (info) => {
+      console.warn('[Ads] Banner failed to load:', info);
       this.isBannerVisible = false;
+      // Must remove banner to clear the native view (prevents black rectangle)
       AdMob?.removeBanner().catch(() => {});
     });
 
@@ -249,7 +251,7 @@ class AdsService {
       await AdMob.showBanner({
         adId,
         adSize: BannerAdSize.ADAPTIVE_BANNER,
-        position: BannerAdPosition.TOP_CENTER,
+        position: BannerAdPosition.BOTTOM_CENTER,
         margin: 0,
         isTesting: false,
       });
@@ -259,6 +261,8 @@ class AdsService {
     } catch (error) {
       console.error('[Ads] Failed to show banner:', error);
       this.isBannerVisible = false;
+      // Remove the native banner view to prevent black rectangle on failure
+      try { await AdMob.removeBanner(); } catch { /* ignore */ }
     }
   }
 

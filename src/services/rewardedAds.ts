@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
-const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS === 'true';
+const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS !== 'false';
 const TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;

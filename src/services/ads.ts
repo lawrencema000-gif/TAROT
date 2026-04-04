@@ -15,8 +15,8 @@ const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
-// Use test ads when VITE_USE_TEST_ADS=true (required until app is on Play Store)
-const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS === 'true';
+// Uses test ads by default. Set VITE_USE_TEST_ADS=false for production (app must be on Play Store)
+const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS !== 'false';
 
 // Google's official test ad unit IDs — always return test ads
 const TEST_AD_UNITS: Record<string, string> = {

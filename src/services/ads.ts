@@ -20,7 +20,6 @@ const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS !== 'false';
 
 // Google's official test ad unit IDs — always return test ads
 const TEST_AD_UNITS: Record<string, string> = {
-  banner: 'ca-app-pub-3940256099942544/6300978111',
   interstitial: 'ca-app-pub-3940256099942544/1033173712',
   rewarded: 'ca-app-pub-3940256099942544/5224354917',
   app_open: 'ca-app-pub-3940256099942544/9257395921',
@@ -28,9 +27,6 @@ const TEST_AD_UNITS: Record<string, string> = {
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
 let InterstitialAdPluginEvents: typeof import('@capacitor-community/admob').InterstitialAdPluginEvents | null = null;
-let BannerAdSize: typeof import('@capacitor-community/admob').BannerAdSize | null = null;
-let BannerAdPosition: typeof import('@capacitor-community/admob').BannerAdPosition | null = null;
-let BannerAdPluginEvents: typeof import('@capacitor-community/admob').BannerAdPluginEvents | null = null;
 
 async function loadAdMobPlugin(): Promise<boolean> {
   if (AdMob) return true;
@@ -39,9 +35,6 @@ async function loadAdMobPlugin(): Promise<boolean> {
     const admobModule = await import('@capacitor-community/admob');
     AdMob = admobModule.AdMob;
     InterstitialAdPluginEvents = admobModule.InterstitialAdPluginEvents;
-    BannerAdSize = admobModule.BannerAdSize;
-    BannerAdPosition = admobModule.BannerAdPosition;
-    BannerAdPluginEvents = admobModule.BannerAdPluginEvents;
     return true;
   } catch (error) {
     console.warn('[Ads] AdMob plugin not available:', error);
@@ -53,7 +46,6 @@ class AdsService {
   private initialized = false;
   private lastAdTime = 0;
   private isInterstitialReady = false;
-  private isBannerVisible = false;
   private pluginAvailable = false;
 
   async initialize(userId: string | null = null): Promise<void> {
@@ -85,11 +77,10 @@ class AdsService {
       });
 
       if (USE_TEST_ADS) {
-        console.log('[Ads] Running in DEBUG mode — using Google test ad units');
+        console.log('[Ads] Running in TEST mode — using Google test ad units');
       }
 
       this.setupInterstitialListeners();
-      this.setupBannerListeners();
 
       await this.preloadInterstitial();
       await rewardedAdsService.initialize(userId);
@@ -107,7 +98,7 @@ class AdsService {
     if (USE_TEST_ADS) {
       return TEST_AD_UNITS[adType] || '';
     }
-    return adConfigService.getAdUnitId(adType as 'banner' | 'interstitial' | 'rewarded' | 'app_open');
+    return adConfigService.getAdUnitId(adType as 'interstitial' | 'rewarded' | 'app_open');
   }
 
   private async loadLastAdTime(): Promise<void> {
@@ -160,34 +151,6 @@ class AdsService {
     } catch (error) {
       console.error('[Ads] Failed to preload interstitial:', error);
     }
-  }
-
-  private setupBannerListeners(): void {
-    if (!AdMob || !BannerAdPluginEvents) return;
-
-    AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
-      this.isBannerVisible = true;
-    });
-
-    AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (info) => {
-      console.warn('[Ads] Banner failed to load:', info);
-      this.isBannerVisible = false;
-      // Must remove banner to clear the native view (prevents black rectangle)
-      AdMob?.removeBanner().catch(() => {});
-    });
-
-    AdMob.addListener(BannerAdPluginEvents.Opened, () => {
-      this.isBannerVisible = true;
-    });
-
-    AdMob.addListener(BannerAdPluginEvents.Closed, () => {
-      this.isBannerVisible = false;
-    });
-
-    AdMob.addListener(BannerAdPluginEvents.AdImpression, () => {
-      // Track banner impression via backend
-      adConfigService.trackEvent('banner', 'navigation');
-    });
   }
 
   async showAppOpenAdOnColdStart(isPremium: boolean, isAdFree: boolean): Promise<void> {
@@ -257,63 +220,6 @@ class AdsService {
       this.isInterstitialReady = false;
       await this.preloadInterstitial();
     }
-  }
-
-  async showBanner(): Promise<void> {
-    if (isWeb() || !this.pluginAvailable || !AdMob || !BannerAdSize || !BannerAdPosition) return;
-
-    try {
-      if (this.isBannerVisible) {
-        try { await AdMob.removeBanner(); } catch { /* ignore */ }
-        this.isBannerVisible = false;
-      }
-
-      const adId = this.getAdId('banner');
-
-      await AdMob.showBanner({
-        adId,
-        adSize: BannerAdSize.ADAPTIVE_BANNER,
-        position: BannerAdPosition.BOTTOM_CENTER,
-        margin: 0,
-        isTesting: false,
-      });
-
-      this.isBannerVisible = true;
-      console.log('[Ads] Banner shown');
-    } catch (error) {
-      console.error('[Ads] Failed to show banner:', error);
-      this.isBannerVisible = false;
-      // Remove the native banner view to prevent black rectangle on failure
-      try { await AdMob.removeBanner(); } catch { /* ignore */ }
-    }
-  }
-
-  async hideBanner(): Promise<void> {
-    if (!this.pluginAvailable || !AdMob) return;
-
-    try {
-      await AdMob.removeBanner();
-    } catch (error) {
-      console.error('[Ads] Failed to hide banner:', error);
-    } finally {
-      this.isBannerVisible = false;
-    }
-  }
-
-  async removeBanner(): Promise<void> {
-    if (!this.pluginAvailable || !AdMob) return;
-
-    try {
-      await AdMob.removeBanner();
-    } catch (error) {
-      console.error('[Ads] Failed to remove banner:', error);
-    } finally {
-      this.isBannerVisible = false;
-    }
-  }
-
-  isBannerShowing(): boolean {
-    return this.isBannerVisible;
   }
 
   setUserId(userId: string | null): void {

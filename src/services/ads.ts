@@ -15,7 +15,8 @@ const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
 
 const AD_COOLDOWN_MS = 10 * 60 * 1000;
 const LAST_AD_TIME_KEY = 'arcana_last_ad_time';
-const IS_DEBUG = import.meta.env.DEV;
+// Use test ads when VITE_USE_TEST_ADS=true (required until app is on Play Store)
+const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS === 'true';
 
 // Google's official test ad unit IDs — always return test ads
 const TEST_AD_UNITS: Record<string, string> = {
@@ -80,10 +81,10 @@ class AdsService {
 
       await AdMob.initialize({
         testingDevices: [],
-        initializeForTesting: IS_DEBUG,
+        initializeForTesting: USE_TEST_ADS,
       });
 
-      if (IS_DEBUG) {
+      if (USE_TEST_ADS) {
         console.log('[Ads] Running in DEBUG mode — using Google test ad units');
       }
 
@@ -103,7 +104,7 @@ class AdsService {
 
   /** Get ad unit ID — test IDs in debug builds, production IDs in release */
   private getAdId(adType: string): string {
-    if (IS_DEBUG) {
+    if (USE_TEST_ADS) {
       return TEST_AD_UNITS[adType] || '';
     }
     return adConfigService.getAdUnitId(adType as 'banner' | 'interstitial' | 'rewarded' | 'app_open');

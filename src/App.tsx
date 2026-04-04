@@ -66,9 +66,9 @@ async function initializeNativeFeatures() {
     console.log('SplashScreen not available');
   }
 
-  // Non-critical: billing + ads init (deferred, don't block UI)
+  // Non-critical: billing init (deferred, don't block UI)
+  // Ads are initialized later after user is authenticated (see user effect)
   initializeBilling().catch(() => console.log('Billing initialization skipped'));
-  adsService.initialize().catch(() => console.log('Ads initialization skipped'));
 }
 
 const pageTitles: Record<string, { title: string; subtitle?: string }> = {
@@ -139,6 +139,8 @@ function AppContent() {
 
   useEffect(() => {
     if (user) {
+      // Initialize ads only after user is authenticated (prevents banner on login screen)
+      adsService.initialize(user.id).catch(() => console.log('Ads initialization skipped'));
       adsService.setUserId(user.id);
       const billingService = getBillingService();
       billingService.setUserId(user.id);
@@ -255,11 +257,23 @@ function AppContent() {
     );
   }
 
-  if (!profile?.onboardingComplete) {
+  if (profile && !profile.onboardingComplete) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <OAuthOnboardingPage onComplete={refreshProfile} />
       </ErrorBoundary>
+    );
+  }
+
+  // Profile still loading after auth — show loading state, not onboarding
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center constellation-bg">
+        <div className="text-center">
+          <div className="loading-constellation mx-auto mb-4" />
+          <p className="text-mystic-400">Loading your profile...</p>
+        </div>
+      </div>
     );
   }
 

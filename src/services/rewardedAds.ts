@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
-const IS_DEBUG = import.meta.env.DEV;
+const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS === 'true';
 const TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
@@ -98,7 +98,7 @@ class RewardedAdsService {
     if (!this.pluginAvailable || !AdMob) return;
 
     try {
-      const adUnitId = IS_DEBUG ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
+      const adUnitId = USE_TEST_ADS ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
       await AdMob.prepareRewardVideoAd({ adId: adUnitId });
     } catch {
       /* empty */
@@ -165,7 +165,7 @@ class RewardedAdsService {
     // Track locally as backup
     this.incrementLocalDailyCount();
 
-    const adUnitId = IS_DEBUG ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
+    const adUnitId = USE_TEST_ADS ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
 
     try {
       // Insert unlock record (server-side)
@@ -204,7 +204,8 @@ class RewardedAdsService {
         .select('id')
         .eq('user_id', this.currentUserId)
         .eq('feature', feature)
-        .eq('used', false);
+        .eq('used', false)
+        .gt('expires_at', new Date().toISOString()); // Only count non-expired unlocks
 
       if (spreadType) {
         query = query.eq('spread_type', spreadType);

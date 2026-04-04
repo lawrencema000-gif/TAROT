@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -134,21 +134,29 @@ function AppContent() {
 
   useEffect(() => {
     if (user) {
-      // Initialize ads only after user is authenticated (prevents banner on login screen)
-      adsService.initialize(user.id).catch(() => console.log('Ads initialization skipped'));
-      adsService.setUserId(user.id);
+      // Initialize ads, then show app open ad once ready
+      adsService.initialize(user.id).then(() => {
+        adsService.setUserId(user.id);
+      }).catch(() => console.log('Ads initialization skipped'));
       const billingService = getBillingService();
       billingService.setUserId(user.id);
       initializeUserAchievements(user.id);
     }
   }, [user]);
 
+  // App open ad — run once after profile loads on cold start
+  const appOpenAdShown = useRef(false);
   useEffect(() => {
-    if (profile?.onboardingComplete) {
-      adsService.showAppOpenAdOnColdStart(
-        profile?.isPremium || false,
-        profile?.isAdFree || false
-      );
+    if (profile?.onboardingComplete && !appOpenAdShown.current) {
+      appOpenAdShown.current = true;
+      // Small delay to ensure AdMob SDK is initialized
+      const timer = setTimeout(() => {
+        adsService.showAppOpenAdOnColdStart(
+          profile?.isPremium || false,
+          profile?.isAdFree || false
+        );
+      }, 1500);
+      return () => clearTimeout(timer);
     }
   }, [profile?.onboardingComplete, profile?.isPremium, profile?.isAdFree]);
 

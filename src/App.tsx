@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -8,7 +8,7 @@ import { useGamification } from './context/GamificationContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
-import { BannerAd } from './components/ads';
+// Banner ad removed — too many native layout issues with Capacitor AdMob banner
 import { DevicePreview } from './components/dev/DevicePreview';
 import { ToastContainer, ListSkeleton } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
@@ -115,11 +115,6 @@ function AppContent() {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [showOAuthCancel, setShowOAuthCancel] = useState(false);
 
-  const BANNER_TABS = useMemo(() => new Set(['readings', 'journal', 'achievements', 'profile', 'horoscope']), []);
-  const showBanner = useMemo(
-    () => BANNER_TABS.has(activeTab) && !activeOverlay && !profile?.isPremium && !profile?.isAdFree,
-    [BANNER_TABS, activeTab, activeOverlay, profile?.isPremium, profile?.isAdFree]
-  );
 
   useEffect(() => {
     initializeNativeFeatures();
@@ -294,11 +289,6 @@ function AppContent() {
         ) : (
           <div className="fixed inset-0 z-0 opacity-60" />
         )}
-        <BannerAd
-          visible={showBanner}
-          isPremium={profile?.isPremium || false}
-          isAdFree={profile?.isAdFree || false}
-        />
         <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top" aria-label={currentPage.title}>
           <Header
             title={currentPage.title}

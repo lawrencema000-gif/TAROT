@@ -5,7 +5,7 @@ interface LandingPageProps {
   onGetStarted: () => void;
 }
 
-// ─── Zodiac Data ───────────────────────────────────────────────
+// ─── Real Data ─────────────────────────────────────────────────
 const ZODIAC_SIGNS = [
   { symbol: '♈', name: 'Aries', element: 'Fire', dates: 'Mar 21 – Apr 19' },
   { symbol: '♉', name: 'Taurus', element: 'Earth', dates: 'Apr 20 – May 20' },
@@ -21,155 +21,123 @@ const ZODIAC_SIGNS = [
   { symbol: '♓', name: 'Pisces', element: 'Water', dates: 'Feb 19 – Mar 20' },
 ];
 
-const FEATURES = [
-  {
-    icon: '🃏',
-    title: 'Tarot Readings',
-    desc: 'Full 78-card deck with detailed upright and reversed meanings. 6 spread types from quick daily pulls to deep Celtic Cross readings. Choose your focus — Love, Career, Health, or Self.',
-    gradient: 'from-purple-500/20 to-indigo-500/20',
-    borderHover: 'hover:border-purple-500/40',
-    iconBg: 'bg-purple-500/10',
-  },
-  {
-    icon: '✨',
-    title: 'Daily Horoscope',
-    desc: 'Personalized forecasts with energy scores, mood analysis, love and career insights, planetary transits, daily affirmations, and guided mini rituals.',
-    gradient: 'from-blue-500/20 to-cyan-500/20',
-    borderHover: 'hover:border-blue-500/40',
-    iconBg: 'bg-blue-500/10',
-  },
-  {
-    icon: '📓',
-    title: 'Reflective Journal',
-    desc: 'Write freely or use guided prompts based on your readings. Track mood with 10 emoji moods, tag entries by theme, and link to your tarot readings.',
-    gradient: 'from-emerald-500/20 to-teal-500/20',
-    borderHover: 'hover:border-emerald-500/40',
-    iconBg: 'bg-emerald-500/10',
-  },
-  {
-    icon: '🧠',
-    title: 'Personality Quizzes',
-    desc: 'MBTI, Enneagram, Big Five, Love Language, and Attachment Style. Six psychology-backed assessments that shape your entire experience.',
-    gradient: 'from-amber-500/20 to-orange-500/20',
-    borderHover: 'hover:border-amber-500/40',
-    iconBg: 'bg-amber-500/10',
-  },
-  {
-    icon: '🔥',
-    title: 'Streaks & Achievements',
-    desc: 'Build your daily ritual habit. Earn XP, level up through Seeker Ranks — from Novice to Awakened and beyond. Unlock achievements as you grow.',
-    gradient: 'from-red-500/20 to-rose-500/20',
-    borderHover: 'hover:border-red-500/40',
-    iconBg: 'bg-red-500/10',
-  },
-  {
-    icon: '🌙',
-    title: 'Birth Chart',
-    desc: 'Enter your birth details to unlock your complete natal chart with planetary placements, aspects, transits, and personalized interpretations.',
-    gradient: 'from-yellow-500/20 to-amber-500/20',
-    borderHover: 'hover:border-yellow-500/40',
-    iconBg: 'bg-yellow-500/10',
-  },
+const HERO_CARDS = [
+  { name: 'The Star', file: 'the-star.webp' },
+  { name: 'The Moon', file: 'the-moon.webp' },
+  { name: 'The Sun', file: 'the-sun.webp' },
+  { name: 'The Empress', file: 'the-empress.webp' },
+  { name: 'The Magician', file: 'the-magician.webp' },
 ];
 
-const FAQ_ITEMS = [
-  { q: 'Is Arcana free to use?', a: 'Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads.' },
-  { q: 'How accurate are the tarot readings?', a: 'Arcana uses a full 78-card tarot deck with detailed traditional meanings for every card — upright and reversed. Readings are designed for self-reflection and personal insight. The meaning you find is yours.' },
-  { q: 'What personality quizzes are available?', a: 'Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check. Results are saved to your profile and personalize your experience.' },
-  { q: 'Is my journal private?', a: 'Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock individual entries with a password for extra privacy.' },
-  { q: 'Can I cancel premium anytime?', a: 'Yes. Subscriptions are managed through Google Play or your account settings. Cancel anytime with no cancellation fees.' },
-  { q: 'Does it work on the web too?', a: 'Yes! You can use Arcana on the web right here, or download the Android app for the full native experience with offline support and push notifications.' },
+const CARD_FAN = [
+  { file: 'the-fool.webp', rotation: -18, x: -100, delay: 0 },
+  { file: 'the-high-priestess.webp', rotation: -9, x: -50, delay: 0.1 },
+  { file: 'the-star.webp', rotation: 0, x: 0, delay: 0.2 },
+  { file: 'the-moon.webp', rotation: 9, x: 50, delay: 0.3 },
+  { file: 'the-world.webp', rotation: 18, x: 100, delay: 0.4 },
 ];
 
-// ─── Scroll Fade-In Hook ───────────────────────────────────────
-function useScrollReveal() {
+// ─── Scroll Reveal Hook ────────────────────────────────────────
+function useReveal(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
-      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, isVisible };
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
 }
 
-// ─── Animated Counter ──────────────────────────────────────────
-function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
+// ─── Animated Number ───────────────────────────────────────────
+function AnimNum({ to, suffix = '' }: { to: number; suffix?: string }) {
+  const [n, setN] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
-
+  const ran = useRef(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !started.current) {
-        started.current = true;
-        const duration = 1600;
-        const steps = 40;
-        const increment = target / steps;
-        let current = 0;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            setCount(target);
-            clearInterval(timer);
-          } else {
-            setCount(Math.floor(current));
-          }
-        }, duration / steps);
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !ran.current) {
+        ran.current = true;
+        let c = 0;
+        const step = to / 30;
+        const iv = setInterval(() => {
+          c += step;
+          if (c >= to) { setN(to); clearInterval(iv); }
+          else setN(Math.floor(c));
+        }, 40);
       }
     }, { threshold: 0.5 });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return <span ref={ref}>{count}{suffix}</span>;
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [to]);
+  return <span ref={ref}>{n}{suffix}</span>;
 }
 
-// ─── Floating Particles ────────────────────────────────────────
-function FloatingParticles() {
+// ─── Star Field ────────────────────────────────────────────────
+function Stars() {
+  const stars = useRef(
+    Array.from({ length: 120 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 0.5 + Math.random() * 1.8,
+      dur: 2 + Math.random() * 5,
+      delay: Math.random() * 5,
+      bright: Math.random() > 0.85,
+    }))
+  ).current;
+
   return (
-    <div className="landing-particles" aria-hidden="true">
-      {Array.from({ length: 30 }).map((_, i) => (
+    <div className="lp-stars" aria-hidden="true">
+      {stars.map(s => (
         <div
-          key={i}
-          className="landing-particle"
+          key={s.id}
+          className={`lp-star ${s.bright ? 'bright' : ''}`}
           style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 8}s`,
-            animationDuration: `${6 + Math.random() * 10}s`,
-            '--particle-size': `${1 + Math.random() * 2.5}px`,
-            '--particle-opacity': `${0.15 + Math.random() * 0.4}`,
-            '--particle-drift': `${-30 + Math.random() * 60}px`,
-          } as React.CSSProperties}
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: s.size,
+            height: s.size,
+            animationDuration: `${s.dur}s`,
+            animationDelay: `${s.delay}s`,
+          }}
         />
       ))}
     </div>
   );
 }
 
-// ─── Twinkling Stars Background ────────────────────────────────
-function StarField() {
+// ─── Particles ─────────────────────────────────────────────────
+function Particles() {
+  const p = useRef(
+    Array.from({ length: 24 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      size: 1 + Math.random() * 2,
+      dur: 8 + Math.random() * 12,
+      delay: Math.random() * 10,
+      drift: -40 + Math.random() * 80,
+      opacity: 0.1 + Math.random() * 0.35,
+    }))
+  ).current;
+
   return (
-    <div className="landing-starfield" aria-hidden="true">
-      {Array.from({ length: 80 }).map((_, i) => (
+    <div className="lp-particles" aria-hidden="true">
+      {p.map(pt => (
         <div
-          key={i}
-          className="landing-star"
+          key={pt.id}
+          className="lp-particle"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${2 + Math.random() * 4}s`,
-            '--star-size': `${0.5 + Math.random() * 2}px`,
+            left: `${pt.x}%`,
+            '--psize': `${pt.size}px`,
+            '--pdrift': `${pt.drift}px`,
+            '--popacity': pt.opacity,
+            animationDuration: `${pt.dur}s`,
+            animationDelay: `${pt.delay}s`,
           } as React.CSSProperties}
         />
       ))}
@@ -179,57 +147,55 @@ function StarField() {
 
 // ─── Zodiac Wheel ──────────────────────────────────────────────
 function ZodiacWheel() {
-  const [hoveredSign, setHoveredSign] = useState<number | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
+  const radius = 155;
 
   return (
-    <div className="landing-zodiac-wrapper">
+    <div className="lp-zodiac-outer">
       <div
-        className={`landing-zodiac-wheel ${isPaused ? 'paused' : ''}`}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => { setIsPaused(false); setHoveredSign(null); }}
+        className={`lp-zodiac ${paused ? 'paused' : ''}`}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => { setPaused(false); setHovered(null); }}
       >
-        {/* Outer glow ring */}
-        <div className="landing-zodiac-ring" />
-        <div className="landing-zodiac-ring-inner" />
+        {/* Rings */}
+        <div className="lp-zodiac-ring r1" />
+        <div className="lp-zodiac-ring r2" />
+        <div className="lp-zodiac-ring r3" />
 
-        {ZODIAC_SIGNS.map((sign, i) => {
-          const angle = (i * 30) - 90;
-          const radius = 140;
-          const x = Math.cos((angle * Math.PI) / 180) * radius;
-          const y = Math.sin((angle * Math.PI) / 180) * radius;
-          const isHovered = hoveredSign === i;
-
+        {/* Signs */}
+        {ZODIAC_SIGNS.map((s, i) => {
+          const a = (i * 30) - 90;
+          const x = Math.cos((a * Math.PI) / 180) * radius;
+          const y = Math.sin((a * Math.PI) / 180) * radius;
           return (
             <div
-              key={sign.name}
-              className={`landing-zodiac-symbol ${isHovered ? 'active' : ''}`}
-              style={{
-                transform: `translate(${x}px, ${y}px) rotate(${isPaused ? 0 : 0}deg)`,
-              }}
-              onMouseEnter={() => setHoveredSign(i)}
-              onMouseLeave={() => setHoveredSign(null)}
+              key={s.name}
+              className={`lp-zodiac-sign ${hovered === i ? 'active' : ''}`}
+              style={{ transform: `translate(${x}px, ${y}px)` }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
             >
-              <span className="landing-zodiac-glyph">{sign.symbol}</span>
+              <span className="lp-zodiac-glyph">{s.symbol}</span>
             </div>
           );
         })}
 
-        {/* Center content */}
-        <div className="landing-zodiac-center">
-          {hoveredSign !== null ? (
-            <div className="landing-zodiac-info">
-              <span className="landing-zodiac-info-symbol">{ZODIAC_SIGNS[hoveredSign].symbol}</span>
-              <span className="landing-zodiac-info-name">{ZODIAC_SIGNS[hoveredSign].name}</span>
-              <span className="landing-zodiac-info-element">{ZODIAC_SIGNS[hoveredSign].element}</span>
-              <span className="landing-zodiac-info-dates">{ZODIAC_SIGNS[hoveredSign].dates}</span>
-            </div>
+        {/* Center */}
+        <div className="lp-zodiac-center">
+          {hovered !== null ? (
+            <>
+              <div className="lp-zodiac-c-sym">{ZODIAC_SIGNS[hovered].symbol}</div>
+              <div className="lp-zodiac-c-name">{ZODIAC_SIGNS[hovered].name}</div>
+              <div className="lp-zodiac-c-el">{ZODIAC_SIGNS[hovered].element}</div>
+              <div className="lp-zodiac-c-dates">{ZODIAC_SIGNS[hovered].dates}</div>
+            </>
           ) : (
-            <div className="landing-zodiac-info">
-              <span className="landing-zodiac-info-symbol" style={{ fontSize: '1.8rem' }}>☉</span>
-              <span className="landing-zodiac-info-name">The Zodiac</span>
-              <span className="landing-zodiac-info-element" style={{ opacity: 0.5 }}>Hover to explore</span>
-            </div>
+            <>
+              <div className="lp-zodiac-c-sym" style={{ fontSize: '2rem' }}>☉</div>
+              <div className="lp-zodiac-c-name">The Zodiac</div>
+              <div className="lp-zodiac-c-el" style={{ opacity: 0.4 }}>Hover to explore</div>
+            </>
           )}
         </div>
       </div>
@@ -237,353 +203,379 @@ function ZodiacWheel() {
   );
 }
 
-// ─── Tarot Card Flip ───────────────────────────────────────────
-function TarotCardFlip() {
-  const [isFlipped, setIsFlipped] = useState(false);
+// ─── Card Fan (Hero) ───────────────────────────────────────────
+function CardFan() {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   return (
-    <div
-      className="landing-tarot-card-container"
-      onMouseEnter={() => setIsFlipped(true)}
-      onMouseLeave={() => setIsFlipped(false)}
-      onClick={() => setIsFlipped(!isFlipped)}
-    >
-      <div className={`landing-tarot-card ${isFlipped ? 'flipped' : ''}`}>
-        {/* Card Back */}
-        <div className="landing-tarot-face landing-tarot-back">
-          <div className="landing-tarot-back-design">
-            <div className="landing-tarot-back-border" />
-            <div className="landing-tarot-back-pattern">
-              <span>✦</span>
-            </div>
-            <div className="landing-tarot-back-label">ARCANA</div>
-          </div>
+    <div className="lp-cardfan">
+      {CARD_FAN.map((card, i) => (
+        <div
+          key={card.file}
+          className={`lp-cardfan-card ${hoveredIdx === i ? 'hovered' : ''}`}
+          style={{
+            '--rot': `${card.rotation}deg`,
+            '--tx': `${card.x}px`,
+            '--delay': `${card.delay}s`,
+            zIndex: hoveredIdx === i ? 10 : 5 - Math.abs(i - 2),
+          } as React.CSSProperties}
+          onMouseEnter={() => setHoveredIdx(i)}
+          onMouseLeave={() => setHoveredIdx(null)}
+        >
+          <img
+            src={`/bundled-cards/major-arcana/${card.file}`}
+            alt=""
+            className="lp-cardfan-img"
+            loading="eager"
+          />
         </div>
-        {/* Card Front */}
-        <div className="landing-tarot-face landing-tarot-front">
-          <div className="landing-tarot-front-content">
-            <div className="landing-tarot-front-number">XVII</div>
-            <div className="landing-tarot-front-symbol">⭐</div>
-            <div className="landing-tarot-front-name">The Star</div>
-            <div className="landing-tarot-front-keyword">Hope & Renewal</div>
-          </div>
-        </div>
-      </div>
-      <p className="landing-tarot-hint">{isFlipped ? 'The Star — Hope awaits' : 'Hover to reveal'}</p>
+      ))}
     </div>
   );
 }
 
-// ─── Glass Card Component ──────────────────────────────────────
-function GlassCard({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const { ref, isVisible } = useScrollReveal();
+// ─── Feature Card ──────────────────────────────────────────────
+function FeatureCard({ icon, title, desc, delay }: { icon: string; title: string; desc: string; delay: number }) {
+  const { ref, visible } = useReveal();
   return (
-    <div
-      ref={ref}
-      className={`landing-glass-card ${className} ${isVisible ? 'visible' : ''}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
+    <div ref={ref} className={`lp-fcard ${visible ? 'vis' : ''}`} style={{ transitionDelay: `${delay}ms` }}>
+      <div className="lp-fcard-icon">{icon}</div>
+      <h3 className="lp-fcard-title">{title}</h3>
+      <p className="lp-fcard-desc">{desc}</p>
     </div>
   );
 }
 
-// ─── FAQ Accordion ─────────────────────────────────────────────
-function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const { ref, isVisible } = useScrollReveal();
-
+// ─── FAQ Item ──────────────────────────────────────────────────
+function Faq({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div
-      ref={ref}
-      className={`landing-faq-item ${isVisible ? 'visible' : ''}`}
-      style={{ transitionDelay: `${index * 80}ms` }}
-    >
-      <button
-        className="landing-faq-question"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-      >
+    <div className={`lp-faq ${open ? 'open' : ''}`}>
+      <button className="lp-faq-q" onClick={() => setOpen(!open)}>
         <span>{q}</span>
-        <span className={`landing-faq-icon ${isOpen ? 'open' : ''}`}>+</span>
+        <span className="lp-faq-plus">+</span>
       </button>
-      <div className={`landing-faq-answer ${isOpen ? 'open' : ''}`}>
-        <p>{a}</p>
-      </div>
+      <div className="lp-faq-a"><p>{a}</p></div>
     </div>
   );
 }
 
-// ─── Section Wrapper ───────────────────────────────────────────
-function Section({ children, id, className = '' }: { children: React.ReactNode; id?: string; className?: string }) {
-  const { ref, isVisible } = useScrollReveal();
+// ─── Section ───────────────────────────────────────────────────
+function Sec({ children, id, className = '' }: { children: React.ReactNode; id?: string; className?: string }) {
+  const { ref, visible } = useReveal();
   return (
-    <section ref={ref} id={id} className={`landing-section ${isVisible ? 'visible' : ''} ${className}`}>
+    <section ref={ref} id={id} className={`lp-sec ${visible ? 'vis' : ''} ${className}`}>
       {children}
     </section>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MAIN LANDING PAGE
+// LANDING PAGE
 // ═══════════════════════════════════════════════════════════════
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
-  const [scrollY, setScrollY] = useState(0);
   const [navSolid, setNavSolid] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
-  const handleScroll = useCallback(() => {
+  const onScroll = useCallback(() => {
     setScrollY(window.scrollY);
-    setNavSolid(window.scrollY > 60);
+    setNavSolid(window.scrollY > 50);
   }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [onScroll]);
 
   return (
-    <div className="landing-root">
-      <StarField />
-      <FloatingParticles />
+    <div className="lp-root">
+      <Stars />
+      <Particles />
 
-      {/* ─── Navigation ─── */}
-      <nav className={`landing-nav ${navSolid ? 'solid' : ''}`}>
-        <div className="landing-nav-inner">
-          <div className="landing-nav-brand">
-            <span className="landing-nav-logo">☽</span>
-            <span className="landing-nav-name">Arcana</span>
+      {/* ── Nav ── */}
+      <nav className={`lp-nav ${navSolid ? 'solid' : ''}`}>
+        <div className="lp-nav-in">
+          <div className="lp-nav-brand">
+            <span className="lp-nav-moon">☽</span>
+            <span className="lp-nav-name">Arcana</span>
           </div>
-          <div className="landing-nav-links">
-            <a href="#features" className="landing-nav-link">Features</a>
-            <a href="#zodiac" className="landing-nav-link">Zodiac</a>
-            <a href="#pricing" className="landing-nav-link">Pricing</a>
-            <button onClick={onSignIn} className="landing-nav-signin">Sign In</button>
+          <div className="lp-nav-right">
+            <a href="#features" className="lp-nav-link">Features</a>
+            <a href="#zodiac" className="lp-nav-link">Zodiac</a>
+            <a href="#pricing" className="lp-nav-link">Pricing</a>
+            <button onClick={onSignIn} className="lp-nav-btn">Sign In</button>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero ─── */}
-      <section className="landing-hero">
-        <div className="landing-hero-glow" style={{ transform: `translateY(${scrollY * 0.15}px)` }} />
+      {/* ── Hero ── */}
+      <section className="lp-hero">
+        <div className="lp-hero-bg-glow" style={{ transform: `translateY(${scrollY * 0.12}px)` }} />
+        <div className="lp-hero-orb o1" />
+        <div className="lp-hero-orb o2" />
+        <div className="lp-hero-orb o3" />
 
-        <div className="landing-hero-content">
-          {/* Moon icon */}
-          <div className="landing-hero-moon">
-            <span>☽</span>
+        <div className="lp-hero-content">
+          <div className="lp-hero-badge">
+            <span className="lp-hero-badge-dot" />
+            Personalized tarot & astrology
           </div>
 
-          <h1 className="landing-hero-title">
-            <span className="landing-hero-title-line1">Know yourself.</span>
-            <span className="landing-hero-title-line2">
-              <span className="landing-shimmer-text">One ritual a day.</span>
-            </span>
+          <h1 className="lp-hero-h1">
+            Know yourself.
+            <br />
+            <span className="lp-shimmer">One ritual a day.</span>
           </h1>
 
-          <p className="landing-hero-subtitle">
-            Daily tarot readings, personalized horoscopes, reflective journaling,
-            and personality quizzes — all in one beautifully crafted app.
+          <p className="lp-hero-sub">
+            Daily tarot readings, personalized horoscopes, reflective
+            journaling, and personality quizzes — all in one beautifully crafted app.
           </p>
 
-          <div className="landing-hero-ctas">
-            <button onClick={onGetStarted} className="landing-btn-primary">
-              <span className="landing-btn-glow" />
+          <div className="lp-hero-ctas">
+            <button onClick={onGetStarted} className="lp-btn-gold">
+              <span className="lp-btn-gold-glow" />
               Get Started Free
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
             <a
               href="https://play.google.com/store/apps/details?id=com.arcana.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="landing-btn-secondary"
+              className="lp-btn-ghost"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="20" height="20">
-                <path d="M12 18v-6m0 0V6m0 6h6m-6 0H6" strokeLinecap="round" />
-              </svg>
-              Download Android App
+              Download for Android
             </a>
           </div>
 
-          <p className="landing-hero-note">Free to use · No credit card required</p>
+          <p className="lp-hero-note">Free forever · No credit card required</p>
         </div>
 
-        {/* Decorative orbs */}
-        <div className="landing-hero-orb landing-hero-orb-1" />
-        <div className="landing-hero-orb landing-hero-orb-2" />
-        <div className="landing-hero-orb landing-hero-orb-3" />
+        <div className="lp-hero-visual" style={{ transform: `translateY(${scrollY * -0.08}px)` }}>
+          <CardFan />
+        </div>
       </section>
 
-      {/* ─── Stats ─── */}
-      <Section className="landing-stats-section">
-        <div className="landing-container">
-          <div className="landing-stats-grid">
+      {/* ── Logos / Trust Strip ── */}
+      <Sec className="lp-trust">
+        <div className="lp-wrap">
+          <div className="lp-trust-grid">
             {[
-              { target: 78, label: 'Tarot Cards', suffix: '' },
-              { target: 6, label: 'Spread Types', suffix: '' },
-              { target: 6, label: 'Personality Quizzes', suffix: '' },
-              { target: 12, label: 'Zodiac Signs', suffix: '' },
-            ].map((stat) => (
-              <div key={stat.label} className="landing-stat">
-                <div className="landing-stat-number">
-                  <AnimatedCounter target={stat.target} suffix={stat.suffix} />
-                </div>
-                <div className="landing-stat-label">{stat.label}</div>
+              { n: '78', l: 'Tarot Cards', sub: 'Full traditional deck' },
+              { n: '6', l: 'Spread Types', sub: 'From daily to Celtic Cross' },
+              { n: '5', l: 'Personality Tests', sub: 'MBTI, Enneagram & more' },
+              { n: '12', l: 'Zodiac Signs', sub: 'Updated daily' },
+            ].map(s => (
+              <div key={s.l} className="lp-trust-item">
+                <div className="lp-trust-num"><AnimNum to={parseInt(s.n)} /></div>
+                <div className="lp-trust-label">{s.l}</div>
+                <div className="lp-trust-sub">{s.sub}</div>
               </div>
             ))}
           </div>
         </div>
-      </Section>
+      </Sec>
 
-      {/* ─── Features ─── */}
-      <Section id="features">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-label">Features</span>
-            <h2 className="landing-section-title">Everything for your daily practice</h2>
-            <p className="landing-section-subtitle">A complete spiritual toolkit designed to help you grow one day at a time.</p>
+      {/* ── Features ── */}
+      <Sec id="features">
+        <div className="lp-wrap">
+          <div className="lp-header">
+            <span className="lp-tag">Features</span>
+            <h2 className="lp-h2">A complete spiritual toolkit</h2>
+            <p className="lp-sub">Everything you need for your daily practice, designed to help you grow one day at a time.</p>
           </div>
-
-          <div className="landing-features-grid">
-            {FEATURES.map((feature, i) => (
-              <GlassCard key={feature.title} className={`landing-feature-card ${feature.borderHover}`} delay={i * 100}>
-                <div className={`landing-feature-icon ${feature.iconBg}`}>
-                  <span>{feature.icon}</span>
-                </div>
-                <h3 className="landing-feature-title">{feature.title}</h3>
-                <p className="landing-feature-desc">{feature.desc}</p>
-              </GlassCard>
+          <div className="lp-fgrid">
+            {[
+              { icon: '🃏', title: 'Tarot Readings', desc: 'Full 78-card deck with detailed upright and reversed meanings. 6 spread types including Celtic Cross, Relationship, Career Decision, and Shadow Work.' },
+              { icon: '✨', title: 'Daily Horoscope', desc: 'Personalized forecasts with energy scores, mood analysis, love and career insights, planetary transits, and daily affirmations.' },
+              { icon: '📓', title: 'Reflective Journal', desc: 'Write freely or use guided prompts. Track mood with 10 emoji moods, tag entries, and link to your tarot readings.' },
+              { icon: '🧠', title: 'Personality Quizzes', desc: 'MBTI, Enneagram, Big Five, Love Language, and Attachment Style. Results shape your entire experience.' },
+              { icon: '🔥', title: 'Streaks & XP', desc: 'Build daily habits. Earn XP, level up through Seeker Ranks, and unlock achievements as you grow.' },
+              { icon: '🌙', title: 'Birth Chart', desc: 'Enter your birth details for your complete natal chart with planetary placements and personalized interpretations.' },
+            ].map((f, i) => (
+              <FeatureCard key={f.title} {...f} delay={i * 80} />
             ))}
           </div>
         </div>
-      </Section>
+      </Sec>
 
-      {/* ─── Zodiac Wheel ─── */}
-      <Section id="zodiac" className="landing-zodiac-section">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-label">The Zodiac</span>
-            <h2 className="landing-section-title">Written in the stars</h2>
-            <p className="landing-section-subtitle">Personalized horoscopes for all 12 zodiac signs, updated daily with cosmic precision.</p>
+      {/* ── Card Showcase ── */}
+      <Sec className="lp-showcase">
+        <div className="lp-wrap">
+          <div className="lp-header">
+            <span className="lp-tag">The Deck</span>
+            <h2 className="lp-h2">78 beautifully illustrated cards</h2>
+            <p className="lp-sub">Every card in the traditional Rider-Waite tradition, with detailed interpretations for upright and reversed positions.</p>
+          </div>
+          <div className="lp-showcase-scroll">
+            {[
+              'the-fool', 'the-magician', 'the-high-priestess', 'the-empress', 'the-emperor',
+              'the-hierophant', 'the-lovers', 'the-chariot', 'strength', 'the-hermit',
+              'wheel-of-fortune', 'justice', 'the-hanged-man', 'death', 'temperance',
+              'the-devil', 'the-tower', 'the-star', 'the-moon', 'the-sun', 'judgement', 'the-world',
+            ].map((card) => (
+              <div key={card} className="lp-showcase-card">
+                <img
+                  src={`/bundled-cards/major-arcana/${card}.webp`}
+                  alt={card.replace(/-/g, ' ').replace('the ', 'The ')}
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </Sec>
+
+      {/* ── Zodiac ── */}
+      <Sec id="zodiac" className="lp-zodiac-sec">
+        <div className="lp-wrap">
+          <div className="lp-header">
+            <span className="lp-tag">The Zodiac</span>
+            <h2 className="lp-h2">Written in the stars</h2>
+            <p className="lp-sub">Personalized horoscopes for all 12 signs, updated daily with cosmic precision.</p>
           </div>
           <ZodiacWheel />
         </div>
-      </Section>
+      </Sec>
 
-      {/* ─── Daily Ritual ─── */}
-      <Section className="landing-ritual-section">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-label">Your Daily Ritual</span>
-            <h2 className="landing-section-title">Three steps. Every day.</h2>
-            <p className="landing-section-subtitle">Complete all three to maintain your streak and level up through Seeker Ranks.</p>
+      {/* ── Ritual Steps ── */}
+      <Sec>
+        <div className="lp-wrap">
+          <div className="lp-header">
+            <span className="lp-tag">Your Daily Ritual</span>
+            <h2 className="lp-h2">Three steps. Every day.</h2>
+            <p className="lp-sub">Complete all three to maintain your streak and level up through Seeker Ranks.</p>
           </div>
+          <div className="lp-steps">
+            {[
+              { n: '01', icon: '☉', title: 'Read Your Horoscope', desc: 'Start with your personalized daily forecast. See your energy score and what the cosmos has in store.' },
+              { n: '02', icon: '🂠', title: 'Pull Your Card', desc: 'Draw a tarot card for daily guidance. Reflect on its meaning and how it connects to your current chapter.' },
+              { n: '03', icon: '✎', title: 'Write a Reflection', desc: 'Journal your thoughts using a guided prompt or free-write. Link your entry to today\'s reading.' },
+            ].map((s, i) => {
+              const { ref, visible } = useReveal();
+              return (
+                <div ref={ref} key={s.n} className={`lp-step ${visible ? 'vis' : ''}`} style={{ transitionDelay: `${i * 120}ms` }}>
+                  <div className="lp-step-num">{s.n}</div>
+                  <div className="lp-step-icon">{s.icon}</div>
+                  <h3 className="lp-step-title">{s.title}</h3>
+                  <p className="lp-step-desc">{s.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </Sec>
 
-          <div className="landing-ritual-layout">
-            <div className="landing-ritual-steps">
-              {[
-                { step: '1', title: 'Read Your Horoscope', desc: 'Start with your personalized daily forecast. See your energy score, planetary influences, and what the cosmos has in store.', icon: '☉' },
-                { step: '2', title: 'Pull Your Card', desc: 'Draw a tarot card for daily guidance. Reflect on its meaning and how it connects to your current chapter.', icon: '🂠' },
-                { step: '3', title: 'Write a Reflection', desc: 'Journal your thoughts using a guided prompt or free-write. Link your entry to today\'s reading.', icon: '✎' },
-              ].map((item, i) => (
-                <GlassCard key={item.step} className="landing-ritual-step" delay={i * 150}>
-                  <div className="landing-ritual-step-number">
-                    <span>{item.icon}</span>
-                  </div>
-                  <div className="landing-ritual-step-connector" />
-                  <h3 className="landing-ritual-step-title">{item.title}</h3>
-                  <p className="landing-ritual-step-desc">{item.desc}</p>
-                </GlassCard>
-              ))}
+      {/* ── Pricing ── */}
+      <Sec id="pricing">
+        <div className="lp-wrap">
+          <div className="lp-header">
+            <span className="lp-tag">Pricing</span>
+            <h2 className="lp-h2">Start free. Upgrade when ready.</h2>
+            <p className="lp-sub">Generous free tier with everything you need to begin.</p>
+          </div>
+          <div className="lp-pricing">
+            <div className="lp-price-card">
+              <h3 className="lp-price-name">Free</h3>
+              <div className="lp-price-amount">$0</div>
+              <div className="lp-price-period">Free forever</div>
+              <ul className="lp-price-list">
+                <li>3 daily tarot readings</li>
+                <li>Single card spread</li>
+                <li>Daily horoscope</li>
+                <li>Full journal with mood tracking</li>
+                <li>All 6 personality quizzes</li>
+                <li>10 saved readings</li>
+                <li>Streaks, XP & achievements</li>
+              </ul>
+              <button onClick={onGetStarted} className="lp-price-btn">Get Started</button>
             </div>
 
-            <div className="landing-ritual-card-preview">
-              <TarotCardFlip />
+            <div className="lp-price-card featured">
+              <div className="lp-price-badge">Best Value</div>
+              <h3 className="lp-price-name">Premium Yearly</h3>
+              <div className="lp-price-amount">$24.99</div>
+              <div className="lp-price-period">per year · saves 58%</div>
+              <ul className="lp-price-list">
+                <li>Unlimited tarot readings</li>
+                <li>All 6 spread types</li>
+                <li>Birth chart analysis</li>
+                <li>Weekly & monthly forecasts</li>
+                <li>Deep card interpretations</li>
+                <li>Unlimited saves</li>
+                <li>Journal locking & insights</li>
+                <li>Ad-free experience</li>
+              </ul>
+              <button onClick={onGetStarted} className="lp-price-btn gold">Start Premium</button>
+            </div>
+
+            <div className="lp-price-card">
+              <div className="lp-price-badge alt">Forever Access</div>
+              <h3 className="lp-price-name">Lifetime</h3>
+              <div className="lp-price-amount">$29.99</div>
+              <div className="lp-price-period">one-time payment</div>
+              <ul className="lp-price-list">
+                <li>Everything in Premium</li>
+                <li>Never pay again</li>
+                <li>All future features included</li>
+                <li>Priority support</li>
+              </ul>
+              <button onClick={onGetStarted} className="lp-price-btn">Get Lifetime</button>
             </div>
           </div>
         </div>
-      </Section>
+      </Sec>
 
-      {/* ─── Pricing ─── */}
-      <Section id="pricing" className="landing-pricing-section">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-label">Pricing</span>
-            <h2 className="landing-section-title">Start free. Upgrade when ready.</h2>
-            <p className="landing-section-subtitle">Generous free tier with everything you need. Premium unlocks the full experience.</p>
+      {/* ── FAQ ── */}
+      <Sec id="faq">
+        <div className="lp-wrap lp-faq-wrap">
+          <div className="lp-header">
+            <span className="lp-tag">FAQ</span>
+            <h2 className="lp-h2">Common questions</h2>
           </div>
-
-          <div className="landing-pricing-grid">
-            <GlassCard className="landing-pricing-card" delay={0}>
-              <h3 className="landing-pricing-name">Free</h3>
-              <div className="landing-pricing-price">$0 <span>forever</span></div>
-              <ul className="landing-pricing-features">
-                <li><span className="landing-check">✓</span> 3 daily tarot readings</li>
-                <li><span className="landing-check">✓</span> Single card & 3-card spreads</li>
-                <li><span className="landing-check">✓</span> Daily horoscope</li>
-                <li><span className="landing-check">✓</span> Full journal with mood tracking</li>
-                <li><span className="landing-check">✓</span> All 6 personality quizzes</li>
-                <li><span className="landing-check">✓</span> Streaks, XP & achievements</li>
-              </ul>
-              <button onClick={onGetStarted} className="landing-btn-outline-card">Get Started</button>
-            </GlassCard>
-
-            <GlassCard className="landing-pricing-card landing-pricing-featured" delay={100}>
-              <div className="landing-pricing-badge">Most Popular</div>
-              <h3 className="landing-pricing-name">Premium</h3>
-              <div className="landing-pricing-price">$4.99 <span>/month</span></div>
-              <ul className="landing-pricing-features">
-                <li><span className="landing-check gold">★</span> Unlimited tarot readings</li>
-                <li><span className="landing-check gold">★</span> All 6 spread types</li>
-                <li><span className="landing-check gold">★</span> Birth chart analysis</li>
-                <li><span className="landing-check gold">★</span> Weekly & monthly forecasts</li>
-                <li><span className="landing-check gold">★</span> Deep interpretations</li>
-                <li><span className="landing-check gold">★</span> Journal locking & insights</li>
-                <li><span className="landing-check gold">★</span> No ads</li>
-              </ul>
-              <button onClick={onGetStarted} className="landing-btn-primary-card">Start Premium</button>
-            </GlassCard>
-          </div>
+          {[
+            { q: 'Is Arcana free to use?', a: 'Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads.' },
+            { q: 'How accurate are the tarot readings?', a: 'Arcana uses a full 78-card tarot deck with detailed traditional meanings for every card — upright and reversed. Readings are designed for self-reflection and personal insight.' },
+            { q: 'What personality quizzes are available?', a: 'Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check.' },
+            { q: 'Is my journal private?', a: 'Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock entries with a password.' },
+            { q: 'Can I cancel premium anytime?', a: 'Yes. Subscriptions are managed through Google Play. Cancel anytime with no fees.' },
+            { q: 'Does it work on the web?', a: 'Yes! Use Arcana right here on the web, or download the Android app for offline support and push notifications.' },
+          ].map(f => <Faq key={f.q} {...f} />)}
         </div>
-      </Section>
+      </Sec>
 
-      {/* ─── FAQ ─── */}
-      <Section id="faq">
-        <div className="landing-container landing-faq-container">
-          <div className="landing-section-header">
-            <span className="landing-section-label">FAQ</span>
-            <h2 className="landing-section-title">Common questions</h2>
-          </div>
-          <div className="landing-faq-list">
-            {FAQ_ITEMS.map((item, i) => (
-              <FaqItem key={item.q} q={item.q} a={item.a} index={i} />
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* ─── Final CTA ─── */}
-      <Section className="landing-final-cta">
-        <div className="landing-container" style={{ textAlign: 'center' }}>
-          <div className="landing-final-moon">☽</div>
-          <h2 className="landing-section-title" style={{ marginBottom: '16px' }}>Begin your journey</h2>
-          <p className="landing-section-subtitle" style={{ marginBottom: '40px' }}>
-            Start your first daily ritual today — free, no credit card required.
-          </p>
-          <button onClick={onGetStarted} className="landing-btn-primary landing-btn-large">
-            <span className="landing-btn-glow" />
+      {/* ── Final CTA ── */}
+      <Sec className="lp-cta-final">
+        <div className="lp-wrap" style={{ textAlign: 'center' }}>
+          <div className="lp-cta-moon">☽</div>
+          <h2 className="lp-h2" style={{ marginBottom: 12 }}>Begin your journey</h2>
+          <p className="lp-sub" style={{ marginBottom: 40 }}>Start your first daily ritual today.</p>
+          <button onClick={onGetStarted} className="lp-btn-gold lp-btn-lg">
+            <span className="lp-btn-gold-glow" />
             Get Started Free
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
-      </Section>
+      </Sec>
 
-      {/* ─── Footer ─── */}
-      <footer className="landing-footer">
-        <div className="landing-container">
-          <div className="landing-footer-links">
-            <a href="/privacy-policy.html">Privacy Policy</a>
-            <a href="mailto:support@arcana.app">Contact</a>
-            <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">Google Play</a>
+      {/* ── Footer ── */}
+      <footer className="lp-footer">
+        <div className="lp-wrap">
+          <div className="lp-footer-top">
+            <div className="lp-footer-brand">
+              <span className="lp-nav-moon">☽</span>
+              <span className="lp-nav-name">Arcana</span>
+            </div>
+            <div className="lp-footer-links">
+              <a href="/privacy-policy.html">Privacy Policy</a>
+              <a href="mailto:support@arcana.app">Contact</a>
+              <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">Google Play</a>
+            </div>
           </div>
-          <p className="landing-footer-disclaimer">Arcana is for entertainment and self-reflection purposes only.</p>
-          <p className="landing-footer-copy">&copy; 2026 Arcana. All rights reserved.</p>
+          <div className="lp-footer-bottom">
+            <p>For entertainment and self-reflection purposes only.</p>
+            <p>&copy; 2026 Arcana. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>

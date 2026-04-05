@@ -21,6 +21,7 @@ import { HomePage } from './pages/HomePage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
 import { AuthPage } from './pages/AuthPage';
+import { LandingPage } from './pages/LandingPage';
 
 // Lazy imports — loaded on demand when user navigates
 const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
@@ -114,6 +115,7 @@ function AppContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [showOAuthCancel, setShowOAuthCancel] = useState(false);
+  const [showAuthForm, setShowAuthForm] = useState(false);
 
 
   useEffect(() => {
@@ -253,9 +255,21 @@ function AppContent() {
   }
 
   if (!user) {
+    // Native (Android): always show auth form directly
+    // Web: show marketing landing page, with option to switch to auth form
+    if (isNative() || showAuthForm) {
+      return (
+        <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+          <AuthPage onSwitchToOnboarding={() => setShowOnboarding(true)} />
+        </ErrorBoundary>
+      );
+    }
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-        <AuthPage onSwitchToOnboarding={() => setShowOnboarding(true)} />
+        <LandingPage
+          onSignIn={() => setShowAuthForm(true)}
+          onGetStarted={() => setShowOnboarding(true)}
+        />
       </ErrorBoundary>
     );
   }

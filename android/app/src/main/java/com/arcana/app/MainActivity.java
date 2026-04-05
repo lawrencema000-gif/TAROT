@@ -11,6 +11,9 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(AppOpenAdPlugin.class);
 
+        // Force NoActionBar theme before anything else
+        setTheme(R.style.AppTheme_NoActionBar);
+
         // Enable edge-to-edge display (Android 15+ / SDK 35+ requirement)
         EdgeToEdge.enable(this);
 
@@ -19,6 +22,11 @@ public class MainActivity extends BridgeActivity {
         // Make app content draw behind system bars
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
+        // Hide the action bar if it somehow still exists
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         WindowInsetsControllerCompat windowInsetsController =
             WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
 
@@ -26,7 +34,6 @@ public class MainActivity extends BridgeActivity {
             windowInsetsController.setSystemBarsBehavior(
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             );
-            // Use light/dark status bar icons based on content
             windowInsetsController.setAppearanceLightStatusBars(false);
             windowInsetsController.setAppearanceLightNavigationBars(false);
         }

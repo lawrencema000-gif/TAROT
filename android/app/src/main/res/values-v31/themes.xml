@@ -19,6 +19,8 @@
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
         <item name="android:background">@drawable/splash</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <!-- Transparent bars handled by EdgeToEdge.enable() in MainActivity -->

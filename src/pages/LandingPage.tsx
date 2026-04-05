@@ -1,205 +1,589 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+
 interface LandingPageProps {
   onSignIn: () => void;
   onGetStarted: () => void;
 }
 
-export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
+// ─── Zodiac Data ───────────────────────────────────────────────
+const ZODIAC_SIGNS = [
+  { symbol: '♈', name: 'Aries', element: 'Fire', dates: 'Mar 21 – Apr 19' },
+  { symbol: '♉', name: 'Taurus', element: 'Earth', dates: 'Apr 20 – May 20' },
+  { symbol: '♊', name: 'Gemini', element: 'Air', dates: 'May 21 – Jun 20' },
+  { symbol: '♋', name: 'Cancer', element: 'Water', dates: 'Jun 21 – Jul 22' },
+  { symbol: '♌', name: 'Leo', element: 'Fire', dates: 'Jul 23 – Aug 22' },
+  { symbol: '♍', name: 'Virgo', element: 'Earth', dates: 'Aug 23 – Sep 22' },
+  { symbol: '♎', name: 'Libra', element: 'Air', dates: 'Sep 23 – Oct 22' },
+  { symbol: '♏', name: 'Scorpio', element: 'Water', dates: 'Oct 23 – Nov 21' },
+  { symbol: '♐', name: 'Sagittarius', element: 'Fire', dates: 'Nov 22 – Dec 21' },
+  { symbol: '♑', name: 'Capricorn', element: 'Earth', dates: 'Dec 22 – Jan 19' },
+  { symbol: '♒', name: 'Aquarius', element: 'Air', dates: 'Jan 20 – Feb 18' },
+  { symbol: '♓', name: 'Pisces', element: 'Water', dates: 'Feb 19 – Mar 20' },
+];
+
+const FEATURES = [
+  {
+    icon: '🃏',
+    title: 'Tarot Readings',
+    desc: 'Full 78-card deck with detailed upright and reversed meanings. 6 spread types from quick daily pulls to deep Celtic Cross readings. Choose your focus — Love, Career, Health, or Self.',
+    gradient: 'from-purple-500/20 to-indigo-500/20',
+    borderHover: 'hover:border-purple-500/40',
+    iconBg: 'bg-purple-500/10',
+  },
+  {
+    icon: '✨',
+    title: 'Daily Horoscope',
+    desc: 'Personalized forecasts with energy scores, mood analysis, love and career insights, planetary transits, daily affirmations, and guided mini rituals.',
+    gradient: 'from-blue-500/20 to-cyan-500/20',
+    borderHover: 'hover:border-blue-500/40',
+    iconBg: 'bg-blue-500/10',
+  },
+  {
+    icon: '📓',
+    title: 'Reflective Journal',
+    desc: 'Write freely or use guided prompts based on your readings. Track mood with 10 emoji moods, tag entries by theme, and link to your tarot readings.',
+    gradient: 'from-emerald-500/20 to-teal-500/20',
+    borderHover: 'hover:border-emerald-500/40',
+    iconBg: 'bg-emerald-500/10',
+  },
+  {
+    icon: '🧠',
+    title: 'Personality Quizzes',
+    desc: 'MBTI, Enneagram, Big Five, Love Language, and Attachment Style. Six psychology-backed assessments that shape your entire experience.',
+    gradient: 'from-amber-500/20 to-orange-500/20',
+    borderHover: 'hover:border-amber-500/40',
+    iconBg: 'bg-amber-500/10',
+  },
+  {
+    icon: '🔥',
+    title: 'Streaks & Achievements',
+    desc: 'Build your daily ritual habit. Earn XP, level up through Seeker Ranks — from Novice to Awakened and beyond. Unlock achievements as you grow.',
+    gradient: 'from-red-500/20 to-rose-500/20',
+    borderHover: 'hover:border-red-500/40',
+    iconBg: 'bg-red-500/10',
+  },
+  {
+    icon: '🌙',
+    title: 'Birth Chart',
+    desc: 'Enter your birth details to unlock your complete natal chart with planetary placements, aspects, transits, and personalized interpretations.',
+    gradient: 'from-yellow-500/20 to-amber-500/20',
+    borderHover: 'hover:border-yellow-500/40',
+    iconBg: 'bg-yellow-500/10',
+  },
+];
+
+const FAQ_ITEMS = [
+  { q: 'Is Arcana free to use?', a: 'Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads.' },
+  { q: 'How accurate are the tarot readings?', a: 'Arcana uses a full 78-card tarot deck with detailed traditional meanings for every card — upright and reversed. Readings are designed for self-reflection and personal insight. The meaning you find is yours.' },
+  { q: 'What personality quizzes are available?', a: 'Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check. Results are saved to your profile and personalize your experience.' },
+  { q: 'Is my journal private?', a: 'Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock individual entries with a password for extra privacy.' },
+  { q: 'Can I cancel premium anytime?', a: 'Yes. Subscriptions are managed through Google Play or your account settings. Cancel anytime with no cancellation fees.' },
+  { q: 'Does it work on the web too?', a: 'Yes! You can use Arcana on the web right here, or download the Android app for the full native experience with offline support and push notifications.' },
+];
+
+// ─── Scroll Fade-In Hook ───────────────────────────────────────
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
+
+// ─── Animated Counter ──────────────────────────────────────────
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started.current) {
+        started.current = true;
+        const duration = 1600;
+        const steps = 40;
+        const increment = target / steps;
+        let current = 0;
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            setCount(target);
+            clearInterval(timer);
+          } else {
+            setCount(Math.floor(current));
+          }
+        }, duration / steps);
+      }
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+// ─── Floating Particles ────────────────────────────────────────
+function FloatingParticles() {
   return (
-    <div className="min-h-screen constellation-bg" style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-        <span className="font-display text-xl text-mystic-100">Arcana</span>
-        <button
-          onClick={onSignIn}
-          className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all"
-        >
-          Sign In
-        </button>
+    <div className="landing-particles" aria-hidden="true">
+      {Array.from({ length: 30 }).map((_, i) => (
+        <div
+          key={i}
+          className="landing-particle"
+          style={{
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 8}s`,
+            animationDuration: `${6 + Math.random() * 10}s`,
+            '--particle-size': `${1 + Math.random() * 2.5}px`,
+            '--particle-opacity': `${0.15 + Math.random() * 0.4}`,
+            '--particle-drift': `${-30 + Math.random() * 60}px`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Twinkling Stars Background ────────────────────────────────
+function StarField() {
+  return (
+    <div className="landing-starfield" aria-hidden="true">
+      {Array.from({ length: 80 }).map((_, i) => (
+        <div
+          key={i}
+          className="landing-star"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 5}s`,
+            animationDuration: `${2 + Math.random() * 4}s`,
+            '--star-size': `${0.5 + Math.random() * 2}px`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Zodiac Wheel ──────────────────────────────────────────────
+function ZodiacWheel() {
+  const [hoveredSign, setHoveredSign] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  return (
+    <div className="landing-zodiac-wrapper">
+      <div
+        className={`landing-zodiac-wheel ${isPaused ? 'paused' : ''}`}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => { setIsPaused(false); setHoveredSign(null); }}
+      >
+        {/* Outer glow ring */}
+        <div className="landing-zodiac-ring" />
+        <div className="landing-zodiac-ring-inner" />
+
+        {ZODIAC_SIGNS.map((sign, i) => {
+          const angle = (i * 30) - 90;
+          const radius = 140;
+          const x = Math.cos((angle * Math.PI) / 180) * radius;
+          const y = Math.sin((angle * Math.PI) / 180) * radius;
+          const isHovered = hoveredSign === i;
+
+          return (
+            <div
+              key={sign.name}
+              className={`landing-zodiac-symbol ${isHovered ? 'active' : ''}`}
+              style={{
+                transform: `translate(${x}px, ${y}px) rotate(${isPaused ? 0 : 0}deg)`,
+              }}
+              onMouseEnter={() => setHoveredSign(i)}
+              onMouseLeave={() => setHoveredSign(null)}
+            >
+              <span className="landing-zodiac-glyph">{sign.symbol}</span>
+            </div>
+          );
+        })}
+
+        {/* Center content */}
+        <div className="landing-zodiac-center">
+          {hoveredSign !== null ? (
+            <div className="landing-zodiac-info">
+              <span className="landing-zodiac-info-symbol">{ZODIAC_SIGNS[hoveredSign].symbol}</span>
+              <span className="landing-zodiac-info-name">{ZODIAC_SIGNS[hoveredSign].name}</span>
+              <span className="landing-zodiac-info-element">{ZODIAC_SIGNS[hoveredSign].element}</span>
+              <span className="landing-zodiac-info-dates">{ZODIAC_SIGNS[hoveredSign].dates}</span>
+            </div>
+          ) : (
+            <div className="landing-zodiac-info">
+              <span className="landing-zodiac-info-symbol" style={{ fontSize: '1.8rem' }}>☉</span>
+              <span className="landing-zodiac-info-name">The Zodiac</span>
+              <span className="landing-zodiac-info-element" style={{ opacity: 0.5 }}>Hover to explore</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tarot Card Flip ───────────────────────────────────────────
+function TarotCardFlip() {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  return (
+    <div
+      className="landing-tarot-card-container"
+      onMouseEnter={() => setIsFlipped(true)}
+      onMouseLeave={() => setIsFlipped(false)}
+      onClick={() => setIsFlipped(!isFlipped)}
+    >
+      <div className={`landing-tarot-card ${isFlipped ? 'flipped' : ''}`}>
+        {/* Card Back */}
+        <div className="landing-tarot-face landing-tarot-back">
+          <div className="landing-tarot-back-design">
+            <div className="landing-tarot-back-border" />
+            <div className="landing-tarot-back-pattern">
+              <span>✦</span>
+            </div>
+            <div className="landing-tarot-back-label">ARCANA</div>
+          </div>
+        </div>
+        {/* Card Front */}
+        <div className="landing-tarot-face landing-tarot-front">
+          <div className="landing-tarot-front-content">
+            <div className="landing-tarot-front-number">XVII</div>
+            <div className="landing-tarot-front-symbol">⭐</div>
+            <div className="landing-tarot-front-name">The Star</div>
+            <div className="landing-tarot-front-keyword">Hope & Renewal</div>
+          </div>
+        </div>
+      </div>
+      <p className="landing-tarot-hint">{isFlipped ? 'The Star — Hope awaits' : 'Hover to reveal'}</p>
+    </div>
+  );
+}
+
+// ─── Glass Card Component ──────────────────────────────────────
+function GlassCard({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const { ref, isVisible } = useScrollReveal();
+  return (
+    <div
+      ref={ref}
+      className={`landing-glass-card ${className} ${isVisible ? 'visible' : ''}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── FAQ Accordion ─────────────────────────────────────────────
+function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { ref, isVisible } = useScrollReveal();
+
+  return (
+    <div
+      ref={ref}
+      className={`landing-faq-item ${isVisible ? 'visible' : ''}`}
+      style={{ transitionDelay: `${index * 80}ms` }}
+    >
+      <button
+        className="landing-faq-question"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <span>{q}</span>
+        <span className={`landing-faq-icon ${isOpen ? 'open' : ''}`}>+</span>
+      </button>
+      <div className={`landing-faq-answer ${isOpen ? 'open' : ''}`}>
+        <p>{a}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Section Wrapper ───────────────────────────────────────────
+function Section({ children, id, className = '' }: { children: React.ReactNode; id?: string; className?: string }) {
+  const { ref, isVisible } = useScrollReveal();
+  return (
+    <section ref={ref} id={id} className={`landing-section ${isVisible ? 'visible' : ''} ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN LANDING PAGE
+// ═══════════════════════════════════════════════════════════════
+export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
+  const [scrollY, setScrollY] = useState(0);
+  const [navSolid, setNavSolid] = useState(false);
+
+  const handleScroll = useCallback(() => {
+    setScrollY(window.scrollY);
+    setNavSolid(window.scrollY > 60);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  return (
+    <div className="landing-root">
+      <StarField />
+      <FloatingParticles />
+
+      {/* ─── Navigation ─── */}
+      <nav className={`landing-nav ${navSolid ? 'solid' : ''}`}>
+        <div className="landing-nav-inner">
+          <div className="landing-nav-brand">
+            <span className="landing-nav-logo">☽</span>
+            <span className="landing-nav-name">Arcana</span>
+          </div>
+          <div className="landing-nav-links">
+            <a href="#features" className="landing-nav-link">Features</a>
+            <a href="#zodiac" className="landing-nav-link">Zodiac</a>
+            <a href="#pricing" className="landing-nav-link">Pricing</a>
+            <button onClick={onSignIn} className="landing-nav-signin">Sign In</button>
+          </div>
+        </div>
       </nav>
 
-      {/* Hero */}
-      <section className="flex flex-col items-center text-center px-6 pt-16 pb-20 max-w-3xl mx-auto">
-        <div className="w-24 h-24 rounded-3xl mb-8 overflow-hidden shadow-lg shadow-gold/10">
-          <img src="/image.png" alt="Arcana" className="w-full h-full object-cover" />
+      {/* ─── Hero ─── */}
+      <section className="landing-hero">
+        <div className="landing-hero-glow" style={{ transform: `translateY(${scrollY * 0.15}px)` }} />
+
+        <div className="landing-hero-content">
+          {/* Moon icon */}
+          <div className="landing-hero-moon">
+            <span>☽</span>
+          </div>
+
+          <h1 className="landing-hero-title">
+            <span className="landing-hero-title-line1">Know yourself.</span>
+            <span className="landing-hero-title-line2">
+              <span className="landing-shimmer-text">One ritual a day.</span>
+            </span>
+          </h1>
+
+          <p className="landing-hero-subtitle">
+            Daily tarot readings, personalized horoscopes, reflective journaling,
+            and personality quizzes — all in one beautifully crafted app.
+          </p>
+
+          <div className="landing-hero-ctas">
+            <button onClick={onGetStarted} className="landing-btn-primary">
+              <span className="landing-btn-glow" />
+              Get Started Free
+            </button>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.arcana.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="landing-btn-secondary"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="20" height="20">
+                <path d="M12 18v-6m0 0V6m0 6h6m-6 0H6" strokeLinecap="round" />
+              </svg>
+              Download Android App
+            </a>
+          </div>
+
+          <p className="landing-hero-note">Free to use · No credit card required</p>
         </div>
-        <h1 className="font-display text-4xl sm:text-5xl font-semibold text-mystic-100 mb-4 leading-tight">
-          Know yourself.<br />
-          <span className="text-gold">One ritual a day.</span>
-        </h1>
-        <p className="text-lg text-mystic-400 max-w-lg mb-10">
-          Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={onGetStarted}
-            className="px-8 py-4 bg-gradient-to-r from-gold to-gold-light text-mystic-950 font-semibold rounded-2xl hover:shadow-lg hover:shadow-gold/20 transition-all hover:-translate-y-0.5 text-lg"
-          >
+
+        {/* Decorative orbs */}
+        <div className="landing-hero-orb landing-hero-orb-1" />
+        <div className="landing-hero-orb landing-hero-orb-2" />
+        <div className="landing-hero-orb landing-hero-orb-3" />
+      </section>
+
+      {/* ─── Stats ─── */}
+      <Section className="landing-stats-section">
+        <div className="landing-container">
+          <div className="landing-stats-grid">
+            {[
+              { target: 78, label: 'Tarot Cards', suffix: '' },
+              { target: 6, label: 'Spread Types', suffix: '' },
+              { target: 6, label: 'Personality Quizzes', suffix: '' },
+              { target: 12, label: 'Zodiac Signs', suffix: '' },
+            ].map((stat) => (
+              <div key={stat.label} className="landing-stat">
+                <div className="landing-stat-number">
+                  <AnimatedCounter target={stat.target} suffix={stat.suffix} />
+                </div>
+                <div className="landing-stat-label">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── Features ─── */}
+      <Section id="features">
+        <div className="landing-container">
+          <div className="landing-section-header">
+            <span className="landing-section-label">Features</span>
+            <h2 className="landing-section-title">Everything for your daily practice</h2>
+            <p className="landing-section-subtitle">A complete spiritual toolkit designed to help you grow one day at a time.</p>
+          </div>
+
+          <div className="landing-features-grid">
+            {FEATURES.map((feature, i) => (
+              <GlassCard key={feature.title} className={`landing-feature-card ${feature.borderHover}`} delay={i * 100}>
+                <div className={`landing-feature-icon ${feature.iconBg}`}>
+                  <span>{feature.icon}</span>
+                </div>
+                <h3 className="landing-feature-title">{feature.title}</h3>
+                <p className="landing-feature-desc">{feature.desc}</p>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── Zodiac Wheel ─── */}
+      <Section id="zodiac" className="landing-zodiac-section">
+        <div className="landing-container">
+          <div className="landing-section-header">
+            <span className="landing-section-label">The Zodiac</span>
+            <h2 className="landing-section-title">Written in the stars</h2>
+            <p className="landing-section-subtitle">Personalized horoscopes for all 12 zodiac signs, updated daily with cosmic precision.</p>
+          </div>
+          <ZodiacWheel />
+        </div>
+      </Section>
+
+      {/* ─── Daily Ritual ─── */}
+      <Section className="landing-ritual-section">
+        <div className="landing-container">
+          <div className="landing-section-header">
+            <span className="landing-section-label">Your Daily Ritual</span>
+            <h2 className="landing-section-title">Three steps. Every day.</h2>
+            <p className="landing-section-subtitle">Complete all three to maintain your streak and level up through Seeker Ranks.</p>
+          </div>
+
+          <div className="landing-ritual-layout">
+            <div className="landing-ritual-steps">
+              {[
+                { step: '1', title: 'Read Your Horoscope', desc: 'Start with your personalized daily forecast. See your energy score, planetary influences, and what the cosmos has in store.', icon: '☉' },
+                { step: '2', title: 'Pull Your Card', desc: 'Draw a tarot card for daily guidance. Reflect on its meaning and how it connects to your current chapter.', icon: '🂠' },
+                { step: '3', title: 'Write a Reflection', desc: 'Journal your thoughts using a guided prompt or free-write. Link your entry to today\'s reading.', icon: '✎' },
+              ].map((item, i) => (
+                <GlassCard key={item.step} className="landing-ritual-step" delay={i * 150}>
+                  <div className="landing-ritual-step-number">
+                    <span>{item.icon}</span>
+                  </div>
+                  <div className="landing-ritual-step-connector" />
+                  <h3 className="landing-ritual-step-title">{item.title}</h3>
+                  <p className="landing-ritual-step-desc">{item.desc}</p>
+                </GlassCard>
+              ))}
+            </div>
+
+            <div className="landing-ritual-card-preview">
+              <TarotCardFlip />
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── Pricing ─── */}
+      <Section id="pricing" className="landing-pricing-section">
+        <div className="landing-container">
+          <div className="landing-section-header">
+            <span className="landing-section-label">Pricing</span>
+            <h2 className="landing-section-title">Start free. Upgrade when ready.</h2>
+            <p className="landing-section-subtitle">Generous free tier with everything you need. Premium unlocks the full experience.</p>
+          </div>
+
+          <div className="landing-pricing-grid">
+            <GlassCard className="landing-pricing-card" delay={0}>
+              <h3 className="landing-pricing-name">Free</h3>
+              <div className="landing-pricing-price">$0 <span>forever</span></div>
+              <ul className="landing-pricing-features">
+                <li><span className="landing-check">✓</span> 3 daily tarot readings</li>
+                <li><span className="landing-check">✓</span> Single card & 3-card spreads</li>
+                <li><span className="landing-check">✓</span> Daily horoscope</li>
+                <li><span className="landing-check">✓</span> Full journal with mood tracking</li>
+                <li><span className="landing-check">✓</span> All 6 personality quizzes</li>
+                <li><span className="landing-check">✓</span> Streaks, XP & achievements</li>
+              </ul>
+              <button onClick={onGetStarted} className="landing-btn-outline-card">Get Started</button>
+            </GlassCard>
+
+            <GlassCard className="landing-pricing-card landing-pricing-featured" delay={100}>
+              <div className="landing-pricing-badge">Most Popular</div>
+              <h3 className="landing-pricing-name">Premium</h3>
+              <div className="landing-pricing-price">$4.99 <span>/month</span></div>
+              <ul className="landing-pricing-features">
+                <li><span className="landing-check gold">★</span> Unlimited tarot readings</li>
+                <li><span className="landing-check gold">★</span> All 6 spread types</li>
+                <li><span className="landing-check gold">★</span> Birth chart analysis</li>
+                <li><span className="landing-check gold">★</span> Weekly & monthly forecasts</li>
+                <li><span className="landing-check gold">★</span> Deep interpretations</li>
+                <li><span className="landing-check gold">★</span> Journal locking & insights</li>
+                <li><span className="landing-check gold">★</span> No ads</li>
+              </ul>
+              <button onClick={onGetStarted} className="landing-btn-primary-card">Start Premium</button>
+            </GlassCard>
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── FAQ ─── */}
+      <Section id="faq">
+        <div className="landing-container landing-faq-container">
+          <div className="landing-section-header">
+            <span className="landing-section-label">FAQ</span>
+            <h2 className="landing-section-title">Common questions</h2>
+          </div>
+          <div className="landing-faq-list">
+            {FAQ_ITEMS.map((item, i) => (
+              <FaqItem key={item.q} q={item.q} a={item.a} index={i} />
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── Final CTA ─── */}
+      <Section className="landing-final-cta">
+        <div className="landing-container" style={{ textAlign: 'center' }}>
+          <div className="landing-final-moon">☽</div>
+          <h2 className="landing-section-title" style={{ marginBottom: '16px' }}>Begin your journey</h2>
+          <p className="landing-section-subtitle" style={{ marginBottom: '40px' }}>
+            Start your first daily ritual today — free, no credit card required.
+          </p>
+          <button onClick={onGetStarted} className="landing-btn-primary landing-btn-large">
+            <span className="landing-btn-glow" />
             Get Started Free
           </button>
-          <a
-            href="https://play.google.com/store/apps/details?id=com.arcana.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-8 py-4 border border-mystic-700/50 text-mystic-200 font-medium rounded-2xl hover:border-gold/30 hover:text-white transition-all text-lg text-center"
-          >
-            Download Android App
-          </a>
         </div>
-        <p className="text-sm text-mystic-500 mt-4">Free to use. No credit card required.</p>
-      </section>
+      </Section>
 
-      {/* Stats */}
-      <section className="border-y border-mystic-800/50 py-10">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 px-6 text-center">
-          {[
-            { number: '78', label: 'Tarot Cards' },
-            { number: '6', label: 'Spread Types' },
-            { number: '6', label: 'Personality Quizzes' },
-            { number: '12', label: 'Zodiac Signs' },
-          ].map(s => (
-            <div key={s.label}>
-              <div className="font-display text-3xl font-bold text-gold">{s.number}</div>
-              <div className="text-sm text-mystic-400 mt-1">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold tracking-widest text-gold uppercase text-center mb-3">Features</p>
-          <h2 className="font-display text-3xl sm:text-4xl font-semibold text-mystic-100 text-center mb-4">Everything you need for your daily practice</h2>
-          <p className="text-mystic-400 text-center max-w-xl mx-auto mb-12">A complete spiritual toolkit designed to help you grow one day at a time.</p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: '🃏', title: 'Tarot Readings', desc: 'Full 78-card deck with detailed upright and reversed meanings. 6 spread types from quick daily pulls to deep Celtic Cross readings.' },
-              { icon: '✨', title: 'Daily Horoscope', desc: 'Personalized forecasts with energy scores, mood analysis, love and career insights, planetary transits, and daily affirmations.' },
-              { icon: '📓', title: 'Reflective Journal', desc: 'Write freely or use guided prompts. Track mood with 10 emoji moods, tag entries by theme, and link to your readings.' },
-              { icon: '🧠', title: 'Personality Quizzes', desc: 'MBTI, Enneagram, Big Five, Love Language, and Attachment Style. Results shape your experience throughout the app.' },
-              { icon: '🔥', title: 'Streaks & Achievements', desc: 'Build your daily ritual habit. Earn XP, level up through Seeker Ranks, and unlock achievements as you grow.' },
-              { icon: '🌙', title: 'Birth Chart', desc: 'Enter your birth details to unlock your complete natal chart with planetary placements and personalized interpretations.' },
-            ].map(f => (
-              <div key={f.title} className="bg-mystic-900/60 border border-mystic-700/30 rounded-2xl p-6 hover:border-gold/20 transition-colors">
-                <div className="text-2xl mb-3">{f.icon}</div>
-                <h3 className="font-display text-xl font-semibold text-mystic-100 mb-2">{f.title}</h3>
-                <p className="text-sm text-mystic-400 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
+      {/* ─── Footer ─── */}
+      <footer className="landing-footer">
+        <div className="landing-container">
+          <div className="landing-footer-links">
+            <a href="/privacy-policy.html">Privacy Policy</a>
+            <a href="mailto:support@arcana.app">Contact</a>
+            <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">Google Play</a>
           </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 px-6 border-t border-mystic-800/50">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold tracking-widest text-gold uppercase text-center mb-3">Your Daily Ritual</p>
-          <h2 className="font-display text-3xl font-semibold text-mystic-100 text-center mb-4">Three steps. Every day.</h2>
-          <p className="text-mystic-400 text-center max-w-md mx-auto mb-12">Complete all three to maintain your streak and level up.</p>
-
-          <div className="grid sm:grid-cols-3 gap-5">
-            {[
-              { step: '1', title: 'Read Your Horoscope', desc: 'Start with your personalized daily forecast and energy score.' },
-              { step: '2', title: 'Pull Your Card', desc: 'Draw a tarot card for daily guidance and reflect on its meaning.' },
-              { step: '3', title: 'Write a Reflection', desc: 'Journal your thoughts with guided prompts or free-write.' },
-            ].map(s => (
-              <div key={s.step} className="bg-mystic-900/60 border border-mystic-700/30 rounded-2xl p-6 text-center">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 text-gold font-semibold flex items-center justify-center mx-auto mb-4">{s.step}</div>
-                <h3 className="font-display text-lg font-semibold text-mystic-100 mb-2">{s.title}</h3>
-                <p className="text-sm text-mystic-400">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="py-20 px-6 border-t border-mystic-800/50">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-semibold tracking-widest text-gold uppercase text-center mb-3">Pricing</p>
-          <h2 className="font-display text-3xl font-semibold text-mystic-100 text-center mb-4">Start free. Upgrade when ready.</h2>
-          <p className="text-mystic-400 text-center max-w-md mx-auto mb-12">Generous free tier. Premium unlocks the full experience.</p>
-
-          <div className="grid sm:grid-cols-2 gap-5">
-            <div className="bg-mystic-900/60 border border-mystic-700/30 rounded-2xl p-7">
-              <h3 className="font-display text-xl font-semibold text-mystic-100 mb-1">Free</h3>
-              <div className="text-3xl font-bold text-gold mb-5">$0 <span className="text-sm font-normal text-mystic-400">forever</span></div>
-              <ul className="space-y-2 text-sm text-mystic-400">
-                <li>3 daily tarot readings</li>
-                <li>Single card & 3-card spreads</li>
-                <li>Daily horoscope</li>
-                <li>Full journal with mood tracking</li>
-                <li>All 6 personality quizzes</li>
-                <li>Streaks, XP & achievements</li>
-              </ul>
-            </div>
-            <div className="bg-mystic-900/60 border border-gold/40 rounded-2xl p-7 shadow-lg shadow-gold/5">
-              <div className="inline-block px-3 py-1 bg-gold/10 text-gold text-xs font-semibold rounded-full mb-3">Most Popular</div>
-              <h3 className="font-display text-xl font-semibold text-mystic-100 mb-1">Premium</h3>
-              <div className="text-3xl font-bold text-gold mb-5">$4.99 <span className="text-sm font-normal text-mystic-400">/month</span></div>
-              <ul className="space-y-2 text-sm text-mystic-400">
-                <li>Unlimited tarot readings</li>
-                <li>All 6 spread types</li>
-                <li>Birth chart analysis</li>
-                <li>Weekly & monthly forecasts</li>
-                <li>Deep interpretations</li>
-                <li>Journal locking & insights</li>
-                <li>No ads</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-20 px-6 border-t border-mystic-800/50">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-semibold tracking-widest text-gold uppercase text-center mb-3">FAQ</p>
-          <h2 className="font-display text-3xl font-semibold text-mystic-100 text-center mb-10">Common questions</h2>
-
-          <div className="space-y-0">
-            {[
-              { q: 'Is Arcana free to use?', a: 'Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all spreads, birth charts, and removes ads.' },
-              { q: 'How accurate are the tarot readings?', a: 'Arcana uses a full 78-card tarot deck with detailed traditional meanings. Readings are meant for self-reflection and personal insight — the meaning you find is yours.' },
-              { q: 'What personality quizzes are available?', a: 'MBTI (16 types), Enneagram (9 types), Big Five, Love Language, Attachment Style, and a daily Mood Check. Results are saved to your profile.' },
-              { q: 'Is my journal private?', a: 'Absolutely. Your journal entries are stored securely and only visible to you. Premium members can also lock individual entries with a password.' },
-              { q: 'Can I cancel premium anytime?', a: 'Yes. Subscriptions are managed through Google Play or your account settings. Cancel anytime with no fees.' },
-            ].map(item => (
-              <details key={item.q} className="border-b border-mystic-800/50 group">
-                <summary className="flex items-center justify-between py-5 cursor-pointer text-mystic-100 font-medium hover:text-gold transition-colors">
-                  {item.q}
-                  <span className="text-gold text-xl ml-4 group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="text-sm text-mystic-400 pb-5 leading-relaxed">{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-20 px-6 border-t border-mystic-800/50 text-center">
-        <h2 className="font-display text-3xl font-semibold text-mystic-100 mb-4">Begin your journey</h2>
-        <p className="text-mystic-400 mb-8 max-w-md mx-auto">Start your first daily ritual today — free, no credit card required.</p>
-        <button
-          onClick={onGetStarted}
-          className="px-10 py-4 bg-gradient-to-r from-gold to-gold-light text-mystic-950 font-semibold rounded-2xl hover:shadow-lg hover:shadow-gold/20 transition-all hover:-translate-y-0.5 text-lg"
-        >
-          Get Started Free
-        </button>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-mystic-800/50 py-10 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="flex justify-center gap-6 mb-4 flex-wrap">
-            <a href="/privacy-policy.html" className="text-sm text-gold hover:underline">Privacy Policy</a>
-            <a href="mailto:support@arcana.app" className="text-sm text-gold hover:underline">Contact</a>
-            <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="text-sm text-gold hover:underline">Google Play</a>
-          </div>
-          <p className="text-xs text-mystic-500">Arcana is for entertainment and self-reflection purposes only.</p>
-          <p className="text-xs text-mystic-500 mt-1">&copy; 2026 Arcana. All rights reserved.</p>
+          <p className="landing-footer-disclaimer">Arcana is for entertainment and self-reflection purposes only.</p>
+          <p className="landing-footer-copy">&copy; 2026 Arcana. All rights reserved.</p>
         </div>
       </footer>
     </div>

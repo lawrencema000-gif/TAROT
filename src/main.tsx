@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import App from './App.tsx';
 import { initAnalytics } from './services/analytics';
 import './index.css';
+import './styles/landing.css';
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({

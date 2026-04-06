@@ -7,18 +7,18 @@ interface LandingPageProps {
 
 // ─── Real Data ─────────────────────────────────────────────────
 const ZODIAC_SIGNS = [
-  { symbol: '♈', name: 'Aries', element: 'Fire', dates: 'Mar 21 – Apr 19' },
-  { symbol: '♉', name: 'Taurus', element: 'Earth', dates: 'Apr 20 – May 20' },
-  { symbol: '♊', name: 'Gemini', element: 'Air', dates: 'May 21 – Jun 20' },
-  { symbol: '♋', name: 'Cancer', element: 'Water', dates: 'Jun 21 – Jul 22' },
-  { symbol: '♌', name: 'Leo', element: 'Fire', dates: 'Jul 23 – Aug 22' },
-  { symbol: '♍', name: 'Virgo', element: 'Earth', dates: 'Aug 23 – Sep 22' },
-  { symbol: '♎', name: 'Libra', element: 'Air', dates: 'Sep 23 – Oct 22' },
-  { symbol: '♏', name: 'Scorpio', element: 'Water', dates: 'Oct 23 – Nov 21' },
-  { symbol: '♐', name: 'Sagittarius', element: 'Fire', dates: 'Nov 22 – Dec 21' },
-  { symbol: '♑', name: 'Capricorn', element: 'Earth', dates: 'Dec 22 – Jan 19' },
-  { symbol: '♒', name: 'Aquarius', element: 'Air', dates: 'Jan 20 – Feb 18' },
-  { symbol: '♓', name: 'Pisces', element: 'Water', dates: 'Feb 19 – Mar 20' },
+  { symbol: '♈', name: 'Aries', element: 'Fire', dates: 'Mar 21 – Apr 19', trait: 'Bold & Ambitious', desc: 'The fearless leader of the zodiac. Driven by passion and a desire to be first in everything they do.' },
+  { symbol: '♉', name: 'Taurus', element: 'Earth', dates: 'Apr 20 – May 20', trait: 'Reliable & Patient', desc: 'Grounded and sensual. Taurus finds comfort in stability, beauty, and the finer things in life.' },
+  { symbol: '♊', name: 'Gemini', element: 'Air', dates: 'May 21 – Jun 20', trait: 'Curious & Adaptive', desc: 'The social butterfly with a brilliant mind. Gemini thrives on communication and new experiences.' },
+  { symbol: '♋', name: 'Cancer', element: 'Water', dates: 'Jun 21 – Jul 22', trait: 'Intuitive & Nurturing', desc: 'Deeply emotional and protective. Cancer creates safe havens and leads with the heart.' },
+  { symbol: '♌', name: 'Leo', element: 'Fire', dates: 'Jul 23 – Aug 22', trait: 'Creative & Confident', desc: 'The natural-born star. Leo radiates warmth, generosity, and an irresistible magnetic energy.' },
+  { symbol: '♍', name: 'Virgo', element: 'Earth', dates: 'Aug 23 – Sep 22', trait: 'Analytical & Devoted', desc: 'The perfectionist healer. Virgo sees the details others miss and serves with quiet precision.' },
+  { symbol: '♎', name: 'Libra', element: 'Air', dates: 'Sep 23 – Oct 22', trait: 'Harmonious & Fair', desc: 'The seeker of balance. Libra brings beauty, diplomacy, and grace to every relationship.' },
+  { symbol: '♏', name: 'Scorpio', element: 'Water', dates: 'Oct 23 – Nov 21', trait: 'Intense & Magnetic', desc: 'The transformer of the zodiac. Scorpio sees beneath the surface and embraces the shadows.' },
+  { symbol: '♐', name: 'Sagittarius', element: 'Fire', dates: 'Nov 22 – Dec 21', trait: 'Adventurous & Free', desc: 'The eternal explorer. Sagittarius chases truth, wisdom, and the horizon with boundless optimism.' },
+  { symbol: '♑', name: 'Capricorn', element: 'Earth', dates: 'Dec 22 – Jan 19', trait: 'Disciplined & Wise', desc: 'The mountain climber. Capricorn builds empires through patience, ambition, and quiet determination.' },
+  { symbol: '♒', name: 'Aquarius', element: 'Air', dates: 'Jan 20 – Feb 18', trait: 'Visionary & Original', desc: 'The revolutionary thinker. Aquarius dreams of a better future and dares to be different.' },
+  { symbol: '♓', name: 'Pisces', element: 'Water', dates: 'Feb 19 – Mar 20', trait: 'Empathic & Mystical', desc: 'The dreamer of the zodiac. Pisces flows between worlds, channeling intuition and boundless compassion.' },
 ];
 
 const HERO_CARDS = [
@@ -325,7 +325,7 @@ function ZodiacWheel() {
         })}
       </svg>
 
-      {/* Center info overlay (HTML, not SVG, for better text rendering) */}
+      {/* Center info overlay */}
       <div className="lp-chart-center-info">
         {active !== null ? (
           <>
@@ -333,8 +333,8 @@ function ZodiacWheel() {
               {ZODIAC_SIGNS[active].symbol}
             </div>
             <div className="lp-chart-ci-name">{ZODIAC_SIGNS[active].name}</div>
-            <div className="lp-chart-ci-el" style={{ color: ELEMENT_COLORS[ZODIAC_SIGNS[active].element] }}>
-              {ZODIAC_SIGNS[active].element}
+            <div className="lp-chart-ci-trait" style={{ color: ELEMENT_COLORS[ZODIAC_SIGNS[active].element] }}>
+              {ZODIAC_SIGNS[active].trait}
             </div>
             <div className="lp-chart-ci-dates">{ZODIAC_SIGNS[active].dates}</div>
           </>
@@ -346,6 +346,21 @@ function ZodiacWheel() {
           </>
         )}
       </div>
+
+      {/* Popup card for hovered sign */}
+      {active !== null && (
+        <div className="lp-chart-popup" style={{ '--el-color': ELEMENT_COLORS[ZODIAC_SIGNS[active].element] } as React.CSSProperties}>
+          <div className="lp-chart-popup-header">
+            <span className="lp-chart-popup-sym">{ZODIAC_SIGNS[active].symbol}</span>
+            <div>
+              <div className="lp-chart-popup-name">{ZODIAC_SIGNS[active].name}</div>
+              <div className="lp-chart-popup-meta">{ZODIAC_SIGNS[active].element} · {ZODIAC_SIGNS[active].dates}</div>
+            </div>
+          </div>
+          <div className="lp-chart-popup-trait">{ZODIAC_SIGNS[active].trait}</div>
+          <div className="lp-chart-popup-desc">{ZODIAC_SIGNS[active].desc}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -449,7 +464,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
           <div className="lp-nav-right">
             <a href="#features" className="lp-nav-link">Features</a>
             <a href="#zodiac" className="lp-nav-link">Zodiac</a>
-            <a href="#pricing" className="lp-nav-link">Pricing</a>
+            <a href="#faq" className="lp-nav-link">FAQ</a>
             <button onClick={onSignIn} className="lp-nav-btn">Sign In</button>
           </div>
         </div>
@@ -613,66 +628,6 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         </div>
       </Sec>
 
-      {/* ── Pricing ── */}
-      <Sec id="pricing">
-        <div className="lp-wrap">
-          <div className="lp-header">
-            <span className="lp-tag">Pricing</span>
-            <h2 className="lp-h2">Start free. Upgrade when ready.</h2>
-            <p className="lp-sub">Generous free tier with everything you need to begin.</p>
-          </div>
-          <div className="lp-pricing">
-            <div className="lp-price-card">
-              <h3 className="lp-price-name">Free</h3>
-              <div className="lp-price-amount">$0</div>
-              <div className="lp-price-period">Free forever</div>
-              <ul className="lp-price-list">
-                <li>3 daily tarot readings</li>
-                <li>Single card spread</li>
-                <li>Daily horoscope</li>
-                <li>Full journal with mood tracking</li>
-                <li>All 6 personality quizzes</li>
-                <li>10 saved readings</li>
-                <li>Streaks, XP & achievements</li>
-              </ul>
-              <button onClick={onGetStarted} className="lp-price-btn">Get Started</button>
-            </div>
-
-            <div className="lp-price-card featured">
-              <div className="lp-price-badge">Best Value</div>
-              <h3 className="lp-price-name">Premium Yearly</h3>
-              <div className="lp-price-amount">$24.99</div>
-              <div className="lp-price-period">per year · saves 58%</div>
-              <ul className="lp-price-list">
-                <li>Unlimited tarot readings</li>
-                <li>All 6 spread types</li>
-                <li>Birth chart analysis</li>
-                <li>Weekly & monthly forecasts</li>
-                <li>Deep card interpretations</li>
-                <li>Unlimited saves</li>
-                <li>Journal locking & insights</li>
-                <li>Ad-free experience</li>
-              </ul>
-              <button onClick={onGetStarted} className="lp-price-btn gold">Start Premium</button>
-            </div>
-
-            <div className="lp-price-card">
-              <div className="lp-price-badge alt">Forever Access</div>
-              <h3 className="lp-price-name">Lifetime</h3>
-              <div className="lp-price-amount">$29.99</div>
-              <div className="lp-price-period">one-time payment</div>
-              <ul className="lp-price-list">
-                <li>Everything in Premium</li>
-                <li>Never pay again</li>
-                <li>All future features included</li>
-                <li>Priority support</li>
-              </ul>
-              <button onClick={onGetStarted} className="lp-price-btn">Get Lifetime</button>
-            </div>
-          </div>
-        </div>
-      </Sec>
-
       {/* ── FAQ ── */}
       <Sec id="faq">
         <div className="lp-wrap lp-faq-wrap">
@@ -685,7 +640,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             { q: 'How accurate are the tarot readings?', a: 'Arcana uses a full 78-card tarot deck with detailed traditional meanings for every card — upright and reversed. Readings are designed for self-reflection and personal insight.' },
             { q: 'What personality quizzes are available?', a: 'Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check.' },
             { q: 'Is my journal private?', a: 'Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock entries with a password.' },
-            { q: 'Can I cancel premium anytime?', a: 'Yes. Subscriptions are managed through Google Play. Cancel anytime with no fees.' },
+            { q: 'Is there a premium version?', a: 'Yes! Arcana is completely free to use. When you\'re ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding.' },
             { q: 'Does it work on the web?', a: 'Yes! Use Arcana right here on the web, or download the Android app for offline support and push notifications.' },
           ].map(f => <Faq key={f.q} {...f} />)}
         </div>

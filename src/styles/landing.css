@@ -360,6 +360,83 @@
   margin-top: 2px;
 }
 
+.lp-chart-ci-trait {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Zodiac popup card */
+.lp-chart-popup {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: rgba(10, 10, 18, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px 22px;
+  z-index: 10;
+  animation: lp-popup-in 0.3s ease-out;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 168, 83, 0.03);
+}
+
+@keyframes lp-popup-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.lp-chart-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lp-chart-popup-sym {
+  font-size: 1.6rem;
+  font-family: serif;
+  color: var(--el-color);
+  filter: drop-shadow(0 0 8px var(--el-color));
+}
+
+.lp-chart-popup-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--tx);
+}
+
+.lp-chart-popup-meta {
+  font-size: 0.7rem;
+  color: var(--tm);
+  letter-spacing: 0.03em;
+}
+
+.lp-chart-popup-trait {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--el-color);
+  margin-bottom: 8px;
+}
+
+.lp-chart-popup-desc {
+  font-size: 0.88rem;
+  color: var(--tm);
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .lp-chart-popup { width: 280px; padding: 16px 18px; }
+}
+
 /* Outer ring subtle pulse */
 .lp-chart-ring-outer {
   animation: lp-ring-breathe 6s ease-in-out infinite;

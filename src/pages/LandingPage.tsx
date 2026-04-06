@@ -21,14 +21,6 @@ const ZODIAC_SIGNS = [
   { symbol: '♓', name: 'Pisces', element: 'Water', dates: 'Feb 19 – Mar 20', trait: 'Empathic & Mystical', desc: 'The dreamer of the zodiac. Pisces flows between worlds, channeling intuition and boundless compassion.' },
 ];
 
-const HERO_CARDS = [
-  { name: 'The Star', file: 'the-star.webp' },
-  { name: 'The Moon', file: 'the-moon.webp' },
-  { name: 'The Sun', file: 'the-sun.webp' },
-  { name: 'The Empress', file: 'the-empress.webp' },
-  { name: 'The Magician', file: 'the-magician.webp' },
-];
-
 const CARD_FAN = [
   { file: 'the-fool.webp', rotation: -18, x: -100, delay: 0 },
   { file: 'the-high-priestess.webp', rotation: -9, x: -50, delay: 0.1 },
@@ -504,9 +496,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               href="https://play.google.com/store/apps/details?id=com.arcana.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="lp-btn-ghost"
+              className="lp-play-badge"
             >
-              Download for Android
+              <img src="/google-play-badge.png" alt="Get it on Google Play" />
             </a>
           </div>
 
@@ -657,6 +649,11 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             Get Started Free
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
+          <div style={{ marginTop: 20 }}>
+            <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="lp-play-badge">
+              <img src="/google-play-badge.png" alt="Get it on Google Play" />
+            </a>
+          </div>
         </div>
       </Sec>
 

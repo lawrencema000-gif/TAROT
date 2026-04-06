@@ -176,6 +176,14 @@
 }
 .lp-btn-ghost:hover { border-color: var(--bdh); background: var(--sf); }
 
+.lp-play-badge {
+  display: inline-block;
+  transition: transform 0.3s, opacity 0.3s;
+  opacity: 0.9;
+}
+.lp-play-badge:hover { transform: scale(1.05); opacity: 1; }
+.lp-play-badge img { height: 52px; display: block; }
+
 /* ── Card Fan ── */
 .lp-cardfan { position: relative; width: 380px; height: 340px; display: flex; align-items: flex-end; justify-content: center; }
 .lp-cardfan-card {

@@ -145,59 +145,206 @@ function Particles() {
   );
 }
 
-// ─── Zodiac Wheel ──────────────────────────────────────────────
+// ─── Zodiac Celestial Chart ────────────────────────────────────
+const ELEMENT_COLORS: Record<string, string> = {
+  Fire: '#e85d3a',
+  Earth: '#5d9e5a',
+  Air: '#5b9dd9',
+  Water: '#7b68d4',
+};
+
 function ZodiacWheel() {
-  const [hovered, setHovered] = useState<number | null>(null);
-  const [paused, setPaused] = useState(false);
-  const radius = 155;
+  const [active, setActive] = useState<number | null>(null);
+  const svgSize = 520;
+  const cx = svgSize / 2;
+  const cy = svgSize / 2;
+
+  // Radii for different rings
+  const rOuter = 230;
+  const rSigns = 190;
+  const rInner = 145;
+  const rCore = 95;
+  const rCenter = 55;
+
+  // Tick marks around outer ring
+  const ticks = Array.from({ length: 72 }, (_, i) => {
+    const angle = (i * 5) * (Math.PI / 180);
+    const isMajor = i % 6 === 0;
+    const r1 = rOuter - (isMajor ? 10 : 5);
+    const r2 = rOuter;
+    return {
+      x1: cx + Math.cos(angle) * r1,
+      y1: cy + Math.sin(angle) * r1,
+      x2: cx + Math.cos(angle) * r2,
+      y2: cy + Math.sin(angle) * r2,
+      major: isMajor,
+    };
+  });
 
   return (
-    <div className="lp-zodiac-outer">
-      <div
-        className={`lp-zodiac ${paused ? 'paused' : ''}`}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => { setPaused(false); setHovered(null); }}
+    <div className="lp-chart-wrap">
+      <svg
+        viewBox={`0 0 ${svgSize} ${svgSize}`}
+        className="lp-chart-svg"
+        aria-label="Zodiac wheel"
       >
-        {/* Rings */}
-        <div className="lp-zodiac-ring r1" />
-        <div className="lp-zodiac-ring r2" />
-        <div className="lp-zodiac-ring r3" />
+        <defs>
+          {/* Gold radial glow for center */}
+          <radialGradient id="zg-center-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(212,168,83,0.15)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          {/* Outer ring gradient */}
+          <linearGradient id="zg-ring-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="rgba(212,168,83,0.12)" />
+            <stop offset="50%" stopColor="rgba(212,168,83,0.04)" />
+            <stop offset="100%" stopColor="rgba(212,168,83,0.12)" />
+          </linearGradient>
+        </defs>
 
-        {/* Signs */}
-        {ZODIAC_SIGNS.map((s, i) => {
-          const a = (i * 30) - 90;
-          const x = Math.cos((a * Math.PI) / 180) * radius;
-          const y = Math.sin((a * Math.PI) / 180) * radius;
+        {/* Background glow */}
+        <circle cx={cx} cy={cy} r={rCenter + 30} fill="url(#zg-center-glow)" />
+
+        {/* Outer ring */}
+        <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="rgba(212,168,83,0.08)" strokeWidth="1" className="lp-chart-ring-outer" />
+
+        {/* Tick marks */}
+        {ticks.map((t, i) => (
+          <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
+            stroke={t.major ? 'rgba(212,168,83,0.2)' : 'rgba(212,168,83,0.07)'}
+            strokeWidth={t.major ? 1 : 0.5}
+          />
+        ))}
+
+        {/* Sign ring */}
+        <circle cx={cx} cy={cy} r={rSigns} fill="none" stroke="rgba(212,168,83,0.05)" strokeWidth="0.5" strokeDasharray="2 6" />
+
+        {/* Inner ring */}
+        <circle cx={cx} cy={cy} r={rInner} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+
+        {/* Core ring */}
+        <circle cx={cx} cy={cy} r={rCore} fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+
+        {/* Dividing lines from center through each sign */}
+        {ZODIAC_SIGNS.map((_, i) => {
+          const angle = ((i * 30) - 90) * (Math.PI / 180);
           return (
-            <div
-              key={s.name}
-              className={`lp-zodiac-sign ${hovered === i ? 'active' : ''}`}
-              style={{ transform: `translate(${x}px, ${y}px)` }}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <span className="lp-zodiac-glyph">{s.symbol}</span>
-            </div>
+            <line key={i}
+              x1={cx + Math.cos(angle) * rCore}
+              y1={cy + Math.sin(angle) * rCore}
+              x2={cx + Math.cos(angle) * rOuter}
+              y2={cy + Math.sin(angle) * rOuter}
+              stroke="rgba(212,168,83,0.04)" strokeWidth="0.5"
+            />
           );
         })}
 
-        {/* Center */}
-        <div className="lp-zodiac-center">
-          {hovered !== null ? (
-            <>
-              <div className="lp-zodiac-c-sym">{ZODIAC_SIGNS[hovered].symbol}</div>
-              <div className="lp-zodiac-c-name">{ZODIAC_SIGNS[hovered].name}</div>
-              <div className="lp-zodiac-c-el">{ZODIAC_SIGNS[hovered].element}</div>
-              <div className="lp-zodiac-c-dates">{ZODIAC_SIGNS[hovered].dates}</div>
-            </>
-          ) : (
-            <>
-              <div className="lp-zodiac-c-sym" style={{ fontSize: '2rem' }}>☉</div>
-              <div className="lp-zodiac-c-name">The Zodiac</div>
-              <div className="lp-zodiac-c-el" style={{ opacity: 0.4 }}>Hover to explore</div>
-            </>
-          )}
-        </div>
+        {/* Element arc segments behind each sign */}
+        {ZODIAC_SIGNS.map((s, i) => {
+          const startAngle = ((i * 30) - 105) * (Math.PI / 180);
+          const endAngle = ((i * 30) - 75) * (Math.PI / 180);
+          const r = rSigns;
+          const isActive = active === i;
+          return (
+            <path key={`arc-${i}`}
+              d={`M ${cx + Math.cos(startAngle) * r} ${cy + Math.sin(startAngle) * r} A ${r} ${r} 0 0 1 ${cx + Math.cos(endAngle) * r} ${cy + Math.sin(endAngle) * r}`}
+              fill="none"
+              stroke={isActive ? ELEMENT_COLORS[s.element] : 'transparent'}
+              strokeWidth={isActive ? 3 : 0}
+              strokeLinecap="round"
+              style={{ transition: 'stroke 0.4s, stroke-width 0.4s' }}
+            />
+          );
+        })}
+
+        {/* Zodiac signs */}
+        {ZODIAC_SIGNS.map((s, i) => {
+          const angle = ((i * 30) - 90) * (Math.PI / 180);
+          const x = cx + Math.cos(angle) * rSigns;
+          const y = cy + Math.sin(angle) * rSigns;
+          const isActive = active === i;
+          const elColor = ELEMENT_COLORS[s.element];
+
+          return (
+            <g key={s.name}
+              onMouseEnter={() => setActive(i)}
+              onMouseLeave={() => setActive(null)}
+              onClick={() => setActive(active === i ? null : i)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Glow behind active sign */}
+              {isActive && (
+                <circle cx={x} cy={y} r={24} fill={elColor} opacity={0.08}
+                  style={{ transition: 'opacity 0.3s' }}
+                />
+              )}
+              {/* Sign circle */}
+              <circle cx={x} cy={y} r={20}
+                fill={isActive ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)'}
+                stroke={isActive ? elColor : 'rgba(212,168,83,0.1)'}
+                strokeWidth={isActive ? 1.5 : 0.5}
+                style={{ transition: 'all 0.35s' }}
+              />
+              {/* Symbol */}
+              <text x={x} y={y} textAnchor="middle" dominantBaseline="central"
+                fontSize={isActive ? 18 : 15}
+                fill={isActive ? elColor : 'rgba(212,168,83,0.6)'}
+                style={{ transition: 'all 0.35s', fontFamily: 'serif' }}
+              >
+                {s.symbol}
+              </text>
+              {/* Name label (outside ring, only when active) */}
+              {isActive && (
+                <text
+                  x={cx + Math.cos(angle) * (rOuter + 20)}
+                  y={cy + Math.sin(angle) * (rOuter + 20)}
+                  textAnchor="middle" dominantBaseline="central"
+                  fontSize={11} fill={elColor} fontWeight={500}
+                  fontFamily="'Cormorant Garamond', Georgia, serif"
+                  letterSpacing="0.05em"
+                  style={{ opacity: 0.9 }}
+                >
+                  {s.name}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Center decoration */}
+        <circle cx={cx} cy={cy} r={rCenter} fill="rgba(5,5,8,0.8)" stroke="rgba(212,168,83,0.08)" strokeWidth="0.5" />
+
+        {/* Center cross-hair lines */}
+        <line x1={cx - 20} y1={cy} x2={cx + 20} y2={cy} stroke="rgba(212,168,83,0.1)" strokeWidth="0.5" />
+        <line x1={cx} y1={cy - 20} x2={cx} y2={cy + 20} stroke="rgba(212,168,83,0.1)" strokeWidth="0.5" />
+
+        {/* Small dots at cardinal points */}
+        {[0, 90, 180, 270].map(deg => {
+          const a = deg * (Math.PI / 180);
+          return <circle key={deg} cx={cx + Math.cos(a) * 15} cy={cy + Math.sin(a) * 15} r={1.5} fill="rgba(212,168,83,0.3)" />;
+        })}
+      </svg>
+
+      {/* Center info overlay (HTML, not SVG, for better text rendering) */}
+      <div className="lp-chart-center-info">
+        {active !== null ? (
+          <>
+            <div className="lp-chart-ci-sym" style={{ color: ELEMENT_COLORS[ZODIAC_SIGNS[active].element] }}>
+              {ZODIAC_SIGNS[active].symbol}
+            </div>
+            <div className="lp-chart-ci-name">{ZODIAC_SIGNS[active].name}</div>
+            <div className="lp-chart-ci-el" style={{ color: ELEMENT_COLORS[ZODIAC_SIGNS[active].element] }}>
+              {ZODIAC_SIGNS[active].element}
+            </div>
+            <div className="lp-chart-ci-dates">{ZODIAC_SIGNS[active].dates}</div>
+          </>
+        ) : (
+          <>
+            <div className="lp-chart-ci-sym" style={{ color: 'var(--g)', fontSize: '1.6rem' }}>☉</div>
+            <div className="lp-chart-ci-name">The Zodiac</div>
+            <div className="lp-chart-ci-el" style={{ opacity: 0.35 }}>Hover to explore</div>
+          </>
+        )}
       </div>
     </div>
   );

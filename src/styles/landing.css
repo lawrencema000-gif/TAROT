@@ -288,57 +288,87 @@
 }
 .lp-showcase-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* ── Zodiac Wheel ── */
+/* ── Zodiac Celestial Chart ── */
 .lp-zodiac-sec { padding: 80px 0 100px !important; }
-.lp-zodiac-outer { display: flex; justify-content: center; padding: 30px 0; }
-.lp-zodiac {
-  position: relative; width: 370px; height: 370px;
-  animation: lp-spin 70s linear infinite;
-}
-.lp-zodiac.paused { animation-play-state: paused; }
-@keyframes lp-spin { to { transform: rotate(360deg); } }
 
-.lp-zodiac-ring {
-  position: absolute; border-radius: 50%; border: 1px solid;
-  transition: border-color 0.5s, box-shadow 0.5s;
-}
-.lp-zodiac-ring.r1 { inset: -14px; border-color: rgba(212,168,83,0.08); animation: lp-ringpulse 5s ease-in-out infinite; }
-.lp-zodiac-ring.r2 { inset: 20px; border-color: rgba(212,168,83,0.04); }
-.lp-zodiac-ring.r3 { inset: 50px; border-color: rgba(255,255,255,0.02); }
-@keyframes lp-ringpulse {
-  0%,100% { border-color: rgba(212,168,83,0.06); box-shadow: 0 0 0 transparent; }
-  50% { border-color: rgba(212,168,83,0.15); box-shadow: 0 0 40px rgba(212,168,83,0.03); }
+.lp-chart-wrap {
+  position: relative;
+  width: 520px;
+  max-width: 90vw;
+  margin: 0 auto;
+  aspect-ratio: 1;
 }
 
-.lp-zodiac-sign {
-  position: absolute; left: 50%; top: 50%;
-  width: 46px; height: 46px; margin: -23px 0 0 -23px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; background: rgba(212,168,83,0.03);
-  border: 1px solid rgba(212,168,83,0.08); cursor: pointer;
+.lp-chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: lp-chart-rotate 120s linear infinite;
+}
+
+@keyframes lp-chart-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.lp-chart-svg:hover {
+  animation-play-state: paused;
+}
+
+/* Center info (counter-rotates to stay readable) */
+.lp-chart-center-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.lp-chart-ci-sym {
+  font-size: 2rem;
+  font-family: serif;
+  filter: drop-shadow(0 0 12px currentColor);
   transition: all 0.35s;
-  /* Counter-rotate */
-  animation: lp-unspin 70s linear infinite;
+  line-height: 1;
+  margin-bottom: 4px;
 }
-.lp-zodiac.paused .lp-zodiac-sign { animation-play-state: paused; }
-@keyframes lp-unspin { to { rotate: -360deg; } }
 
-.lp-zodiac-sign.active {
-  background: rgba(212,168,83,0.1); border-color: var(--g);
-  box-shadow: 0 0 24px var(--gg); transform: translate(var(--_x,0),var(--_y,0)) scale(1.25);
+.lp-chart-ci-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--tx);
+  letter-spacing: 0.02em;
 }
-.lp-zodiac-glyph { font-size: 1.25rem; color: var(--g); transition: all 0.3s; }
-.lp-zodiac-sign.active .lp-zodiac-glyph { filter: drop-shadow(0 0 8px var(--gg)); }
 
-.lp-zodiac-center {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  text-align: center; animation: lp-unspin 70s linear infinite;
+.lp-chart-ci-el {
+  font-size: 0.65rem;
+  color: var(--g);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
-.lp-zodiac.paused .lp-zodiac-center { animation-play-state: paused; }
-.lp-zodiac-c-sym { font-size: 2.4rem; color: var(--g); filter: drop-shadow(0 0 12px var(--gg)); }
-.lp-zodiac-c-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
-.lp-zodiac-c-el { font-size: 0.7rem; color: var(--g); letter-spacing: 0.15em; text-transform: uppercase; }
-.lp-zodiac-c-dates { font-size: 0.68rem; color: var(--tm); }
+
+.lp-chart-ci-dates {
+  font-size: 0.68rem;
+  color: var(--tm);
+  margin-top: 2px;
+}
+
+/* Outer ring subtle pulse */
+.lp-chart-ring-outer {
+  animation: lp-ring-breathe 6s ease-in-out infinite;
+}
+
+@keyframes lp-ring-breathe {
+  0%, 100% { stroke: rgba(212,168,83,0.06); }
+  50% { stroke: rgba(212,168,83,0.14); }
+}
 
 /* ── Steps ── */
 .lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -466,7 +496,7 @@
   .lp-steps { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
   .lp-pricing { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
   .lp-trust-grid { grid-template-columns: repeat(2, 1fr); }
-  .lp-zodiac { width: 300px; height: 300px; }
+  .lp-chart-wrap { width: 360px; }
 }
 @media (max-width: 640px) {
   .lp-nav-link { display: none; }

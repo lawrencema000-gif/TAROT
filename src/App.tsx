@@ -243,6 +243,33 @@ function AppContent() {
     );
   }
 
+  // Blog pages are publicly accessible (SEO) — render before auth guard
+  if (!user && location.pathname.startsWith('/blog')) {
+    return (
+      <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+        <div className="min-h-screen constellation-bg">
+          <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
+            <a href="/" className="font-display text-xl text-mystic-100 no-underline">☽ Arcana</a>
+            <button onClick={() => setShowAuthForm(true)} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
+              Sign In
+            </button>
+          </nav>
+          <main className="max-w-3xl mx-auto px-4 pb-16">
+            <Suspense fallback={<ListSkeleton count={3} />}>
+              <Routes>
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <footer className="border-t border-mystic-800/50 py-8 text-center">
+            <a href="/" className="text-sm text-gold hover:underline">← Back to Arcana</a>
+          </footer>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
   if (showOnboarding && !user) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>

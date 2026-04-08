@@ -177,12 +177,44 @@
 .lp-btn-ghost:hover { border-color: var(--bdh); background: var(--sf); }
 
 .lp-play-badge {
-  display: inline-block;
-  transition: transform 0.3s, opacity 0.3s;
-  opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s;
+  color: #fff;
 }
-.lp-play-badge:hover { transform: scale(1.05); opacity: 1; }
-.lp-play-badge img { height: 52px; display: block; }
+.lp-play-badge:hover {
+  border-color: rgba(255,255,255,0.3);
+  transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.lp-play-badge-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.lp-play-badge-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.lp-play-badge-label {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.lp-play-badge-store {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
 
 /* ── Card Fan ── */
 .lp-cardfan { position: relative; width: 380px; height: 340px; display: flex; align-items: flex-end; justify-content: center; }

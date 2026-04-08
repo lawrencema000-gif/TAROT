@@ -498,7 +498,16 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               rel="noopener noreferrer"
               className="lp-play-badge"
             >
-              <img src="/google-play-badge.png" alt="Get it on Google Play" />
+              <svg className="lp-play-badge-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92z" fill="#4285F4"/>
+                <path d="M17.556 8.235L5.016.907a1.005 1.005 0 00-1.02-.011l9.796 11.1 3.764-3.76z" fill="#34A853"/>
+                <path d="M17.556 15.765l-3.764-3.761-9.796 11.1c.325.186.727.2 1.064-.012l12.496-7.327z" fill="#EA4335"/>
+                <path d="M21.395 10.486l-3.84-2.25-4.149 4.149 4.108 4.108 3.88-2.279c.779-.457.779-1.578.001-1.728z" fill="#FBBC05"/>
+              </svg>
+              <span className="lp-play-badge-text">
+                <span className="lp-play-badge-label">Get it on</span>
+                <span className="lp-play-badge-store">Google Play</span>
+              </span>
             </a>
           </div>
 

@@ -23,6 +23,21 @@
   to = "/privacy-policy.html"
   status = 200
 
+[[redirects]]
+  from = "/robots.txt"
+  to = "/robots.txt"
+  status = 200
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap.xml"
+  status = 200
+
+[[redirects]]
+  from = "/google-play-badge.png"
+  to = "/google-play-badge.png"
+  status = 200
+
 # SPA fallback — all routes serve index.html for react-router
 [[redirects]]
   from = "/*"

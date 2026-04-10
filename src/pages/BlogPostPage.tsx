@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Tag, User } from 'lucide-react';
 import { Card } from '../components/ui';
 import { useBlogPost } from '../hooks/useBlogPosts';
-import { setPageMeta } from '../utils/seo';
+import { setArticleMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
 
 export function BlogPostPage() {
@@ -13,7 +13,16 @@ export function BlogPostPage() {
 
   useEffect(() => {
     if (post) {
-      setPageMeta(post.title, post.excerpt || undefined, post.cover_image || undefined);
+      setArticleMeta({
+        title: post.title,
+        excerpt: post.excerpt,
+        cover_image: post.cover_image,
+        author: post.author,
+        published_at: post.published_at,
+        updated_at: post.updated_at,
+        tags: post.tags,
+        slug: post.slug,
+      });
     }
   }, [post]);
 

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /blog/
+
+Disallow: /admin
+Disallow: /profile
+Disallow: /journal
+Disallow: /achievements
+
+Sitemap: https://tarotlife.app/sitemap.xml

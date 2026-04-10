@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { setPageMeta, setWebsiteSchema } from '../utils/seo';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -430,6 +431,11 @@ function Sec({ children, id, className = '' }: { children: React.ReactNode; id?:
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   const [navSolid, setNavSolid] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    setPageMeta('Daily Tarot, Horoscope & Journal', 'Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.');
+    setWebsiteSchema();
+  }, []);
 
   const onScroll = useCallback(() => {
     setScrollY(window.scrollY);

@@ -347,7 +347,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             </button>
             <PlayBadge />
           </div>
-          <p className="lp-hero-note lp-fade-in" style={{ animationDelay: '1.9s' }}>Free forever · No credit card required</p>
+          <p className="lp-hero-note lp-fade-in" style={{ animationDelay: '1.9s' }}>Free to start · No credit card required</p>
         </div>
 
         <div className="lp-hero-visual lp-fade-in" style={{ animationDelay: '0.8s' }}>

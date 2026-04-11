@@ -217,6 +217,7 @@ function AppContent() {
   const handleSwitchToSignIn = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
+    setShowAuthForm(true);
   };
 
   if (loading || checkingOnboarding || isProcessingOAuth) {

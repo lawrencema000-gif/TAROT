@@ -29,7 +29,7 @@
 
 /* ── Stars ── */
 .lp-stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-.lp-star { position: absolute; border-radius: 50%; background: #fff; animation: lp-tw ease-in-out infinite alternate; opacity: 0.06; }
+.lp-star { position: absolute; border-radius: 50%; background: #fff; animation: lp-tw ease-in-out infinite alternate; opacity: 0.06; will-change: opacity; }
 .lp-star.bright { background: var(--g); opacity: 0.2; box-shadow: 0 0 4px var(--gg); }
 @keyframes lp-tw { 0% { opacity: 0.04; transform: scale(0.5); } 100% { opacity: 0.6; transform: scale(1.4); } }
 
@@ -145,10 +145,11 @@
 .lp-orbit-card {
   position: absolute; left: 50%; top: 50%;
   width: 100px; height: 155px; border-radius: 10px; overflow: hidden;
-  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(145px) rotate(calc(-1 * var(--angle)));
-  animation: lp-orbit-spin 30s linear infinite;
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(140px) rotate(calc(-1 * var(--angle)));
+  animation: lp-orbit-spin 35s linear infinite;
   box-shadow: 0 8px 30px rgba(0,0,0,0.5); cursor: pointer;
   transition: box-shadow 0.4s, filter 0.4s;
+  will-change: transform;
 }
 .lp-orbit-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lp-orbit-card.hovered {
@@ -255,7 +256,9 @@
   width: 52px; height: 52px; border-radius: 14px;
   background: rgba(212,168,83,0.05); border: 1px solid rgba(212,168,83,0.08);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; margin-bottom: 18px; transition: transform 0.4s;
+  font-size: 1.4rem; margin-bottom: 18px; transition: transform 0.4s;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--g); font-weight: 400;
 }
 .lp-bento-card:hover .lp-bento-icon { transform: scale(1.1) rotate(-6deg); }
 .lp-bento-title {
@@ -270,6 +273,7 @@
 .lp-marquee-track {
   display: flex; gap: 14px; width: max-content;
   animation: lp-scroll 40s linear infinite;
+  will-change: transform;
 }
 .lp-marquee.reverse .lp-marquee-track { animation-direction: reverse; }
 @keyframes lp-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }

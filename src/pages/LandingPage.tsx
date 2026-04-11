@@ -32,22 +32,22 @@ const CARDS_ROW2 = [
 ];
 
 const HERO_ORBIT = [
-  { file: 'the-star.webp', angle: 0 },
-  { file: 'the-moon.webp', angle: 72 },
-  { file: 'the-sun.webp', angle: 144 },
-  { file: 'the-empress.webp', angle: 216 },
-  { file: 'the-world.webp', angle: 288 },
+  { file: 'the-star.webp', angle: -18 },
+  { file: 'the-moon.webp', angle: 54 },
+  { file: 'the-sun.webp', angle: 126 },
+  { file: 'the-empress.webp', angle: 198 },
+  { file: 'the-world.webp', angle: 270 },
 ];
 
 const EL_COLORS: Record<string, string> = { Fire: '#e85d3a', Earth: '#5d9e5a', Air: '#5b9dd9', Water: '#7b68d4' };
 
 const FEATURES = [
-  { icon: '🃏', title: 'Tarot Readings', desc: 'Full 78-card deck with 6 spread types. Celtic Cross, Relationship, Career, Shadow Work — choose your focus and pull your cards.', size: 'large' },
-  { icon: '✨', title: 'Daily Horoscope', desc: 'Personalized forecasts with energy scores, love and career insights, planetary transits, and daily affirmations.', size: 'small' },
-  { icon: '📓', title: 'Reflective Journal', desc: 'Track mood with 10 emoji moods, tag entries, and link readings to journal entries over time.', size: 'small' },
-  { icon: '🧠', title: 'Personality Quizzes', desc: 'MBTI, Enneagram, Big Five, Love Language, Attachment Style — six assessments that shape your experience.', size: 'large' },
-  { icon: '🔥', title: 'Streaks & XP', desc: 'Earn XP, level up through Seeker Ranks, and unlock achievements as you build your daily habit.', size: 'small' },
-  { icon: '🌙', title: 'Birth Chart', desc: 'Complete natal chart with planetary placements, aspects, and personalized interpretations.', size: 'small' },
+  { icon: '✦', title: 'Tarot Readings', desc: 'Full 78-card deck with 6 spread types. Celtic Cross, Relationship, Career, Shadow Work — choose your focus and pull your cards.', size: 'large' },
+  { icon: '☉', title: 'Daily Horoscope', desc: 'Personalized forecasts with energy scores, love and career insights, planetary transits, and daily affirmations.', size: 'small' },
+  { icon: '✎', title: 'Reflective Journal', desc: 'Track mood with 10 emoji moods, tag entries, and link readings to journal entries over time.', size: 'small' },
+  { icon: '◈', title: 'Personality Quizzes', desc: 'MBTI, Enneagram, Big Five, Love Language, Attachment Style — six assessments that shape your experience.', size: 'large' },
+  { icon: '↑', title: 'Streaks & XP', desc: 'Earn XP, level up through Seeker Ranks, and unlock achievements as you build your daily habit.', size: 'small' },
+  { icon: '☽', title: 'Birth Chart', desc: 'Complete natal chart with planetary placements, aspects, and personalized interpretations.', size: 'small' },
 ];
 
 const FAQ = [
@@ -75,7 +75,7 @@ function useReveal(t = 0.12) {
 
 // ─── Stars ─────────────────────────────────────────────────────
 function Stars() {
-  const s = useRef(Array.from({ length: 150 }, (_, i) => ({
+  const s = useRef(Array.from({ length: 80 }, (_, i) => ({
     i, x: Math.random() * 100, y: Math.random() * 100,
     sz: 0.4 + Math.random() * 1.8, dur: 2 + Math.random() * 5,
     del: Math.random() * 5, bright: Math.random() > 0.88,
@@ -91,7 +91,7 @@ function Stars() {
 
 // ─── Particles ─────────────────────────────────────────────────
 function Particles() {
-  const p = useRef(Array.from({ length: 28 }, (_, i) => ({
+  const p = useRef(Array.from({ length: 14 }, (_, i) => ({
     i, x: Math.random() * 100, sz: 1 + Math.random() * 2.5,
     dur: 7 + Math.random() * 14, del: Math.random() * 10,
     drift: -40 + Math.random() * 80, op: 0.1 + Math.random() * 0.35,

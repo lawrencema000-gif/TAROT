@@ -497,6 +497,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <div className="lp-footer-brand"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
             <div className="lp-footer-links">
               <a href="/privacy-policy.html">Privacy Policy</a>
+              <a href="/blog">Blog</a>
               <a href="mailto:support@arcana.app">Contact</a>
               <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">Google Play</a>
             </div>

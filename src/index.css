@@ -274,6 +274,32 @@
   }
 }
 
+/* ── Web Ad Sidebar ── */
+.web-ad-sidebar {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  display: none;
+}
+
+.web-ad-label {
+  text-align: center;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Only show on wide desktop screens where there's space */
+@media (min-width: 1400px) {
+  .web-ad-sidebar {
+    display: block;
+  }
+}
+
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;

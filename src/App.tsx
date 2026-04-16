@@ -143,6 +143,9 @@ function AppContent() {
       const billingService = getBillingService();
       billingService.setUserId(user.id);
       initializeUserAchievements(user.id);
+    } else {
+      // Cleanup when user signs out — prevent stale state crashes
+      adsService.setUserId(null);
     }
   }, [user]);
 

@@ -683,7 +683,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (async () => {
           await fetchProfile(session.user.id);
           if (event === 'SIGNED_IN') {
-            migrateGuestData(session.user.id).catch(() => {});
+            migrateGuestData(session.user.id).catch((e) => {
+              console.warn('[Auth] Guest data migration failed:', e);
+            });
           }
         })();
       } else {
@@ -770,6 +772,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         try {
           await GoogleAuth.initialize();
+          // Sign out first to clear cached account — forces fresh account picker
+          try { await GoogleAuth.signOut(); } catch { /* may fail if not signed in — safe to ignore */ }
           const googleUser = await GoogleAuth.signIn();
 
           logInfo('auth.google.nativeSuccess', 'Native Google sign-in succeeded', {
@@ -923,6 +927,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logError('auth.signOut.billing', 'Billing sign out error', { error: e });
     }
 
+    // 5. Reset ads service state (prevent stale user ID crashes)
+    try {
+      const { adsService } = await import('../services/ads');
+      adsService.setUserId(null);
+    } catch { /* ignore */ }
+
     logInfo('auth.signOut.complete', 'Sign out complete');
     endSpan(span, 'success');
   };
@@ -975,6 +985,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Then verify against the user_roles table via RPC
       verifyAdminStatus().then((verified) => {
         setIsAdminVerified(verified);
+      }).catch(() => {
+        // RPC failed — keep the local check result
       });
     } else {
       setIsAdminVerified(false);

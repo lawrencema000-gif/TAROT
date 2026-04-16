@@ -8,7 +8,7 @@ import { useGamification } from './context/GamificationContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
-// Banner ad removed — too many native layout issues with Capacitor AdMob banner
+import { WebAdSidebar } from './components/ads/WebAdSidebar';
 import { DevicePreview } from './components/dev/DevicePreview';
 import { ToastContainer, ListSkeleton } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
@@ -274,6 +274,8 @@ function AppContent() {
               </Routes>
             </Suspense>
           </main>
+          {/* Sidebar ad — desktop only, non-intrusive */}
+          <WebAdSidebar />
           <footer className="border-t border-mystic-800/50 py-8 text-center">
             <a href="/" className="text-sm text-gold hover:underline">← Back to Arcana</a>
           </footer>

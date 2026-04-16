@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { setPageMeta, setWebsiteSchema } from '../utils/seo';
+import { setPageMeta, setWebsiteSchema, setFaqSchema } from '../utils/seo';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -302,8 +302,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   }, [onScroll]);
 
   useEffect(() => {
-    setPageMeta('Daily Tarot, Horoscope & Journal');
+    setPageMeta('Daily Tarot Readings, Horoscope & Astrology Journal');
     setWebsiteSchema();
+    setFaqSchema(FAQ);
   }, []);
 
   return (

@@ -479,6 +479,274 @@
   box-shadow: 0 8px 32px rgba(212, 168, 83, 0.3);
 }
 
+/* ── Cheat Sheet ── */
+.tm-cheatsheet {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.tm-cheatsheet-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #d4a853;
+  margin-bottom: 14px;
+  letter-spacing: 0.03em;
+}
+
+.tm-cheatsheet-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tm-cheatsheet-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 0.85rem;
+  vertical-align: top;
+}
+
+.tm-cheatsheet-table tr:last-child td { border-bottom: none; }
+
+.tm-cs-label {
+  color: #706a82;
+  width: 100px;
+  font-weight: 500;
+}
+
+.tm-cs-value { color: #b0aac0; }
+
+.tm-yesno {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.tm-yesno.yes { background: rgba(93, 158, 90, 0.15); color: #5d9e5a; }
+.tm-yesno.no { background: rgba(232, 93, 58, 0.15); color: #e85d3a; }
+.tm-yesno.maybe { background: rgba(212, 168, 83, 0.15); color: #d4a853; }
+
+/* ── Card Description Section ── */
+.tm-description {
+  margin-bottom: 32px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+}
+
+.tm-section-h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 12px;
+}
+
+.tm-description-text {
+  font-size: 0.95rem;
+  color: #706a82;
+  line-height: 1.75;
+  font-style: italic;
+}
+
+/* ── Full Context Readings (Love, Career, Yes/No) ── */
+.tm-contexts-full {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.tm-yesno-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.tm-yesno-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tm-yesno-badge.yes { background: rgba(93, 158, 90, 0.15); color: #5d9e5a; border: 1px solid rgba(93, 158, 90, 0.2); }
+.tm-yesno-badge.no { background: rgba(232, 93, 58, 0.15); color: #e85d3a; border: 1px solid rgba(232, 93, 58, 0.2); }
+.tm-yesno-badge.maybe { background: rgba(212, 168, 83, 0.15); color: #d4a853; border: 1px solid rgba(212, 168, 83, 0.2); }
+
+/* ── Email Capture ── */
+.tm-email-capture {
+  background: rgba(212, 168, 83, 0.03);
+  border: 1px solid rgba(212, 168, 83, 0.1);
+  border-radius: 18px;
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.tm-email-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #d4a853;
+  margin-bottom: 8px;
+}
+
+.tm-email-desc {
+  font-size: 0.92rem;
+  color: #706a82;
+  margin-bottom: 20px;
+}
+
+.tm-email-form {
+  display: flex;
+  gap: 8px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.tm-email-input {
+  flex: 1;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #eae6f2;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.tm-email-input:focus { border-color: rgba(212, 168, 83, 0.3); }
+.tm-email-input::placeholder { color: #504c5e; }
+
+.tm-email-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #d4a853, #e8c97a);
+  color: #080808;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+
+.tm-email-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212, 168, 83, 0.25); }
+
+.tm-email-note {
+  font-size: 0.72rem;
+  color: #3e3a4d;
+  margin-top: 10px;
+}
+
+.tm-email-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1rem;
+  color: #5d9e5a;
+  font-weight: 500;
+  padding: 16px;
+}
+
+.tm-email-success span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(93, 158, 90, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+/* ── Related Cards Grid ── */
+.tm-related {
+  margin-bottom: 48px;
+}
+
+.tm-related-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.tm-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+}
+
+.tm-related-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tm-related-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(212, 168, 83, 0.12);
+}
+
+.tm-related-card.active {
+  background: rgba(212, 168, 83, 0.06);
+  border-color: rgba(212, 168, 83, 0.2);
+  cursor: default;
+}
+
+.tm-related-img {
+  width: 56px;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tm-related-placeholder {
+  width: 56px;
+  height: 84px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: rgba(212, 168, 83, 0.15);
+}
+
+.tm-related-name {
+  font-size: 0.6rem;
+  color: #706a82;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-related-card.active .tm-related-name { color: #d4a853; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .tm-detail-header {
@@ -493,9 +761,23 @@
     justify-content: center;
   }
   .tm-meanings,
-  .tm-contexts {
+  .tm-contexts,
+  .tm-contexts-full {
     grid-template-columns: 1fr;
   }
+  .tm-email-form {
+    flex-direction: column;
+  }
+  .tm-yesno-block {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .tm-related-grid {
+    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+    gap: 6px;
+  }
+  .tm-related-img { width: 48px; }
+  .tm-cheatsheet { margin-top: 20px; }
   .tm-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 12px;

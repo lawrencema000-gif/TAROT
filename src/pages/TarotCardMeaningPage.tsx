@@ -1,41 +1,70 @@
-import { useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fullDeck } from '../data/tarotDeck';
-import { getBundledFullPath } from '../config/bundledImages';
+import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import type { TarotCard } from '../types';
 
 function cardToSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
+// Yes/No determination based on card energy
+const YES_CARDS = new Set([
+  'The Fool', 'The Magician', 'The Empress', 'The Emperor', 'The Lovers',
+  'The Chariot', 'Strength', 'Wheel of Fortune', 'The Star', 'The Sun',
+  'The World', 'Judgement', 'Temperance',
+]);
+const NO_CARDS = new Set([
+  'The Tower', 'The Devil', 'Death', 'The Hanged Man',
+]);
+// Everything else is "Maybe" — depends on context
+
+function getYesNo(card: TarotCard): { answer: string; explanation: string } {
+  if (YES_CARDS.has(card.name)) return { answer: 'Yes', explanation: `${card.name} carries positive, affirming energy. This card supports forward movement and favorable outcomes.` };
+  if (NO_CARDS.has(card.name)) return { answer: 'No', explanation: `${card.name} suggests obstacles, upheaval, or the need to pause. The timing may not be right, or a different approach is needed.` };
+  // Check minor arcana by keywords
+  const positiveKeywords = ['success', 'joy', 'abundance', 'victory', 'celebration', 'love', 'harmony', 'fulfillment', 'completion'];
+  const negativeKeywords = ['loss', 'defeat', 'betrayal', 'grief', 'conflict', 'anxiety', 'burden', 'deception', 'stagnation'];
+  const kw = card.keywords.map(k => k.toLowerCase());
+  const posMatch = kw.some(k => positiveKeywords.some(p => k.includes(p)));
+  const negMatch = kw.some(k => negativeKeywords.some(n => k.includes(n)));
+  if (posMatch && !negMatch) return { answer: 'Yes', explanation: `This card's energy of ${card.keywords.slice(0, 2).join(' and ')} leans toward a positive outcome.` };
+  if (negMatch && !posMatch) return { answer: 'No', explanation: `This card's energy of ${card.keywords.slice(0, 2).join(' and ')} suggests challenges or delays.` };
+  return { answer: 'Maybe', explanation: `${card.name} is context-dependent. The answer depends on surrounding cards and your specific situation.` };
+}
+
+// Get cards in same group for navigation grid
+function getRelatedCards(card: TarotCard): TarotCard[] {
+  if (card.arcana === 'major') return fullDeck.filter(c => c.arcana === 'major');
+  return fullDeck.filter(c => c.suit === card.suit);
+}
+
 export function TarotCardMeaningPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-  const card = useMemo(() => {
-    return fullDeck.find(c => cardToSlug(c.name) === slug);
-  }, [slug]);
-
-  // Find prev/next cards for navigation
+  const card = useMemo(() => fullDeck.find(c => cardToSlug(c.name) === slug), [slug]);
   const cardIndex = card ? fullDeck.indexOf(card) : -1;
   const prevCard = cardIndex > 0 ? fullDeck[cardIndex - 1] : null;
   const nextCard = cardIndex < fullDeck.length - 1 ? fullDeck[cardIndex + 1] : null;
+  const relatedCards = card ? getRelatedCards(card) : [];
+  const yesNo = card ? getYesNo(card) : null;
 
   useEffect(() => {
     if (!card) return;
     const suitLabel = card.suit ? ` — ${card.suit.charAt(0).toUpperCase() + card.suit.slice(1)}` : ' — Major Arcana';
     setPageMeta(
       `${card.name} Tarot Card Meaning${suitLabel}`,
-      `${card.name} tarot meaning: ${card.keywords.join(', ')}. Upright and reversed interpretations, love and career readings.`,
+      `${card.name} tarot meaning: ${card.keywords.join(', ')}. Upright and reversed interpretations, love, career, yes/no readings.`,
       getBundledFullPath(card.id) || undefined
     );
-
-    // JSON-LD for this card
     removeJsonLd();
     addJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'Article',
+      '@context': 'https://schema.org', '@type': 'Article',
       headline: `${card.name} Tarot Card Meaning`,
       description: `${card.name}: ${card.keywords.join(', ')}. Complete upright and reversed meanings.`,
       image: `https://tarotlife.app${getBundledFullPath(card.id) || '/image.png'}`,
@@ -45,15 +74,13 @@ export function TarotCardMeaningPage() {
       keywords: card.keywords.join(', '),
     });
     addJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
+      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tarotlife.app' },
         { '@type': 'ListItem', position: 2, name: 'Tarot Meanings', item: 'https://tarotlife.app/tarot-meanings' },
         { '@type': 'ListItem', position: 3, name: card.name, item: `https://tarotlife.app/tarot-meanings/${cardToSlug(card.name)}` },
       ],
     });
-
     window.scrollTo(0, 0);
   }, [card]);
 
@@ -87,25 +114,53 @@ export function TarotCardMeaningPage() {
       {/* Card Header */}
       <div className="tm-detail-header">
         <div className="tm-detail-img-wrap">
-          {imgPath ? (
-            <img src={imgPath} alt={card.name} className="tm-detail-img" />
-          ) : (
-            <div className="tm-detail-placeholder"><span>✦</span></div>
-          )}
+          {imgPath ? <img src={imgPath} alt={card.name} className="tm-detail-img" /> : <div className="tm-detail-placeholder"><span>✦</span></div>}
         </div>
         <div className="tm-detail-info">
           <div className="tm-detail-badge">{suitLabel}</div>
           <h1 className="tm-detail-name">{card.name}</h1>
           <div className="tm-detail-keywords">
-            {card.keywords.map(k => (
-              <span key={k} className="tm-detail-keyword">{k}</span>
-            ))}
+            {card.keywords.map(k => <span key={k} className="tm-detail-keyword">{k}</span>)}
           </div>
-          <p className="tm-detail-desc">{card.description}</p>
+
+          {/* ── Cheat Sheet (NEW) ── */}
+          <div className="tm-cheatsheet">
+            <h3 className="tm-cheatsheet-title">Quick Reference</h3>
+            <table className="tm-cheatsheet-table">
+              <tbody>
+                <tr>
+                  <td className="tm-cs-label">Upright</td>
+                  <td className="tm-cs-value">{card.keywords.join(', ')}</td>
+                </tr>
+                <tr>
+                  <td className="tm-cs-label">Reversed</td>
+                  <td className="tm-cs-value">{card.meaningReversed.split('.')[0]}.</td>
+                </tr>
+                {yesNo && (
+                  <tr>
+                    <td className="tm-cs-label">Yes or No</td>
+                    <td className="tm-cs-value">
+                      <span className={`tm-yesno ${yesNo.answer.toLowerCase()}`}>{yesNo.answer}</span>
+                    </td>
+                  </tr>
+                )}
+                <tr>
+                  <td className="tm-cs-label">Element</td>
+                  <td className="tm-cs-value">{card.suit === 'wands' ? 'Fire 🔥' : card.suit === 'cups' ? 'Water 💧' : card.suit === 'swords' ? 'Air 💨' : card.suit === 'pentacles' ? 'Earth 🌍' : 'Spirit ✨'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Meanings */}
+      {/* Card Description */}
+      <div className="tm-description">
+        <h2 className="tm-section-h2">Card Description</h2>
+        <p className="tm-description-text">{card.description}</p>
+      </div>
+
+      {/* Upright & Reversed Meanings */}
       <div className="tm-meanings">
         <div className="tm-meaning-card upright">
           <div className="tm-meaning-header">
@@ -114,7 +169,6 @@ export function TarotCardMeaningPage() {
           </div>
           <p className="tm-meaning-text">{card.meaningUpright}</p>
         </div>
-
         <div className="tm-meaning-card reversed">
           <div className="tm-meaning-header">
             <span className="tm-meaning-icon">↓</span>
@@ -124,35 +178,67 @@ export function TarotCardMeaningPage() {
         </div>
       </div>
 
-      {/* Love & Career */}
-      {(card.loveMeaning || card.careerMeaning) && (
-        <div className="tm-contexts">
-          {card.loveMeaning && (
-            <div className="tm-context-card">
-              <h3 className="tm-context-title">
-                <span className="tm-context-icon">♡</span> Love & Relationships
-              </h3>
-              <p className="tm-context-text">{card.loveMeaning}</p>
+      {/* Context Readings: Love, Career, Yes/No */}
+      <div className="tm-contexts-full">
+        {card.loveMeaning && (
+          <div className="tm-context-card">
+            <h3 className="tm-context-title"><span className="tm-context-icon">♡</span> Love & Relationships</h3>
+            <p className="tm-context-text">{card.loveMeaning}</p>
+          </div>
+        )}
+        {card.careerMeaning && (
+          <div className="tm-context-card">
+            <h3 className="tm-context-title"><span className="tm-context-icon">◈</span> Career & Finances</h3>
+            <p className="tm-context-text">{card.careerMeaning}</p>
+          </div>
+        )}
+        {yesNo && (
+          <div className="tm-context-card">
+            <h3 className="tm-context-title"><span className="tm-context-icon">◉</span> Yes or No Reading</h3>
+            <div className="tm-yesno-block">
+              <span className={`tm-yesno-badge ${yesNo.answer.toLowerCase()}`}>{yesNo.answer}</span>
+              <p className="tm-context-text">{yesNo.explanation}</p>
             </div>
-          )}
-          {card.careerMeaning && (
-            <div className="tm-context-card">
-              <h3 className="tm-context-title">
-                <span className="tm-context-icon">◈</span> Career & Finances
-              </h3>
-              <p className="tm-context-text">{card.careerMeaning}</p>
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Reflection */}
+      {/* Reflection Prompt */}
       {card.reflectionPrompt && (
         <div className="tm-reflection">
           <h3 className="tm-reflection-title">✎ Reflection Prompt</h3>
           <blockquote className="tm-reflection-text">{card.reflectionPrompt}</blockquote>
         </div>
       )}
+
+      {/* ── Email Capture (NEW) ── */}
+      <div className="tm-email-capture">
+        {subscribed ? (
+          <div className="tm-email-success">
+            <span>✓</span> You're in! Check your inbox for your free tarot guide.
+          </div>
+        ) : (
+          <>
+            <h3 className="tm-email-title">☽ Free Tarot Guide</h3>
+            <p className="tm-email-desc">Get a free beginner's guide to tarot readings — delivered to your inbox.</p>
+            <form className="tm-email-form" onSubmit={(e) => {
+              e.preventDefault();
+              if (email.includes('@')) setSubscribed(true);
+            }}>
+              <input
+                type="email"
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="tm-email-input"
+                required
+              />
+              <button type="submit" className="tm-email-btn">Get Free Guide</button>
+            </form>
+            <p className="tm-email-note">No spam. Unsubscribe anytime.</p>
+          </>
+        )}
+      </div>
 
       {/* Prev/Next Navigation */}
       <div className="tm-card-nav">
@@ -168,7 +254,34 @@ export function TarotCardMeaningPage() {
         ) : <div />}
       </div>
 
-      {/* CTA */}
+      {/* ── Full Card Navigation Grid (NEW) ── */}
+      <div className="tm-related">
+        <h3 className="tm-related-title">
+          {card.arcana === 'major' ? 'All Major Arcana Cards' : `All ${card.suit?.charAt(0).toUpperCase()}${card.suit?.slice(1)} Cards`}
+        </h3>
+        <div className="tm-related-grid">
+          {relatedCards.map(rc => {
+            const thumb = getBundledThumbPath(rc.id);
+            const isActive = rc.id === card.id;
+            return (
+              <button
+                key={rc.id}
+                className={`tm-related-card ${isActive ? 'active' : ''}`}
+                onClick={() => { if (!isActive) navigate(`/tarot-meanings/${cardToSlug(rc.name)}`); }}
+              >
+                {thumb ? (
+                  <img src={thumb} alt={rc.name} className="tm-related-img" loading="lazy" />
+                ) : (
+                  <div className="tm-related-placeholder">✦</div>
+                )}
+                <span className="tm-related-name">{rc.name.replace('of ', '').replace('The ', '')}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom CTA */}
       <div className="tm-bottom-cta">
         <p className="tm-bottom-text">Experience {card.name} in a reading</p>
         <a href="/" className="tm-bottom-btn">Try a Free Reading</a>

@@ -318,6 +318,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         <div className="lp-nav-in">
           <div className="lp-nav-brand"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
           <div className="lp-nav-right">
+            <a href="/tarot-meanings" className="lp-nav-link">Card Meanings</a>
             <a href="#features" className="lp-nav-link">Features</a>
             <a href="#zodiac" className="lp-nav-link">Zodiac</a>
             <a href="#faq" className="lp-nav-link">FAQ</a>

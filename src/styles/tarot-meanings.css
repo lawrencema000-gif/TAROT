@@ -1,0 +1,516 @@
+/* ═══════════════════════════════════════════════════════════════
+   TAROT CARD MEANINGS LIBRARY
+   ═══════════════════════════════════════════════════════════════ */
+
+.tm-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Hero ── */
+.tm-hero {
+  text-align: center;
+  padding: 40px 0 48px;
+}
+
+.tm-hero-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #d4a853;
+  padding: 5px 16px;
+  border: 1px solid rgba(212, 168, 83, 0.12);
+  border-radius: 20px;
+  background: rgba(212, 168, 83, 0.04);
+  margin-bottom: 18px;
+}
+
+.tm-hero-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.tm-hero-sub {
+  font-size: 1rem;
+  color: #706a82;
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── Filters ── */
+.tm-filters {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+  padding: 0 10px;
+}
+
+.tm-filter-btn {
+  padding: 8px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: none;
+  color: #706a82;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tm-filter-btn:hover {
+  color: #eae6f2;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.tm-filter-btn.active {
+  color: #d4a853;
+  border-color: rgba(212, 168, 83, 0.25);
+  background: rgba(212, 168, 83, 0.06);
+}
+
+/* ── Section Intro ── */
+.tm-section-intro {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+.tm-section-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 4px;
+}
+
+.tm-section-subtitle {
+  font-size: 0.78rem;
+  color: #d4a853;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.tm-section-divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(212, 168, 83, 0.2);
+  margin: 0 auto 16px;
+}
+
+.tm-section-desc {
+  font-size: 0.92rem;
+  color: #706a82;
+  line-height: 1.65;
+}
+
+/* ── Card Grid ── */
+.tm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 60px;
+}
+
+.tm-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 16px 12px 14px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tm-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(212, 168, 83, 0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 168, 83, 0.03);
+}
+
+.tm-card-img-wrap {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tm-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s;
+}
+
+.tm-card:hover .tm-card-img {
+  transform: scale(1.05);
+}
+
+.tm-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: rgba(212, 168, 83, 0.2);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.tm-card-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 4px;
+}
+
+.tm-card-keywords {
+  font-size: 0.68rem;
+  color: #706a82;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* ── Breadcrumb ── */
+.tm-breadcrumb {
+  padding: 24px 0 16px;
+  font-size: 0.8rem;
+  color: #706a82;
+}
+
+.tm-breadcrumb a {
+  color: #d4a853;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.tm-breadcrumb a:hover {
+  opacity: 0.7;
+}
+
+.tm-breadcrumb-sep {
+  margin: 0 8px;
+  color: #3e3a4d;
+}
+
+.tm-breadcrumb-current {
+  color: #eae6f2;
+}
+
+/* ── Card Detail Header ── */
+.tm-detail-header {
+  display: flex;
+  gap: 40px;
+  padding: 20px 0 48px;
+  align-items: flex-start;
+}
+
+.tm-detail-img-wrap {
+  width: 240px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 168, 83, 0.05);
+}
+
+.tm-detail-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.tm-detail-placeholder {
+  width: 100%;
+  aspect-ratio: 2/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 3rem;
+  color: rgba(212, 168, 83, 0.15);
+}
+
+.tm-detail-info {
+  flex: 1;
+  padding-top: 8px;
+}
+
+.tm-detail-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4a853;
+  margin-bottom: 10px;
+}
+
+.tm-detail-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+.tm-detail-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tm-detail-keyword {
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(212, 168, 83, 0.06);
+  border: 1px solid rgba(212, 168, 83, 0.1);
+  font-size: 0.75rem;
+  color: #d4a853;
+  font-weight: 500;
+}
+
+.tm-detail-desc {
+  font-size: 0.95rem;
+  color: #706a82;
+  line-height: 1.7;
+}
+
+/* ── Meanings ── */
+.tm-meanings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.tm-meaning-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.tm-meaning-card.upright {
+  border-color: rgba(93, 158, 90, 0.12);
+}
+
+.tm-meaning-card.reversed {
+  border-color: rgba(232, 93, 58, 0.12);
+}
+
+.tm-meaning-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tm-meaning-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.upright .tm-meaning-icon {
+  background: rgba(93, 158, 90, 0.1);
+  color: #5d9e5a;
+}
+
+.reversed .tm-meaning-icon {
+  background: rgba(232, 93, 58, 0.1);
+  color: #e85d3a;
+}
+
+.tm-meaning-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #eae6f2;
+}
+
+.tm-meaning-text {
+  font-size: 0.92rem;
+  color: #706a82;
+  line-height: 1.7;
+}
+
+/* ── Love & Career ── */
+.tm-contexts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.tm-context-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.tm-context-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #eae6f2;
+  margin-bottom: 12px;
+}
+
+.tm-context-icon {
+  color: #d4a853;
+  margin-right: 6px;
+}
+
+.tm-context-text {
+  font-size: 0.92rem;
+  color: #706a82;
+  line-height: 1.7;
+}
+
+/* ── Reflection ── */
+.tm-reflection {
+  background: rgba(212, 168, 83, 0.03);
+  border: 1px solid rgba(212, 168, 83, 0.08);
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 40px;
+}
+
+.tm-reflection-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #d4a853;
+  margin-bottom: 12px;
+}
+
+.tm-reflection-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: #8a849a;
+  line-height: 1.65;
+  border-left: 2px solid rgba(212, 168, 83, 0.15);
+  padding-left: 20px;
+  margin: 0;
+}
+
+/* ── Prev/Next Nav ── */
+.tm-card-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tm-card-nav-btn {
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: none;
+  color: #706a82;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tm-card-nav-btn:hover {
+  color: #d4a853;
+  border-color: rgba(212, 168, 83, 0.2);
+}
+
+/* ── Bottom CTA ── */
+.tm-bottom-cta {
+  text-align: center;
+  padding: 48px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tm-bottom-text {
+  font-size: 1rem;
+  color: #706a82;
+  margin-bottom: 16px;
+}
+
+.tm-bottom-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #d4a853, #e8c97a);
+  color: #080808;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(212, 168, 83, 0.25);
+  transition: all 0.3s;
+}
+
+.tm-bottom-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(212, 168, 83, 0.3);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .tm-detail-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .tm-detail-img-wrap {
+    width: 200px;
+  }
+  .tm-detail-keywords {
+    justify-content: center;
+  }
+  .tm-meanings,
+  .tm-contexts {
+    grid-template-columns: 1fr;
+  }
+  .tm-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tm-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .tm-card {
+    padding: 10px 8px;
+  }
+  .tm-card-name {
+    font-size: 0.8rem;
+  }
+}

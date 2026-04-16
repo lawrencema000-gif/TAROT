@@ -33,6 +33,8 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })));
+const TarotMeaningsPage = lazy(() => import('./pages/TarotMeaningsPage').then(m => ({ default: m.TarotMeaningsPage })));
+const TarotCardMeaningPage = lazy(() => import('./pages/TarotCardMeaningPage').then(m => ({ default: m.TarotCardMeaningPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -247,22 +249,28 @@ function AppContent() {
     );
   }
 
-  // Blog pages are publicly accessible (SEO) — render before auth guard
-  if (!user && location.pathname.startsWith('/blog')) {
+  // Public content pages (SEO) — render before auth guard
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings'))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
           <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
             <a href="/" className="font-display text-xl text-mystic-100 no-underline">☽ Arcana</a>
-            <button onClick={() => setShowAuthForm(true)} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
-              Sign In
-            </button>
+            <div className="flex items-center gap-4">
+              <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Card Meanings</a>
+              <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Blog</a>
+              <button onClick={() => setShowAuthForm(true)} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
+                Sign In
+              </button>
+            </div>
           </nav>
           <main className="max-w-3xl mx-auto px-4 pb-16">
             <Suspense fallback={<ListSkeleton count={3} />}>
               <Routes>
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="/tarot-meanings" element={<TarotMeaningsPage />} />
+                <Route path="/tarot-meanings/:slug" element={<TarotCardMeaningPage />} />
               </Routes>
             </Suspense>
           </main>

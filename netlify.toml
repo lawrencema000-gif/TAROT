@@ -14,6 +14,11 @@
 
 # Let static files through (app-ads.txt, privacy-policy, etc.)
 [[redirects]]
+  from = "/ads.txt"
+  to = "/ads.txt"
+  status = 200
+
+[[redirects]]
   from = "/app-ads.txt"
   to = "/app-ads.txt"
   status = 200

@@ -258,9 +258,15 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         supabase.from('quiz_results').select('*').eq('user_id', user.id),
       ]);
 
+      // Check for query errors
+      const errors = [profileRes.error, journalRes.error, readingsRes.error, quizRes.error].filter(Boolean);
+      if (errors.length > 0) {
+        toast('Some data could not be exported. Please try again.', 'error');
+      }
+
       const exportData = {
         exportedAt: new Date().toISOString(),
-        profile: profileRes.data,
+        profile: profileRes.data || null,
         journalEntries: journalRes.data || [],
         tarotReadings: readingsRes.data || [],
         quizResults: quizRes.data || [],

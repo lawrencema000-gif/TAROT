@@ -102,6 +102,8 @@ class NativeBillingService implements BillingService {
   async setUserId(userId: string): Promise<void> {
     try {
       this.userId = userId;
+      // Clear cached packages from previous user
+      this.packages = [];
       if (this.initialized) {
         await Purchases.logIn({ appUserID: userId });
         console.log('[RevenueCat] User ID set:', userId);
@@ -113,9 +115,11 @@ class NativeBillingService implements BillingService {
 
   async logOut(): Promise<void> {
     try {
+      // Clear cached packages and user state
+      this.packages = [];
+      this.userId = undefined;
       if (this.initialized) {
         await Purchases.logOut();
-        this.userId = undefined;
         console.log('[RevenueCat] User logged out');
       }
     } catch (error) {

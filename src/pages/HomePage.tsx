@@ -83,18 +83,18 @@ export function HomePage() {
       const [ritualResult, savesResult, countResult] = await Promise.all([
         supabase
           .from('daily_rituals')
-          .select('*')
+          .select('horoscope_viewed, tarot_drawn, journal_written, completed')
           .eq('user_id', user.id)
           .eq('date', today)
           .maybeSingle(),
         supabase
           .from('saved_highlights')
-          .select('*')
+          .select('highlight_type')
           .eq('user_id', user.id)
           .eq('date', today),
         supabase
           .from('daily_rituals')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id),
       ]);
 

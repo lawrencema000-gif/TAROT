@@ -40,7 +40,10 @@ export interface AnalyticsPayload {
 let sessionId: string | null = null;
 let userId: string | null = null;
 const eventQueue: AnalyticsPayload[] = [];
+const MAX_QUEUE_SIZE = 500;
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
+let flushBackoffMs = 2000;
+let consecutiveFailures = 0;
 
 function getSessionId(): string {
   if (!sessionId) {
@@ -71,11 +74,16 @@ export function track(event: AnalyticsEvent, properties?: Record<string, unknown
 
   eventQueue.push(payload);
 
+  // Cap queue size to prevent unbounded memory growth
+  if (eventQueue.length > MAX_QUEUE_SIZE) {
+    eventQueue.splice(0, eventQueue.length - MAX_QUEUE_SIZE);
+  }
+
   if (flushTimeout) {
     clearTimeout(flushTimeout);
   }
 
-  flushTimeout = setTimeout(flushEvents, 2000);
+  flushTimeout = setTimeout(flushEvents, flushBackoffMs);
 
   if (eventQueue.length >= 10) {
     flushEvents();
@@ -114,9 +122,18 @@ async function flushEvents(): Promise<void> {
         console.log(`[Analytics] ${e.event}`, e.properties);
       });
     }
+    // Reset backoff on success
+    consecutiveFailures = 0;
+    flushBackoffMs = 2000;
   } catch (err) {
     console.warn('Failed to send analytics:', err);
-    eventQueue.unshift(...eventsToSend);
+    // Re-queue but respect max size
+    const requeued = [...eventsToSend, ...eventQueue];
+    eventQueue.length = 0;
+    eventQueue.push(...requeued.slice(-MAX_QUEUE_SIZE));
+    // Exponential backoff: 2s → 4s → 8s → 16s → max 30s
+    consecutiveFailures++;
+    flushBackoffMs = Math.min(2000 * Math.pow(2, consecutiveFailures), 30000);
   }
 }
 

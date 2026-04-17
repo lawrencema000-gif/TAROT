@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { Tab } from '../types';
 
@@ -63,14 +63,12 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     setActiveOverlay(null);
   }, []);
 
+  const value = useMemo(() => ({
+    activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay,
+  }), [activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay]);
+
   return (
-    <UIContext.Provider value={{
-      activeTab,
-      setActiveTab,
-      activeOverlay,
-      openOverlay,
-      closeOverlay,
-    }}>
+    <UIContext.Provider value={value}>
       {children}
     </UIContext.Provider>
   );

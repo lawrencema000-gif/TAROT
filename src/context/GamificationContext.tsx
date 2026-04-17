@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 export interface LevelUpEvent {
   newLevel: number;
@@ -37,15 +37,13 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     setShowRatePrompt(false);
   }, []);
 
+  const value = useMemo(() => ({
+    levelUpEvent, triggerLevelUp, dismissLevelUp,
+    showRatePrompt, openRatePrompt, closeRatePrompt,
+  }), [levelUpEvent, triggerLevelUp, dismissLevelUp, showRatePrompt, openRatePrompt, closeRatePrompt]);
+
   return (
-    <GamificationContext.Provider value={{
-      levelUpEvent,
-      triggerLevelUp,
-      dismissLevelUp,
-      showRatePrompt,
-      openRatePrompt,
-      closeRatePrompt,
-    }}>
+    <GamificationContext.Provider value={value}>
       {children}
     </GamificationContext.Provider>
   );

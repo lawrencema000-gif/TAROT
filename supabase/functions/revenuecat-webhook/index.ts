@@ -63,7 +63,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const rawBody = await req.text();
-    console.log("[RevenueCat] Raw webhook body:", rawBody);
+    // Do NOT log raw webhook body — contains user identifiers, transaction IDs,
+    // and store-issued tokens. Log safe fields only after parsing.
 
     let webhookData: RevenueCatEvent;
     try {

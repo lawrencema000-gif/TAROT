@@ -81,6 +81,38 @@ export function TarotCardMeaningPage() {
         { '@type': 'ListItem', position: 3, name: card.name, item: `https://tarotlife.app/tarot-meanings/${cardToSlug(card.name)}` },
       ],
     });
+    // FAQPage schema — drives "People also ask" rich results
+    const yn = getYesNo(card);
+    addJsonLd({
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: `What does the ${card.name} tarot card mean?`,
+          acceptedAnswer: { '@type': 'Answer', text: card.meaningUpright },
+        },
+        {
+          '@type': 'Question',
+          name: `What does the ${card.name} mean reversed?`,
+          acceptedAnswer: { '@type': 'Answer', text: card.meaningReversed },
+        },
+        {
+          '@type': 'Question',
+          name: `Is the ${card.name} a yes or no card?`,
+          acceptedAnswer: { '@type': 'Answer', text: `${yn.answer}. ${yn.explanation}` },
+        },
+        {
+          '@type': 'Question',
+          name: `What does the ${card.name} mean in a love reading?`,
+          acceptedAnswer: { '@type': 'Answer', text: card.loveMeaning || `${card.name} in love represents ${card.keywords.slice(0, 3).join(', ').toLowerCase()}.` },
+        },
+        {
+          '@type': 'Question',
+          name: `What does the ${card.name} mean in a career reading?`,
+          acceptedAnswer: { '@type': 'Answer', text: card.careerMeaning || `${card.name} in career represents ${card.keywords.slice(0, 3).join(', ').toLowerCase()}.` },
+        },
+      ],
+    });
     window.scrollTo(0, 0);
   }, [card]);
 

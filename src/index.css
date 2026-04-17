@@ -274,15 +274,16 @@
   }
 }
 
-/* ── Web Ad Sidebar ── */
+/* ── Web Ad Sidebars (flanking content on wide desktops) ── */
 .web-ad-sidebar {
   position: fixed;
-  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 50;
   display: none;
 }
+.web-ad-sidebar-left  { left: 20px; }
+.web-ad-sidebar-right { right: 20px; }
 
 .web-ad-label {
   text-align: center;
@@ -293,7 +294,7 @@
   margin-top: 4px;
 }
 
-/* Only show on wide desktop screens where there's space */
+/* Only show on wide desktop screens where there's room to flank the content */
 @media (min-width: 1400px) {
   .web-ad-sidebar {
     display: block;

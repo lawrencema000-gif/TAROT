@@ -8,16 +8,22 @@ declare global {
   }
 }
 
+type Side = 'left' | 'right';
+
+interface WebAdSidebarProps {
+  side: Side;
+}
+
 /**
- * Sticky sidebar ad for desktop web only.
- * Shows a 160x600 (Wide Skyscraper) AdSense ad on the right side.
- * Only visible on screens wider than 1400px (see .web-ad-sidebar CSS).
+ * Sticky sidebar ad — one on each flank of the content column.
+ * 160x600 Wide Skyscraper. Only visible on screens ≥ 1400px where there's
+ * enough horizontal room that the ad doesn't crowd the content (see CSS).
  * Hidden for premium / ad-free users.
  */
-export function WebAdSidebar() {
+export function WebAdSidebar({ side }: WebAdSidebarProps) {
   const show = useShouldShowAds();
   const pushed = useRef(false);
-  const slot = AD_SLOTS.sidebar;
+  const slot = side === 'left' ? AD_SLOTS.sidebarLeft : AD_SLOTS.sidebarRight;
 
   useEffect(() => {
     if (!show || !slot || pushed.current) return;
@@ -32,7 +38,7 @@ export function WebAdSidebar() {
   if (!show || !slot) return null;
 
   return (
-    <div className="web-ad-sidebar">
+    <div className={`web-ad-sidebar web-ad-sidebar-${side}`}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '160px', height: '600px' }}

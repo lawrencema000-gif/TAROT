@@ -4,8 +4,6 @@ import { fullDeck } from '../data/tarotDeck';
 import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
-import { InArticleAd } from '../components/ads/InArticleAd';
-import { EndOfArticleAd } from '../components/ads/EndOfArticleAd';
 import type { TarotCard } from '../types';
 
 function cardToSlug(name: string): string {
@@ -212,8 +210,6 @@ export function TarotCardMeaningPage() {
         </div>
       </div>
 
-      <InArticleAd />
-
       {/* Context Readings: Love, Career, Yes/No */}
       <div className="tm-contexts-full">
         {card.loveMeaning && (
@@ -246,8 +242,6 @@ export function TarotCardMeaningPage() {
           <blockquote className="tm-reflection-text">{card.reflectionPrompt}</blockquote>
         </div>
       )}
-
-      <EndOfArticleAd />
 
       {/* ── Email Capture (NEW) ── */}
       <div className="tm-email-capture">

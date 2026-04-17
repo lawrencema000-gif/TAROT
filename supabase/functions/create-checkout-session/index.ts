@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14.10.0";
+import { callerKey, checkRateLimit, rateLimitHeaders } from "../_shared/rate-limit.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2024-11-20.acacia",
@@ -85,6 +86,22 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // Rate limit: 10 checkout sessions / 10 minutes per user
+    const rl = checkRateLimit(callerKey(req, user.id), 10, 10 * 60_000);
+    if (!rl.allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests" }),
+        {
+          status: 429,
+          headers: {
+            ...getCorsHeaders(req),
+            ...rateLimitHeaders(rl),
+            "Content-Type": "application/json",
+          },
+        }
       );
     }
 

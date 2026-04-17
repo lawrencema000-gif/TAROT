@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
 import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
+import { getAttribution, clearAttribution } from '../utils/attribution';
 import type { Goal, TonePreference } from '../types';
 
 const goalOptions: { label: string; value: Goal }[] = [
@@ -177,6 +178,20 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
     if (user) {
       await assignRandomVisuals(user.id);
+
+      // Persist ad attribution (UTM from landing) — only on first complete
+      const attr = getAttribution();
+      if (attr) {
+        await supabase.from('profiles').update({
+          utm_source: attr.utm_source,
+          utm_medium: attr.utm_medium,
+          utm_campaign: attr.utm_campaign,
+          utm_content: attr.utm_content,
+          utm_term: attr.utm_term,
+          first_referrer: attr.first_referrer,
+        }).eq('id', user.id);
+        clearAttribution();
+      }
     }
 
     toast('Welcome to Arcana!', 'success');

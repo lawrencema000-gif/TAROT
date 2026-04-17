@@ -1,6 +1,30 @@
 import { supabase } from '../lib/supabase';
 import { appStorage } from '../lib/appStorage';
 
+// ─── Google Analytics / Google Ads conversion bridge ──────────────
+// Fires GA4 events via gtag() when available (web only — not in Capacitor).
+// Google Ads imports these events as conversions automatically after they
+// appear in GA4 and are marked as conversions in the Google Ads UI.
+
+type GtagArgs = [string, string, Record<string, unknown>?];
+
+declare global {
+  interface Window {
+    gtag?: (...args: GtagArgs) => void;
+    dataLayer?: unknown[];
+  }
+}
+
+/** Safe no-op when gtag isn't loaded (Capacitor, dev, or blocked). */
+function gtagEvent(name: string, params: Record<string, unknown> = {}): void {
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
+  try {
+    window.gtag('event', name, params);
+  } catch {
+    // Never let a tracking error break the app
+  }
+}
+
 export type AnalyticsEvent =
   | 'page_view'
   | 'sign_up'
@@ -143,6 +167,8 @@ export function trackPageView(pageName: string, properties?: Record<string, unkn
 
 export function trackSignUp(method: 'email' | 'google'): void {
   track('sign_up', { method });
+  // GA4 recommended event — Google Ads can import as conversion
+  gtagEvent('sign_up', { method });
 }
 
 export function trackSignIn(method: 'email' | 'google'): void {
@@ -163,6 +189,11 @@ export function trackOnboardingStepCompleted(data: {
 
 export function trackOnboardingComplete(data: { goals?: string[]; sign?: string; totalDurationMs: number }): void {
   track('onboarding_complete', data);
+  // Signals a fully activated user — stronger conversion signal than sign_up
+  gtagEvent('onboarding_complete', {
+    total_duration_ms: data.totalDurationMs,
+    has_sign: !!data.sign,
+  });
 }
 
 export function trackRitualStarted(): void {
@@ -196,6 +227,12 @@ export function trackSpreadCompleted(data: {
   duration?: number;
 }): void {
   track('spread_completed', data);
+  // Core engagement signal — ads optimized against "first_reading" converters
+  // behave very differently from raw clicks. Mark as conversion in Google Ads.
+  gtagEvent('first_reading', {
+    spread_type: data.spreadType,
+    card_count: data.cardCount,
+  });
 }
 
 export function trackQuizStarted(data: { quizType: string; quizId?: string }): void {
@@ -223,8 +260,24 @@ export function trackPurchaseSuccess(data: {
   plan: 'monthly' | 'yearly';
   price?: number;
   currency?: string;
+  transactionId?: string;
 }): void {
   track('purchase_success', data);
+  // GA4 'purchase' is the canonical revenue event. Google Ads imports it
+  // for value-based bidding. Always pass value + currency so Ads can
+  // calculate ROAS rather than just counting conversions.
+  gtagEvent('purchase', {
+    transaction_id: data.transactionId || `tx_${Date.now()}`,
+    value: data.price ?? 0,
+    currency: data.currency ?? 'USD',
+    items: [{
+      item_id: `arcana_${data.plan}`,
+      item_name: `Arcana Premium ${data.plan}`,
+      item_category: 'subscription',
+      price: data.price ?? 0,
+      quantity: 1,
+    }],
+  });
 }
 
 export function trackRestoreSuccess(): void {

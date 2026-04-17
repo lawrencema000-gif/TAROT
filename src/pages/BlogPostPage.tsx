@@ -6,8 +6,6 @@ import { useBlogPost } from '../hooks/useBlogPosts';
 import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
-import { InArticleAd } from '../components/ads/InArticleAd';
-import { EndOfArticleAd } from '../components/ads/EndOfArticleAd';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -123,8 +121,6 @@ export function BlogPostPage() {
             }) }}
           />
         </Card>
-
-        <EndOfArticleAd />
       </article>
     </div>
   );

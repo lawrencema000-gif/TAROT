@@ -9,7 +9,9 @@
 export const ADSENSE_CLIENT = 'ca-pub-9489106590476826';
 
 export const AD_SLOTS = {
-  sidebar: import.meta.env.VITE_ADSENSE_SIDEBAR_SLOT as string | undefined,
+  sidebarLeft: import.meta.env.VITE_ADSENSE_SIDEBAR_LEFT_SLOT as string | undefined,
+  sidebarRight: import.meta.env.VITE_ADSENSE_SIDEBAR_RIGHT_SLOT as string | undefined,
+  // Unused for now — kept for future activation without a code change.
   inArticle: import.meta.env.VITE_ADSENSE_IN_ARTICLE_SLOT as string | undefined,
   endOfArticle: import.meta.env.VITE_ADSENSE_END_ARTICLE_SLOT as string | undefined,
   blogGrid: import.meta.env.VITE_ADSENSE_BLOG_GRID_SLOT as string | undefined,

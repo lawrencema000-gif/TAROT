@@ -279,8 +279,9 @@ function AppContent() {
               </Routes>
             </Suspense>
           </main>
-          {/* Sidebar ad — desktop only, non-intrusive */}
-          <WebAdSidebar />
+          {/* Flanking sidebar ads — desktop ≥1400px only, non-intrusive */}
+          <WebAdSidebar side="left" />
+          <WebAdSidebar side="right" />
           <footer className="border-t border-mystic-800/50 py-8 text-center">
             <a href="/" className="text-sm text-gold hover:underline">← Back to Arcana</a>
           </footer>

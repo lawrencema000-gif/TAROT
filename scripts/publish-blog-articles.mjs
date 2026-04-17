@@ -3,9 +3,14 @@
  * Run: node scripts/publish-blog-articles.mjs
  */
 import { createClient } from '@supabase/supabase-js';
+import { readFileSync } from 'fs';
 
-const supabaseUrl = 'https://ulzlthhkqjuohzjangcq.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsemx0aGhrcWp1b2h6amFuZ2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTY4NTQsImV4cCI6MjA4MjgzMjg1NH0.pqf2bqHJZ_D1i2-KFEN07xYYvruIYHd2-nv7MI6yeyE';
+// Load env vars from .env file
+try { const env = readFileSync('.env', 'utf8'); env.split('\n').forEach(line => { const [k, ...v] = line.split('='); if (k && !k.startsWith('#')) process.env[k.trim()] = v.join('=').trim(); }); } catch { /* .env may not exist */ }
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+if (!supabaseUrl || !supabaseKey) { console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env'); process.exit(1); }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

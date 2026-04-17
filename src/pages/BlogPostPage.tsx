@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Tag, User } from 'lucide-react';
 import { Card } from '../components/ui';
 import { useBlogPost } from '../hooks/useBlogPosts';
+import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
 
@@ -114,7 +115,10 @@ export function BlogPostPage() {
               prose-ul:text-mystic-300 prose-ol:text-mystic-300
               prose-blockquote:border-gold/30 prose-blockquote:text-mystic-400
               prose-img:rounded-lg"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, {
+              ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'a', 'img', 'blockquote', 'ul', 'ol', 'li', 'br', 'article', 'section', 'span', 'table', 'thead', 'tbody', 'tr', 'td', 'th'],
+              ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
+            }) }}
           />
         </Card>
       </article>

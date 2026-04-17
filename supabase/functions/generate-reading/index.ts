@@ -201,11 +201,15 @@ async function callGemini(prompt: string): Promise<string> {
     throw new Error("GEMINI_API_KEY not configured");
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -216,6 +220,7 @@ async function callGemini(prompt: string): Promise<string> {
       }),
     }
   );
+  clearTimeout(timeout);
 
   if (!response.ok) {
     const error = await response.text();

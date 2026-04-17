@@ -395,6 +395,8 @@ export async function clearLocalStorage(): Promise<void> {
 
 export async function migrateGuestData(userId: string): Promise<{ migrated: number }> {
   let migrated = 0;
+  let savedMigrated = false;
+  let historyMigrated = false;
 
   const savedItems = await getLocalSavedItems();
   if (savedItems.length > 0) {
@@ -410,7 +412,10 @@ export async function migrateGuestData(userId: string): Promise<{ migrated: numb
       .upsert(rows, { onConflict: 'user_id,highlight_type,date' })
       .select('id');
 
-    if (!error) migrated += savedItems.length;
+    if (!error) {
+      migrated += savedItems.length;
+      savedMigrated = true;
+    }
   }
 
   const history = await getLocalHistory();
@@ -427,10 +432,14 @@ export async function migrateGuestData(userId: string): Promise<{ migrated: numb
       .from('content_interactions')
       .insert(rows);
 
-    if (!error) migrated += history.length;
+    if (!error) {
+      migrated += history.length;
+      historyMigrated = true;
+    }
   }
 
-  if (migrated > 0) {
+  // Only clear local storage if ALL migrations succeeded
+  if ((savedItems.length === 0 || savedMigrated) && (history.length === 0 || historyMigrated)) {
     await clearLocalStorage();
   }
 

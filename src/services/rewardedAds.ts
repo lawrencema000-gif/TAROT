@@ -162,13 +162,10 @@ class RewardedAdsService {
   private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<void> {
     if (!this.currentUserId) return;
 
-    // Track locally as backup
-    this.incrementLocalDailyCount();
-
     const adUnitId = USE_TEST_ADS ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
 
     try {
-      // Insert unlock record (server-side)
+      // Insert unlock record (server-side FIRST, then increment local count)
       const { error } = await supabase.from('rewarded_ad_unlocks').insert({
         user_id: this.currentUserId,
         feature,
@@ -179,6 +176,9 @@ class RewardedAdsService {
       if (error) {
         console.error('[RewardedAds] Failed to save unlock:', error);
       }
+
+      // Only increment local count AFTER server confirms
+      this.incrementLocalDailyCount();
 
       // Track rewarded ad event via backend
       await adConfigService.trackEvent('rewarded', 'feature_unlock', {

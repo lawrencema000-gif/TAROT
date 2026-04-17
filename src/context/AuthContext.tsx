@@ -194,7 +194,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCorrelationId(null);
   }, [clearOAuthTimeout]);
 
+  const fetchProfileInFlight = useRef<string | null>(null);
+
   const fetchProfile = useCallback(async (userId: string) => {
+    // Deduplicate: skip if already fetching for this user
+    if (fetchProfileInFlight.current === userId) return;
+    fetchProfileInFlight.current = userId;
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -242,6 +248,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
+
+    fetchProfileInFlight.current = null;
   }, []);
 
   const getSessionWithRetry = useCallback(async (retries = 4, delayMs = 400): Promise<Session | null> => {

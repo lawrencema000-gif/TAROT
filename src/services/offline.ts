@@ -37,6 +37,11 @@ async function getCache<T>(key: string): Promise<T | null> {
     if (!stored) return null;
 
     const cached: CachedData<T> = JSON.parse(stored);
+    if (!cached || typeof cached.expiresAt !== 'number') {
+      // Corrupted data — remove and return null
+      await appStorage.remove(key);
+      return null;
+    }
     if (Date.now() > cached.expiresAt) {
       await appStorage.remove(key);
       return null;
@@ -44,6 +49,8 @@ async function getCache<T>(key: string): Promise<T | null> {
 
     return cached.data;
   } catch {
+    // Corrupted JSON — clean up so it doesn't fail on every subsequent read
+    await appStorage.remove(key).catch(() => {});
     return null;
   }
 }
@@ -54,8 +61,13 @@ async function getCacheWithMeta<T>(key: string): Promise<CachedData<T> | null> {
     if (!stored) return null;
 
     const cached: CachedData<T> = JSON.parse(stored);
+    if (!cached || typeof cached.expiresAt !== 'number') {
+      await appStorage.remove(key);
+      return null;
+    }
     return cached;
   } catch {
+    await appStorage.remove(key).catch(() => {});
     return null;
   }
 }

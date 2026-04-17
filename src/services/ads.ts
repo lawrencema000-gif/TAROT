@@ -71,10 +71,11 @@ class AdsService {
       // Fetch ad config from backend (non-blocking — uses env fallbacks if it fails)
       adConfigService.fetchConfig().catch(() => {});
 
-      await AdMob.initialize({
-        testingDevices: [],
-        initializeForTesting: USE_TEST_ADS,
-      });
+      // Timeout: don't let AdMob init hang the app
+      await Promise.race([
+        AdMob.initialize({ testingDevices: [], initializeForTesting: USE_TEST_ADS }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AdMob init timeout')), 10000)),
+      ]);
 
       if (USE_TEST_ADS) {
         console.log('[Ads] Running in TEST mode — using Google test ad units');

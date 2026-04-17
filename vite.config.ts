@@ -18,7 +18,13 @@ export default defineConfig((): UserConfig => {
             if (id.includes('node_modules')) {
               if (id.includes('framer-motion')) return 'vendor-motion';
               if (id.includes('@supabase')) return 'vendor-supabase';
-              if (id.includes('react-router') || id.includes('react-dom')) return 'vendor-react';
+              // React core must include `react` itself, not just react-dom /
+              // react-router. Splitting react into a different chunk causes
+              // hook references (useRef, useState, …) to resolve as undefined
+              // when the vendor chunk loads after vendor-react.
+              if (/[/\\]node_modules[/\\](react|react-dom|react-router|react-router-dom|scheduler)[/\\]/.test(id)) {
+                return 'vendor-react';
+              }
               if (id.includes('lucide-react')) return 'vendor-icons';
               if (id.includes('@capacitor-community/admob') || id.includes('@revenuecat')) return 'vendor-monetization';
               if (id.includes('@sentry')) return 'vendor-sentry';

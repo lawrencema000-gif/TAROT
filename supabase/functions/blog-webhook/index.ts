@@ -90,14 +90,10 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Accept secret from: header, query param, Authorization bearer, or request body
-  const url = new URL(req.url)
-  const bodyObj = (body && typeof body === 'object' && !Array.isArray(body)) ? body as Record<string, unknown> : null
+  // Accept secret from headers only (not query params or body — more secure)
   const providedSecret =
     req.headers.get('x-webhook-secret') ||
-    url.searchParams.get('secret') ||
     req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
-    (bodyObj?.secret as string) ||
     null
 
   if (!webhookSecret || providedSecret !== webhookSecret) {

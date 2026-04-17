@@ -13,6 +13,7 @@ import { Button, Input, toast } from '../components/ui';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
+import { validateEmail, validatePassword } from '../utils/validation';
 import {
   trackOnboardingStepViewed,
   trackOnboardingStepCompleted,
@@ -74,8 +75,14 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   };
 
   const handleEmailSignup = async () => {
-    if (!email.includes('@') || password.length < 6) {
-      toast('Please enter a valid email and password (min 6 characters).', 'error');
+    const emailResult = validateEmail(email);
+    if (!emailResult.valid) {
+      toast(emailResult.error || 'Please enter a valid email.', 'error');
+      return;
+    }
+    const passwordResult = validatePassword(password);
+    if (!passwordResult.valid) {
+      toast(passwordResult.error || 'Invalid password.', 'error');
       return;
     }
 
@@ -243,7 +250,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="Password (min 6 characters)"
+                      placeholder="Password (min 8 chars, letters + numbers)"
                       icon={<Lock className="w-5 h-5" />}
                     />
                     <button
@@ -293,7 +300,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     variant="gold"
                     fullWidth
                     onClick={handleEmailSignup}
-                    disabled={loading || !email || password.length < 6 || !ageConfirmed}
+                    disabled={loading || !email || password.length < 8 || !ageConfirmed}
                     loading={loading}
                     className="min-h-[48px]"
                   >

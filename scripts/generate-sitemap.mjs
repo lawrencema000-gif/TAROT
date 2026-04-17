@@ -4,12 +4,19 @@
  * Called automatically by: npm run build (via postbuild)
  */
 import { createClient } from '@supabase/supabase-js';
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
-const supabaseUrl = 'https://ulzlthhkqjuohzjangcq.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsemx0aGhrcWp1b2h6amFuZ2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTY4NTQsImV4cCI6MjA4MjgzMjg1NH0.pqf2bqHJZ_D1i2-KFEN07xYYvruIYHd2-nv7MI6yeyE';
+// Load env vars from .env file
+try { const env = readFileSync('.env', 'utf8'); env.split('\n').forEach(line => { const [k, ...v] = line.split('='); if (k && !k.startsWith('#')) process.env[k.trim()] = v.join('=').trim(); }); } catch { /* .env may not exist in CI */ }
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 const siteUrl = 'https://tarotlife.app';
+
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — generating static sitemap only');
+}
 
 async function generate() {
   const supabase = createClient(supabaseUrl, supabaseKey);

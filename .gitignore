@@ -26,6 +26,12 @@ dist-ssr
 android/google-oauth-credentials.md
 android/keystore-fingerprints.md
 
+# Google OAuth credential files
+android/app/client_secret_*.json
+android/app/gemini_*.json
+*.keystore
+*.jks
+
 # Local Netlify folder
 .netlify
 .vercel

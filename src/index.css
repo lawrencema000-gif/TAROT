@@ -301,6 +301,18 @@
   }
 }
 
+/* AdSense sets data-ad-status="unfilled" when it can't serve an ad.
+   The empty iframe renders as a light-colored broken-resource box which
+   clashes with the dark theme — hide the container entirely until the
+   ad is filled. Must use display:none rather than visibility:hidden
+   because AdSense injects the iframe with inline visibility:visible
+   which would override a parent's visibility:hidden. display:none
+   can't be overridden from descendants. When AdSense starts filling,
+   the attribute flips and the sidebar renders automatically. */
+.web-ad-sidebar:has(ins[data-ad-status="unfilled"]) {
+  display: none;
+}
+
 /* ── In-article, end-of-article, native grid ad containers ── */
 .in-article-ad,
 .end-of-article-ad {

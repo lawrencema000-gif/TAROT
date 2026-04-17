@@ -451,3 +451,61 @@
   .lp-footer-top { flex-direction: column; align-items: center; text-align: center; }
   .lp-marquee-card { width: 95px; height: 150px; }
 }
+
+
+/* ── Free Reading Demo (landing hero) ──────────────────────────── */
+.free-reading {
+  margin-top: 32px;
+  padding: 24px;
+  background: linear-gradient(140deg, rgba(212,175,55,0.06), rgba(30,30,60,0.4));
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  max-width: 480px;
+}
+.free-reading-prompt { text-align: center; }
+.free-reading-icon { font-size: 28px; color: #d4af37; margin-bottom: 8px; }
+.free-reading-title { font-size: 22px; font-weight: 600; color: #f0e8d8; margin: 0 0 6px; }
+.free-reading-sub { font-size: 14px; color: #a0a0b0; margin: 0 0 18px; }
+.free-reading-btn { padding: 12px 28px; min-height: 46px; }
+.free-reading-picking { text-align: center; }
+.free-reading-cards { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+.free-reading-card-back {
+  width: 90px; height: 140px; border-radius: 12px;
+  background: linear-gradient(160deg, #2a2442, #15132a);
+  border: 1px solid rgba(212,175,55,0.3);
+  cursor: pointer; transition: transform .25s ease, border-color .25s;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(212,175,55,0.45); font-size: 28px;
+  padding: 0;
+}
+.free-reading-card-back:hover { transform: translateY(-8px); border-color: rgba(212,175,55,0.7); }
+.free-reading-card-glyph { pointer-events: none; }
+.free-reading-revealed { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.free-reading-card-face {
+  width: 130px; height: 200px; border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(212,175,55,0.4);
+  flex-shrink: 0;
+  animation: flip-reveal .5s ease-out;
+}
+.free-reading-card-face.reversed { transform: rotate(180deg); }
+.free-reading-card-img { width: 100%; height: 100%; object-fit: cover; }
+.free-reading-card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #d4af37; padding: 12px; text-align: center; font-size: 13px; }
+@keyframes flip-reveal { from { transform: rotateY(180deg); opacity: 0 } to { transform: rotateY(0); opacity: 1 } }
+.free-reading-result { flex: 1; min-width: 200px; }
+.free-reading-orientation { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #d4af37; margin: 0 0 4px; }
+.free-reading-card-name { font-size: 18px; font-weight: 600; color: #f0e8d8; margin: 0 0 10px; }
+.free-reading-keywords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.free-reading-keyword { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: rgba(212,175,55,0.1); color: #d4af37; }
+.free-reading-meaning { font-size: 13px; color: #c0c0c0; line-height: 1.5; margin: 0 0 14px; }
+.free-reading-ctas { display: flex; flex-direction: column; gap: 8px; }
+.free-reading-draw-again { background: none; border: none; color: #a0a0b0; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.free-reading-draw-again:hover { color: #d4af37; }
+@media (max-width: 640px) {
+  .free-reading { margin-left: auto; margin-right: auto; padding: 20px; }
+  .free-reading-card-back { width: 75px; height: 115px; }
+  .free-reading-card-face { width: 110px; height: 170px; margin: 0 auto; }
+  .free-reading-revealed { flex-direction: column; align-items: center; text-align: center; }
+  .free-reading-keywords { justify-content: center; }
+}
+

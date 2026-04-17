@@ -126,8 +126,13 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    // Web: cold visitors land on the marketing LandingPage (social proof,
+    // free demo, FAQ) so ad traffic can evaluate the app before committing.
+    // Onboarding only fires after they click "Get Started" on LandingPage.
+    // Native (Android) keeps the direct-to-onboarding behaviour — the Play
+    // Store listing is the marketing layer there.
     appStorage.get(ONBOARDING_KEY).then((val) => {
-      if (!user && !val) {
+      if (!user && !val && isNative()) {
         setShowOnboarding(true);
       }
       setCheckingOnboarding(false);

@@ -5,6 +5,8 @@ import { Card } from '../components/ui';
 import { useBlogPosts } from '../hooks/useBlogPosts';
 import { setPageMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
+import { NativeGridAd } from '../components/ads/NativeGridAd';
+import { Fragment } from 'react';
 
 export function BlogPage() {
   const [page, setPage] = useState(1);
@@ -44,51 +46,53 @@ export function BlogPage() {
   return (
     <div className="space-y-4 pt-2 pb-8">
       <div className="grid gap-4">
-        {posts.map((post) => (
-          <button
-            key={post.id}
-            onClick={() => navigate(`/blog/${post.slug}`)}
-            className="text-left w-full"
-          >
-            <Card className="overflow-hidden hover:border-gold/30 transition-all duration-300 group">
-              {post.cover_image && (
-                <div className="h-40 overflow-hidden">
-                  <img
-                    src={post.cover_image}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-              <div className="p-4 space-y-2">
-                <h2 className="text-lg font-semibold text-mystic-100 group-hover:text-gold transition-colors line-clamp-2">
-                  {post.title}
-                </h2>
-                {post.excerpt && (
-                  <p className="text-sm text-mystic-400 line-clamp-2">{post.excerpt}</p>
+        {posts.map((post, i) => (
+          <Fragment key={post.id}>
+            <button
+              onClick={() => navigate(`/blog/${post.slug}`)}
+              className="text-left w-full"
+            >
+              <Card className="overflow-hidden hover:border-gold/30 transition-all duration-300 group">
+                {post.cover_image && (
+                  <div className="h-40 overflow-hidden">
+                    <img
+                      src={post.cover_image}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
                 )}
-                <div className="flex items-center gap-3 text-xs text-mystic-500">
-                  {post.published_at && (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(post.published_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
+                <div className="p-4 space-y-2">
+                  <h2 className="text-lg font-semibold text-mystic-100 group-hover:text-gold transition-colors line-clamp-2">
+                    {post.title}
+                  </h2>
+                  {post.excerpt && (
+                    <p className="text-sm text-mystic-400 line-clamp-2">{post.excerpt}</p>
                   )}
-                  {post.tags.length > 0 && (
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      {post.tags.slice(0, 2).join(', ')}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-3 text-xs text-mystic-500">
+                    {post.published_at && (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(post.published_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    )}
+                    {post.tags.length > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        {post.tags.slice(0, 2).join(', ')}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </button>
+              </Card>
+            </button>
+            {i === 2 && <NativeGridAd />}
+          </Fragment>
         ))}
       </div>
 

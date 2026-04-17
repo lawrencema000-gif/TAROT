@@ -300,6 +300,27 @@
   }
 }
 
+/* ── In-article, end-of-article, native grid ad containers ── */
+.in-article-ad,
+.end-of-article-ad {
+  margin: 2rem 0;
+  min-height: 100px; /* reserve space to reduce CLS */
+  display: flex;
+  justify-content: center;
+}
+
+.in-article-ad ins,
+.end-of-article-ad ins {
+  width: 100%;
+  max-width: 728px;
+}
+
+.native-grid-ad {
+  min-height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;

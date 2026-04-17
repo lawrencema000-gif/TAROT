@@ -2,22 +2,15 @@ import { useEffect, useRef } from 'react';
 import { ADSENSE_CLIENT, AD_SLOTS } from './config';
 import { useShouldShowAds } from './useShouldShowAds';
 
-declare global {
-  interface Window {
-    adsbygoogle: unknown[];
-  }
-}
-
 /**
- * Sticky sidebar ad for desktop web only.
- * Shows a 160x600 (Wide Skyscraper) AdSense ad on the right side.
- * Only visible on screens wider than 1400px (see .web-ad-sidebar CSS).
- * Hidden for premium / ad-free users.
+ * End-of-article display ad — responsive unit placed after the main content.
+ * Highest-engagement position (reader has finished the article) with minimal
+ * UX disruption.
  */
-export function WebAdSidebar() {
+export function EndOfArticleAd() {
   const show = useShouldShowAds();
   const pushed = useRef(false);
-  const slot = AD_SLOTS.sidebar;
+  const slot = AD_SLOTS.endOfArticle;
 
   useEffect(() => {
     if (!show || !slot || pushed.current) return;
@@ -32,16 +25,15 @@ export function WebAdSidebar() {
   if (!show || !slot) return null;
 
   return (
-    <div className="web-ad-sidebar">
+    <div className="end-of-article-ad" aria-label="Advertisement">
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', width: '160px', height: '600px' }}
+        style={{ display: 'block' }}
         data-ad-client={ADSENSE_CLIENT}
         data-ad-slot={slot}
-        data-ad-format="vertical"
-        data-full-width-responsive="false"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
       />
-      <p className="web-ad-label">Advertisement</p>
     </div>
   );
 }

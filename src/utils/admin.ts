@@ -2,10 +2,16 @@ import { supabase } from '../lib/supabase';
 
 // Client-side heuristic for immediate UI rendering (NOT authoritative).
 // Real authorization is enforced server-side via RLS + user_roles table.
-const ADMIN_EMAIL = 'lawrence.ma000@gmail.com';
+// Comma-separated list via VITE_ADMIN_EMAILS env var; falls back to empty.
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map((e: string) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export function isAdminEmail(email: string | undefined | null): boolean {
-  return email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  const e = email?.toLowerCase();
+  if (!e) return false;
+  return ADMIN_EMAILS.includes(e);
 }
 
 export function isAdmin(user: { email?: string | null } | null | undefined): boolean {

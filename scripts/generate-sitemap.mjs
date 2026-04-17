@@ -1,5 +1,9 @@
 /**
- * Generate sitemap.xml with all published blog post URLs.
+ * Generate sitemap.xml with all public URLs:
+ *   - Static pages (/, /blog, /horoscope, /tarot-meanings, privacy)
+ *   - 78 tarot card meaning pages (/tarot-meanings/<slug>)
+ *   - Published blog posts from Supabase
+ *
  * Run: node scripts/generate-sitemap.mjs
  * Called automatically by: npm run build (via postbuild)
  */
@@ -18,6 +22,29 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — generating static sitemap only');
 }
 
+// Mirrors cardToSlug() in TarotMeaningsPage.tsx — keep in sync.
+const toSlug = (name) =>
+  name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+const MAJOR_ARCANA = [
+  'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
+  'The Hierophant', 'The Lovers', 'The Chariot', 'Strength', 'The Hermit',
+  'The Wheel of Fortune', 'Justice', 'The Hanged Man', 'Death', 'Temperance',
+  'The Devil', 'The Tower', 'The Star', 'The Moon', 'The Sun',
+  'Judgement', 'The World',
+];
+
+const MINOR_RANKS = [
+  'Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
+  'Eight', 'Nine', 'Ten', 'Page', 'Knight', 'Queen', 'King',
+];
+const MINOR_SUITS = ['Wands', 'Cups', 'Swords', 'Pentacles'];
+const MINOR_ARCANA = MINOR_SUITS.flatMap(suit =>
+  MINOR_RANKS.map(rank => `${rank} of ${suit}`)
+);
+
+const ALL_CARDS = [...MAJOR_ARCANA, ...MINOR_ARCANA];
+
 async function generate() {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -35,12 +62,23 @@ async function generate() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // Static pages
   const urls = [
     { loc: `${siteUrl}/`, changefreq: 'weekly', priority: '1.0', lastmod: today },
     { loc: `${siteUrl}/blog`, changefreq: 'daily', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/tarot-meanings`, changefreq: 'monthly', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/horoscope`, changefreq: 'daily', priority: '0.8', lastmod: today },
     { loc: `${siteUrl}/privacy-policy.html`, changefreq: 'monthly', priority: '0.3' },
   ];
+
+  // 78 tarot card meaning pages
+  for (const name of ALL_CARDS) {
+    urls.push({
+      loc: `${siteUrl}/tarot-meanings/${toSlug(name)}`,
+      changefreq: 'monthly',
+      priority: '0.7',
+      lastmod: today,
+    });
+  }
 
   // Blog post pages
   for (const post of posts || []) {
@@ -53,7 +91,6 @@ async function generate() {
     });
   }
 
-  // Generate XML
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(u => `  <url>
@@ -64,7 +101,6 @@ ${urls.map(u => `  <url>
   </url>`).join('\n')}
 </urlset>`;
 
-  // Write to both public/ (source) and dist/ (built output)
   writeFileSync(resolve('public/sitemap.xml'), xml);
   try {
     writeFileSync(resolve('dist/sitemap.xml'), xml);
@@ -72,7 +108,10 @@ ${urls.map(u => `  <url>
     // dist/ may not exist yet during first run
   }
 
-  console.log(`Sitemap generated with ${urls.length} URLs (${posts?.length || 0} blog posts)`);
+  console.log(
+    `Sitemap generated with ${urls.length} URLs ` +
+    `(${ALL_CARDS.length} tarot cards, ${posts?.length || 0} blog posts)`
+  );
 }
 
 generate();

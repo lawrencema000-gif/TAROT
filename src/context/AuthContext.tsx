@@ -771,9 +771,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const nativeSpan = startSpan('auth.google.nativeSignIn');
 
         try {
-          await GoogleAuth.initialize();
-          // Sign out first to clear cached account — forces fresh account picker
-          try { await GoogleAuth.signOut(); } catch { /* may fail if not signed in — safe to ignore */ }
+          // Initialize and sign out to clear any cached account (forces fresh picker)
+          try {
+            await GoogleAuth.initialize();
+            await GoogleAuth.signOut();
+          } catch {
+            // Re-initialize after signOut failure to ensure clean state
+            await GoogleAuth.initialize();
+          }
           const googleUser = await GoogleAuth.signIn();
 
           logInfo('auth.google.nativeSuccess', 'Native Google sign-in succeeded', {

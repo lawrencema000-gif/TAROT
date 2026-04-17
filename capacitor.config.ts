@@ -43,10 +43,9 @@ const config: CapacitorConfig = {
     },
     GoogleAuth: {
       scopes: ['email', 'profile'],
-      // This must be the Web Application OAuth Client ID from Google Cloud Console
-      // (same one configured in Supabase Auth > Providers > Google)
+      // MUST be the Web Application OAuth Client ID — Android uses this for requestIdToken()
+      // The Android SDK matches the app by package name + SHA-1 automatically
       clientId: '804690093810-kb7q1v06or3dffgk0a0nv6vnr1lnc70o.apps.googleusercontent.com',
-      androidClientId: '804690093810-qvqh4a4u59vkanlsekqe3k210v7pbch9.apps.googleusercontent.com',
       iosClientId: '804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },

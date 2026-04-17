@@ -14,10 +14,12 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { validateEmail, validatePassword } from '../utils/validation';
+import { getAttribution, clearAttribution } from '../utils/attribution';
 import {
   trackOnboardingStepViewed,
   trackOnboardingStepCompleted,
   trackOnboardingComplete,
+  trackSignUp,
 } from '../services/analytics';
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -108,6 +110,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
     }
 
     if (authData.user) {
+      const attr = getAttribution();
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: authData.user.id,
         email,
@@ -119,6 +122,12 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         streak: 0,
         subscribed_to_newsletter: subscribedToNewsletter,
         newsletter_subscribed_at: subscribedToNewsletter ? new Date().toISOString() : null,
+        utm_source: attr?.utm_source,
+        utm_medium: attr?.utm_medium,
+        utm_campaign: attr?.utm_campaign,
+        utm_content: attr?.utm_content,
+        utm_term: attr?.utm_term,
+        first_referrer: attr?.first_referrer,
       });
 
       if (profileError) {
@@ -127,6 +136,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         return;
       }
 
+      clearAttribution();
+      trackSignUp('email');
       trackOnboardingStepCompleted({
         step: 1,
         stepName: 'create_account',

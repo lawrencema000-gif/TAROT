@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema } from '../utils/seo';
+import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -350,6 +351,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <PlayBadge />
           </div>
           <p className="lp-hero-note lp-fade-in" style={{ animationDelay: '1.9s' }}>Free to start · No credit card required</p>
+          <div className="lp-fade-in" style={{ animationDelay: '2.2s' }}>
+            <FreeReadingDemo onSignUp={onGetStarted} />
+          </div>
         </div>
 
         <div className="lp-hero-visual lp-fade-in" style={{ animationDelay: '0.8s' }}>

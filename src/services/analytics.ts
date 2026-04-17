@@ -15,14 +15,34 @@ declare global {
   }
 }
 
-/** Safe no-op when gtag isn't loaded (Capacitor, dev, or blocked). */
+/** Safe no-op when gtag isn't loaded (Capacitor, dev, or blocked).
+ *
+ *  Fires via two channels for maximum reliability:
+ *    1. gtag('event', ...) — standard GA4 API
+ *    2. dataLayer.push({event, ...}) — GTM-native format
+ *  Dual-push ensures GA4 picks up the event even when called inside a
+ *  React event handler's synchronous work (where gtag's internal
+ *  batching can defer and sometimes drop the event).
+ *
+ *  Deferred via setTimeout(0) so it runs after React's synchronous
+ *  render pass finishes — that's what was causing events to reach
+ *  dataLayer but never leave the browser.
+ */
 function gtagEvent(name: string, params: Record<string, unknown> = {}): void {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
-  try {
-    window.gtag('event', name, params);
-  } catch {
-    // Never let a tracking error break the app
-  }
+  if (typeof window === 'undefined') return;
+  setTimeout(() => {
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', name, params);
+      }
+      const dl = window.dataLayer;
+      if (Array.isArray(dl)) {
+        dl.push({ event: name, ...params });
+      }
+    } catch {
+      // Never let a tracking error break the app
+    }
+  }, 0);
 }
 
 export type AnalyticsEvent =

@@ -27,11 +27,26 @@ function pickThreeRandom(): TarotCard[] {
 }
 
 function fireGtag(event: string, params?: Record<string, unknown>) {
-  // Window type is extended in src/services/analytics.ts
-  const w = window as unknown as { gtag?: (...args: unknown[]) => void };
-  if (typeof w.gtag === 'function') {
-    try { w.gtag('event', event, params || {}); } catch { /* ignore */ }
-  }
+  // Deferred + dual-push (gtag + dataLayer) for reliable delivery from
+  // inside React event handlers. See gtagEvent() comment in
+  // src/services/analytics.ts for the why.
+  if (typeof window === 'undefined') return;
+  setTimeout(() => {
+    try {
+      const w = window as unknown as {
+        gtag?: (...args: unknown[]) => void;
+        dataLayer?: unknown[];
+      };
+      if (typeof w.gtag === 'function') {
+        w.gtag('event', event, params || {});
+      }
+      if (Array.isArray(w.dataLayer)) {
+        w.dataLayer.push({ event, ...(params || {}) });
+      }
+    } catch {
+      // ignore — never let tracking break the demo
+    }
+  }, 0);
 }
 
 interface FreeReadingDemoProps {

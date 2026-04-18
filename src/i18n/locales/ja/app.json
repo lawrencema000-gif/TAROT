@@ -25,7 +25,26 @@
       "title": "今日のリチュアルがあなたを待っています。",
       "sub": "カードを一枚引き、ひとことだけ正直な気持ちを書きましょう。"
     },
-    "startTodaysRitual": "今日のリチュアルをはじめる"
+    "startTodaysRitual": "今日のリチュアルをはじめる",
+    "ritualCards": {
+      "todaysEnergy": "今日のエネルギー",
+      "yourPrompt": "あなたへのプロンプト",
+      "reflection": "振り返り",
+      "yourCard": "あなたのカード",
+      "tapToReveal": "タップして開く",
+      "reversed": "逆位置",
+      "upright": "正位置",
+      "majorArcana": "大アルカナ",
+      "love": "恋愛",
+      "work": "仕事",
+      "mood": "気分",
+      "read": "読む",
+      "write": "書く",
+      "twoMin": "2分",
+      "save": "保存",
+      "share": "シェア",
+      "meaning": "意味"
+    }
   },
   "auth": {
     "welcomeBack": "お帰りなさい",

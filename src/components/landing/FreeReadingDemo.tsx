@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { fullDeck } from '../../data/tarotDeck';
 import { getBundledFullPath } from '../../config/bundledImages';
+import { useT } from '../../i18n/useT';
 import type { TarotCard } from '../../types';
 
 /**
@@ -54,6 +55,7 @@ interface FreeReadingDemoProps {
 }
 
 export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
+  const { t } = useT('landing');
   const [stage, setStage] = useState<Stage>('prompt');
   const [cards, setCards] = useState<TarotCard[]>([]);
   const [chosen, setChosen] = useState<TarotCard | null>(null);
@@ -91,17 +93,17 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
       {stage === 'prompt' && (
         <div className="free-reading-prompt">
           <div className="free-reading-icon">✦</div>
-          <h3 className="free-reading-title">Try a free reading</h3>
-          <p className="free-reading-sub">Ask a question, then draw a card. No signup.</p>
+          <h3 className="free-reading-title">{t('demo.title')}</h3>
+          <p className="free-reading-sub">{t('demo.sub')}</p>
           <button className="lp-btn-gold free-reading-btn" onClick={startPicking}>
-            Draw Your Card
+            {t('demo.drawBtn')}
           </button>
         </div>
       )}
 
       {stage === 'picking' && (
         <div className="free-reading-picking">
-          <p className="free-reading-sub">Pick the card that calls to you.</p>
+          <p className="free-reading-sub">{t('demo.pickCalling')}</p>
           <div className="free-reading-cards">
             {cards.map((c, i) => (
               <button
@@ -133,7 +135,7 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
           </div>
           <div className="free-reading-result">
             <p className="free-reading-orientation">
-              {reversed ? 'Reversed' : 'Upright'}
+              {reversed ? t('demo.reversed') : t('demo.upright')}
             </p>
             <h4 className="free-reading-card-name">{chosen.name}</h4>
             <div className="free-reading-keywords">
@@ -146,10 +148,10 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
             </p>
             <div className="free-reading-ctas">
               <button className="lp-btn-gold" onClick={handleSignUp}>
-                Get your full reading →
+                {t('demo.fullCta')}
               </button>
               <button className="free-reading-draw-again" onClick={reset}>
-                Draw another card
+                {t('demo.drawAnother')}
               </button>
             </div>
           </div>

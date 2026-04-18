@@ -25,7 +25,26 @@
       "title": "今天的仪式已经准备好。",
       "sub": "抽一张牌,再写下一句真诚的话。"
     },
-    "startTodaysRitual": "开始今日仪式"
+    "startTodaysRitual": "开始今日仪式",
+    "ritualCards": {
+      "todaysEnergy": "今日能量",
+      "yourPrompt": "你的提示语",
+      "reflection": "反思",
+      "yourCard": "你的牌",
+      "tapToReveal": "点击翻开",
+      "reversed": "逆位",
+      "upright": "正位",
+      "majorArcana": "大阿卡纳",
+      "love": "爱情",
+      "work": "工作",
+      "mood": "心情",
+      "read": "阅读",
+      "write": "书写",
+      "twoMin": "2 分钟",
+      "save": "收藏",
+      "share": "分享",
+      "meaning": "牌意"
+    }
   },
   "auth": {
     "welcomeBack": "欢迎回来",

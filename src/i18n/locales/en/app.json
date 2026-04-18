@@ -25,7 +25,26 @@
       "title": "Your ritual is ready.",
       "sub": "Pull one card, then write one honest sentence."
     },
-    "startTodaysRitual": "Start Today's Ritual"
+    "startTodaysRitual": "Start Today's Ritual",
+    "ritualCards": {
+      "todaysEnergy": "Today's Energy",
+      "yourPrompt": "Your Prompt",
+      "reflection": "Reflection",
+      "yourCard": "Your Card",
+      "tapToReveal": "Tap to reveal",
+      "reversed": "Reversed",
+      "upright": "Upright",
+      "majorArcana": "Major Arcana",
+      "love": "Love",
+      "work": "Work",
+      "mood": "Mood",
+      "read": "Read",
+      "write": "Write",
+      "twoMin": "2 min",
+      "save": "Save",
+      "share": "Share",
+      "meaning": "Meaning"
+    }
   },
   "auth": {
     "welcomeBack": "Welcome Back",

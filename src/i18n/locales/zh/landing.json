@@ -118,5 +118,15 @@
   },
   "meta": {
     "title": "每日塔罗、星座运势与占星日记"
+  },
+  "demo": {
+    "title": "免费试一次",
+    "sub": "心里想一个问题,抽一张牌。无需注册。",
+    "drawBtn": "抽取你的牌",
+    "pickCalling": "选择召唤你的那张牌。",
+    "reversed": "逆位",
+    "upright": "正位",
+    "fullCta": "获取完整牌阵 →",
+    "drawAnother": "再抽一张"
   }
 }

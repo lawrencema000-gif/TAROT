@@ -25,7 +25,26 @@
       "title": "오늘의 의식이 준비됐어요.",
       "sub": "카드 한 장을 뽑고, 솔직한 한 문장을 적어보세요."
     },
-    "startTodaysRitual": "오늘의 의식 시작하기"
+    "startTodaysRitual": "오늘의 의식 시작하기",
+    "ritualCards": {
+      "todaysEnergy": "오늘의 에너지",
+      "yourPrompt": "당신을 위한 프롬프트",
+      "reflection": "성찰",
+      "yourCard": "당신의 카드",
+      "tapToReveal": "눌러서 열기",
+      "reversed": "역방향",
+      "upright": "정방향",
+      "majorArcana": "메이저 아르카나",
+      "love": "연애",
+      "work": "일",
+      "mood": "기분",
+      "read": "읽기",
+      "write": "쓰기",
+      "twoMin": "2분",
+      "save": "저장",
+      "share": "공유",
+      "meaning": "의미"
+    }
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",

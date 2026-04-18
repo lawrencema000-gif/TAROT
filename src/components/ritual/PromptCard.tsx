@@ -1,5 +1,6 @@
 import { PenLine, Clock } from 'lucide-react';
 import { Button } from '../ui';
+import { useT } from '../../i18n/useT';
 
 interface PromptCardProps {
   prompt: string;
@@ -7,6 +8,7 @@ interface PromptCardProps {
 }
 
 export function PromptCard({ prompt, onWrite }: PromptCardProps) {
+  const { t } = useT('app');
   return (
     <div className="bg-gradient-to-br from-mystic-800/80 to-mystic-900/80 backdrop-blur-sm rounded-2xl border border-mystic-700/50 p-5">
       <div className="flex items-start gap-3 mb-4">
@@ -14,8 +16,8 @@ export function PromptCard({ prompt, onWrite }: PromptCardProps) {
           <PenLine className="w-5 h-5 text-gold" />
         </div>
         <div>
-          <p className="text-xs text-mystic-500 uppercase tracking-wider">Your Prompt</p>
-          <h3 className="font-display text-lg text-mystic-100">Reflection</h3>
+          <p className="text-xs text-mystic-500 uppercase tracking-wider">{t('home.ritualCards.yourPrompt')}</p>
+          <h3 className="font-display text-lg text-mystic-100">{t('home.ritualCards.reflection')}</h3>
         </div>
       </div>
 
@@ -26,10 +28,10 @@ export function PromptCard({ prompt, onWrite }: PromptCardProps) {
       <div className="flex items-center justify-between">
         <Button variant="gold" onClick={onWrite} className="min-h-[44px]">
           <PenLine className="w-4 h-4" />
-          Write
+          {t('home.ritualCards.write')}
           <span className="flex items-center gap-1 text-xs opacity-80 ml-1">
             <Clock className="w-3 h-3" />
-            2 min
+            {t('home.ritualCards.twoMin')}
           </span>
         </Button>
       </div>

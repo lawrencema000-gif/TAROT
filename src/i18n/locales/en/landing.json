@@ -118,5 +118,15 @@
   },
   "meta": {
     "title": "Daily Tarot Readings, Horoscope & Astrology Journal"
+  },
+  "demo": {
+    "title": "Try a free reading",
+    "sub": "Ask a question, then draw a card. No signup.",
+    "drawBtn": "Draw Your Card",
+    "pickCalling": "Pick the card that calls to you.",
+    "reversed": "Reversed",
+    "upright": "Upright",
+    "fullCta": "Get your full reading →",
+    "drawAnother": "Draw another card"
   }
 }

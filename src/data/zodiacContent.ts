@@ -1,4 +1,5 @@
 import type { ZodiacSign } from '../types';
+import { localizeZodiacProfile } from '../i18n/localizeZodiac';
 
 export interface TarotArchetype {
   card: string;
@@ -463,7 +464,7 @@ export const miniRitualTemplates = [
 ];
 
 export function getZodiacProfile(sign: ZodiacSign): ZodiacProfile {
-  return zodiacProfiles[sign];
+  return localizeZodiacProfile(sign, zodiacProfiles[sign]);
 }
 
 export function getElementTheme(element: 'fire' | 'earth' | 'air' | 'water') {
@@ -475,5 +476,5 @@ export function getDayTheme(date: Date) {
 }
 
 export function getTarotArchetype(sign: ZodiacSign): TarotArchetype {
-  return zodiacProfiles[sign].tarotArchetype;
+  return localizeZodiacProfile(sign, zodiacProfiles[sign]).tarotArchetype;
 }

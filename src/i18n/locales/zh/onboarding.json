@@ -1,0 +1,41 @@
+{
+  "language": {
+    "title": "选择语言",
+    "subtitle": "稍后可在设置中更改。"
+  },
+  "welcome": {
+    "heading": "你的每日仪式从这里开始。",
+    "subheading": "塔罗、占星和人格洞察,精致融合为一。",
+    "cta": "开始使用",
+    "alreadyHaveAccount": "我已有账号"
+  },
+  "createAccount": {
+    "heading": "创建账号",
+    "subheading": "在所有设备间同步你的牌阵与日记",
+    "googleCta": "使用 Google 继续",
+    "divider": "或使用邮箱注册",
+    "emailPlaceholder": "邮箱地址",
+    "passwordPlaceholder": "密码(至少 8 位,含字母与数字)",
+    "newsletter": "订阅通讯与促销信息,获取星象洞察、贴士与专属优惠。",
+    "ageConfirm": "我已年满 13 岁,并同意服务条款。",
+    "submit": "创建账号",
+    "switchToSignIn": "已有账号?立即登录",
+    "back": "返回"
+  },
+  "toast": {
+    "invalidEmail": "请输入有效的邮箱地址。",
+    "invalidPassword": "密码无效。",
+    "userExists": "请尝试直接登录。",
+    "profileSaveFailed": "保存资料失败,请稍后重试。",
+    "accountCreated": "账号已创建!让我们开始个性化吧。"
+  },
+  "signIn": {
+    "heading": "欢迎回来",
+    "subheading": "从上次的地方继续",
+    "googleCta": "使用 Google 登录",
+    "divider": "或使用邮箱登录",
+    "submit": "登录",
+    "forgotPassword": "忘记密码?",
+    "switchToSignUp": "还没有账号?立即注册"
+  }
+}

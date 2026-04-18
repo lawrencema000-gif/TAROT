@@ -1,0 +1,41 @@
+{
+  "language": {
+    "title": "言語を選択",
+    "subtitle": "後で設定からいつでも変更できます。"
+  },
+  "welcome": {
+    "heading": "毎日のリチュアル、はじまる。",
+    "subheading": "タロット、占星術、性格診断 — すべてを美しく、ひとつに。",
+    "cta": "はじめる",
+    "alreadyHaveAccount": "すでにアカウントをお持ちの方"
+  },
+  "createAccount": {
+    "heading": "アカウントを作成",
+    "subheading": "リーディングと日記をすべてのデバイスで同期",
+    "googleCta": "Google で続ける",
+    "divider": "またはメールで登録",
+    "emailPlaceholder": "メールアドレス",
+    "passwordPlaceholder": "パスワード(8文字以上、英字と数字)",
+    "newsletter": "ニュースレターとプロモーションを受け取る。占星術のヒントや限定オファーをお届けします。",
+    "ageConfirm": "13歳以上であることを確認し、利用規約に同意します。",
+    "submit": "アカウントを作成",
+    "switchToSignIn": "すでにアカウントをお持ちですか? ログイン",
+    "back": "戻る"
+  },
+  "toast": {
+    "invalidEmail": "有効なメールアドレスを入力してください。",
+    "invalidPassword": "パスワードが正しくありません。",
+    "userExists": "ログインをお試しください。",
+    "profileSaveFailed": "プロフィールの保存に失敗しました。もう一度お試しください。",
+    "accountCreated": "アカウントを作成しました!さっそくカスタマイズしましょう。"
+  },
+  "signIn": {
+    "heading": "お帰りなさい",
+    "subheading": "続きからはじめましょう",
+    "googleCta": "Google でログイン",
+    "divider": "またはメールでログイン",
+    "submit": "ログイン",
+    "forgotPassword": "パスワードをお忘れですか?",
+    "switchToSignUp": "アカウントをお持ちでないですか? 新規登録"
+  }
+}

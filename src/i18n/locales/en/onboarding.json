@@ -1,0 +1,41 @@
+{
+  "language": {
+    "title": "Choose your language",
+    "subtitle": "You can change this later in Settings."
+  },
+  "welcome": {
+    "heading": "Your daily ritual starts here.",
+    "subheading": "Tarot, astrology, and personality insights — beautifully combined.",
+    "cta": "Get Started",
+    "alreadyHaveAccount": "I already have an account"
+  },
+  "createAccount": {
+    "heading": "Create your account",
+    "subheading": "Save readings & journal entries across devices",
+    "googleCta": "Continue with Google",
+    "divider": "or sign up with email",
+    "emailPlaceholder": "Email address",
+    "passwordPlaceholder": "Password (min 8 chars, letters + numbers)",
+    "newsletter": "Subscribe to newsletters and promotions. Get cosmic insights, tips, and exclusive offers.",
+    "ageConfirm": "I confirm I am at least 13 years old and agree to the Terms of Service.",
+    "submit": "Create Account",
+    "switchToSignIn": "Already have an account? Sign in",
+    "back": "Back"
+  },
+  "toast": {
+    "invalidEmail": "Please enter a valid email.",
+    "invalidPassword": "Invalid password.",
+    "userExists": "Try signing in instead.",
+    "profileSaveFailed": "Failed to save profile. Please try again.",
+    "accountCreated": "Account created! Let's personalize your experience."
+  },
+  "signIn": {
+    "heading": "Welcome back",
+    "subheading": "Pick up where you left off",
+    "googleCta": "Continue with Google",
+    "divider": "or sign in with email",
+    "submit": "Sign In",
+    "forgotPassword": "Forgot password?",
+    "switchToSignUp": "Don't have an account? Sign up"
+  }
+}

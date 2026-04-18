@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "Arcana",
-    "tagline": "Know yourself. One ritual a day."
+    "tagline": "Know yourself. One ritual a day.",
+    "shortTagline": "Your daily ritual."
   },
   "nav": {
     "home": "Home",
@@ -13,37 +14,105 @@
     "blog": "Blog",
     "cardMeanings": "Card Meanings",
     "signIn": "Sign In",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "settings": "Settings",
+    "search": "Search",
+    "saved": "Saved",
+    "back": "Back",
+    "backToArcana": "← Back to Arcana",
+    "backToNews": "Back to News"
   },
   "actions": {
     "continue": "Continue",
+    "next": "Next",
     "back": "Back",
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
     "confirm": "Confirm",
+    "close": "Close",
+    "done": "Done",
+    "skip": "Skip",
+    "submit": "Submit",
+    "retry": "Try again",
     "getStarted": "Get Started",
+    "getStartedFree": "Get Started Free",
     "tryFree": "Try Free",
-    "learnMore": "Learn more"
+    "learnMore": "Learn more",
+    "viewAll": "View all",
+    "readMore": "Read more",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "upgrade": "Upgrade",
+    "restore": "Restore purchases",
+    "manage": "Manage subscription"
   },
   "labels": {
     "email": "Email",
     "password": "Password",
     "displayName": "Display name",
     "language": "Language",
+    "birthDate": "Birth date",
+    "birthTime": "Birth time",
+    "birthPlace": "Birth place",
+    "timezone": "Time zone",
     "loading": "Loading…",
-    "today": "Today"
+    "processing": "Processing…",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "optional": "Optional",
+    "required": "Required",
+    "searchPlaceholder": "Search…",
+    "yes": "Yes",
+    "no": "No",
+    "maybe": "Maybe"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "network": "Network error. Check your connection.",
     "unauthorized": "Please sign in to continue.",
-    "notFound": "Not found."
+    "forbidden": "You don't have permission for that.",
+    "notFound": "Not found.",
+    "invalidEmail": "Please enter a valid email address.",
+    "emailTooLong": "Email address is too long.",
+    "emailRequired": "Email is required.",
+    "passwordRequired": "Password is required.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordTooLong": "Password is too long.",
+    "passwordNeedsLetter": "Password must contain letters and numbers.",
+    "nameRequired": "Display name is required.",
+    "nameTooShort": "Name must be at least 2 characters.",
+    "nameTooLong": "Name must be less than 50 characters.",
+    "nameInvalidChars": "Name contains invalid characters.",
+    "birthDateRequired": "Birth date is required.",
+    "birthDateInvalid": "Please enter a valid date.",
+    "birthDateFuture": "Birth date cannot be in the future.",
+    "minAge": "You must be at least 13 years old.",
+    "tooManyRequests": "Too many requests. Please wait a moment.",
+    "saveFailed": "Failed to save. Please try again."
+  },
+  "toast": {
+    "savedSuccess": "Saved.",
+    "deletedSuccess": "Deleted.",
+    "copiedSuccess": "Copied to clipboard.",
+    "welcomeBack": "Welcome back!",
+    "signedOut": "Signed out.",
+    "offline": "You're offline. Some features are unavailable.",
+    "reconnected": "Back online.",
+    "updateAvailable": "A new version is available.",
+    "languageChanged": "Language changed."
   },
   "languages": {
     "en": "English",
     "ja": "日本語",
     "ko": "한국어",
     "zh": "简体中文"
+  },
+  "time": {
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "night": "Night"
   }
 }

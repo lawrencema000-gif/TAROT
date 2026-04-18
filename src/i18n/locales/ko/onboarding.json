@@ -1,0 +1,41 @@
+{
+  "language": {
+    "title": "언어 선택",
+    "subtitle": "설정에서 언제든지 변경할 수 있어요."
+  },
+  "welcome": {
+    "heading": "당신의 데일리 의식이 시작됩니다.",
+    "subheading": "타로, 점성술, 성격 통찰이 하나로 아름답게 어우러집니다.",
+    "cta": "시작하기",
+    "alreadyHaveAccount": "이미 계정이 있어요"
+  },
+  "createAccount": {
+    "heading": "계정 만들기",
+    "subheading": "리딩과 저널을 모든 기기에 저장하세요",
+    "googleCta": "Google로 계속",
+    "divider": "또는 이메일로 가입",
+    "emailPlaceholder": "이메일 주소",
+    "passwordPlaceholder": "비밀번호 (8자 이상, 영문+숫자)",
+    "newsletter": "뉴스레터와 프로모션을 구독합니다. 우주적 통찰, 팁, 특별 혜택을 받아보세요.",
+    "ageConfirm": "저는 만 13세 이상이며 서비스 약관에 동의합니다.",
+    "submit": "계정 만들기",
+    "switchToSignIn": "이미 계정이 있나요? 로그인",
+    "back": "뒤로"
+  },
+  "toast": {
+    "invalidEmail": "유효한 이메일을 입력하세요.",
+    "invalidPassword": "비밀번호가 올바르지 않습니다.",
+    "userExists": "대신 로그인해 보세요.",
+    "profileSaveFailed": "프로필 저장에 실패했습니다. 다시 시도해 주세요.",
+    "accountCreated": "계정이 생성되었습니다! 맞춤 설정을 시작해 볼까요."
+  },
+  "signIn": {
+    "heading": "다시 오신 것을 환영합니다",
+    "subheading": "이어서 시작해 보세요",
+    "googleCta": "Google로 로그인",
+    "divider": "또는 이메일로 로그인",
+    "submit": "로그인",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "switchToSignUp": "계정이 없으신가요? 가입하기"
+  }
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
+import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
 
 interface LandingPageProps {
@@ -335,6 +336,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <a href="#features" className="lp-nav-link">{t('nav.features')}</a>
             <a href="#zodiac" className="lp-nav-link">{t('nav.zodiac')}</a>
             <a href="#faq" className="lp-nav-link">{t('nav.faq')}</a>
+            <LanguageDropdown />
             <button onClick={onSignIn} className="lp-nav-btn">{t('common:nav.signIn')}</button>
           </div>
         </div>

@@ -222,8 +222,27 @@ export function normalizeSupabaseError(error: unknown): NormalizedError {
   };
 }
 
+/**
+ * Return a user-facing, localized error message.
+ * Looks up common:errors.auth.<code> in the active i18n locale.
+ * Falls back to the English message if the key isn't present.
+ */
 export function getAuthErrorMessage(error: Error | string): string {
   const normalized = normalizeSupabaseError(error);
+  try {
+    // Dynamic import via require-like access to avoid circular graph at module load.
+    // react-i18next's singleton exposes .t() with locale-aware lookup + fallback.
+    const i18n = (globalThis as unknown as {
+      __arcanaI18n?: { t: (key: string, opts?: Record<string, unknown>) => string };
+    }).__arcanaI18n;
+    if (i18n) {
+      const key = `common:errors.auth.${normalized.code}`;
+      const translated = i18n.t(key, { defaultValue: '' });
+      if (translated) return translated;
+    }
+  } catch {
+    // swallow — fall back to English
+  }
   return normalized.message;
 }
 

@@ -3,61 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { fullDeck } from '../data/tarotDeck';
 import { getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
+import { useT } from '../i18n/useT';
 import type { TarotCard } from '../types';
 
 type Filter = 'all' | 'major' | 'wands' | 'cups' | 'swords' | 'pentacles';
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all', label: 'All Cards' },
-  { id: 'major', label: 'Major Arcana' },
-  { id: 'wands', label: 'Wands' },
-  { id: 'cups', label: 'Cups' },
-  { id: 'swords', label: 'Swords' },
-  { id: 'pentacles', label: 'Pentacles' },
+const FILTERS: { id: Filter; labelKey: string }[] = [
+  { id: 'all', labelKey: 'tarot.allCards' },
+  { id: 'major', labelKey: 'tarot.majorArcana' },
+  { id: 'wands', labelKey: 'tarot.wands' },
+  { id: 'cups', labelKey: 'tarot.cups' },
+  { id: 'swords', labelKey: 'tarot.swords' },
+  { id: 'pentacles', labelKey: 'tarot.pentacles' },
 ];
-
-const SUIT_INTROS: Record<string, { title: string; subtitle: string; desc: string }> = {
-  major: {
-    title: 'Major Arcana',
-    subtitle: "The Fool's Journey",
-    desc: "The 22 Major Arcana cards represent life's major themes, spiritual lessons, and turning points. From The Fool's innocent first step to The World's triumphant completion, these cards tell the story of the soul's evolution.",
-  },
-  wands: {
-    title: 'Suit of Wands',
-    subtitle: 'Fire · Passion · Creation',
-    desc: 'Wands represent passion, creativity, ambition, and energy. They speak to what drives you — your goals, desires, and the spark that sets everything in motion.',
-  },
-  cups: {
-    title: 'Suit of Cups',
-    subtitle: 'Water · Emotion · Intuition',
-    desc: 'Cups represent emotions, relationships, intuition, and the inner world. They reflect how you feel, who you love, and the depths of your emotional landscape.',
-  },
-  swords: {
-    title: 'Suit of Swords',
-    subtitle: 'Air · Intellect · Truth',
-    desc: 'Swords represent thought, communication, conflict, and truth. They cut through illusion to reveal what is — sometimes painfully, always honestly.',
-  },
-  pentacles: {
-    title: 'Suit of Pentacles',
-    subtitle: 'Earth · Material · Growth',
-    desc: 'Pentacles represent money, career, health, and the physical world. They ground the spiritual in the practical — what you build, earn, and nurture.',
-  },
-};
 
 function cardToSlug(card: TarotCard): string {
   return card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
 export function TarotMeaningsPage() {
+  const { t } = useT('app');
   const [filter, setFilter] = useState<Filter>('all');
   const navigate = useNavigate();
 
   useEffect(() => {
-    setPageMeta(
-      'Tarot Card Meanings — All 78 Cards Explained',
-      'Explore the meaning of all 78 tarot cards. Upright and reversed meanings, love and career interpretations, keywords, and reflection prompts for every card.'
-    );
-  }, []);
+    setPageMeta(t('tarot.pageTitle'), t('tarot.pageDesc'));
+  }, [t]);
 
   const filteredCards = useMemo(() => {
     if (filter === 'all') return fullDeck;
@@ -65,18 +36,15 @@ export function TarotMeaningsPage() {
     return fullDeck.filter(c => c.suit === filter);
   }, [filter]);
 
-  const activeIntro = filter !== 'all' ? SUIT_INTROS[filter] : null;
+  const activeSuitKey = filter !== 'all' ? filter : null;
 
   return (
     <div className="tm-page">
       {/* Hero */}
       <div className="tm-hero">
-        <div className="tm-hero-badge">78 Cards · Full Meanings</div>
-        <h1 className="tm-hero-title">Tarot Card Meanings</h1>
-        <p className="tm-hero-sub">
-          A complete guide to every card in the tarot deck — upright and reversed meanings,
-          love and career interpretations, and reflection prompts.
-        </p>
+        <div className="tm-hero-badge">{t('tarot.heroBadge')}</div>
+        <h1 className="tm-hero-title">{t('tarot.title')}</h1>
+        <p className="tm-hero-sub">{t('tarot.heroSub')}</p>
       </div>
 
       {/* Filters */}
@@ -87,18 +55,18 @@ export function TarotMeaningsPage() {
             className={`tm-filter-btn ${filter === f.id ? 'active' : ''}`}
             onClick={() => setFilter(f.id)}
           >
-            {f.label}
+            {t(f.labelKey)}
           </button>
         ))}
       </div>
 
       {/* Section intro */}
-      {activeIntro && (
+      {activeSuitKey && (
         <div className="tm-section-intro">
-          <h2 className="tm-section-title">{activeIntro.title}</h2>
-          <p className="tm-section-subtitle">{activeIntro.subtitle}</p>
+          <h2 className="tm-section-title">{t(`tarot.suits.${activeSuitKey}.title`)}</h2>
+          <p className="tm-section-subtitle">{t(`tarot.suits.${activeSuitKey}.subtitle`)}</p>
           <div className="tm-section-divider" />
-          <p className="tm-section-desc">{activeIntro.desc}</p>
+          <p className="tm-section-desc">{t(`tarot.suits.${activeSuitKey}.desc`)}</p>
         </div>
       )}
 
@@ -132,12 +100,8 @@ export function TarotMeaningsPage() {
 
       {/* Bottom CTA */}
       <div className="tm-bottom-cta">
-        <p className="tm-bottom-text">
-          Ready to put these meanings into practice?
-        </p>
-        <a href="/" className="tm-bottom-btn">
-          Try a Free Reading
-        </a>
+        <p className="tm-bottom-text">{t('tarot.bottomText')}</p>
+        <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
       </div>
     </div>
   );

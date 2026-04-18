@@ -30,13 +30,23 @@ import enCommon from './locales/en/common.json';
 import jaCommon from './locales/ja/common.json';
 import koCommon from './locales/ko/common.json';
 import zhCommon from './locales/zh/common.json';
+import enOnboarding from './locales/en/onboarding.json';
+import jaOnboarding from './locales/ja/onboarding.json';
+import koOnboarding from './locales/ko/onboarding.json';
+import zhOnboarding from './locales/zh/onboarding.json';
+import enLanding from './locales/en/landing.json';
+import jaLanding from './locales/ja/landing.json';
+import koLanding from './locales/ko/landing.json';
+import zhLanding from './locales/zh/landing.json';
+import enApp from './locales/en/app.json';
+import jaApp from './locales/ja/app.json';
+import koApp from './locales/ko/app.json';
+import zhApp from './locales/zh/app.json';
 
 export const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 const LAZY_NAMESPACES = [
-  'onboarding',
-  'landing',
   'tarot',
   'meanings',
   'horoscope',
@@ -74,10 +84,10 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { common: enCommon },
-      ja: { common: jaCommon },
-      ko: { common: koCommon },
-      zh: { common: zhCommon },
+      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp },
+      ja: { common: jaCommon, onboarding: jaOnboarding, landing: jaLanding, app: jaApp },
+      ko: { common: koCommon, onboarding: koOnboarding, landing: koLanding, app: koApp },
+      zh: { common: zhCommon, onboarding: zhOnboarding, landing: zhLanding, app: zhApp },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LOCALES as unknown as string[],
@@ -122,6 +132,12 @@ export function getLocale(): SupportedLocale {
   const current = normalizeLocale(i18n.language);
   return current ?? 'en';
 }
+
+// Expose a minimal i18n reference on globalThis so non-React modules
+// (e.g. src/utils/authErrors.ts) can translate without import cycles.
+(globalThis as unknown as {
+  __arcanaI18n?: { t: (key: string, opts?: Record<string, unknown>) => string };
+}).__arcanaI18n = i18n as unknown as { t: (key: string, opts?: Record<string, unknown>) => string };
 
 export { LAZY_NAMESPACES };
 export default i18n;

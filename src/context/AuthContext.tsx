@@ -223,6 +223,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const profile = mapDbToProfile(data as DbProfile);
       setProfile(profile);
 
+      // Sync locale between profile and client i18n state.
+      // Server profile wins if it's set — otherwise push the locale the user
+      // picked while anonymous (from localStorage) up to their profile.
+      try {
+        const { getLocale, setLocale, normalizeLocale } = await import('../i18n/config');
+        const profileLocale = normalizeLocale(profile.locale ?? null);
+        const clientLocale = getLocale();
+        if (profileLocale && profileLocale !== clientLocale) {
+          await setLocale(profileLocale);
+        } else if (!profileLocale && clientLocale !== 'en') {
+          await supabase.from('profiles').update({ locale: clientLocale }).eq('id', userId);
+        }
+      } catch (e) {
+        console.warn('[Auth] Locale sync failed:', e);
+      }
+
       // Update streak on app open
       const today = new Date().toISOString().split('T')[0];
       const lastDate = profile.lastRitualDate;

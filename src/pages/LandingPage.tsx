@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
+import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
 
 interface LandingPageProps {
@@ -43,23 +44,8 @@ const HERO_ORBIT = [
 
 const EL_COLORS: Record<string, string> = { Fire: '#e85d3a', Earth: '#5d9e5a', Air: '#5b9dd9', Water: '#7b68d4' };
 
-const FEATURES = [
-  { icon: '✦', title: 'Tarot Readings', desc: 'Full 78-card deck with 6 spread types. Celtic Cross, Relationship, Career, Shadow Work — choose your focus and pull your cards.', size: 'large' },
-  { icon: '☉', title: 'Daily Horoscope', desc: 'Personalized forecasts with energy scores, love and career insights, planetary transits, and daily affirmations.', size: 'small' },
-  { icon: '✎', title: 'Reflective Journal', desc: 'Track mood with 10 emoji moods, tag entries, and link readings to journal entries over time.', size: 'small' },
-  { icon: '◈', title: 'Personality Quizzes', desc: 'MBTI, Enneagram, Big Five, Love Language, Attachment Style — six assessments that shape your experience.', size: 'large' },
-  { icon: '↑', title: 'Streaks & XP', desc: 'Earn XP, level up through Seeker Ranks, and unlock achievements as you build your daily habit.', size: 'small' },
-  { icon: '☽', title: 'Birth Chart', desc: 'Complete natal chart with planetary placements, aspects, and personalized interpretations.', size: 'small' },
-];
-
-const FAQ = [
-  { q: 'Is Arcana free to use?', a: 'Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads.' },
-  { q: 'How accurate are the tarot readings?', a: 'Arcana uses a full 78-card tarot deck with detailed traditional meanings for every card — upright and reversed. Readings are designed for self-reflection and personal insight.' },
-  { q: 'What personality quizzes are available?', a: 'Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check.' },
-  { q: 'Is my journal private?', a: 'Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock entries with a password.' },
-  { q: 'Is there a premium version?', a: 'Yes! Arcana is completely free to use. When you\'re ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding.' },
-  { q: 'Does it work on the web?', a: 'Yes! Use Arcana right here on the web, or download the Android app for offline support and push notifications.' },
-];
+// Features and FAQ data moved to src/i18n/locales/<lang>/landing.json
+// and pulled in via FEATURES_I18N / FAQ_KEYS defined inside LandingPage().
 
 // ─── Hooks ─────────────────────────────────────────────────────
 function useReveal(t = 0.12) {
@@ -295,8 +281,28 @@ function PlayBadge() {
 // MAIN
 // ═══════════════════════════════════════════════════════════════
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
-  const { t } = useT();
+  const { t } = useT(['landing', 'common']);
   const [navSolid, setNavSolid] = useState(false);
+
+  // Feature grid items — i18n-aware, mapped to the landing namespace.
+  const FEATURES_I18N = [
+    { icon: '✦', key: 'tarot', size: 'large' },
+    { icon: '☉', key: 'horoscope', size: 'small' },
+    { icon: '✎', key: 'journal', size: 'small' },
+    { icon: '◈', key: 'quizzes', size: 'large' },
+    { icon: '↑', key: 'streaks', size: 'small' },
+    { icon: '☽', key: 'birthChart', size: 'small' },
+  ] as const;
+
+  // Ritual steps — same pattern.
+  const RITUAL_STEPS_I18N = [
+    { n: '01', icon: '☉', key: 'horoscope' },
+    { n: '02', icon: '🂠', key: 'card' },
+    { n: '03', icon: '✎', key: 'journal' },
+  ] as const;
+
+  // FAQ items referenced by the i18n keys.
+  const FAQ_KEYS = ['free', 'accuracy', 'quizzes', 'privacy', 'premium', 'web'] as const;
 
   const onScroll = useCallback(() => { setNavSolid(window.scrollY > 50); }, []);
   useEffect(() => {
@@ -305,10 +311,14 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   }, [onScroll]);
 
   useEffect(() => {
-    setPageMeta('Daily Tarot Readings, Horoscope & Astrology Journal');
+    setPageMeta(t('meta.title'));
     setWebsiteSchema();
-    setFaqSchema(FAQ);
-  }, []);
+    setFaqSchema(FAQ_KEYS.map(k => ({
+      q: t(`faq.items.${k}.q`),
+      a: t(`faq.items.${k}.a`),
+    })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t]);
 
   return (
     <div className="lp-root">
@@ -322,11 +332,12 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         <div className="lp-nav-in">
           <div className="lp-nav-brand"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
           <div className="lp-nav-right">
-            <a href="/tarot-meanings" className="lp-nav-link">Card Meanings</a>
-            <a href="#features" className="lp-nav-link">Features</a>
-            <a href="#zodiac" className="lp-nav-link">Zodiac</a>
-            <a href="#faq" className="lp-nav-link">FAQ</a>
-            <button onClick={onSignIn} className="lp-nav-btn">{t('nav.signIn')}</button>
+            <a href="/tarot-meanings" className="lp-nav-link">{t('nav.cardMeanings')}</a>
+            <a href="#features" className="lp-nav-link">{t('nav.features')}</a>
+            <a href="#zodiac" className="lp-nav-link">{t('nav.zodiac')}</a>
+            <a href="#faq" className="lp-nav-link">{t('nav.faq')}</a>
+            <LanguageDropdown />
+            <button onClick={onSignIn} className="lp-nav-btn">{t('common:nav.signIn')}</button>
           </div>
         </div>
       </nav>
@@ -336,23 +347,23 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         <div className="lp-hero-orb o1" /><div className="lp-hero-orb o2" /><div className="lp-hero-orb o3" />
 
         <div className="lp-hero-content">
-          <div className="lp-hero-badge"><span className="lp-hero-badge-dot" />Personalized tarot & astrology</div>
+          <div className="lp-hero-badge"><span className="lp-hero-badge-dot" />{t('hero.badge')}</div>
           <h1 className="lp-hero-h1">
-            <WordReveal text="Know yourself." className="lp-hero-line1" />
+            <WordReveal text={t('hero.headlineTop')} className="lp-hero-line1" />
             <br />
-            <WordReveal text="One ritual a day." className="lp-shimmer" delay={0.5} />
+            <WordReveal text={t('hero.headlineBottom')} className="lp-shimmer" delay={0.5} />
           </h1>
           <p className="lp-hero-sub lp-fade-in" style={{ animationDelay: '1.2s' }}>
-            Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.
+            {t('hero.sub')}
           </p>
           <div className="lp-hero-ctas lp-fade-in" style={{ animationDelay: '1.6s' }}>
             <button onClick={onGetStarted} className="lp-btn-gold">
-              <span className="lp-btn-gold-glow" />Get Started Free
+              <span className="lp-btn-gold-glow" />{t('hero.cta')}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
             <PlayBadge />
           </div>
-          <p className="lp-hero-note lp-fade-in" style={{ animationDelay: '1.9s' }}>Free to start · No credit card required</p>
+          <p className="lp-hero-note lp-fade-in" style={{ animationDelay: '1.9s' }}>{t('hero.note')}</p>
           <div className="lp-fade-in" style={{ animationDelay: '2.2s' }}>
             <FreeReadingDemo onSignUp={onGetStarted} />
           </div>
@@ -387,18 +398,18 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <Sec id="features">
         <div className="lp-wrap">
           <div className="lp-header">
-            <span className="lp-tag">Features</span>
-            <h2 className="lp-h2">A complete spiritual toolkit</h2>
-            <p className="lp-sub">Everything you need for your daily practice, designed to help you grow one day at a time.</p>
+            <span className="lp-tag">{t('features.tag')}</span>
+            <h2 className="lp-h2">{t('features.heading')}</h2>
+            <p className="lp-sub">{t('features.sub')}</p>
           </div>
           <div className="lp-bento">
-            {FEATURES.map((f, i) => {
+            {FEATURES_I18N.map((f, i) => {
               const { ref, v } = useReveal();
               return (
-                <div ref={ref} key={f.title} className={`lp-bento-card ${f.size} ${v ? 'vis' : ''}`} style={{ transitionDelay: `${i * 80}ms` }}>
+                <div ref={ref} key={f.key} className={`lp-bento-card ${f.size} ${v ? 'vis' : ''}`} style={{ transitionDelay: `${i * 80}ms` }}>
                   <div className="lp-bento-icon">{f.icon}</div>
-                  <h3 className="lp-bento-title">{f.title}</h3>
-                  <p className="lp-bento-desc">{f.desc}</p>
+                  <h3 className="lp-bento-title">{t(`features.items.${f.key}.title`)}</h3>
+                  <p className="lp-bento-desc">{t(`features.items.${f.key}.desc`)}</p>
                 </div>
               );
             })}
@@ -412,9 +423,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <Sec className="lp-showcase">
         <div className="lp-wrap">
           <div className="lp-header">
-            <span className="lp-tag">The Deck</span>
-            <h2 className="lp-h2">78 beautifully illustrated cards</h2>
-            <p className="lp-sub">Every card in the traditional tarot, with detailed interpretations for upright and reversed positions.</p>
+            <span className="lp-tag">{t('deck.tag')}</span>
+            <h2 className="lp-h2">{t('deck.heading')}</h2>
+            <p className="lp-sub">{t('deck.sub')}</p>
           </div>
         </div>
         <CardMarquee cards={CARDS_ROW1} />
@@ -427,9 +438,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <Sec id="zodiac">
         <div className="lp-wrap">
           <div className="lp-header">
-            <span className="lp-tag">The Zodiac</span>
-            <h2 className="lp-h2">Written in the stars</h2>
-            <p className="lp-sub">Personalized horoscopes for all 12 signs, updated daily with cosmic precision.</p>
+            <span className="lp-tag">{t('zodiac.tag')}</span>
+            <h2 className="lp-h2">{t('zodiac.heading')}</h2>
+            <p className="lp-sub">{t('zodiac.sub')}</p>
           </div>
           <ZodiacWheel />
         </div>
@@ -441,16 +452,12 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <Sec>
         <div className="lp-wrap">
           <div className="lp-header">
-            <span className="lp-tag">Your Daily Ritual</span>
-            <h2 className="lp-h2">Three steps. Every day.</h2>
-            <p className="lp-sub">Complete all three to maintain your streak and level up through Seeker Ranks.</p>
+            <span className="lp-tag">{t('ritual.tag')}</span>
+            <h2 className="lp-h2">{t('ritual.heading')}</h2>
+            <p className="lp-sub">{t('ritual.sub')}</p>
           </div>
           <div className="lp-timeline">
-            {[
-              { n: '01', icon: '☉', title: 'Read Your Horoscope', desc: 'Start with your personalized daily forecast. See your energy score and what the cosmos has in store.' },
-              { n: '02', icon: '🂠', title: 'Pull Your Card', desc: 'Draw a tarot card for daily guidance. Reflect on its meaning and how it connects to your current chapter.' },
-              { n: '03', icon: '✎', title: 'Write a Reflection', desc: 'Journal your thoughts using a guided prompt or free-write. Link your entry to today\'s reading.' },
-            ].map((s, i) => {
+            {RITUAL_STEPS_I18N.map((s, i) => {
               const { ref, v } = useReveal();
               return (
                 <div ref={ref} key={s.n} className={`lp-timeline-item ${i % 2 === 1 ? 'right' : 'left'} ${v ? 'vis' : ''}`} style={{ transitionDelay: `${i * 150}ms` }}>
@@ -458,8 +465,8 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
                   <div className="lp-timeline-card">
                     <div className="lp-timeline-watermark">{s.n}</div>
                     <div className="lp-timeline-icon">{s.icon}</div>
-                    <h3 className="lp-timeline-title">{s.title}</h3>
-                    <p className="lp-timeline-desc">{s.desc}</p>
+                    <h3 className="lp-timeline-title">{t(`ritual.steps.${s.key}.title`)}</h3>
+                    <p className="lp-timeline-desc">{t(`ritual.steps.${s.key}.desc`)}</p>
                   </div>
                 </div>
               );
@@ -474,8 +481,8 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       {/* ── FAQ ── */}
       <Sec id="faq">
         <div className="lp-wrap lp-faq-wrap">
-          <div className="lp-header"><span className="lp-tag">FAQ</span><h2 className="lp-h2">Common questions</h2></div>
-          {FAQ.map((f, i) => <FaqItem key={f.q} q={f.q} a={f.a} i={i} />)}
+          <div className="lp-header"><span className="lp-tag">{t('faq.tag')}</span><h2 className="lp-h2">{t('faq.heading')}</h2></div>
+          {FAQ_KEYS.map((k, i) => <FaqItem key={k} q={t(`faq.items.${k}.q`)} a={t(`faq.items.${k}.a`)} i={i} />)}
         </div>
       </Sec>
 
@@ -488,10 +495,10 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <div className="lp-cta-moon">☽</div>
             <div className="lp-cta-ray r1" /><div className="lp-cta-ray r2" /><div className="lp-cta-ray r3" /><div className="lp-cta-ray r4" />
           </div>
-          <h2 className="lp-h2" style={{ marginBottom: 12 }}>Begin your journey</h2>
-          <p className="lp-sub" style={{ marginBottom: 40 }}>Start your first daily ritual today.</p>
+          <h2 className="lp-h2" style={{ marginBottom: 12 }}>{t('finalCta.heading')}</h2>
+          <p className="lp-sub" style={{ marginBottom: 40 }}>{t('finalCta.sub')}</p>
           <button onClick={onGetStarted} className="lp-btn-gold lp-btn-lg">
-            <span className="lp-btn-gold-glow" />Get Started Free
+            <span className="lp-btn-gold-glow" />{t('finalCta.cta')}
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
           <div style={{ marginTop: 20 }}><PlayBadge /></div>
@@ -504,15 +511,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
           <div className="lp-footer-top">
             <div className="lp-footer-brand"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
             <div className="lp-footer-links">
-              <a href="/privacy-policy.html">Privacy Policy</a>
-              <a href="/blog">Blog</a>
-              <a href="mailto:support@arcana.app">Contact</a>
-              <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">Google Play</a>
+              <a href="/privacy-policy.html">{t('footer.privacyPolicy')}</a>
+              <a href="/blog">{t('footer.blog')}</a>
+              <a href="mailto:support@arcana.app">{t('footer.contact')}</a>
+              <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">{t('footer.googlePlay')}</a>
             </div>
           </div>
           <div className="lp-footer-bottom">
-            <p>For entertainment and self-reflection purposes only.</p>
-            <p>&copy; 2026 Arcana. All rights reserved.</p>
+            <p>{t('footer.disclaimer')}</p>
+            <p>{t('footer.copyright')}</p>
           </div>
         </div>
       </footer>

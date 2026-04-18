@@ -1,0 +1,132 @@
+{
+  "nav": {
+    "cardMeanings": "Card Meanings",
+    "features": "Features",
+    "zodiac": "Zodiac",
+    "faq": "FAQ"
+  },
+  "hero": {
+    "badge": "Personalized tarot & astrology",
+    "headlineTop": "Know yourself.",
+    "headlineBottom": "One ritual a day.",
+    "sub": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+    "cta": "Get Started Free",
+    "note": "Free to start · No credit card required"
+  },
+  "features": {
+    "tag": "Features",
+    "heading": "A complete spiritual toolkit",
+    "sub": "Everything you need for your daily practice, designed to help you grow one day at a time.",
+    "items": {
+      "tarot": {
+        "title": "Tarot Readings",
+        "desc": "Full 78-card deck with 6 spread types. Celtic Cross, Relationship, Career, Shadow Work — choose your focus and pull your cards."
+      },
+      "horoscope": {
+        "title": "Daily Horoscope",
+        "desc": "Personalized forecasts with energy scores, love and career insights, planetary transits, and daily affirmations."
+      },
+      "journal": {
+        "title": "Reflective Journal",
+        "desc": "Track mood with 10 emoji moods, tag entries, and link readings to journal entries over time."
+      },
+      "quizzes": {
+        "title": "Personality Quizzes",
+        "desc": "MBTI, Enneagram, Big Five, Love Language, Attachment Style — six assessments that shape your experience."
+      },
+      "streaks": {
+        "title": "Streaks & XP",
+        "desc": "Earn XP, level up through Seeker Ranks, and unlock achievements as you build your daily habit."
+      },
+      "birthChart": {
+        "title": "Birth Chart",
+        "desc": "Complete natal chart with planetary placements, aspects, and personalized interpretations."
+      }
+    }
+  },
+  "deck": {
+    "tag": "The Deck",
+    "heading": "78 beautifully illustrated cards",
+    "sub": "Every card in the traditional tarot, with detailed interpretations for upright and reversed positions."
+  },
+  "zodiac": {
+    "tag": "The Zodiac",
+    "heading": "Written in the stars",
+    "sub": "Personalized horoscopes for all 12 signs, updated daily with cosmic precision."
+  },
+  "ritual": {
+    "tag": "Your Daily Ritual",
+    "heading": "Three steps. Every day.",
+    "sub": "Complete all three to maintain your streak and level up through Seeker Ranks.",
+    "steps": {
+      "horoscope": {
+        "title": "Read Your Horoscope",
+        "desc": "Start with your personalized daily forecast. See your energy score and what the cosmos has in store."
+      },
+      "card": {
+        "title": "Pull Your Card",
+        "desc": "Draw a tarot card for daily guidance. Reflect on its meaning and how it connects to your current chapter."
+      },
+      "journal": {
+        "title": "Write a Reflection",
+        "desc": "Journal your thoughts using a guided prompt or free-write. Link your entry to today's reading."
+      }
+    }
+  },
+  "faq": {
+    "tag": "FAQ",
+    "heading": "Common questions",
+    "items": {
+      "free": {
+        "q": "Is Arcana free to use?",
+        "a": "Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads."
+      },
+      "accuracy": {
+        "q": "How accurate are the tarot readings?",
+        "a": "Arcana uses a full 78-card tarot deck with detailed traditional meanings for every card — upright and reversed. Readings are designed for self-reflection and personal insight."
+      },
+      "quizzes": {
+        "q": "What personality quizzes are available?",
+        "a": "Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check."
+      },
+      "privacy": {
+        "q": "Is my journal private?",
+        "a": "Absolutely. Journal entries are stored securely and only visible to you. Premium members can also lock entries with a password."
+      },
+      "premium": {
+        "q": "Is there a premium version?",
+        "a": "Yes! Arcana is completely free to use. When you're ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding."
+      },
+      "web": {
+        "q": "Does it work on the web?",
+        "a": "Yes! Use Arcana right here on the web, or download the Android app for offline support and push notifications."
+      }
+    }
+  },
+  "finalCta": {
+    "heading": "Begin your journey",
+    "sub": "Start your first daily ritual today.",
+    "cta": "Get Started Free"
+  },
+  "footer": {
+    "privacyPolicy": "Privacy Policy",
+    "blog": "Blog",
+    "contact": "Contact",
+    "googlePlay": "Google Play",
+    "disclaimer": "For entertainment and self-reflection purposes only.",
+    "copyright": "© 2026 Arcana. All rights reserved."
+  },
+  "meta": {
+    "title": "Daily Tarot Readings, Horoscope & Astrology Journal"
+  },
+  "demo": {
+    "title": "Try a free reading",
+    "sub": "Ask a question, then draw a card. No signup.",
+    "drawBtn": "Draw Your Card",
+    "pickCalling": "Pick the card that calls to you.",
+    "reversed": "Reversed",
+    "upright": "Upright",
+    "fullCta": "Get your full reading →",
+    "drawAnother": "Draw another card"
+  }
+}

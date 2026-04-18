@@ -1,0 +1,87 @@
+{
+  "language": {
+    "title": "언어 선택",
+    "subtitle": "설정에서 언제든지 변경할 수 있어요."
+  },
+  "welcome": {
+    "heading": "당신의 데일리 의식이 시작됩니다.",
+    "subheading": "타로, 점성술, 성격 통찰이 하나로 아름답게 어우러집니다.",
+    "cta": "시작하기",
+    "alreadyHaveAccount": "이미 계정이 있어요"
+  },
+  "createAccount": {
+    "heading": "계정 만들기",
+    "subheading": "리딩과 저널을 모든 기기에 저장하세요",
+    "googleCta": "Google로 계속",
+    "divider": "또는 이메일로 가입",
+    "emailPlaceholder": "이메일 주소",
+    "passwordPlaceholder": "비밀번호 (8자 이상, 영문+숫자)",
+    "newsletter": "뉴스레터와 프로모션을 구독합니다. 우주적 통찰, 팁, 특별 혜택을 받아보세요.",
+    "ageConfirm": "저는 만 13세 이상이며 서비스 약관에 동의합니다.",
+    "submit": "계정 만들기",
+    "switchToSignIn": "이미 계정이 있나요? 로그인",
+    "back": "뒤로"
+  },
+  "toast": {
+    "invalidEmail": "유효한 이메일을 입력하세요.",
+    "invalidPassword": "비밀번호가 올바르지 않습니다.",
+    "userExists": "대신 로그인해 보세요.",
+    "profileSaveFailed": "프로필 저장에 실패했습니다. 다시 시도해 주세요.",
+    "accountCreated": "계정이 생성되었습니다! 맞춤 설정을 시작해 볼까요."
+  },
+  "signIn": {
+    "heading": "다시 오신 것을 환영합니다",
+    "subheading": "이어서 시작해 보세요",
+    "googleCta": "Google로 로그인",
+    "divider": "또는 이메일로 로그인",
+    "submit": "로그인",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "switchToSignUp": "계정이 없으신가요? 가입하기"
+  },
+  "oauth": {
+    "welcome": "환영해요, {{name}}님!",
+    "welcomeSub": "몇 가지 단계로 맞춤 경험을 만들어 볼게요",
+    "goals": {
+      "heading": "어떤 도움을 받고 싶으세요?",
+      "hint": "해당되는 모든 항목을 선택하세요"
+    },
+    "basics": {
+      "heading": "당신의 우주 기본 정보",
+      "hint": "별자리가 결정돼요",
+      "birthDate": "생년월일",
+      "birthTime": "출생 시각",
+      "optional": "(선택)",
+      "birthTimeHint": "더 정확한 차트를 위해",
+      "birthPlace": "출생지",
+      "birthPlaceHint": "나중에 네이털 차트를 계산하는 데 사용돼요",
+      "searchPlaceholder": "도시 또는 마을 검색...",
+      "locationVerified": "위치가 확인되었어요",
+      "invalidBirthDate": "생년월일이 유효하지 않아요"
+    },
+    "tone": {
+      "heading": "당신의 우주 톤",
+      "hint": "어떻게 말해드릴까요?",
+      "gentle": {
+        "label": "부드럽고 따뜻하게",
+        "desc": "포근하고 지지하는 안내"
+      },
+      "direct": {
+        "label": "솔직하고 직접적으로",
+        "desc": "또렷하고 담백한 인사이트"
+      },
+      "playful": {
+        "label": "재치 있고 신비롭게",
+        "desc": "환상적이고 매혹적인 지혜"
+      }
+    },
+    "notifications": {
+      "reminderTime": "알림 시간"
+    },
+    "next": "다음",
+    "beginJourney": "여정 시작하기",
+    "toast": {
+      "saveFailed": "프로필 저장에 실패했어요. 다시 시도해 주세요.",
+      "welcome": "Arcana에 오신 걸 환영해요!"
+    }
+  }
+}

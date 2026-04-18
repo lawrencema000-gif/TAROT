@@ -6,8 +6,18 @@ import { useBlogPost } from '../hooks/useBlogPosts';
 import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
+import { useT } from '../i18n/useT';
+import i18n from '../i18n/config';
+
+const DATE_LOCALES: Record<string, string> = {
+  en: 'en-US',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  zh: 'zh-CN',
+};
 
 export function BlogPostPage() {
+  const { t } = useT(['app', 'common']);
   const { slug } = useParams<{ slug: string }>();
   const { post, loading, error } = useBlogPost(slug || '');
   const navigate = useNavigate();
@@ -38,16 +48,18 @@ export function BlogPostPage() {
   if (error || !post) {
     return (
       <div className="text-center py-12">
-        <p className="text-mystic-400 mb-4">Article not found.</p>
+        <p className="text-mystic-400 mb-4">{t('blog.articleNotFound')}</p>
         <button
           onClick={() => navigate('/blog')}
           className="text-gold hover:text-gold/80 text-sm transition-colors"
         >
-          Back to News
+          {t('common:nav.backToNews')}
         </button>
       </div>
     );
   }
+
+  const dateLocale = DATE_LOCALES[i18n.language] || DATE_LOCALES.en;
 
   return (
     <div className="space-y-4 pt-2 pb-8">
@@ -56,7 +68,7 @@ export function BlogPostPage() {
         className="flex items-center gap-1 text-sm text-mystic-400 hover:text-gold transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to News
+        {t('common:nav.backToNews')}
       </button>
 
       <article>
@@ -83,7 +95,7 @@ export function BlogPostPage() {
             {post.published_at && (
               <span className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                {new Date(post.published_at).toLocaleDateString('en-US', {
+                {new Date(post.published_at).toLocaleDateString(dateLocale, {
                   month: 'long',
                   day: 'numeric',
                   year: 'numeric',

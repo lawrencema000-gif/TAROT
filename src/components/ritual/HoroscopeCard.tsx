@@ -1,4 +1,5 @@
 import { ChevronRight, Heart, Briefcase, Sparkles } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import type { ZodiacSign } from '../../types';
 import { zodiacData } from '../../utils/zodiac';
 
@@ -8,6 +9,7 @@ interface HoroscopeCardProps {
 }
 
 export function HoroscopeCard({ sign, onRead }: HoroscopeCardProps) {
+  const { t } = useT('app');
   const info = zodiacData[sign];
 
   return (
@@ -21,7 +23,7 @@ export function HoroscopeCard({ sign, onRead }: HoroscopeCardProps) {
             <span className="text-2xl">{info.symbol}</span>
           </div>
           <div>
-            <p className="text-xs text-mystic-500 uppercase tracking-wider">Today's Energy</p>
+            <p className="text-xs text-mystic-500 uppercase tracking-wider">{t('home.ritualCards.todaysEnergy')}</p>
             <h3 className="font-display text-lg text-mystic-100">{info.name}</h3>
           </div>
         </div>
@@ -33,21 +35,21 @@ export function HoroscopeCard({ sign, onRead }: HoroscopeCardProps) {
       <div className="flex items-center gap-4 text-sm">
         <div className="flex items-center gap-1.5">
           <Heart className="w-4 h-4 text-cosmic-rose" />
-          <span className="text-mystic-400">Love</span>
+          <span className="text-mystic-400">{t('home.ritualCards.love')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Briefcase className="w-4 h-4 text-cosmic-blue" />
-          <span className="text-mystic-400">Work</span>
+          <span className="text-mystic-400">{t('home.ritualCards.work')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Sparkles className="w-4 h-4 text-gold" />
-          <span className="text-mystic-400">Mood</span>
+          <span className="text-mystic-400">{t('home.ritualCards.mood')}</span>
         </div>
       </div>
 
       <div className="mt-4 pt-4 border-t border-mystic-700/50">
         <span className="text-sm text-gold font-medium flex items-center gap-1">
-          Read
+          {t('home.ritualCards.read')}
           <ChevronRight className="w-3.5 h-3.5" />
         </span>
       </div>

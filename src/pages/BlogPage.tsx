@@ -5,15 +5,26 @@ import { Card } from '../components/ui';
 import { useBlogPosts } from '../hooks/useBlogPosts';
 import { setPageMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
+import { useT } from '../i18n/useT';
+import i18n from '../i18n/config';
+
+// Map our i18next locale codes to the Intl locales we prefer for dates
+const DATE_LOCALES: Record<string, string> = {
+  en: 'en-US',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  zh: 'zh-CN',
+};
 
 export function BlogPage() {
+  const { t } = useT('app');
   const [page, setPage] = useState(1);
   const { posts, totalPages, loading, error } = useBlogPosts(page);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setPageMeta('News & Insights', 'Tarot insights, spiritual guidance, and self-discovery articles from Arcana.');
-  }, []);
+    setPageMeta(t('blog.title'), t('blog.subtitle'));
+  }, [t]);
 
   if (loading) {
     return (
@@ -26,7 +37,7 @@ export function BlogPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-mystic-400">Failed to load articles.</p>
+        <p className="text-mystic-400">{t('blog.failedToLoad')}</p>
       </div>
     );
   }
@@ -35,11 +46,13 @@ export function BlogPage() {
     return (
       <div className="text-center py-16">
         <Newspaper className="w-12 h-12 text-mystic-600 mx-auto mb-4" />
-        <h2 className="text-lg font-semibold text-mystic-200 mb-2">No articles yet</h2>
-        <p className="text-mystic-400 text-sm">Check back soon for tarot insights and spiritual guidance.</p>
+        <h2 className="text-lg font-semibold text-mystic-200 mb-2">{t('blog.noArticles')}</h2>
+        <p className="text-mystic-400 text-sm">{t('blog.comeBackSoon')}</p>
       </div>
     );
   }
+
+  const dateLocale = DATE_LOCALES[i18n.language] || DATE_LOCALES.en;
 
   return (
     <div className="space-y-4 pt-2 pb-8">
@@ -72,7 +85,7 @@ export function BlogPage() {
                   {post.published_at && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {new Date(post.published_at).toLocaleDateString('en-US', {
+                      {new Date(post.published_at).toLocaleDateString(dateLocale, {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',

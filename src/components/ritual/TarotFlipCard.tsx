@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage, useCardBackImage } from '../../hooks/useProgressiveImage';
+import { useT } from '../../i18n/useT';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface TarotFlipCardProps {
@@ -23,6 +24,7 @@ export function TarotFlipCard({
   onMeaning,
   cardBackUrl,
 }: TarotFlipCardProps) {
+  const { t } = useT('app');
   const [isFlipped, setIsFlipped] = useState(false);
   const [showReversed, setShowReversed] = useState(reversed);
 
@@ -57,8 +59,8 @@ export function TarotFlipCard({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="text-xs text-mystic-500 uppercase tracking-wider">Your Card</p>
-          <h3 className="font-display text-lg text-mystic-100">Tap to reveal</h3>
+          <p className="text-xs text-mystic-500 uppercase tracking-wider">{t('home.ritualCards.yourCard')}</p>
+          <h3 className="font-display text-lg text-mystic-100">{t('home.ritualCards.tapToReveal')}</h3>
         </div>
         {isFlipped && (
           <button
@@ -71,7 +73,7 @@ export function TarotFlipCard({
             }`}
           >
             <RotateCcw className="w-3 h-3" />
-            {showReversed ? 'Reversed' : 'Upright'}
+            {showReversed ? t('home.ritualCards.reversed') : t('home.ritualCards.upright')}
           </button>
         )}
       </div>
@@ -105,7 +107,7 @@ export function TarotFlipCard({
                       <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gold/10 flex items-center justify-center">
                         <Sparkles className="w-8 h-8 text-gold animate-pulse-slow" />
                       </div>
-                      <p className="text-sm text-gold font-medium">Tap to reveal</p>
+                      <p className="text-sm text-gold font-medium">{t('home.ritualCards.tapToReveal')}</p>
                     </div>
                   </div>
                   <div className="absolute bottom-3 left-3 right-3">
@@ -138,11 +140,11 @@ export function TarotFlipCard({
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
                     <h4 className="font-display text-sm text-gold mb-0.5">{card.name}</h4>
                     <p className="text-xs text-mystic-300">
-                      {card.arcana === 'major' ? 'Major Arcana' : `${card.suit} ${card.number}`}
+                      {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : `${card.suit} ${card.number}`}
                     </p>
                     {showReversed && (
                       <span className="inline-block mt-1 px-2 py-0.5 bg-mystic-700/80 rounded text-xs text-mystic-300">
-                        Reversed
+                        {t('home.ritualCards.reversed')}
                       </span>
                     )}
                   </div>
@@ -156,11 +158,11 @@ export function TarotFlipCard({
                     </div>
                     <h4 className="font-display text-lg text-gold mb-1">{card.name}</h4>
                     <p className="text-xs text-mystic-400">
-                      {card.arcana === 'major' ? 'Major Arcana' : `${card.suit} ${card.number}`}
+                      {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : `${card.suit} ${card.number}`}
                     </p>
                     {showReversed && (
                       <span className="mt-2 px-2 py-0.5 bg-mystic-700 rounded text-xs text-mystic-300">
-                        Reversed
+                        {t('home.ritualCards.reversed')}
                       </span>
                     )}
                   </div>
@@ -206,7 +208,7 @@ export function TarotFlipCard({
               }`}
             >
               {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-              Save
+              {t('home.ritualCards.save')}
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onShare(); }}
@@ -214,7 +216,7 @@ export function TarotFlipCard({
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-all active:scale-95"
             >
               <Share2 className="w-4 h-4" />
-              Share
+              {t('home.ritualCards.share')}
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onMeaning(); }}
@@ -222,7 +224,7 @@ export function TarotFlipCard({
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm bg-mystic-800 text-mystic-300 hover:bg-mystic-700 transition-all active:scale-95"
             >
               <HelpCircle className="w-4 h-4" />
-              Meaning
+              {t('home.ritualCards.meaning')}
             </button>
           </div>
         </div>

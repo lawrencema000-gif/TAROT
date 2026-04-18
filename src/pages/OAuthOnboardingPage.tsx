@@ -19,22 +19,18 @@ import { validateBirthDate } from '../utils/validation';
 import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
 import { getAttribution, clearAttribution } from '../utils/attribution';
+import { useT } from '../i18n/useT';
 import type { Goal, TonePreference } from '../types';
 
-const goalOptions: { label: string; value: Goal }[] = [
-  { label: 'Love', value: 'love' },
-  { label: 'Career', value: 'career' },
-  { label: 'Confidence', value: 'confidence' },
-  { label: 'Healing', value: 'healing' },
-  { label: 'Focus', value: 'focus' },
-  { label: 'Purpose', value: 'purpose' },
-  { label: 'Stress', value: 'stress' },
-];
+// Value-based goal options — labels read from app.profile.goals.* at render time.
+const goalValues: Goal[] = ['love', 'career', 'confidence', 'healing', 'focus', 'purpose', 'stress'];
 
-const toneOptions: { value: TonePreference; label: string; description: string; icon: typeof Heart }[] = [
-  { value: 'gentle', label: 'Gentle & supportive', description: 'Warm, nurturing guidance', icon: Heart },
-  { value: 'direct', label: 'Direct & honest', description: 'Clear, straightforward insights', icon: Zap },
-  { value: 'playful', label: 'Playful & mystical', description: 'Whimsical, enchanting wisdom', icon: Feather },
+// Value-based tone options with icons — labels and descriptions read from
+// onboarding.oauth.tone.* at render time.
+const toneValues: { value: TonePreference; icon: typeof Heart }[] = [
+  { value: 'gentle', icon: Heart },
+  { value: 'direct', icon: Zap },
+  { value: 'playful', icon: Feather },
 ];
 
 interface OAuthOnboardingPageProps {
@@ -94,6 +90,17 @@ async function assignRandomVisuals(userId: string) {
 }
 
 export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
+  const { t } = useT(['onboarding', 'app', 'common']);
+  const goalOptions = goalValues.map(value => ({
+    value,
+    label: t(`app:profile.goals.${value}`),
+  }));
+  const toneOptions = toneValues.map(({ value, icon }) => ({
+    value,
+    icon,
+    label: t(`oauth.tone.${value}.label`),
+    description: t(`oauth.tone.${value}.desc`),
+  }));
   const { user, profile, updateProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -131,7 +138,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     if (value) {
       const validation = validateBirthDate(value);
       if (!validation.valid) {
-        setBirthDateError(validation.error || 'Invalid birth date');
+        setBirthDateError(validation.error || t('oauth.basics.invalidBirthDate'));
       } else {
         setBirthDateError('');
       }
@@ -171,7 +178,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     const { error } = await updateProfile(profileUpdate);
 
     if (error) {
-      toast('Failed to save profile. Please try again.', 'error');
+      toast(t('oauth.toast.saveFailed'), 'error');
       setLoading(false);
       return;
     }
@@ -194,7 +201,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
       }
     }
 
-    toast('Welcome to Arcana!', 'success');
+    toast(t('oauth.toast.welcome'), 'success');
     setLoading(false);
     onComplete();
   };
@@ -231,15 +238,15 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   </span>
                 </div>
                 <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Welcome, {profile?.displayName || user?.email?.split('@')[0]}!
+                  {t('oauth.welcome', { name: profile?.displayName || user?.email?.split('@')[0] || '' })}
                 </h2>
                 <p className="text-mystic-400 mb-6">
-                  Let's personalize your experience in just a few steps
+                  {t('oauth.welcomeSub')}
                 </p>
                 <h3 className="font-display text-xl text-mystic-100 mb-2">
-                  What do you want help with?
+                  {t('oauth.goals.heading')}
                 </h3>
-                <p className="text-mystic-400">Select all that apply</p>
+                <p className="text-mystic-400">{t('oauth.goals.hint')}</p>
               </div>
 
               <div className="flex flex-wrap gap-3 justify-center">
@@ -270,15 +277,15 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   <Calendar className="w-8 h-8 text-gold" />
                 </div>
                 <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Your cosmic basics
+                  {t('oauth.basics.heading')}
                 </h2>
-                <p className="text-mystic-400">This determines your zodiac sign</p>
+                <p className="text-mystic-400">{t('oauth.basics.hint')}</p>
               </div>
 
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-mystic-300 mb-2">
-                    Birth date <span className="text-coral">*</span>
+                    {t('oauth.basics.birthDate')} <span className="text-coral">*</span>
                   </label>
                   <Input
                     type="date"
@@ -299,33 +306,33 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
                     <Clock className="w-4 h-4 text-mystic-500" />
-                    Birth time
-                    <span className="text-xs text-mystic-500 font-normal">(optional)</span>
+                    {t('oauth.basics.birthTime')}
+                    <span className="text-xs text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
                   </label>
                   <Input
                     type="time"
                     value={data.birthTime}
                     onChange={e => setData(d => ({ ...d, birthTime: e.target.value }))}
                   />
-                  <p className="text-xs text-mystic-500 mt-1.5">For deeper chart accuracy</p>
+                  <p className="text-xs text-mystic-500 mt-1.5">{t('oauth.basics.birthTimeHint')}</p>
                 </div>
 
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
                     <MapPin className="w-4 h-4 text-mystic-500" />
-                    Birth place
-                    <span className="text-xs text-mystic-500 font-normal">(optional)</span>
+                    {t('oauth.basics.birthPlace')}
+                    <span className="text-xs text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
                   </label>
                   <Input
                     value={data.birthPlace}
                     onChange={e => handleBirthPlaceInput(e.target.value)}
-                    placeholder="Search city or town..."
+                    placeholder={t('oauth.basics.searchPlaceholder')}
                     icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   />
                   {data.birthLat && data.birthLon && (
                     <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
                       <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                      <span className="text-xs text-mystic-300">Location verified</span>
+                      <span className="text-xs text-mystic-300">{t('oauth.basics.locationVerified')}</span>
                     </div>
                   )}
                   {showGeoResults && !data.birthLat && geoResults.length > 0 && (
@@ -341,7 +348,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                       ))}
                     </div>
                   )}
-                  <p className="text-xs text-mystic-500 mt-1.5">Helps compute your natal chart later</p>
+                  <p className="text-xs text-mystic-500 mt-1.5">{t('oauth.basics.birthPlaceHint')}</p>
                 </div>
               </div>
             </div>
@@ -351,9 +358,9 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
                 <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Pick your vibe
+                  {t('oauth.tone.heading')}
                 </h2>
-                <p className="text-mystic-400">How should we speak to you?</p>
+                <p className="text-mystic-400">{t('oauth.tone.hint')}</p>
               </div>
 
               <div className="space-y-3">
@@ -419,7 +426,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
                 {data.notificationsEnabled && (
                   <div className="px-4 animate-fade-in">
-                    <label className="block text-sm text-mystic-400 mb-2">Reminder time</label>
+                    <label className="block text-sm text-mystic-400 mb-2">{t('oauth.notifications.reminderTime')}</label>
                     <Input
                       type="time"
                       value={data.notificationTime}
@@ -461,7 +468,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           loading={loading}
           className="min-h-[52px]"
         >
-          {step === totalSteps - 1 ? 'Begin Your Journey' : 'Next'}
+          {step === totalSteps - 1 ? t('oauth.beginJourney') : t('oauth.next')}
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>

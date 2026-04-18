@@ -4,6 +4,7 @@ import { Button, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { supabase } from '../lib/supabase';
+import { useT } from '../i18n/useT';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -21,6 +22,7 @@ interface AuthPageProps {
 }
 
 export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
+  const { t } = useT(['app', 'common', 'onboarding']);
   const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,7 +78,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         setResendSent(true);
       }
     } catch {
-      toast('Failed to resend verification email.', 'error');
+      toast(t('auth.resendFailed'), 'error');
     }
     setResendLoading(false);
   };
@@ -84,7 +86,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail.trim()) {
-      toast('Please enter your email address.', 'error');
+      toast(t('auth.enterEmail'), 'error');
       return;
     }
     setResetLoading(true);
@@ -98,7 +100,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         setResetSent(true);
       }
     } catch {
-      toast('Failed to send reset email. Please try again.', 'error');
+      toast(t('auth.resetFailed'), 'error');
     }
     setResetLoading(false);
   };
@@ -121,7 +123,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to sign in
+            {t('auth.backToSignIn')}
           </button>
 
           <div className="text-center mb-10">
@@ -129,9 +131,9 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               <Mail className="w-10 h-10 text-gold" />
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
-            <h1 className="font-display text-3xl text-mystic-100 mb-2">Verify Your Email</h1>
+            <h1 className="font-display text-3xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
             <p className="text-mystic-400">
-              We sent a verification link to <span className="text-mystic-200">{verifyEmail}</span>. Please check your inbox.
+              {t('auth.verifySentTo', { email: verifyEmail })}
             </p>
           </div>
 
@@ -139,7 +141,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             {resendSent ? (
               <div className="flex items-center justify-center gap-2 text-gold py-3">
                 <CheckCircle className="w-5 h-5" />
-                <span className="font-medium">Verification email sent!</span>
+                <span className="font-medium">{t('auth.verificationSent')}</span>
               </div>
             ) : (
               <Button
@@ -149,11 +151,11 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
                 loading={resendLoading}
                 className="min-h-[52px]"
               >
-                Resend Verification Email
+                {t('auth.resendVerification')}
               </Button>
             )}
             <p className="text-sm text-mystic-500 text-center">
-              Check your spam folder if you don't see it.
+              {t('auth.checkSpam')}
             </p>
           </div>
         </div>
@@ -170,7 +172,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to sign in
+            {t('auth.backToSignIn')}
           </button>
 
           <div className="text-center mb-10">
@@ -183,12 +185,12 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
             <h1 className="font-display text-3xl text-mystic-100 mb-2">
-              {resetSent ? 'Check Your Email' : 'Reset Password'}
+              {resetSent ? t('auth.checkEmail') : t('auth.resetPassword')}
             </h1>
             <p className="text-mystic-400">
               {resetSent
-                ? `We've sent a reset link to ${resetEmail}`
-                : 'Enter your email to receive a password reset link'}
+                ? t('auth.resetSentTo', { email: resetEmail })
+                : t('auth.enterEmailForReset')}
             </p>
           </div>
 
@@ -198,18 +200,18 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
                 type="email"
                 value={resetEmail}
                 onChange={e => setResetEmail(e.target.value)}
-                placeholder="Email address"
+                placeholder={t('onboarding:createAccount.emailPlaceholder')}
                 icon={<Mail className="w-5 h-5" />}
                 required
               />
               <Button type="submit" variant="gold" fullWidth loading={resetLoading} className="min-h-[52px]">
-                Send Reset Link
+                {t('auth.sendResetLink')}
               </Button>
             </form>
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-mystic-400 text-center">
-                Didn't receive the email? Check your spam folder or try again.
+                {t('auth.resetDidntReceive')}
               </p>
               <Button
                 variant="outline"
@@ -217,7 +219,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
                 onClick={() => setResetSent(false)}
                 className="min-h-[52px]"
               >
-                Try Again
+                {t('auth.tryAgain')}
               </Button>
             </div>
           )}
@@ -234,8 +236,8 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             <Sparkles className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100 mb-2">Welcome Back</h1>
-          <p className="text-mystic-400">Sign in to continue your journey</p>
+          <h1 className="font-display text-3xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
+          <p className="text-mystic-400">{t('auth.signInSub')}</p>
         </div>
 
         <div className="space-y-4">
@@ -248,7 +250,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             className="min-h-[52px] bg-white hover:bg-gray-50 border-gray-300 text-gray-800"
           >
             <GoogleIcon className="w-5 h-5" />
-            Continue with Google
+            {t('onboarding:createAccount.googleCta')}
           </Button>
 
           <div className="relative py-2">
@@ -256,7 +258,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               <div className="w-full border-t border-mystic-700/50" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-mystic-900 text-sm text-mystic-500">or</span>
+              <span className="px-3 bg-mystic-900 text-sm text-mystic-500">{t('auth.orDivider')}</span>
             </div>
           </div>
         </div>
@@ -266,7 +268,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="Email address"
+            placeholder={t('onboarding:createAccount.emailPlaceholder')}
             icon={<Mail className="w-5 h-5" />}
             required
           />
@@ -276,7 +278,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder={t('common:labels.password')}
               icon={<Lock className="w-5 h-5" />}
               required
               minLength={6}
@@ -291,7 +293,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
           </div>
 
           <Button type="submit" variant="gold" fullWidth loading={loading} className="min-h-[52px]">
-            Sign In
+            {t('common:nav.signIn')}
           </Button>
         </form>
 
@@ -300,23 +302,23 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
           onClick={() => { setShowResetPassword(true); setResetEmail(email); }}
           className="w-full mt-4 text-sm text-mystic-400 hover:text-gold transition-colors py-2"
         >
-          Forgot your password?
+          {t('auth.forgotPassword')}
         </button>
 
         <div className="mt-8 pt-8 border-t border-mystic-800">
-          <p className="text-center text-mystic-400 mb-4">New to Arcana?</p>
+          <p className="text-center text-mystic-400 mb-4">{t('auth.newToArcana')}</p>
           <Button
             variant="outline"
             fullWidth
             onClick={onSwitchToOnboarding}
             className="min-h-[52px]"
           >
-            Create Account
+            {t('auth.createAccount')}
           </Button>
         </div>
 
         <p className="mt-8 text-xs text-center text-mystic-500">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
+          {t('auth.termsNotice')}
           <br />This app is for entertainment purposes only.
         </p>
       </div>

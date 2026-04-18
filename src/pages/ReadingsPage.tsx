@@ -7,10 +7,12 @@ import {
   CompatibilitySection,
   LibrarySection,
 } from '../components/readings';
+import { useT } from '../i18n/useT';
 
 type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'library';
 
 export function ReadingsPage() {
+  const { t } = useT('app');
   const [activeTab, setActiveTab] = useState<ReadingTab>('tarot');
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState('');
@@ -21,15 +23,15 @@ export function ReadingsPage() {
   };
 
   const tabs = [
-    { id: 'tarot' as const, label: 'Tarot', icon: Sparkles },
-    { id: 'horoscope' as const, label: 'Horoscope', icon: Sun },
-    { id: 'compatibility' as const, label: 'Compatibility', icon: Heart },
-    { id: 'library' as const, label: 'Library', icon: BookOpen },
+    { id: 'tarot' as const, labelKey: 'readings.tabs.tarot', icon: Sparkles },
+    { id: 'horoscope' as const, labelKey: 'readings.tabs.horoscope', icon: Sun },
+    { id: 'compatibility' as const, labelKey: 'readings.tabs.compatibility', icon: Heart },
+    { id: 'library' as const, labelKey: 'readings.tabs.library', icon: BookOpen },
   ];
 
   return (
     <div className="space-y-6 pb-32">
-      <h1 className="font-display text-2xl text-mystic-100">Readings</h1>
+      <h1 className="font-display text-2xl text-mystic-100">{t('readings.title')}</h1>
 
       <div className="relative -mx-4">
         <div
@@ -53,7 +55,7 @@ export function ReadingsPage() {
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             );
           })}

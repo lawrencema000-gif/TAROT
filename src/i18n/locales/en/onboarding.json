@@ -1,0 +1,87 @@
+{
+  "language": {
+    "title": "Choose your language",
+    "subtitle": "You can change this later in Settings."
+  },
+  "welcome": {
+    "heading": "Your daily ritual starts here.",
+    "subheading": "Tarot, astrology, and personality insights — beautifully combined.",
+    "cta": "Get Started",
+    "alreadyHaveAccount": "I already have an account"
+  },
+  "createAccount": {
+    "heading": "Create your account",
+    "subheading": "Save readings & journal entries across devices",
+    "googleCta": "Continue with Google",
+    "divider": "or sign up with email",
+    "emailPlaceholder": "Email address",
+    "passwordPlaceholder": "Password (min 8 chars, letters + numbers)",
+    "newsletter": "Subscribe to newsletters and promotions. Get cosmic insights, tips, and exclusive offers.",
+    "ageConfirm": "I confirm I am at least 13 years old and agree to the Terms of Service.",
+    "submit": "Create Account",
+    "switchToSignIn": "Already have an account? Sign in",
+    "back": "Back"
+  },
+  "toast": {
+    "invalidEmail": "Please enter a valid email.",
+    "invalidPassword": "Invalid password.",
+    "userExists": "Try signing in instead.",
+    "profileSaveFailed": "Failed to save profile. Please try again.",
+    "accountCreated": "Account created! Let's personalize your experience."
+  },
+  "signIn": {
+    "heading": "Welcome back",
+    "subheading": "Pick up where you left off",
+    "googleCta": "Continue with Google",
+    "divider": "or sign in with email",
+    "submit": "Sign In",
+    "forgotPassword": "Forgot password?",
+    "switchToSignUp": "Don't have an account? Sign up"
+  },
+  "oauth": {
+    "welcome": "Welcome, {{name}}!",
+    "welcomeSub": "Let's personalize your experience in just a few steps",
+    "goals": {
+      "heading": "What do you want help with?",
+      "hint": "Select all that apply"
+    },
+    "basics": {
+      "heading": "Your cosmic basics",
+      "hint": "This determines your zodiac sign",
+      "birthDate": "Birth date",
+      "birthTime": "Birth time",
+      "optional": "(optional)",
+      "birthTimeHint": "For deeper chart accuracy",
+      "birthPlace": "Birth place",
+      "birthPlaceHint": "Helps compute your natal chart later",
+      "searchPlaceholder": "Search city or town...",
+      "locationVerified": "Location verified",
+      "invalidBirthDate": "Invalid birth date"
+    },
+    "tone": {
+      "heading": "Your cosmic tone",
+      "hint": "How should we speak to you?",
+      "gentle": {
+        "label": "Gentle & supportive",
+        "desc": "Warm, nurturing guidance"
+      },
+      "direct": {
+        "label": "Direct & honest",
+        "desc": "Clear, straightforward insights"
+      },
+      "playful": {
+        "label": "Playful & mystical",
+        "desc": "Whimsical, enchanting wisdom"
+      }
+    },
+    "notifications": {
+      "reminderTime": "Reminder time"
+    },
+    "next": "Next",
+    "beginJourney": "Begin Your Journey",
+    "toast": {
+      "saveFailed": "Failed to save profile. Please try again.",
+      "welcome": "Welcome to Arcana!"
+    }
+  }
+}

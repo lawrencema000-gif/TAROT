@@ -15,6 +15,9 @@ import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { validateEmail, validatePassword } from '../utils/validation';
 import { getAttribution, clearAttribution } from '../utils/attribution';
+import { LanguagePicker } from '../components/i18n/LanguagePicker';
+import { getLocale } from '../i18n/config';
+import { useT } from '../i18n/useT';
 import {
   trackOnboardingStepViewed,
   trackOnboardingStepCompleted,
@@ -39,6 +42,7 @@ interface OnboardingPageProps {
 }
 
 export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageProps) {
+  const { t } = useT(['onboarding', 'common']);
   const { signInWithGoogle } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -49,7 +53,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(true);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
-  const stepNames = ['welcome', 'create_account'] as const;
+  // Step 0 = language picker, 1 = welcome, 2 = create account
+  const stepNames = ['language', 'welcome', 'create_account'] as const;
   const onboardingStartTime = useRef(Date.now());
   const stepStartTime = useRef(Date.now());
 
@@ -79,12 +84,12 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const handleEmailSignup = async () => {
     const emailResult = validateEmail(email);
     if (!emailResult.valid) {
-      toast(emailResult.error || 'Please enter a valid email.', 'error');
+      toast(emailResult.error || t('toast.invalidEmail'), 'error');
       return;
     }
     const passwordResult = validatePassword(password);
     if (!passwordResult.valid) {
-      toast(passwordResult.error || 'Invalid password.', 'error');
+      toast(passwordResult.error || t('toast.invalidPassword'), 'error');
       return;
     }
 
@@ -101,7 +106,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         signUpError.message?.toLowerCase().includes('duplicate');
 
       if (isUserExists) {
-        toast(message + ' Try signing in instead.', 'error');
+        toast(message + ' ' + t('toast.userExists'), 'error');
       } else {
         toast(message, 'error');
       }
@@ -116,6 +121,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         email,
         display_name: email.split('@')[0],
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        locale: getLocale(),
         onboarding_complete: false,
         is_premium: false,
         is_guest: false,
@@ -131,7 +137,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       });
 
       if (profileError) {
-        toast('Failed to save profile. Please try again.', 'error');
+        toast(t('toast.profileSaveFailed'), 'error');
         setLoading(false);
         return;
       }
@@ -146,7 +152,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       trackOnboardingComplete({
         totalDurationMs: Date.now() - onboardingStartTime.current,
       });
-      toast('Account created! Let\'s personalize your experience.', 'success');
+      toast(t('toast.accountCreated'), 'success');
       onComplete();
     }
 
@@ -155,7 +161,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
   return (
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
-      {step === 1 && (
+      {step === 2 && (
         <div className="h-1 bg-mystic-800/50">
           <div className="h-full bg-gradient-to-r from-gold/80 to-gold w-full transition-all duration-500 ease-out" />
         </div>
@@ -169,6 +175,43 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-gold/20 via-mystic-800 to-mystic-900 flex items-center justify-center border border-gold/20">
                   <Sparkles className="w-14 h-14 text-gold" />
                 </div>
+              </div>
+              <div className="space-y-3">
+                <h1 className="font-display text-2xl text-mystic-100 leading-tight">
+                  {t('language.title')}
+                </h1>
+                <p className="text-mystic-400 text-base leading-relaxed">
+                  {t('language.subtitle')}
+                </p>
+              </div>
+              <LanguagePicker />
+              <div className="pt-2">
+                <Button
+                  variant="gold"
+                  fullWidth
+                  onClick={() => {
+                    trackOnboardingStepCompleted({
+                      step: 0,
+                      stepName: 'language',
+                      durationMs: Date.now() - stepStartTime.current,
+                    });
+                    setStep(1);
+                  }}
+                  className="min-h-[52px]"
+                >
+                  {t('common:actions.continue')}
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="text-center space-y-8 animate-fade-in">
+              <div className="relative">
+                <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-gold/20 via-mystic-800 to-mystic-900 flex items-center justify-center border border-gold/20">
+                  <Sparkles className="w-14 h-14 text-gold" />
+                </div>
                 <div className="absolute inset-0 animate-pulse-slow">
                   <div className="w-28 h-28 mx-auto rounded-full border border-gold/10" />
                 </div>
@@ -176,10 +219,10 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
               <div className="space-y-4">
                 <h1 className="font-display text-3xl text-mystic-100 leading-tight">
-                  Your daily ritual starts here.
+                  {t('welcome.heading')}
                 </h1>
                 <p className="text-mystic-400 text-lg leading-relaxed">
-                  Tarot, astrology, and personality insights -- beautifully combined.
+                  {t('welcome.subheading')}
                 </p>
               </div>
 
@@ -189,15 +232,15 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   fullWidth
                   onClick={() => {
                     trackOnboardingStepCompleted({
-                      step: 0,
+                      step: 1,
                       stepName: 'welcome',
                       durationMs: Date.now() - stepStartTime.current,
                     });
-                    setStep(1);
+                    setStep(2);
                   }}
                   className="min-h-[52px]"
                 >
-                  Get Started
+                  {t('welcome.cta')}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
 
@@ -205,23 +248,23 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   onClick={onSwitchToSignIn}
                   className="w-full text-center text-sm text-mystic-400 hover:text-gold transition-colors py-3"
                 >
-                  I already have an account
+                  {t('welcome.alreadyHaveAccount')}
                 </button>
               </div>
             </div>
           )}
 
-          {step === 1 && (
+          {step === 2 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-gold" />
                 </div>
                 <h2 className="font-display text-2xl text-mystic-100 mb-2">
-                  Create your account
+                  {t('createAccount.heading')}
                 </h2>
                 <p className="text-mystic-400">
-                  Save readings & journal entries across devices
+                  {t('createAccount.subheading')}
                 </p>
               </div>
 
@@ -235,7 +278,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   className="min-h-[52px] bg-white hover:bg-gray-50 border-gray-300 text-gray-800"
                 >
                   <GoogleIcon className="w-5 h-5" />
-                  Continue with Google
+                  {t('createAccount.googleCta')}
                 </Button>
 
                 <div className="relative py-4">
@@ -243,7 +286,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     <div className="w-full border-t border-mystic-700/50" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-3 bg-mystic-900 text-sm text-mystic-500">or sign up with email</span>
+                    <span className="px-3 bg-mystic-900 text-sm text-mystic-500">{t('createAccount.divider')}</span>
                   </div>
                 </div>
 
@@ -252,7 +295,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="Email address"
+                    placeholder={t('createAccount.emailPlaceholder')}
                     icon={<Mail className="w-5 h-5" />}
                   />
 
@@ -261,7 +304,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder="Password (min 8 chars, letters + numbers)"
+                      placeholder={t('createAccount.passwordPlaceholder')}
                       icon={<Lock className="w-5 h-5" />}
                     />
                     <button
@@ -286,7 +329,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       {subscribedToNewsletter && <Check className="w-3 h-3 text-mystic-900" />}
                     </div>
                     <span className="text-sm text-mystic-400 leading-snug">
-                      Subscribe to newsletters and promotions. Get cosmic insights, tips, and exclusive offers.
+                      {t('createAccount.newsletter')}
                     </span>
                   </button>
 
@@ -303,7 +346,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       {ageConfirmed && <Check className="w-3 h-3 text-mystic-900" />}
                     </div>
                     <span className="text-sm text-mystic-400 leading-snug">
-                      I confirm I am at least 13 years old and agree to the Terms of Service.
+                      {t('createAccount.ageConfirm')}
                     </span>
                   </button>
 
@@ -315,7 +358,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     loading={loading}
                     className="min-h-[48px]"
                   >
-                    Create Account
+                    {t('createAccount.submit')}
                   </Button>
                 </div>
               </div>
@@ -324,18 +367,18 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 onClick={onSwitchToSignIn}
                 className="w-full text-center text-sm text-mystic-400 hover:text-gold transition-colors py-2"
               >
-                Already have an account? Sign in
+                {t('createAccount.switchToSignIn')}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {step === 1 && (
+      {step >= 1 && (
         <div className="p-6 safe-bottom">
-          <Button variant="ghost" onClick={() => setStep(0)} className="min-h-[52px] w-full">
+          <Button variant="ghost" onClick={() => setStep(step - 1)} className="min-h-[52px] w-full">
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {t('createAccount.back')}
           </Button>
         </div>
       )}

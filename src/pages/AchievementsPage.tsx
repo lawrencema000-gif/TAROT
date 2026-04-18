@@ -22,12 +22,14 @@ import {
 } from '../services/achievements';
 import { Skeleton } from '../components/ui';
 import { supabase } from '../lib/supabase';
+import { useT } from '../i18n/useT';
 
 type FilterCategory = 'all' | AchievementCategory;
 
 const CATEGORIES: FilterCategory[] = ['all', 'exploration', 'mastery', 'dedication', 'milestones', 'special'];
 
 export function AchievementsPage() {
+  const { t } = useT('app');
   const { user, profile, refreshProfile } = useAuth();
   const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
   const [stats, setStats] = useState<AchievementStatsType | null>(null);
@@ -84,7 +86,7 @@ export function AchievementsPage() {
         setUnnotifiedQueue(unnotified);
       }
     } catch (error) {
-      console.error('Error loading achievements:', error);
+      console.error(t('achievements.errorLoading'), error);
     } finally {
       setLoading(false);
     }
@@ -192,19 +194,19 @@ export function AchievementsPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-5 h-5 text-gold" />
                 <span className="text-sm font-semibold text-gold">
-                  {profile?.seekerRank || 'Novice Seeker'}
+                  {profile?.seekerRank || t('achievements.novicesSeeker')}
                 </span>
               </div>
               <h2 className="text-xl font-bold text-white mb-1">
                 {stats?.unlocked_achievements || 0} of {stats?.total_achievements || 0}
               </h2>
               <p className="text-sm text-mystic-400">
-                Achievements Unlocked
+                {t('achievements.achievementsUnlocked')}
               </p>
               <div className="flex items-center gap-1 mt-2">
                 <Sparkles className="w-4 h-4 text-gold" />
                 <span className="text-sm text-mystic-300">
-                  {stats?.total_xp_from_achievements?.toLocaleString() || 0} XP earned
+                  {t('achievements.xpEarned', { n: (stats?.total_xp_from_achievements ?? 0).toLocaleString() })}
                 </span>
               </div>
             </div>
@@ -214,7 +216,7 @@ export function AchievementsPage() {
         <div className="p-4 space-y-6">
           <div className="bg-mystic-800/30 rounded-2xl p-4 border border-mystic-700/30">
             <RankProgressBar
-              currentRank={profile?.seekerRank || 'Novice Seeker'}
+              currentRank={profile?.seekerRank || t('achievements.novicesSeeker')}
               currentXP={profile?.xp || 0}
             />
           </div>
@@ -232,7 +234,7 @@ export function AchievementsPage() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gold flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
-                  Recent Unlocks
+                  {t('achievements.recentUnlocks')}
                 </h3>
                 <ChevronRight className="w-4 h-4 text-gold/60" />
               </div>
@@ -268,7 +270,7 @@ export function AchievementsPage() {
                       }
                     `}
                   >
-                    All ({stats.unlocked_achievements}/{stats.total_achievements})
+                    {t('achievements.all')} ({stats.unlocked_achievements}/{stats.total_achievements})
                   </button>
                   {(Object.entries(stats.category_stats) as [AchievementCategory, { total: number; unlocked: number }][]).map(
                     ([category, data]) => (
@@ -283,7 +285,7 @@ export function AchievementsPage() {
                           }
                         `}
                       >
-                        {getCategoryDisplayName(category)} ({data.unlocked}/{data.total})
+                        {t(`achievements.categories.${category}`, { defaultValue: getCategoryDisplayName(category) })} ({data.unlocked}/{data.total})
                       </button>
                     )
                   )}
@@ -325,7 +327,7 @@ export function AchievementsPage() {
           {filteredAchievements.length === 0 && (
             <div className="text-center py-12">
               <Trophy className="w-12 h-12 text-mystic-600 mx-auto mb-4" />
-              <p className="text-mystic-400">No achievements in this category yet.</p>
+              <p className="text-mystic-400">{t('achievements.noInCategory')}</p>
             </div>
           )}
         </div>

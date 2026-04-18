@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import App from './App.tsx';
 import { initAnalytics } from './services/analytics';
 import { captureAttributionFromUrl } from './utils/attribution';
+import './i18n/config'; // must load before any component that calls useT()
 import './index.css';
 import './styles/landing.css';
 import './styles/tarot-meanings.css';

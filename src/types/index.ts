@@ -26,6 +26,7 @@ export interface UserProfile {
   onboardingComplete: boolean;
   isPremium: boolean;
   isAdFree: boolean;
+  locale?: 'en' | 'ja' | 'ko' | 'zh';
   streak: number;
   lastRitualDate?: string;
   mbtiType?: string;

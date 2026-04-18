@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "Arcana",
+    "tagline": "认识自己,每日一份仪式感。"
+  },
+  "nav": {
+    "home": "首页",
+    "readings": "牌阵",
+    "horoscope": "星座运势",
+    "journal": "日记",
+    "quizzes": "测试",
+    "profile": "个人资料",
+    "blog": "博客",
+    "cardMeanings": "牌意解读",
+    "signIn": "登录",
+    "signOut": "退出登录"
+  },
+  "actions": {
+    "continue": "继续",
+    "back": "返回",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "confirm": "确认",
+    "getStarted": "开始使用",
+    "tryFree": "免费试用",
+    "learnMore": "了解更多"
+  },
+  "labels": {
+    "email": "邮箱",
+    "password": "密码",
+    "displayName": "显示名称",
+    "language": "语言",
+    "loading": "加载中…",
+    "today": "今天"
+  },
+  "errors": {
+    "generic": "出错了,请稍后再试。",
+    "network": "网络错误,请检查连接。",
+    "unauthorized": "请登录后继续。",
+    "notFound": "未找到。"
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "ko": "한국어",
+    "zh": "简体中文"
+  }
+}

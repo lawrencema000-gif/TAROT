@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "Arcana",
+    "tagline": "나를 아는 하루 한 번의 의식."
+  },
+  "nav": {
+    "home": "홈",
+    "readings": "리딩",
+    "horoscope": "별자리 운세",
+    "journal": "저널",
+    "quizzes": "퀴즈",
+    "profile": "프로필",
+    "blog": "블로그",
+    "cardMeanings": "카드 의미",
+    "signIn": "로그인",
+    "signOut": "로그아웃"
+  },
+  "actions": {
+    "continue": "계속",
+    "back": "뒤로",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "confirm": "확인",
+    "getStarted": "시작하기",
+    "tryFree": "무료로 체험",
+    "learnMore": "자세히 보기"
+  },
+  "labels": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "displayName": "표시 이름",
+    "language": "언어",
+    "loading": "불러오는 중…",
+    "today": "오늘"
+  },
+  "errors": {
+    "generic": "문제가 발생했습니다. 다시 시도해 주세요.",
+    "network": "네트워크 오류입니다. 연결을 확인하세요.",
+    "unauthorized": "계속하려면 로그인하세요.",
+    "notFound": "찾을 수 없습니다."
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "ko": "한국어",
+    "zh": "简体中文"
+  }
+}

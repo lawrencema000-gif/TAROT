@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "Arcana",
+    "tagline": "Know yourself. One ritual a day."
+  },
+  "nav": {
+    "home": "Home",
+    "readings": "Readings",
+    "horoscope": "Horoscope",
+    "journal": "Journal",
+    "quizzes": "Quizzes",
+    "profile": "Profile",
+    "blog": "Blog",
+    "cardMeanings": "Card Meanings",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "actions": {
+    "continue": "Continue",
+    "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "getStarted": "Get Started",
+    "tryFree": "Try Free",
+    "learnMore": "Learn more"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "language": "Language",
+    "loading": "Loading…",
+    "today": "Today"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Check your connection.",
+    "unauthorized": "Please sign in to continue.",
+    "notFound": "Not found."
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "ko": "한국어",
+    "zh": "简体中文"
+  }
+}

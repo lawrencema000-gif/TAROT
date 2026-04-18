@@ -20,7 +20,11 @@
     "saved": "已收藏",
     "back": "返回",
     "backToArcana": "← 返回 Arcana",
-    "backToNews": "返回资讯"
+    "backToNews": "返回资讯",
+    "trophies": "成就",
+    "news": "资讯",
+    "admin": "管理",
+    "more": "更多"
   },
   "actions": {
     "continue": "继续",
@@ -90,7 +94,29 @@
     "birthDateFuture": "出生日期不能是未来日期。",
     "minAge": "您必须年满 13 岁。",
     "tooManyRequests": "请求过于频繁,请稍后再试。",
-    "saveFailed": "保存失败,请重试。"
+    "saveFailed": "保存失败,请重试。",
+    "auth": {
+      "unknown": "出现未知错误。",
+      "unexpected": "出现意外错误。",
+      "INVALID_GRANT": "授权码已过期或无效。",
+      "FLOW_STATE_NOT_FOUND": "登录会话已过期。",
+      "PKCE_VERIFIER_MISSING": "安全校验失败。",
+      "SESSION_EXPIRED": "会话已过期。",
+      "INVALID_REQUEST": "登录请求无效。",
+      "ACCESS_DENIED": "登录已取消。",
+      "UNAUTHORIZED_CLIENT": "Google 登录未被授权。",
+      "INVALID_CREDENTIALS": "邮箱或密码不正确。",
+      "EMAIL_NOT_CONFIRMED": "请先验证你的邮箱。",
+      "USER_EXISTS": "此邮箱已注册账号。",
+      "PASSWORD_TOO_SHORT": "密码至少需要 6 位。",
+      "INVALID_EMAIL": "请输入有效的邮箱地址。",
+      "NETWORK_ERROR": "网络错误,请检查连接。",
+      "POPUP_BLOCKED": "弹窗被阻止了。",
+      "USER_CANCELLED": "登录已取消。",
+      "RATE_LIMITED": "尝试次数过多。",
+      "UNAUTHORIZED": "未授权。",
+      "PROVIDER_NOT_ENABLED": "Google 登录暂不可用。"
+    }
   },
   "toast": {
     "savedSuccess": "已保存。",

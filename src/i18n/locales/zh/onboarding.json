@@ -37,5 +37,51 @@
     "submit": "登录",
     "forgotPassword": "忘记密码?",
     "switchToSignUp": "还没有账号?立即注册"
+  },
+  "oauth": {
+    "welcome": "欢迎,{{name}}!",
+    "welcomeSub": "用几个步骤定制你的专属体验",
+    "goals": {
+      "heading": "你想要什么样的帮助?",
+      "hint": "可多选"
+    },
+    "basics": {
+      "heading": "你的宇宙基础信息",
+      "hint": "决定你的星座",
+      "birthDate": "出生日期",
+      "birthTime": "出生时间",
+      "optional": "(可选)",
+      "birthTimeHint": "让星盘更精准",
+      "birthPlace": "出生地",
+      "birthPlaceHint": "用于之后计算本命星盘",
+      "searchPlaceholder": "搜索城市或城镇...",
+      "locationVerified": "位置已确认",
+      "invalidBirthDate": "出生日期无效"
+    },
+    "tone": {
+      "heading": "你的宇宙语气",
+      "hint": "我们该用怎样的口吻与你交流?",
+      "gentle": {
+        "label": "温柔 & 支持",
+        "desc": "温暖且给予滋养的指引"
+      },
+      "direct": {
+        "label": "直接 & 坦诚",
+        "desc": "清晰明了的洞察"
+      },
+      "playful": {
+        "label": "俏皮 & 神秘",
+        "desc": "奇幻又迷人的智慧"
+      }
+    },
+    "notifications": {
+      "reminderTime": "提醒时间"
+    },
+    "next": "下一步",
+    "beginJourney": "开启旅程",
+    "toast": {
+      "saveFailed": "保存资料失败,请稍后重试。",
+      "welcome": "欢迎来到 Arcana!"
+    }
   }
 }

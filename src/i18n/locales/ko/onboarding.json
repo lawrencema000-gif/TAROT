@@ -37,5 +37,51 @@
     "submit": "로그인",
     "forgotPassword": "비밀번호를 잊으셨나요?",
     "switchToSignUp": "계정이 없으신가요? 가입하기"
+  },
+  "oauth": {
+    "welcome": "환영해요, {{name}}님!",
+    "welcomeSub": "몇 가지 단계로 맞춤 경험을 만들어 볼게요",
+    "goals": {
+      "heading": "어떤 도움을 받고 싶으세요?",
+      "hint": "해당되는 모든 항목을 선택하세요"
+    },
+    "basics": {
+      "heading": "당신의 우주 기본 정보",
+      "hint": "별자리가 결정돼요",
+      "birthDate": "생년월일",
+      "birthTime": "출생 시각",
+      "optional": "(선택)",
+      "birthTimeHint": "더 정확한 차트를 위해",
+      "birthPlace": "출생지",
+      "birthPlaceHint": "나중에 네이털 차트를 계산하는 데 사용돼요",
+      "searchPlaceholder": "도시 또는 마을 검색...",
+      "locationVerified": "위치가 확인되었어요",
+      "invalidBirthDate": "생년월일이 유효하지 않아요"
+    },
+    "tone": {
+      "heading": "당신의 우주 톤",
+      "hint": "어떻게 말해드릴까요?",
+      "gentle": {
+        "label": "부드럽고 따뜻하게",
+        "desc": "포근하고 지지하는 안내"
+      },
+      "direct": {
+        "label": "솔직하고 직접적으로",
+        "desc": "또렷하고 담백한 인사이트"
+      },
+      "playful": {
+        "label": "재치 있고 신비롭게",
+        "desc": "환상적이고 매혹적인 지혜"
+      }
+    },
+    "notifications": {
+      "reminderTime": "알림 시간"
+    },
+    "next": "다음",
+    "beginJourney": "여정 시작하기",
+    "toast": {
+      "saveFailed": "프로필 저장에 실패했어요. 다시 시도해 주세요.",
+      "welcome": "Arcana에 오신 걸 환영해요!"
+    }
   }
 }

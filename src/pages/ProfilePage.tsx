@@ -23,23 +23,10 @@ import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
+import { useT } from '../i18n/useT';
 import type { Goal } from '../types';
-const goalOptions: { label: string; value: Goal }[] = [
-  { label: 'Love', value: 'love' },
-  { label: 'Career', value: 'career' },
-  { label: 'Clarity', value: 'clarity' },
-  { label: 'Growth', value: 'growth' },
-  { label: 'Wellness', value: 'wellness' },
-  { label: 'Creativity', value: 'creativity' },
-];
-
-const loveLanguageLabels: Record<string, string> = {
-  'words-of-affirmation': 'Words of Affirmation',
-  'quality-time': 'Quality Time',
-  'receiving-gifts': 'Receiving Gifts',
-  'acts-of-service': 'Acts of Service',
-  'physical-touch': 'Physical Touch',
-};
+// Value-based goal keys — labels pulled from app.profile.goals at render time.
+const goalValues: Goal[] = ['love', 'career', 'clarity', 'growth', 'wellness', 'creativity'];
 
 interface SavedHighlight {
   id: string;
@@ -49,6 +36,15 @@ interface SavedHighlight {
 }
 
 export function ProfilePage() {
+  const { t } = useT('app');
+  const goalOptions = goalValues.map(value => ({ label: t(`profile.goals.${value}`), value }));
+  const loveLanguageLabels: Record<string, string> = {
+    'words-of-affirmation': t('profile.loveLanguages.words-of-affirmation'),
+    'quality-time': t('profile.loveLanguages.quality-time'),
+    'receiving-gifts': t('profile.loveLanguages.receiving-gifts'),
+    'acts-of-service': t('profile.loveLanguages.acts-of-service'),
+    'physical-touch': t('profile.loveLanguages.physical-touch'),
+  };
   const { profile, user, updateProfile } = useAuth();
   const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -163,7 +159,7 @@ export function ProfilePage() {
     if (error) {
       toast(error.message, 'error');
     } else {
-      toast('Profile updated', 'success');
+      toast(t('profile.profileUpdated'), 'success');
       setShowEditProfile(false);
     }
   };
@@ -202,7 +198,7 @@ export function ProfilePage() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-display text-xl text-mystic-100 truncate">{profile?.displayName || 'Seeker'}</h2>
+            <h2 className="font-display text-xl text-mystic-100 truncate">{profile?.displayName || t('home.seeker')}</h2>
             {zodiacInfo && (
               <p className="text-gold text-sm">{zodiacInfo.name}</p>
             )}
@@ -219,21 +215,21 @@ export function ProfilePage() {
               <Flame className="w-4 h-4 text-gold" />
               <span className="text-2xl font-display text-mystic-100">{profile?.streak || 0}</span>
             </div>
-            <p className="text-xs text-mystic-500">Day Streak</p>
+            <p className="text-xs text-mystic-500">{t('profile.dayStreak')}</p>
           </div>
           <div className="bg-mystic-800/50 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Star className="w-4 h-4 text-cosmic-blue" />
-              <span className="text-2xl font-display text-mystic-100">Level {profile?.level || 1}</span>
+              <span className="text-2xl font-display text-mystic-100">{t('profile.level', { n: profile?.level || 1 })}</span>
             </div>
-            <p className="text-xs text-mystic-500">{profile?.seekerRank || 'Novice Seeker'}</p>
+            <p className="text-xs text-mystic-500">{profile?.seekerRank || t('achievements.novicesSeeker')}</p>
           </div>
         </div>
 
         <div className="mt-4">
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-mystic-500">XP Progress</span>
-            <span className="text-gold">{xpProgress.current} / {xpProgress.required} XP</span>
+            <span className="text-mystic-500">{t('profile.xpProgress')}</span>
+            <span className="text-gold">{t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}</span>
           </div>
           <div className="h-1.5 bg-mystic-800 rounded-full overflow-hidden">
             <div
@@ -246,7 +242,7 @@ export function ProfilePage() {
 
       {(profile?.mbtiType || profile?.loveLanguage) && (
         <Card padding="md">
-          <h3 className="text-sm font-medium text-mystic-400 mb-3">Personality Badges</h3>
+          <h3 className="text-sm font-medium text-mystic-400 mb-3">{t('profile.personalityBadges')}</h3>
           <div className="flex flex-wrap gap-2">
             {profile?.mbtiType && (
               <div className="flex items-center gap-2 px-3 py-2 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
@@ -268,7 +264,7 @@ export function ProfilePage() {
 
       {formatBirthProfile() && (
         <Card padding="md">
-          <h3 className="text-sm font-medium text-mystic-400 mb-2">Birth Profile</h3>
+          <h3 className="text-sm font-medium text-mystic-400 mb-2">{t('profile.birthProfile')}</h3>
           <div className="flex items-start gap-3">
             {zodiacInfo && (
               <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center text-xl">
@@ -277,7 +273,7 @@ export function ProfilePage() {
             )}
             <div>
               <p className="text-mystic-200">{formatBirthProfile()}</p>
-              <p className="text-sm text-mystic-500 mt-1">{zodiacInfo?.element} Sign</p>
+              <p className="text-sm text-mystic-500 mt-1">{t('profile.elementSign', { element: zodiacInfo?.element })}</p>
             </div>
           </div>
         </Card>
@@ -287,12 +283,12 @@ export function ProfilePage() {
         <Card padding="md">
           <div className="flex items-center gap-2 mb-3">
             <Target className="w-4 h-4 text-mystic-500" />
-            <h3 className="text-sm font-medium text-mystic-400">Your Goals</h3>
+            <h3 className="text-sm font-medium text-mystic-400">{t('profile.yourGoals')}</h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {profile.goals.map(goal => (
-              <span key={goal} className="px-3 py-1.5 bg-gold/10 border border-gold/20 rounded-full text-sm text-gold capitalize">
-                {goal}
+              <span key={goal} className="px-3 py-1.5 bg-gold/10 border border-gold/20 rounded-full text-sm text-gold">
+                {t(`profile.goals.${goal}`, { defaultValue: goal })}
               </span>
             ))}
           </div>
@@ -306,8 +302,8 @@ export function ProfilePage() {
               <Crown className="w-6 h-6 text-mystic-950" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-gold">Premium Member</h3>
-              <p className="text-sm text-mystic-400">Full access to all features</p>
+              <h3 className="font-medium text-gold">{t('profile.premiumMember')}</h3>
+              <p className="text-sm text-mystic-400">{t('profile.premiumSub')}</p>
             </div>
             <Zap className="w-5 h-5 text-gold" />
           </div>
@@ -320,8 +316,8 @@ export function ProfilePage() {
               <Crown className="w-6 h-6 text-gold" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">Upgrade to Premium</h3>
-              <p className="text-sm text-mystic-400">Unlock all spreads, charts & more</p>
+              <h3 className="font-medium text-mystic-100">{t('profile.upgradeToPremium')}</h3>
+              <p className="text-sm text-mystic-400">{t('profile.upgradeSub')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
           </button>
@@ -335,40 +331,40 @@ export function ProfilePage() {
             <Bookmark className="w-6 h-6 text-mystic-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-mystic-100">Saved</h3>
-            <p className="text-sm text-mystic-400">Your bookmarked readings & insights</p>
+            <h3 className="font-medium text-mystic-100">{t('profile.saved')}</h3>
+            <p className="text-sm text-mystic-400">{t('profile.yourBookmarks')}</p>
           </div>
           <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
         </button>
       </Card>
 
       <p className="text-center text-xs text-mystic-600 px-4">
-        This app is for entertainment and self-reflection purposes only.
+        {t('profile.disclaimer')}
       </p>
 
-      <Sheet open={showEditProfile} onClose={() => setShowEditProfile(false)} title="Edit Profile">
+      <Sheet open={showEditProfile} onClose={() => setShowEditProfile(false)} title={t('profile.editProfileSheet.title')}>
         <div className="space-y-6">
           <Input
-            label="Display Name"
+            label={t('profile.editProfileSheet.displayName')}
             value={editData.displayName}
             onChange={e => setEditData(d => ({ ...d, displayName: e.target.value }))}
-            placeholder="Your name"
+            placeholder={t('profile.editProfileSheet.yourName')}
           />
 
           <Input
-            label="Birth Time (optional)"
+            label={t('profile.editProfileSheet.birthTimeOptional')}
             type="time"
             value={editData.birthTime}
             onChange={e => setEditData(d => ({ ...d, birthTime: e.target.value }))}
           />
 
           <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-2">Birth Place (optional)</label>
+            <label className="block text-sm font-medium text-mystic-300 mb-2">{t('profile.birthPlaceOptional')}</label>
             <div className="relative">
               <Input
                 value={locationQuery}
                 onChange={e => handleLocationInput(e.target.value)}
-                placeholder="Search city or town..."
+                placeholder={t('profile.editProfileSheet.searchCity')}
                 icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               />
             </div>

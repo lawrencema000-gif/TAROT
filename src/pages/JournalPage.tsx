@@ -33,6 +33,7 @@ import { supabase } from '../lib/supabase';
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
+import { useT } from '../i18n/useT';
 
 const moodEmojis = [
   { emoji: '😊', label: 'Happy', value: 'happy' },
@@ -110,6 +111,7 @@ const categoryIcons: Record<string, typeof Sun> = {
 };
 
 export function JournalPage() {
+  const { t } = useT('app');
   const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp } = useGamification();
   const [activeTab, setActiveTab] = useState<JournalTab>('entries');
@@ -136,7 +138,10 @@ export function JournalPage() {
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
 
   const today = new Date().toISOString().split('T')[0];
-  const [todayPrompt, setTodayPrompt] = useState('What are you reflecting on today?');
+  const [todayPrompt, setTodayPrompt] = useState<string>(() => {
+    // placeholder — translated default replaced via t() once mounted
+    return 'What are you reflecting on today?';
+  });
 
   useEffect(() => {
     import('../data/horoscopes').then(m => setTodayPrompt(m.getDailyPrompt(today)));
@@ -240,7 +245,7 @@ export function JournalPage() {
 
   const openEditEntry = (entry: JournalEntry) => {
     if (entry.is_locked && !profile?.isPremium) {
-      toast('Unlock premium to view locked entries', 'error');
+      toast(t('journal.toast.unlockPremiumLock'), 'error');
       return;
     }
     setEditingEntry(entry);
@@ -271,7 +276,7 @@ export function JournalPage() {
     if (!user || !content.trim()) return;
 
     if (lock && !profile?.isPremium) {
-      toast('Upgrade to premium to lock entries', 'error');
+      toast(t('journal.toast.upgradeToLock'), 'error');
       return;
     }
 
@@ -304,12 +309,12 @@ export function JournalPage() {
     setShowEditor(false);
     setSelectedTemplate(null);
     loadEntries();
-    toast(lock ? 'Entry saved & locked' : 'Entry saved', 'success');
+    toast(lock ? t('journal.toast.savedLocked') : t('journal.toast.saved'), 'success');
 
     if (!editingEntry) {
       const xpResult = await awardXP(user.id, 'journal_entry');
       if (xpResult) {
-        toast(`+${xpResult.xp_earned} XP earned!`, 'success');
+        toast(t('journal.toast.xpEarned', { n: xpResult.xp_earned }), 'success');
         if (xpResult.level_up) {
           triggerLevelUp({
             newLevel: xpResult.new_level,
@@ -324,11 +329,11 @@ export function JournalPage() {
   };
 
   const deleteEntry = async (entryId: string) => {
-    if (!confirm('Delete this journal entry?')) return;
+    if (!confirm(t('journal.toast.deleteConfirm'))) return;
 
     await supabase.from('journal_entries').delete().eq('id', entryId);
     loadEntries();
-    toast('Entry deleted', 'success');
+    toast(t('journal.toast.deleted'), 'success');
   };
 
   const toggleTag = (tagValue: string) => {
@@ -490,15 +495,15 @@ export function JournalPage() {
   };
 
   const tabs = [
-    { id: 'entries' as const, label: 'Entries', icon: BookOpen },
-    { id: 'templates' as const, label: 'Templates', icon: FileText },
-    { id: 'insights' as const, label: 'Insights', icon: Lightbulb },
+    { id: 'entries' as const, label: t('journal.tabs.entries'), icon: BookOpen },
+    { id: 'templates' as const, label: t('journal.tabs.templates'), icon: FileText },
+    { id: 'insights' as const, label: t('journal.tabs.insights'), icon: Lightbulb },
   ];
 
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-mystic-100">Journal</h1>
+        <h1 className="font-display text-2xl text-mystic-100">{t('journal.title')}</h1>
         <Button variant="primary" size="sm" onClick={openNewEntry}>
           <Plus className="w-4 h-4" />
           New
@@ -577,7 +582,7 @@ export function JournalPage() {
                   <Sparkles className="w-6 h-6 text-gold" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Today&apos;s Prompt</p>
+                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{t('journal.todaysPrompt')}</p>
                   <p className="text-mystic-100 leading-relaxed mb-2">{todayPrompt}</p>
                   <div className="flex items-center text-gold text-sm">
                     Start writing
@@ -631,8 +636,8 @@ export function JournalPage() {
             </div>
           ) : filteredEntries.length === 0 ? (
             <Card padding="lg" className="text-center">
-              <p className="text-mystic-400">No journal entries yet.</p>
-              <p className="text-sm text-mystic-500 mt-1">Start your reflection journey today.</p>
+              <p className="text-mystic-400">{t('journal.emptyState')}</p>
+              <p className="text-sm text-mystic-500 mt-1">{t('journal.emptyStateSub')}</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -693,7 +698,7 @@ export function JournalPage() {
                   disabled={loadingMore}
                   className="w-full"
                 >
-                  {loadingMore ? 'Loading...' : 'Load more entries'}
+                  {loadingMore ? t('journal.loadingMore') : t('journal.loadMore')}
                 </Button>
               )}
             </div>
@@ -809,17 +814,17 @@ export function JournalPage() {
             <Card padding="lg" className="text-center">
               <Flame className="w-8 h-8 text-gold mx-auto mb-2" />
               <p className="font-display text-3xl text-mystic-100">{insights.currentStreak}</p>
-              <p className="text-xs text-mystic-400 mt-1">Day Streak</p>
+              <p className="text-xs text-mystic-400 mt-1">{t('journal.dayStreak')}</p>
             </Card>
             <Card padding="lg" className="text-center">
               <TrendingUp className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
               <p className="font-display text-3xl text-mystic-100">{insights.totalEntries}</p>
-              <p className="text-xs text-mystic-400 mt-1">Total Entries</p>
+              <p className="text-xs text-mystic-400 mt-1">{t('journal.totalEntries')}</p>
             </Card>
           </div>
 
           <Card padding="lg">
-            <h3 className="font-medium text-mystic-200 mb-4">Mood Trend (7 days)</h3>
+            <h3 className="font-medium text-mystic-200 mb-4">{t('journal.moodTrend')}</h3>
             <div className="flex justify-between gap-1">
               {insights.last7DaysMoods.map((day, i) => {
                 const date = new Date(day.date);
@@ -847,7 +852,7 @@ export function JournalPage() {
             <Card padding="lg">
               <div className="flex items-center gap-2 mb-4">
                 <Tag className="w-4 h-4 text-mystic-500" />
-                <h3 className="font-medium text-mystic-200">Most Common Tags</h3>
+                <h3 className="font-medium text-mystic-200">{t('journal.mostCommonTags')}</h3>
               </div>
               <div className="space-y-3">
                 {insights.topTags.map(([tagValue, count]) => {
@@ -876,7 +881,7 @@ export function JournalPage() {
             <Card padding="lg">
               <div className="flex items-center gap-2 mb-4">
                 <BarChart3 className="w-4 h-4 text-mystic-500" />
-                <h3 className="font-medium text-mystic-200">Mood Distribution</h3>
+                <h3 className="font-medium text-mystic-200">{t('journal.moodDistribution')}</h3>
               </div>
               <div className="space-y-3">
                 {insights.moodDistribution.map(({ mood, percentage }) => {
@@ -908,7 +913,7 @@ export function JournalPage() {
               <div className="flex items-start gap-3">
                 <Star className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-gold mb-2">Personal Insight</h3>
+                  <h3 className="font-medium text-gold mb-2">{t('journal.personalInsight')}</h3>
                   <p className="text-mystic-300 text-sm leading-relaxed">{insights.generatedInsight}</p>
                 </div>
               </div>
@@ -918,7 +923,7 @@ export function JournalPage() {
           <Card padding="lg">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="w-4 h-4 text-mystic-500" />
-              <h3 className="font-medium text-mystic-200">This Week</h3>
+              <h3 className="font-medium text-mystic-200">{t('journal.thisWeek')}</h3>
             </div>
             <div className="flex justify-between gap-2">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
@@ -943,26 +948,26 @@ export function JournalPage() {
           </Card>
 
           <Card padding="lg">
-            <h3 className="font-medium text-mystic-200 mb-4">Writing Stats</h3>
+            <h3 className="font-medium text-mystic-200 mb-4">{t('journal.writingStats')}</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-xl font-display text-gold">{insights.averageWordsPerEntry}</p>
-                <p className="text-xs text-mystic-400">Avg words</p>
+                <p className="text-xs text-mystic-400">{t('journal.avgWords')}</p>
               </div>
               <div className="text-center">
                 <p className="text-xl font-display text-cosmic-blue">{insights.last30DaysEntries}</p>
-                <p className="text-xs text-mystic-400">Last 30 days</p>
+                <p className="text-xs text-mystic-400">{t('journal.last30Days')}</p>
               </div>
               <div className="text-center">
                 <p className="text-xl font-display text-emerald-400">{insights.totalWords.toLocaleString()}</p>
-                <p className="text-xs text-mystic-400">Total words</p>
+                <p className="text-xs text-mystic-400">{t('journal.totalWords')}</p>
               </div>
             </div>
           </Card>
 
           {entries.length === 0 && (
             <Card padding="lg" className="text-center">
-              <p className="text-mystic-400">Write your first entry to see insights.</p>
+              <p className="text-mystic-400">{t('journal.insightsEmpty')}</p>
               <Button variant="primary" className="mt-4" onClick={openNewEntry}>
                 Start Writing
               </Button>
@@ -971,7 +976,7 @@ export function JournalPage() {
         </div>
       )}
 
-      <Sheet open={showEditor} onClose={() => { setShowEditor(false); setSelectedTemplate(null); }} title={editingEntry ? 'Edit Entry' : selectedTemplate ? selectedTemplate.title : 'New Entry'}>
+      <Sheet open={showEditor} onClose={() => { setShowEditor(false); setSelectedTemplate(null); }} title={editingEntry ? t('journal.editSheet.editEntry') : selectedTemplate ? selectedTemplate.title : t('journal.editSheet.newEntry')}>
         <div className="flex flex-col h-full -m-6">
           <div className="flex-1 overflow-y-auto p-6 space-y-5">
             {!editingEntry && selectedTemplate && (
@@ -1034,7 +1039,7 @@ export function JournalPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-2">Your Thoughts</label>
+              <label className="block text-sm font-medium text-mystic-300 mb-2">{t('journal.editSheet.yourThoughts')}</label>
               <textarea
                 placeholder="Write your reflection..."
                 value={content}
@@ -1045,7 +1050,7 @@ export function JournalPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-3">How are you feeling?</label>
+              <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.howFeeling')}</label>
               <div className="flex flex-wrap gap-2">
                 {moodEmojis.map(mood => (
                   <button
@@ -1065,7 +1070,7 @@ export function JournalPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-3">Tags</label>
+              <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.tags')}</label>
               <div className="flex flex-wrap gap-2">
                 {categoryTags.map(tag => (
                   <button
@@ -1082,11 +1087,11 @@ export function JournalPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-3">Attachments</label>
+              <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.attachments')}</label>
               {linkedReadingId ? (
                 <div className="flex items-center gap-3 p-3 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
                   <Link2 className="w-5 h-5 text-cosmic-blue" />
-                  <span className="text-sm text-mystic-200 flex-1">Tarot reading linked</span>
+                  <span className="text-sm text-mystic-200 flex-1">{t('journal.editSheet.tarotLinked')}</span>
                   <button
                     onClick={() => setLinkedReadingId(null)}
                     className="p-1 hover:bg-mystic-700 rounded"
@@ -1139,7 +1144,7 @@ export function JournalPage() {
       >
         <div className="space-y-3">
           {recentReadings.length === 0 ? (
-            <p className="text-center text-mystic-400 py-8">No readings to link yet.</p>
+            <p className="text-center text-mystic-400 py-8">{t('journal.noReadings')}</p>
           ) : (
             recentReadings.map(reading => (
               <button

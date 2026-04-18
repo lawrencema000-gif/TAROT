@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy, MoreHorizontal, X } from 'lucide-react';
 import { isWeb } from '../../utils/platform';
+import { useT } from '../../i18n/useT';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
@@ -9,25 +10,27 @@ interface BottomNavProps {
   isAdmin?: boolean;
 }
 
-type TabDef = { id: Tab; label: string; icon: React.ElementType };
+// Label here is a translation key under common:nav.* — rendered via t().
+type TabDef = { id: Tab; labelKey: string; icon: React.ElementType };
 
 const visibleTabs: TabDef[] = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'readings', label: 'Readings', icon: Sparkles },
-  { id: 'horoscope', label: 'Horoscope', icon: Star },
-  { id: 'quizzes', label: 'Quizzes', icon: Brain },
+  { id: 'home', labelKey: 'nav.home', icon: Home },
+  { id: 'readings', labelKey: 'nav.readings', icon: Sparkles },
+  { id: 'horoscope', labelKey: 'nav.horoscope', icon: Star },
+  { id: 'quizzes', labelKey: 'nav.quizzes', icon: Brain },
 ];
 
 const moreMenuTabs: TabDef[] = [
-  { id: 'achievements', label: 'Trophies', icon: Trophy },
-  { id: 'journal', label: 'Journal', icon: BookOpen },
+  { id: 'achievements', labelKey: 'nav.trophies', icon: Trophy },
+  { id: 'journal', labelKey: 'nav.journal', icon: BookOpen },
 ];
 
-const blogTab: TabDef = { id: 'blog', label: 'News', icon: Newspaper };
-const profileTab: TabDef = { id: 'profile', label: 'Profile', icon: User };
-const adminTab: TabDef = { id: 'admin', label: 'Admin', icon: Shield };
+const blogTab: TabDef = { id: 'blog', labelKey: 'nav.news', icon: Newspaper };
+const profileTab: TabDef = { id: 'profile', labelKey: 'nav.profile', icon: User };
+const adminTab: TabDef = { id: 'admin', labelKey: 'nav.admin', icon: Shield };
 
 export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNavProps) {
+  const { t } = useT();
   const [moreOpen, setMoreOpen] = useState(false);
 
   // Build the list of items inside the More menu
@@ -60,11 +63,11 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
             <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-mystic-700/30">
-                <span className="text-gold font-semibold text-sm tracking-wide">More</span>
+                <span className="text-gold font-semibold text-sm tracking-wide">{t('nav.more')}</span>
                 <button
                   onClick={() => setMoreOpen(false)}
                   className="p-1 rounded-lg text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/40 transition-colors"
-                  aria-label="Close menu"
+                  aria-label={t('actions.close')}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -96,7 +99,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                         <Icon className={`w-5 h-5 transition-all duration-200 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
                       </div>
                       <span className={`text-xs font-medium ${isActive ? 'text-gold' : ''}`}>
-                        {item.label}
+                        {t(item.labelKey)}
                       </span>
                     </button>
                   );
@@ -124,7 +127,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   }}
                   role="tab"
                   aria-selected={isActive}
-                  aria-label={tab.label}
+                  aria-label={t(tab.labelKey)}
                   className={`
                     relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                     transition-all duration-300 touch-manipulation
@@ -142,7 +145,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                     <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
                   </div>
                   <span className={`text-[10px] font-medium transition-all duration-300 ${isActive ? 'text-gold' : ''}`}>
-                    {tab.label}
+                    {t(tab.labelKey)}
                   </span>
                 </button>
               );
@@ -153,7 +156,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               onClick={() => setMoreOpen(prev => !prev)}
               role="tab"
               aria-selected={isMoreActive}
-              aria-label="More"
+              aria-label={t('nav.more')}
               className={`
                 relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                 transition-all duration-300 touch-manipulation
@@ -171,7 +174,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 <MoreHorizontal className={`w-5 h-5 transition-all duration-300 ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
               </div>
               <span className={`text-[10px] font-medium transition-all duration-300 ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
-                More
+                {t('nav.more')}
               </span>
             </button>
           </div>

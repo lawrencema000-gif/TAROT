@@ -42,6 +42,7 @@ import { supabase } from '../lib/supabase';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { ratePromptService } from '../services/ratePrompt';
+import { useT } from '../i18n/useT';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -100,6 +101,7 @@ const encouragementMessages = [
 ];
 
 export function QuizzesPage() {
+  const { t: tApp } = useT('app');
   const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp, openRatePrompt } = useGamification();
   const [state, setState] = useState<QuizState>('list');
@@ -217,7 +219,7 @@ export function QuizzesPage() {
         .from('profiles')
         .update(updateData)
         .eq('id', user.id);
-      toast('Saved to your profile!', 'success');
+      toast(tApp('home.savedToHighlights'), 'success');
     }
     setSaving(false);
   };
@@ -232,7 +234,7 @@ export function QuizzesPage() {
         await navigator.share({ text: shareText });
       } catch {
         await navigator.clipboard.writeText(shareText);
-        toast('Copied to clipboard!', 'success');
+        toast(tApp('home.copiedToClipboard'), 'success');
       }
     } else {
       await navigator.clipboard.writeText(shareText);
@@ -1327,14 +1329,14 @@ export function QuizzesPage() {
   return (
     <div className="space-y-6 pb-6">
       <div>
-        <h1 className="font-display text-2xl text-mystic-100">Personality Quizzes</h1>
-        <p className="text-mystic-400 mt-1">Discover more about yourself</p>
+        <h1 className="font-display text-2xl text-mystic-100">{tApp('quizzes.title')}</h1>
+        <p className="text-mystic-400 mt-1">{tApp('quizzes.subtitle')}</p>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
           <div className="loading-constellation mx-auto mb-4" />
-          <p className="text-mystic-400">Loading...</p>
+          <p className="text-mystic-400">{tApp('quizzes.loading', { defaultValue: 'Loading...' })}</p>
         </div>
       ) : (
         <div className="space-y-4">

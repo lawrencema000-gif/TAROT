@@ -38,6 +38,9 @@ import { DiagnosticsSheet } from '../diagnostics';
 import { useDiagnostics } from '../../context/DiagnosticsContext';
 import { isDevMode } from '../../utils/telemetry';
 import { useGeocode } from '../../hooks/useAstrology';
+import { LanguagePicker } from '../i18n/LanguagePicker';
+import { useT } from '../../i18n/useT';
+import { getLocale, type SupportedLocale } from '../../i18n/config';
 
 type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
 
@@ -65,6 +68,10 @@ interface SettingItem {
 }
 
 export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
+  const { t: tI18n } = useT('common');
+  // app namespace lookups — used for the settings menu labels. Passed args
+  // (like {{n}} for error counts) are interpolated by i18next.
+  const { t: tAppSettings } = useT('app');
   const { profile, user, signOut, updateProfile, refreshProfile } = useAuth();
   const { openDiagnostics, isOpen: isDiagnosticsOpen, closeDiagnostics, errorCount } = useDiagnostics();
   const [activeSheet, setActiveSheet] = useState<SubSheet>('main');
@@ -380,52 +387,52 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         toast('Failed to update', 'error');
       } else {
         await refreshProfile();
-        toast(profile?.notificationsEnabled ? 'Notifications disabled' : 'Notifications enabled', 'success');
+        toast(profile?.notificationsEnabled ? tAppSettings('settings.menu.notificationsDisabled') : tAppSettings('settings.menu.notificationsEnabled'), 'success');
       }
     } catch {
-      toast('Failed to update', 'error');
+      toast(tAppSettings('settings.menu.updateFailed'), 'error');
     }
   };
 
   const settingGroups: { title: string; items: SettingItem[] }[] = [
     {
-      title: 'Account',
+      title: tAppSettings('settings.sections.account'),
       items: [
-        { icon: User, label: 'Edit Profile', value: profile?.displayName || user?.email?.split('@')[0], action: () => setActiveSheet('editProfile') },
+        { icon: User, label: tAppSettings('settings.menu.editProfile'), value: profile?.displayName || user?.email?.split('@')[0], action: () => setActiveSheet('editProfile') },
         {
           icon: profile?.isPremium ? Crown : CreditCard,
-          label: 'Subscription',
-          value: profile?.isPremium ? 'Premium' : 'Free',
+          label: tAppSettings('settings.menu.subscription'),
+          value: profile?.isPremium ? tAppSettings('settings.menu.premium') : tAppSettings('settings.menu.free'),
           action: handleSubscriptionClick,
         },
-        { icon: ArrowLeftRight, label: 'Switch Account', action: handleSwitchAccount },
+        { icon: ArrowLeftRight, label: tAppSettings('settings.menu.switchAccount'), action: handleSwitchAccount },
       ],
     },
     {
-      title: 'Preferences',
+      title: tAppSettings('settings.sections.preferences'),
       items: [
-        { icon: Bell, label: 'Notifications', value: profile?.notificationsEnabled ? 'On' : 'Off', action: () => setActiveSheet('notifications') },
-        { icon: Moon, label: 'Appearance', value: profile?.theme || 'Dark', action: () => setActiveSheet('appearance') },
-        { icon: Globe, label: 'Language', value: 'English', action: () => setActiveSheet('language') },
+        { icon: Bell, label: tAppSettings('settings.sections.notifications'), value: profile?.notificationsEnabled ? tAppSettings('settings.menu.toggleOn') : tAppSettings('settings.menu.toggleOff'), action: () => setActiveSheet('notifications') },
+        { icon: Moon, label: tAppSettings('settings.menu.appearance'), value: profile?.theme || 'Dark', action: () => setActiveSheet('appearance') },
+        { icon: Globe, label: tI18n('labels.language'), value: tI18n(`languages.${getLocale()}`), action: () => setActiveSheet('language') },
       ],
     },
     {
-      title: 'Privacy',
+      title: tAppSettings('settings.sections.privacy'),
       items: [
-        { icon: Download, label: 'Export My Data', action: handleExportData },
-        { icon: Trash2, label: 'Delete Account', action: () => setActiveSheet('deleteConfirm'), danger: true },
+        { icon: Download, label: tAppSettings('settings.menu.exportData'), action: handleExportData },
+        { icon: Trash2, label: tAppSettings('settings.menu.deleteAccount'), action: () => setActiveSheet('deleteConfirm'), danger: true },
       ],
     },
     {
-      title: 'Support',
+      title: tAppSettings('settings.sections.support'),
       items: [
-        { icon: HelpCircle, label: 'Help Center', action: () => setActiveSheet('help') },
-        { icon: FileText, label: 'Terms of Service', action: () => setActiveSheet('terms') },
-        { icon: Lock, label: 'Privacy Policy', action: () => setActiveSheet('privacy') },
+        { icon: HelpCircle, label: tAppSettings('settings.menu.helpCenter'), action: () => setActiveSheet('help') },
+        { icon: FileText, label: tAppSettings('settings.menu.termsOfService'), action: () => setActiveSheet('terms') },
+        { icon: Lock, label: tAppSettings('settings.menu.privacyPolicy'), action: () => setActiveSheet('privacy') },
         ...(isDevMode() || versionTapCount >= 5 ? [{
           icon: Bug,
-          label: 'Developer Diagnostics',
-          value: errorCount > 0 ? `${errorCount} errors` : undefined,
+          label: tAppSettings('settings.menu.developerDiagnostics'),
+          value: errorCount > 0 ? tAppSettings('settings.menu.errorCount', { n: errorCount }) : undefined,
           action: () => openDiagnostics(),
         }] : []),
       ],
@@ -433,7 +440,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     {
       title: '',
       items: [
-        { icon: LogOut, label: 'Sign Out', action: handleSignOut, danger: true },
+        { icon: LogOut, label: tAppSettings('settings.menu.signOut'), action: handleSignOut, danger: true },
       ],
     },
   ];
@@ -444,7 +451,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors mb-4"
     >
       <ChevronLeft className="w-4 h-4" />
-      <span className="text-sm">Back to Settings</span>
+      <span className="text-sm">{tAppSettings('settings.menu.backToSettings')}</span>
     </button>
   );
 
@@ -547,7 +554,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
   if (activeSheet === 'notifications') {
     return (
-      <Sheet open={open} onClose={onClose} title="Notifications">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.sections.notifications')}>
         {renderBackButton()}
         <div className="space-y-4">
           <div className="p-4 bg-mystic-800/50 rounded-xl">
@@ -599,7 +606,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               onClick={async () => {
                 await updateProfile({ theme: theme.id });
                 await refreshProfile();
-                toast(`Theme changed to ${theme.name}`, 'success');
+                toast(tAppSettings('settings.menu.themeChanged', { name: theme.name }), 'success');
               }}
               className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                 (profile?.theme || 'dark') === theme.id
@@ -624,41 +631,23 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   }
 
   if (activeSheet === 'language') {
-    const languages = [
-      { id: 'en', name: 'English', native: 'English' },
-      { id: 'es', name: 'Spanish', native: 'Espanol' },
-      { id: 'fr', name: 'French', native: 'Francais' },
-      { id: 'de', name: 'German', native: 'Deutsch' },
-    ];
+    const handleLanguageChange = async (locale: SupportedLocale) => {
+      // Persist to profile if signed in — server is source of truth for locale
+      if (user?.id) {
+        try {
+          await supabase.from('profiles').update({ locale }).eq('id', user.id);
+        } catch (e) {
+          console.warn('[Settings] Failed to persist locale:', e);
+        }
+      }
+      toast(tI18n('toast.languageChanged'), 'success');
+    };
 
     return (
-      <Sheet open={open} onClose={onClose} title="Language">
+      <Sheet open={open} onClose={onClose} title={tI18n('labels.language')}>
         {renderBackButton()}
         <div className="space-y-3">
-          {languages.map(lang => (
-            <button
-              key={lang.id}
-              onClick={() => {
-                toast('Language settings coming soon', 'info');
-              }}
-              className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-                lang.id === 'en'
-                  ? 'border-gold bg-gold/10'
-                  : 'border-mystic-700 hover:border-mystic-500'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-mystic-200">{lang.name}</p>
-                  <p className="text-sm text-mystic-500">{lang.native}</p>
-                </div>
-                {lang.id === 'en' && <Check className="w-5 h-5 text-gold" />}
-              </div>
-            </button>
-          ))}
-          <p className="text-xs text-mystic-500 text-center pt-2">
-            More languages coming soon
-          </p>
+          <LanguagePicker onSelect={handleLanguageChange} variant="full" />
         </div>
       </Sheet>
     );
@@ -867,7 +856,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           </div>
 
           <Button variant="outline" fullWidth onClick={() => setActiveSheet('main')}>
-            Back to Settings
+            {tAppSettings('settings.menu.backToSettings')}
           </Button>
         </div>
       </Sheet>
@@ -928,7 +917,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Settings">
+    <Sheet open={open} onClose={onClose} title={tAppSettings('settings.title')}>
       <div className="space-y-6">
         {settingGroups.map((group, groupIndex) => (
           <div key={groupIndex}>

@@ -25,6 +25,7 @@ import { useImagePreloader } from '../hooks/useImagePreloader';
 import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMilestone } from '../services/levelSystem';
 import { checkAchievementProgress } from '../services/achievements';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
+import { useT } from '../i18n/useT';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -34,6 +35,7 @@ interface RitualState {
 }
 
 export function HomePage() {
+  const { t } = useT(['app', 'common']);
   const { profile, user, refreshProfile } = useAuth();
   const { setActiveTab, openOverlay } = useUI();
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
@@ -250,7 +252,7 @@ export function HomePage() {
       });
       setTarotSaved(true);
       updateRitualProgress('tarotViewed');
-      toast('Saved to highlights', 'success');
+      toast(t('home.savedToHighlights'), 'success');
       checkRitualStatus();
     }
   };
@@ -265,11 +267,11 @@ export function HomePage() {
         await navigator.share({ text });
       } catch {
         await navigator.clipboard.writeText(text);
-        toast('Copied to clipboard', 'success');
+        toast(t('home.copiedToClipboard'), 'success');
       }
     } else {
       await navigator.clipboard.writeText(text);
-      toast('Copied to clipboard', 'success');
+      toast(t('home.copiedToClipboard'), 'success');
     }
   };
 
@@ -285,14 +287,14 @@ export function HomePage() {
 
   const greeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return t('home.greeting.morning');
+    if (hour < 18) return t('home.greeting.afternoon');
+    return t('home.greeting.evening');
   };
 
   const getDisplayName = () => {
     if (!profile?.displayName || profile.displayName.trim() === '') {
-      return 'Seeker';
+      return t('home.seeker');
     }
 
     const name = profile.displayName.trim();
@@ -303,7 +305,7 @@ export function HomePage() {
         .split(/[._-]/)
         .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(' ');
-      return formatted || 'Seeker';
+      return formatted || t('home.seeker');
     }
 
     return name;
@@ -323,14 +325,14 @@ export function HomePage() {
         </div>
 
         <h1 className="font-display text-2xl text-mystic-100 mb-3">
-          Your ritual is ready.
+          {t('home.ritualReady.title')}
         </h1>
         <p className="text-mystic-400 mb-8 max-w-xs">
-          Pull one card, then write one honest sentence.
+          {t('home.ritualReady.sub')}
         </p>
 
         <Button variant="gold" onClick={handleStartRitual} className="min-h-[52px] px-8">
-          Start Today's Ritual
+          {t('home.startTodaysRitual')}
           <Sparkles className="w-4 h-4" />
         </Button>
       </div>
@@ -345,7 +347,7 @@ export function HomePage() {
           <h1 className="font-display text-2xl text-mystic-100">{displayName}.</h1>
           {profile?.seekerRank && (
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-gold">Level {profile.level}</span>
+              <span className="text-xs text-gold">{t('home.level', { n: profile.level })}</span>
               <span className="text-xs text-mystic-500">•</span>
               <span className="text-xs text-mystic-400">{profile.seekerRank}</span>
             </div>
@@ -357,7 +359,7 @@ export function HomePage() {
         >
           <Flame className="w-5 h-5 text-gold" />
           <span className="font-semibold text-gold">{streak}</span>
-          <span className="text-mystic-400 text-sm">day streak</span>
+          <span className="text-mystic-400 text-sm">{t('home.dayStreakLabel')}</span>
         </button>
       </div>
 
@@ -366,10 +368,10 @@ export function HomePage() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-gold" />
-              <span className="text-sm font-medium text-mystic-100">XP Progress</span>
+              <span className="text-sm font-medium text-mystic-100">{t('home.xpProgress')}</span>
             </div>
             <span className="text-xs text-mystic-400">
-              {xpProgress.current} / {xpProgress.required} XP
+              {t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}
             </span>
           </div>
           <div className="relative h-2 bg-mystic-800 rounded-full overflow-hidden">
@@ -385,10 +387,10 @@ export function HomePage() {
         <Card variant="glow" padding="lg" className="text-center">
           <div className="py-4">
             <Sparkles className="w-12 h-12 text-gold mx-auto mb-4" />
-            <h2 className="font-display text-xl text-mystic-100 mb-2">Today's Ritual</h2>
-            <p className="text-mystic-400 text-sm mb-6">Your daily dose of cosmic wisdom awaits</p>
+            <h2 className="font-display text-xl text-mystic-100 mb-2">{t('home.todaysRitual')}</h2>
+            <p className="text-mystic-400 text-sm mb-6">{t('home.subtitle')}</p>
             <Button variant="gold" onClick={handleStartRitual} className="min-h-[48px]">
-              Start Today's Ritual
+              {t('home.startTodaysRitual')}
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -396,7 +398,7 @@ export function HomePage() {
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg text-mystic-200">Today's Ritual</h2>
+            <h2 className="font-display text-lg text-mystic-200">{t('home.todaysRitual')}</h2>
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${ritualState.horoscopeViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
               <div className={`w-2 h-2 rounded-full ${ritualState.tarotViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
@@ -427,12 +429,12 @@ export function HomePage() {
       {savedToday.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-mystic-300">Saved today</h3>
+            <h3 className="text-sm font-medium text-mystic-300">{t('home.savedToday')}</h3>
             <button
               onClick={() => openOverlay('saved')}
               className="text-xs text-gold hover:text-gold-light transition-colors"
             >
-              View all
+              {t('common:actions.viewAll')}
             </button>
           </div>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
@@ -460,8 +462,8 @@ export function HomePage() {
               <Sparkles className="w-7 h-7 text-gold" />
             </div>
             <div className="flex-1">
-              <h3 className="font-display text-lg text-gold">Ritual Complete!</h3>
-              <p className="text-sm text-mystic-400">You're on a {streak}-day streak. Keep it going!</p>
+              <h3 className="font-display text-lg text-gold">{t('home.ritualComplete')}</h3>
+              <p className="text-sm text-mystic-400">{t('home.streak', { n: streak })}</p>
             </div>
           </div>
         </Card>

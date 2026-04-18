@@ -37,5 +37,51 @@
     "submit": "Sign In",
     "forgotPassword": "Forgot password?",
     "switchToSignUp": "Don't have an account? Sign up"
+  },
+  "oauth": {
+    "welcome": "Welcome, {{name}}!",
+    "welcomeSub": "Let's personalize your experience in just a few steps",
+    "goals": {
+      "heading": "What do you want help with?",
+      "hint": "Select all that apply"
+    },
+    "basics": {
+      "heading": "Your cosmic basics",
+      "hint": "This determines your zodiac sign",
+      "birthDate": "Birth date",
+      "birthTime": "Birth time",
+      "optional": "(optional)",
+      "birthTimeHint": "For deeper chart accuracy",
+      "birthPlace": "Birth place",
+      "birthPlaceHint": "Helps compute your natal chart later",
+      "searchPlaceholder": "Search city or town...",
+      "locationVerified": "Location verified",
+      "invalidBirthDate": "Invalid birth date"
+    },
+    "tone": {
+      "heading": "Your cosmic tone",
+      "hint": "How should we speak to you?",
+      "gentle": {
+        "label": "Gentle & supportive",
+        "desc": "Warm, nurturing guidance"
+      },
+      "direct": {
+        "label": "Direct & honest",
+        "desc": "Clear, straightforward insights"
+      },
+      "playful": {
+        "label": "Playful & mystical",
+        "desc": "Whimsical, enchanting wisdom"
+      }
+    },
+    "notifications": {
+      "reminderTime": "Reminder time"
+    },
+    "next": "Next",
+    "beginJourney": "Begin Your Journey",
+    "toast": {
+      "saveFailed": "Failed to save profile. Please try again.",
+      "welcome": "Welcome to Arcana!"
+    }
   }
 }

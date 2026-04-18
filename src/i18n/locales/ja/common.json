@@ -20,7 +20,11 @@
     "saved": "保存済み",
     "back": "戻る",
     "backToArcana": "← Arcana に戻る",
-    "backToNews": "ニュース一覧へ"
+    "backToNews": "ニュース一覧へ",
+    "trophies": "トロフィー",
+    "news": "ニュース",
+    "admin": "管理",
+    "more": "その他"
   },
   "actions": {
     "continue": "続ける",
@@ -90,7 +94,29 @@
     "birthDateFuture": "未来の日付は入力できません。",
     "minAge": "13歳以上の方のみご利用いただけます。",
     "tooManyRequests": "リクエストが多すぎます。少しお待ちください。",
-    "saveFailed": "保存に失敗しました。もう一度お試しください。"
+    "saveFailed": "保存に失敗しました。もう一度お試しください。",
+    "auth": {
+      "unknown": "不明なエラーが発生しました。",
+      "unexpected": "予期しないエラーが発生しました。",
+      "INVALID_GRANT": "認証コードの有効期限が切れているか、無効です。",
+      "FLOW_STATE_NOT_FOUND": "サインインセッションの有効期限が切れました。",
+      "PKCE_VERIFIER_MISSING": "セキュリティ検証に失敗しました。",
+      "SESSION_EXPIRED": "セッションの有効期限が切れました。",
+      "INVALID_REQUEST": "サインインリクエストが無効です。",
+      "ACCESS_DENIED": "サインインがキャンセルされました。",
+      "UNAUTHORIZED_CLIENT": "Google サインインが承認されていません。",
+      "INVALID_CREDENTIALS": "メールアドレスまたはパスワードが違います。",
+      "EMAIL_NOT_CONFIRMED": "メールアドレスを認証してください。",
+      "USER_EXISTS": "このメールアドレスはすでに登録されています。",
+      "PASSWORD_TOO_SHORT": "パスワードは6文字以上にしてください。",
+      "INVALID_EMAIL": "有効なメールアドレスを入力してください。",
+      "NETWORK_ERROR": "ネットワークエラー。接続をご確認ください。",
+      "POPUP_BLOCKED": "ポップアップがブロックされました。",
+      "USER_CANCELLED": "サインインがキャンセルされました。",
+      "RATE_LIMITED": "試行回数が多すぎます。",
+      "UNAUTHORIZED": "認証されていません。",
+      "PROVIDER_NOT_ENABLED": "Google サインインは利用できません。"
+    }
   },
   "toast": {
     "savedSuccess": "保存しました。",

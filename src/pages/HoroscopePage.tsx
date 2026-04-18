@@ -6,13 +6,14 @@ import { PaywallSheet } from '../components/premium';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
 import { preloadInterpModules } from '../data/preloadInterpModules';
+import { useT } from '../i18n/useT';
 import type { HoroscopeSubTab } from '../types/astrology';
 
-const TABS: { id: HoroscopeSubTab; label: string; icon: typeof Sun; premiumOnly?: boolean }[] = [
-  { id: 'today', label: 'Today', icon: Sun },
-  { id: 'chart', label: 'Chart', icon: Circle },
-  { id: 'forecast', label: 'Forecast', icon: TrendingUp },
-  { id: 'explore', label: 'Explore', icon: Compass, premiumOnly: true },
+const TABS: { id: HoroscopeSubTab; labelKey: string; icon: typeof Sun; premiumOnly?: boolean }[] = [
+  { id: 'today', labelKey: 'horoscope.tabs.today', icon: Sun },
+  { id: 'chart', labelKey: 'horoscope.tabs.chart', icon: Circle },
+  { id: 'forecast', labelKey: 'horoscope.tabs.forecast', icon: TrendingUp },
+  { id: 'explore', labelKey: 'horoscope.tabs.explore', icon: Compass, premiumOnly: true },
 ];
 
 export function HoroscopePage() {
@@ -28,6 +29,7 @@ export function HoroscopePage() {
 }
 
 function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShowPaywall: () => void; showPaywall: boolean; onClosePaywall: () => void }) {
+  const { t } = useT('app');
   return (
     <>
       <div className="space-y-6">
@@ -38,9 +40,9 @@ function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShow
               <Sun className="w-14 h-14 text-gold drop-shadow-[0_0_20px_rgba(212,175,55,0.5)]" />
             </div>
           </div>
-          <h1 className="text-2xl font-display font-bold text-white">Your Personal Horoscope</h1>
+          <h1 className="text-2xl font-display font-bold text-white">{t('horoscope.yourPersonalHoroscope')}</h1>
           <p className="text-mystic-300 max-w-md mx-auto text-sm">
-            Unlock your complete astrological profile with personalized daily insights, birth chart analysis, and cosmic forecasts
+            {t('horoscope.unlockIntro')}
           </p>
         </div>
 
@@ -48,16 +50,16 @@ function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShow
           <div className="absolute top-3 right-3">
             <div className="flex items-center gap-1 px-2 py-1 bg-gold/20 rounded-full">
               <Crown className="w-3 h-3 text-gold" />
-              <span className="text-xs font-medium text-gold">Premium</span>
+              <span className="text-xs font-medium text-gold">{t('horoscope.premiumLocked')}</span>
             </div>
           </div>
           <div className="p-5 space-y-4">
-            <h3 className="text-lg font-semibold text-white mb-3">What You'll Unlock</h3>
+            <h3 className="text-lg font-semibold text-white mb-3">{t('horoscope.whatUnlocks')}</h3>
             <div className="space-y-3">
-              <FeatureItem icon={Sun} title="Daily Personalized Forecast" description="Tailored daily horoscopes based on your unique birth chart" />
-              <FeatureItem icon={Star} title="Complete Birth Chart" description="Full natal chart with all planetary placements and aspects" />
-              <FeatureItem icon={Moon} title="Transit Calendar" description="Track upcoming cosmic shifts affecting your chart" />
-              <FeatureItem icon={Sparkles} title="Weekly & Monthly Forecasts" description="Extended predictions for cosmic timing" />
+              <FeatureItem icon={Sun} title={t('horoscope.features.dailyForecast.title')} description={t('horoscope.features.dailyForecast.desc')} />
+              <FeatureItem icon={Star} title={t('horoscope.features.fullChart.title')} description={t('horoscope.features.fullChart.desc')} />
+              <FeatureItem icon={Moon} title={t('horoscope.features.transits.title')} description={t('horoscope.features.transits.desc')} />
+              <FeatureItem icon={Sparkles} title={t('horoscope.features.forecasts.title')} description={t('horoscope.features.forecasts.desc')} />
             </div>
           </div>
         </Card>
@@ -69,12 +71,12 @@ function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShow
             className="w-full relative bg-gradient-to-r from-gold to-amber-600 hover:from-gold/90 hover:to-amber-600/90 text-mystic-900 font-semibold py-4 text-lg shadow-lg shadow-gold/25"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Unlock Premium Access
+            {t('horoscope.unlockPremium')}
           </Button>
         </div>
 
         <p className="text-center text-xs text-mystic-500">
-          Join thousands discovering their cosmic potential
+          {t('horoscope.joinThousands')}
         </p>
       </div>
 
@@ -84,6 +86,7 @@ function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShow
 }
 
 function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise<void> }) {
+  const { t } = useT('app');
   const { chart, loading: chartLoading, computeChart, fetchChart } = useNatalChart();
   const [activeTab, setActiveTab] = useState<HoroscopeSubTab>('today');
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
@@ -138,7 +141,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
               `}
             >
               {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           );
         })}

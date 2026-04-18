@@ -20,7 +20,11 @@
     "saved": "Saved",
     "back": "Back",
     "backToArcana": "← Back to Arcana",
-    "backToNews": "Back to News"
+    "backToNews": "Back to News",
+    "trophies": "Trophies",
+    "news": "News",
+    "admin": "Admin",
+    "more": "More"
   },
   "actions": {
     "continue": "Continue",
@@ -90,7 +94,29 @@
     "birthDateFuture": "Birth date cannot be in the future.",
     "minAge": "You must be at least 13 years old.",
     "tooManyRequests": "Too many requests. Please wait a moment.",
-    "saveFailed": "Failed to save. Please try again."
+    "saveFailed": "Failed to save. Please try again.",
+    "auth": {
+      "unknown": "An unknown error occurred.",
+      "unexpected": "An unexpected error occurred.",
+      "INVALID_GRANT": "The authorization code has expired or is invalid.",
+      "FLOW_STATE_NOT_FOUND": "Sign in session expired.",
+      "PKCE_VERIFIER_MISSING": "Security verification failed.",
+      "SESSION_EXPIRED": "Your session has expired.",
+      "INVALID_REQUEST": "The sign in request was invalid.",
+      "ACCESS_DENIED": "Sign in was cancelled.",
+      "UNAUTHORIZED_CLIENT": "App is not authorized for Google Sign In.",
+      "INVALID_CREDENTIALS": "Email or password is incorrect.",
+      "EMAIL_NOT_CONFIRMED": "Please verify your email address.",
+      "USER_EXISTS": "An account with this email already exists.",
+      "PASSWORD_TOO_SHORT": "Password must be at least 6 characters.",
+      "INVALID_EMAIL": "Please enter a valid email address.",
+      "NETWORK_ERROR": "Network error. Please check your connection.",
+      "POPUP_BLOCKED": "Popup was blocked.",
+      "USER_CANCELLED": "Sign in was cancelled.",
+      "RATE_LIMITED": "Too many attempts.",
+      "UNAUTHORIZED": "You are not authorized.",
+      "PROVIDER_NOT_ENABLED": "Google sign in is not available."
+    }
   },
   "toast": {
     "savedSuccess": "Saved.",

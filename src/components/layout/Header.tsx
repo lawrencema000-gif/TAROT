@@ -1,4 +1,5 @@
 import { Search, Star, Settings } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 interface HeaderProps {
   title?: string;
@@ -17,6 +18,7 @@ export function Header({
   onSettingsClick,
   showTitle = true,
 }: HeaderProps) {
+  const { t } = useT();
   return (
     <header className="flex items-center justify-between mb-6">
       {showTitle && title ? (
@@ -36,21 +38,21 @@ export function Header({
         <button
           onClick={onSearchClick}
           className="p-2.5 rounded-xl text-mystic-400 hover:text-mystic-200 hover:bg-mystic-800/50 transition-all duration-200 active:scale-95"
-          aria-label="Search"
+          aria-label={t('nav.search')}
         >
           <Search className="w-5 h-5" />
         </button>
         <button
           onClick={onSavedClick}
           className="p-2.5 rounded-xl text-mystic-400 hover:text-gold hover:bg-mystic-800/50 transition-all duration-200 active:scale-95"
-          aria-label="Saved items"
+          aria-label={t('nav.saved')}
         >
           <Star className="w-5 h-5" />
         </button>
         <button
           onClick={onSettingsClick}
           className="p-2.5 rounded-xl text-mystic-400 hover:text-mystic-200 hover:bg-mystic-800/50 transition-all duration-200 active:scale-95"
-          aria-label="Settings"
+          aria-label={t('nav.settings')}
         >
           <Settings className="w-5 h-5" />
         </button>

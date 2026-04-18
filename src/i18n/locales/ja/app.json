@@ -1,0 +1,570 @@
+{
+  "home": {
+    "greeting": {
+      "morning": "おはようございます",
+      "afternoon": "こんにちは",
+      "evening": "こんばんは",
+      "night": "こんばんは"
+    },
+    "subtitle": "今日の宇宙からのメッセージを",
+    "level": "レベル {{n}}",
+    "xpProgress": "XP の進捗",
+    "todaysRitual": "今日のリチュアル",
+    "ritualComplete": "リチュアル完了!",
+    "streak": "{{n}}日連続です。この調子で!",
+    "savedToday": "今日の保存",
+    "savedHighlights": "ハイライト保存",
+    "morningRitual": "朝のリチュアル",
+    "eveningRitual": "夜のリチュアル",
+    "savedToHighlights": "ハイライトに保存しました",
+    "copiedToClipboard": "クリップボードにコピーしました",
+    "seeker": "シーカー",
+    "dayStreakLabel": "日連続",
+    "xpValue": "{{current}} / {{required}} XP",
+    "ritualReady": {
+      "title": "今日のリチュアルがあなたを待っています。",
+      "sub": "カードを一枚引き、ひとことだけ正直な気持ちを書きましょう。"
+    },
+    "startTodaysRitual": "今日のリチュアルをはじめる"
+  },
+  "auth": {
+    "welcomeBack": "お帰りなさい",
+    "signInSub": "続きから旅をはじめましょう",
+    "newToArcana": "Arcana をはじめてお使いですか?",
+    "verifyEmail": "メールアドレスを認証",
+    "checkEmail": "メールをご確認ください",
+    "verificationSent": "認証メールを送信しました!",
+    "resendVerification": "認証メールを再送",
+    "resendFailed": "認証メールの再送に失敗しました。",
+    "resetPassword": "パスワードをリセット",
+    "enterEmailForReset": "パスワードリセットリンクを受け取るメールアドレスを入力",
+    "enterEmail": "メールアドレスを入力してください。",
+    "resetSent": "リセットリンクを送信しました。受信トレイをご確認ください。",
+    "resetFailed": "リセットメールの送信に失敗しました。もう一度お試しください。",
+    "sendResetLink": "リセットリンクを送る",
+    "forgotPassword": "パスワードをお忘れですか?",
+    "backToSignIn": "ログインに戻る",
+    "createAccount": "アカウントを作成",
+    "signUpLink": "新規登録",
+    "emailNotConfirmed": "ログインする前にメールアドレスを認証してください。",
+    "verifySentTo": "{{email}} に認証リンクを送信しました。メールをご確認ください。",
+    "checkSpam": "届かない場合は迷惑メールフォルダもご確認ください。",
+    "resetSentTo": "{{email}} にリセットリンクを送信しました",
+    "resetDidntReceive": "メールが届きませんか?迷惑メールフォルダをご確認いただくか、もう一度お試しください。",
+    "tryAgain": "もう一度試す",
+    "orDivider": "または",
+    "termsNotice": "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
+  },
+  "readings": {
+    "title": "リーディング",
+    "subtitle": "今日のスプレッドを選びましょう",
+    "tabs": {
+      "tarot": "タロット",
+      "horoscope": "星占い",
+      "compatibility": "相性",
+      "library": "ライブラリ"
+    },
+    "dailyRemaining": "今日の無料リーディング {{used}} / {{limit}}",
+    "upgradeForUnlimited": "無制限にアップグレード",
+    "limitReached": "1日の上限に達しました",
+    "limitReachedMsg": "今日の無料リーディングをすべて使用しました。アップグレードで無制限に、または明日また戻ってきてください。",
+    "resetsAt": "{{hours}}時間 {{minutes}}分後にリセット",
+    "categories": {
+      "daily": "デイリー",
+      "love": "恋愛",
+      "career": "仕事",
+      "decision": "決断",
+      "shadow": "シャドウ",
+      "celtic": "ケルト十字"
+    },
+    "focusArea": "フォーカス",
+    "focusPrompt": "今、何について知りたいですか?",
+    "draw": "カードを引く",
+    "drawAgain": "もう一度引く",
+    "saveReading": "リーディングを保存",
+    "shareReading": "シェア",
+    "readingSaved": "リーディングを保存しました",
+    "interpretation": "解釈",
+    "premiumInterpretation": "プレミアム解釈",
+    "tryPremium": "プレミアムを試す",
+    "cards": {
+      "past": "過去",
+      "present": "現在",
+      "future": "未来",
+      "self": "自分",
+      "partner": "相手",
+      "relationship": "関係性",
+      "situation": "状況",
+      "challenge": "課題",
+      "advice": "アドバイス",
+      "outcome": "結果"
+    }
+  },
+  "journal": {
+    "title": "ジャーナル",
+    "subtitle": "振り返り、覚え、育てる。",
+    "newEntry": "新しいエントリー",
+    "entryPlaceholder": "今日、心に残ったことは?",
+    "titlePlaceholder": "タイトル(任意)",
+    "moodLabel": "今日の気分は?",
+    "tagsLabel": "タグ",
+    "tagsPlaceholder": "タグを追加(Enter で確定)",
+    "addPrompt": "プロンプトを追加",
+    "linkToReading": "リーディングをリンク",
+    "linkToCard": "カードをリンク",
+    "saveEntry": "エントリーを保存",
+    "saved": "エントリーを保存しました。",
+    "deleted": "エントリーを削除しました。",
+    "noEntries": "エントリーがありません",
+    "noEntriesSub": "今日心が動いたことを書き留めてみましょう。",
+    "wordCount": "{{n}} 語",
+    "moods": {
+      "joyful": "よろこび",
+      "grateful": "感謝",
+      "peaceful": "やすらぎ",
+      "curious": "好奇心",
+      "tired": "疲れ",
+      "anxious": "不安",
+      "sad": "悲しみ",
+      "angry": "怒り",
+      "confused": "混乱",
+      "hopeful": "希望"
+    },
+    "prompts": {
+      "pick": "プロンプトを選ぶ",
+      "skip": "プロンプトをスキップ",
+      "picker": "振り返りのプロンプト"
+    },
+    "lock": {
+      "locked": "ロック中",
+      "unlock": "ロック解除",
+      "set": "パスコードを設定",
+      "enter": "パスコードを入力",
+      "wrong": "パスコードが違います"
+    },
+    "tabs": {
+      "entries": "エントリー",
+      "templates": "テンプレート",
+      "insights": "インサイト"
+    },
+    "todaysPrompt": "今日のプロンプト",
+    "defaultPrompt": "今日、何について振り返っていますか?",
+    "emptyState": "まだジャーナルがありません。",
+    "emptyStateSub": "今日から振り返りの旅をはじめましょう。",
+    "loadMore": "さらに読み込む",
+    "loadingMore": "読み込み中...",
+    "totalEntries": "合計エントリー",
+    "dayStreak": "連続日数",
+    "moodTrend": "ムードトレンド(7日間)",
+    "mostCommonTags": "最も多いタグ",
+    "moodDistribution": "ムード分布",
+    "personalInsight": "パーソナルインサイト",
+    "thisWeek": "今週",
+    "writingStats": "ライティング統計",
+    "avgWords": "平均語数",
+    "last30Days": "直近30日",
+    "totalWords": "総語数",
+    "insightsEmpty": "最初のエントリーを書くとインサイトが表示されます。",
+    "noReadings": "リンクできるリーディングがまだありません。",
+    "editSheet": {
+      "newEntry": "新しいエントリー",
+      "editEntry": "エントリーを編集",
+      "yourThoughts": "あなたの思い",
+      "howFeeling": "今日の気分は?",
+      "tags": "タグ",
+      "attachments": "添付",
+      "tarotLinked": "タロットリーディングをリンク済み"
+    },
+    "toast": {
+      "unlockPremiumLock": "ロック済みエントリーを見るにはプレミアムに登録してください",
+      "upgradeToLock": "エントリーをロックするにはプレミアムへアップグレードしてください",
+      "savedLocked": "エントリーを保存してロックしました",
+      "saved": "エントリーを保存しました",
+      "xpEarned": "+{{n}} XP 獲得!",
+      "deleteConfirm": "このジャーナルエントリーを削除しますか?",
+      "deleted": "エントリーを削除しました"
+    }
+  },
+  "quizzes": {
+    "title": "診断",
+    "subtitle": "内なる地図を見つけましょう",
+    "questions": "問",
+    "takes": "所要時間",
+    "minutes": "分",
+    "startQuiz": "診断をはじめる",
+    "continueQuiz": "続きから",
+    "retake": "もう一度受ける",
+    "results": "結果",
+    "yourType": "あなたのタイプ",
+    "yourResult": "あなたの結果",
+    "viewResult": "結果を見る",
+    "completed": "完了",
+    "inProgress": "進行中",
+    "notStarted": "未開始",
+    "question": "質問 {{n}} / {{total}}",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "結果を見る",
+    "answerPlaceholder": "回答を選んでください",
+    "types": {
+      "mbti": "MBTI",
+      "enneagram": "エニアグラム",
+      "bigfive": "ビッグファイブ",
+      "loveLanguage": "ラブランゲージ",
+      "attachment": "アタッチメントスタイル",
+      "mood": "ムードチェック"
+    }
+  },
+  "horoscope": {
+    "title": "星占い",
+    "subtitle": "今日のコスミックな予報",
+    "today": "今日",
+    "week": "今週",
+    "month": "今月",
+    "year": "今年",
+    "energyScore": "エネルギースコア",
+    "sections": {
+      "overview": "全体",
+      "love": "恋愛",
+      "career": "仕事",
+      "wellness": "健康",
+      "affirmation": "今日のアファメーション",
+      "luckyNumbers": "ラッキーナンバー",
+      "luckyColors": "ラッキーカラー"
+    },
+    "birthChart": "出生図",
+    "compatibility": "相性",
+    "transits": "トランジット",
+    "yourPersonalHoroscope": "あなただけの星占い",
+    "whatUnlocks": "解放される機能",
+    "premiumLocked": "プレミアム",
+    "completeBirthChart": "出生情報を入力して解放",
+    "enterBirthInfo": "出生情報を入力",
+    "tabs": {
+      "today": "今日",
+      "chart": "チャート",
+      "forecast": "予報",
+      "explore": "探求"
+    },
+    "unlockPremium": "プレミアムを解放",
+    "unlockIntro": "あなた専用の占星術プロフィールを解放しましょう。パーソナライズされたデイリーインサイト、出生図解析、コスミック予報。",
+    "joinThousands": "多くのユーザーが自分のコスミックな可能性を見つけています",
+    "features": {
+      "dailyForecast": {
+        "title": "パーソナライズされたデイリー予報",
+        "desc": "あなたの出生図に基づいた毎日の星占い"
+      },
+      "fullChart": {
+        "title": "完全な出生図",
+        "desc": "すべての惑星配置とアスペクトを含む完全な出生図"
+      },
+      "transits": {
+        "title": "トランジットカレンダー",
+        "desc": "あなたのチャートに影響する今後の宇宙の変化を追跡"
+      },
+      "forecasts": {
+        "title": "週間・月間予報",
+        "desc": "タイミングを読む長期予報"
+      }
+    }
+  },
+  "profile": {
+    "title": "プロフィール",
+    "birthProfile": "出生情報",
+    "birthPlaceOptional": "出生地(任意)",
+    "yourGoals": "あなたのゴール",
+    "personalityBadges": "パーソナリティバッジ",
+    "saved": "保存済み",
+    "yourBookmarks": "お気に入りのリーディングと気づき",
+    "noSaved": "まだ保存したアイテムはありません",
+    "noSavedSub": "リーディングや気づきをブックマークすると、ここに表示されます",
+    "dayStreak": "連続日数",
+    "level": "レベル {{n}}",
+    "xpProgress": "XP の進捗",
+    "upgradeToPremium": "プレミアムへアップグレード",
+    "upgradeSub": "すべてのスプレッドとチャートを解放",
+    "premiumMember": "プレミアム会員",
+    "premiumSub": "すべての機能が利用可能",
+    "manageSubscription": "サブスクリプションを管理",
+    "editProfile": "プロフィールを編集",
+    "signOut": "ログアウト",
+    "signOutConfirm": "ログアウトしますか?",
+    "signOutConfirmMsg": "いつでも再度ログインできます。",
+    "deleteAccount": "アカウントを削除",
+    "deleteAccountConfirm": "アカウントを削除しますか?",
+    "deleteAccountConfirmMsg": "プロフィール、リーディング、ジャーナルがすべて完全に削除されます。",
+    "goals": {
+      "love": "恋愛",
+      "career": "仕事",
+      "confidence": "自信",
+      "healing": "癒し",
+      "focus": "集中",
+      "purpose": "目的",
+      "stress": "ストレス",
+      "creativity": "創造性",
+      "clarity": "クリアさ",
+      "growth": "成長",
+      "wellness": "ウェルネス"
+    },
+    "loveLanguages": {
+      "words-of-affirmation": "肯定の言葉",
+      "quality-time": "質の時間",
+      "receiving-gifts": "贈り物",
+      "acts-of-service": "奉仕",
+      "physical-touch": "身体的な触れ合い"
+    },
+    "profileUpdated": "プロフィールを更新しました",
+    "editProfileSheet": {
+      "title": "プロフィールを編集",
+      "displayName": "表示名",
+      "yourName": "あなたの名前",
+      "birthTimeOptional": "出生時刻(任意)",
+      "searchCity": "都市を検索…"
+    },
+    "disclaimer": "このアプリはエンターテインメントと自己省察のためのものです。",
+    "elementSign": "{{element}}の星座"
+  },
+  "achievements": {
+    "title": "トロフィー",
+    "subtitle": "これまでの歩み",
+    "noInCategory": "このカテゴリにはまだ実績がありません。",
+    "errorLoading": "実績の読み込みに失敗しました:",
+    "novicesSeeker": "ノービスシーカー",
+    "achievementsUnlocked": "実績解放",
+    "xpEarned": "{{n}} XP 獲得",
+    "recentUnlocks": "最近の解放",
+    "all": "すべて",
+    "unlocked": "解放済み",
+    "locked": "未解放",
+    "progress": "{{current}} / {{target}}",
+    "categories": {
+      "dedication": "献身",
+      "exploration": "探求",
+      "mastery": "熟達",
+      "milestones": "マイルストーン",
+      "quiz_results": "診断結果",
+      "special": "スペシャル"
+    }
+  },
+  "blog": {
+    "title": "ニュース & 知見",
+    "subtitle": "タロット、占星術、そして自己発見",
+    "failedToLoad": "記事の読み込みに失敗しました。",
+    "noArticles": "まだ記事がありません",
+    "comeBackSoon": "タロットの知見や精神的なガイダンスをお楽しみに。",
+    "articleNotFound": "記事が見つかりません。",
+    "readingTime": "{{n}} 分で読めます",
+    "by": "著者: {{author}}"
+  },
+  "tarot": {
+    "title": "タロットカード意味一覧",
+    "subtitle": "タロットのすべてのカードを完全ガイド — 正位置・逆位置、恋愛・仕事の解釈、振り返りのプロンプト。",
+    "allCards": "すべてのカード",
+    "backToAllCards": "すべてのカードに戻る",
+    "majorArcana": "大アルカナ",
+    "wands": "ワンド",
+    "cups": "カップ",
+    "swords": "ソード",
+    "pentacles": "ペンタクル",
+    "cardNotFound": "カードが見つかりません。",
+    "uprightMeaning": "正位置の意味",
+    "reversedMeaning": "逆位置の意味",
+    "upright": "正位置",
+    "reversed": "逆位置",
+    "yesOrNo": "YES / NO",
+    "cardDescription": "カードの説明",
+    "quickReference": "クイックリファレンス",
+    "element": "元素",
+    "loveAndRelationships": "恋愛と人間関係",
+    "careerAndFinances": "仕事とお金",
+    "reflectionPrompt": "振り返りのプロンプト",
+    "experienceInReading": "{{name}} をリーディングで体験",
+    "tryFreeReading": "無料リーディングを試す",
+    "freeTarotGuide": "無料タロットガイド",
+    "freeTarotGuideDesc": "タロット初心者向け無料ガイドをお届けします。",
+    "getFreeGuide": "無料ガイドを受け取る",
+    "noSpam": "迷惑メールなし。いつでも配信停止できます。",
+    "youreIn": "登録完了!メールで無料タロットガイドをお送りします。",
+    "yourEmail": "メールアドレス",
+    "heroBadge": "78枚 · 完全解説",
+    "heroSub": "タロットのすべてのカードの完全ガイド — 正位置・逆位置、恋愛・仕事の解釈、そして振り返りのプロンプトまで。",
+    "bottomText": "これらの意味を実際に活かす準備はできましたか?",
+    "pageTitle": "タロットカード意味一覧 — 78枚すべてのカードを解説",
+    "pageDesc": "78枚すべてのタロットカードの意味を探る。正位置・逆位置、恋愛と仕事の解釈、キーワード、振り返りのプロンプトを各カードに。",
+    "yesOrNoReading": "YES / NO リーディング",
+    "allMajorCards": "大アルカナ一覧",
+    "allSuitCards": "{{suit}}一覧",
+    "suitMinorLabel": "{{suit}} · 小アルカナ",
+    "elements": {
+      "fire": "火 🔥",
+      "water": "水 💧",
+      "air": "風 💨",
+      "earth": "地 🌍",
+      "spirit": "霊 ✨"
+    },
+    "suits": {
+      "major": {
+        "title": "大アルカナ",
+        "subtitle": "愚者の旅",
+        "desc": "22枚の大アルカナは人生の大きなテーマ、スピリチュアルな学び、そして転換点を表します。愚者の無邪気な最初の一歩から、世界の勝利の完成まで、これらのカードは魂の進化の物語を語ります。"
+      },
+      "wands": {
+        "title": "ワンドのスート",
+        "subtitle": "火 · 情熱 · 創造",
+        "desc": "ワンドは情熱、創造性、野心、エネルギーを表します。あなたを動かすもの — 目標、欲望、そしてすべてを動かす火花を語ります。"
+      },
+      "cups": {
+        "title": "カップのスート",
+        "subtitle": "水 · 感情 · 直感",
+        "desc": "カップは感情、人間関係、直感、そして内なる世界を表します。どう感じ、誰を愛し、どれほど豊かな情感の風景を持つかを映します。"
+      },
+      "swords": {
+        "title": "ソードのスート",
+        "subtitle": "風 · 知性 · 真実",
+        "desc": "ソードは思考、コミュニケーション、対立、そして真実を表します。幻想を断ち切り、ありのままを明らかにします — 時に痛みを伴い、常に正直に。"
+      },
+      "pentacles": {
+        "title": "ペンタクルのスート",
+        "subtitle": "地 · 物質 · 成長",
+        "desc": "ペンタクルはお金、仕事、健康、物質世界を表します。スピリチュアルを現実に根付かせます — 築き、稼ぎ、育むもの。"
+      }
+    }
+  },
+  "admin": {
+    "title": "管理",
+    "subtitle": "サイトのコンテンツと設定を管理",
+    "unauthorized": "管理パネルへのアクセス権がありません。",
+    "tabs": {
+      "blog": "ブログ記事",
+      "ads": "広告",
+      "users": "ユーザー",
+      "content": "コンテンツ"
+    }
+  },
+  "premium": {
+    "title": "プレミアムを解放",
+    "subtitle": "毎日の実践をさらに深く。",
+    "features": {
+      "unlimitedReadings": "無制限リーディング",
+      "allSpreads": "6種類すべてのスプレッド",
+      "birthChart": "出生図フル解析",
+      "transits": "リアルタイムトランジット",
+      "noAds": "広告なし体験",
+      "priorityAi": "優先 AI 解釈"
+    },
+    "monthly": "月額",
+    "yearly": "年額",
+    "lifetime": "買い切り",
+    "bestValue": "おすすめ",
+    "save": "{{pct}}% お得",
+    "perMonth": "/月",
+    "perYear": "/年",
+    "oneTime": "一回払い",
+    "subscribe": "サブスクリプションをはじめる",
+    "startFreeTrial": "無料トライアルをはじめる",
+    "restorePurchases": "購入を復元",
+    "termsNotice": "自動更新課金。いつでもキャンセル可能。",
+    "activeUntil": "有効期限 {{date}}"
+  },
+  "settings": {
+    "title": "設定",
+    "sections": {
+      "account": "アカウント",
+      "preferences": "環境設定",
+      "notifications": "通知",
+      "privacy": "プライバシー",
+      "data": "データ",
+      "about": "アプリについて",
+      "support": "サポート"
+    },
+    "menu": {
+      "editProfile": "プロフィールを編集",
+      "subscription": "サブスクリプション",
+      "premium": "プレミアム",
+      "free": "フリー",
+      "switchAccount": "アカウントを切り替え",
+      "appearance": "外観",
+      "exportData": "データをエクスポート",
+      "deleteAccount": "アカウントを削除",
+      "helpCenter": "ヘルプセンター",
+      "termsOfService": "利用規約",
+      "privacyPolicy": "プライバシーポリシー",
+      "developerDiagnostics": "開発者診断",
+      "signOut": "ログアウト",
+      "errorCount": "エラー {{n}} 件",
+      "toggleOn": "オン",
+      "toggleOff": "オフ",
+      "backToSettings": "設定に戻る",
+      "notificationsEnabled": "通知を有効にしました",
+      "notificationsDisabled": "通知を無効にしました",
+      "themeChanged": "テーマを{{name}}に変更しました",
+      "updateFailed": "更新に失敗しました"
+    },
+    "language": "言語",
+    "languageSub": "お好みの言語を選んでください",
+    "theme": "テーマ",
+    "themes": {
+      "dark": "ダーク",
+      "light": "ライト",
+      "system": "システム"
+    },
+    "fontSize": "文字サイズ",
+    "fontSizes": {
+      "small": "小",
+      "medium": "中",
+      "large": "大"
+    },
+    "notificationsEnabled": "毎日の通知",
+    "notificationsSub": "デイリーリチュアルのリマインダーを受け取る",
+    "notificationTime": "通知時刻",
+    "tonePreference": "トーン",
+    "tones": {
+      "gentle": "やさしい",
+      "direct": "はっきり",
+      "playful": "あそび心"
+    },
+    "clearCache": "キャッシュをクリア",
+    "cacheCleared": "キャッシュをクリアしました",
+    "exportData": "データをエクスポート",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfService": "利用規約",
+    "contactSupport": "サポートに問い合わせ",
+    "version": "バージョン {{v}}",
+    "about": "Arcana について",
+    "aboutText": "Arcana は、タロット、占星術、ジャーナリング、自己発見のためのデイリーコンパニオンです。"
+  },
+  "search": {
+    "placeholder": "カード、ジャーナル、星占いを検索…",
+    "noResults": "一致するものがありません",
+    "noResultsSub": "別のキーワードをお試しください",
+    "recent": "最近",
+    "suggestions": "おすすめ",
+    "recentSearches": "最近の検索",
+    "quickLinks": "クイックリンク",
+    "quickLink": {
+      "horoscope": "デイリー星占い",
+      "journalPrompts": "ジャーナルプロンプト",
+      "personalityQuiz": "性格診断"
+    },
+    "resultsFor": "「{{query}}」の検索結果がここに表示されます",
+    "sections": {
+      "cards": "カード",
+      "journal": "ジャーナル",
+      "horoscope": "星占い",
+      "articles": "記事"
+    }
+  },
+  "saved": {
+    "title": "保存済み",
+    "subtitle": "ブックマークした瞬間",
+    "empty": "保存したアイテムはまだありません",
+    "emptySub": "リーディング、カード、気づきの星マークをタップして保存しましょう。",
+    "emptySubAlt": "リーディング、ジャーナル、診断結果に星を付けると、ここに保存されます",
+    "filters": {
+      "all": "すべて",
+      "readings": "リーディング",
+      "journal": "ジャーナル",
+      "quizzes": "診断"
+    }
+  }
+}

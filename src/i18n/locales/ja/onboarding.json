@@ -37,5 +37,51 @@
     "submit": "ログイン",
     "forgotPassword": "パスワードをお忘れですか?",
     "switchToSignUp": "アカウントをお持ちでないですか? 新規登録"
+  },
+  "oauth": {
+    "welcome": "ようこそ、{{name}} さん!",
+    "welcomeSub": "いくつかのステップであなた専用の体験をつくりましょう",
+    "goals": {
+      "heading": "どんなサポートが必要ですか?",
+      "hint": "当てはまるものをすべて選んでください"
+    },
+    "basics": {
+      "heading": "あなたのコスミック基本情報",
+      "hint": "星座を決定します",
+      "birthDate": "生年月日",
+      "birthTime": "出生時刻",
+      "optional": "(任意)",
+      "birthTimeHint": "より正確な出生図のために",
+      "birthPlace": "出生地",
+      "birthPlaceHint": "後ほど出生図の計算に使います",
+      "searchPlaceholder": "都市や町を検索...",
+      "locationVerified": "位置情報を確認しました",
+      "invalidBirthDate": "生年月日が無効です"
+    },
+    "tone": {
+      "heading": "あなたのコスミックトーン",
+      "hint": "どのように話しかけましょうか?",
+      "gentle": {
+        "label": "やさしく・寄り添う",
+        "desc": "温かく、支えになるガイダンス"
+      },
+      "direct": {
+        "label": "率直・はっきり",
+        "desc": "明快でストレートなインサイト"
+      },
+      "playful": {
+        "label": "遊び心・神秘的",
+        "desc": "幻想的で魅力的な知恵"
+      }
+    },
+    "notifications": {
+      "reminderTime": "リマインダー時刻"
+    },
+    "next": "次へ",
+    "beginJourney": "旅をはじめる",
+    "toast": {
+      "saveFailed": "プロフィールの保存に失敗しました。もう一度お試しください。",
+      "welcome": "Arcana へようこそ!"
+    }
   }
 }

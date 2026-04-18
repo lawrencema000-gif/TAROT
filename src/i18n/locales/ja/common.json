@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "Arcana",
+    "tagline": "自分を知る。一日一つの儀式で。"
+  },
+  "nav": {
+    "home": "ホーム",
+    "readings": "リーディング",
+    "horoscope": "星占い",
+    "journal": "ジャーナル",
+    "quizzes": "診断",
+    "profile": "プロフィール",
+    "blog": "ブログ",
+    "cardMeanings": "カード解説",
+    "signIn": "ログイン",
+    "signOut": "ログアウト"
+  },
+  "actions": {
+    "continue": "続ける",
+    "back": "戻る",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "confirm": "確定",
+    "getStarted": "はじめる",
+    "tryFree": "無料で試す",
+    "learnMore": "詳しく見る"
+  },
+  "labels": {
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "displayName": "表示名",
+    "language": "言語",
+    "loading": "読み込み中…",
+    "today": "今日"
+  },
+  "errors": {
+    "generic": "問題が発生しました。もう一度お試しください。",
+    "network": "ネットワークエラー。接続をご確認ください。",
+    "unauthorized": "続行するにはログインしてください。",
+    "notFound": "見つかりません。"
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "ko": "한국어",
+    "zh": "简体中文"
+  }
+}

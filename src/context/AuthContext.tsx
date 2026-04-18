@@ -62,6 +62,7 @@ interface DbProfile {
   onboarding_complete: boolean;
   is_premium: boolean;
   is_ad_free: boolean;
+  locale?: 'en' | 'ja' | 'ko' | 'zh';
   streak: number;
   last_ritual_date?: string;
   mbti_type?: string;
@@ -97,6 +98,7 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     onboardingComplete: db.onboarding_complete,
     isPremium: db.is_premium,
     isAdFree: db.is_ad_free ?? false,
+    locale: db.locale,
     streak: db.streak,
     lastRitualDate: db.last_ritual_date,
     mbtiType: db.mbti_type,
@@ -141,6 +143,7 @@ const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   subscribedToNewsletter: 'subscribed_to_newsletter',
   streak: 'streak',
   lastRitualDate: 'last_ritual_date',
+  locale: 'locale',
 };
 
 function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> {

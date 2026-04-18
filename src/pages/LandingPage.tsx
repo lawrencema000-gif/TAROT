@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
+import { useT } from '../i18n/useT';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -294,6 +295,7 @@ function PlayBadge() {
 // MAIN
 // ═══════════════════════════════════════════════════════════════
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
+  const { t } = useT();
   const [navSolid, setNavSolid] = useState(false);
 
   const onScroll = useCallback(() => { setNavSolid(window.scrollY > 50); }, []);
@@ -324,7 +326,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <a href="#features" className="lp-nav-link">Features</a>
             <a href="#zodiac" className="lp-nav-link">Zodiac</a>
             <a href="#faq" className="lp-nav-link">FAQ</a>
-            <button onClick={onSignIn} className="lp-nav-btn">Sign In</button>
+            <button onClick={onSignIn} className="lp-nav-btn">{t('nav.signIn')}</button>
           </div>
         </div>
       </nav>

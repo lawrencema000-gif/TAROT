@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard } from '../types';
 import { getBundledCardPath } from '../config/bundledImages';
+import { localizeCard, localizeCards } from '../i18n/localizeCard';
 
 // Lazy-load the 915-line tarot deck only when needed as fallback
 async function getFullDeck(): Promise<TarotCard[]> {
@@ -112,18 +113,18 @@ export async function getAllTarotCards(): Promise<TarotCard[]> {
 
     if (error) {
       console.error('Error fetching tarot cards:', error);
-      return getFullDeck();
+      return localizeCards(await getFullDeck());
     }
 
     if (!data || data.length === 0) {
       await seedTarotCards();
-      return getFullDeck();
+      return localizeCards(await getFullDeck());
     }
 
-    return data.map(dbToCard);
+    return localizeCards(data.map(dbToCard));
   } catch (error) {
     console.error('Error fetching tarot cards:', error);
-    return getFullDeck();
+    return localizeCards(await getFullDeck());
   }
 }
 
@@ -137,14 +138,16 @@ export async function getTarotCardById(id: number): Promise<TarotCard | null> {
 
     if (error || !data) {
       const deck = await getFullDeck();
-      return deck.find(card => card.id === id) || null;
+      const card = deck.find(c => c.id === id);
+      return card ? localizeCard(card) : null;
     }
 
-    return dbToCard(data);
+    return localizeCard(dbToCard(data));
   } catch (error) {
     console.error('Error fetching tarot card:', error);
     const deck = await getFullDeck();
-    return deck.find(card => card.id === id) || null;
+    const card = deck.find(c => c.id === id);
+    return card ? localizeCard(card) : null;
   }
 }
 
@@ -158,18 +161,25 @@ export async function getTarotCardsByArcana(arcana: 'major' | 'minor'): Promise<
 
     if (error || !data || data.length === 0) {
       const deck = await getFullDeck();
-      return deck.filter(card => card.arcana === arcana);
+      return localizeCards(deck.filter(card => card.arcana === arcana));
     }
 
-    return data.map(dbToCard);
+    return localizeCards(data.map(dbToCard));
   } catch (error) {
     console.error('Error fetching tarot cards by arcana:', error);
     const deck = await getFullDeck();
-    return deck.filter(card => card.arcana === arcana);
+    return localizeCards(deck.filter(card => card.arcana === arcana));
   }
 }
 
 export async function searchTarotCards(query: string): Promise<TarotCard[]> {
+  const q = query.toLowerCase();
+  const filterLocal = (deck: TarotCard[]) =>
+    deck.filter(card =>
+      card.name.toLowerCase().includes(q) ||
+      card.keywords.some((k: string) => k.toLowerCase().includes(q))
+    );
+
   try {
     const { data, error } = await supabase
       .from('tarot_cards')
@@ -178,20 +188,23 @@ export async function searchTarotCards(query: string): Promise<TarotCard[]> {
       .order('id');
 
     if (error || !data) {
-      const deck = await getFullDeck();
-      return deck.filter(card =>
-        card.name.toLowerCase().includes(query.toLowerCase()) ||
-        card.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
-      );
+      const deck = localizeCards(await getFullDeck());
+      return filterLocal(deck);
     }
 
-    return data.map(dbToCard);
+    const localized = localizeCards(data.map(dbToCard));
+    const byId = new Map(localized.map(c => [c.id, c]));
+    const rawMatch = filterLocal(localized);
+
+    // Also match against localized-only text by scanning the full localized deck,
+    // so Japanese/Korean/Chinese users can search in their own language.
+    const full = localizeCards(await getFullDeck());
+    const localMatches = filterLocal(full).filter(c => !byId.has(c.id));
+
+    return [...rawMatch, ...localMatches];
   } catch (error) {
     console.error('Error searching tarot cards:', error);
-    const deck = await getFullDeck();
-    return deck.filter(card =>
-      card.name.toLowerCase().includes(query.toLowerCase()) ||
-      card.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
-    );
+    const deck = localizeCards(await getFullDeck());
+    return filterLocal(deck);
   }
 }

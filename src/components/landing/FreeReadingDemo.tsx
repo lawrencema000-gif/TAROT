@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { fullDeck } from '../../data/tarotDeck';
 import { getBundledFullPath } from '../../config/bundledImages';
 import { useT } from '../../i18n/useT';
+import { localizeCard } from '../../i18n/localizeCard';
 import type { TarotCard } from '../../types';
 
 /**
@@ -22,7 +23,7 @@ function pickThreeRandom(): TarotCard[] {
   const out: TarotCard[] = [];
   for (let i = 0; i < 3; i++) {
     const idx = Math.floor(Math.random() * pool.length);
-    out.push(pool.splice(idx, 1)[0]);
+    out.push(localizeCard(pool.splice(idx, 1)[0]));
   }
   return out;
 }

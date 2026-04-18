@@ -4,6 +4,8 @@ import { fullDeck } from '../data/tarotDeck';
 import { getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
+import { localizeCards } from '../i18n/localizeCard';
+import { getLocale } from '../i18n/config';
 import type { TarotCard } from '../types';
 
 type Filter = 'all' | 'major' | 'wands' | 'cups' | 'swords' | 'pentacles';
@@ -21,20 +23,30 @@ function cardToSlug(card: TarotCard): string {
   return card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
+// Slug lookup always uses English names so URLs stay stable across locales.
+const enNameById: Map<number, string> = new Map(fullDeck.map(c => [c.id, c.name]));
+function slugFromCardId(id: number): string {
+  const enName = enNameById.get(id) ?? '';
+  return enName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
 export function TarotMeaningsPage() {
   const { t } = useT('app');
   const [filter, setFilter] = useState<Filter>('all');
   const navigate = useNavigate();
+  const locale = getLocale();
 
   useEffect(() => {
     setPageMeta(t('tarot.pageTitle'), t('tarot.pageDesc'));
   }, [t]);
 
+  const localizedDeck = useMemo(() => localizeCards(fullDeck, locale), [locale]);
+
   const filteredCards = useMemo(() => {
-    if (filter === 'all') return fullDeck;
-    if (filter === 'major') return fullDeck.filter(c => c.arcana === 'major');
-    return fullDeck.filter(c => c.suit === filter);
-  }, [filter]);
+    if (filter === 'all') return localizedDeck;
+    if (filter === 'major') return localizedDeck.filter(c => c.arcana === 'major');
+    return localizedDeck.filter(c => c.suit === filter);
+  }, [filter, localizedDeck]);
 
   const activeSuitKey = filter !== 'all' ? filter : null;
 
@@ -78,7 +90,7 @@ export function TarotMeaningsPage() {
             <button
               key={card.id}
               className="tm-card"
-              onClick={() => navigate(`/tarot-meanings/${cardToSlug(card)}`)}
+              onClick={() => navigate(`/tarot-meanings/${slugFromCardId(card.id)}`)}
             >
               <div className="tm-card-img-wrap">
                 {thumb ? (

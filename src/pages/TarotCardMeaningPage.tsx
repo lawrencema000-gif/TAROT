@@ -5,10 +5,19 @@ import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { useT } from '../i18n/useT';
+import { localizeCard } from '../i18n/localizeCard';
+import { getLocale } from '../i18n/config';
 import type { TarotCard } from '../types';
 
 function cardToSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+// Map card id → English name, so we can generate stable URL slugs even when
+// the UI is rendering localized card names.
+const EN_NAME_BY_ID: Map<number, string> = new Map(fullDeck.map(c => [c.id, c.name]));
+function slugFromId(id: number): string {
+  return cardToSlug(EN_NAME_BY_ID.get(id) ?? '');
 }
 
 // Yes/No determination based on card energy
@@ -48,16 +57,26 @@ export function TarotCardMeaningPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const locale = getLocale();
 
-  const card = useMemo(() => fullDeck.find(c => cardToSlug(c.name) === slug), [slug]);
-  const cardIndex = card ? fullDeck.indexOf(card) : -1;
-  const prevCard = cardIndex > 0 ? fullDeck[cardIndex - 1] : null;
-  const nextCard = cardIndex < fullDeck.length - 1 ? fullDeck[cardIndex + 1] : null;
-  const relatedCards = card ? getRelatedCards(card) : [];
-  const yesNo = card ? getYesNo(card) : null;
+  // `enCard` keeps the English content used for slug lookups, Yes/No classification,
+  // and JSON-LD (which should stay English for search indexing).
+  const enCard = useMemo(() => fullDeck.find(c => cardToSlug(c.name) === slug), [slug]);
+  const cardIndex = enCard ? fullDeck.indexOf(enCard) : -1;
+  const enPrev = cardIndex > 0 ? fullDeck[cardIndex - 1] : null;
+  const enNext = cardIndex < fullDeck.length - 1 ? fullDeck[cardIndex + 1] : null;
+  // Localized versions used for display.
+  const card = useMemo(() => (enCard ? localizeCard(enCard, locale) : null), [enCard, locale]);
+  const prevCard = useMemo(() => (enPrev ? localizeCard(enPrev, locale) : null), [enPrev, locale]);
+  const nextCard = useMemo(() => (enNext ? localizeCard(enNext, locale) : null), [enNext, locale]);
+  const relatedCards = useMemo(
+    () => (enCard ? getRelatedCards(enCard).map(c => localizeCard(c, locale)) : []),
+    [enCard, locale],
+  );
+  const yesNo = enCard ? getYesNo(enCard) : null;
 
   useEffect(() => {
-    if (!card) return;
+    if (!card || !enCard) return;
     const suitLabel = card.suit ? ` — ${card.suit.charAt(0).toUpperCase() + card.suit.slice(1)}` : ' — Major Arcana';
     setPageMeta(
       `${card.name} Tarot Card Meaning${suitLabel}`,
@@ -65,58 +84,60 @@ export function TarotCardMeaningPage() {
       getBundledFullPath(card.id) || undefined
     );
     removeJsonLd();
+    // JSON-LD / breadcrumb keep English names + EN slug so structured data
+    // stays consistent with the canonical EN URL that Google indexes.
     addJsonLd({
       '@context': 'https://schema.org', '@type': 'Article',
-      headline: `${card.name} Tarot Card Meaning`,
-      description: `${card.name}: ${card.keywords.join(', ')}. Complete upright and reversed meanings.`,
-      image: `https://tarotlife.app${getBundledFullPath(card.id) || '/image.png'}`,
+      headline: `${enCard.name} Tarot Card Meaning`,
+      description: `${enCard.name}: ${enCard.keywords.join(', ')}. Complete upright and reversed meanings.`,
+      image: `https://tarotlife.app${getBundledFullPath(enCard.id) || '/image.png'}`,
       author: { '@type': 'Organization', name: 'Arcana', url: 'https://tarotlife.app' },
       publisher: { '@type': 'Organization', name: 'Arcana', url: 'https://tarotlife.app' },
-      url: `https://tarotlife.app/tarot-meanings/${cardToSlug(card.name)}`,
-      keywords: card.keywords.join(', '),
+      url: `https://tarotlife.app/tarot-meanings/${cardToSlug(enCard.name)}`,
+      keywords: enCard.keywords.join(', '),
     });
     addJsonLd({
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tarotlife.app' },
         { '@type': 'ListItem', position: 2, name: 'Tarot Meanings', item: 'https://tarotlife.app/tarot-meanings' },
-        { '@type': 'ListItem', position: 3, name: card.name, item: `https://tarotlife.app/tarot-meanings/${cardToSlug(card.name)}` },
+        { '@type': 'ListItem', position: 3, name: enCard.name, item: `https://tarotlife.app/tarot-meanings/${cardToSlug(enCard.name)}` },
       ],
     });
     // FAQPage schema — drives "People also ask" rich results
-    const yn = getYesNo(card);
+    const yn = getYesNo(enCard);
     addJsonLd({
       '@context': 'https://schema.org', '@type': 'FAQPage',
       mainEntity: [
         {
           '@type': 'Question',
-          name: `What does the ${card.name} tarot card mean?`,
-          acceptedAnswer: { '@type': 'Answer', text: card.meaningUpright },
+          name: `What does the ${enCard.name} tarot card mean?`,
+          acceptedAnswer: { '@type': 'Answer', text: enCard.meaningUpright },
         },
         {
           '@type': 'Question',
-          name: `What does the ${card.name} mean reversed?`,
-          acceptedAnswer: { '@type': 'Answer', text: card.meaningReversed },
+          name: `What does the ${enCard.name} mean reversed?`,
+          acceptedAnswer: { '@type': 'Answer', text: enCard.meaningReversed },
         },
         {
           '@type': 'Question',
-          name: `Is the ${card.name} a yes or no card?`,
+          name: `Is the ${enCard.name} a yes or no card?`,
           acceptedAnswer: { '@type': 'Answer', text: `${yn.answer}. ${yn.explanation}` },
         },
         {
           '@type': 'Question',
-          name: `What does the ${card.name} mean in a love reading?`,
-          acceptedAnswer: { '@type': 'Answer', text: card.loveMeaning || `${card.name} in love represents ${card.keywords.slice(0, 3).join(', ').toLowerCase()}.` },
+          name: `What does the ${enCard.name} mean in a love reading?`,
+          acceptedAnswer: { '@type': 'Answer', text: enCard.loveMeaning || `${enCard.name} in love represents ${enCard.keywords.slice(0, 3).join(', ').toLowerCase()}.` },
         },
         {
           '@type': 'Question',
-          name: `What does the ${card.name} mean in a career reading?`,
-          acceptedAnswer: { '@type': 'Answer', text: card.careerMeaning || `${card.name} in career represents ${card.keywords.slice(0, 3).join(', ').toLowerCase()}.` },
+          name: `What does the ${enCard.name} mean in a career reading?`,
+          acceptedAnswer: { '@type': 'Answer', text: enCard.careerMeaning || `${enCard.name} in career represents ${enCard.keywords.slice(0, 3).join(', ').toLowerCase()}.` },
         },
       ],
     });
     window.scrollTo(0, 0);
-  }, [card]);
+  }, [card, enCard]);
 
   if (!card) {
     return (
@@ -281,12 +302,12 @@ export function TarotCardMeaningPage() {
       {/* Prev/Next Navigation */}
       <div className="tm-card-nav">
         {prevCard ? (
-          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${cardToSlug(prevCard.name)}`)}>
+          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(prevCard.id)}`)}>
             ← {prevCard.name}
           </button>
         ) : <div />}
         {nextCard ? (
-          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${cardToSlug(nextCard.name)}`)}>
+          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(nextCard.id)}`)}>
             {nextCard.name} →
           </button>
         ) : <div />}
@@ -307,7 +328,7 @@ export function TarotCardMeaningPage() {
               <button
                 key={rc.id}
                 className={`tm-related-card ${isActive ? 'active' : ''}`}
-                onClick={() => { if (!isActive) navigate(`/tarot-meanings/${cardToSlug(rc.name)}`); }}
+                onClick={() => { if (!isActive) navigate(`/tarot-meanings/${slugFromId(rc.id)}`); }}
               >
                 {thumb ? (
                   <img src={thumb} alt={rc.name} className="tm-related-img" loading="lazy" />

@@ -31,6 +31,7 @@ import {
 } from '../../data/horoscopes';
 import { generateDailyReading } from '../../services/dailyContent';
 import { fullDeck } from '../../data/tarotDeck';
+import { localizeCard } from '../../i18n/localizeCard';
 import { shareToNative, copyToClipboard } from '../../services/share';
 import { awardXP } from '../../services/levelSystem';
 import { checkAchievementProgress } from '../../services/achievements';
@@ -86,7 +87,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
     const dateNum = new Date(today).getTime();
     const signNum = zodiacSign.charCodeAt(0);
     const index = (dateNum + signNum) % fullDeck.length;
-    return fullDeck[index];
+    return localizeCard(fullDeck[index]);
   };
 
   const tarotCard = getDailyTarotCard();

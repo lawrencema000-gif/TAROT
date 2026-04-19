@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { supabase } from '../lib/supabase';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -92,7 +93,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     setResetLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/?lang=${getLocale()}`,
       });
       if (error) {
         toast(getAuthErrorMessage(error), 'error');

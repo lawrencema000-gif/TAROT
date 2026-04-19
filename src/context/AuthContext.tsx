@@ -26,6 +26,7 @@ import {
   detectOAuthIssues,
 } from '../utils/authErrors';
 import { migrateGuestData } from '../services/storage';
+import { getLocale } from '../i18n/config';
 
 interface AuthContextType {
   user: User | null;
@@ -735,7 +736,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     logInfo('auth.signUp.start', 'Starting email sign up');
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    // Propagate the user's active locale through email confirmation:
+    //   - emailRedirectTo carries ?lang=xx so the post-confirm landing page boots in the right language
+    //   - options.data.locale lives in auth.users.raw_user_meta_data so Supabase template helpers + downstream services can localize
+    const locale = getLocale();
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const emailRedirectTo = origin ? `${origin}/?lang=${locale}` : undefined;
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo,
+        data: { locale },
+      },
+    });
 
     if (error) {
       const normalized = normalizeSupabaseError(error);
@@ -891,7 +906,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Web: standard OAuth redirect flow
         const webOAuthSpan = startSpan('auth.google.webOAuth');
-        const redirectUrl = window.location.origin + window.location.pathname;
+        const localeParam = `?lang=${getLocale()}`;
+        const redirectUrl = window.location.origin + window.location.pathname + localeParam;
 
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',

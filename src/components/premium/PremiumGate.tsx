@@ -7,6 +7,7 @@ import type { PremiumFeature } from '../../services/premium';
 import { PREMIUM_FEATURES, isFeatureUnlockable } from '../../services/premium';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { isNative } from '../../utils/platform';
+import { useT } from '../../i18n/useT';
 
 interface PremiumGateProps {
   feature: PremiumFeature;
@@ -16,6 +17,7 @@ interface PremiumGateProps {
 }
 
 export function PremiumGate({ feature, children, fallback, showBadge = true }: PremiumGateProps) {
+  const { t } = useT('app');
   const { profile, isAdmin } = useAuth();
   const [showPaywall, setShowPaywall] = useState(false);
   const [showWatchAd, setShowWatchAd] = useState(false);
@@ -62,7 +64,7 @@ export function PremiumGate({ feature, children, fallback, showBadge = true }: P
         {showBadge && (
           <div className="absolute top-2 right-2 px-2 py-1 bg-gold/20 border border-gold/30 rounded-full flex items-center gap-1">
             <Crown className="w-3 h-3 text-gold" />
-            <span className="text-xs font-medium text-gold">Premium</span>
+            <span className="text-xs font-medium text-gold">{t('premium.badge')}</span>
           </div>
         )}
       </div>
@@ -91,10 +93,11 @@ interface PremiumBadgeProps {
 }
 
 export function PremiumBadge({ size = 'sm', className = '' }: PremiumBadgeProps) {
+  const { t } = useT('app');
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 bg-gold/20 border border-gold/30 rounded-full ${className}`}>
       <Crown className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} style={{ color: 'rgb(212, 175, 55)' }} />
-      <span className={`font-medium text-gold ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>Premium</span>
+      <span className={`font-medium text-gold ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>{t('premium.badge')}</span>
     </span>
   );
 }
@@ -107,6 +110,7 @@ interface PremiumLockOverlayProps {
 }
 
 export function PremiumLockOverlay({ feature, onUnlock, showAdOption, onWatchAd }: PremiumLockOverlayProps) {
+  const { t } = useT('app');
   const featureDef = PREMIUM_FEATURES[feature];
   const [canWatch, setCanWatch] = useState(false);
 
@@ -136,11 +140,11 @@ export function PremiumLockOverlay({ feature, onUnlock, showAdOption, onWatchAd 
             className="px-4 py-2 bg-mystic-800 border border-gold/30 text-gold font-medium rounded-lg text-sm hover:bg-mystic-700 transition-colors flex items-center gap-2"
           >
             <Play className="w-4 h-4" />
-            Watch Ad to Try
+            {t('premium.gate.watchAdToTry')}
           </button>
         )}
         <button className="px-4 py-2 bg-gold text-mystic-950 font-medium rounded-lg text-sm hover:bg-gold-dark transition-colors">
-          Unlock Premium
+          {t('premium.gate.unlockPremium')}
         </button>
       </div>
     </div>

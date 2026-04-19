@@ -18,6 +18,7 @@ import {
 import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService, PRODUCT_IDS, Product } from '../../services/billing';
+import { useT } from '../../i18n/useT';
 
 interface PaywallSheetProps {
   open: boolean;
@@ -26,23 +27,27 @@ interface PaywallSheetProps {
 }
 
 const unlocks = [
-  { icon: Ban, label: 'Ad-Free Experience', desc: 'No interruptions, pure focus' },
-  { icon: Layers, label: 'All Tarot Spreads', desc: 'Celtic Cross, 3-Card & more' },
-  { icon: InfinityIcon, label: 'Unlimited Saves', desc: 'Keep every insight forever' },
-  { icon: Heart, label: 'Full Compatibility', desc: 'Deep partner analysis' },
-  { icon: Brain, label: 'Deep Interpretations', desc: 'Personalized guidance' },
-  { icon: Star, label: 'Guided Prompts', desc: 'AI-crafted reflections' },
-  { icon: Moon, label: 'Birth Chart', desc: 'Your cosmic blueprint' },
-];
+  { icon: Ban, key: 'adFree' },
+  { icon: Layers, key: 'allSpreads' },
+  { icon: InfinityIcon, key: 'unlimitedSaves' },
+  { icon: Heart, key: 'compatibility' },
+  { icon: Brain, key: 'deepInterpretations' },
+  { icon: Star, key: 'guidedPrompts' },
+  { icon: Moon, key: 'birthChart' },
+] as const;
 
 type PlanId = 'monthly' | 'yearly' | 'lifetime';
 
+type PlanLabelKey = 'monthly' | 'yearly' | 'lifetime';
+type PeriodKey = 'month' | 'year' | 'oneTime';
+type BadgeKey = 'bestValue' | 'foreverAccess';
+
 interface DisplayPlan {
   id: PlanId;
-  label: string;
+  labelKey: PlanLabelKey;
   price: string;
-  period: string;
-  badge?: string;
+  periodKey: PeriodKey;
+  badgeKey?: BadgeKey;
   productId: string;
   product?: Product;
 }
@@ -87,18 +92,18 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
   if (monthlyProduct) {
     plans.push({
       id: 'monthly',
-      label: 'Monthly',
+      labelKey: 'monthly',
       price: monthlyProduct.price,
-      period: '/month',
+      periodKey: 'month',
       productId: monthlyProduct.id,
       product: monthlyProduct,
     });
   } else {
     plans.push({
       id: 'monthly',
-      label: 'Monthly',
+      labelKey: 'monthly',
       price: FALLBACK_PRICES[PRODUCT_IDS.PREMIUM_MONTHLY],
-      period: '/month',
+      periodKey: 'month',
       productId: PRODUCT_IDS.PREMIUM_MONTHLY,
     });
   }
@@ -106,20 +111,20 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
   if (yearlyProduct) {
     plans.push({
       id: 'yearly',
-      label: 'Yearly',
+      labelKey: 'yearly',
       price: yearlyProduct.price,
-      period: '/year',
-      badge: 'Best Value',
+      periodKey: 'year',
+      badgeKey: 'bestValue',
       productId: yearlyProduct.id,
       product: yearlyProduct,
     });
   } else {
     plans.push({
       id: 'yearly',
-      label: 'Yearly',
+      labelKey: 'yearly',
       price: FALLBACK_PRICES[PRODUCT_IDS.PREMIUM_YEARLY],
-      period: '/year',
-      badge: 'Best Value',
+      periodKey: 'year',
+      badgeKey: 'bestValue',
       productId: PRODUCT_IDS.PREMIUM_YEARLY,
     });
   }
@@ -127,20 +132,20 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
   if (lifetimeProduct) {
     plans.push({
       id: 'lifetime',
-      label: 'Lifetime',
+      labelKey: 'lifetime',
       price: lifetimeProduct.price,
-      period: 'one-time',
-      badge: 'Forever Access',
+      periodKey: 'oneTime',
+      badgeKey: 'foreverAccess',
       productId: lifetimeProduct.id,
       product: lifetimeProduct,
     });
   } else {
     plans.push({
       id: 'lifetime',
-      label: 'Lifetime',
+      labelKey: 'lifetime',
       price: FALLBACK_PRICES[PRODUCT_IDS.PREMIUM_LIFETIME],
-      period: 'one-time',
-      badge: 'Forever Access',
+      periodKey: 'oneTime',
+      badgeKey: 'foreverAccess',
       productId: PRODUCT_IDS.PREMIUM_LIFETIME,
     });
   }
@@ -149,6 +154,7 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
 }
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
+  const { t } = useT('app');
   const { user, refreshProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
   const [purchasing, setPurchasing] = useState(false);
@@ -199,12 +205,12 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       }
     } catch (error) {
       console.error('[Paywall] Failed to load products:', error);
-      setProductError('Unable to load pricing. Please check your connection.');
+      setProductError(t('premium.paywall.errors.loadFailed'));
       setDisplayPlans(buildDisplayPlans([]));
     } finally {
       setLoadingProducts(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (open) {
@@ -219,7 +225,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
     if (!plan) return;
 
     if (!plan.product?.rcPackage && !hasRealProducts) {
-      toast('Products not available. Please try again later.', 'error');
+      toast(t('premium.paywall.toasts.productsUnavailable'), 'error');
       console.error('[Paywall] No rcPackage available for purchase. RevenueCat offerings may not be configured.');
       return;
     }
@@ -237,13 +243,13 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
             checkAchievementProgress(user.id, 'premium_upgrade');
           });
         }
-        toast('Welcome to Premium!', 'success');
+        toast(t('premium.paywall.toasts.welcome'), 'success');
         onClose();
       } else if (result.error) {
         toast(result.error, 'error');
       }
     } catch {
-      toast('Purchase failed', 'error');
+      toast(t('premium.paywall.toasts.purchaseFailed'), 'error');
     } finally {
       setPurchasing(false);
     }
@@ -258,13 +264,13 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       if (purchases.some(p => p.success)) {
         // Premium status is set server-side by RevenueCat webhook — just refresh
         await refreshProfile();
-        toast('Purchases restored!', 'success');
+        toast(t('premium.paywall.toasts.purchasesRestored'), 'success');
         onClose();
       } else {
-        toast('No purchases found', 'info');
+        toast(t('premium.paywall.toasts.noPurchases'), 'info');
       }
     } catch {
-      toast('Restore failed', 'error');
+      toast(t('premium.paywall.toasts.restoreFailed'), 'error');
     } finally {
       setRestoring(false);
     }
@@ -297,22 +303,22 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           </div>
 
           <h1 className="font-display text-3xl text-center text-mystic-100 mb-2">
-            Unlock the Full Deck
+            {t('premium.paywall.heading')}
           </h1>
           <p className="text-mystic-400 text-center max-w-xs mb-8">
-            Deeper spreads, unlimited saves, compatibility insights & more
+            {t('premium.paywall.subheading')}
           </p>
 
           {feature && (
             <div className="flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/20 rounded-full mb-6">
               <Lock className="w-4 h-4 text-gold" />
-              <span className="text-sm text-gold">{feature} requires Premium</span>
+              <span className="text-sm text-gold">{t('premium.paywall.featureRequires', { feature })}</span>
             </div>
           )}
 
           <div className="w-full max-w-sm space-y-3 mb-8">
             <p className="text-xs font-medium text-mystic-500 uppercase tracking-wider text-center mb-4">
-              What You Unlock
+              {t('premium.paywall.whatYouUnlock')}
             </p>
             <div className="grid grid-cols-2 gap-3">
               {unlocks.map((item, i) => {
@@ -326,8 +332,8 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                       <Icon className="w-4 h-4 text-gold" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-mystic-100 truncate">{item.label}</p>
-                      <p className="text-xs text-mystic-500 truncate">{item.desc}</p>
+                      <p className="text-sm font-medium text-mystic-100 truncate">{t(`premium.paywall.unlocks.${item.key}.label`)}</p>
+                      <p className="text-xs text-mystic-500 truncate">{t(`premium.paywall.unlocks.${item.key}.desc`)}</p>
                     </div>
                   </div>
                 );
@@ -357,8 +363,8 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                 <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-amber-300 font-medium mb-1">Premium Not Available</p>
-                  <p className="text-xs text-amber-400/80">RevenueCat offerings need to be configured. Purchases are disabled until setup is complete.</p>
+                  <p className="text-sm text-amber-300 font-medium mb-1">{t('premium.paywall.errors.notAvailableTitle')}</p>
+                  <p className="text-xs text-amber-400/80">{t('premium.paywall.errors.notAvailableDesc')}</p>
                 </div>
               </div>
             </div>
@@ -368,7 +374,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
             {loadingProducts ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mb-3" />
-                <p className="text-sm text-mystic-400">Loading prices...</p>
+                <p className="text-sm text-mystic-400">{t('premium.paywall.loadingPrices')}</p>
               </div>
             ) : (
               displayPlans.map((plan) => (
@@ -381,13 +387,13 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                       : 'border-mystic-700/50 bg-mystic-800/30 hover:border-mystic-600'
                   }`}
                 >
-                  {plan.badge && (
+                  {plan.badgeKey && (
                     <span className={`absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      plan.badge === 'Best Value'
+                      plan.badgeKey === 'bestValue'
                         ? 'bg-gold text-mystic-950'
                         : 'bg-emerald-500 text-white'
                     }`}>
-                      {plan.badge}
+                      {t(`premium.paywall.badges.${plan.badgeKey}`)}
                     </span>
                   )}
                   <div className="flex items-center justify-between">
@@ -401,7 +407,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                       </div>
                       <div>
                         <span className={`font-medium ${selectedPlan === plan.id ? 'text-mystic-100' : 'text-mystic-300'}`}>
-                          {plan.label}
+                          {t(`premium.paywall.plans.${plan.labelKey}`)}
                         </span>
                       </div>
                     </div>
@@ -409,7 +415,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                       <span className={`text-lg font-display ${selectedPlan === plan.id ? 'text-gold' : 'text-mystic-200'}`}>
                         {plan.price}
                       </span>
-                      <span className="text-mystic-500 text-sm ml-1">{plan.period}</span>
+                      <span className="text-mystic-500 text-sm ml-1">{t(`premium.paywall.periods.${plan.periodKey}`)}</span>
                     </div>
                   </div>
                 </button>
@@ -428,10 +434,10 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
             >
               {!hasRealProducts && !loadingProducts
-                ? 'Premium Not Available'
+                ? t('premium.paywall.cta.notAvailable')
                 : selectedPlan === 'lifetime'
-                ? 'Get Lifetime Access'
-                : 'Subscribe Now'}
+                ? t('premium.paywall.cta.getLifetime')
+                : t('premium.paywall.cta.subscribeNow')}
             </Button>
 
             <button
@@ -444,7 +450,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               ) : (
                 <RotateCcw className="w-4 h-4" />
               )}
-              Restore Purchase
+              {t('premium.paywall.restorePurchase')}
             </button>
           </div>
         </div>
@@ -452,8 +458,8 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         <div className="px-6 pb-8 pt-4 border-t border-mystic-800/50">
           <p className="text-xs text-mystic-600 text-center leading-relaxed">
             {selectedPlan === 'lifetime'
-              ? 'One-time purchase. No recurring charges. Lifetime access to all premium features.'
-              : 'Cancel anytime. Payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.'}
+              ? t('premium.paywall.disclaimers.lifetime')
+              : t('premium.paywall.disclaimers.subscription')}
           </p>
         </div>
       </div>

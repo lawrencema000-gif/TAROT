@@ -1192,5 +1192,23 @@
       "함께하는 시간과 독립의 공간을 모두 만드세요.",
       "적극적 경청과 인정을 실천하세요."
     ]
+  },
+  "library": {
+    "loading": "로딩 중...",
+    "toasts": {
+      "loadSavedFailed": "저장된 항목을 불러올 수 없습니다 — 오프라인일 수 있습니다",
+      "loadMoreFailed": "추가 항목을 불러오지 못했습니다",
+      "deleteFailed": "삭제에 실패했습니다",
+      "deleted": "삭제되었습니다"
+    },
+    "empty": {
+      "noAIReadings": "아직 AI 리딩이 없습니다",
+      "getAIFromTarot": "타로 섹션에서 AI 해석을 받아보세요"
+    },
+    "reading": {
+      "yourQuestion": "질문",
+      "cardsDrawn": "뽑은 카드",
+      "interpretation": "해석"
+    }
   }
 }

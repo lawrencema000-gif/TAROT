@@ -1192,5 +1192,23 @@
       "既要为共处留出空间,也要为独立留出空间。",
       "练习积极倾听与肯定。"
     ]
+  },
+  "library": {
+    "loading": "加载中...",
+    "toasts": {
+      "loadSavedFailed": "无法加载已保存项目 — 您可能处于离线状态",
+      "loadMoreFailed": "加载更多项目失败",
+      "deleteFailed": "删除失败",
+      "deleted": "已删除"
+    },
+    "empty": {
+      "noAIReadings": "暂无AI解读",
+      "getAIFromTarot": "在塔罗牌部分获取AI解读"
+    },
+    "reading": {
+      "yourQuestion": "你的问题",
+      "cardsDrawn": "抽取的牌",
+      "interpretation": "解读"
+    }
   }
 }

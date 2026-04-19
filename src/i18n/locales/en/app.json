@@ -1192,5 +1192,23 @@
       "Create space for both togetherness and independence.",
       "Practice active listening and validation."
     ]
+  },
+  "library": {
+    "loading": "Loading...",
+    "toasts": {
+      "loadSavedFailed": "Could not load saved items — you may be offline",
+      "loadMoreFailed": "Failed to load more items",
+      "deleteFailed": "Failed to delete",
+      "deleted": "Deleted"
+    },
+    "empty": {
+      "noAIReadings": "No AI readings yet",
+      "getAIFromTarot": "Get AI interpretations from the Tarot section"
+    },
+    "reading": {
+      "yourQuestion": "Your Question",
+      "cardsDrawn": "Cards Drawn",
+      "interpretation": "Interpretation"
+    }
   }
 }

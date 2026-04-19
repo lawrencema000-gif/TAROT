@@ -20,6 +20,7 @@ import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService } from '../../services/billing';
 import { isNative, isAndroid } from '../../utils/platform';
+import { useT } from '../../i18n/useT';
 
 interface SubscriptionSheetProps {
   open: boolean;
@@ -27,16 +28,17 @@ interface SubscriptionSheetProps {
 }
 
 const premiumFeatures = [
-  { icon: Ban, label: 'Ad-Free Experience' },
-  { icon: Layers, label: 'All Tarot Spreads' },
-  { icon: InfinityIcon, label: 'Unlimited Saves' },
-  { icon: Heart, label: 'Full Compatibility' },
-  { icon: Brain, label: 'Deep Interpretations' },
-  { icon: Star, label: 'Guided Prompts' },
-  { icon: Moon, label: 'Birth Chart' },
-];
+  { icon: Ban, key: 'adFree' },
+  { icon: Layers, key: 'allSpreads' },
+  { icon: InfinityIcon, key: 'unlimitedSaves' },
+  { icon: Heart, key: 'compatibility' },
+  { icon: Brain, key: 'deepInterpretations' },
+  { icon: Star, key: 'guidedPrompts' },
+  { icon: Moon, key: 'birthChart' },
+] as const;
 
 export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
+  const { t } = useT('app');
   const { profile, refreshProfile } = useAuth();
   const [restoring, setRestoring] = useState(false);
 
@@ -58,12 +60,12 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
       if (purchases.some(p => p.success)) {
         await refreshProfile();
-        toast('Subscription verified!', 'success');
+        toast(t('premium.subscription.toasts.verified'), 'success');
       } else {
-        toast('Subscription is active', 'info');
+        toast(t('premium.subscription.toasts.active'), 'info');
       }
     } catch {
-      toast('Could not verify subscription', 'error');
+      toast(t('premium.subscription.toasts.verifyFailed'), 'error');
     } finally {
       setRestoring(false);
     }
@@ -97,13 +99,13 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-gold" />
             <h1 className="font-display text-3xl text-center text-mystic-100">
-              Premium Active
+              {t('premium.subscription.heading')}
             </h1>
             <Sparkles className="w-5 h-5 text-gold" />
           </div>
 
           <p className="text-mystic-400 text-center max-w-xs mb-8">
-            You have full access to all premium features
+            {t('premium.subscription.subheading')}
           </p>
 
           <div className="w-full max-w-sm mb-8">
@@ -113,9 +115,9 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
                   <Crown className="w-5 h-5 text-gold" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-mystic-100">Premium Plan</h3>
+                  <h3 className="font-semibold text-mystic-100">{t('premium.subscription.planTitle')}</h3>
                   <p className="text-sm text-mystic-400">
-                    {profile?.displayName || 'Member'}
+                    {profile?.displayName || t('premium.subscription.memberFallback')}
                   </p>
                 </div>
               </div>
@@ -124,16 +126,16 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 text-mystic-400">
                     <Calendar className="w-4 h-4" />
-                    <span>Status</span>
+                    <span>{t('premium.subscription.status')}</span>
                   </div>
-                  <span className="text-emerald-400 font-medium">Active</span>
+                  <span className="text-emerald-400 font-medium">{t('premium.subscription.statusActive')}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 text-mystic-400">
                     <CreditCard className="w-4 h-4" />
-                    <span>Billing</span>
+                    <span>{t('premium.subscription.billing')}</span>
                   </div>
-                  <span className="text-mystic-300">Google Play</span>
+                  <span className="text-mystic-300">{t('premium.subscription.billingGooglePlay')}</span>
                 </div>
               </div>
             </div>
@@ -141,7 +143,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
           <div className="w-full max-w-sm mb-8">
             <p className="text-xs font-medium text-mystic-500 uppercase tracking-wider text-center mb-4">
-              Your Premium Benefits
+              {t('premium.subscription.yourBenefits')}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {premiumFeatures.map((feature, i) => {
@@ -154,7 +156,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 flex items-center justify-center flex-shrink-0">
                       <Icon className="w-4 h-4 text-emerald-400" />
                     </div>
-                    <span className="text-sm text-mystic-200">{feature.label}</span>
+                    <span className="text-sm text-mystic-200">{t(`premium.subscription.features.${feature.key}`)}</span>
                   </div>
                 );
               })}
@@ -170,7 +172,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
               className="min-h-[52px]"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              Manage on Google Play
+              {t('premium.subscription.manageOnGooglePlay')}
             </Button>
 
             <button
@@ -183,15 +185,14 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
               ) : (
                 <RotateCcw className="w-4 h-4" />
               )}
-              Sync Subscription Status
+              {t('premium.subscription.syncStatus')}
             </button>
           </div>
         </div>
 
         <div className="px-6 pb-8 pt-4 border-t border-mystic-800/50">
           <p className="text-xs text-mystic-600 text-center leading-relaxed">
-            To cancel or modify your subscription, use the Google Play Store app or website.
-            Changes may take a few minutes to reflect in the app.
+            {t('premium.subscription.disclaimer')}
           </p>
         </div>
       </div>

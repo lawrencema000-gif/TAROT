@@ -1192,5 +1192,23 @@
       "一緒の時間と独立の両方のためのスペースを作りましょう。",
       "アクティブリスニングと承認を実践しましょう。"
     ]
+  },
+  "library": {
+    "loading": "読み込み中...",
+    "toasts": {
+      "loadSavedFailed": "保存済みアイテムを読み込めませんでした — オフラインの可能性があります",
+      "loadMoreFailed": "追加のアイテムの読み込みに失敗しました",
+      "deleteFailed": "削除に失敗しました",
+      "deleted": "削除しました"
+    },
+    "empty": {
+      "noAIReadings": "AIリーディングはまだありません",
+      "getAIFromTarot": "タロットセクションからAI解釈を取得してください"
+    },
+    "reading": {
+      "yourQuestion": "質問",
+      "cardsDrawn": "引いたカード",
+      "interpretation": "解釈"
+    }
   }
 }

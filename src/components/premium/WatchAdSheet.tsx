@@ -3,6 +3,7 @@ import { Play, X, Gift, Clock, Crown, Sparkles, BookOpen } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { PREMIUM_FEATURES, type PremiumFeature } from '../../services/premium';
+import { useT } from '../../i18n/useT';
 
 interface WatchAdSheetProps {
   open: boolean;
@@ -13,15 +14,13 @@ interface WatchAdSheetProps {
   onShowPaywall: () => void;
 }
 
-const FEATURE_CONTEXT: Partial<Record<PremiumFeature, { title: string; subtitle: string; icon: typeof Gift }>> = {
+const FEATURE_CONTEXT: Partial<Record<PremiumFeature, { contextKey: string; icon: typeof Gift }>> = {
   extra_reading: {
-    title: 'Get an Extra Reading',
-    subtitle: 'Watch a short ad to unlock one more tarot reading today',
+    contextKey: 'extraReading',
     icon: Sparkles,
   },
   deep_interpretations: {
-    title: 'Unlock Extended Interpretation',
-    subtitle: 'Watch a short ad for a deeper look into your cards',
+    contextKey: 'deepInterpretations',
     icon: BookOpen,
   },
 };
@@ -34,6 +33,7 @@ export function WatchAdSheet({
   onUnlocked,
   onShowPaywall,
 }: WatchAdSheetProps) {
+  const { t } = useT('app');
   const [loading, setLoading] = useState(false);
   const [remainingUnlocks, setRemainingUnlocks] = useState(0);
 
@@ -47,8 +47,12 @@ export function WatchAdSheet({
 
   if (!open) return null;
 
-  const title = context?.title || `Try ${featureDef.name}`;
-  const subtitle = context?.subtitle || 'Watch a short ad to unlock this premium feature for one use';
+  const title = context
+    ? t(`premium.watchAd.contexts.${context.contextKey}.title`)
+    : t('premium.watchAd.defaultTitle', { feature: featureDef.name });
+  const subtitle = context
+    ? t(`premium.watchAd.contexts.${context.contextKey}.subtitle`)
+    : t('premium.watchAd.defaultSubtitle');
   const Icon = context?.icon || Gift;
 
   const handleWatchAd = async () => {
@@ -57,15 +61,15 @@ export function WatchAdSheet({
       const success = await rewardedAdsService.showRewardedAd(feature, spreadType);
 
       if (success) {
-        toast('Feature unlocked! Enjoy your free trial.', 'success');
+        toast(t('premium.watchAd.toasts.unlocked'), 'success');
         onUnlocked();
         onClose();
       } else {
-        toast('Ad not available. Please try again.', 'error');
+        toast(t('premium.watchAd.toasts.notAvailable'), 'error');
       }
     } catch (error) {
       console.error('[WatchAdSheet] Error showing ad:', error);
-      toast('Something went wrong. Please try again.', 'error');
+      toast(t('premium.watchAd.toasts.error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -111,7 +115,7 @@ export function WatchAdSheet({
           <div className="flex items-center justify-center gap-2 px-3 py-2 bg-mystic-800/50 rounded-full mb-6">
             <Clock className="w-4 h-4 text-mystic-500" />
             <span className="text-sm text-mystic-300">
-              {remainingUnlocks} of {5} free unlocks remaining today
+              {t('premium.watchAd.unlocksRemaining', { remaining: remainingUnlocks, total: 5 })}
             </span>
           </div>
 
@@ -126,15 +130,15 @@ export function WatchAdSheet({
                 className="min-h-[52px]"
               >
                 <Play className="w-5 h-5" />
-                Watch Ad to Unlock
+                {t('premium.watchAd.watchAdToUnlock')}
               </Button>
             ) : (
               <div className="text-center py-3">
                 <p className="text-sm text-mystic-400 mb-2">
-                  You've used all free unlocks for today
+                  {t('premium.watchAd.usedAllUnlocks')}
                 </p>
                 <p className="text-xs text-mystic-500">
-                  Come back tomorrow or upgrade to Premium
+                  {t('premium.watchAd.comeBackTomorrow')}
                 </p>
               </div>
             )}
@@ -146,21 +150,21 @@ export function WatchAdSheet({
               className="min-h-[44px]"
             >
               <Crown className="w-4 h-4" />
-              Get Unlimited Access
+              {t('premium.watchAd.getUnlimited')}
             </Button>
 
             <button
               onClick={onClose}
               className="w-full py-2 text-sm text-mystic-500 hover:text-mystic-400 transition-colors"
             >
-              Not now
+              {t('premium.watchAd.notNow')}
             </button>
           </div>
         </div>
 
         <div className="px-6 pb-6 pt-2 border-t border-mystic-800/50">
           <p className="text-xs text-mystic-600 text-center">
-            Premium members get unlimited access to all features with no ads
+            {t('premium.watchAd.footerDisclaimer')}
           </p>
         </div>
       </div>

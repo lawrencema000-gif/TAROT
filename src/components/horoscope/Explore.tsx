@@ -67,6 +67,7 @@ const ASPECT_COLORS: Record<AspectType, string> = {
 };
 
 export function Explore() {
+  const { t } = useT('app');
   const [tab, setTab] = useState<ExploreTab>('transits');
   const data = useExploreData();
 
@@ -74,23 +75,23 @@ export function Explore() {
     <div className="p-4 space-y-4">
       <div className="flex gap-1">
         {([
-          { id: 'transits' as const, label: 'Transits', icon: Orbit },
-          { id: 'houses' as const, label: 'Houses', icon: Home },
-          { id: 'aspects' as const, label: 'Aspects', icon: Triangle },
-        ]).map((t) => {
-          const Icon = t.icon;
+          { id: 'transits' as const, label: t('horoscope.exploreView.tabs.transits'), icon: Orbit },
+          { id: 'houses' as const, label: t('horoscope.exploreView.tabs.houses'), icon: Home },
+          { id: 'aspects' as const, label: t('horoscope.exploreView.tabs.aspects'), icon: Triangle },
+        ]).map((item) => {
+          const Icon = item.icon;
           return (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={item.id}
+              onClick={() => setTab(item.id)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                tab === t.id
+                tab === item.id
                   ? 'bg-gold/15 text-gold border border-gold/25'
                   : 'text-mystic-400 border border-transparent'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
-              {t.label}
+              {item.label}
             </button>
           );
         })}
@@ -131,7 +132,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
         <Filter className="w-3.5 h-3.5 text-mystic-400" />
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
           <Chip
-            label="All"
+            label={t('horoscope.exploreView.filterAll')}
             selected={!filter}
             onSelect={() => setFilter('')}
             size="sm"
@@ -173,7 +174,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
                     {PLANET_SYMBOLS[ev.natalPlanet]}
                   </span>
                   <span className="text-xs text-mystic-400 truncate">
-                    {ev.transitPlanet} to {ev.natalPlanet}
+                    {t('horoscope.exploreView.transitArrow', { from: ev.transitPlanet, to: ev.natalPlanet })}
                   </span>
                 </div>
                 {isOpen ? <ChevronUp className="w-4 h-4 text-mystic-500" /> : <ChevronDown className="w-4 h-4 text-mystic-500" />}
@@ -268,7 +269,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
                     })}
                   </div>
                 ) : (
-                  <div className="text-[10px] text-mystic-600 mt-0.5">No planets here</div>
+                  <div className="text-[10px] text-mystic-600 mt-0.5">{t('horoscope.exploreView.noPlanetsHere')}</div>
                 )}
               </div>
             </div>
@@ -314,7 +315,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
         {['all', 'harmonious', 'challenging', 'conjunctions'].map((f) => (
           <Chip
             key={f}
-            label={f.charAt(0).toUpperCase() + f.slice(1)}
+            label={t(`horoscope.exploreView.aspectFilters.${f}`)}
             selected={aspectFilter === f}
             onSelect={() => setAspectFilter(f)}
             size="sm"
@@ -323,7 +324,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-mystic-400 text-sm text-center py-8">No aspects match this filter</p>
+        <p className="text-mystic-400 text-sm text-center py-8">{t('horoscope.exploreView.noAspectsMatch')}</p>
       ) : (
         filtered.map((a: Aspect, i: number) => {
           const isOpen = expanded === i;
@@ -343,7 +344,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
                   {PLANET_SYMBOLS[a.planet2 as Planet]}
                 </span>
                 <span className="flex-1 text-xs text-mystic-400">
-                  {a.planet1} - {a.planet2}
+                  {t('horoscope.exploreView.aspectPair', { a: a.planet1, b: a.planet2 })}
                 </span>
                 <span className="text-xs text-mystic-500">{a.orb.toFixed(1)}&deg;</span>
                 {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-mystic-500" /> : <ChevronDown className="w-3.5 h-3.5 text-mystic-500" />}

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles, RefreshCw, AlertCircle, Globe, Home, Triangle, Star } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Button, Card, Input } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
+  const { t } = useT('app');
   const { profile, updateProfile } = useAuth();
   const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -75,7 +77,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
       doCompute(best);
     } else if (!geoLoading && geoResults.length === 0 && computing) {
       setComputing(false);
-      setComputeError('Could not find your birth location. Please search below.');
+      setComputeError(t('horoscope.onboarding.errors.couldNotFindLocation'));
     }
   }, [geoResults, geoLoading]);
 
@@ -96,7 +98,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
       });
       onComplete();
     } catch {
-      setComputeError('Could not compute your chart automatically. Please confirm your birth location below.');
+      setComputeError(t('horoscope.onboarding.errors.couldNotAutoCompute'));
       setComputing(false);
     }
   };
@@ -125,7 +127,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
       });
       onComplete();
     } catch {
-      setComputeError('Could not compute your chart. Please try a different location.');
+      setComputeError(t('horoscope.onboarding.errors.couldNotCompute'));
       setComputing(false);
     }
   };
@@ -153,12 +155,12 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
     return (
       <div className="space-y-6 py-4">
         <div className="text-center space-y-2">
-          <h2 className="font-display text-2xl font-semibold text-mystic-100">One More Detail</h2>
+          <h2 className="font-display text-2xl font-semibold text-mystic-100">{t('horoscope.onboarding.oneMoreDetail')}</h2>
           <p className="text-mystic-400 text-sm">
-            We need your birth location to compute an accurate natal chart.
+            {t('horoscope.onboarding.needBirthLocation')}
             {hasBirthDate && (
               <span className="block mt-1 text-mystic-500">
-                Your other birth details are already saved from your profile.
+                {t('horoscope.onboarding.profileDetailsNote')}
               </span>
             )}
           </p>
@@ -167,12 +169,12 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
         {profile?.birthDate && (
           <div className="flex gap-3 justify-center text-xs">
             <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
-              <span className="text-mystic-500">Date:</span>{' '}
+              <span className="text-mystic-500">{t('horoscope.onboarding.dateLabel')}</span>{' '}
               <span className="text-mystic-200">{profile.birthDate}</span>
             </div>
             {profile.birthTime && (
               <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
-                <span className="text-mystic-500">Time:</span>{' '}
+                <span className="text-mystic-500">{t('horoscope.onboarding.timeLabel')}</span>{' '}
                 <span className="text-mystic-200">{profile.birthTime}</span>
               </div>
             )}
@@ -182,14 +184,14 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
         <Card padding="lg" className="space-y-4">
           <div className="flex items-center gap-3 text-gold">
             <MapPin className="w-5 h-5" />
-            <span className="font-display text-lg font-semibold text-mystic-100">Birth Location</span>
+            <span className="font-display text-lg font-semibold text-mystic-100">{t('horoscope.onboarding.birthLocation')}</span>
           </div>
 
           <div className="relative">
             <Input
               value={locationQuery}
               onChange={(e) => handleLocationInput(e.target.value)}
-              placeholder="Search city or town..."
+              placeholder={t('horoscope.onboarding.searchCityPlaceholder')}
               icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             />
           </div>
@@ -237,12 +239,12 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           loading={computing}
           disabled={!selectedLocation}
         >
-          Compute My Chart
+          {t('horoscope.onboarding.computeMyChart')}
           <ChevronRight className="w-4 h-4" />
         </Button>
 
         {!selectedLocation && !computing && (
-          <p className="text-center text-xs text-mystic-500">Select a location above to continue</p>
+          <p className="text-center text-xs text-mystic-500">{t('horoscope.onboarding.selectLocationToContinue')}</p>
         )}
       </div>
     );
@@ -254,9 +256,9 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
         <div className="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
           <AlertCircle className="w-7 h-7 text-red-400" />
         </div>
-        <h2 className="font-display text-xl font-semibold text-mystic-100">Chart Computation Failed</h2>
+        <h2 className="font-display text-xl font-semibold text-mystic-100">{t('horoscope.onboarding.chartComputationFailed')}</h2>
         <p className="text-mystic-400 text-sm max-w-sm mx-auto">
-          {computeError || 'We could not compute your natal chart. Please try again or update your birth location.'}
+          {computeError || t('horoscope.onboarding.chartComputeFailDefault')}
         </p>
       </div>
 
@@ -270,7 +272,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           }}
         >
           <RefreshCw className="w-4 h-4" />
-          Retry
+          {t('horoscope.onboarding.retry')}
         </Button>
         <Button
           variant="ghost"
@@ -284,7 +286,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           }}
         >
           <MapPin className="w-4 h-4" />
-          Change Birth Location
+          {t('horoscope.onboarding.changeBirthLocation')}
         </Button>
       </div>
     </div>
@@ -292,13 +294,14 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
 }
 
 const COMPUTE_STEPS = [
-  { label: 'Calculating planetary positions...', icon: Globe },
-  { label: 'Computing house cusps...', icon: Home },
-  { label: 'Analyzing aspects...', icon: Triangle },
-  { label: 'Preparing your chart...', icon: Star },
+  { key: 'planetaryPositions', icon: Globe },
+  { key: 'houseCusps', icon: Home },
+  { key: 'aspects', icon: Triangle },
+  { key: 'preparing', icon: Star },
 ] as const;
 
 function ChartComputeProgress() {
+  const { t } = useT('app');
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -353,7 +356,7 @@ function ChartComputeProgress() {
                   ? 'text-mystic-400'
                   : 'text-mystic-500'
               }`}>
-                {s.label}
+                {t(`horoscope.onboarding.computeSteps.${s.key}`)}
               </span>
             </div>
           );
@@ -374,10 +377,11 @@ function ChartComputeProgress() {
 }
 
 export function BigThreeDisplay({ bigThree }: { bigThree: { sun: { sign: ZodiacSign }; moon: { sign: ZodiacSign }; rising: { sign: ZodiacSign } | null } }) {
+  const { t } = useT('app');
   const items = [
-    { label: 'Sun', sign: bigThree.sun.sign },
-    { label: 'Moon', sign: bigThree.moon.sign },
-    ...(bigThree.rising ? [{ label: 'Rising', sign: bigThree.rising.sign }] : []),
+    { label: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
+    { label: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
+    ...(bigThree.rising ? [{ label: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
   ];
 
   return (

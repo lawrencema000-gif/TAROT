@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { RefreshCw, Moon, Zap, Heart, Briefcase, DollarSign, Flame, Check, X, Sparkles, BookOpen } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card, Skeleton } from '../ui';
 import { useDailyHoroscope } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
@@ -30,6 +31,7 @@ const CATEGORY_COLORS = {
 };
 
 export function TodayForYou() {
+  const { t } = useT('app');
   const { content, loading, error, refresh } = useDailyHoroscope();
   const { profile } = useAuth();
   const adShownRef = useRef(false);
@@ -58,9 +60,9 @@ export function TodayForYou() {
   if (error || !content) {
     return (
       <div className="p-6 text-center space-y-4">
-        <p className="text-mystic-400">{error || 'No daily content available'}</p>
+        <p className="text-mystic-400">{error || t('horoscope.todayForYou.noDailyContent')}</p>
         <button onClick={() => refresh()} className="text-gold text-sm hover:underline cursor-pointer">
-          Try Again
+          {t('horoscope.todayForYou.tryAgain')}
         </button>
       </div>
     );
@@ -69,7 +71,7 @@ export function TodayForYou() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-semibold text-mystic-100">Today For You</h2>
+        <h2 className="font-display text-xl font-semibold text-mystic-100">{t('horoscope.todayForYou.heading')}</h2>
         <button onClick={() => refresh()} className="p-2 rounded-lg hover:bg-mystic-800/60 transition-colors cursor-pointer">
           <RefreshCw className="w-4 h-4 text-mystic-400" />
         </button>
@@ -91,14 +93,14 @@ export function TodayForYou() {
             <Moon className="w-5 h-5 text-mystic-300" />
           </div>
           <div>
-            <div className="text-xs text-mystic-400">Moon in</div>
+            <div className="text-xs text-mystic-400">{t('horoscope.todayForYou.moonIn')}</div>
             <div className="flex items-center gap-1.5">
               <span className="text-lg" style={{ fontFamily: 'serif' }}>
                 {SIGN_SYMBOLS[content.moonSign as ZodiacSign]}
               </span>
               <span className="font-medium text-mystic-200">{content.moonSign}</span>
               {content.moonHouse && (
-                <span className="text-xs text-mystic-500">(House {content.moonHouse})</span>
+                <span className="text-xs text-mystic-500">{t('horoscope.todayForYou.houseParen', { num: content.moonHouse })}</span>
               )}
             </div>
           </div>
@@ -109,7 +111,7 @@ export function TodayForYou() {
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-mystic-300 flex items-center gap-2">
             <Zap className="w-3.5 h-3.5" />
-            Active Transits
+            {t('horoscope.todayForYou.activeTransits')}
           </h3>
           <div className="space-y-2">
             {content.transitHighlights.map((t, i) => (
@@ -135,7 +137,7 @@ export function TodayForYou() {
             <Card key={key} padding="sm" className="space-y-2">
               <div className={`flex items-center gap-2 ${color}`}>
                 <Icon className="w-4 h-4" />
-                <span className="text-xs font-medium capitalize">{key}</span>
+                <span className="text-xs font-medium">{t(`horoscope.todayForYou.categories.${key}`)}</span>
               </div>
               <p className="text-xs text-mystic-300 leading-relaxed">{text}</p>
             </Card>
@@ -150,7 +152,7 @@ export function TodayForYou() {
               <Zap className="w-4 h-4 text-gold" />
             </div>
             <div>
-              <div className="text-xs font-medium text-gold mb-1">Power Move</div>
+              <div className="text-xs font-medium text-gold mb-1">{t('horoscope.todayForYou.powerMove')}</div>
               <p className="text-sm text-mystic-200">{content.powerMove}</p>
             </div>
           </div>
@@ -161,7 +163,7 @@ export function TodayForYou() {
         {content.doList && content.doList.length > 0 && (
           <Card padding="sm" className="space-y-2">
             <div className="text-xs font-medium text-teal flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5" /> Do
+              <Check className="w-3.5 h-3.5" /> {t('horoscope.todayForYou.doLabel')}
             </div>
             <ul className="space-y-1">
               {content.doList.map((item, i) => (
@@ -173,7 +175,7 @@ export function TodayForYou() {
         {content.avoidList && content.avoidList.length > 0 && (
           <Card padding="sm" className="space-y-2">
             <div className="text-xs font-medium text-coral flex items-center gap-1.5">
-              <X className="w-3.5 h-3.5" /> Avoid
+              <X className="w-3.5 h-3.5" /> {t('horoscope.todayForYou.avoidLabel')}
             </div>
             <ul className="space-y-1">
               {content.avoidList.map((item, i) => (
@@ -191,7 +193,7 @@ export function TodayForYou() {
               <Sparkles className="w-4 h-4 text-mystic-300" />
             </div>
             <div>
-              <div className="text-xs font-medium text-mystic-400 mb-1">Mini Ritual</div>
+              <div className="text-xs font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.miniRitual')}</div>
               <p className="text-sm text-mystic-200">{content.ritual}</p>
             </div>
           </div>
@@ -205,7 +207,7 @@ export function TodayForYou() {
               <BookOpen className="w-4 h-4 text-mystic-300" />
             </div>
             <div>
-              <div className="text-xs font-medium text-mystic-400 mb-1">Journal Prompt</div>
+              <div className="text-xs font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.journalPrompt')}</div>
               <p className="text-sm text-mystic-200 italic">{content.journalPrompt}</p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card, Sheet, Skeleton } from '../ui';
 import { ChartWheel } from './ChartWheel';
 import { useNatalChart } from '../../hooks/useAstrology';
@@ -61,6 +62,7 @@ const ASPECT_LABELS: Record<string, { symbol: string; color: string }> = {
 };
 
 export function BirthChart() {
+  const { t } = useT('app');
   const { chart, loading, error } = useNatalChart();
   const interp = useInterpData();
   const [expandedBigThree, setExpandedBigThree] = useState(false);
@@ -84,7 +86,7 @@ export function BirthChart() {
   if (error || !chart) {
     return (
       <div className="p-6 text-center">
-        <p className="text-mystic-400">{error || 'No chart data available'}</p>
+        <p className="text-mystic-400">{error || t('horoscope.birthChartView.noChartData')}</p>
       </div>
     );
   }
@@ -96,20 +98,20 @@ export function BirthChart() {
     <div className="p-4 space-y-5">
       <Card variant="glow" padding="md" interactive onClick={() => setExpandedBigThree(!expandedBigThree)}>
         <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-mystic-100">Your Big Three</h3>
+          <h3 className="font-display text-lg font-semibold text-mystic-100">{t('horoscope.birthChartView.yourBigThree')}</h3>
           {expandedBigThree ? <ChevronUp className="w-4 h-4 text-mystic-400" /> : <ChevronDown className="w-4 h-4 text-mystic-400" />}
         </div>
         <div className="flex gap-3 mt-3">
           {[
-            { label: 'Sun', sign: bigThree.sun.sign },
-            { label: 'Moon', sign: bigThree.moon.sign },
-            ...(bigThree.rising ? [{ label: 'Rising', sign: bigThree.rising.sign }] : []),
+            { label: 'Sun', labelI18n: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
+            { label: 'Moon', labelI18n: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
+            ...(bigThree.rising ? [{ label: 'Rising', labelI18n: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
           ].map((item) => (
             <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-xl">
               <div className="text-xl mb-0.5" style={{ fontFamily: 'serif' }}>
                 {SIGN_SYMBOLS[item.sign]}
               </div>
-              <div className="text-[10px] text-mystic-500">{item.label}</div>
+              <div className="text-[10px] text-mystic-500">{item.labelI18n}</div>
               <div className="text-xs font-medium text-mystic-200">{item.sign}</div>
             </div>
           ))}
@@ -117,15 +119,15 @@ export function BirthChart() {
         {expandedBigThree && (
           <div className="mt-4 space-y-3 animate-fade-in">
             {[
-              { planet: 'Sun' as const, sign: bigThree.sun.sign },
-              { planet: 'Moon' as const, sign: bigThree.moon.sign },
-              ...(bigThree.rising ? [{ planet: 'Rising' as const, sign: bigThree.rising.sign }] : []),
-            ].map(({ planet, sign }) => {
+              { planet: 'Sun' as const, planetLabel: t('horoscope.birthChartView.sun'), sign: bigThree.sun.sign },
+              { planet: 'Moon' as const, planetLabel: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
+              ...(bigThree.rising ? [{ planet: 'Rising' as const, planetLabel: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
+            ].map(({ planet, planetLabel, sign }) => {
               const signInterp = interp.getPlanetInSign?.(planet, sign);
               if (!signInterp) return null;
               return (
                 <div key={planet} className="p-3 bg-mystic-800/30 rounded-xl">
-                  <div className="text-xs font-medium text-gold mb-1">{planet} in {sign}</div>
+                  <div className="text-xs font-medium text-gold mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign })}</div>
                   <p className="text-xs text-mystic-300 leading-relaxed">{signInterp.core}</p>
                 </div>
               );
@@ -137,7 +139,7 @@ export function BirthChart() {
       <ChartWheel planets={planets} houses={houses} ascendant={ascendant} />
 
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-mystic-300 px-1">Placements</h3>
+        <h3 className="text-sm font-medium text-mystic-300 px-1">{t('horoscope.birthChartView.placements')}</h3>
         <div className="space-y-1">
           {planets.map((p) => (
             <button
@@ -154,7 +156,7 @@ export function BirthChart() {
               </span>
               <span className="text-sm text-mystic-300">{p.sign} {p.degree.toFixed(0)}&deg;</span>
               {p.house && (
-                <span className="text-xs text-mystic-500">H{p.house}</span>
+                <span className="text-xs text-mystic-500">{t('horoscope.birthChartView.houseShort', { num: p.house })}</span>
               )}
               <Info className="w-3.5 h-3.5 text-mystic-600" />
             </button>
@@ -164,12 +166,12 @@ export function BirthChart() {
 
       {dominants && (
         <Card padding="md" className="space-y-3">
-          <h3 className="text-sm font-medium text-mystic-300">Element Balance</h3>
+          <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.birthChartView.elementBalance')}</h3>
           <div className="space-y-2">
             {(Object.entries(dominants.elements) as [Element, number][]).map(([el, count]) => (
               <div key={el} className="flex items-center gap-3">
                 <span className={`text-xs font-medium w-12 px-2 py-0.5 rounded-full text-center ${ELEMENT_COLORS[el]}`}>
-                  {el}
+                  {t(`horoscope.birthChartView.elements.${el}`)}
                 </span>
                 <div className="flex-1 bg-mystic-800/40 rounded-full h-2">
                   <div
@@ -183,7 +185,7 @@ export function BirthChart() {
               </div>
             ))}
           </div>
-          <h3 className="text-sm font-medium text-mystic-300 pt-2">Modality Balance</h3>
+          <h3 className="text-sm font-medium text-mystic-300 pt-2">{t('horoscope.birthChartView.modalityBalance')}</h3>
           <div className="space-y-2">
             {(Object.entries(dominants.modalities) as [Modality, number][]).map(([mod, count]) => (
               <div key={mod} className="flex items-center gap-3">
@@ -203,7 +205,7 @@ export function BirthChart() {
 
       {aspects && aspects.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-mystic-300 px-1">Key Aspects</h3>
+          <h3 className="text-sm font-medium text-mystic-300 px-1">{t('horoscope.birthChartView.keyAspects')}</h3>
           <div className="space-y-1">
             {aspects.slice(0, 10).map((a, i) => {
               const info = ASPECT_LABELS[a.type] || { symbol: '?', color: 'text-mystic-400' };
@@ -255,6 +257,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
   getPlanetInSign: PlanetInSignModule['getPlanetInSign'];
   getGenericHouseInterp: PlanetInHouseModule['getGenericHouseInterp'];
 }) {
+  const { t } = useT('app');
   const signInterp = getPlanetInSign(placement.planet as Planet, placement.sign as ZodiacSign);
   const houseInterp = placement.house ? getGenericHouseInterp(placement.planet as Planet, placement.house) : null;
 
@@ -272,7 +275,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             <span className="font-medium text-mystic-100">{placement.sign} {placement.degree.toFixed(1)}&deg;</span>
           </div>
           {placement.house && (
-            <div className="text-xs text-mystic-400">House {placement.house} - {HOUSE_THEMES[placement.house - 1]}</div>
+            <div className="text-xs text-mystic-400">{t('horoscope.birthChartView.houseLabel', { num: placement.house })} - {HOUSE_THEMES[placement.house - 1]}</div>
           )}
         </div>
       </div>
@@ -281,7 +284,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
         <div className="space-y-3">
           <p className="text-sm text-mystic-200 leading-relaxed">{signInterp.core}</p>
           <div>
-            <h4 className="text-xs font-medium text-teal mb-1.5">Strengths</h4>
+            <h4 className="text-xs font-medium text-teal mb-1.5">{t('horoscope.birthChartView.strengths')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {signInterp.strengths.map((s, i) => (
                 <span key={i} className="text-xs px-2 py-1 bg-teal/10 text-teal rounded-full">{s}</span>
@@ -289,7 +292,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             </div>
           </div>
           <div>
-            <h4 className="text-xs font-medium text-coral mb-1.5">Blind Spots</h4>
+            <h4 className="text-xs font-medium text-coral mb-1.5">{t('horoscope.birthChartView.blindSpots')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {signInterp.blindSpots.map((s, i) => (
                 <span key={i} className="text-xs px-2 py-1 bg-coral/10 text-coral rounded-full">{s}</span>
@@ -298,7 +301,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
           </div>
           {signInterp.underStress && signInterp.underStress.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-cosmic-rose mb-1.5">Under Stress</h4>
+              <h4 className="text-xs font-medium text-cosmic-rose mb-1.5">{t('horoscope.birthChartView.underStress')}</h4>
               <ul className="space-y-1">
                 {signInterp.underStress.map((s, i) => (
                   <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-cosmic-rose/20">{s}</li>
@@ -308,7 +311,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
           )}
           {signInterp.growthPath && signInterp.growthPath.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-gold mb-1.5">Growth Path</h4>
+              <h4 className="text-xs font-medium text-gold mb-1.5">{t('horoscope.birthChartView.growthPath')}</h4>
               <ul className="space-y-1">
                 {signInterp.growthPath.map((s, i) => (
                   <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-gold/20">{s}</li>
@@ -321,7 +324,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
 
       {houseInterp && (
         <div className="p-3 bg-mystic-800/30 rounded-xl space-y-2">
-          <h4 className="text-xs font-medium text-gold">In House {placement.house}</h4>
+          <h4 className="text-xs font-medium text-gold">{t('horoscope.birthChartView.inHouse', { num: placement.house })}</h4>
           <p className="text-xs text-mystic-300 leading-relaxed">{houseInterp.expression}</p>
           <div className="flex flex-wrap gap-1.5">
             {houseInterp.themes.map((t, i) => (
@@ -330,13 +333,13 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
           </div>
           {houseInterp.healthy && (
             <div className="pt-1">
-              <h5 className="text-[10px] font-medium text-teal mb-0.5">At Its Best</h5>
+              <h5 className="text-[10px] font-medium text-teal mb-0.5">{t('horoscope.birthChartView.atItsBest')}</h5>
               <p className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-teal/20">{houseInterp.healthy}</p>
             </div>
           )}
           {houseInterp.unhealthy && (
             <div className="pt-1">
-              <h5 className="text-[10px] font-medium text-coral mb-0.5">Shadow Side</h5>
+              <h5 className="text-[10px] font-medium text-coral mb-0.5">{t('horoscope.birthChartView.shadowSide')}</h5>
               <p className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-coral/20">{houseInterp.unhealthy}</p>
             </div>
           )}
@@ -351,6 +354,7 @@ function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
   getAspectInterp: AspectsModule['getAspectInterp'];
   getGenericAspectInterp: AspectsModule['getGenericAspectInterp'];
 }) {
+  const { t } = useT('app');
   const interp = getAspectInterp(aspect.planet1 as Planet, aspect.planet2 as Planet, aspect.type) ||
     getGenericAspectInterp(aspect.planet1 as Planet, aspect.planet2 as Planet, aspect.type);
 
@@ -370,7 +374,11 @@ function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
         </div>
       </div>
       <div className="text-center text-xs text-mystic-500">
-        {aspect.type} &bull; Orb: {aspect.orb.toFixed(1)}&deg; &bull; {aspect.applying ? 'Applying' : 'Separating'}
+        {t('horoscope.birthChartView.aspectMeta', {
+          type: aspect.type,
+          orb: aspect.orb.toFixed(1),
+          motion: aspect.applying ? t('horoscope.birthChartView.applying') : t('horoscope.birthChartView.separating'),
+        })}
       </div>
       <div className="space-y-2">
         <p className="text-sm text-mystic-200 leading-relaxed">{interp.meaning}</p>

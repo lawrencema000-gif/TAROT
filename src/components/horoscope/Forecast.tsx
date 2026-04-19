@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calendar, Star, Moon as MoonIcon, Sun, ArrowRight, Sparkles } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card, Skeleton } from '../ui';
 import { useWeeklyForecast, useMonthlyForecast } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS } from '../../types/astrology';
@@ -8,22 +9,23 @@ import type { ZodiacSign, Planet } from '../../types/astrology';
 type ForecastTab = 'weekly' | 'monthly';
 
 export function Forecast() {
+  const { t } = useT('app');
   const [tab, setTab] = useState<ForecastTab>('weekly');
 
   return (
     <div className="p-4 space-y-4">
       <div className="flex gap-2">
-        {(['weekly', 'monthly'] as ForecastTab[]).map((t) => (
+        {(['weekly', 'monthly'] as ForecastTab[]).map((key) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={key}
+            onClick={() => setTab(key)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-              tab === t
+              tab === key
                 ? 'bg-gold/15 text-gold border border-gold/25'
                 : 'bg-mystic-800/60 text-mystic-400 border border-transparent'
             }`}
           >
-            {t === 'weekly' ? 'This Week' : 'This Month'}
+            {key === 'weekly' ? t('horoscope.forecastView.thisWeek') : t('horoscope.forecastView.thisMonth')}
           </button>
         ))}
       </div>
@@ -34,6 +36,7 @@ export function Forecast() {
 }
 
 function WeeklyView() {
+  const { t } = useT('app');
   const { content, loading, error } = useWeeklyForecast();
 
   if (loading) {
@@ -49,7 +52,7 @@ function WeeklyView() {
   if (error || !content) {
     return (
       <div className="text-center py-8">
-        <p className="text-mystic-400 text-sm">{error || 'Weekly forecast unavailable'}</p>
+        <p className="text-mystic-400 text-sm">{error || t('horoscope.forecastView.weeklyUnavailable')}</p>
       </div>
     );
   }
@@ -64,14 +67,14 @@ function WeeklyView() {
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-2 mb-2">
           <Star className="w-4 h-4 text-gold" />
-          <span className="text-sm font-medium text-gold">Weekly Theme</span>
+          <span className="text-sm font-medium text-gold">{t('horoscope.forecastView.weeklyTheme')}</span>
         </div>
         <p className="text-sm text-mystic-200 leading-relaxed">{content.mainStoryline}</p>
       </Card>
 
       {content.keyMoments && content.keyMoments.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-mystic-300">Key Moments</h3>
+          <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.forecastView.keyMoments')}</h3>
           {content.keyMoments.map((m, i) => (
             <Card key={i} padding="sm">
               <div className="flex items-start gap-3">
@@ -90,7 +93,7 @@ function WeeklyView() {
 
       {content.bestDays && content.bestDays.length > 0 && (
         <Card padding="md" className="space-y-3">
-          <h3 className="text-sm font-medium text-mystic-300">Best Days For</h3>
+          <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.forecastView.bestDaysFor')}</h3>
           <div className="grid grid-cols-2 gap-2">
             {content.bestDays.map((b, i) => (
               <div key={i} className="flex items-center gap-2 px-3 py-2 bg-mystic-800/40 rounded-lg">
@@ -109,6 +112,7 @@ function WeeklyView() {
 }
 
 function MonthlyView() {
+  const { t } = useT('app');
   const { content, loading, error } = useMonthlyForecast();
 
   if (loading) {
@@ -127,7 +131,7 @@ function MonthlyView() {
   if (error || !content) {
     return (
       <div className="text-center py-8">
-        <p className="text-mystic-400 text-sm">{error || 'Monthly forecast unavailable'}</p>
+        <p className="text-mystic-400 text-sm">{error || t('horoscope.forecastView.monthlyUnavailable')}</p>
       </div>
     );
   }
@@ -142,7 +146,7 @@ function MonthlyView() {
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-2 mb-2">
           <Star className="w-4 h-4 text-gold" />
-          <span className="text-sm font-medium text-gold">Monthly Overview</span>
+          <span className="text-sm font-medium text-gold">{t('horoscope.forecastView.monthlyOverview')}</span>
         </div>
         <p className="text-sm text-mystic-200 leading-relaxed">{content.overview}</p>
       </Card>
@@ -152,7 +156,7 @@ function MonthlyView() {
           <Card padding="sm" className="space-y-2">
             <div className="flex items-center gap-2">
               <MoonIcon className="w-4 h-4 text-mystic-300" />
-              <span className="text-xs font-medium text-mystic-300">New Moon</span>
+              <span className="text-xs font-medium text-mystic-300">{t('horoscope.forecastView.newMoon')}</span>
             </div>
             <div className="text-xs text-mystic-500">{content.newMoon.date}</div>
             <div className="flex items-center gap-1.5">
@@ -168,7 +172,7 @@ function MonthlyView() {
           <Card padding="sm" className="space-y-2">
             <div className="flex items-center gap-2">
               <Sun className="w-4 h-4 text-gold" />
-              <span className="text-xs font-medium text-gold">Full Moon</span>
+              <span className="text-xs font-medium text-gold">{t('horoscope.forecastView.fullMoon')}</span>
             </div>
             <div className="text-xs text-mystic-500">{content.fullMoon.date}</div>
             <div className="flex items-center gap-1.5">
@@ -184,7 +188,7 @@ function MonthlyView() {
 
       {content.keyDates && content.keyDates.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-mystic-300">Key Dates</h3>
+          <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.forecastView.keyDates')}</h3>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
             {content.keyDates.map((d, i) => (
               <Card key={i} padding="sm" className="flex-shrink-0 w-40 space-y-1">
@@ -203,7 +207,7 @@ function MonthlyView() {
               <Sparkles className="w-4 h-4 text-gold" />
             </div>
             <div>
-              <div className="text-xs font-medium text-gold mb-1">One Thing This Month</div>
+              <div className="text-xs font-medium text-gold mb-1">{t('horoscope.forecastView.oneThingThisMonth')}</div>
               <p className="text-sm text-mystic-200">{content.oneThingToDoThisMonth}</p>
             </div>
           </div>
@@ -212,7 +216,7 @@ function MonthlyView() {
 
       {content.outerPlanetTransits && content.outerPlanetTransits.length > 0 && (
         <Card padding="md" className="space-y-3">
-          <h3 className="text-sm font-medium text-mystic-300">Outer Planet Themes</h3>
+          <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.forecastView.outerPlanetThemes')}</h3>
           {content.outerPlanetTransits.map((t, i) => (
             <div key={i} className="flex items-start gap-3 py-2 border-b border-mystic-800/30 last:border-0">
               <span className="text-lg" style={{ fontFamily: 'serif' }}>

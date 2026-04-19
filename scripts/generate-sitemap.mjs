@@ -45,6 +45,25 @@ const MINOR_ARCANA = MINOR_SUITS.flatMap(suit =>
 
 const ALL_CARDS = [...MAJOR_ARCANA, ...MINOR_ARCANA];
 
+// Supported locales mirror src/i18n/config.ts SUPPORTED_LOCALES.
+const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'];
+
+/**
+ * Emit xhtml:link alternates for every supported locale plus x-default so
+ * Google serves the right-language page in SERPs. We encode locale as a
+ * ?lang=xx query param since the SPA routes all locales through the same
+ * URL space; the client's i18next LanguageDetector picks it up on load.
+ */
+function hreflangLinks(baseLoc) {
+  const sep = baseLoc.includes('?') ? '&' : '?';
+  const alt = (locale) => `${baseLoc}${sep}lang=${locale}`;
+  const lines = SUPPORTED_LOCALES.map(
+    (locale) => `    <xhtml:link rel="alternate" hreflang="${locale}" href="${alt(locale)}"/>`
+  );
+  lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${baseLoc}"/>`);
+  return lines.join('\n');
+}
+
 async function generate() {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -92,12 +111,13 @@ async function generate() {
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.map(u => `  <url>
     <loc>${u.loc}</loc>
     ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
+${hreflangLinks(u.loc)}
   </url>`).join('\n')}
 </urlset>`;
 

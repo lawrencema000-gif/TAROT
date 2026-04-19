@@ -1,4 +1,5 @@
 import type { Planet } from '../types/astrology';
+import { getLocalizedPlanetInHouse, getLocalizedGenericPlanetInHouse } from '../i18n/localizePlanetInHouse';
 
 interface PlanetInHouseInterp {
   expression: string;
@@ -171,12 +172,18 @@ const houseKeywords: Record<number, string> = {
 };
 
 export function getPlanetInHouse(planet: Planet, house: number): PlanetInHouseInterp | null {
-  return interpretations[`${planet}-${house}`] || null;
+  return getLocalizedPlanetInHouse(planet, house) ?? interpretations[`${planet}-${house}`] ?? null;
 }
 
 export function getGenericHouseInterp(planet: Planet, house: number): PlanetInHouseInterp {
+  const localizedSpecific = getLocalizedPlanetInHouse(planet, house);
+  if (localizedSpecific) return localizedSpecific;
+
   const specific = interpretations[`${planet}-${house}`];
   if (specific) return specific;
+
+  const localizedGeneric = getLocalizedGenericPlanetInHouse(planet, house);
+  if (localizedGeneric) return localizedGeneric;
 
   const pKey = planetKeywords[planet] || 'personal energy';
   const hKey = houseKeywords[house] || 'this area of life';

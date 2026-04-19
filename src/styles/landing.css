@@ -60,7 +60,7 @@
 .lp-nav-in { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
 .lp-nav-brand { display: flex; align-items: center; gap: 10px; }
 .lp-nav-moon { font-size: 1.4rem; color: var(--g); filter: drop-shadow(0 0 10px var(--gg)); }
-.lp-nav-name { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.35rem; font-weight: 600; color: var(--tx); letter-spacing: 0.03em; }
+.lp-nav-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif; font-size: 1.35rem; font-weight: 600; color: var(--tx); letter-spacing: 0.03em; }
 .lp-nav-right { display: flex; align-items: center; gap: 6px; }
 .lp-nav-link { padding: 8px 16px; color: var(--tm); text-decoration: none; font-size: 0.85rem; border-radius: 10px; transition: color 0.25s; }
 .lp-nav-link:hover { color: var(--tx); }
@@ -109,7 +109,7 @@
 @keyframes lp-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; box-shadow: 0 0 8px var(--gg); } }
 
 .lp-hero-h1 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: clamp(2.8rem, 5.5vw, 4.5rem);
   font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px;
   perspective: 400px;
@@ -215,7 +215,7 @@
   border-radius: 20px; background: rgba(212,168,83,0.03); margin-bottom: 18px;
 }
 .lp-h2 {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
   font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 600;
   color: var(--tx); margin-bottom: 12px; letter-spacing: -0.01em;
 }
@@ -226,7 +226,7 @@
 .lp-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 32px 0; }
 .lp-trust-item { text-align: center; }
 .lp-trust-num {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
   font-size: 2.8rem; font-weight: 700; color: var(--g); line-height: 1;
   filter: drop-shadow(0 0 8px var(--gg));
 }
@@ -257,12 +257,12 @@
   background: rgba(212,168,83,0.05); border: 1px solid rgba(212,168,83,0.08);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.4rem; margin-bottom: 18px; transition: transform 0.4s;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   color: var(--g); font-weight: 400;
 }
 .lp-bento-card:hover .lp-bento-icon { transform: scale(1.1) rotate(-6deg); }
 .lp-bento-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
   font-size: 1.3rem; font-weight: 600; color: var(--tx); margin-bottom: 8px;
 }
 .lp-bento-desc { font-size: 0.88rem; color: var(--tm); line-height: 1.65; }
@@ -304,7 +304,7 @@
   display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
 .lp-chart-ci-sym { font-size: 2rem; font-family: serif; filter: drop-shadow(0 0 12px currentColor); transition: all 0.35s; line-height: 1; margin-bottom: 4px; }
-.lp-chart-ci-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
+.lp-chart-ci-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
 .lp-chart-ci-trait { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
 .lp-chart-ci-el { font-size: 0.65rem; color: var(--g); letter-spacing: 0.18em; text-transform: uppercase; }
 .lp-chart-ci-dates { font-size: 0.68rem; color: var(--tm); margin-top: 2px; }
@@ -320,7 +320,7 @@
 @keyframes lp-popup-in { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 .lp-chart-popup-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .lp-chart-popup-sym { font-size: 1.6rem; font-family: serif; color: var(--el-color); filter: drop-shadow(0 0 8px var(--el-color)); }
-.lp-chart-popup-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
+.lp-chart-popup-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
 .lp-chart-popup-meta { font-size: 0.7rem; color: var(--tm); }
 .lp-chart-popup-trait { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--el-color); margin-bottom: 8px; }
 .lp-chart-popup-desc { font-size: 0.88rem; color: var(--tm); line-height: 1.6; }
@@ -357,14 +357,14 @@
 .lp-timeline-card:hover { background: var(--sfh); border-color: var(--bdh); transform: translateY(-4px); }
 .lp-timeline-watermark {
   position: absolute; top: -10px; right: 16px;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
   font-size: 5rem; font-weight: 700; color: rgba(212,168,83,0.04);
   line-height: 1; pointer-events: none;
 }
 .lp-timeline-item.right .lp-timeline-watermark { right: auto; left: 16px; }
 .lp-timeline-icon { font-size: 1.8rem; margin-bottom: 12px; }
 .lp-timeline-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
   font-size: 1.2rem; font-weight: 600; color: var(--tx); margin-bottom: 6px;
 }
 .lp-timeline-desc { font-size: 0.88rem; color: var(--tm); line-height: 1.6; }

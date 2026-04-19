@@ -115,6 +115,11 @@ i18n
     react: {
       useSuspense: false, // safer default — components decide per-hook
     },
+
+    // Enable the missingKey event so we can log/alert when a key is
+    // referenced in code but not present in the active bundle.
+    saveMissing: true,
+    missingKeyHandler: undefined, // handled via i18n.on('missingKey') below
   });
 
 /** Change language at runtime + persist to localStorage. */
@@ -149,6 +154,46 @@ function syncDocumentLang(lng: string) {
 }
 syncDocumentLang(i18n.language);
 i18n.on('languageChanged', syncDocumentLang);
+
+// Emit a GA4 event every time the user switches language so we can measure
+// real-world adoption by locale. Fires once per change, regardless of how
+// the change was initiated (LanguageDropdown click, programmatic setLocale,
+// URL ?lang= param).
+i18n.on('languageChanged', (lng: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const w = window as unknown as {
+      gtag?: (...args: unknown[]) => void;
+      dataLayer?: unknown[];
+    };
+    const payload = { locale: normalizeLocale(lng) ?? 'en' };
+    if (typeof w.gtag === 'function') w.gtag('event', 'language_changed', payload);
+    if (Array.isArray(w.dataLayer)) w.dataLayer.push({ event: 'language_changed', ...payload });
+  } catch {
+    // never let analytics errors interrupt the locale change
+  }
+});
+
+// Log any i18next missing-key event in development + surface to Sentry in
+// production so we catch untranslated strings before users do. In the wild
+// the most common cause is a new UI string added in code without a
+// corresponding entry in the JA/KO/ZH bundles.
+i18n.on('missingKey', (lngs: readonly string[], namespace: string, key: string) => {
+  const lngList = Array.from(lngs).join(',');
+  const message = `[i18n] missing key: ns="${namespace}" key="${key}" lng=${lngList}`;
+  if (import.meta.env.DEV) {
+    console.warn(message);
+  }
+  // Non-blocking Sentry hook — only runs if Sentry is loaded
+  try {
+    const w = window as unknown as {
+      Sentry?: { captureMessage: (msg: string, level?: string) => void };
+    };
+    w.Sentry?.captureMessage(message, 'warning');
+  } catch {
+    /* ignore */
+  }
+});
 
 export { LAZY_NAMESPACES };
 export default i18n;

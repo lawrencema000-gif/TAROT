@@ -117,6 +117,111 @@
       "challenge": "Challenge",
       "advice": "Advice",
       "outcome": "Outcome"
+    },
+    "focusAreas": {
+      "love": "Love",
+      "career": "Career",
+      "self": "Self",
+      "money": "Money",
+      "health": "Health",
+      "general": "General"
+    },
+    "spreads": {
+      "single": {
+        "name": "1-Card Daily",
+        "description": "Quick guidance"
+      },
+      "threeCard": {
+        "name": "Past/Present/Future",
+        "description": "3-card spread"
+      },
+      "celticCross": {
+        "name": "Celtic Cross",
+        "description": "10-card deep reading"
+      },
+      "relationship": {
+        "name": "Relationship Spread",
+        "description": "5-card love reading"
+      },
+      "careerSpread": {
+        "name": "Career Decision",
+        "description": "6-card career insight"
+      },
+      "shadow": {
+        "name": "Shadow Work",
+        "description": "7-card inner work"
+      }
+    },
+    "dailyDraw": {
+      "title": "Daily Draw",
+      "subtitle": "Tap to begin your reading"
+    },
+    "browse": {
+      "title": "Browse Deck",
+      "allCards": "All 78 Cards",
+      "learnMeanings": "Learn card meanings",
+      "filters": {
+        "all": "All",
+        "major": "Major Arcana",
+        "swords": "Swords",
+        "cups": "Cups",
+        "wands": "Wands",
+        "pentacles": "Pentacles"
+      }
+    },
+    "spreadsSection": "Spreads",
+    "focusView": {
+      "title": "What's your focus?",
+      "subtitle": "Choose an area to guide your reading",
+      "continue": "Continue"
+    },
+    "shuffleView": {
+      "inProgress": "Shuffling the deck...",
+      "clearMind": "Clear your mind",
+      "spreading": "Spreading all 78 cards",
+      "focusQuestion": "Focus on your question",
+      "shuffleDeck": "Shuffle Deck"
+    },
+    "selectView": {
+      "chooseMore_one": "Choose {{count}} more card",
+      "chooseMore_other": "Choose {{count}} more cards",
+      "readyReveal": "Ready to reveal!",
+      "trustIntuition": "Trust your intuition • All 78 cards",
+      "selectMore": "Select {{count}} More",
+      "revealCards": "Reveal Cards"
+    },
+    "revealView": {
+      "focusReading": "{{focus}} Reading",
+      "tapToReveal": "Tap to reveal",
+      "revealAll": "Reveal All",
+      "generating": "Generating...",
+      "getAIInsight": "Get AI Insight",
+      "premiumAI": "Premium AI",
+      "aiInterpretation": "AI Interpretation",
+      "aiSubtitle": "Personalized insight based on your cards and profile",
+      "showCardMeanings": "← Show card meanings",
+      "loveFocus": "Love Focus",
+      "careerFocus": "Career Focus",
+      "moneyFocus": "Money Focus",
+      "traditional": "Traditional",
+      "reversedParen": "(Reversed)",
+      "reversed": "Reversed",
+      "upright": "Upright",
+      "reversalNote": "Reversal note: {{text}}",
+      "save": "Save",
+      "saved": "Saved",
+      "newReading": "New Reading",
+      "cardsSpoken": "\"The cards have spoken. What small action can you take today that aligns with this guidance?\""
+    },
+    "status": {
+      "try": "Try",
+      "unlocked": "Unlocked"
+    },
+    "back": "← Back",
+    "toasts": {
+      "cardsNotFound": "Some selected cards could not be found. Please reshuffle and try again.",
+      "saveFailed": "Failed to save reading",
+      "readingSaved": "Reading saved"
     }
   },
   "journal": {

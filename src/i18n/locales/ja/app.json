@@ -117,6 +117,111 @@
       "challenge": "課題",
       "advice": "アドバイス",
       "outcome": "結果"
+    },
+    "focusAreas": {
+      "love": "恋愛",
+      "career": "キャリア",
+      "self": "自分",
+      "money": "お金",
+      "health": "健康",
+      "general": "全般"
+    },
+    "spreads": {
+      "single": {
+        "name": "1枚引き(日々)",
+        "description": "クイックガイダンス"
+      },
+      "threeCard": {
+        "name": "過去・現在・未来",
+        "description": "3枚スプレッド"
+      },
+      "celticCross": {
+        "name": "ケルト十字",
+        "description": "10枚の深いリーディング"
+      },
+      "relationship": {
+        "name": "関係性スプレッド",
+        "description": "5枚の恋愛リーディング"
+      },
+      "careerSpread": {
+        "name": "キャリアの決断",
+        "description": "6枚のキャリア洞察"
+      },
+      "shadow": {
+        "name": "シャドウワーク",
+        "description": "7枚の内面ワーク"
+      }
+    },
+    "dailyDraw": {
+      "title": "デイリードロー",
+      "subtitle": "タップしてリーディングを開始"
+    },
+    "browse": {
+      "title": "デッキを見る",
+      "allCards": "全78枚",
+      "learnMeanings": "カードの意味を学ぶ",
+      "filters": {
+        "all": "すべて",
+        "major": "大アルカナ",
+        "swords": "ソード",
+        "cups": "カップ",
+        "wands": "ワンド",
+        "pentacles": "ペンタクル"
+      }
+    },
+    "spreadsSection": "スプレッド",
+    "focusView": {
+      "title": "テーマは何ですか?",
+      "subtitle": "リーディングを導くエリアを選んでください",
+      "continue": "続ける"
+    },
+    "shuffleView": {
+      "inProgress": "デッキをシャッフル中...",
+      "clearMind": "心を澄ませて",
+      "spreading": "全78枚を広げています",
+      "focusQuestion": "質問に集中してください",
+      "shuffleDeck": "デッキをシャッフル"
+    },
+    "selectView": {
+      "chooseMore_one": "あと{{count}}枚選んでください",
+      "chooseMore_other": "あと{{count}}枚選んでください",
+      "readyReveal": "めくる準備ができました!",
+      "trustIntuition": "直感を信じて • 全78枚",
+      "selectMore": "あと{{count}}枚選ぶ",
+      "revealCards": "カードをめくる"
+    },
+    "revealView": {
+      "focusReading": "{{focus}}リーディング",
+      "tapToReveal": "タップしてめくる",
+      "revealAll": "すべてめくる",
+      "generating": "生成中...",
+      "getAIInsight": "AIインサイト取得",
+      "premiumAI": "プレミアムAI",
+      "aiInterpretation": "AI解釈",
+      "aiSubtitle": "あなたのカードとプロフィールに基づくパーソナライズされた洞察",
+      "showCardMeanings": "← カードの意味を表示",
+      "loveFocus": "恋愛フォーカス",
+      "careerFocus": "キャリアフォーカス",
+      "moneyFocus": "マネーフォーカス",
+      "traditional": "伝統的",
+      "reversedParen": "(逆位置)",
+      "reversed": "逆位置",
+      "upright": "正位置",
+      "reversalNote": "逆位置ノート: {{text}}",
+      "save": "保存",
+      "saved": "保存済み",
+      "newReading": "新しいリーディング",
+      "cardsSpoken": "「カードは語りました。このガイダンスに沿って、今日あなたが取れる小さな行動は何ですか?」"
+    },
+    "status": {
+      "try": "お試し",
+      "unlocked": "ロック解除"
+    },
+    "back": "← 戻る",
+    "toasts": {
+      "cardsNotFound": "選択されたカードが見つかりませんでした。再シャッフルしてやり直してください。",
+      "saveFailed": "リーディングの保存に失敗しました",
+      "readingSaved": "リーディングを保存しました"
     }
   },
   "journal": {

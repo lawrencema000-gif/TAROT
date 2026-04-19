@@ -18,6 +18,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { Card, Button, Sheet, Chip, toast } from '../ui';
+import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { useRitual } from '../../context/RitualContext';
 import { useGamification } from '../../context/GamificationContext';
@@ -79,16 +80,32 @@ interface TarotSectionProps {
 
 const focusAreas: FocusArea[] = ['Love', 'Career', 'Self', 'Money', 'Health', 'General'];
 
+const focusAreaI18nKey: Record<FocusArea, string> = {
+  Love: 'readings.focusAreas.love',
+  Career: 'readings.focusAreas.career',
+  Self: 'readings.focusAreas.self',
+  Money: 'readings.focusAreas.money',
+  Health: 'readings.focusAreas.health',
+  General: 'readings.focusAreas.general',
+};
+
+// Source-of-truth spread configs with i18n keys; .name/.description resolved at render time.
 const spreadConfigs = [
-  { id: 'single', name: '1-Card Daily', description: 'Quick guidance', free: true, count: 1 },
-  { id: 'three-card', name: 'Past/Present/Future', description: '3-card spread', free: true, count: 3 },
-  { id: 'celtic-cross', name: 'Celtic Cross', description: '10-card deep reading', free: false, count: 10 },
-  { id: 'relationship', name: 'Relationship Spread', description: '5-card love reading', free: false, count: 5 },
-  { id: 'career', name: 'Career Decision', description: '6-card career insight', free: false, count: 6 },
-  { id: 'shadow', name: 'Shadow Work', description: '7-card inner work', free: false, count: 7 },
-];
+  { id: 'single',        i18n: 'single',       free: true,  count: 1  },
+  { id: 'three-card',    i18n: 'threeCard',    free: true,  count: 3  },
+  { id: 'celtic-cross',  i18n: 'celticCross',  free: false, count: 10 },
+  { id: 'relationship',  i18n: 'relationship', free: false, count: 5  },
+  { id: 'career',        i18n: 'careerSpread', free: false, count: 6  },
+  { id: 'shadow',        i18n: 'shadow',       free: false, count: 7  },
+] as const;
+
+type SpreadConfig = typeof spreadConfigs[number];
 
 export function TarotSection({ onShowPaywall }: TarotSectionProps) {
+  const { t } = useT('app');
+  const spreadName = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.name`);
+  const spreadDesc = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.description`);
+  const focusLabel = (f: FocusArea) => t(focusAreaI18nKey[f]);
   const { user, profile, refreshProfile } = useAuth();
   const { tarotRefreshTrigger } = useRitual();
   const { openRatePrompt } = useGamification();
@@ -228,7 +245,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         setPendingSpreadId(currentSpread);
         setShowWatchAdSheet(true);
       } else {
-        onShowPaywall(spread.name);
+        onShowPaywall(spreadName(spread));
       }
       return;
     }
@@ -300,7 +317,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       .filter((c): c is TarotCard => !!c);
 
     if (selectedCards.length !== spread.count) {
-      toast('Some selected cards could not be found. Please reshuffle and try again.', 'error');
+      toast(t('readings.toasts.cardsNotFound'), 'error');
       return;
     }
 
@@ -388,10 +405,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     });
 
     if (error) {
-      toast('Failed to save reading', 'error');
+      toast(t('readings.toasts.saveFailed'), 'error');
     } else {
       setIsSaved(true);
-      toast('Reading saved', 'success');
+      toast(t('readings.toasts.readingSaved'), 'success');
 
       awardXP(user.id, 'reading_saved').then(() => refreshProfile());
       checkAchievementProgress(user.id, 'reading_saved');
@@ -483,7 +500,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         setCurrentSpread(spreadId);
         setShowWatchAdSheet(true);
       } else {
-        onShowPaywall(spread.name);
+        onShowPaywall(spreadName(spread));
       }
       return;
     }
@@ -499,20 +516,20 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           onClick={() => setView('home')}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
-          ← Back
+          {t('readings.back')}
         </button>
 
         <div className="text-center space-y-3">
           <Sparkles className="w-12 h-12 text-gold mx-auto animate-pulse" />
-          <h2 className="font-display text-2xl text-mystic-100">What's your focus?</h2>
-          <p className="text-mystic-400">Choose an area to guide your reading</p>
+          <h2 className="font-display text-2xl text-mystic-100">{t('readings.focusView.title')}</h2>
+          <p className="text-mystic-400">{t('readings.focusView.subtitle')}</p>
         </div>
 
         <div className="flex flex-wrap justify-center gap-2">
           {focusAreas.map(focus => (
             <Chip
               key={focus}
-              label={focus}
+              label={focusLabel(focus)}
               selected={selectedFocus === focus}
               onSelect={() => handleFocusSelect(focus)}
             />
@@ -526,7 +543,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           onClick={handleDraw}
           className="min-h-[52px]"
         >
-          Continue
+          {t('readings.focusView.continue')}
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
@@ -540,7 +557,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           onClick={() => setView('focus')}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
-          ← Back
+          {t('readings.back')}
         </button>
 
         <div className="text-center space-y-6 py-12">
@@ -570,10 +587,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
           <div className="space-y-2">
             <h2 className="font-display text-xl text-mystic-100">
-              {isShuffling ? 'Shuffling the deck...' : 'Clear your mind'}
+              {isShuffling ? t('readings.shuffleView.inProgress') : t('readings.shuffleView.clearMind')}
             </h2>
             <p className="text-mystic-400 text-sm">
-              {isShuffling ? 'Spreading all 78 cards' : 'Focus on your question'}
+              {isShuffling ? t('readings.shuffleView.spreading') : t('readings.shuffleView.focusQuestion')}
             </p>
           </div>
 
@@ -584,7 +601,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
               className="min-h-[52px]"
             >
               <Shuffle className="w-4 h-4" />
-              Shuffle Deck
+              {t('readings.shuffleView.shuffleDeck')}
             </Button>
           )}
         </div>
@@ -602,17 +619,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           onClick={() => setView('shuffle')}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
-          ← Back
+          {t('readings.back')}
         </button>
 
         <div className="text-center space-y-2 sticky top-0 bg-mystic-950 z-10 pb-3">
           <h2 className="font-display text-xl text-mystic-100">
             {needsMore > 0
-              ? `Choose ${needsMore} more ${needsMore === 1 ? 'card' : 'cards'}`
-              : 'Ready to reveal!'
+              ? t('readings.selectView.chooseMore', { count: needsMore })
+              : t('readings.selectView.readyReveal')
             }
           </h2>
-          <p className="text-mystic-400 text-sm">Trust your intuition • All 78 cards</p>
+          <p className="text-mystic-400 text-sm">{t('readings.selectView.trustIntuition')}</p>
         </div>
 
         <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-20">
@@ -665,7 +682,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             onClick={handleRevealSelected}
             className="min-h-[52px] shadow-xl"
           >
-            {needsMore > 0 ? `Select ${needsMore} More` : 'Reveal Cards'}
+            {needsMore > 0 ? t('readings.selectView.selectMore', { count: needsMore }) : t('readings.selectView.revealCards')}
             <Sparkles className="w-4 h-4" />
           </Button>
         </div>
@@ -683,7 +700,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             onClick={() => setView('home')}
             className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
           >
-            ← Back
+            {t('readings.back')}
           </button>
           <button
             onClick={handleSaveReading}
@@ -699,8 +716,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         </div>
 
         <div className="text-center">
-          <p className="text-xs text-mystic-500 uppercase tracking-wider">{selectedFocus} Reading</p>
-          <h2 className="font-display text-xl text-mystic-100">{spread?.name}</h2>
+          <p className="text-xs text-mystic-500 uppercase tracking-wider">{selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}</p>
+          <h2 className="font-display text-xl text-mystic-100">{spread ? spreadName(spread) : ''}</h2>
         </div>
 
         {currentSpread === 'celtic-cross' ? (
@@ -755,7 +772,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                             <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
                               <Sparkles className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
                             </div>
-                            <p className="text-xs text-mystic-500 mt-2">Tap to reveal</p>
+                            <p className="text-xs text-mystic-500 mt-2">{t('readings.revealView.tapToReveal')}</p>
                           </div>
                         )}
                       </>
@@ -781,7 +798,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
         {!allRevealed && (
           <Button variant="ghost" fullWidth onClick={revealAll} className="min-h-[44px]">
-            Reveal All
+            {t('readings.revealView.revealAll')}
           </Button>
         )}
 
@@ -789,7 +806,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           <div className="space-y-6 animate-fade-in">
             <div className="border-t border-mystic-700 pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-lg text-gold">Interpretation</h3>
+                <h3 className="font-display text-lg text-gold">{t('readings.interpretation')}</h3>
                 {!showAIInterpretation && (
                   <button
                     onClick={handleGetAIInterpretation}
@@ -799,12 +816,12 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                     {loadingAI ? (
                       <>
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Generating...
+                        {t('readings.revealView.generating')}
                       </>
                     ) : (
                       <>
                         <Brain className="w-3.5 h-3.5" />
-                        {profile?.isPremium ? 'Get AI Insight' : 'Premium AI'}
+                        {profile?.isPremium ? t('readings.revealView.getAIInsight') : t('readings.revealView.premiumAI')}
                       </>
                     )}
                   </button>
@@ -819,8 +836,8 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                         <Brain className="w-4 h-4 text-gold" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-mystic-100 mb-1">AI Interpretation</h4>
-                        <p className="text-xs text-mystic-400">Personalized insight based on your cards and profile</p>
+                        <h4 className="font-medium text-mystic-100 mb-1">{t('readings.revealView.aiInterpretation')}</h4>
+                        <p className="text-xs text-mystic-400">{t('readings.revealView.aiSubtitle')}</p>
                       </div>
                     </div>
                     <div className="text-sm text-mystic-200 leading-relaxed whitespace-pre-line">
@@ -831,7 +848,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                     onClick={() => setShowAIInterpretation(false)}
                     className="text-xs text-mystic-400 hover:text-mystic-300 transition-colors"
                   >
-                    ← Show card meanings
+                    {t('readings.revealView.showCardMeanings')}
                   </button>
                 </div>
               ) : (
@@ -848,7 +865,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                         }`}
                       >
                         {selectedFocus === 'Love' ? <Heart className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
-                        {selectedFocus} Focus
+                        {selectedFocus === 'Love'
+                          ? t('readings.revealView.loveFocus')
+                          : selectedFocus === 'Career'
+                            ? t('readings.revealView.careerFocus')
+                            : t('readings.revealView.moneyFocus')}
                       </button>
                       <button
                         onClick={() => setInterpretationView('traditional')}
@@ -859,7 +880,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                         }`}
                       >
                         <ArrowUp className="w-4 h-4" />
-                        Traditional
+                        {t('readings.revealView.traditional')}
                       </button>
                     </div>
                   )}
@@ -877,7 +898,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                           <div className="flex-1">
                             <h4 className="font-medium text-mystic-100">
                               {drawn.card.name}
-                              {drawn.reversed && <span className="text-mystic-400 text-sm ml-2">(Reversed)</span>}
+                              {drawn.reversed && <span className="text-mystic-400 text-sm ml-2">{t('readings.revealView.reversedParen')}</span>}
                             </h4>
                           </div>
                         </div>
@@ -907,7 +928,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                                 <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
                               )}
                               <span className={`text-xs font-medium ${drawn.reversed ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                {drawn.reversed ? 'Reversed' : 'Upright'}
+                                {drawn.reversed ? t('readings.revealView.reversed') : t('readings.revealView.upright')}
                               </span>
                             </div>
                             <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">
@@ -924,7 +945,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                                   (drawn.reversed ? drawn.card.meaningReversed : drawn.card.meaningUpright);
                                 const reversalAddon =
                                   focusMeaning && drawn.reversed
-                                    ? `\n\nReversal note: ${drawn.card.meaningReversed}`
+                                    ? `\n\n${t('readings.revealView.reversalNote', { text: drawn.card.meaningReversed })}`
                                     : '';
                                 return `${mainText}${reversalAddon}`;
                               })()}
@@ -949,17 +970,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
             <Card padding="md" className="bg-gold/5 border-gold/20">
               <p className="text-sm text-mystic-300 italic">
-                "The cards have spoken. What small action can you take today that aligns with this guidance?"
+                {t('readings.revealView.cardsSpoken')}
               </p>
             </Card>
 
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" onClick={handleSaveReading} className="min-h-[44px]">
                 {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                {isSaved ? 'Saved' : 'Save'}
+                {isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
               </Button>
               <Button variant="gold" onClick={() => setView('home')} className="min-h-[44px]">
-                New Reading
+                {t('readings.revealView.newReading')}
               </Button>
             </div>
           </div>
@@ -984,13 +1005,13 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             <Sparkles className="w-10 h-10 text-gold animate-pulse" />
           )}
         </div>
-        <h2 className="font-display text-xl text-mystic-100 mb-1">Daily Draw</h2>
-        <p className="text-mystic-400 text-sm">Tap to begin your reading</p>
+        <h2 className="font-display text-xl text-mystic-100 mb-1">{t('readings.dailyDraw.title')}</h2>
+        <p className="text-mystic-400 text-sm">{t('readings.dailyDraw.subtitle')}</p>
       </Card>
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-mystic-200">Spreads</h3>
+          <h3 className="font-medium text-mystic-200">{t('readings.spreadsSection')}</h3>
           <Layers className="w-4 h-4 text-mystic-500" />
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -1006,7 +1027,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                 isNative() && canWatchAd ? (
                   <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-mystic-800/80 rounded-full">
                     <Play className="w-3 h-3 text-gold" />
-                    <span className="text-[10px] text-gold">Try</span>
+                    <span className="text-[10px] text-gold">{t('readings.status.try')}</span>
                   </div>
                 ) : (
                   <Lock className="absolute top-2 right-2 w-4 h-4 text-gold" />
@@ -1014,11 +1035,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
               )}
               {!spread.free && hasTemporaryAccess[spread.id] && (
                 <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full">
-                  <span className="text-[10px] text-emerald-400">Unlocked</span>
+                  <span className="text-[10px] text-emerald-400">{t('readings.status.unlocked')}</span>
                 </div>
               )}
-              <h4 className="font-medium text-mystic-100 text-sm">{spread.name}</h4>
-              <p className="text-xs text-mystic-400 mt-1">{spread.description}</p>
+              <h4 className="font-medium text-mystic-100 text-sm">{spreadName(spread)}</h4>
+              <p className="text-xs text-mystic-400 mt-1">{spreadDesc(spread)}</p>
             </Card>
           ))}
         </div>
@@ -1026,7 +1047,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium text-mystic-200">Browse Deck</h3>
+          <h3 className="font-medium text-mystic-200">{t('readings.browse.title')}</h3>
           <Grid3X3 className="w-4 h-4 text-mystic-500" />
         </div>
         <Card
@@ -1049,28 +1070,21 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
               ))}
             </div>
             <div>
-              <h4 className="font-medium text-mystic-100 text-sm">All 78 Cards</h4>
-              <p className="text-xs text-mystic-400">Learn card meanings</p>
+              <h4 className="font-medium text-mystic-100 text-sm">{t('readings.browse.allCards')}</h4>
+              <p className="text-xs text-mystic-400">{t('readings.browse.learnMeanings')}</p>
             </div>
           </div>
           <ChevronRight className="w-5 h-5 text-mystic-400" />
         </Card>
       </div>
 
-      <Sheet open={showBrowse} onClose={() => setShowBrowse(false)} title="Browse Deck">
+      <Sheet open={showBrowse} onClose={() => setShowBrowse(false)} title={t('readings.browse.title')}>
         <div className="space-y-4">
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {(['all', 'major', 'swords', 'cups', 'wands', 'pentacles'] as const).map(filter => (
               <Chip
                 key={filter}
-                label={
-                  filter === 'all' ? 'All' :
-                  filter === 'major' ? 'Major Arcana' :
-                  filter === 'swords' ? 'Swords' :
-                  filter === 'cups' ? 'Cups' :
-                  filter === 'wands' ? 'Wands' :
-                  'Pentacles'
-                }
+                label={t(`readings.browse.filters.${filter}`)}
                 selected={browseFilter === filter}
                 onSelect={() => setBrowseFilter(filter)}
               />
@@ -1142,7 +1156,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             setPendingSpreadId(null);
             const spread = spreadConfigs.find(s => s.id === pendingSpreadId);
             if (spread) {
-              onShowPaywall(spread.name);
+              onShowPaywall(spreadName(spread));
             }
           }}
         />

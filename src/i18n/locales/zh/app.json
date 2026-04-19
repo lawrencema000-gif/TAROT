@@ -117,6 +117,111 @@
       "challenge": "挑战",
       "advice": "建议",
       "outcome": "结果"
+    },
+    "focusAreas": {
+      "love": "爱情",
+      "career": "事业",
+      "self": "自我",
+      "money": "财运",
+      "health": "健康",
+      "general": "综合"
+    },
+    "spreads": {
+      "single": {
+        "name": "每日一张",
+        "description": "快速指引"
+      },
+      "threeCard": {
+        "name": "过去/现在/未来",
+        "description": "3张牌阵"
+      },
+      "celticCross": {
+        "name": "凯尔特十字",
+        "description": "10张深度解读"
+      },
+      "relationship": {
+        "name": "关系牌阵",
+        "description": "5张爱情解读"
+      },
+      "careerSpread": {
+        "name": "事业抉择",
+        "description": "6张事业洞察"
+      },
+      "shadow": {
+        "name": "阴影工作",
+        "description": "7张内在探索"
+      }
+    },
+    "dailyDraw": {
+      "title": "每日抽牌",
+      "subtitle": "点击开始你的解读"
+    },
+    "browse": {
+      "title": "浏览牌组",
+      "allCards": "全部78张",
+      "learnMeanings": "学习牌意",
+      "filters": {
+        "all": "全部",
+        "major": "大阿尔克那",
+        "swords": "宝剑",
+        "cups": "圣杯",
+        "wands": "权杖",
+        "pentacles": "星币"
+      }
+    },
+    "spreadsSection": "牌阵",
+    "focusView": {
+      "title": "你的焦点是什么?",
+      "subtitle": "选择一个领域来引导你的解读",
+      "continue": "继续"
+    },
+    "shuffleView": {
+      "inProgress": "正在洗牌...",
+      "clearMind": "清空思绪",
+      "spreading": "展开全部78张牌",
+      "focusQuestion": "专注于你的问题",
+      "shuffleDeck": "洗牌"
+    },
+    "selectView": {
+      "chooseMore_one": "再选{{count}}张牌",
+      "chooseMore_other": "再选{{count}}张牌",
+      "readyReveal": "准备揭示!",
+      "trustIntuition": "相信你的直觉 • 全78张",
+      "selectMore": "再选{{count}}张",
+      "revealCards": "揭示牌面"
+    },
+    "revealView": {
+      "focusReading": "{{focus}}解读",
+      "tapToReveal": "点击揭示",
+      "revealAll": "全部揭示",
+      "generating": "生成中...",
+      "getAIInsight": "获取AI洞察",
+      "premiumAI": "高级AI",
+      "aiInterpretation": "AI解读",
+      "aiSubtitle": "基于你的牌和个人资料的个性化洞察",
+      "showCardMeanings": "← 显示牌意",
+      "loveFocus": "爱情焦点",
+      "careerFocus": "事业焦点",
+      "moneyFocus": "财运焦点",
+      "traditional": "传统",
+      "reversedParen": "(逆位)",
+      "reversed": "逆位",
+      "upright": "正位",
+      "reversalNote": "逆位说明: {{text}}",
+      "save": "保存",
+      "saved": "已保存",
+      "newReading": "新解读",
+      "cardsSpoken": "\"牌已说话。遵循这份指引,你今天可以采取哪个小小的行动?\""
+    },
+    "status": {
+      "try": "试用",
+      "unlocked": "已解锁"
+    },
+    "back": "← 返回",
+    "toasts": {
+      "cardsNotFound": "部分选中的牌无法找到。请重新洗牌后再试。",
+      "saveFailed": "保存解读失败",
+      "readingSaved": "解读已保存"
     }
   },
   "journal": {

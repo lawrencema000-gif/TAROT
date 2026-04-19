@@ -117,6 +117,111 @@
       "challenge": "도전",
       "advice": "조언",
       "outcome": "결과"
+    },
+    "focusAreas": {
+      "love": "사랑",
+      "career": "커리어",
+      "self": "자기",
+      "money": "돈",
+      "health": "건강",
+      "general": "일반"
+    },
+    "spreads": {
+      "single": {
+        "name": "1장 데일리",
+        "description": "간단한 안내"
+      },
+      "threeCard": {
+        "name": "과거/현재/미래",
+        "description": "3장 스프레드"
+      },
+      "celticCross": {
+        "name": "켈틱 크로스",
+        "description": "10장 심층 리딩"
+      },
+      "relationship": {
+        "name": "관계 스프레드",
+        "description": "5장 사랑 리딩"
+      },
+      "careerSpread": {
+        "name": "커리어 결정",
+        "description": "6장 커리어 통찰"
+      },
+      "shadow": {
+        "name": "섀도우 워크",
+        "description": "7장 내면 작업"
+      }
+    },
+    "dailyDraw": {
+      "title": "데일리 드로우",
+      "subtitle": "탭하여 리딩 시작"
+    },
+    "browse": {
+      "title": "덱 보기",
+      "allCards": "전체 78장",
+      "learnMeanings": "카드 의미 배우기",
+      "filters": {
+        "all": "전체",
+        "major": "메이저 아르카나",
+        "swords": "소드",
+        "cups": "컵",
+        "wands": "완드",
+        "pentacles": "펜타클"
+      }
+    },
+    "spreadsSection": "스프레드",
+    "focusView": {
+      "title": "무엇에 집중하시겠어요?",
+      "subtitle": "리딩을 안내할 영역을 선택하세요",
+      "continue": "계속"
+    },
+    "shuffleView": {
+      "inProgress": "덱을 섞는 중...",
+      "clearMind": "마음을 비우세요",
+      "spreading": "78장을 펼치는 중",
+      "focusQuestion": "질문에 집중하세요",
+      "shuffleDeck": "덱 섞기"
+    },
+    "selectView": {
+      "chooseMore_one": "{{count}}장 더 선택하세요",
+      "chooseMore_other": "{{count}}장 더 선택하세요",
+      "readyReveal": "공개 준비 완료!",
+      "trustIntuition": "직관을 믿으세요 • 전체 78장",
+      "selectMore": "{{count}}장 더 선택",
+      "revealCards": "카드 공개"
+    },
+    "revealView": {
+      "focusReading": "{{focus}} 리딩",
+      "tapToReveal": "탭하여 공개",
+      "revealAll": "전체 공개",
+      "generating": "생성 중...",
+      "getAIInsight": "AI 인사이트 받기",
+      "premiumAI": "프리미엄 AI",
+      "aiInterpretation": "AI 해석",
+      "aiSubtitle": "당신의 카드와 프로필을 기반으로 한 맞춤형 통찰",
+      "showCardMeanings": "← 카드 의미 표시",
+      "loveFocus": "사랑 포커스",
+      "careerFocus": "커리어 포커스",
+      "moneyFocus": "돈 포커스",
+      "traditional": "전통적",
+      "reversedParen": "(역방향)",
+      "reversed": "역방향",
+      "upright": "정방향",
+      "reversalNote": "역방향 노트: {{text}}",
+      "save": "저장",
+      "saved": "저장됨",
+      "newReading": "새 리딩",
+      "cardsSpoken": "\"카드가 말했습니다. 이 안내에 따라 오늘 당신이 취할 수 있는 작은 행동은 무엇인가요?\""
+    },
+    "status": {
+      "try": "시도",
+      "unlocked": "잠금 해제"
+    },
+    "back": "← 뒤로",
+    "toasts": {
+      "cardsNotFound": "선택한 카드 중 일부를 찾을 수 없습니다. 다시 섞어서 시도하세요.",
+      "saveFailed": "리딩 저장에 실패했습니다",
+      "readingSaved": "리딩이 저장되었습니다"
     }
   },
   "journal": {

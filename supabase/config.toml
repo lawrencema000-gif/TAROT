@@ -1,8 +1,28 @@
 # Minimal Supabase CLI config for the TAROT project.
-# Only the email template section is declared here so `supabase config push`
-# updates the multilingual auth emails without touching any other setting.
+# Only the email template + auth redirect sections are declared here so
+# `supabase config push` updates ONLY those settings.
 
 project_id = "ulzlthhkqjuohzjangcq"
+
+[auth]
+# Production web site. Was previously stuck on localhost, which broke the
+# Google OAuth return flow (Supabase refused to redirect back to tarotlife.app).
+site_url = "https://tarotlife.app"
+
+# Every URL the app might ask Supabase to redirect to after an auth event
+# (OAuth callback, email confirmation, password reset, magic link). Must
+# include native-app deep links and every locale variant the SPA uses.
+additional_redirect_urls = [
+  "https://tarotlife.app",
+  "https://tarotlife.app/",
+  "https://tarotlife.app/**",
+  "https://tarotlife.app/?lang=en",
+  "https://tarotlife.app/?lang=ja",
+  "https://tarotlife.app/?lang=ko",
+  "https://tarotlife.app/?lang=zh",
+  "com.arcana.app://auth",
+  "com.arcana.app://**",
+]
 
 [auth.email.template.confirmation]
 subject = "Confirm your Arcana email / メールアドレスを確認 / 이메일 확인 / 确认您的电子邮箱"

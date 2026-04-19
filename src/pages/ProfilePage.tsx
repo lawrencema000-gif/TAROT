@@ -428,8 +428,8 @@ export function ProfilePage() {
           ) : savedHighlights.length === 0 ? (
             <div className="text-center py-12">
               <Bookmark className="w-12 h-12 text-mystic-700 mx-auto mb-3" />
-              <p className="text-mystic-400">No saved items yet</p>
-              <p className="text-sm text-mystic-500 mt-1">Bookmark readings and insights to see them here</p>
+              <p className="text-mystic-400">{t('profile.noSaved')}</p>
+              <p className="text-sm text-mystic-500 mt-1">{t('profile.noSavedSub')}</p>
             </div>
           ) : (
             savedHighlights.map(highlight => (

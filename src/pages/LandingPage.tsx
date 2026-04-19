@@ -167,6 +167,7 @@ function AnimNum({ to }: { to: number }) {
 
 // ─── Zodiac Wheel ──────────────────────────────────────────────
 function ZodiacWheel() {
+  const { t } = useT(['landing', 'common']);
   const [active, setActive] = useState<number | null>(null);
   const svgSize = 520; const cx = svgSize / 2; const cy = svgSize / 2;
   const rOuter = 230; const rSigns = 190; const rInner = 145; const rCore = 95; const rCenter = 55;

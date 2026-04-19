@@ -27,6 +27,7 @@ import {
 } from '../utils/authErrors';
 import { migrateGuestData } from '../services/storage';
 import { getLocale } from '../i18n/config';
+import i18n from 'i18next';
 
 interface AuthContextType {
   user: User | null;
@@ -216,7 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         errorCode: error.code,
         errorMessage: error.message,
       });
-      toast('Failed to load your profile. Please try refreshing.', 'error');
+      toast(i18n.t('auth.profileLoadFailed', { ns: 'common' }), 'error');
       return;
     }
 
@@ -481,7 +482,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               return true;
             }
             endSpan(retrySpan, 'failure');
-            toast('Sign in session expired. Please try again.', 'error', createDiagnosticsAction());
+            toast(i18n.t('auth.sessionExpired', { ns: 'common' }), 'error', createDiagnosticsAction());
           } else {
             toast(normalized.message || 'Could not complete sign-in', 'error', createDiagnosticsAction());
           }
@@ -544,7 +545,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       captureException('auth.callback.unexpectedError', e, {
         sanitizedUrl: sanitizeUrl(url),
       });
-      toast('Sign in failed. Please try again.', 'error', createDiagnosticsAction());
+      toast(i18n.t('auth.signInFailed', { ns: 'common' }), 'error', createDiagnosticsAction());
       isProcessingCallbackRef.current = false;
       setOAuthProcessing(false);
       setCorrelationId(null);
@@ -635,7 +636,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 logError('auth.init.exchangeCodeError', 'Code exchange failed', {
                   error: exchangeError.message,
                 });
-                toast('Sign in failed: ' + exchangeError.message, 'error');
+                toast(i18n.t('auth.signInFailedWith', { ns: 'common', error: exchangeError.message }), 'error');
               } else if (data?.session?.user) {
                 logInfo('auth.init.exchangeSuccess', 'Session established from code exchange');
                 if (mounted) {

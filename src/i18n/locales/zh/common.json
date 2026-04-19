@@ -141,5 +141,11 @@
     "afternoon": "下午",
     "evening": "傍晚",
     "night": "夜晚"
+  },
+  "auth": {
+    "profileLoadFailed": "加载个人资料失败。请尝试刷新。",
+    "sessionExpired": "登录会话已过期。请重试。",
+    "signInFailed": "登录失败。请重试。",
+    "signInFailedWith": "登录失败: {{error}}"
   }
 }

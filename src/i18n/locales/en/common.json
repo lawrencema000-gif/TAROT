@@ -141,5 +141,11 @@
     "afternoon": "Afternoon",
     "evening": "Evening",
     "night": "Night"
+  },
+  "auth": {
+    "profileLoadFailed": "Failed to load your profile. Please try refreshing.",
+    "sessionExpired": "Sign in session expired. Please try again.",
+    "signInFailed": "Sign in failed. Please try again.",
+    "signInFailedWith": "Sign in failed: {{error}}"
   }
 }

@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
+import { normalizeLocale, PLANET_NAMES, type Locale, type Element as LElement } from "../_shared/astrology-content.ts";
+import { DAY_SHORT, ASPECT_EVENTS as LASPECT_EVENTS, ASPECT_ADVICE as LASPECT_ADVICE, STORYLINES as LSTORYLINES, BEST_DAYS_ACTIVITIES as LBEST_DAYS, NATAL_WORD, formatShortLocalized } from "../_shared/astrology-content-extra.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -200,18 +202,25 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) throw new Error("Unauthorized");
 
+    let locale: Locale = "en";
+    try {
+      const body = await req.json();
+      locale = normalizeLocale(body.locale);
+    } catch { /* empty body ok */ }
+
     const now = new Date();
     const weekStart = getWeekStart(now);
     const weekEnd = new Date(weekStart);
     weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
     const weekKey = formatDate(weekStart);
 
+    const cacheType = locale === "en" ? "weekly" : `weekly:${locale}`;
     const { data: cached } = await supabase
       .from("astrology_horoscope_cache")
       .select("content_json")
       .eq("user_id", user.id)
       .eq("date", weekKey)
-      .eq("type", "weekly")
+      .eq("type", cacheType)
       .maybeSingle();
 
     if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
@@ -239,7 +248,14 @@ Deno.serve(async (req: Request) => {
       })
     );
     const sunSign = chartRow.big_three_json?.sun?.sign || "Aries";
-    const element = SIGN_ELEMENTS[sunSign] || "Fire";
+    const element = (SIGN_ELEMENTS[sunSign] || "Fire") as LElement;
+    const dayShort = DAY_SHORT[locale];
+    const aspectEvents = LASPECT_EVENTS[locale];
+    const aspectAdvice = LASPECT_ADVICE[locale];
+    const storylines = LSTORYLINES[locale];
+    const bestDaysPoolSrc = LBEST_DAYS[locale];
+    const natalWord = NATAL_WORD[locale];
+    const planetNames = PLANET_NAMES[locale];
 
     const seed = weekKey.split("-").map(Number).reduce((a, b) => a * 31 + b, sunSign.charCodeAt(0));
     const rng = seededRandom(Math.abs(seed));
@@ -249,7 +265,7 @@ Deno.serve(async (req: Request) => {
     for (let d = 0; d < 7; d++) {
       const dayDate = new Date(weekStart);
       dayDate.setUTCDate(dayDate.getUTCDate() + d);
-      const dayName = DAY_NAMES[dayDate.getUTCDay()];
+      const dayName = dayShort[dayDate.getUTCDay()];
 
       for (const [tName, tBody] of bodyMap) {
         if (tName === "Moon") continue;
@@ -262,11 +278,20 @@ Deno.serve(async (req: Request) => {
           for (const def of aspectDefs) {
             const orb = Math.abs(diff - def.angle);
             if (orb <= def.maxOrb * 0.6) {
-              const eventPhrases = ASPECT_EVENTS[def.type];
-              const advicePhrases = ASPECT_ADVICE[def.type];
+              const eventPhrases = aspectEvents[def.type];
+              const advicePhrases = aspectAdvice[def.type];
+              const tPlanetLocal = planetNames[tName] ?? tName;
+              const nPlanetLocal = planetNames[np.planet] ?? np.planet;
+              const phrase = pick(eventPhrases, rng);
+              // Compose event line per locale (phrase already locale-specific)
+              const eventText =
+                locale === "en" ? `${tPlanetLocal} ${phrase} your ${natalWord} ${nPlanetLocal}` :
+                locale === "ja" ? `${tPlanetLocal}${phrase}あなたの${natalWord}${nPlanetLocal}` :
+                locale === "ko" ? `${tPlanetLocal}이(가) ${phrase} 당신의 ${natalWord} ${nPlanetLocal}` :
+                /* zh */           `${tPlanetLocal}${phrase}你的${natalWord}${nPlanetLocal}`;
               keyMoments.push({
                 day: dayName,
-                event: `${tName} ${pick(eventPhrases, rng)} your natal ${np.planet}`,
+                event: eventText,
                 advice: pick(advicePhrases, rng),
               });
             }
@@ -284,24 +309,24 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const bestDaysPool = [...BEST_DAYS_POOL[element]];
+    const bestDaysPool = [...bestDaysPoolSrc[element]];
     const bestDays: { activity: string; day: string }[] = [];
     for (let i = 0; i < 4 && bestDaysPool.length > 0; i++) {
       const idx = Math.floor(rng() * bestDaysPool.length);
-      const item = bestDaysPool.splice(idx, 1)[0];
+      const activity = bestDaysPool.splice(idx, 1)[0];
       const dayOffset = Math.floor(rng() * 7);
       const dayDate = new Date(weekStart);
       dayDate.setUTCDate(dayDate.getUTCDate() + dayOffset);
       bestDays.push({
-        activity: item.activity,
-        day: DAY_NAMES[dayDate.getUTCDay()],
+        activity,
+        day: dayShort[dayDate.getUTCDay()],
       });
     }
 
     const content = {
-      weekStart: formatShort(weekStart),
-      weekEnd: formatShort(weekEnd),
-      mainStoryline: pick(STORYLINES[element], rng),
+      weekStart: formatShortLocalized(weekStart, locale),
+      weekEnd: formatShortLocalized(weekEnd, locale),
+      mainStoryline: pick(storylines[element], rng),
       keyMoments: uniqueMoments,
       bestDays,
     };
@@ -310,7 +335,7 @@ Deno.serve(async (req: Request) => {
       {
         user_id: user.id,
         date: weekKey,
-        type: "weekly",
+        type: cacheType,
         content_json: content,
         generated_at: new Date().toISOString(),
       },

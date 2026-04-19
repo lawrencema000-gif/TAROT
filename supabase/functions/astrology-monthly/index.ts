@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
+import { normalizeLocale, SIGN_NAMES, PLANET_NAMES, type Locale, type Element as LElement } from "../_shared/astrology-content.ts";
+import { NEW_MOON_THEMES as LNEW_MOON_THEMES, FULL_MOON_THEMES as LFULL_MOON_THEMES, OVERVIEWS as LOVERVIEWS, ONE_THING as LONE_THING, OUTER_PLANET_THEMES as LOUTER_PLANET_THEMES, KEY_DATES as LKEY_DATES, OUTER_PLANET_FALLBACK, formatShortLocalized } from "../_shared/astrology-content-extra.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -202,17 +204,24 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) throw new Error("Unauthorized");
 
+    let locale: Locale = "en";
+    try {
+      const body = await req.json();
+      locale = normalizeLocale(body.locale);
+    } catch { /* empty body ok */ }
+
     const now = new Date();
     const year = now.getUTCFullYear();
     const month = now.getUTCMonth();
     const monthKey = `${year}-${String(month + 1).padStart(2, "0")}-01`;
 
+    const cacheType = locale === "en" ? "monthly" : `monthly:${locale}`;
     const { data: cached } = await supabase
       .from("astrology_horoscope_cache")
       .select("content_json")
       .eq("user_id", user.id)
       .eq("date", monthKey)
-      .eq("type", "monthly")
+      .eq("type", cacheType)
       .maybeSingle();
 
     if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
@@ -235,7 +244,16 @@ Deno.serve(async (req: Request) => {
     }
 
     const sunSign = chartRow.big_three_json?.sun?.sign || "Aries";
-    const element = SIGN_ELEMENTS[sunSign] || "Fire";
+    const element = (SIGN_ELEMENTS[sunSign] || "Fire") as LElement;
+    const signNames = SIGN_NAMES[locale];
+    const planetNames = PLANET_NAMES[locale];
+    const newMoonThemes = LNEW_MOON_THEMES[locale];
+    const fullMoonThemes = LFULL_MOON_THEMES[locale];
+    const overviews = LOVERVIEWS[locale];
+    const oneThings = LONE_THING[locale];
+    const outerThemes = LOUTER_PLANET_THEMES[locale];
+    const keyDateLabels = LKEY_DATES[locale];
+    const outerFallback = OUTER_PLANET_FALLBACK[locale];
     const houseCusps: number[] = chartRow.natal_json.houses || [];
 
     const seed = year * 13 + month * 7 + sunSign.charCodeAt(0);
@@ -247,12 +265,12 @@ Deno.serve(async (req: Request) => {
     if (newMoonDate) {
       const moonLon = Astronomy.EclipticGeoMoon(newMoonDate).lon;
       const moonSignData = lonToSign(moonLon);
-      const moonEl = SIGN_ELEMENTS[moonSignData.sign] || "Fire";
+      const moonEl = (SIGN_ELEMENTS[moonSignData.sign] || "Fire") as LElement;
       newMoonEvent = {
-        date: formatShort(newMoonDate),
+        date: formatShortLocalized(newMoonDate, locale),
         sign: moonSignData.sign,
         house: findHouse(moonLon, houseCusps),
-        theme: pick(NEW_MOON_THEMES[moonEl], rng),
+        theme: pick(newMoonThemes[moonEl], rng),
       };
     }
 
@@ -260,21 +278,27 @@ Deno.serve(async (req: Request) => {
     if (fullMoonDate) {
       const moonLon = Astronomy.EclipticGeoMoon(fullMoonDate).lon;
       const moonSignData = lonToSign(moonLon);
-      const moonEl = SIGN_ELEMENTS[moonSignData.sign] || "Fire";
+      const moonEl = (SIGN_ELEMENTS[moonSignData.sign] || "Fire") as LElement;
       fullMoonEvent = {
-        date: formatShort(fullMoonDate),
+        date: formatShortLocalized(fullMoonDate, locale),
         sign: moonSignData.sign,
         house: findHouse(moonLon, houseCusps),
-        theme: pick(FULL_MOON_THEMES[moonEl], rng),
+        theme: pick(fullMoonThemes[moonEl], rng),
       };
     }
 
     const keyDates: { date: string; event: string }[] = [];
-    if (newMoonDate) {
-      keyDates.push({ date: formatShort(newMoonDate), event: `New Moon in ${newMoonEvent?.sign} -- set intentions` });
+    if (newMoonDate && newMoonEvent) {
+      keyDates.push({
+        date: formatShortLocalized(newMoonDate, locale),
+        event: keyDateLabels.newMoonLabel.replace("{sign}", signNames[newMoonEvent.sign] ?? newMoonEvent.sign),
+      });
     }
-    if (fullMoonDate) {
-      keyDates.push({ date: formatShort(fullMoonDate), event: `Full Moon in ${fullMoonEvent?.sign} -- release & celebrate` });
+    if (fullMoonDate && fullMoonEvent) {
+      keyDates.push({
+        date: formatShortLocalized(fullMoonDate, locale),
+        event: keyDateLabels.fullMoonLabel.replace("{sign}", signNames[fullMoonEvent.sign] ?? fullMoonEvent.sign),
+      });
     }
 
     const midMonth = new Date(Date.UTC(year, month, 15));
@@ -290,12 +314,17 @@ Deno.serve(async (req: Request) => {
     for (const [name, body] of outerBodies) {
       const lon = Astronomy.EclipticLongitude(body, midMonth);
       const signData = lonToSign(lon);
-      const planetEl = SIGN_ELEMENTS[signData.sign] || "Fire";
-      const themes = OUTER_PLANET_THEMES[name]?.[planetEl] || [`${name} transits through ${signData.sign}, shaping collective themes.`];
+      const planetEl = (SIGN_ELEMENTS[signData.sign] || "Fire") as LElement;
+      const themes = outerThemes[name]?.[planetEl];
+      const theme = themes
+        ? pick(themes, rng)
+        : outerFallback
+            .replace("{planet}", planetNames[name] ?? name)
+            .replace("{sign}", signNames[signData.sign] ?? signData.sign);
       outerPlanetTransits.push({
         planet: name,
         sign: signData.sign,
-        theme: pick(themes, rng),
+        theme,
       });
     }
 
@@ -312,10 +341,14 @@ Deno.serve(async (req: Request) => {
         const prevSign = lonToSign(prevLon).sign;
 
         if (sign !== prevSign && day > 1) {
-          keyDates.push({
-            date: formatShort(d),
-            event: `${pName} enters ${sign}`,
-          });
+          const pLocal = planetNames[pName] ?? pName;
+          const sLocal = signNames[sign] ?? sign;
+          const enters =
+            locale === "en" ? `${pLocal} enters ${sLocal}` :
+            locale === "ja" ? `${pLocal}が${sLocal}に入る` :
+            locale === "ko" ? `${pLocal}이(가) ${sLocal}에 진입` :
+            /* zh */           `${pLocal}进入${sLocal}`;
+          keyDates.push({ date: formatShortLocalized(d, locale), event: enters });
           break;
         }
       }
@@ -330,13 +363,17 @@ Deno.serve(async (req: Request) => {
       return parseShort(a.date) - parseShort(b.date);
     });
 
+    const monthLabel = locale === "en" ? `${MONTH_NAMES[month]} ${year}` :
+      locale === "ja" ? `${year}年${month + 1}月` :
+      locale === "ko" ? `${year}년 ${month + 1}월` :
+      /* zh */           `${year}年${month + 1}月`;
     const content = {
-      month: `${MONTH_NAMES[month]} ${year}`,
-      overview: pick(OVERVIEWS[element], rng),
+      month: monthLabel,
+      overview: pick(overviews[element], rng),
       newMoon: newMoonEvent,
       fullMoon: fullMoonEvent,
       keyDates: keyDates.slice(0, 6),
-      oneThingToDoThisMonth: pick(ONE_THING[element], rng),
+      oneThingToDoThisMonth: pick(oneThings[element], rng),
       outerPlanetTransits,
     };
 
@@ -344,7 +381,7 @@ Deno.serve(async (req: Request) => {
       {
         user_id: user.id,
         date: monthKey,
-        type: "monthly",
+        type: cacheType,
         content_json: content,
         generated_at: new Date().toISOString(),
       },

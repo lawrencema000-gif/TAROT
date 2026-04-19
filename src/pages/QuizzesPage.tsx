@@ -43,6 +43,7 @@ import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { ratePromptService } from '../services/ratePrompt';
 import { useT } from '../i18n/useT';
+import { localizeQuiz } from '../i18n/localizeQuiz';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -156,39 +157,41 @@ export function QuizzesPage() {
 
   const quizzes = [
     {
-      quiz: moodCheckQuiz,
+      quiz: localizeQuiz(moodCheckQuiz),
       type: 'mood-check',
       metadata: quizMetadata['mood-check'],
     },
     {
-      quiz: mbtiQuiz,
+      quiz: localizeQuiz(mbtiQuiz),
       type: 'mbti',
       metadata: quizMetadata.mbti,
     },
     {
-      quiz: loveLanguageQuiz,
+      quiz: localizeQuiz(loveLanguageQuiz),
       type: 'love-language',
       metadata: quizMetadata['love-language'],
     },
     {
-      quiz: bigFiveQuiz,
+      quiz: localizeQuiz(bigFiveQuiz),
       type: 'big-five',
       metadata: quizMetadata['big-five'],
     },
     {
-      quiz: enneagramQuiz,
+      quiz: localizeQuiz(enneagramQuiz),
       type: 'enneagram',
       metadata: quizMetadata.enneagram,
     },
     {
-      quiz: attachmentQuiz,
+      quiz: localizeQuiz(attachmentQuiz),
       type: 'attachment',
       metadata: quizMetadata.attachment,
     },
   ];
 
   const startQuiz = (quiz: QuizDefinition) => {
-    setProgress({ quiz, currentQuestion: 0, answers: {} });
+    // Swap in localized title, description, and Likert labels for the
+    // active locale before handing the definition to the quiz runner.
+    setProgress({ quiz: localizeQuiz(quiz), currentQuestion: 0, answers: {} });
     setState('taking');
   };
 

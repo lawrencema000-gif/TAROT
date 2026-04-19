@@ -139,5 +139,16 @@ export function getLocale(): SupportedLocale {
   __arcanaI18n?: { t: (key: string, opts?: Record<string, unknown>) => string };
 }).__arcanaI18n = i18n as unknown as { t: (key: string, opts?: Record<string, unknown>) => string };
 
+// Keep <html lang="..."> in sync with the active locale so screen readers,
+// Chrome's translate bar, and the browser's built-in spellcheck behave
+// correctly. Runs once on init and on every language change.
+function syncDocumentLang(lng: string) {
+  if (typeof document === 'undefined') return;
+  const normalized = normalizeLocale(lng) ?? 'en';
+  document.documentElement.lang = normalized;
+}
+syncDocumentLang(i18n.language);
+i18n.on('languageChanged', syncDocumentLang);
+
 export { LAZY_NAMESPACES };
 export default i18n;

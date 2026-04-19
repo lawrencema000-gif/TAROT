@@ -1,4 +1,5 @@
 import type { Planet, AspectType } from '../types/astrology';
+import { getLocalizedAspectInterp, getLocalizedGenericAspectInterp } from '../i18n/localizeAspect';
 
 interface AspectInterp {
   meaning: string;
@@ -197,12 +198,20 @@ const aspectTypeDescriptions: Record<string, string> = {
 };
 
 export function getAspectInterp(p1: Planet, p2: Planet, type: AspectType): AspectInterp | null {
+  const localized = getLocalizedAspectInterp(p1, p2, type);
+  if (localized) return localized;
   return interpretations[`${p1}-${p2}-${type}`] || interpretations[`${p2}-${p1}-${type}`] || null;
 }
 
 export function getGenericAspectInterp(p1: Planet, p2: Planet, type: AspectType): AspectInterp {
+  const localizedSpecific = getLocalizedAspectInterp(p1, p2, type);
+  if (localizedSpecific) return localizedSpecific;
+
   const specific = interpretations[`${p1}-${p2}-${type}`] || interpretations[`${p2}-${p1}-${type}`];
   if (specific) return specific;
+
+  const localizedGeneric = getLocalizedGenericAspectInterp(p1, p2, type);
+  if (localizedGeneric) return localizedGeneric;
 
   const typeDesc = aspectTypeDescriptions[type] || 'connects';
 

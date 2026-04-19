@@ -423,6 +423,96 @@
         "title": "주간·월간 예보",
         "desc": "장기 예측으로 타이밍을 읽어요"
       }
+    },
+    "periods": {
+      "today": "오늘",
+      "week": "이번 주",
+      "month": "이번 달"
+    },
+    "general": "종합",
+    "love": "사랑",
+    "work": "일",
+    "mood": "기분",
+    "moodDescription": "당신의 에너지가 {{vibe}} 하루를 예고합니다.",
+    "vibe": {
+      "productive": "매우 생산적인",
+      "balanced": "균형 잡힌",
+      "reflective": "사색적인",
+      "expansive": "확장적",
+      "steady": "안정",
+      "introspective": "내성"
+    },
+    "luckyFocus": "행운의 포커스",
+    "luckyLabels": {
+      "color": "색상",
+      "number": "숫자",
+      "vibe": "분위기"
+    },
+    "todaysMood": "오늘의 기분",
+    "shadowInsight": "그림자 통찰",
+    "caution": "주의",
+    "planetaryTransit": "행성 트랜짓",
+    "dailyAffirmation": "오늘의 확언",
+    "cardOfTheDay": "오늘의 카드",
+    "luckyNumbersLabel": "행운의 숫자",
+    "miniRitual": "미니 리추얼",
+    "actionStep": "행동 단계",
+    "showMore": "더 많은 통찰 보기",
+    "showLess": "간단히 보기",
+    "weeklyOverview": "주간 개요",
+    "weekdayInitials": {
+      "mon": "월",
+      "tue": "화",
+      "wed": "수",
+      "thu": "목",
+      "fri": "금",
+      "sat": "토",
+      "sun": "일"
+    },
+    "lovePeak": "사랑의 절정",
+    "careerPeak": "커리어 절정",
+    "bestDay": "최고의 날",
+    "peakDays": {
+      "wednesday": "수요일",
+      "thursday": "목요일",
+      "friday": "금요일"
+    },
+    "monthlyTheme": "이달의 테마",
+    "moonPhaseInfluence": "달의 위상 영향",
+    "moonPhaseText": "12일의 신월이 새로운 시작을 증폭시킵니다",
+    "keyDates": "주요 날짜",
+    "keyDatesText": "7일, 15일, 23일 - 에너지가 높은 날",
+    "weeklyInsights": [
+      "주 초반은 의사소통에 명확함을 가져옵니다. 주 중반은 과감한 결정에 유리하며, 주말은 휴식이 필요합니다.",
+      "주 초반에는 관계에 집중하세요. 커리어는 주 중반에 정점에 이릅니다. 금요일까지 재정을 검토하세요.",
+      "월요일은 느리게 시작하지만 추진력이 붙습니다. 수요일에는 예상치 못한 소식이 있으며, 주말에는 로맨틱한 가능성이 열립니다.",
+      "주 초반에는 창조적 에너지가 높습니다. 주 중반에는 실무가 요구됩니다. 토요일은 사교 행사에 완벽합니다."
+    ],
+    "monthlyThemes": [
+      "이번 달은 개인적 변화를 강조합니다. 15일경 커리어 기회가 나타나고, 월말에는 사랑이 안정됩니다.",
+      "월초에는 재정 문제가 지배적입니다. 월 중반에는 관계의 진전이 있고, 마지막 주에는 개인적 성장이 가속됩니다.",
+      "건강과 웰빙이 중심입니다. 전문적인 인정이 예기치 않게 찾아옵니다. 20일까지 감정의 명료함이 도착합니다."
+    ],
+    "journalButton": "저널",
+    "birthChartCard": {
+      "title": "출생 차트 분석",
+      "subtitle": "개인 맞춤 트랜짓 노트",
+      "upgrade": "업그레이드"
+    },
+    "paywallFeatures": {
+      "monthly": "월간 호로스코프",
+      "birthChart": "출생 차트 분석"
+    },
+    "share": {
+      "title": "나의 오늘의 호로스코프",
+      "template": "{{sign}} 오늘의 호로스코프\n\n{{general}}\n\n확언: {{affirmation}}\n\nArcana에서 생성 ✨"
+    },
+    "toasts": {
+      "saveFailed": "저장에 실패했습니다",
+      "horoscopeSaved": "호로스코프가 저장되었습니다",
+      "shared": "공유되었습니다",
+      "copied": "클립보드에 복사되었습니다",
+      "unableToShare": "공유할 수 없습니다"
     }
   },
   "profile": {
@@ -585,6 +675,38 @@
         "subtitle": "땅 · 물질 · 성장",
         "desc": "펜타클은 돈, 커리어, 건강, 물질세계를 나타냅니다. 영적인 것을 현실에 뿌리내리게 합니다 — 짓고, 벌고, 가꾸는 모든 것."
       }
+    },
+    "detail": {
+      "majorArcanaLabel": "메이저 아르카나",
+      "minorArcanaLabel": "{{suit}} - 마이너 아르카나",
+      "cardNumber": "메이저 아르카나 {{id}}번 카드",
+      "reversed": "역방향",
+      "tabs": {
+        "meaning": "의미",
+        "love": "사랑",
+        "career": "커리어",
+        "reflect": "성찰"
+      },
+      "loveTitle": "사랑과 관계",
+      "loveSubtitle": "마음의 문제",
+      "loveFallback": "마음의 문제에서는 직관을 믿으세요. 이 카드는 감정의 깊이와 연결의 에너지를 로맨틱한 삶에 가져옵니다.",
+      "loveInsightReversed": "역방향에서는 관계에서 감정의 개방을 막는 것이 무엇인지 살펴보세요.",
+      "loveInsightUpright": "오늘은 연결 속에서 취약함과 개방성을 받아들이세요.",
+      "careerTitle": "커리어와 재정",
+      "careerSubtitle": "직업적 지침",
+      "careerFallback": "직업적 통찰이 당신을 기다립니다. 이 카드는 직장 생활에서의 성장 기회와 전략적 결정을 강조합니다.",
+      "careerInsightReversed": "어떤 두려움이 당신의 직업적 성장을 제한하고 있는지 생각해 보세요.",
+      "careerInsightUpright": "오늘 직업 목표를 향해 영감을 받은 행동을 취하세요.",
+      "reflectionTitle": "개인적 성찰",
+      "reflectionSubtitle": "더 깊은 통찰을 위한 질문",
+      "reflectionFallback": "이 카드는 당신의 여정에 어떤 메시지를 담고 있나요? 이 에너지는 현재 상황과 어떻게 공명하나요?",
+      "journalPromptsLabel": "저널 프롬프트:",
+      "journalPrompt1": "이 카드의 이미지가 오늘 나에게 무엇을 말하고 있나요?",
+      "journalPrompt2": "이 카드 의미의 어떤 측면이 가장 나에게 도전이 되나요?",
+      "journalPrompt3": "이 카드의 안내를 기리기 위해 오늘 어떤 작은 행동을 취할 수 있나요?",
+      "todaysAction": "오늘의 행동",
+      "todaysActionText": "{{name}}의 에너지에 맞는 작은 행동 하나를 선택하세요. 10분 이내에 할 수 있을 만큼 쉽게 만들어 보세요.",
+      "closeLabel": "닫기"
     }
   },
   "admin": {
@@ -730,5 +852,84 @@
       "journal": "저널",
       "quizzes": "퀴즈"
     }
+  },
+  "compatibility": {
+    "modes": {
+      "love": "사랑",
+      "friendship": "우정",
+      "work": "일"
+    },
+    "paywallFeatures": {
+      "full": "전체 궁합 분석",
+      "friendship": "친구 궁합",
+      "work": "직장 궁합"
+    },
+    "disclaimer": "이 앱은 성찰과 엔터테인먼트를 위한 것입니다. 의료, 법률, 재정 조언을 제공하지 않습니다.",
+    "you": "당신",
+    "theirName": "상대방 이름",
+    "theirNamePlaceholder": "상대방 이름을 입력하세요",
+    "theirBirthDate": "상대방 생년월일",
+    "requiredMark": "*",
+    "optionalLabel": "선택 사항: 더 깊은 통찰을 위한 상세 정보",
+    "theirMbti": "상대방 MBTI 유형",
+    "moreMbti": "+{{count}}개 더",
+    "theirLoveLanguage": "상대방 사랑의 언어",
+    "selectPlaceholder": "선택...",
+    "loveLanguages": {
+      "words": "인정의 말",
+      "acts": "봉사의 행동",
+      "gifts": "선물 주기",
+      "quality": "함께하는 시간",
+      "touch": "신체적 접촉"
+    },
+    "calculate": "궁합 계산",
+    "bestMatches": "최고의 매치",
+    "bestMatchesSubtitle": "{{sign}}(으)로서 가장 잘 맞는 상대:",
+    "startOver": "다시 시작",
+    "match": "일치",
+    "famousPairing": "유명한 커플:",
+    "dimensions": {
+      "title": "관계의 차원",
+      "emotional": "감정",
+      "intellectual": "지성",
+      "physical": "신체",
+      "spiritual": "영성"
+    },
+    "strengths": "강점",
+    "frictionPoints": "마찰 지점",
+    "doThisToday": "오늘 해볼 것",
+    "reflectionDisclaimer": "이것은 판결이 아닌 성찰 도구입니다. 대화와 이해를 촉발하는 데 사용하세요.",
+    "connectionStyles": {
+      "fire": "열정적이고 역동적",
+      "earth": "안정적이고 현실적",
+      "air": "지적으로 자극적",
+      "water": "감정적으로 깊은",
+      "deeply": "깊이 {{style}}",
+      "complementary": "아름답게 보완적",
+      "challenging": "도전적이지만 성장 지향적"
+    },
+    "strengthPool": {
+      "natural": "자연스러운 이해와 공감",
+      "shared": "공유된 가치관과 의사소통 스타일",
+      "mutual": "상호 존중과 경외",
+      "balanced": "균형 잡힌 파트너십의 가능성",
+      "growth": "개인적 성장의 기회",
+      "unique": "나눌 수 있는 독특한 관점",
+      "romantic": "강한 로맨틱 케미",
+      "workStyles": "비슷한 업무 스타일"
+    },
+    "frictionPool": {
+      "communication": "추가적인 의사소통 노력이 필요할 수 있음",
+      "different": "삶에 대한 다른 접근",
+      "patience": "인내와 이해가 필요할 수 있음",
+      "romanceNurture": "로맨스는 의도적인 가꿈이 필요할 수 있음",
+      "workApproach": "과제에 대한 다른 접근"
+    },
+    "advice": [
+      "열린 소통과 공유된 경험에 집중하세요.",
+      "차이를 성장의 기회로 받아들이세요.",
+      "함께하는 시간과 독립의 공간을 모두 만드세요.",
+      "적극적 경청과 인정을 실천하세요."
+    ]
   }
 }

@@ -18,6 +18,7 @@ import { Card, Button, Input, Chip } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getZodiacSign, zodiacData, getCompatibility } from '../../utils/zodiac';
 import type { ZodiacSign } from '../../types';
+import { useT } from '../../i18n/useT';
 
 type CompatibilityMode = 'love' | 'friendship' | 'work';
 
@@ -26,7 +27,9 @@ interface CompatibilitySectionProps {
 }
 
 const mbtiTypes = ['INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP'];
-const loveLanguages = ['Words of Affirmation', 'Acts of Service', 'Receiving Gifts', 'Quality Time', 'Physical Touch'];
+
+// Love language option IDs — labels come from translation bundle under compatibility.loveLanguages.*
+const loveLanguageKeys = ['words', 'acts', 'gifts', 'quality', 'touch'] as const;
 
 const celebrityCouples: Record<string, string[]> = {
   'aries-aries': ['Sarah Michelle Gellar & Freddie Prinze Jr.'],
@@ -61,6 +64,7 @@ interface CompatibilityResult {
 }
 
 export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProps) {
+  const { t } = useT('app');
   const { profile } = useAuth();
   const [mode, setMode] = useState<CompatibilityMode>('love');
   const [partnerName, setPartnerName] = useState('');
@@ -76,7 +80,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
 
   const handleCalculate = () => {
     if (!profile?.isPremium && mode !== 'love') {
-      onShowPaywall('Full Compatibility Analysis');
+      onShowPaywall(t('compatibility.paywallFeatures.full'));
       return;
     }
 
@@ -89,11 +93,11 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
     const modeModifier = mode === 'love' ? 1 : mode === 'friendship' ? 0.9 : 0.85;
     const score = Math.min(100, Math.round(compatibility * modeModifier));
 
-    const connectionStyles: Record<string, string> = {
-      fire: 'Passionate and dynamic',
-      earth: 'Stable and grounded',
-      air: 'Intellectually stimulating',
-      water: 'Emotionally deep',
+    const connectionStyleByElement: Record<string, string> = {
+      fire: t('compatibility.connectionStyles.fire'),
+      earth: t('compatibility.connectionStyles.earth'),
+      air: t('compatibility.connectionStyles.air'),
+      water: t('compatibility.connectionStyles.water'),
     };
 
     const elementMatch = userInfo.element === partnerInfo.element;
@@ -106,44 +110,39 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
 
     let connectionStyle = '';
     if (elementMatch) {
-      connectionStyle = `Deeply ${connectionStyles[userInfo.element]}`;
+      connectionStyle = t('compatibility.connectionStyles.deeply', { style: connectionStyleByElement[userInfo.element] });
     } else if (complementary) {
-      connectionStyle = 'Beautifully complementary';
+      connectionStyle = t('compatibility.connectionStyles.complementary');
     } else {
-      connectionStyle = 'Challenging but growth-oriented';
+      connectionStyle = t('compatibility.connectionStyles.challenging');
     }
 
     const strengths: string[] = [];
     const frictionPoints: string[] = [];
 
     if (score >= 70) {
-      strengths.push('Natural understanding and rapport');
-      strengths.push('Shared values and communication style');
-      strengths.push('Mutual respect and admiration');
+      strengths.push(t('compatibility.strengthPool.natural'));
+      strengths.push(t('compatibility.strengthPool.shared'));
+      strengths.push(t('compatibility.strengthPool.mutual'));
     } else if (score >= 50) {
-      strengths.push('Potential for balanced partnership');
-      strengths.push('Opportunity for personal growth');
-      frictionPoints.push('May require extra communication effort');
+      strengths.push(t('compatibility.strengthPool.balanced'));
+      strengths.push(t('compatibility.strengthPool.growth'));
+      frictionPoints.push(t('compatibility.frictionPool.communication'));
     } else {
-      strengths.push('Unique perspectives to share');
-      frictionPoints.push('Different approaches to life');
-      frictionPoints.push('May need patience and understanding');
+      strengths.push(t('compatibility.strengthPool.unique'));
+      frictionPoints.push(t('compatibility.frictionPool.different'));
+      frictionPoints.push(t('compatibility.frictionPool.patience'));
     }
 
     if (mode === 'love') {
-      if (complementary) strengths.push('Strong romantic chemistry');
-      else frictionPoints.push('Romance may need intentional nurturing');
+      if (complementary) strengths.push(t('compatibility.strengthPool.romantic'));
+      else frictionPoints.push(t('compatibility.frictionPool.romanceNurture'));
     } else if (mode === 'work') {
-      if (elementMatch) strengths.push('Similar work styles');
-      else frictionPoints.push('Different approaches to tasks');
+      if (elementMatch) strengths.push(t('compatibility.strengthPool.workStyles'));
+      else frictionPoints.push(t('compatibility.frictionPool.workApproach'));
     }
 
-    const advices = [
-      'Focus on open communication and shared experiences.',
-      'Appreciate your differences as opportunities for growth.',
-      'Create space for both togetherness and independence.',
-      'Practice active listening and validation.',
-    ];
+    const advices = t('compatibility.advice', { returnObjects: true }) as string[];
 
     const calculateDimensions = () => {
       const base = score / 100;
@@ -193,7 +192,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           onClick={handleReset}
           className="text-sm text-mystic-400 hover:text-mystic-300"
         >
-          Start Over
+          {t('compatibility.startOver')}
         </button>
 
         <div className="text-center">
@@ -202,7 +201,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
               <div className="w-16 h-16 rounded-full bg-mystic-800 flex items-center justify-center text-2xl mb-1">
                 {userInfo.symbol}
               </div>
-              <p className="text-xs text-mystic-400">You</p>
+              <p className="text-xs text-mystic-400">{t('compatibility.you')}</p>
             </div>
             <Heart className="w-6 h-6 text-cosmic-rose" />
             <div className="text-center">
@@ -243,7 +242,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl font-display text-gold">{result.overallScore}%</span>
-              <span className="text-xs text-mystic-400">Match</span>
+              <span className="text-xs text-mystic-400">{t('compatibility.match')}</span>
             </div>
           </div>
 
@@ -255,7 +254,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             <div className="flex items-center gap-2 justify-center">
               <Star className="w-4 h-4 text-gold" />
               <p className="text-sm text-mystic-300">
-                Famous pairing: <span className="text-gold font-medium">{result.celebrityExample}</span>
+                {t('compatibility.famousPairing')} <span className="text-gold font-medium">{result.celebrityExample}</span>
               </p>
             </div>
           </Card>
@@ -264,14 +263,14 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         <Card padding="md">
           <h3 className="font-medium text-mystic-200 mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-gold" />
-            Relationship Dimensions
+            {t('compatibility.dimensions.title')}
           </h3>
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Heart className="w-4 h-4 text-cosmic-rose" />
-                  <span className="text-sm text-mystic-300">Emotional</span>
+                  <span className="text-sm text-mystic-300">{t('compatibility.dimensions.emotional')}</span>
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.emotional}%</span>
               </div>
@@ -287,7 +286,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Brain className="w-4 h-4 text-cosmic-blue" />
-                  <span className="text-sm text-mystic-300">Intellectual</span>
+                  <span className="text-sm text-mystic-300">{t('compatibility.dimensions.intellectual')}</span>
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.intellectual}%</span>
               </div>
@@ -303,7 +302,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-gold" />
-                  <span className="text-sm text-mystic-300">Physical</span>
+                  <span className="text-sm text-mystic-300">{t('compatibility.dimensions.physical')}</span>
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.physical}%</span>
               </div>
@@ -319,7 +318,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-teal" />
-                  <span className="text-sm text-mystic-300">Spiritual</span>
+                  <span className="text-sm text-mystic-300">{t('compatibility.dimensions.spiritual')}</span>
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.spiritual}%</span>
               </div>
@@ -336,7 +335,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         <Card padding="md">
           <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
-            Strengths
+            {t('compatibility.strengths')}
           </h3>
           <ul className="space-y-2">
             {result.strengths.map((strength, i) => (
@@ -352,7 +351,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           <Card padding="md">
             <h3 className="font-medium text-mystic-300 mb-3 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Friction Points
+              {t('compatibility.frictionPoints')}
             </h3>
             <ul className="space-y-2">
               {result.frictionPoints.map((point, i) => (
@@ -366,12 +365,12 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         )}
 
         <Card padding="md" className="bg-gold/5 border-gold/20">
-          <h3 className="font-medium text-gold mb-2">Do this today</h3>
+          <h3 className="font-medium text-gold mb-2">{t('compatibility.doThisToday')}</h3>
           <p className="text-sm text-mystic-300">{result.advice}</p>
         </Card>
 
         <p className="text-xs text-mystic-500 text-center italic">
-          This is a reflection tool - not a verdict. Use it to spark conversation and understanding.
+          {t('compatibility.reflectionDisclaimer')}
         </p>
       </div>
     );
@@ -382,7 +381,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
       <div className="flex items-start gap-2 p-3 bg-mystic-800/50 border border-mystic-700 rounded-lg">
         <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-mystic-500 leading-relaxed">
-          This app is for reflection and entertainment. It does not provide medical, legal, or financial advice.
+          {t('compatibility.disclaimer')}
         </p>
       </div>
 
@@ -400,13 +399,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             onClick={() => setMode('love')}
           >
             <Heart className="w-3.5 h-3.5" />
-            Love
+            {t('compatibility.modes.love')}
           </Chip>
           <Chip
             selected={mode === 'friendship'}
             onClick={() => {
               if (!profile?.isPremium) {
-                onShowPaywall('Friendship Compatibility');
+                onShowPaywall(t('compatibility.paywallFeatures.friendship'));
                 return;
               }
               setMode('friendship');
@@ -414,13 +413,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           >
             {!profile?.isPremium && <Lock className="w-3 h-3" />}
             <Users className="w-3.5 h-3.5" />
-            Friendship
+            {t('compatibility.modes.friendship')}
           </Chip>
           <Chip
             selected={mode === 'work'}
             onClick={() => {
               if (!profile?.isPremium) {
-                onShowPaywall('Work Compatibility');
+                onShowPaywall(t('compatibility.paywallFeatures.work'));
                 return;
               }
               setMode('work');
@@ -428,7 +427,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           >
             {!profile?.isPremium && <Lock className="w-3 h-3" />}
             <Briefcase className="w-3.5 h-3.5" />
-            Work
+            {t('compatibility.modes.work')}
           </Chip>
         </div>
       </div>
@@ -439,25 +438,25 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             {userInfo.symbol}
           </div>
           <div>
-            <p className="text-xs text-mystic-500">You</p>
+            <p className="text-xs text-mystic-500">{t('compatibility.you')}</p>
             <h3 className="font-display text-lg text-gold">{userInfo.name}</h3>
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-mystic-400 mb-2">Their Name</label>
+            <label className="block text-sm text-mystic-400 mb-2">{t('compatibility.theirName')}</label>
             <Input
               type="text"
               value={partnerName}
               onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="Enter their name"
+              placeholder={t('compatibility.theirNamePlaceholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm text-mystic-400 mb-2">
-              Their Birth Date <span className="text-gold">*</span>
+              {t('compatibility.theirBirthDate')} <span className="text-gold">{t('compatibility.requiredMark')}</span>
             </label>
             <Input
               type="date"
@@ -467,11 +466,11 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           </div>
 
           <div className="pt-2 border-t border-mystic-700">
-            <p className="text-xs text-mystic-500 mb-3">Optional: More details for deeper insight</p>
+            <p className="text-xs text-mystic-500 mb-3">{t('compatibility.optionalLabel')}</p>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-mystic-400 mb-2">Their MBTI Type</label>
+                <label className="block text-sm text-mystic-400 mb-2">{t('compatibility.theirMbti')}</label>
                 <div className="flex flex-wrap gap-1.5">
                   {(showAllMbti ? mbtiTypes : mbtiTypes.slice(0, 8)).map(type => (
                     <button
@@ -491,22 +490,22 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                       onClick={() => setShowAllMbti(true)}
                       className="px-2 py-1 text-xs text-mystic-500 hover:text-gold transition-colors"
                     >
-                      +8 more
+                      {t('compatibility.moreMbti', { count: mbtiTypes.length - 8 })}
                     </button>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-mystic-400 mb-2">Their Love Language</label>
+                <label className="block text-sm text-mystic-400 mb-2">{t('compatibility.theirLoveLanguage')}</label>
                 <select
                   value={partnerLoveLanguage}
                   onChange={(e) => setPartnerLoveLanguage(e.target.value)}
                   className="w-full px-4 py-3 bg-mystic-800 border border-mystic-700 rounded-xl text-mystic-100 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 outline-none"
                 >
-                  <option value="">Select...</option>
-                  {loveLanguages.map(lang => (
-                    <option key={lang} value={lang}>{lang}</option>
+                  <option value="">{t('compatibility.selectPlaceholder')}</option>
+                  {loveLanguageKeys.map(key => (
+                    <option key={key} value={key}>{t(`compatibility.loveLanguages.${key}`)}</option>
                   ))}
                 </select>
               </div>
@@ -522,13 +521,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         onClick={handleCalculate}
         className="min-h-[52px]"
       >
-        Calculate Compatibility
+        {t('compatibility.calculate')}
         <ChevronRight className="w-4 h-4" />
       </Button>
 
       <Card padding="md">
-        <h3 className="font-medium text-mystic-200 mb-3">Your Best Matches</h3>
-        <p className="text-sm text-mystic-400 mb-4">As a {userInfo.name}, you're most compatible with:</p>
+        <h3 className="font-medium text-mystic-200 mb-3">{t('compatibility.bestMatches')}</h3>
+        <p className="text-sm text-mystic-400 mb-4">{t('compatibility.bestMatchesSubtitle', { sign: userInfo.name })}</p>
         <div className="flex gap-2 flex-wrap">
           {getTopMatches(userSign).map(sign => (
             <span key={sign} className="px-3 py-1.5 bg-mystic-800 rounded-full text-sm text-mystic-300">

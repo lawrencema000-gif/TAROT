@@ -379,7 +379,7 @@
     "week": "本周",
     "month": "本月",
     "year": "今年",
-    "energyScore": "能量指数",
+    "energyScore": "能量评分",
     "sections": {
       "overview": "综合",
       "love": "爱情",
@@ -423,6 +423,96 @@
         "title": "每周与每月预报",
         "desc": "长线预测,把握宇宙时机"
       }
+    },
+    "periods": {
+      "today": "今天",
+      "week": "本周",
+      "month": "本月"
+    },
+    "general": "综合",
+    "love": "爱情",
+    "work": "工作",
+    "mood": "心情",
+    "moodDescription": "你的能量水平预示着{{vibe}}的一天。",
+    "vibe": {
+      "productive": "高效的",
+      "balanced": "平衡的",
+      "reflective": "沉思的",
+      "expansive": "开阔",
+      "steady": "平稳",
+      "introspective": "内省"
+    },
+    "luckyFocus": "幸运焦点",
+    "luckyLabels": {
+      "color": "颜色",
+      "number": "数字",
+      "vibe": "氛围"
+    },
+    "todaysMood": "今日心情",
+    "shadowInsight": "阴影洞察",
+    "caution": "注意",
+    "planetaryTransit": "行星行运",
+    "dailyAffirmation": "每日肯定语",
+    "cardOfTheDay": "今日之牌",
+    "luckyNumbersLabel": "幸运数字",
+    "miniRitual": "迷你仪式",
+    "actionStep": "行动步骤",
+    "showMore": "显示更多洞察",
+    "showLess": "收起",
+    "weeklyOverview": "本周概览",
+    "weekdayInitials": {
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六",
+      "sun": "日"
+    },
+    "lovePeak": "爱情高峰",
+    "careerPeak": "事业高峰",
+    "bestDay": "最佳日",
+    "peakDays": {
+      "wednesday": "周三",
+      "thursday": "周四",
+      "friday": "周五"
+    },
+    "monthlyTheme": "本月主题",
+    "moonPhaseInfluence": "月相影响",
+    "moonPhaseText": "12日的新月放大新的开始",
+    "keyDates": "关键日期",
+    "keyDatesText": "7日、15日、23日 - 高能量日",
+    "weeklyInsights": [
+      "周初带来沟通的清晰。周中有利于果断决策。周末需要休息。",
+      "周初专注于人际关系。事业问题在周中达到高峰。周五前需要财务审视。",
+      "周一开始缓慢但势头渐增。周三带来意外消息。周末有浪漫的可能。",
+      "周初创意能量高涨。周中实际事务需要关注。周六适合社交活动。"
+    ],
+    "monthlyThemes": [
+      "本月强调个人转变。15日左右出现事业机会。月底前感情生活稳定。",
+      "月初财务问题为主。月中关系发展。最后一周个人成长加速。",
+      "健康与身心占据中心。专业认可意外到来。20日前情感清晰到位。"
+    ],
+    "journalButton": "日记",
+    "birthChartCard": {
+      "title": "出生星盘分析",
+      "subtitle": "个性化行运笔记",
+      "upgrade": "升级"
+    },
+    "paywallFeatures": {
+      "monthly": "每月星座运势",
+      "birthChart": "出生星盘分析"
+    },
+    "share": {
+      "title": "我的每日星座运势",
+      "template": "{{sign}}今日运势\n\n{{general}}\n\n肯定语:{{affirmation}}\n\n由 Arcana 生成 ✨"
+    },
+    "toasts": {
+      "saveFailed": "保存失败",
+      "horoscopeSaved": "运势已保存",
+      "shared": "分享成功",
+      "copied": "已复制到剪贴板",
+      "unableToShare": "无法分享"
     }
   },
   "profile": {
@@ -585,6 +675,38 @@
         "subtitle": "土 · 物质 · 成长",
         "desc": "星币代表金钱、事业、健康与物质世界。它们把精神扎根于实际 — 你建造、赚取、孕育的一切。"
       }
+    },
+    "detail": {
+      "majorArcanaLabel": "大阿尔克那",
+      "minorArcanaLabel": "{{suit}} - 小阿尔克那",
+      "cardNumber": "大阿尔克那第{{id}}号牌",
+      "reversed": "逆位",
+      "tabs": {
+        "meaning": "牌意",
+        "love": "爱情",
+        "career": "事业",
+        "reflect": "反思"
+      },
+      "loveTitle": "爱情与关系",
+      "loveSubtitle": "心之事",
+      "loveFallback": "在心的事情上相信你的直觉。这张牌为你的浪漫生活带来情感深度与联结的能量。",
+      "loveInsightReversed": "在逆位时,审视是什么阻碍了你关系中情感的开放。",
+      "loveInsightUpright": "今日在你的连结中拥抱脆弱与开放。",
+      "careerTitle": "事业与财运",
+      "careerSubtitle": "职业指引",
+      "careerFallback": "职业洞察等你发现。这张牌凸显了你工作中的成长机会与战略决定。",
+      "careerInsightReversed": "思考哪些恐惧可能限制了你的职业成长。",
+      "careerInsightUpright": "今日向着你的职业目标采取受启发的行动。",
+      "reflectionTitle": "个人反思",
+      "reflectionSubtitle": "深入洞察的问题",
+      "reflectionFallback": "这张牌对你的旅程持有什么信息?它的能量如何与你当前情境共鸣?",
+      "journalPromptsLabel": "日记提示:",
+      "journalPrompt1": "这张牌的图像今天对我有何诉说?",
+      "journalPrompt2": "这张牌含义的哪个方面最具挑战性?",
+      "journalPrompt3": "为尊重这张牌的指引,我今天可以采取哪个小行动?",
+      "todaysAction": "今日行动",
+      "todaysActionText": "选择一个与{{name}}能量一致的小行动。让它简单到10分钟内可以完成。",
+      "closeLabel": "关闭"
     }
   },
   "admin": {
@@ -730,5 +852,84 @@
       "journal": "日记",
       "quizzes": "测试"
     }
+  },
+  "compatibility": {
+    "modes": {
+      "love": "爱情",
+      "friendship": "友情",
+      "work": "工作"
+    },
+    "paywallFeatures": {
+      "full": "完整相配分析",
+      "friendship": "友情相配",
+      "work": "工作相配"
+    },
+    "disclaimer": "此应用用于自我反思和娱乐。不提供医疗、法律或财务建议。",
+    "you": "你",
+    "theirName": "对方姓名",
+    "theirNamePlaceholder": "输入对方姓名",
+    "theirBirthDate": "对方生日",
+    "requiredMark": "*",
+    "optionalLabel": "可选:更多细节以获得更深洞察",
+    "theirMbti": "对方的MBTI类型",
+    "moreMbti": "+{{count}}个",
+    "theirLoveLanguage": "对方的爱之语言",
+    "selectPlaceholder": "选择...",
+    "loveLanguages": {
+      "words": "肯定的言语",
+      "acts": "服务的行动",
+      "gifts": "接受礼物",
+      "quality": "优质时光",
+      "touch": "身体接触"
+    },
+    "calculate": "计算相配度",
+    "bestMatches": "你的最佳配对",
+    "bestMatchesSubtitle": "作为{{sign}},你最适合的是:",
+    "startOver": "重新开始",
+    "match": "匹配",
+    "famousPairing": "著名配对:",
+    "dimensions": {
+      "title": "关系维度",
+      "emotional": "情感",
+      "intellectual": "智识",
+      "physical": "身体",
+      "spiritual": "灵性"
+    },
+    "strengths": "优势",
+    "frictionPoints": "摩擦点",
+    "doThisToday": "今日可做",
+    "reflectionDisclaimer": "这是反思工具,而非判决。用它激发对话与理解。",
+    "connectionStyles": {
+      "fire": "热情而充满活力",
+      "earth": "稳定而踏实",
+      "air": "智识上相互激发",
+      "water": "情感深邃",
+      "deeply": "深度{{style}}",
+      "complementary": "完美互补",
+      "challenging": "充满挑战但有利成长"
+    },
+    "strengthPool": {
+      "natural": "自然的理解与默契",
+      "shared": "共同的价值观与沟通风格",
+      "mutual": "相互的尊重与欣赏",
+      "balanced": "平衡伙伴关系的潜力",
+      "growth": "个人成长的机会",
+      "unique": "独特视角的分享",
+      "romantic": "强烈的浪漫化学反应",
+      "workStyles": "相似的工作风格"
+    },
+    "frictionPool": {
+      "communication": "可能需要额外的沟通努力",
+      "different": "不同的人生取向",
+      "patience": "可能需要耐心与理解",
+      "romanceNurture": "浪漫可能需要有意识的培育",
+      "workApproach": "对任务的不同处理方式"
+    },
+    "advice": [
+      "专注于开放的沟通与共享的体验。",
+      "把差异当作成长的机会去欣赏。",
+      "既要为共处留出空间,也要为独立留出空间。",
+      "练习积极倾听与肯定。"
+    ]
   }
 }

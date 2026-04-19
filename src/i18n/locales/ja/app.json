@@ -423,6 +423,96 @@
         "title": "週間・月間予報",
         "desc": "タイミングを読む長期予報"
       }
+    },
+    "periods": {
+      "today": "今日",
+      "week": "今週",
+      "month": "今月"
+    },
+    "general": "全般",
+    "love": "恋愛",
+    "work": "仕事",
+    "mood": "気分",
+    "moodDescription": "あなたのエネルギーは{{vibe}}1日を示しています。",
+    "vibe": {
+      "productive": "非常に生産的な",
+      "balanced": "バランスの取れた",
+      "reflective": "内省的な",
+      "expansive": "拡張的",
+      "steady": "安定",
+      "introspective": "内省"
+    },
+    "luckyFocus": "ラッキーフォーカス",
+    "luckyLabels": {
+      "color": "色",
+      "number": "数字",
+      "vibe": "雰囲気"
+    },
+    "todaysMood": "今日のムード",
+    "shadowInsight": "シャドウの洞察",
+    "caution": "注意",
+    "planetaryTransit": "惑星のトランジット",
+    "dailyAffirmation": "デイリーアファメーション",
+    "cardOfTheDay": "今日のカード",
+    "luckyNumbersLabel": "ラッキーナンバー",
+    "miniRitual": "ミニリチュアル",
+    "actionStep": "アクションステップ",
+    "showMore": "もっと見る",
+    "showLess": "閉じる",
+    "weeklyOverview": "週の概観",
+    "weekdayInitials": {
+      "mon": "月",
+      "tue": "火",
+      "wed": "水",
+      "thu": "木",
+      "fri": "金",
+      "sat": "土",
+      "sun": "日"
+    },
+    "lovePeak": "恋愛ピーク",
+    "careerPeak": "キャリアピーク",
+    "bestDay": "ベストデー",
+    "peakDays": {
+      "wednesday": "水曜日",
+      "thursday": "木曜日",
+      "friday": "金曜日"
+    },
+    "monthlyTheme": "月のテーマ",
+    "moonPhaseInfluence": "月相の影響",
+    "moonPhaseText": "12日の新月が新しい始まりを後押しします",
+    "keyDates": "重要な日付",
+    "keyDatesText": "7日、15日、23日 - ハイエナジーな日",
+    "weeklyInsights": [
+      "週の前半はコミュニケーションに明晰さをもたらします。週半ばは大胆な決断に有利。週末は休息を必要とします。",
+      "週初めは人間関係に集中。キャリアのことは週半ばでピーク。金曜までに金銭の見直しを。",
+      "月曜はスロースタートですが勢いを増します。水曜に思いがけない知らせ。週末はロマンスの可能性が。",
+      "週の初めは創造的エネルギーが高まります。週半ばは実務が要求されます。土曜は社交イベントに最適。"
+    ],
+    "monthlyThemes": [
+      "今月は自己変容がテーマ。15日ごろにキャリアのチャンス。月末に向けて恋愛が安定します。",
+      "月初めは金銭問題が中心。月半ばに人間関係の進展。最終週は自己成長が加速します。",
+      "健康とウェルネスが主役。仕事での評価が思いがけず訪れます。20日までに感情の明晰さが。"
+    ],
+    "journalButton": "ジャーナル",
+    "birthChartCard": {
+      "title": "出生図の分析",
+      "subtitle": "パーソナライズされたトランジットノート",
+      "upgrade": "アップグレード"
+    },
+    "paywallFeatures": {
+      "monthly": "月間ホロスコープ",
+      "birthChart": "出生図の分析"
+    },
+    "share": {
+      "title": "今日のホロスコープ",
+      "template": "{{sign}}の今日のホロスコープ\n\n{{general}}\n\nアファメーション: {{affirmation}}\n\nArcanaで作成 ✨"
+    },
+    "toasts": {
+      "saveFailed": "保存に失敗しました",
+      "horoscopeSaved": "ホロスコープを保存しました",
+      "shared": "共有しました",
+      "copied": "クリップボードにコピーしました",
+      "unableToShare": "共有できませんでした"
     }
   },
   "profile": {
@@ -585,6 +675,38 @@
         "subtitle": "地 · 物質 · 成長",
         "desc": "ペンタクルはお金、仕事、健康、物質世界を表します。スピリチュアルを現実に根付かせます — 築き、稼ぎ、育むもの。"
       }
+    },
+    "detail": {
+      "majorArcanaLabel": "大アルカナ",
+      "minorArcanaLabel": "{{suit}} - 小アルカナ",
+      "cardNumber": "大アルカナ第{{id}}番",
+      "reversed": "逆位置",
+      "tabs": {
+        "meaning": "意味",
+        "love": "恋愛",
+        "career": "キャリア",
+        "reflect": "内省"
+      },
+      "loveTitle": "恋愛と人間関係",
+      "loveSubtitle": "心の問題",
+      "loveFallback": "心の問題では直感を信じてください。このカードは恋愛に感情の深みと繋がりのエネルギーをもたらします。",
+      "loveInsightReversed": "逆位置では、人間関係における感情のオープンさを妨げているものを見つめ直してください。",
+      "loveInsightUpright": "今日は、繋がりにおける脆さとオープンさを受け入れましょう。",
+      "careerTitle": "キャリアと金銭",
+      "careerSubtitle": "仕事の指針",
+      "careerFallback": "仕事の洞察があなたを待っています。このカードは仕事での成長の機会と戦略的決断を示します。",
+      "careerInsightReversed": "どんな恐れが仕事の成長を制限しているか考えてみましょう。",
+      "careerInsightUpright": "今日は、仕事の目標に向けてインスパイアされた行動を起こしましょう。",
+      "reflectionTitle": "個人的な内省",
+      "reflectionSubtitle": "より深い洞察のための問い",
+      "reflectionFallback": "このカードはあなたの旅にどんなメッセージを持っていますか?そのエネルギーは現状にどう響いていますか?",
+      "journalPromptsLabel": "ジャーナルのプロンプト:",
+      "journalPrompt1": "このカードのイメージは今日の私に何を語っていますか?",
+      "journalPrompt2": "このカードの意味のどの側面が最も私を試していますか?",
+      "journalPrompt3": "このカードの導きを尊重するために、今日取れる小さな行動は何ですか?",
+      "todaysAction": "今日のアクション",
+      "todaysActionText": "{{name}}のエネルギーに沿った小さな行動を一つ選びましょう。10分以内にできるくらい簡単なものに。",
+      "closeLabel": "閉じる"
     }
   },
   "admin": {
@@ -730,5 +852,84 @@
       "journal": "ジャーナル",
       "quizzes": "診断"
     }
+  },
+  "compatibility": {
+    "modes": {
+      "love": "恋愛",
+      "friendship": "友情",
+      "work": "仕事"
+    },
+    "paywallFeatures": {
+      "full": "完全相性診断",
+      "friendship": "友情の相性",
+      "work": "仕事の相性"
+    },
+    "disclaimer": "このアプリは内省とエンターテインメントのためのものです。医療、法律、財務の助言は提供しません。",
+    "you": "あなた",
+    "theirName": "お相手の名前",
+    "theirNamePlaceholder": "お相手の名前を入力",
+    "theirBirthDate": "お相手の生年月日",
+    "requiredMark": "*",
+    "optionalLabel": "任意: より深い洞察のための追加情報",
+    "theirMbti": "お相手のMBTIタイプ",
+    "moreMbti": "他{{count}}件",
+    "theirLoveLanguage": "お相手の愛の言語",
+    "selectPlaceholder": "選択...",
+    "loveLanguages": {
+      "words": "肯定的な言葉",
+      "acts": "サービス行為",
+      "gifts": "贈り物を受け取る",
+      "quality": "特別な時間",
+      "touch": "スキンシップ"
+    },
+    "calculate": "相性を計算",
+    "bestMatches": "ベストマッチ",
+    "bestMatchesSubtitle": "{{sign}}として、最も相性が良いのは:",
+    "startOver": "やり直す",
+    "match": "一致度",
+    "famousPairing": "有名なカップル:",
+    "dimensions": {
+      "title": "関係性の次元",
+      "emotional": "感情",
+      "intellectual": "知性",
+      "physical": "肉体",
+      "spiritual": "精神"
+    },
+    "strengths": "強み",
+    "frictionPoints": "摩擦ポイント",
+    "doThisToday": "今日のアクション",
+    "reflectionDisclaimer": "これは内省のためのツールであり、判決ではありません。会話と理解のきっかけとして活用してください。",
+    "connectionStyles": {
+      "fire": "情熱的でダイナミック",
+      "earth": "安定して地に足がついている",
+      "air": "知的に刺激的",
+      "water": "感情的に深い",
+      "deeply": "深く{{style}}",
+      "complementary": "美しく補完的",
+      "challenging": "挑戦的だが成長志向"
+    },
+    "strengthPool": {
+      "natural": "自然な理解と共鳴",
+      "shared": "共通の価値観とコミュニケーションスタイル",
+      "mutual": "相互の尊敬と賞賛",
+      "balanced": "バランスの取れたパートナーシップの可能性",
+      "growth": "個人的成長の機会",
+      "unique": "ユニークな視点を共有",
+      "romantic": "強いロマンチックな相性",
+      "workStyles": "似た仕事のスタイル"
+    },
+    "frictionPool": {
+      "communication": "追加のコミュニケーション努力が必要かも",
+      "different": "人生への異なるアプローチ",
+      "patience": "忍耐と理解が必要かも",
+      "romanceNurture": "ロマンスには意図的な育みが必要かも",
+      "workApproach": "タスクへの異なるアプローチ"
+    },
+    "advice": [
+      "オープンなコミュニケーションと共有体験に集中しましょう。",
+      "違いを成長の機会として受け入れましょう。",
+      "一緒の時間と独立の両方のためのスペースを作りましょう。",
+      "アクティブリスニングと承認を実践しましょう。"
+    ]
   }
 }

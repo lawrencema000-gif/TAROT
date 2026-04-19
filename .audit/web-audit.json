@@ -1,0 +1,1164 @@
+{
+  "meta": {
+    "base": "https://tarotlife.app",
+    "startedAt": "2026-04-19T20:17:56.940Z",
+    "userAgent": null,
+    "finishedAt": "2026-04-19T20:18:49.739Z"
+  },
+  "perf": {
+    "landing-desktop": {
+      "url": "https://tarotlife.app/",
+      "loadMs": 3028,
+      "navErr": null,
+      "domContentLoaded": 1398.199999999255,
+      "loadEvent": 1400.699999999255,
+      "fcp": 1520,
+      "lcp": null,
+      "transferSize": 1250,
+      "lcpElement": null
+    },
+    "landing-mobile": {
+      "url": "https://tarotlife.app/",
+      "loadMs": 3120,
+      "navErr": null,
+      "domContentLoaded": 1260.199999999255,
+      "loadEvent": 1261.5,
+      "fcp": 1244,
+      "lcp": null,
+      "transferSize": 1250,
+      "lcpElement": null
+    },
+    "landing-ja-desktop": {
+      "url": "https://tarotlife.app/?lang=ja",
+      "loadMs": 3201,
+      "navErr": null,
+      "domContentLoaded": 1422.5,
+      "loadEvent": 1424.9000000003725,
+      "fcp": 1492,
+      "lcp": null,
+      "transferSize": 1250,
+      "lcpElement": null
+    },
+    "landing-ja-mobile": {
+      "url": "https://tarotlife.app/?lang=ja",
+      "loadMs": 3856,
+      "navErr": null,
+      "domContentLoaded": 1775.4000000003725,
+      "loadEvent": 1776.9000000003725,
+      "fcp": 1764,
+      "lcp": null,
+      "transferSize": 1250,
+      "lcpElement": null
+    },
+    "tarot-meanings-desktop": {
+      "url": "https://tarotlife.app/tarot-meanings",
+      "loadMs": 4038,
+      "navErr": null,
+      "domContentLoaded": 1596.199999999255,
+      "loadEvent": 1598.300000000745,
+      "fcp": 1648,
+      "lcp": null,
+      "transferSize": 1286,
+      "lcpElement": null
+    },
+    "tarot-meanings-mobile": {
+      "url": "https://tarotlife.app/tarot-meanings",
+      "loadMs": 4115,
+      "navErr": null,
+      "domContentLoaded": 1721.7999999988824,
+      "loadEvent": 1724.699999999255,
+      "fcp": 1712,
+      "lcp": null,
+      "transferSize": 1286,
+      "lcpElement": null
+    },
+    "the-fool-desktop": {
+      "url": "https://tarotlife.app/tarot-meanings/the-fool",
+      "loadMs": 3759,
+      "navErr": null,
+      "domContentLoaded": 1834.7999999988824,
+      "loadEvent": 1836.7999999988824,
+      "fcp": 1868,
+      "lcp": null,
+      "transferSize": 1250,
+      "lcpElement": null
+    },
+    "the-fool-mobile": {
+      "url": "https://tarotlife.app/tarot-meanings/the-fool",
+      "loadMs": 3754,
+      "navErr": null,
+      "domContentLoaded": 1911,
+      "loadEvent": 1912.300000000745,
+      "fcp": 1904,
+      "lcp": null,
+      "transferSize": 1250,
+      "lcpElement": null
+    },
+    "blog-desktop": {
+      "url": "https://tarotlife.app/blog",
+      "loadMs": 3255,
+      "navErr": null,
+      "domContentLoaded": 1419.2000000011176,
+      "loadEvent": 1421.1000000014901,
+      "fcp": 1460,
+      "lcp": null,
+      "transferSize": 1286,
+      "lcpElement": null
+    },
+    "blog-mobile": {
+      "url": "https://tarotlife.app/blog",
+      "loadMs": 3189,
+      "navErr": null,
+      "domContentLoaded": 1467.5999999996275,
+      "loadEvent": 1469,
+      "fcp": 1464,
+      "lcp": null,
+      "transferSize": 1286,
+      "lcpElement": null
+    }
+  },
+  "seo": {
+    "landing-desktop": {
+      "title": "Daily Tarot Readings, Horoscope & Astrology Journal | Arcana",
+      "metaDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "canonical": "https://tarotlife.app/",
+      "ogTitle": "Daily Tarot Readings, Horoscope & Astrology Journal",
+      "ogDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "Daily Tarot Readings, Horoscope & Astrology Journal",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 1,
+      "h1Text": "Know yourself. One ritual a day."
+    },
+    "landing-mobile": {
+      "title": "Daily Tarot Readings, Horoscope & Astrology Journal | Arcana",
+      "metaDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "canonical": "https://tarotlife.app/",
+      "ogTitle": "Daily Tarot Readings, Horoscope & Astrology Journal",
+      "ogDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "Daily Tarot Readings, Horoscope & Astrology Journal",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 1,
+      "h1Text": "Know yourself. One ritual a day."
+    },
+    "landing-ja-desktop": {
+      "title": "毎日のタロット・星占い・占星術ジャーナル | Arcana",
+      "metaDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "canonical": "https://tarotlife.app/",
+      "ogTitle": "毎日のタロット・星占い・占星術ジャーナル",
+      "ogDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "毎日のタロット・星占い・占星術ジャーナル",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/"
+        }
+      ],
+      "htmlLang": "ja",
+      "h1Count": 1,
+      "h1Text": "自分を知ろう。 毎日ひとつの儀式で。"
+    },
+    "landing-ja-mobile": {
+      "title": "毎日のタロット・星占い・占星術ジャーナル | Arcana",
+      "metaDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "canonical": "https://tarotlife.app/",
+      "ogTitle": "毎日のタロット・星占い・占星術ジャーナル",
+      "ogDesc": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "毎日のタロット・星占い・占星術ジャーナル",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/"
+        }
+      ],
+      "htmlLang": "ja",
+      "h1Count": 1,
+      "h1Text": "自分を知ろう。 毎日ひとつの儀式で。"
+    },
+    "tarot-meanings-desktop": {
+      "title": "Tarot Card Meanings — All 78 Cards Explained | Arcana",
+      "metaDesc": "Explore the meaning of all 78 tarot cards. Upright and reversed meanings, love and career interpretations, keywords, and reflection prompts for every card.",
+      "canonical": "https://tarotlife.app/tarot-meanings",
+      "ogTitle": "Tarot Card Meanings — All 78 Cards Explained",
+      "ogDesc": "Explore the meaning of all 78 tarot cards. Upright and reversed meanings, love and career interpretations, keywords, and reflection prompts for every card.",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "Tarot Card Meanings — All 78 Cards Explained",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/tarot-meanings?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/tarot-meanings?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/tarot-meanings?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/tarot-meanings?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/tarot-meanings"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 1,
+      "h1Text": "Tarot Card Meanings"
+    },
+    "tarot-meanings-mobile": {
+      "title": "Tarot Card Meanings — All 78 Cards Explained | Arcana",
+      "metaDesc": "Explore the meaning of all 78 tarot cards. Upright and reversed meanings, love and career interpretations, keywords, and reflection prompts for every card.",
+      "canonical": "https://tarotlife.app/tarot-meanings",
+      "ogTitle": "Tarot Card Meanings — All 78 Cards Explained",
+      "ogDesc": "Explore the meaning of all 78 tarot cards. Upright and reversed meanings, love and career interpretations, keywords, and reflection prompts for every card.",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "Tarot Card Meanings — All 78 Cards Explained",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/tarot-meanings?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/tarot-meanings?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/tarot-meanings?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/tarot-meanings?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/tarot-meanings"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 1,
+      "h1Text": "Tarot Card Meanings"
+    },
+    "the-fool-desktop": {
+      "title": "The Fool Tarot Card Meaning — Major Arcana | Arcana",
+      "metaDesc": "The Fool tarot meaning: New beginnings, Innocence, Spontaneity, Free spirit. Upright and reversed interpretations, love, career, yes/no readings.",
+      "canonical": "https://tarotlife.app/tarot-meanings/the-fool",
+      "ogTitle": "The Fool Tarot Card Meaning — Major Arcana",
+      "ogDesc": "The Fool tarot meaning: New beginnings, Innocence, Spontaneity, Free spirit. Upright and reversed interpretations, love, career, yes/no readings.",
+      "ogImage": "/bundled-cards/full/major-arcana/the-fool.webp",
+      "twCard": "summary_large_image",
+      "twTitle": "The Fool Tarot Card Meaning — Major Arcana",
+      "twImage": "/bundled-cards/full/major-arcana/the-fool.webp",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 1,
+      "h1Text": "The Fool"
+    },
+    "the-fool-mobile": {
+      "title": "The Fool Tarot Card Meaning — Major Arcana | Arcana",
+      "metaDesc": "The Fool tarot meaning: New beginnings, Innocence, Spontaneity, Free spirit. Upright and reversed interpretations, love, career, yes/no readings.",
+      "canonical": "https://tarotlife.app/tarot-meanings/the-fool",
+      "ogTitle": "The Fool Tarot Card Meaning — Major Arcana",
+      "ogDesc": "The Fool tarot meaning: New beginnings, Innocence, Spontaneity, Free spirit. Upright and reversed interpretations, love, career, yes/no readings.",
+      "ogImage": "/bundled-cards/full/major-arcana/the-fool.webp",
+      "twCard": "summary_large_image",
+      "twTitle": "The Fool Tarot Card Meaning — Major Arcana",
+      "twImage": "/bundled-cards/full/major-arcana/the-fool.webp",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/tarot-meanings/the-fool"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 1,
+      "h1Text": "The Fool"
+    },
+    "blog-desktop": {
+      "title": "News & Insights | Arcana",
+      "metaDesc": "Tarot, astrology and self-discovery",
+      "canonical": "https://tarotlife.app/blog",
+      "ogTitle": "News & Insights",
+      "ogDesc": "Tarot, astrology and self-discovery",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "News & Insights",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/blog?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/blog?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/blog?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/blog?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/blog"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 0,
+      "h1Text": null
+    },
+    "blog-mobile": {
+      "title": "News & Insights | Arcana",
+      "metaDesc": "Tarot, astrology and self-discovery",
+      "canonical": "https://tarotlife.app/blog",
+      "ogTitle": "News & Insights",
+      "ogDesc": "Tarot, astrology and self-discovery",
+      "ogImage": "https://tarotlife.app/image.png",
+      "twCard": "summary_large_image",
+      "twTitle": "News & Insights",
+      "twImage": "https://tarotlife.app/image.png",
+      "hreflangs": [
+        {
+          "hreflang": "en",
+          "href": "https://tarotlife.app/blog?lang=en"
+        },
+        {
+          "hreflang": "ja",
+          "href": "https://tarotlife.app/blog?lang=ja"
+        },
+        {
+          "hreflang": "ko",
+          "href": "https://tarotlife.app/blog?lang=ko"
+        },
+        {
+          "hreflang": "zh",
+          "href": "https://tarotlife.app/blog?lang=zh"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tarotlife.app/blog"
+        }
+      ],
+      "htmlLang": "en",
+      "h1Count": 0,
+      "h1Text": null
+    }
+  },
+  "a11y": {
+    "landing-desktop": {
+      "landmarks": {
+        "main": 0,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 11,
+      "buttonsWithoutLabel": 0,
+      "anchors": 12,
+      "anchorsWithoutText": 0,
+      "headingCount": 17,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 49,
+        "withoutAlt": 0,
+        "lazy": 44,
+        "webp": 49
+      },
+      "keyboardTabReached": 1
+    },
+    "landing-mobile": {
+      "landmarks": {
+        "main": 0,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 11,
+      "buttonsWithoutLabel": 0,
+      "anchors": 12,
+      "anchorsWithoutText": 0,
+      "headingCount": 17,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 49,
+        "withoutAlt": 0,
+        "lazy": 44,
+        "webp": 49
+      },
+      "keyboardTabReached": 1
+    },
+    "landing-ja-desktop": {
+      "landmarks": {
+        "main": 0,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 11,
+      "buttonsWithoutLabel": 0,
+      "anchors": 12,
+      "anchorsWithoutText": 0,
+      "headingCount": 17,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 49,
+        "withoutAlt": 0,
+        "lazy": 44,
+        "webp": 49
+      },
+      "keyboardTabReached": 1
+    },
+    "landing-ja-mobile": {
+      "landmarks": {
+        "main": 0,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 11,
+      "buttonsWithoutLabel": 0,
+      "anchors": 12,
+      "anchorsWithoutText": 0,
+      "headingCount": 17,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 49,
+        "withoutAlt": 0,
+        "lazy": 44,
+        "webp": 49
+      },
+      "keyboardTabReached": 1
+    },
+    "tarot-meanings-desktop": {
+      "landmarks": {
+        "main": 1,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 85,
+      "buttonsWithoutLabel": 0,
+      "anchors": 5,
+      "anchorsWithoutText": 0,
+      "headingCount": 79,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 78,
+        "withoutAlt": 0,
+        "lazy": 78,
+        "webp": 78
+      },
+      "keyboardTabReached": 1
+    },
+    "tarot-meanings-mobile": {
+      "landmarks": {
+        "main": 1,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 85,
+      "buttonsWithoutLabel": 0,
+      "anchors": 5,
+      "anchorsWithoutText": 0,
+      "headingCount": 79,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 78,
+        "withoutAlt": 0,
+        "lazy": 78,
+        "webp": 78
+      },
+      "keyboardTabReached": 1
+    },
+    "the-fool-desktop": {
+      "landmarks": {
+        "main": 1,
+        "nav": 2,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 25,
+      "buttonsWithoutLabel": 0,
+      "anchors": 6,
+      "anchorsWithoutText": 0,
+      "headingCount": 11,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 23,
+        "withoutAlt": 0,
+        "lazy": 22,
+        "webp": 23
+      },
+      "keyboardTabReached": 1
+    },
+    "the-fool-mobile": {
+      "landmarks": {
+        "main": 1,
+        "nav": 2,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 25,
+      "buttonsWithoutLabel": 0,
+      "anchors": 6,
+      "anchorsWithoutText": 0,
+      "headingCount": 11,
+      "skippedHeadings": [
+        {
+          "from": 1,
+          "to": 3,
+          "index": 1
+        }
+      ],
+      "images": {
+        "total": 23,
+        "withoutAlt": 0,
+        "lazy": 22,
+        "webp": 23
+      },
+      "keyboardTabReached": 1
+    },
+    "blog-desktop": {
+      "landmarks": {
+        "main": 1,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 7,
+      "buttonsWithoutLabel": 0,
+      "anchors": 4,
+      "anchorsWithoutText": 0,
+      "headingCount": 6,
+      "skippedHeadings": [],
+      "images": {
+        "total": 1,
+        "withoutAlt": 0,
+        "lazy": 1,
+        "webp": 0
+      },
+      "keyboardTabReached": 1
+    },
+    "blog-mobile": {
+      "landmarks": {
+        "main": 1,
+        "nav": 1,
+        "header": 0,
+        "footer": 1
+      },
+      "buttons": 7,
+      "buttonsWithoutLabel": 0,
+      "anchors": 4,
+      "anchorsWithoutText": 0,
+      "headingCount": 6,
+      "skippedHeadings": [],
+      "images": {
+        "total": 1,
+        "withoutAlt": 0,
+        "lazy": 1,
+        "webp": 0
+      },
+      "keyboardTabReached": 1
+    }
+  },
+  "console": {
+    "landing-desktop": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0709100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "landing-mobile": [
+      {
+        "type": "error",
+        "text": "[Report Only] Refused to frame 'https://www.google.com/' because an ancestor violates the following Content Security Policy directive: \"frame-ancestors 'self'\".\n"
+      },
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0409100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "landing-ja-desktop": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0409100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "landing-ja-mobile": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0A09100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "tarot-meanings-desktop": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0709100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "tarot-meanings-mobile": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0409100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "the-fool-desktop": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0409100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "the-fool-mobile": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0409100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "blog-desktop": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0409100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "error",
+        "text": "Refused to load the image 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800' because it violates the following Content Security Policy directive: \"img-src 'self' data: blob: https://*.supabase.co https://*.googleapis.com https://*.googleusercontent.com https://*.google.com https://*.gstatic.com https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ],
+    "blog-mobile": [
+      {
+        "type": "warning",
+        "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0709100BC670000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader flag to opt in to lower security guarantees for trusted content."
+      },
+      {
+        "type": "error",
+        "text": "Refused to load the image 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800' because it violates the following Content Security Policy directive: \"img-src 'self' data: blob: https://*.supabase.co https://*.googleapis.com https://*.googleusercontent.com https://*.google.com https://*.gstatic.com https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      },
+      {
+        "type": "warning",
+        "text": "Deprecated API for given entry type."
+      }
+    ]
+  },
+  "network": {
+    "landing-desktop": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64g0h2v9207841760za200zd9207841760&_p=1776629892730&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=843076151.1776629893&frm=0&pscdl=noapi&rcb=4&sr=1440x900&uaa=x86&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-au&_s=1&tag_exp=0~115616985~115938466~115938469~117266401&sid=1776629893&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2F&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=823",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "landing-mobile": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1h1v9207841760za200zd9207841760&_p=1776629895902&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=1635833852.1776629896&frm=0&pscdl=noapi&rcb=10&sr=390x844&uaa=arm&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=1&uap=iOS&uapv=15_0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938466~115938469~117266401~117884344~118128923~118463801&sid=1776629896&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2F&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=731",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "url": "https://csp.withgoogle.com/csp/frame-ancestors/38fac9d5b82543fc4729580d18ff2d3d",
+        "failure": "net::ERR_BLOCKED_BY_ORB"
+      }
+    ],
+    "landing-ja-desktop": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1v9207841760za200zd9207841760&_p=1776629899465&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=1005023295.1776629900&frm=0&pscdl=noapi&rcb=8&sr=1440x900&uaa=x86&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938465~115938468~117266400&sid=1776629899&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2F%3Flang%3Dja&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=751",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "landing-ja-mobile": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64g0h2v9207841760za200zd9207841760&_p=1776629903079&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=1139407095.1776629903&frm=0&pscdl=noapi&rcb=5&sr=390x844&uaa=arm&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=1&uap=iOS&uapv=15_0&uaw=0&ul=en-au&_s=1&tag_exp=0~115616986~115938465~115938469~117266401&sid=1776629903&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2F%3Flang%3Dja&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=835",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "tarot-meanings-desktop": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1v9207841760za200zd9207841760&_p=1776629907059&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=779647772.1776629907&frm=0&pscdl=noapi&rcb=2&sr=1440x900&uaa=x86&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938465~115938468~117266400&sid=1776629907&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2Ftarot-meanings&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=752",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "tarot-meanings-mobile": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1v9207841760za200zd9207841760&_p=1776629911339&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=1372451496.1776629912&frm=0&pscdl=noapi&rcb=19&sr=390x844&uaa=arm&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=1&uap=iOS&uapv=15_0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938465~115938468~117266401~117384406&sid=1776629911&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2Ftarot-meanings&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1047",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "the-fool-desktop": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1v9207841760za200zd9207841760&_p=1776629915824&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=261199407.1776629916&frm=0&pscdl=noapi&rcb=0&sr=1440x900&uaa=x86&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938465~115938468~117266401~117384406~117512543&sid=1776629916&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2Ftarot-meanings%2Fthe-fool&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1008",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "the-fool-mobile": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1v9207841760za200zd9207841760&_p=1776629919737&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=264244426.1776629920&frm=0&pscdl=noapi&rcb=18&sr=390x844&uaa=arm&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=1&uap=iOS&uapv=15_0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938466~115938469~117266400~118128923&sid=1776629920&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2Ftarot-meanings%2Fthe-fool&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1056",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "blog-desktop": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64f1v9207841760za200zd9207841760&_p=1776629923378&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=1163019864.1776629924&frm=0&pscdl=noapi&rcb=6&sr=1440x900&uaa=x86&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=19.0.0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938466~115938468~117266400~117512543&sid=1776629923&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2Fblog&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=715",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
+        "failure": "csp"
+      }
+    ],
+    "blog-mobile": [
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-6V3H9HV31V&gtm=45je64g0h2v9207841760za200zd9207841760&_p=1776629926773&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=1735841295.1776629927&frm=0&pscdl=noapi&rcb=5&sr=390x844&uaa=arm&uab=64&uafvl=Chromium%3B136.0.7103.25%7CHeadlessChrome%3B136.0.7103.25%7CNot.A%252FBrand%3B99.0.0.0&uam=&uamb=1&uap=iOS&uapv=15_0&uaw=0&ul=en-au&_s=1&tag_exp=0~115938465~115938469~117266401~117512543~117884344&sid=1776629927&sct=1&seg=0&dl=https%3A%2F%2Ftarotlife.app%2Fblog&dt=Arcana%20-%20Know%20yourself.%20One%20ritual%20a%20day.&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=699",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
+        "failure": "csp"
+      }
+    ]
+  },
+  "mobile": {
+    "landing": {
+      "horizontalOverflow": false,
+      "widest": [
+        {
+          "tag": "DIV",
+          "w": 450
+        },
+        {
+          "tag": "DIV",
+          "w": 400
+        },
+        {
+          "tag": "SPAN",
+          "w": 423
+        },
+        {
+          "tag": "DIV",
+          "w": 2384
+        },
+        {
+          "tag": "DIV",
+          "w": 2384
+        }
+      ]
+    },
+    "landing-ja": {
+      "horizontalOverflow": false,
+      "widest": [
+        {
+          "tag": "DIV",
+          "w": 450
+        },
+        {
+          "tag": "DIV",
+          "w": 400
+        },
+        {
+          "tag": "SPAN",
+          "w": 395.515625
+        },
+        {
+          "tag": "DIV",
+          "w": 2384
+        },
+        {
+          "tag": "DIV",
+          "w": 2384
+        }
+      ]
+    },
+    "tarot-meanings": {
+      "horizontalOverflow": false,
+      "widest": []
+    },
+    "the-fool": {
+      "horizontalOverflow": false,
+      "widest": []
+    },
+    "blog": {
+      "horizontalOverflow": false,
+      "widest": []
+    }
+  },
+  "images": {
+    "landing-desktop": {
+      "brokenSample": []
+    },
+    "landing-mobile": {
+      "brokenSample": []
+    },
+    "landing-ja-desktop": {
+      "brokenSample": []
+    },
+    "landing-ja-mobile": {
+      "brokenSample": []
+    },
+    "tarot-meanings-desktop": {
+      "brokenSample": []
+    },
+    "tarot-meanings-mobile": {
+      "brokenSample": []
+    },
+    "the-fool-desktop": {
+      "brokenSample": []
+    },
+    "the-fool-mobile": {
+      "brokenSample": []
+    },
+    "blog-desktop": {
+      "brokenSample": [
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800"
+      ]
+    },
+    "blog-mobile": {
+      "brokenSample": [
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800"
+      ]
+    }
+  },
+  "sitemap": {
+    "urls": [
+      "https://tarotlife.app/",
+      "https://tarotlife.app/blog",
+      "https://tarotlife.app/tarot-meanings",
+      "https://tarotlife.app/horoscope",
+      "https://tarotlife.app/privacy-policy.html",
+      "https://tarotlife.app/tarot-meanings/the-fool",
+      "https://tarotlife.app/tarot-meanings/the-magician",
+      "https://tarotlife.app/tarot-meanings/the-high-priestess",
+      "https://tarotlife.app/tarot-meanings/the-empress",
+      "https://tarotlife.app/tarot-meanings/the-emperor",
+      "https://tarotlife.app/tarot-meanings/the-hierophant",
+      "https://tarotlife.app/tarot-meanings/the-lovers",
+      "https://tarotlife.app/tarot-meanings/the-chariot",
+      "https://tarotlife.app/tarot-meanings/strength",
+      "https://tarotlife.app/tarot-meanings/the-hermit",
+      "https://tarotlife.app/tarot-meanings/the-wheel-of-fortune",
+      "https://tarotlife.app/tarot-meanings/justice",
+      "https://tarotlife.app/tarot-meanings/the-hanged-man",
+      "https://tarotlife.app/tarot-meanings/death",
+      "https://tarotlife.app/tarot-meanings/temperance",
+      "https://tarotlife.app/tarot-meanings/the-devil",
+      "https://tarotlife.app/tarot-meanings/the-tower",
+      "https://tarotlife.app/tarot-meanings/the-star",
+      "https://tarotlife.app/tarot-meanings/the-moon",
+      "https://tarotlife.app/tarot-meanings/the-sun"
+    ],
+    "broken": [],
+    "total": 89
+  },
+  "robots": {
+    "status": 200,
+    "hasSitemap": true,
+    "disallowsAdmin": true,
+    "raw": "User-agent: *\r\nAllow: /\r\nAllow: /blog\r\nAllow: /blog/\r\nAllow: /tarot-meanings\r\nAllow: /tarot-meanings/\r\n\r\nDisallow: /admin\r\nDisallow: /profile\r\nDisallow: /journal\r\nDisallow: /achievements\r\n\r\nSitemap: https://tarotlife.app/sitemap.xml\r\n"
+  },
+  "bundle": {
+    "jsTotalBytes": 3812391,
+    "jsTotalKb": 3723,
+    "cssTotalBytes": 113039,
+    "cssTotalKb": 110,
+    "largest": [
+      {
+        "file": "index-BamytnP9.js",
+        "size": 817585
+      },
+      {
+        "file": "vendor-icons-FbbEw2KZ.js",
+        "size": 459115
+      },
+      {
+        "file": "vendor-sentry-z9byLo4e.js",
+        "size": 447427
+      },
+      {
+        "file": "data-astrology-CFlE2lWE.js",
+        "size": 422690
+      },
+      {
+        "file": "data-tarot-C81u3mLZ.js",
+        "size": 283752
+      },
+      {
+        "file": "data-horoscopes-CnkayY7t.js",
+        "size": 261881
+      },
+      {
+        "file": "vendor-B_RZpOh1.js",
+        "size": 213482
+      },
+      {
+        "file": "data-quizzes-UI67BFrP.js",
+        "size": 205388
+      },
+      {
+        "file": "vendor-react-e-hhefBg.js",
+        "size": 178529
+      },
+      {
+        "file": "vendor-supabase-BBDJWtnO.js",
+        "size": 164082
+      },
+      {
+        "file": "index-InPPxeJc.css",
+        "size": 113039
+      },
+      {
+        "file": "ReadingsPage-DTyM6nrS.js",
+        "size": 101332
+      }
+    ],
+    "fileCount": 25
+  }
+}

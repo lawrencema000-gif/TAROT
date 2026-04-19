@@ -56,6 +56,10 @@ export function BlogPage() {
 
   return (
     <div className="space-y-4 pt-2 pb-8">
+      <header>
+        <h1 className="font-display text-2xl text-mystic-100">{t('blog.title')}</h1>
+        <p className="text-mystic-400 text-sm mt-1">{t('blog.subtitle')}</p>
+      </header>
       <div className="grid gap-4">
         {posts.map((post) => (
           <button

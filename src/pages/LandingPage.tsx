@@ -312,7 +312,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   }, [onScroll]);
 
   useEffect(() => {
-    setPageMeta(t('meta.title'));
+    setPageMeta(t('meta.title'), t('meta.description'));
     setWebsiteSchema();
     setFaqSchema(FAQ_KEYS.map(k => ({
       q: t(`faq.items.${k}.q`),
@@ -344,6 +344,8 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         </div>
       </nav>
 
+      {/* ── Main content (hero onwards) ── */}
+      <main>
       {/* ── Hero ── */}
       <section className="lp-hero">
         <div className="lp-hero-orb o1" /><div className="lp-hero-orb o2" /><div className="lp-hero-orb o3" />
@@ -506,6 +508,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
           <div style={{ marginTop: 20 }}><PlayBadge /></div>
         </div>
       </Sec>
+      </main>
 
       {/* ── Footer ── */}
       <footer className="lp-footer">

@@ -85,7 +85,7 @@ export function HomePage() {
       const [ritualResult, savesResult, countResult] = await Promise.all([
         supabase
           .from('daily_rituals')
-          .select('horoscope_viewed, tarot_drawn, journal_written, completed')
+          .select('horoscope_viewed, tarot_viewed, prompt_viewed, completed')
           .eq('user_id', user.id)
           .eq('date', today)
           .maybeSingle(),

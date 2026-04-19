@@ -622,7 +622,8 @@
         "conjunctions": "コンジャンクション"
       },
       "noAspectsMatch": "このフィルターに一致するアスペクトはありません",
-      "aspectPair": "{{a}} - {{b}}"
+      "aspectPair": "{{a}} - {{b}}",
+      "planetInSign": "{{planet}}が{{sign}}"
     }
   },
   "profile": {

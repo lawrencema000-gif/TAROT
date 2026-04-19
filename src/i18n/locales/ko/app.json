@@ -622,7 +622,8 @@
         "conjunctions": "컨정션"
       },
       "noAspectsMatch": "이 필터와 일치하는 각도가 없습니다",
-      "aspectPair": "{{a}} - {{b}}"
+      "aspectPair": "{{a}} - {{b}}",
+      "planetInSign": "{{sign}} {{planet}}"
     }
   },
   "profile": {

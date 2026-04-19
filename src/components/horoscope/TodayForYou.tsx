@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { adsService } from '../../services/ads';
 import { SIGN_SYMBOLS } from '../../types/astrology';
 import type { AspectType, ZodiacSign } from '../../types/astrology';
+import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 
 const ASPECT_COLORS: Record<AspectType, string> = {
   conjunction: 'text-gold border-gold/20 bg-gold/5',
@@ -98,7 +99,7 @@ export function TodayForYou() {
               <span className="text-lg" style={{ fontFamily: 'serif' }}>
                 {SIGN_SYMBOLS[content.moonSign as ZodiacSign]}
               </span>
-              <span className="font-medium text-mystic-200">{content.moonSign}</span>
+              <span className="font-medium text-mystic-200">{localizeSignName(content.moonSign as ZodiacSign)}</span>
               {content.moonHouse && (
                 <span className="text-xs text-mystic-500">{t('horoscope.todayForYou.houseParen', { num: content.moonHouse })}</span>
               )}
@@ -114,15 +115,15 @@ export function TodayForYou() {
             {t('horoscope.todayForYou.activeTransits')}
           </h3>
           <div className="space-y-2">
-            {content.transitHighlights.map((t, i) => (
+            {content.transitHighlights.map((tr, i) => (
               <div
                 key={i}
-                className={`px-3 py-2.5 rounded-xl border ${ASPECT_COLORS[t.aspect] || 'text-mystic-300 border-mystic-700/30 bg-mystic-800/30'}`}
+                className={`px-3 py-2.5 rounded-xl border ${ASPECT_COLORS[tr.aspect] || 'text-mystic-300 border-mystic-700/30 bg-mystic-800/30'}`}
               >
                 <div className="text-xs font-medium mb-0.5">
-                  {t.planet} {t.aspect} {t.natalPlanet}
+                  {localizePlanetName(tr.planet)} {localizeAspectName(tr.aspect)} {localizePlanetName(tr.natalPlanet)}
                 </div>
-                <div className="text-xs opacity-80">{t.brief}</div>
+                <div className="text-xs opacity-80">{tr.brief}</div>
               </div>
             ))}
           </div>

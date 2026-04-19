@@ -4,6 +4,7 @@ import { useT } from '../../i18n/useT';
 import { Card, Chip, Skeleton } from '../ui';
 import { useTransitCalendar, useNatalChart } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS, PLANETS, HOUSE_THEMES } from '../../types/astrology';
+import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 import type { Planet, AspectType, PlanetPlacement, Aspect } from '../../types/astrology';
 
 // Lazy-loaded data modules
@@ -168,13 +169,13 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
                     {PLANET_SYMBOLS[ev.transitPlanet]}
                   </span>
                   <span className={`text-xs ${ASPECT_COLORS[ev.aspectType]}`}>
-                    {ev.aspectType}
+                    {localizeAspectName(ev.aspectType)}
                   </span>
                   <span style={{ fontFamily: 'serif' }} className="text-sm">
                     {PLANET_SYMBOLS[ev.natalPlanet]}
                   </span>
                   <span className="text-xs text-mystic-400 truncate">
-                    {t('horoscope.exploreView.transitArrow', { from: ev.transitPlanet, to: ev.natalPlanet })}
+                    {t('horoscope.exploreView.transitArrow', { from: localizePlanetName(ev.transitPlanet), to: localizePlanetName(ev.natalPlanet) })}
                   </span>
                 </div>
                 {isOpen ? <ChevronUp className="w-4 h-4 text-mystic-500" /> : <ChevronDown className="w-4 h-4 text-mystic-500" />}
@@ -259,7 +260,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
                             {PLANET_SYMBOLS[p.planet as Planet]}
                           </span>
                           <span className="text-mystic-300">
-                            {p.planet} in {SIGN_SYMBOLS[p.sign]} {p.sign}
+                            {t('horoscope.exploreView.planetInSign', { planet: localizePlanetName(p.planet as Planet), sign: localizeSignName(p.sign) })} {SIGN_SYMBOLS[p.sign]}
                           </span>
                           {interp && (
                             <p className="text-mystic-400 mt-0.5 pl-4">{interp.expression}</p>
@@ -338,13 +339,13 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
                   {PLANET_SYMBOLS[a.planet1 as Planet]}
                 </span>
                 <span className={`text-xs font-medium ${ASPECT_COLORS[a.type]}`}>
-                  {a.type}
+                  {localizeAspectName(a.type)}
                 </span>
                 <span style={{ fontFamily: 'serif' }} className="text-sm">
                   {PLANET_SYMBOLS[a.planet2 as Planet]}
                 </span>
                 <span className="flex-1 text-xs text-mystic-400">
-                  {t('horoscope.exploreView.aspectPair', { a: a.planet1, b: a.planet2 })}
+                  {t('horoscope.exploreView.aspectPair', { a: localizePlanetName(a.planet1 as Planet), b: localizePlanetName(a.planet2 as Planet) })}
                 </span>
                 <span className="text-xs text-mystic-500">{a.orb.toFixed(1)}&deg;</span>
                 {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-mystic-500" /> : <ChevronDown className="w-3.5 h-3.5 text-mystic-500" />}

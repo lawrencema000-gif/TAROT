@@ -23,6 +23,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { supabase } from '../../lib/supabase';
 import { getZodiacSign, zodiacData, getElementColor } from '../../utils/zodiac';
+import { localizeSignName } from '../../i18n/localizeNames';
+import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 import {
   generateDailyHoroscope,
   getPlanetaryTransit,
@@ -194,7 +196,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
             {zodiacInfo.symbol}
           </div>
           <div className="flex-1">
-            <h2 className="font-display text-2xl text-gold">{zodiacInfo.name}</h2>
+            <h2 className="font-display text-2xl text-gold">{localizeSignName(zodiacInfo.name as ZodiacSignPC)}</h2>
             <p className="text-mystic-400 text-sm">{zodiacInfo.dateRange}</p>
           </div>
           <button

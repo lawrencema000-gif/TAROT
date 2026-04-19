@@ -6,6 +6,7 @@ import { ChartWheel } from './ChartWheel';
 import { useNatalChart } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS, HOUSE_THEMES } from '../../types/astrology';
 import type { ZodiacSign, Planet, Element, Modality, PlanetPlacement, Aspect } from '../../types/astrology';
+import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 
 // Lazy-loaded interpretation data modules
 type PlanetInSignModule = typeof import('../../data/planetInSign');
@@ -112,7 +113,7 @@ export function BirthChart() {
                 {SIGN_SYMBOLS[item.sign]}
               </div>
               <div className="text-[10px] text-mystic-500">{item.labelI18n}</div>
-              <div className="text-xs font-medium text-mystic-200">{item.sign}</div>
+              <div className="text-xs font-medium text-mystic-200">{localizeSignName(item.sign)}</div>
             </div>
           ))}
         </div>
@@ -127,7 +128,7 @@ export function BirthChart() {
               if (!signInterp) return null;
               return (
                 <div key={planet} className="p-3 bg-mystic-800/30 rounded-xl">
-                  <div className="text-xs font-medium text-gold mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign })}</div>
+                  <div className="text-xs font-medium text-gold mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign: localizeSignName(sign) })}</div>
                   <p className="text-xs text-mystic-300 leading-relaxed">{signInterp.core}</p>
                 </div>
               );
@@ -150,11 +151,11 @@ export function BirthChart() {
               <span className="text-lg w-6 text-center" style={{ fontFamily: 'serif' }}>
                 {PLANET_SYMBOLS[p.planet as Planet]}
               </span>
-              <span className="text-sm text-mystic-200 flex-1">{p.planet}</span>
+              <span className="text-sm text-mystic-200 flex-1">{localizePlanetName(p.planet as Planet)}</span>
               <span className="text-sm" style={{ fontFamily: 'serif' }}>
                 {SIGN_SYMBOLS[p.sign]}
               </span>
-              <span className="text-sm text-mystic-300">{p.sign} {p.degree.toFixed(0)}&deg;</span>
+              <span className="text-sm text-mystic-300">{localizeSignName(p.sign)} {p.degree.toFixed(0)}&deg;</span>
               {p.house && (
                 <span className="text-xs text-mystic-500">{t('horoscope.birthChartView.houseShort', { num: p.house })}</span>
               )}
@@ -223,7 +224,7 @@ export function BirthChart() {
                     {PLANET_SYMBOLS[a.planet2 as Planet]}
                   </span>
                   <span className="flex-1 text-xs text-mystic-400">
-                    {a.planet1} {a.type} {a.planet2}
+                    {localizePlanetName(a.planet1 as Planet)} {localizeAspectName(a.type)} {localizePlanetName(a.planet2 as Planet)}
                   </span>
                   <span className="text-xs text-mystic-500">{a.orb.toFixed(1)}&deg;</span>
                 </button>
@@ -236,7 +237,7 @@ export function BirthChart() {
       <Sheet
         open={!!selectedPlacement}
         onClose={() => setSelectedPlacement(null)}
-        title={selectedPlacement ? `${selectedPlacement.planet} in ${selectedPlacement.sign}` : ''}
+        title={selectedPlacement ? t('horoscope.exploreView.planetInSign', { planet: localizePlanetName(selectedPlacement.planet as Planet), sign: localizeSignName(selectedPlacement.sign) }) : ''}
       >
         {selectedPlacement && interp.loaded && <PlacementDetail placement={selectedPlacement} getPlanetInSign={interp.getPlanetInSign!} getGenericHouseInterp={interp.getGenericHouseInterp!} />}
       </Sheet>
@@ -244,7 +245,7 @@ export function BirthChart() {
       <Sheet
         open={!!selectedAspect}
         onClose={() => setSelectedAspect(null)}
-        title={selectedAspect ? `${selectedAspect.planet1} ${selectedAspect.type} ${selectedAspect.planet2}` : ''}
+        title={selectedAspect ? `${localizePlanetName(selectedAspect.planet1 as Planet)} ${localizeAspectName(selectedAspect.type)} ${localizePlanetName(selectedAspect.planet2 as Planet)}` : ''}
       >
         {selectedAspect && interp.loaded && <AspectDetail aspect={selectedAspect} getAspectInterp={interp.getAspectInterp!} getGenericAspectInterp={interp.getGenericAspectInterp!} />}
       </Sheet>
@@ -272,7 +273,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             <span className="text-lg" style={{ fontFamily: 'serif' }}>
               {SIGN_SYMBOLS[placement.sign]}
             </span>
-            <span className="font-medium text-mystic-100">{placement.sign} {placement.degree.toFixed(1)}&deg;</span>
+            <span className="font-medium text-mystic-100">{localizeSignName(placement.sign)} {placement.degree.toFixed(1)}&deg;</span>
           </div>
           {placement.house && (
             <div className="text-xs text-mystic-400">{t('horoscope.birthChartView.houseLabel', { num: placement.house })} - {HOUSE_THEMES[placement.house - 1]}</div>

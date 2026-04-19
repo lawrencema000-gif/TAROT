@@ -622,7 +622,8 @@
         "conjunctions": "合相"
       },
       "noAspectsMatch": "没有匹配此筛选条件的相位",
-      "aspectPair": "{{a}} - {{b}}"
+      "aspectPair": "{{a}} - {{b}}",
+      "planetInSign": "{{planet}}在{{sign}}"
     }
   },
   "profile": {

@@ -622,7 +622,8 @@
         "conjunctions": "Conjunctions"
       },
       "noAspectsMatch": "No aspects match this filter",
-      "aspectPair": "{{a}} - {{b}}"
+      "aspectPair": "{{a}} - {{b}}",
+      "planetInSign": "{{planet}} in {{sign}}"
     }
   },
   "profile": {

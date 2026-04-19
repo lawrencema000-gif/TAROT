@@ -19,6 +19,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getZodiacSign, zodiacData, getCompatibility } from '../../utils/zodiac';
 import type { ZodiacSign } from '../../types';
 import { useT } from '../../i18n/useT';
+import { localizeSignName } from '../../i18n/localizeNames';
+import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 
 type CompatibilityMode = 'love' | 'friendship' | 'work';
 
@@ -208,7 +210,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
               <div className="w-16 h-16 rounded-full bg-mystic-800 flex items-center justify-center text-2xl mb-1">
                 {partnerInfo.symbol}
               </div>
-              <p className="text-xs text-mystic-400">{partnerName || partnerInfo.name}</p>
+              <p className="text-xs text-mystic-400">{partnerName || localizeSignName(partnerInfo.name as ZodiacSignPC)}</p>
             </div>
           </div>
 
@@ -439,7 +441,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           </div>
           <div>
             <p className="text-xs text-mystic-500">{t('compatibility.you')}</p>
-            <h3 className="font-display text-lg text-gold">{userInfo.name}</h3>
+            <h3 className="font-display text-lg text-gold">{localizeSignName(userInfo.name as ZodiacSignPC)}</h3>
           </div>
         </div>
 
@@ -527,7 +529,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
 
       <Card padding="md">
         <h3 className="font-medium text-mystic-200 mb-3">{t('compatibility.bestMatches')}</h3>
-        <p className="text-sm text-mystic-400 mb-4">{t('compatibility.bestMatchesSubtitle', { sign: userInfo.name })}</p>
+        <p className="text-sm text-mystic-400 mb-4">{t('compatibility.bestMatchesSubtitle', { sign: localizeSignName(userInfo.name as ZodiacSignPC) })}</p>
         <div className="flex gap-2 flex-wrap">
           {getTopMatches(userSign).map(sign => (
             <span key={sign} className="px-3 py-1.5 bg-mystic-800 rounded-full text-sm text-mystic-300">

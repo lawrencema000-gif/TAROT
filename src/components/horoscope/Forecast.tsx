@@ -5,6 +5,7 @@ import { Card, Skeleton } from '../ui';
 import { useWeeklyForecast, useMonthlyForecast } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS } from '../../types/astrology';
 import type { ZodiacSign, Planet } from '../../types/astrology';
+import { localizeSignName, localizePlanetName } from '../../i18n/localizeNames';
 
 type ForecastTab = 'weekly' | 'monthly';
 
@@ -163,7 +164,7 @@ function MonthlyView() {
               <span style={{ fontFamily: 'serif' }}>
                 {SIGN_SYMBOLS[content.newMoon.sign as ZodiacSign]}
               </span>
-              <span className="text-xs text-mystic-200">{content.newMoon.sign}</span>
+              <span className="text-xs text-mystic-200">{localizeSignName(content.newMoon.sign as ZodiacSign)}</span>
             </div>
             <p className="text-xs text-mystic-400">{content.newMoon.theme}</p>
           </Card>
@@ -179,7 +180,7 @@ function MonthlyView() {
               <span style={{ fontFamily: 'serif' }}>
                 {SIGN_SYMBOLS[content.fullMoon.sign as ZodiacSign]}
               </span>
-              <span className="text-xs text-mystic-200">{content.fullMoon.sign}</span>
+              <span className="text-xs text-mystic-200">{localizeSignName(content.fullMoon.sign as ZodiacSign)}</span>
             </div>
             <p className="text-xs text-mystic-400">{content.fullMoon.theme}</p>
           </Card>
@@ -224,7 +225,7 @@ function MonthlyView() {
               </span>
               <div className="flex-1">
                 <div className="text-xs font-medium text-mystic-200">
-                  {t.planet} in {SIGN_SYMBOLS[t.sign as ZodiacSign]} {t.sign}
+                  {localizePlanetName(t.planet as Planet)} {SIGN_SYMBOLS[t.sign as ZodiacSign]} {localizeSignName(t.sign as ZodiacSign)}
                 </div>
                 <div className="text-xs text-mystic-400 mt-0.5">{t.theme}</div>
               </div>

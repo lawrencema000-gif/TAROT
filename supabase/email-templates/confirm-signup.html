@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+</head>
+<body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter','Noto Sans JP','Noto Sans KR','Noto Sans SC',system-ui,sans-serif;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width:560px;background:#12121a;margin:32px auto;border-radius:16px;overflow:hidden;">
+    <tr>
+      <td style="padding:32px 32px 16px;text-align:center;">
+        <div style="font-family:'Cormorant Garamond','Noto Serif JP','Noto Serif KR','Noto Serif SC',Georgia,serif;font-size:28px;color:#d4af37;letter-spacing:0.05em;">☽ Arcana</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 32px 24px;color:#e8e4f0;">
+        <h1 style="font-family:'Cormorant Garamond','Noto Serif JP','Noto Serif KR','Noto Serif SC',Georgia,serif;font-size:22px;font-weight:600;margin:0 0 8px;color:#f3efff;">Welcome to Arcana</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">Confirm your email to begin your daily ritual:</p>
+        <h1 style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;margin:20px 0 8px;color:#f3efff;">Arcanaへようこそ</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">日々のリチュアルを始めるには、メールアドレスを確認してください:</p>
+        <h1 style="font-family:'Noto Serif KR',serif;font-size:20px;font-weight:600;margin:20px 0 8px;color:#f3efff;">Arcana에 오신 것을 환영합니다</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">일일 의식을 시작하려면 이메일을 확인하세요:</p>
+        <h1 style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;margin:20px 0 8px;color:#f3efff;">欢迎使用 Arcana</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">确认您的电子邮箱以开始每日仪式:</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px 32px 32px;text-align:center;">
+        <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#d4af37,#b8902a);color:#0a0a0f;font-weight:600;text-decoration:none;border-radius:999px;font-size:15px;">
+          Confirm / 確認 / 확인 / 确认
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 32px 24px;text-align:center;color:#706a82;font-size:12px;line-height:1.6;">
+        If the button doesn't work, open this link:<br>
+        ボタンが動作しない場合は、このリンクを開いてください:<br>
+        버튼이 작동하지 않으면 이 링크를 여세요:<br>
+        如果按钮无效,请打开此链接:<br>
+        <a href="{{ .ConfirmationURL }}" style="color:#d4af37;word-break:break-all;">{{ .ConfirmationURL }}</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:16px 32px 32px;text-align:center;border-top:1px solid #1e1e2a;color:#706a82;font-size:11px;line-height:1.6;">
+        Didn't sign up? You can safely ignore this email.<br>
+        このメールに心当たりがない場合は、無視してください。<br>
+        가입하지 않으셨나요? 이 이메일을 무시하셔도 됩니다.<br>
+        未注册?您可以安全地忽略此邮件。
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

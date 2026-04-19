@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+</head>
+<body style="margin:0;padding:0;background:#0a0a0f;font-family:'Inter','Noto Sans JP','Noto Sans KR','Noto Sans SC',system-ui,sans-serif;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" style="max-width:560px;background:#12121a;margin:32px auto;border-radius:16px;overflow:hidden;">
+    <tr>
+      <td style="padding:32px 32px 16px;text-align:center;">
+        <div style="font-family:'Cormorant Garamond','Noto Serif JP','Noto Serif KR','Noto Serif SC',Georgia,serif;font-size:28px;color:#d4af37;letter-spacing:0.05em;">☽ Arcana</div>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 32px 24px;color:#e8e4f0;">
+        <h1 style="font-family:'Cormorant Garamond','Noto Serif JP','Noto Serif KR','Noto Serif SC',Georgia,serif;font-size:22px;font-weight:600;margin:0 0 8px;color:#f3efff;">Your sign-in link</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">Click the button below to sign in. The link is valid for one hour.</p>
+        <h1 style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;margin:20px 0 8px;color:#f3efff;">ログインリンク</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">下のボタンをクリックしてログインしてください。リンクの有効期限は1時間です。</p>
+        <h1 style="font-family:'Noto Serif KR',serif;font-size:20px;font-weight:600;margin:20px 0 8px;color:#f3efff;">로그인 링크</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">아래 버튼을 클릭하여 로그인하세요. 링크는 1시간 동안 유효합니다.</p>
+        <h1 style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;margin:20px 0 8px;color:#f3efff;">登录链接</h1>
+        <p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#c9c2dc;">点击下方按钮登录。链接有效期为1小时。</p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:8px 32px 32px;text-align:center;">
+        <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#d4af37,#b8902a);color:#0a0a0f;font-weight:600;text-decoration:none;border-radius:999px;font-size:15px;">
+          Sign in / ログイン / 로그인 / 登录
+        </a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 32px 24px;text-align:center;color:#706a82;font-size:12px;line-height:1.6;">
+        <a href="{{ .ConfirmationURL }}" style="color:#d4af37;word-break:break-all;">{{ .ConfirmationURL }}</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:16px 32px 32px;text-align:center;border-top:1px solid #1e1e2a;color:#706a82;font-size:11px;line-height:1.6;">
+        Didn't request this? Ignore this email — your account is safe.<br>
+        リクエストしていない場合は、このメールを無視してください。アカウントは安全です。<br>
+        요청하지 않으셨다면 이 이메일을 무시하세요. 계정은 안전합니다.<br>
+        未请求?请忽略此邮件 — 您的账户是安全的。
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

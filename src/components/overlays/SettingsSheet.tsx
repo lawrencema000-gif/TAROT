@@ -523,7 +523,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             )}
 
             {cityQuery.length > 0 && cityQuery.length < 2 && (
-              <p className="text-xs text-mystic-500">Type at least 2 characters to search</p>
+              <p className="text-xs text-mystic-500">{tAppSettings('settings.typeMinChars')}</p>
             )}
 
             {!geoLoading && geoError && editForm.birthLat === undefined && (
@@ -536,15 +536,15 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               <Mail className="w-4 h-4" />
               <span className="text-sm">{user?.email}</span>
             </div>
-            <p className="text-xs text-mystic-500 mt-1">Email cannot be changed</p>
+            <p className="text-xs text-mystic-500 mt-1">{tAppSettings('settings.emailNotChangeable')}</p>
           </div>
 
           <div className="flex gap-3 pt-2">
             <Button variant="ghost" fullWidth onClick={() => setActiveSheet('main')}>
-              Cancel
+              {tI18n('actions.cancel')}
             </Button>
             <Button variant="primary" fullWidth onClick={handleSaveProfile} loading={isSaving}>
-              Save Changes
+              {tAppSettings('settings.saveChanges')}
             </Button>
           </div>
         </div>
@@ -562,8 +562,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               <div className="flex items-center gap-3">
                 <Bell className="w-5 h-5 text-mystic-400" />
                 <div>
-                  <p className="font-medium text-mystic-200">Daily Reminders</p>
-                  <p className="text-sm text-mystic-500">Get notified for your daily ritual</p>
+                  <p className="font-medium text-mystic-200">{tAppSettings('settings.dailyReminders')}</p>
+                  <p className="text-sm text-mystic-500">{tAppSettings('settings.getNotified')}</p>
                 </div>
               </div>
               <button

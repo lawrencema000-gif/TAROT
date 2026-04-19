@@ -583,7 +583,14 @@
     "contactSupport": "サポートに問い合わせ",
     "version": "バージョン {{v}}",
     "about": "Arcana について",
-    "aboutText": "Arcana は、タロット、占星術、ジャーナリング、自己発見のためのデイリーコンパニオンです。"
+    "aboutText": "Arcana は、タロット、占星術、ジャーナリング、自己発見のためのデイリーコンパニオンです。",
+    "emailNotChangeable": "メールアドレスは変更できません",
+    "typeMinChars": "2文字以上入力してください",
+    "saveChanges": "変更を保存",
+    "dailyReminders": "毎日のリマインダー",
+    "getNotified": "日々のリチュアルの通知を受け取る",
+    "noTransits": "この期間のトランジットは見つかりません",
+    "chartUnavailable": "チャートデータを利用できません"
   },
   "search": {
     "placeholder": "カード、ジャーナル、星占いを検索…",

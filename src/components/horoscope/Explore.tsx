@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Orbit, Home, Triangle, ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 import { Card, Chip, Skeleton } from '../ui';
 import { useTransitCalendar, useNatalChart } from '../../hooks/useAstrology';
 import { SIGN_SYMBOLS, PLANET_SYMBOLS, PLANETS, HOUSE_THEMES } from '../../types/astrology';
@@ -103,6 +104,7 @@ export function Explore() {
 }
 
 function TransitExplorer({ data }: { data: LazyExploreData }) {
+  const { t } = useT('app');
   const { events, loading, error, load } = useTransitCalendar();
   const [filter, setFilter] = useState<string>('');
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -147,7 +149,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
       </div>
 
       {events.length === 0 ? (
-        <p className="text-mystic-400 text-sm text-center py-8">No transits found for this period</p>
+        <p className="text-mystic-400 text-sm text-center py-8">{t('settings.noTransits')}</p>
       ) : (
         events.map((ev, i) => {
           const isOpen = expanded === i;
@@ -193,6 +195,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
 }
 
 function HouseExplorer({ data }: { data: LazyExploreData }) {
+  const { t } = useT('app');
   const { chart, loading } = useNatalChart();
 
   // Memoize planet-by-house grouping and interpretation lookups
@@ -230,7 +233,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
   }
 
   if (!chart) {
-    return <p className="text-mystic-400 text-sm text-center py-8">Chart data not available</p>;
+    return <p className="text-mystic-400 text-sm text-center py-8">{t('settings.chartUnavailable')}</p>;
   }
 
   return (
@@ -277,6 +280,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
 }
 
 function AspectExplorer({ data }: { data: LazyExploreData }) {
+  const { t } = useT('app');
   const { chart, loading } = useNatalChart();
   const [aspectFilter, setAspectFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -292,7 +296,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
   }
 
   if (!chart) {
-    return <p className="text-mystic-400 text-sm text-center py-8">Chart data not available</p>;
+    return <p className="text-mystic-400 text-sm text-center py-8">{t('settings.chartUnavailable')}</p>;
   }
 
   const { natalChart } = chart;

@@ -44,7 +44,9 @@
       "save": "保存",
       "share": "シェア",
       "meaning": "意味"
-    }
+    },
+    "xpEarned": "+{{xp}} XPを獲得しました!",
+    "removedFromSaved": "保存済みから削除しました"
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -513,6 +515,114 @@
       "shared": "共有しました",
       "copied": "クリップボードにコピーしました",
       "unableToShare": "共有できませんでした"
+    },
+    "birthChartView": {
+      "noChartData": "チャートデータがありません",
+      "yourBigThree": "あなたのビッグスリー",
+      "sun": "太陽",
+      "moon": "月",
+      "rising": "アセンダント",
+      "planetInSign": "{{sign}}の{{planet}}",
+      "placements": "配置",
+      "houseShort": "H{{num}}",
+      "elementBalance": "エレメントバランス",
+      "modalityBalance": "モダリティバランス",
+      "keyAspects": "主要アスペクト",
+      "strengths": "強み",
+      "blindSpots": "盲点",
+      "underStress": "ストレス下で",
+      "growthPath": "成長の道",
+      "inHouse": "第{{num}}ハウスにて",
+      "atItsBest": "最良の状態",
+      "shadowSide": "シャドウ面",
+      "houseLabel": "第{{num}}ハウス",
+      "aspectMeta": "{{type}} • オーブ: {{orb}}° • {{motion}}",
+      "applying": "接近中",
+      "separating": "離反中",
+      "elements": {
+        "Fire": "火",
+        "Earth": "地",
+        "Air": "風",
+        "Water": "水"
+      }
+    },
+    "forecastView": {
+      "thisWeek": "今週",
+      "thisMonth": "今月",
+      "weeklyUnavailable": "週間予報は利用できません",
+      "monthlyUnavailable": "月間予報は利用できません",
+      "weeklyTheme": "週間テーマ",
+      "keyMoments": "重要な瞬間",
+      "bestDaysFor": "最適な日",
+      "monthlyOverview": "月間概要",
+      "newMoon": "新月",
+      "fullMoon": "満月",
+      "keyDates": "重要な日付",
+      "oneThingThisMonth": "今月の一つのこと",
+      "outerPlanetThemes": "外惑星のテーマ"
+    },
+    "todayForYou": {
+      "heading": "今日のあなたへ",
+      "noDailyContent": "本日のコンテンツがありません",
+      "tryAgain": "もう一度試す",
+      "moonIn": "月の位置",
+      "houseParen": "(第{{num}}ハウス)",
+      "activeTransits": "アクティブなトランジット",
+      "powerMove": "パワームーブ",
+      "doLabel": "する",
+      "avoidLabel": "避ける",
+      "miniRitual": "ミニ儀式",
+      "journalPrompt": "ジャーナルプロンプト",
+      "categories": {
+        "love": "恋愛",
+        "career": "キャリア",
+        "money": "お金",
+        "energy": "エネルギー"
+      }
+    },
+    "onboarding": {
+      "oneMoreDetail": "あともう一つ",
+      "needBirthLocation": "正確な出生図を計算するために出生地が必要です。",
+      "profileDetailsNote": "その他の出生情報はプロフィールから保存されています。",
+      "dateLabel": "日付:",
+      "timeLabel": "時刻:",
+      "birthLocation": "出生地",
+      "searchCityPlaceholder": "都市や町を検索...",
+      "computeMyChart": "チャートを計算",
+      "selectLocationToContinue": "続けるには上で場所を選択してください",
+      "chartComputationFailed": "チャート計算に失敗しました",
+      "chartComputeFailDefault": "出生図を計算できませんでした。もう一度お試しいただくか、出生地を更新してください。",
+      "retry": "再試行",
+      "changeBirthLocation": "出生地を変更",
+      "errors": {
+        "couldNotFindLocation": "出生地が見つかりませんでした。下で検索してください。",
+        "couldNotAutoCompute": "自動でチャートを計算できませんでした。下で出生地を確認してください。",
+        "couldNotCompute": "チャートを計算できませんでした。別の場所でお試しください。"
+      },
+      "computeSteps": {
+        "planetaryPositions": "惑星の位置を計算中...",
+        "houseCusps": "ハウスカスプを計算中...",
+        "aspects": "アスペクトを分析中...",
+        "preparing": "チャートを準備中..."
+      }
+    },
+    "exploreView": {
+      "tabs": {
+        "transits": "トランジット",
+        "houses": "ハウス",
+        "aspects": "アスペクト"
+      },
+      "filterAll": "すべて",
+      "transitArrow": "{{from}} → {{to}}",
+      "noPlanetsHere": "ここには惑星がありません",
+      "aspectFilters": {
+        "all": "すべて",
+        "harmonious": "調和的",
+        "challenging": "挑戦的",
+        "conjunctions": "コンジャンクション"
+      },
+      "noAspectsMatch": "このフィルターに一致するアスペクトはありません",
+      "aspectPair": "{{a}} - {{b}}"
     }
   },
   "profile": {
@@ -743,7 +853,140 @@
     "startFreeTrial": "無料トライアルをはじめる",
     "restorePurchases": "購入を復元",
     "termsNotice": "自動更新課金。いつでもキャンセル可能。",
-    "activeUntil": "有効期限 {{date}}"
+    "activeUntil": "有効期限 {{date}}",
+    "badge": "プレミアム",
+    "paywall": {
+      "heading": "全てのカードを解き放つ",
+      "subheading": "深いスプレッド、無制限の保存、相性分析など",
+      "featureRequires": "{{feature}}にはプレミアムが必要です",
+      "whatYouUnlock": "解放される機能",
+      "loadingPrices": "価格を読み込み中...",
+      "unlocks": {
+        "adFree": {
+          "label": "広告なし体験",
+          "desc": "中断のない純粋な集中"
+        },
+        "allSpreads": {
+          "label": "全タロットスプレッド",
+          "desc": "ケルト十字、3枚引きなど"
+        },
+        "unlimitedSaves": {
+          "label": "無制限の保存",
+          "desc": "すべての洞察を永遠に保存"
+        },
+        "compatibility": {
+          "label": "フル相性診断",
+          "desc": "深いパートナー分析"
+        },
+        "deepInterpretations": {
+          "label": "深い解釈",
+          "desc": "あなただけのガイダンス"
+        },
+        "guidedPrompts": {
+          "label": "ガイド付きプロンプト",
+          "desc": "AIが紡ぐ内省の言葉"
+        },
+        "birthChart": {
+          "label": "バースチャート",
+          "desc": "あなたの宇宙の設計図"
+        }
+      },
+      "plans": {
+        "monthly": "月額",
+        "yearly": "年額",
+        "lifetime": "買い切り"
+      },
+      "periods": {
+        "month": "/月",
+        "year": "/年",
+        "oneTime": "一括"
+      },
+      "badges": {
+        "bestValue": "ベストバリュー",
+        "foreverAccess": "永久アクセス"
+      },
+      "cta": {
+        "notAvailable": "プレミアムは現在ご利用いただけません",
+        "getLifetime": "買い切りで入手する",
+        "subscribeNow": "今すぐ登録"
+      },
+      "restorePurchase": "購入を復元",
+      "errors": {
+        "loadFailed": "価格を読み込めません。接続をご確認ください。",
+        "notAvailableTitle": "プレミアムは現在ご利用いただけません",
+        "notAvailableDesc": "RevenueCatの設定が必要です。セットアップ完了まで購入は無効です。"
+      },
+      "disclaimers": {
+        "lifetime": "一度限りのお支払い。継続課金はありません。すべてのプレミアム機能に永久アクセスできます。",
+        "subscription": "いつでもキャンセル可能。お支払いはアカウントに請求されます。期間終了の24時間以上前にキャンセルしない限り、サブスクリプションは自動更新されます。"
+      },
+      "toasts": {
+        "productsUnavailable": "商品を読み込めませんでした。時間をおいて再度お試しください。",
+        "welcome": "プレミアムへようこそ!",
+        "purchaseFailed": "購入に失敗しました",
+        "purchasesRestored": "購入を復元しました!",
+        "noPurchases": "購入履歴が見つかりませんでした",
+        "restoreFailed": "復元に失敗しました"
+      }
+    },
+    "gate": {
+      "watchAdToTry": "広告を見て試す",
+      "unlockPremium": "プレミアムを解除"
+    },
+    "subscription": {
+      "heading": "プレミアム有効",
+      "subheading": "すべてのプレミアム機能をフルにご利用いただけます",
+      "planTitle": "プレミアムプラン",
+      "memberFallback": "メンバー",
+      "status": "ステータス",
+      "statusActive": "有効",
+      "billing": "お支払い方法",
+      "billingGooglePlay": "Google Play",
+      "yourBenefits": "プレミアム特典",
+      "manageOnGooglePlay": "Google Playで管理",
+      "syncStatus": "サブスクリプション状態を同期",
+      "disclaimer": "サブスクリプションの解約・変更は、Google Playストアアプリまたはウェブサイトから行ってください。変更の反映には数分かかる場合があります。",
+      "features": {
+        "adFree": "広告なし体験",
+        "allSpreads": "全タロットスプレッド",
+        "unlimitedSaves": "無制限の保存",
+        "compatibility": "フル相性診断",
+        "deepInterpretations": "深い解釈",
+        "guidedPrompts": "ガイド付きプロンプト",
+        "birthChart": "バースチャート"
+      },
+      "toasts": {
+        "verified": "サブスクリプションを確認しました!",
+        "active": "サブスクリプションは有効です",
+        "verifyFailed": "サブスクリプションを確認できませんでした"
+      }
+    },
+    "watchAd": {
+      "defaultTitle": "{{feature}}を試す",
+      "defaultSubtitle": "短い広告を見ると、このプレミアム機能を1回だけ解放できます",
+      "contexts": {
+        "extraReading": {
+          "title": "もう1回リーディングを取得",
+          "subtitle": "短い広告を見ると、今日もう1回タロットリーディングを解放できます"
+        },
+        "deepInterpretations": {
+          "title": "拡張解釈を解放",
+          "subtitle": "短い広告を見ると、カードをより深く読み解けます"
+        }
+      },
+      "unlocksRemaining": "本日の無料解放: 残り{{remaining}}/{{total}}回",
+      "watchAdToUnlock": "広告を見て解放",
+      "usedAllUnlocks": "本日の無料解放はすべて使用済みです",
+      "comeBackTomorrow": "明日また来るか、プレミアムにアップグレード",
+      "getUnlimited": "無制限アクセスを取得",
+      "notNow": "後で",
+      "footerDisclaimer": "プレミアム会員は広告なしで全機能を無制限にご利用いただけます",
+      "toasts": {
+        "unlocked": "機能を解放しました!無料トライアルをお楽しみください。",
+        "notAvailable": "広告を表示できませんでした。もう一度お試しください。",
+        "error": "エラーが発生しました。もう一度お試しください。"
+      }
+    }
   },
   "settings": {
     "title": "設定",
@@ -807,7 +1050,7 @@
     "exportData": "データをエクスポート",
     "privacyPolicy": "プライバシーポリシー",
     "termsOfService": "利用規約",
-    "contactSupport": "サポートに問い合わせ",
+    "contactSupport": "サポートに問い合わせる",
     "version": "バージョン {{v}}",
     "about": "Arcana について",
     "aboutText": "Arcana は、タロット、占星術、ジャーナリング、自己発見のためのデイリーコンパニオンです。",
@@ -817,7 +1060,25 @@
     "dailyReminders": "毎日のリマインダー",
     "getNotified": "日々のリチュアルの通知を受け取る",
     "noTransits": "この期間のトランジットは見つかりません",
-    "chartUnavailable": "チャートデータを利用できません"
+    "chartUnavailable": "チャートデータを利用できません",
+    "birthCity": "出生地",
+    "frequentlyAskedQuestions": "よくある質問",
+    "faq": {
+      "accuracyQ": "リーディングの精度はどの程度ですか?",
+      "cancelQ": "サブスクリプションはキャンセルできますか?",
+      "secureQ": "私のデータは安全ですか?"
+    },
+    "defaultLabel": "デフォルト",
+    "disclaimerHeader": "免責事項",
+    "disclaimerBody": "最小限のデータのみを収集します。出生時刻と場所は任意です。",
+    "actionCannotBeUndone": "この操作は取り消せません",
+    "toasts": {
+      "exportPartial": "一部のデータをエクスポートできませんでした。もう一度お試しください。",
+      "profileUpdated": "プロフィールを更新しました",
+      "profileUpdateFailed": "プロフィールの更新に失敗しました",
+      "updateFailed": "更新に失敗しました",
+      "devModeEnabled": "開発者モードを有効にしました"
+    }
   },
   "search": {
     "placeholder": "カード、ジャーナル、星占いを検索…",

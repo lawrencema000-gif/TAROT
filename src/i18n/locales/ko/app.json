@@ -44,7 +44,9 @@
       "save": "저장",
       "share": "공유",
       "meaning": "의미"
-    }
+    },
+    "xpEarned": "+{{xp}} XP 획득!",
+    "removedFromSaved": "저장에서 제거되었습니다"
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
@@ -513,6 +515,114 @@
       "shared": "공유되었습니다",
       "copied": "클립보드에 복사되었습니다",
       "unableToShare": "공유할 수 없습니다"
+    },
+    "birthChartView": {
+      "noChartData": "차트 데이터가 없습니다",
+      "yourBigThree": "당신의 빅 쓰리",
+      "sun": "태양",
+      "moon": "달",
+      "rising": "상승궁",
+      "planetInSign": "{{sign}}의 {{planet}}",
+      "placements": "배치",
+      "houseShort": "H{{num}}",
+      "elementBalance": "원소 균형",
+      "modalityBalance": "양태 균형",
+      "keyAspects": "주요 각도",
+      "strengths": "강점",
+      "blindSpots": "맹점",
+      "underStress": "스트레스 상황에서",
+      "growthPath": "성장의 길",
+      "inHouse": "{{num}}번째 하우스에서",
+      "atItsBest": "최상의 상태",
+      "shadowSide": "그림자 면",
+      "houseLabel": "{{num}}번째 하우스",
+      "aspectMeta": "{{type}} • 오브: {{orb}}° • {{motion}}",
+      "applying": "접근 중",
+      "separating": "분리 중",
+      "elements": {
+        "Fire": "불",
+        "Earth": "흙",
+        "Air": "공기",
+        "Water": "물"
+      }
+    },
+    "forecastView": {
+      "thisWeek": "이번 주",
+      "thisMonth": "이번 달",
+      "weeklyUnavailable": "주간 예보를 사용할 수 없습니다",
+      "monthlyUnavailable": "월간 예보를 사용할 수 없습니다",
+      "weeklyTheme": "주간 테마",
+      "keyMoments": "중요한 순간",
+      "bestDaysFor": "최적의 날",
+      "monthlyOverview": "월간 개요",
+      "newMoon": "신월",
+      "fullMoon": "보름달",
+      "keyDates": "주요 날짜",
+      "oneThingThisMonth": "이번 달의 한 가지",
+      "outerPlanetThemes": "외행성 테마"
+    },
+    "todayForYou": {
+      "heading": "오늘의 당신",
+      "noDailyContent": "오늘의 콘텐츠가 없습니다",
+      "tryAgain": "다시 시도",
+      "moonIn": "달의 위치",
+      "houseParen": "({{num}}번째 하우스)",
+      "activeTransits": "활성 트랜짓",
+      "powerMove": "파워 무브",
+      "doLabel": "할 것",
+      "avoidLabel": "피할 것",
+      "miniRitual": "미니 의식",
+      "journalPrompt": "저널 프롬프트",
+      "categories": {
+        "love": "사랑",
+        "career": "커리어",
+        "money": "돈",
+        "energy": "에너지"
+      }
+    },
+    "onboarding": {
+      "oneMoreDetail": "한 가지 더",
+      "needBirthLocation": "정확한 출생 차트를 계산하려면 출생지가 필요합니다.",
+      "profileDetailsNote": "다른 출생 정보는 프로필에 저장되어 있습니다.",
+      "dateLabel": "날짜:",
+      "timeLabel": "시간:",
+      "birthLocation": "출생지",
+      "searchCityPlaceholder": "도시 또는 마을 검색...",
+      "computeMyChart": "차트 계산하기",
+      "selectLocationToContinue": "계속하려면 위에서 위치를 선택하세요",
+      "chartComputationFailed": "차트 계산 실패",
+      "chartComputeFailDefault": "출생 차트를 계산할 수 없습니다. 다시 시도하거나 출생지를 업데이트하세요.",
+      "retry": "재시도",
+      "changeBirthLocation": "출생지 변경",
+      "errors": {
+        "couldNotFindLocation": "출생지를 찾을 수 없습니다. 아래에서 검색하세요.",
+        "couldNotAutoCompute": "차트를 자동으로 계산할 수 없습니다. 아래에서 출생지를 확인하세요.",
+        "couldNotCompute": "차트를 계산할 수 없습니다. 다른 위치로 시도하세요."
+      },
+      "computeSteps": {
+        "planetaryPositions": "행성 위치 계산 중...",
+        "houseCusps": "하우스 커스프 계산 중...",
+        "aspects": "각도 분석 중...",
+        "preparing": "차트 준비 중..."
+      }
+    },
+    "exploreView": {
+      "tabs": {
+        "transits": "트랜짓",
+        "houses": "하우스",
+        "aspects": "각도"
+      },
+      "filterAll": "전체",
+      "transitArrow": "{{from}} → {{to}}",
+      "noPlanetsHere": "여기에 행성이 없습니다",
+      "aspectFilters": {
+        "all": "전체",
+        "harmonious": "조화로운",
+        "challenging": "도전적인",
+        "conjunctions": "컨정션"
+      },
+      "noAspectsMatch": "이 필터와 일치하는 각도가 없습니다",
+      "aspectPair": "{{a}} - {{b}}"
     }
   },
   "profile": {
@@ -743,7 +853,140 @@
     "startFreeTrial": "무료 체험 시작",
     "restorePurchases": "구매 복원",
     "termsNotice": "자동 갱신. 언제든 취소 가능.",
-    "activeUntil": "만료일 {{date}}"
+    "activeUntil": "만료일 {{date}}",
+    "badge": "프리미엄",
+    "paywall": {
+      "heading": "전체 덱을 잠금 해제",
+      "subheading": "더 깊은 스프레드, 무제한 저장, 궁합 인사이트까지",
+      "featureRequires": "{{feature}}은(는) 프리미엄이 필요합니다",
+      "whatYouUnlock": "잠금 해제되는 기능",
+      "loadingPrices": "가격을 불러오는 중...",
+      "unlocks": {
+        "adFree": {
+          "label": "광고 없는 경험",
+          "desc": "방해 없이 온전한 몰입"
+        },
+        "allSpreads": {
+          "label": "모든 타로 스프레드",
+          "desc": "켈틱 크로스, 3카드 외 다수"
+        },
+        "unlimitedSaves": {
+          "label": "무제한 저장",
+          "desc": "모든 통찰을 영원히 보관"
+        },
+        "compatibility": {
+          "label": "전체 궁합 분석",
+          "desc": "깊이 있는 상대 분석"
+        },
+        "deepInterpretations": {
+          "label": "심층 해석",
+          "desc": "나만의 맞춤 안내"
+        },
+        "guidedPrompts": {
+          "label": "가이드 프롬프트",
+          "desc": "AI가 엮은 성찰"
+        },
+        "birthChart": {
+          "label": "출생 차트",
+          "desc": "당신의 우주적 설계도"
+        }
+      },
+      "plans": {
+        "monthly": "월간",
+        "yearly": "연간",
+        "lifetime": "평생"
+      },
+      "periods": {
+        "month": "/월",
+        "year": "/년",
+        "oneTime": "일회성"
+      },
+      "badges": {
+        "bestValue": "최고의 가치",
+        "foreverAccess": "평생 이용"
+      },
+      "cta": {
+        "notAvailable": "프리미엄을 사용할 수 없습니다",
+        "getLifetime": "평생 이용권 구매",
+        "subscribeNow": "지금 구독하기"
+      },
+      "restorePurchase": "구매 복원",
+      "errors": {
+        "loadFailed": "가격을 불러올 수 없습니다. 연결 상태를 확인해 주세요.",
+        "notAvailableTitle": "프리미엄을 사용할 수 없습니다",
+        "notAvailableDesc": "RevenueCat 오퍼링이 설정되어야 합니다. 설정이 완료될 때까지 구매가 비활성화됩니다."
+      },
+      "disclaimers": {
+        "lifetime": "일회성 결제. 반복 청구 없음. 모든 프리미엄 기능을 평생 이용할 수 있습니다.",
+        "subscription": "언제든지 해지할 수 있습니다. 결제는 계정으로 청구됩니다. 현재 기간 종료 24시간 전까지 해지하지 않으면 구독이 자동 갱신됩니다."
+      },
+      "toasts": {
+        "productsUnavailable": "상품을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.",
+        "welcome": "프리미엄에 오신 것을 환영합니다!",
+        "purchaseFailed": "구매에 실패했습니다",
+        "purchasesRestored": "구매가 복원되었습니다!",
+        "noPurchases": "구매 내역을 찾을 수 없습니다",
+        "restoreFailed": "복원에 실패했습니다"
+      }
+    },
+    "gate": {
+      "watchAdToTry": "광고 보고 체험하기",
+      "unlockPremium": "프리미엄 잠금 해제"
+    },
+    "subscription": {
+      "heading": "프리미엄 활성화됨",
+      "subheading": "모든 프리미엄 기능에 완전히 접근할 수 있습니다",
+      "planTitle": "프리미엄 플랜",
+      "memberFallback": "회원",
+      "status": "상태",
+      "statusActive": "활성",
+      "billing": "결제 수단",
+      "billingGooglePlay": "Google Play",
+      "yourBenefits": "프리미엄 혜택",
+      "manageOnGooglePlay": "Google Play에서 관리",
+      "syncStatus": "구독 상태 동기화",
+      "disclaimer": "구독을 해지하거나 변경하려면 Google Play 스토어 앱 또는 웹사이트를 이용하세요. 변경 사항이 앱에 반영되기까지 몇 분 정도 걸릴 수 있습니다.",
+      "features": {
+        "adFree": "광고 없는 경험",
+        "allSpreads": "모든 타로 스프레드",
+        "unlimitedSaves": "무제한 저장",
+        "compatibility": "전체 궁합 분석",
+        "deepInterpretations": "심층 해석",
+        "guidedPrompts": "가이드 프롬프트",
+        "birthChart": "출생 차트"
+      },
+      "toasts": {
+        "verified": "구독이 확인되었습니다!",
+        "active": "구독이 활성 상태입니다",
+        "verifyFailed": "구독을 확인할 수 없습니다"
+      }
+    },
+    "watchAd": {
+      "defaultTitle": "{{feature}} 체험하기",
+      "defaultSubtitle": "짧은 광고를 시청하면 이 프리미엄 기능을 1회 사용할 수 있습니다",
+      "contexts": {
+        "extraReading": {
+          "title": "리딩 1회 더 받기",
+          "subtitle": "짧은 광고를 시청하면 오늘 타로 리딩을 1회 더 받을 수 있습니다"
+        },
+        "deepInterpretations": {
+          "title": "확장 해석 잠금 해제",
+          "subtitle": "짧은 광고를 시청하면 카드를 더 깊이 들여다볼 수 있습니다"
+        }
+      },
+      "unlocksRemaining": "오늘 남은 무료 해제: {{remaining}}/{{total}}회",
+      "watchAdToUnlock": "광고 보고 잠금 해제",
+      "usedAllUnlocks": "오늘 무료 해제 횟수를 모두 사용했습니다",
+      "comeBackTomorrow": "내일 다시 오거나 프리미엄으로 업그레이드하세요",
+      "getUnlimited": "무제한 이용권 받기",
+      "notNow": "나중에",
+      "footerDisclaimer": "프리미엄 회원은 광고 없이 모든 기능을 무제한으로 이용할 수 있습니다",
+      "toasts": {
+        "unlocked": "기능이 잠금 해제되었습니다! 무료 체험을 즐겨보세요.",
+        "notAvailable": "광고를 표시할 수 없습니다. 다시 시도해 주세요.",
+        "error": "문제가 발생했습니다. 다시 시도해 주세요."
+      }
+    }
   },
   "settings": {
     "title": "설정",
@@ -807,7 +1050,7 @@
     "exportData": "내 데이터 내보내기",
     "privacyPolicy": "개인정보 처리방침",
     "termsOfService": "서비스 이용약관",
-    "contactSupport": "지원팀 문의",
+    "contactSupport": "지원 문의",
     "version": "버전 {{v}}",
     "about": "Arcana 소개",
     "aboutText": "Arcana는 타로, 점성술, 저널링, 자기 발견을 위한 데일리 동반자예요.",
@@ -817,7 +1060,25 @@
     "dailyReminders": "일일 알림",
     "getNotified": "매일의 의식에 대한 알림 받기",
     "noTransits": "이 기간 동안의 트랜짓을 찾을 수 없습니다",
-    "chartUnavailable": "차트 데이터를 사용할 수 없습니다"
+    "chartUnavailable": "차트 데이터를 사용할 수 없습니다",
+    "birthCity": "출생지",
+    "frequentlyAskedQuestions": "자주 묻는 질문",
+    "faq": {
+      "accuracyQ": "리딩은 얼마나 정확한가요?",
+      "cancelQ": "구독을 취소할 수 있나요?",
+      "secureQ": "제 데이터는 안전한가요?"
+    },
+    "defaultLabel": "기본",
+    "disclaimerHeader": "면책 조항",
+    "disclaimerBody": "최소한의 데이터만 수집합니다. 출생 시간과 장소는 선택 사항입니다.",
+    "actionCannotBeUndone": "이 작업은 되돌릴 수 없습니다",
+    "toasts": {
+      "exportPartial": "일부 데이터를 내보내지 못했습니다. 다시 시도해 주세요.",
+      "profileUpdated": "프로필이 업데이트되었습니다",
+      "profileUpdateFailed": "프로필 업데이트에 실패했습니다",
+      "updateFailed": "업데이트에 실패했습니다",
+      "devModeEnabled": "개발자 모드가 활성화되었습니다"
+    }
   },
   "search": {
     "placeholder": "카드, 저널, 별자리 운세 검색…",

@@ -44,7 +44,9 @@
       "save": "收藏",
       "share": "分享",
       "meaning": "牌意"
-    }
+    },
+    "xpEarned": "获得 +{{xp}} XP!",
+    "removedFromSaved": "已从收藏中移除"
   },
   "auth": {
     "welcomeBack": "欢迎回来",
@@ -513,6 +515,114 @@
       "shared": "分享成功",
       "copied": "已复制到剪贴板",
       "unableToShare": "无法分享"
+    },
+    "birthChartView": {
+      "noChartData": "暂无星盘数据",
+      "yourBigThree": "你的三大主宰",
+      "sun": "太阳",
+      "moon": "月亮",
+      "rising": "上升",
+      "planetInSign": "{{sign}}的{{planet}}",
+      "placements": "行星落位",
+      "houseShort": "H{{num}}",
+      "elementBalance": "元素平衡",
+      "modalityBalance": "模式平衡",
+      "keyAspects": "主要相位",
+      "strengths": "优势",
+      "blindSpots": "盲点",
+      "underStress": "压力之下",
+      "growthPath": "成长路径",
+      "inHouse": "在第{{num}}宫",
+      "atItsBest": "最佳状态",
+      "shadowSide": "阴影面",
+      "houseLabel": "第{{num}}宫",
+      "aspectMeta": "{{type}} • 容许度: {{orb}}° • {{motion}}",
+      "applying": "入相位",
+      "separating": "出相位",
+      "elements": {
+        "Fire": "火",
+        "Earth": "土",
+        "Air": "风",
+        "Water": "水"
+      }
+    },
+    "forecastView": {
+      "thisWeek": "本周",
+      "thisMonth": "本月",
+      "weeklyUnavailable": "周运势暂不可用",
+      "monthlyUnavailable": "月运势暂不可用",
+      "weeklyTheme": "周主题",
+      "keyMoments": "关键时刻",
+      "bestDaysFor": "最佳日期",
+      "monthlyOverview": "月度概览",
+      "newMoon": "新月",
+      "fullMoon": "满月",
+      "keyDates": "关键日期",
+      "oneThingThisMonth": "本月一件事",
+      "outerPlanetThemes": "外行星主题"
+    },
+    "todayForYou": {
+      "heading": "今日运势",
+      "noDailyContent": "暂无每日内容",
+      "tryAgain": "重试",
+      "moonIn": "月亮位于",
+      "houseParen": "(第{{num}}宫)",
+      "activeTransits": "当前流年",
+      "powerMove": "强势行动",
+      "doLabel": "宜",
+      "avoidLabel": "忌",
+      "miniRitual": "小仪式",
+      "journalPrompt": "日记提示",
+      "categories": {
+        "love": "爱情",
+        "career": "事业",
+        "money": "财运",
+        "energy": "能量"
+      }
+    },
+    "onboarding": {
+      "oneMoreDetail": "还差一步",
+      "needBirthLocation": "我们需要你的出生地点来计算精准的本命盘。",
+      "profileDetailsNote": "你的其他出生信息已从个人资料中保存。",
+      "dateLabel": "日期:",
+      "timeLabel": "时间:",
+      "birthLocation": "出生地点",
+      "searchCityPlaceholder": "搜索城市或城镇...",
+      "computeMyChart": "计算我的星盘",
+      "selectLocationToContinue": "请在上方选择地点以继续",
+      "chartComputationFailed": "星盘计算失败",
+      "chartComputeFailDefault": "无法计算你的本命盘。请重试或更新出生地点。",
+      "retry": "重试",
+      "changeBirthLocation": "更改出生地点",
+      "errors": {
+        "couldNotFindLocation": "无法找到你的出生地点。请在下方搜索。",
+        "couldNotAutoCompute": "无法自动计算你的星盘。请在下方确认出生地点。",
+        "couldNotCompute": "无法计算你的星盘。请尝试其他地点。"
+      },
+      "computeSteps": {
+        "planetaryPositions": "正在计算行星位置...",
+        "houseCusps": "正在计算宫位起点...",
+        "aspects": "正在分析相位...",
+        "preparing": "正在准备你的星盘..."
+      }
+    },
+    "exploreView": {
+      "tabs": {
+        "transits": "流年",
+        "houses": "宫位",
+        "aspects": "相位"
+      },
+      "filterAll": "全部",
+      "transitArrow": "{{from}} → {{to}}",
+      "noPlanetsHere": "此宫无行星",
+      "aspectFilters": {
+        "all": "全部",
+        "harmonious": "和谐",
+        "challenging": "挑战",
+        "conjunctions": "合相"
+      },
+      "noAspectsMatch": "没有匹配此筛选条件的相位",
+      "aspectPair": "{{a}} - {{b}}"
     }
   },
   "profile": {
@@ -743,7 +853,140 @@
     "startFreeTrial": "开始免费试用",
     "restorePurchases": "恢复购买",
     "termsNotice": "自动续费,可随时取消。",
-    "activeUntil": "有效期至 {{date}}"
+    "activeUntil": "有效期至 {{date}}",
+    "badge": "高级版",
+    "paywall": {
+      "heading": "解锁完整牌组",
+      "subheading": "更深度的牌阵、无限保存、合盘洞察等等",
+      "featureRequires": "{{feature}}需要高级版",
+      "whatYouUnlock": "你将解锁",
+      "loadingPrices": "正在加载价格...",
+      "unlocks": {
+        "adFree": {
+          "label": "无广告体验",
+          "desc": "纯粹专注,毫无打扰"
+        },
+        "allSpreads": {
+          "label": "全部塔罗牌阵",
+          "desc": "凯尔特十字、三张牌阵等"
+        },
+        "unlimitedSaves": {
+          "label": "无限保存",
+          "desc": "永久保留每一份洞察"
+        },
+        "compatibility": {
+          "label": "完整合盘",
+          "desc": "深入分析伴侣关系"
+        },
+        "deepInterpretations": {
+          "label": "深度解读",
+          "desc": "量身定制的指引"
+        },
+        "guidedPrompts": {
+          "label": "引导式提示",
+          "desc": "AI 精心打造的内省"
+        },
+        "birthChart": {
+          "label": "本命盘",
+          "desc": "你的宇宙蓝图"
+        }
+      },
+      "plans": {
+        "monthly": "月度",
+        "yearly": "年度",
+        "lifetime": "终身"
+      },
+      "periods": {
+        "month": "/月",
+        "year": "/年",
+        "oneTime": "一次性"
+      },
+      "badges": {
+        "bestValue": "最超值",
+        "foreverAccess": "永久使用"
+      },
+      "cta": {
+        "notAvailable": "高级版暂不可用",
+        "getLifetime": "获取终身权限",
+        "subscribeNow": "立即订阅"
+      },
+      "restorePurchase": "恢复购买",
+      "errors": {
+        "loadFailed": "无法加载价格,请检查网络连接。",
+        "notAvailableTitle": "高级版暂不可用",
+        "notAvailableDesc": "RevenueCat 产品尚未配置,购买将暂时停用,直到配置完成。"
+      },
+      "disclaimers": {
+        "lifetime": "一次性付款,无自动续费。永久使用所有高级功能。",
+        "subscription": "可随时取消。费用将从你的账户扣除。除非在当前周期结束前至少24小时取消,否则订阅将自动续订。"
+      },
+      "toasts": {
+        "productsUnavailable": "产品暂不可用,请稍后再试。",
+        "welcome": "欢迎加入高级版!",
+        "purchaseFailed": "购买失败",
+        "purchasesRestored": "已恢复购买!",
+        "noPurchases": "未找到购买记录",
+        "restoreFailed": "恢复失败"
+      }
+    },
+    "gate": {
+      "watchAdToTry": "观看广告试用",
+      "unlockPremium": "解锁高级版"
+    },
+    "subscription": {
+      "heading": "高级版已激活",
+      "subheading": "你拥有所有高级功能的完整权限",
+      "planTitle": "高级版方案",
+      "memberFallback": "会员",
+      "status": "状态",
+      "statusActive": "已激活",
+      "billing": "付款方式",
+      "billingGooglePlay": "Google Play",
+      "yourBenefits": "你的高级权益",
+      "manageOnGooglePlay": "在 Google Play 管理",
+      "syncStatus": "同步订阅状态",
+      "disclaimer": "如需取消或修改订阅,请使用 Google Play 商店应用或网页。变更可能需要几分钟才会在应用中生效。",
+      "features": {
+        "adFree": "无广告体验",
+        "allSpreads": "全部塔罗牌阵",
+        "unlimitedSaves": "无限保存",
+        "compatibility": "完整合盘",
+        "deepInterpretations": "深度解读",
+        "guidedPrompts": "引导式提示",
+        "birthChart": "本命盘"
+      },
+      "toasts": {
+        "verified": "订阅已验证!",
+        "active": "订阅处于激活状态",
+        "verifyFailed": "无法验证订阅"
+      }
+    },
+    "watchAd": {
+      "defaultTitle": "试用{{feature}}",
+      "defaultSubtitle": "观看一则短广告即可解锁此高级功能一次",
+      "contexts": {
+        "extraReading": {
+          "title": "获取额外一次解读",
+          "subtitle": "观看一则短广告,今日再解锁一次塔罗解读"
+        },
+        "deepInterpretations": {
+          "title": "解锁扩展解读",
+          "subtitle": "观看一则短广告,获得更深入的牌面解读"
+        }
+      },
+      "unlocksRemaining": "今日剩余免费解锁次数:{{remaining}}/{{total}}",
+      "watchAdToUnlock": "观看广告解锁",
+      "usedAllUnlocks": "今日免费解锁次数已用完",
+      "comeBackTomorrow": "明天再来或升级到高级版",
+      "getUnlimited": "获取无限访问",
+      "notNow": "暂不",
+      "footerDisclaimer": "高级会员可无广告无限制使用全部功能",
+      "toasts": {
+        "unlocked": "功能已解锁!享受你的免费试用。",
+        "notAvailable": "广告暂不可用,请稍后再试。",
+        "error": "出错了,请稍后再试。"
+      }
+    }
   },
   "settings": {
     "title": "设置",
@@ -817,7 +1060,25 @@
     "dailyReminders": "每日提醒",
     "getNotified": "接收每日仪式的提醒",
     "noTransits": "此期间未找到流年",
-    "chartUnavailable": "星盘数据不可用"
+    "chartUnavailable": "星盘数据不可用",
+    "birthCity": "出生地",
+    "frequentlyAskedQuestions": "常见问题",
+    "faq": {
+      "accuracyQ": "解读的准确度如何?",
+      "cancelQ": "我可以取消订阅吗?",
+      "secureQ": "我的数据安全吗?"
+    },
+    "defaultLabel": "默认",
+    "disclaimerHeader": "免责声明",
+    "disclaimerBody": "我们仅收集最少的数据。出生时间和地点是可选的。",
+    "actionCannotBeUndone": "此操作无法撤消",
+    "toasts": {
+      "exportPartial": "部分数据无法导出。请重试。",
+      "profileUpdated": "个人资料已更新",
+      "profileUpdateFailed": "更新个人资料失败",
+      "updateFailed": "更新失败",
+      "devModeEnabled": "已启用开发者模式"
+    }
   },
   "search": {
     "placeholder": "搜索卡牌、日记、运势…",

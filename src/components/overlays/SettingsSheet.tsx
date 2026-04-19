@@ -268,7 +268,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       // Check for query errors
       const errors = [profileRes.error, journalRes.error, readingsRes.error, quizRes.error].filter(Boolean);
       if (errors.length > 0) {
-        toast('Some data could not be exported. Please try again.', 'error');
+        toast(tAppSettings('settings.toasts.exportPartial'), 'error');
       }
 
       const exportData = {
@@ -367,12 +367,12 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       if (error) {
         toast(error.message, 'error');
       } else {
-        toast('Profile updated', 'success');
+        toast(tAppSettings('settings.toasts.profileUpdated'), 'success');
         await refreshProfile();
         setActiveSheet('main');
       }
     } catch {
-      toast('Failed to update profile', 'error');
+      toast(tAppSettings('settings.toasts.profileUpdateFailed'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -384,7 +384,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         notificationsEnabled: !profile?.notificationsEnabled,
       });
       if (error) {
-        toast('Failed to update', 'error');
+        toast(tAppSettings('settings.toasts.updateFailed'), 'error');
       } else {
         await refreshProfile();
         toast(profile?.notificationsEnabled ? tAppSettings('settings.menu.notificationsDisabled') : tAppSettings('settings.menu.notificationsEnabled'), 'success');
@@ -487,7 +487,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           <div className="p-4 bg-mystic-800/40 rounded-xl border border-mystic-700/50 space-y-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-gold" />
-              <span className="text-sm font-medium text-mystic-200">Birth City</span>
+              <span className="text-sm font-medium text-mystic-200">{tAppSettings('settings.birthCity')}</span>
               <span className="text-xs text-mystic-500">(optional)</span>
             </div>
 
@@ -667,7 +667,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 <Mail className="w-5 h-5 text-cosmic-blue" />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-mystic-200">Contact Support</p>
+                <p className="font-medium text-mystic-200">{tAppSettings('settings.contactSupport')}</p>
                 <p className="text-sm text-mystic-500">support@arcana.app</p>
               </div>
               <ExternalLink className="w-4 h-4 text-mystic-500" />
@@ -675,24 +675,24 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           </a>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-mystic-300">Frequently Asked Questions</h3>
+            <h3 className="text-sm font-medium text-mystic-300">{tAppSettings('settings.frequentlyAskedQuestions')}</h3>
 
             <div className="p-4 bg-mystic-800/30 rounded-xl">
-              <p className="text-sm font-medium text-mystic-200">How accurate are the readings?</p>
+              <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.accuracyQ')}</p>
               <p className="text-sm text-mystic-500 mt-2">
                 Tarot readings are meant for reflection and guidance, not prediction. They help you explore your thoughts and feelings.
               </p>
             </div>
 
             <div className="p-4 bg-mystic-800/30 rounded-xl">
-              <p className="text-sm font-medium text-mystic-200">Can I cancel my subscription?</p>
+              <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.cancelQ')}</p>
               <p className="text-sm text-mystic-500 mt-2">
                 Yes, you can cancel anytime from your device's app store subscription settings.
               </p>
             </div>
 
             <div className="p-4 bg-mystic-800/30 rounded-xl">
-              <p className="text-sm font-medium text-mystic-200">Is my data secure?</p>
+              <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.secureQ')}</p>
               <p className="text-sm text-mystic-500 mt-2">
                 Yes, all your data is encrypted and stored securely. We never share or sell your information.
               </p>
@@ -871,7 +871,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           <div className="flex items-start gap-4 p-4 bg-coral/10 border border-coral/20 rounded-xl">
             <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-medium text-coral mb-1">This action cannot be undone</h3>
+              <h3 className="font-medium text-coral mb-1">{tAppSettings('settings.actionCannotBeUndone')}</h3>
               <p className="text-sm text-mystic-300">
                 All your data will be permanently deleted, including your profile, journal entries, tarot readings, and saved items.
               </p>
@@ -993,7 +993,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     disabled:opacity-50
                   `}
                 >
-                  <span className="text-xs text-mystic-400 text-center px-1">Default</span>
+                  <span className="text-xs text-mystic-400 text-center px-1">{tAppSettings('settings.defaultLabel')}</span>
                   {!profile?.card_back_url && (
                     <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
                       <Check className="w-3 h-3 text-mystic-900" />
@@ -1074,7 +1074,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <ImageIcon className="w-5 h-5 text-mystic-400" />
-                    <span className="text-xs text-mystic-400">Default</span>
+                    <span className="text-xs text-mystic-400">{tAppSettings('settings.defaultLabel')}</span>
                   </div>
                   {!profile?.background_url && (
                     <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
@@ -1125,7 +1125,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           <div className="flex items-start gap-3">
             <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-mystic-300 mb-1">Disclaimer</h4>
+              <h4 className="text-sm font-medium text-mystic-300 mb-1">{tAppSettings('settings.disclaimerHeader')}</h4>
               <p className="text-xs text-mystic-500 leading-relaxed">
                 This app is for reflection and entertainment. It does not provide medical, legal, or financial advice.
               </p>
@@ -1134,7 +1134,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         </div>
 
         <div className="text-xs text-mystic-600 space-y-1">
-          <p>We collect minimal data. Birth time and location are optional.</p>
+          <p>{tAppSettings('settings.disclaimerBody')}</p>
         </div>
 
         <div className="pt-4 border-t border-mystic-800">
@@ -1143,7 +1143,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               setVersionTapCount(prev => {
                 const next = prev + 1;
                 if (next === 5) {
-                  toast('Developer mode enabled', 'info');
+                  toast(tAppSettings('settings.toasts.devModeEnabled'), 'info');
                 }
                 return next;
               });

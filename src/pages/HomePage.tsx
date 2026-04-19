@@ -194,7 +194,7 @@ export function HomePage() {
       const xpResult = await awardXP(user.id, 'ritual_complete');
 
       if (xpResult) {
-        toast(`+${xpResult.xp_earned} XP earned!`, 'success');
+        toast(t('home.xpEarned', { xp: xpResult.xp_earned }), 'success');
 
         if (xpResult.level_up) {
           triggerLevelUp({
@@ -242,7 +242,7 @@ export function HomePage() {
         .eq('highlight_type', 'tarot');
       setTarotSaved(false);
       setSavedToday(prev => prev.filter(s => s.highlightType !== 'tarot'));
-      toast('Removed from saved', 'info');
+      toast(t('home.removedFromSaved'), 'info');
     } else {
       await supabase.from('saved_highlights').insert({
         user_id: user.id,

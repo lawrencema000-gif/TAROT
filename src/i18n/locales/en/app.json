@@ -44,7 +44,9 @@
       "save": "Save",
       "share": "Share",
       "meaning": "Meaning"
-    }
+    },
+    "xpEarned": "+{{xp}} XP earned!",
+    "removedFromSaved": "Removed from saved"
   },
   "auth": {
     "welcomeBack": "Welcome Back",
@@ -513,6 +515,114 @@
       "shared": "Shared successfully",
       "copied": "Copied to clipboard",
       "unableToShare": "Unable to share"
+    },
+    "birthChartView": {
+      "noChartData": "No chart data available",
+      "yourBigThree": "Your Big Three",
+      "sun": "Sun",
+      "moon": "Moon",
+      "rising": "Rising",
+      "planetInSign": "{{planet}} in {{sign}}",
+      "placements": "Placements",
+      "houseShort": "H{{num}}",
+      "elementBalance": "Element Balance",
+      "modalityBalance": "Modality Balance",
+      "keyAspects": "Key Aspects",
+      "strengths": "Strengths",
+      "blindSpots": "Blind Spots",
+      "underStress": "Under Stress",
+      "growthPath": "Growth Path",
+      "inHouse": "In House {{num}}",
+      "atItsBest": "At Its Best",
+      "shadowSide": "Shadow Side",
+      "houseLabel": "House {{num}}",
+      "aspectMeta": "{{type}} • Orb: {{orb}}° • {{motion}}",
+      "applying": "Applying",
+      "separating": "Separating",
+      "elements": {
+        "Fire": "Fire",
+        "Earth": "Earth",
+        "Air": "Air",
+        "Water": "Water"
+      }
+    },
+    "forecastView": {
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "weeklyUnavailable": "Weekly forecast unavailable",
+      "monthlyUnavailable": "Monthly forecast unavailable",
+      "weeklyTheme": "Weekly Theme",
+      "keyMoments": "Key Moments",
+      "bestDaysFor": "Best Days For",
+      "monthlyOverview": "Monthly Overview",
+      "newMoon": "New Moon",
+      "fullMoon": "Full Moon",
+      "keyDates": "Key Dates",
+      "oneThingThisMonth": "One Thing This Month",
+      "outerPlanetThemes": "Outer Planet Themes"
+    },
+    "todayForYou": {
+      "heading": "Today For You",
+      "noDailyContent": "No daily content available",
+      "tryAgain": "Try Again",
+      "moonIn": "Moon in",
+      "houseParen": "(House {{num}})",
+      "activeTransits": "Active Transits",
+      "powerMove": "Power Move",
+      "doLabel": "Do",
+      "avoidLabel": "Avoid",
+      "miniRitual": "Mini Ritual",
+      "journalPrompt": "Journal Prompt",
+      "categories": {
+        "love": "Love",
+        "career": "Career",
+        "money": "Money",
+        "energy": "Energy"
+      }
+    },
+    "onboarding": {
+      "oneMoreDetail": "One More Detail",
+      "needBirthLocation": "We need your birth location to compute an accurate natal chart.",
+      "profileDetailsNote": "Your other birth details are already saved from your profile.",
+      "dateLabel": "Date:",
+      "timeLabel": "Time:",
+      "birthLocation": "Birth Location",
+      "searchCityPlaceholder": "Search city or town...",
+      "computeMyChart": "Compute My Chart",
+      "selectLocationToContinue": "Select a location above to continue",
+      "chartComputationFailed": "Chart Computation Failed",
+      "chartComputeFailDefault": "We could not compute your natal chart. Please try again or update your birth location.",
+      "retry": "Retry",
+      "changeBirthLocation": "Change Birth Location",
+      "errors": {
+        "couldNotFindLocation": "Could not find your birth location. Please search below.",
+        "couldNotAutoCompute": "Could not compute your chart automatically. Please confirm your birth location below.",
+        "couldNotCompute": "Could not compute your chart. Please try a different location."
+      },
+      "computeSteps": {
+        "planetaryPositions": "Calculating planetary positions...",
+        "houseCusps": "Computing house cusps...",
+        "aspects": "Analyzing aspects...",
+        "preparing": "Preparing your chart..."
+      }
+    },
+    "exploreView": {
+      "tabs": {
+        "transits": "Transits",
+        "houses": "Houses",
+        "aspects": "Aspects"
+      },
+      "filterAll": "All",
+      "transitArrow": "{{from}} to {{to}}",
+      "noPlanetsHere": "No planets here",
+      "aspectFilters": {
+        "all": "All",
+        "harmonious": "Harmonious",
+        "challenging": "Challenging",
+        "conjunctions": "Conjunctions"
+      },
+      "noAspectsMatch": "No aspects match this filter",
+      "aspectPair": "{{a}} - {{b}}"
     }
   },
   "profile": {
@@ -743,7 +853,140 @@
     "startFreeTrial": "Start free trial",
     "restorePurchases": "Restore purchases",
     "termsNotice": "Recurring charge. Cancel anytime.",
-    "activeUntil": "Active until {{date}}"
+    "activeUntil": "Active until {{date}}",
+    "badge": "Premium",
+    "paywall": {
+      "heading": "Unlock the Full Deck",
+      "subheading": "Deeper spreads, unlimited saves, compatibility insights & more",
+      "featureRequires": "{{feature}} requires Premium",
+      "whatYouUnlock": "What You Unlock",
+      "loadingPrices": "Loading prices...",
+      "unlocks": {
+        "adFree": {
+          "label": "Ad-Free Experience",
+          "desc": "No interruptions, pure focus"
+        },
+        "allSpreads": {
+          "label": "All Tarot Spreads",
+          "desc": "Celtic Cross, 3-Card & more"
+        },
+        "unlimitedSaves": {
+          "label": "Unlimited Saves",
+          "desc": "Keep every insight forever"
+        },
+        "compatibility": {
+          "label": "Full Compatibility",
+          "desc": "Deep partner analysis"
+        },
+        "deepInterpretations": {
+          "label": "Deep Interpretations",
+          "desc": "Personalized guidance"
+        },
+        "guidedPrompts": {
+          "label": "Guided Prompts",
+          "desc": "AI-crafted reflections"
+        },
+        "birthChart": {
+          "label": "Birth Chart",
+          "desc": "Your cosmic blueprint"
+        }
+      },
+      "plans": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "lifetime": "Lifetime"
+      },
+      "periods": {
+        "month": "/month",
+        "year": "/year",
+        "oneTime": "one-time"
+      },
+      "badges": {
+        "bestValue": "Best Value",
+        "foreverAccess": "Forever Access"
+      },
+      "cta": {
+        "notAvailable": "Premium Not Available",
+        "getLifetime": "Get Lifetime Access",
+        "subscribeNow": "Subscribe Now"
+      },
+      "restorePurchase": "Restore Purchase",
+      "errors": {
+        "loadFailed": "Unable to load pricing. Please check your connection.",
+        "notAvailableTitle": "Premium Not Available",
+        "notAvailableDesc": "RevenueCat offerings need to be configured. Purchases are disabled until setup is complete."
+      },
+      "disclaimers": {
+        "lifetime": "One-time purchase. No recurring charges. Lifetime access to all premium features.",
+        "subscription": "Cancel anytime. Payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period."
+      },
+      "toasts": {
+        "productsUnavailable": "Products not available. Please try again later.",
+        "welcome": "Welcome to Premium!",
+        "purchaseFailed": "Purchase failed",
+        "purchasesRestored": "Purchases restored!",
+        "noPurchases": "No purchases found",
+        "restoreFailed": "Restore failed"
+      }
+    },
+    "gate": {
+      "watchAdToTry": "Watch Ad to Try",
+      "unlockPremium": "Unlock Premium"
+    },
+    "subscription": {
+      "heading": "Premium Active",
+      "subheading": "You have full access to all premium features",
+      "planTitle": "Premium Plan",
+      "memberFallback": "Member",
+      "status": "Status",
+      "statusActive": "Active",
+      "billing": "Billing",
+      "billingGooglePlay": "Google Play",
+      "yourBenefits": "Your Premium Benefits",
+      "manageOnGooglePlay": "Manage on Google Play",
+      "syncStatus": "Sync Subscription Status",
+      "disclaimer": "To cancel or modify your subscription, use the Google Play Store app or website. Changes may take a few minutes to reflect in the app.",
+      "features": {
+        "adFree": "Ad-Free Experience",
+        "allSpreads": "All Tarot Spreads",
+        "unlimitedSaves": "Unlimited Saves",
+        "compatibility": "Full Compatibility",
+        "deepInterpretations": "Deep Interpretations",
+        "guidedPrompts": "Guided Prompts",
+        "birthChart": "Birth Chart"
+      },
+      "toasts": {
+        "verified": "Subscription verified!",
+        "active": "Subscription is active",
+        "verifyFailed": "Could not verify subscription"
+      }
+    },
+    "watchAd": {
+      "defaultTitle": "Try {{feature}}",
+      "defaultSubtitle": "Watch a short ad to unlock this premium feature for one use",
+      "contexts": {
+        "extraReading": {
+          "title": "Get an Extra Reading",
+          "subtitle": "Watch a short ad to unlock one more tarot reading today"
+        },
+        "deepInterpretations": {
+          "title": "Unlock Extended Interpretation",
+          "subtitle": "Watch a short ad for a deeper look into your cards"
+        }
+      },
+      "unlocksRemaining": "{{remaining}} of {{total}} free unlocks remaining today",
+      "watchAdToUnlock": "Watch Ad to Unlock",
+      "usedAllUnlocks": "You've used all free unlocks for today",
+      "comeBackTomorrow": "Come back tomorrow or upgrade to Premium",
+      "getUnlimited": "Get Unlimited Access",
+      "notNow": "Not now",
+      "footerDisclaimer": "Premium members get unlimited access to all features with no ads",
+      "toasts": {
+        "unlocked": "Feature unlocked! Enjoy your free trial.",
+        "notAvailable": "Ad not available. Please try again.",
+        "error": "Something went wrong. Please try again."
+      }
+    }
   },
   "settings": {
     "title": "Settings",
@@ -807,7 +1050,7 @@
     "exportData": "Export my data",
     "privacyPolicy": "Privacy policy",
     "termsOfService": "Terms of service",
-    "contactSupport": "Contact support",
+    "contactSupport": "Contact Support",
     "version": "Version {{v}}",
     "about": "About Arcana",
     "aboutText": "Arcana is your daily companion for tarot, astrology, journaling, and self-discovery.",
@@ -817,7 +1060,25 @@
     "dailyReminders": "Daily Reminders",
     "getNotified": "Get notified for your daily ritual",
     "noTransits": "No transits found for this period",
-    "chartUnavailable": "Chart data not available"
+    "chartUnavailable": "Chart data not available",
+    "birthCity": "Birth City",
+    "frequentlyAskedQuestions": "Frequently Asked Questions",
+    "faq": {
+      "accuracyQ": "How accurate are the readings?",
+      "cancelQ": "Can I cancel my subscription?",
+      "secureQ": "Is my data secure?"
+    },
+    "defaultLabel": "Default",
+    "disclaimerHeader": "Disclaimer",
+    "disclaimerBody": "We collect minimal data. Birth time and location are optional.",
+    "actionCannotBeUndone": "This action cannot be undone",
+    "toasts": {
+      "exportPartial": "Some data could not be exported. Please try again.",
+      "profileUpdated": "Profile updated",
+      "profileUpdateFailed": "Failed to update profile",
+      "updateFailed": "Failed to update",
+      "devModeEnabled": "Developer mode enabled"
+    }
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",

@@ -43,3 +43,11 @@ content_path = "./supabase/email-templates/change-email.html"
 [auth.email.template.invite]
 subject = "You're invited to Arcana / Arcanaへの招待 / Arcana 초대 / Arcana邀请"
 content_path = "./supabase/email-templates/invite.html"
+
+# Edge functions that must be reachable before a user signs in.
+# The function bodies enforce their own rate limiting / validation.
+[functions.ad-config]
+verify_jwt = false
+
+[functions.astrology-geocode]
+verify_jwt = false

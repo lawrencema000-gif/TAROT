@@ -1,5 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  callerKey,
+  checkRateLimit,
+  rateLimitHeaders,
+} from "../_shared/rate-limit.ts";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -226,10 +231,13 @@ async function callGemini(prompt: string): Promise<string> {
   const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
       signal: controller.signal,
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
@@ -312,6 +320,24 @@ Deno.serve(async (req: Request) => {
         {
           status: 401,
           headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // --- Burst rate limit: 5 requests / 60s per user, in-memory. ---
+    // Layered *before* DB queries so hammering the endpoint can't spam the
+    // database. The daily limit below is the durable per-user quota.
+    const burst = checkRateLimit(callerKey(req, user.id), 5, 60_000);
+    if (!burst.allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests" }),
+        {
+          status: 429,
+          headers: {
+            ...getCorsHeaders(req),
+            ...rateLimitHeaders(burst),
+            "Content-Type": "application/json",
+          },
         }
       );
     }

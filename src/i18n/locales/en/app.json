@@ -225,6 +225,39 @@
     "previous": "Previous",
     "submit": "See results",
     "answerPlaceholder": "Choose your answer",
+    "likert": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    },
+    "definitions": {
+      "mbti": {
+        "title": "Personality Type Assessment",
+        "description": "This assessment explores the way you naturally process information, make decisions, and move through the world. Instead of judging personality as right or wrong, it highlights your default strengths, your blind spots under stress, and what you tend to need from relationships and environments to thrive."
+      },
+      "loveLanguage": {
+        "title": "Love Language Assessment",
+        "description": "This assessment helps you discover how you most naturally give and receive love. Many relationship conflicts are not a lack of love — they are a mismatch of expression. You will receive a primary and secondary love language with clear ways to ask for what you need."
+      },
+      "enneagram": {
+        "title": "Enneagram Type Assessment",
+        "description": "This assessment identifies your core motivation and the emotional pattern that drives your choices. You will discover your primary type, your wing, growth directions, and stress signatures."
+      },
+      "bigfive": {
+        "title": "Big Five Assessment",
+        "description": "This assessment measures five core personality dimensions: openness, conscientiousness, extraversion, agreeableness, and emotional stability. The most research-validated personality framework."
+      },
+      "attachment": {
+        "title": "Attachment Style Assessment",
+        "description": "This assessment reveals how you form and maintain close bonds. You will identify your default attachment pattern in relationships and learn strategies for earning secure attachment."
+      },
+      "mood": {
+        "title": "Mood Check-In",
+        "description": "A short daily check-in to track how you are feeling and what your emotional needs are today."
+      }
+    },
     "types": {
       "mbti": "MBTI",
       "enneagram": "Enneagram",

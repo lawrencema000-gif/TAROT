@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getLocale } from '../i18n/config';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
@@ -34,11 +35,13 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
   const headers = await getAuthHeaders();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
+  // Always include the current locale so astrology functions can localize content
+  const payload = { ...(body ?? {}), locale: getLocale() };
   try {
     const res = await fetch(`${API_BASE}/${name}`, {
       method: 'POST',
       headers,
-      body: body ? JSON.stringify(body) : JSON.stringify({}),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
     if (!res.ok) {
@@ -58,7 +61,7 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
             const retry = await fetch(`${API_BASE}/${name}`, {
               method: 'POST',
               headers: retryHeaders,
-              body: body ? JSON.stringify(body) : JSON.stringify({}),
+              body: JSON.stringify(payload),
               signal: controller2.signal,
             });
             if (!retry.ok) {

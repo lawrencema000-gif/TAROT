@@ -87,7 +87,7 @@ class NativeBillingService implements BillingService {
           appUserID: userId,
         });
         this.initialized = true;
-        console.log('[RevenueCat] Initialized with user ID:', userId);
+        if (import.meta.env.DEV) console.log('[RevenueCat] Initialized with user ID:', userId);
         return true;
       }
 
@@ -106,7 +106,7 @@ class NativeBillingService implements BillingService {
       this.packages = [];
       if (this.initialized) {
         await Purchases.logIn({ appUserID: userId });
-        console.log('[RevenueCat] User ID set:', userId);
+        if (import.meta.env.DEV) console.log('[RevenueCat] User ID set:', userId);
       }
     } catch (error) {
       console.error('[RevenueCat] Failed to set user ID:', error);

@@ -1,6 +1,21 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
+import {
+  normalizeLocale,
+  SIGN_NAMES,
+  THEMES as LTHEMES,
+  SUMMARIES as LSUMMARIES,
+  CATEGORIES as LCATEGORIES,
+  DO_LISTS as LDO_LISTS,
+  AVOID_LISTS as LAVOID_LISTS,
+  POWER_MOVES as LPOWER_MOVES,
+  RITUALS as LRITUALS,
+  JOURNAL_PROMPTS as LJOURNAL_PROMPTS,
+  buildAspectBrief,
+  type Locale,
+  type Element as LElement,
+} from "../_shared/astrology-content.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -303,10 +318,12 @@ Deno.serve(async (req: Request) => {
 
     let requestDate: string | undefined;
     let timezone: string | undefined;
+    let locale: Locale = "en";
     try {
       const body = await req.json();
       requestDate = body.date;
       timezone = body.timezone;
+      locale = normalizeLocale(body.locale);
     } catch { /* empty body is fine */ }
 
     let today: string;
@@ -329,12 +346,14 @@ Deno.serve(async (req: Request) => {
       today = new Date().toISOString().split("T")[0];
     }
 
+    // Include locale in the cache type key so switching language re-generates
+    const cacheType = locale === "en" ? "daily" : `daily:${locale}`;
     const { data: cached } = await supabase
       .from("astrology_horoscope_cache")
       .select("content_json")
       .eq("user_id", user.id)
       .eq("date", today)
-      .eq("type", "daily")
+      .eq("type", cacheType)
       .maybeSingle();
 
     if (cached?.content_json && Object.keys(cached.content_json).length > 0) {
@@ -378,38 +397,49 @@ Deno.serve(async (req: Request) => {
     const hits = findTransitHits(transitPlanets, natalPlanets);
 
     const sunSign = bigThree?.sun?.sign || "Aries";
-    const element = SIGN_ELEMENTS[sunSign] || "Fire";
+    const element = (SIGN_ELEMENTS[sunSign] || "Fire") as LElement;
 
     const rng = seededRandom(dateSeed(today, sunSign.charCodeAt(0)));
 
-    const theme = pick(THEMES[element], rng);
-    const summary = pick(SUMMARIES[element], rng);
+    // Locale-specific content arrays — falls back to English gracefully.
+    const themesForEl = LTHEMES[locale][element];
+    const summariesForEl = LSUMMARIES[locale][element];
+    const categoriesForLoc = LCATEGORIES[locale];
+    const doForEl = LDO_LISTS[locale][element];
+    const avoidForEl = LAVOID_LISTS[locale][element];
+    const powerForEl = LPOWER_MOVES[locale][element];
+    const ritualsForEl = LRITUALS[locale][element];
+    const promptsForEl = LJOURNAL_PROMPTS[locale][element];
+
+    const theme = pick(themesForEl, rng);
+    const summary = pick(summariesForEl, rng);
 
     const transitHighlights = hits.map((h) => ({
       planet: h.planet,
       aspect: h.aspect,
       natalPlanet: h.natalPlanet,
-      brief: getAspectBrief(h.planet, h.aspect, h.natalPlanet),
+      brief: buildAspectBrief(locale, h.planet, h.aspect, h.natalPlanet),
     }));
 
     const categories = {
-      love: pick(CATEGORY_TEMPLATES.love[element], rng),
-      career: pick(CATEGORY_TEMPLATES.career[element], rng),
-      money: pick(CATEGORY_TEMPLATES.money[element], rng),
-      energy: pick(CATEGORY_TEMPLATES.energy[element], rng),
+      love: pick(categoriesForLoc.love[element], rng),
+      career: pick(categoriesForLoc.career[element], rng),
+      money: pick(categoriesForLoc.money[element], rng),
+      energy: pick(categoriesForLoc.energy[element], rng),
     };
 
-    const doList = pick(DO_LISTS[element], rng);
-    const avoidList = pick(AVOID_LISTS[element], rng);
-    const powerMove = pick(POWER_MOVES[element], rng);
-    const ritual = pick(RITUALS[element], rng);
-    const journalPrompt = pick(JOURNAL_PROMPTS[element], rng);
+    const doList = pick(doForEl, rng);
+    const avoidList = pick(avoidForEl, rng);
+    const powerMove = pick(powerForEl, rng);
+    const ritual = pick(ritualsForEl, rng);
+    const journalPrompt = pick(promptsForEl, rng);
 
     const content = {
       date: today,
       theme,
       summary,
       moonSign: moonSign.sign,
+      moonSignLocalized: SIGN_NAMES[locale][moonSign.sign] ?? moonSign.sign,
       moonHouse,
       transitHighlights,
       categories,
@@ -424,7 +454,7 @@ Deno.serve(async (req: Request) => {
       {
         user_id: user.id,
         date: today,
-        type: "daily",
+        type: cacheType,
         content_json: content,
         generated_at: new Date().toISOString(),
       },

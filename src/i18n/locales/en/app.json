@@ -1223,5 +1223,42 @@
       "level": "Level",
       "newAbilities": "New Abilities Unlocked"
     }
+  },
+  "pageTitles": {
+    "home": {
+      "title": "Today",
+      "subtitle": "Your daily ritual awaits"
+    },
+    "readings": {
+      "title": "Readings",
+      "subtitle": "Explore the cards"
+    },
+    "quizzes": {
+      "title": "Quizzes",
+      "subtitle": "Discover yourself"
+    },
+    "horoscope": {
+      "title": "Horoscope",
+      "subtitle": "Your cosmic blueprint"
+    },
+    "achievements": {
+      "title": "Achievements",
+      "subtitle": "Track your progress"
+    },
+    "journal": {
+      "title": "Journal",
+      "subtitle": "Reflect and grow"
+    },
+    "profile": {
+      "title": "Profile"
+    },
+    "blog": {
+      "title": "News",
+      "subtitle": "Insights & articles"
+    },
+    "admin": {
+      "title": "Admin",
+      "subtitle": "Manage uploads"
+    }
   }
 }

@@ -1223,5 +1223,42 @@
       "level": "레벨",
       "newAbilities": "새로운 능력 해제"
     }
+  },
+  "pageTitles": {
+    "home": {
+      "title": "오늘",
+      "subtitle": "당신의 일일 의식이 기다립니다"
+    },
+    "readings": {
+      "title": "리딩",
+      "subtitle": "카드를 탐험하세요"
+    },
+    "quizzes": {
+      "title": "퀴즈",
+      "subtitle": "자신을 발견하세요"
+    },
+    "horoscope": {
+      "title": "별자리 운세",
+      "subtitle": "당신의 우주 설계도"
+    },
+    "achievements": {
+      "title": "업적",
+      "subtitle": "진행 상황 추적"
+    },
+    "journal": {
+      "title": "저널",
+      "subtitle": "돌아보고 성장하세요"
+    },
+    "profile": {
+      "title": "프로필"
+    },
+    "blog": {
+      "title": "뉴스",
+      "subtitle": "통찰과 기사"
+    },
+    "admin": {
+      "title": "관리",
+      "subtitle": "업로드 관리"
+    }
   }
 }

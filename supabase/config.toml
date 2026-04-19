@@ -51,3 +51,41 @@ verify_jwt = false
 
 [functions.astrology-geocode]
 verify_jwt = false
+
+# Authenticated astrology endpoints: each function already calls
+# supabase.auth.getUser(token) internally. The platform gateway's default
+# verifier is HS256 only, but Supabase now issues ES256 user session tokens.
+# Disabling platform verification lets the asymmetric tokens through; the
+# function's internal getUser still enforces a real authenticated session.
+[functions.astrology-daily]
+verify_jwt = false
+
+[functions.astrology-weekly]
+verify_jwt = false
+
+[functions.astrology-monthly]
+verify_jwt = false
+
+[functions.astrology-compute-natal]
+verify_jwt = false
+
+[functions.astrology-get-chart]
+verify_jwt = false
+
+[functions.astrology-transit-calendar]
+verify_jwt = false
+
+[functions.generate-reading]
+verify_jwt = false
+
+[functions.ad-events]
+verify_jwt = false
+
+[functions.create-checkout-session]
+verify_jwt = false
+
+[functions.create-portal-session]
+verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false

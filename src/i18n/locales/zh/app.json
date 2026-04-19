@@ -1223,5 +1223,42 @@
       "level": "等级",
       "newAbilities": "新能力解锁"
     }
+  },
+  "pageTitles": {
+    "home": {
+      "title": "今日",
+      "subtitle": "你的每日仪式正等待"
+    },
+    "readings": {
+      "title": "牌阵",
+      "subtitle": "探索塔罗牌"
+    },
+    "quizzes": {
+      "title": "测试",
+      "subtitle": "发现自己"
+    },
+    "horoscope": {
+      "title": "星座运势",
+      "subtitle": "你的宇宙蓝图"
+    },
+    "achievements": {
+      "title": "成就",
+      "subtitle": "追踪你的进展"
+    },
+    "journal": {
+      "title": "日记",
+      "subtitle": "反思与成长"
+    },
+    "profile": {
+      "title": "个人资料"
+    },
+    "blog": {
+      "title": "资讯",
+      "subtitle": "洞见与文章"
+    },
+    "admin": {
+      "title": "管理",
+      "subtitle": "管理上传"
+    }
   }
 }

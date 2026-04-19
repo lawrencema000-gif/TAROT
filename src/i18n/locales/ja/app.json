@@ -1223,5 +1223,42 @@
       "level": "レベル",
       "newAbilities": "新しい能力を獲得"
     }
+  },
+  "pageTitles": {
+    "home": {
+      "title": "今日",
+      "subtitle": "日々のリチュアルが待っています"
+    },
+    "readings": {
+      "title": "リーディング",
+      "subtitle": "カードを探究する"
+    },
+    "quizzes": {
+      "title": "診断",
+      "subtitle": "自分を発見する"
+    },
+    "horoscope": {
+      "title": "星占い",
+      "subtitle": "あなたの宇宙の設計図"
+    },
+    "achievements": {
+      "title": "実績",
+      "subtitle": "進捗を記録する"
+    },
+    "journal": {
+      "title": "ジャーナル",
+      "subtitle": "振り返り、育つ"
+    },
+    "profile": {
+      "title": "プロフィール"
+    },
+    "blog": {
+      "title": "ニュース",
+      "subtitle": "洞察と記事"
+    },
+    "admin": {
+      "title": "管理",
+      "subtitle": "アップロード管理"
+    }
   }
 }

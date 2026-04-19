@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import i18n from './i18n/config';
+import { useT } from './i18n/useT';
 import { syncHreflangTags } from './i18n/hreflang';
 import { AppProvider } from './context/AppContext';
 import { useUI } from './context/UIContext';
@@ -76,17 +77,7 @@ async function initializeNativeFeatures() {
   initializeBilling().catch(() => console.log('Billing initialization skipped'));
 }
 
-const pageTitles: Record<string, { title: string; subtitle?: string }> = {
-  home: { title: 'Today', subtitle: 'Your daily ritual awaits' },
-  readings: { title: 'Readings', subtitle: 'Explore the cards' },
-  quizzes: { title: 'Quizzes', subtitle: 'Discover yourself' },
-  horoscope: { title: 'Horoscope', subtitle: 'Your cosmic blueprint' },
-  achievements: { title: 'Achievements', subtitle: 'Track your progress' },
-  journal: { title: 'Journal', subtitle: 'Reflect and grow' },
-  profile: { title: 'Profile' },
-  blog: { title: 'News', subtitle: 'Insights & articles' },
-  admin: { title: 'Admin', subtitle: 'Manage uploads' },
-};
+const PAGE_TITLE_KEYS = ['home', 'readings', 'quizzes', 'horoscope', 'achievements', 'journal', 'profile', 'blog', 'admin'] as const;
 
 function DiagnosticsSync() {
   const { session, user } = useAuth();
@@ -111,6 +102,7 @@ function DiagnosticsSync() {
 }
 
 function AppContent() {
+  const { t } = useT('app');
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   const location = useLocation();
@@ -353,7 +345,11 @@ function AppContent() {
     );
   }
 
-  const currentPage = pageTitles[activeTab] || pageTitles.home;
+  const tabKey = (PAGE_TITLE_KEYS as readonly string[]).includes(activeTab) ? activeTab : 'home';
+  const currentPage = {
+    title: t(`pageTitles.${tabKey}.title`),
+    subtitle: t(`pageTitles.${tabKey}.subtitle`, { defaultValue: '' }) || undefined,
+  };
 
   return (
     <ErrorBoundary onOpenDiagnostics={openDiagnostics}>

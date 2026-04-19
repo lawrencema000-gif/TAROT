@@ -337,6 +337,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <a href="#features" className="lp-nav-link">{t('nav.features')}</a>
             <a href="#zodiac" className="lp-nav-link">{t('nav.zodiac')}</a>
             <a href="#faq" className="lp-nav-link">{t('nav.faq')}</a>
+            <a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className="lp-nav-link">{t('common:nav.shop')}</a>
             <LanguageDropdown />
             <button onClick={onSignIn} className="lp-nav-btn">{t('common:nav.signIn')}</button>
           </div>
@@ -514,6 +515,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <div className="lp-footer-links">
               <a href="/privacy-policy.html">{t('footer.privacyPolicy')}</a>
               <a href="/blog">{t('footer.blog')}</a>
+              <a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer">{t('footer.shop')}</a>
               <a href="mailto:support@arcana.app">{t('footer.contact')}</a>
               <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">{t('footer.googlePlay')}</a>
             </div>

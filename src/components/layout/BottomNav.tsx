@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy, MoreHorizontal, X } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy, MoreHorizontal, X, ShoppingBag } from 'lucide-react';
 import { isWeb } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
 import type { Tab } from '../../types';
@@ -12,6 +12,11 @@ interface BottomNavProps {
 
 // Label here is a translation key under common:nav.* — rendered via t().
 type TabDef = { id: Tab; labelKey: string; icon: React.ElementType };
+type ExternalItem = { id: string; labelKey: string; icon: React.ElementType; externalHref: string };
+type MoreItem = TabDef | ExternalItem;
+
+const isExternal = (item: MoreItem): item is ExternalItem =>
+  (item as ExternalItem).externalHref !== undefined;
 
 const visibleTabs: TabDef[] = [
   { id: 'home', labelKey: 'nav.home', icon: Home },
@@ -25,6 +30,7 @@ const moreMenuTabs: TabDef[] = [
   { id: 'journal', labelKey: 'nav.journal', icon: BookOpen },
 ];
 
+const shopItem: ExternalItem = { id: 'shop', labelKey: 'nav.shop', icon: ShoppingBag, externalHref: 'https://yinyangguardian.com/' };
 const blogTab: TabDef = { id: 'blog', labelKey: 'nav.news', icon: Newspaper };
 const profileTab: TabDef = { id: 'profile', labelKey: 'nav.profile', icon: User };
 const adminTab: TabDef = { id: 'admin', labelKey: 'nav.admin', icon: Shield };
@@ -34,13 +40,14 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   const [moreOpen, setMoreOpen] = useState(false);
 
   // Build the list of items inside the More menu
-  const moreItems: TabDef[] = [...moreMenuTabs];
+  const moreItems: MoreItem[] = [...moreMenuTabs];
   if (isWeb()) moreItems.push(blogTab);
   moreItems.push(profileTab);
   if (isAdmin) moreItems.push(adminTab);
+  moreItems.push(shopItem);
 
-  const moreTabIds = moreItems.map(t => t.id);
-  const isMoreActive = moreTabIds.includes(activeTab);
+  const moreTabIds = moreItems.filter((item): item is TabDef => !isExternal(item)).map(t => t.id);
+  const isMoreActive = moreTabIds.includes(activeTab as Tab);
 
   const handleMoreItemClick = (tab: Tab) => {
     onTabChange(tab);
@@ -77,30 +84,53 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               <div className="grid grid-cols-3 gap-1 p-3">
                 {moreItems.map(item => {
                   const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleMoreItemClick(item.id)}
-                      className={`
+                  const external = isExternal(item);
+                  const isActive = !external && activeTab === item.id;
+                  const baseClass = `
                         flex flex-col items-center gap-2 py-4 px-2 rounded-xl
                         transition-all duration-200 touch-manipulation active:scale-95
                         ${isActive
                           ? 'bg-gold/10 text-gold'
                           : 'text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/30'
                         }
-                      `}
-                    >
-                      <div className={`
+                      `;
+                  const iconWrap = `
                         p-2.5 rounded-xl transition-all duration-200
                         ${isActive ? 'bg-gold/15 shadow-[0_0_12px_rgba(212,175,55,0.2)]' : 'bg-mystic-700/30'}
-                      `}>
+                      `;
+                  const inner = (
+                    <>
+                      <div className={iconWrap}>
                         <Icon className={`w-5 h-5 transition-all duration-200 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
                       </div>
                       <span className={`text-xs font-medium ${isActive ? 'text-gold' : ''}`}>
                         {t(item.labelKey)}
                       </span>
+                    </>
+                  );
+
+                  if (external) {
+                    return (
+                      <a
+                        key={item.id}
+                        href={item.externalHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMoreOpen(false)}
+                        className={baseClass}
+                      >
+                        {inner}
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleMoreItemClick(item.id)}
+                      className={baseClass}
+                    >
+                      {inner}
                     </button>
                   );
                 })}

@@ -1,4 +1,8 @@
 import type { ZodiacSign, EnhancedHoroscope } from '../types';
+import { getLocale, type SupportedLocale } from '../i18n/config';
+import jaHoroscopes from '../i18n/locales/ja/horoscopes.json';
+import koHoroscopes from '../i18n/locales/ko/horoscopes.json';
+import zhHoroscopes from '../i18n/locales/zh/horoscopes.json';
 
 interface HoroscopeTemplate {
   general: string[];
@@ -156,6 +160,40 @@ const templates: HoroscopeTemplate = {
   actionSteps: actionStepTemplates,
 };
 
+// English colors used as the base set; localized colors swap in at render time.
+const baseColors = ['Gold', 'Silver', 'Crimson', 'Azure', 'Emerald', 'Violet', 'Rose', 'Amber', 'Ivory', 'Obsidian'];
+
+interface HoroscopeBundle {
+  general: string[];
+  love: string[];
+  career: string[];
+  mood: string[];
+  actionSteps: string[];
+  colors: string[];
+}
+
+const HOROSCOPE_BUNDLES: Partial<Record<SupportedLocale, HoroscopeBundle>> = {
+  ja: jaHoroscopes as HoroscopeBundle,
+  ko: koHoroscopes as HoroscopeBundle,
+  zh: zhHoroscopes as HoroscopeBundle,
+};
+
+/**
+ * Pick the localized template array for the given field, falling back to
+ * English if the active locale has no bundle. Index-based selection from
+ * the seeded random means the same seed produces parallel-translated
+ * output across locales, as long as array lengths match (they do).
+ */
+function localizedTemplates(field: keyof HoroscopeTemplate): string[] {
+  const bundle = HOROSCOPE_BUNDLES[getLocale()];
+  return bundle?.[field] ?? templates[field];
+}
+
+function localizedColors(): string[] {
+  const bundle = HOROSCOPE_BUNDLES[getLocale()];
+  return bundle?.colors ?? baseColors;
+}
+
 const signTags: Record<ZodiacSign, string[]> = {
   aries: ['action', 'courage', 'initiative', 'leadership', 'energy'],
   taurus: ['stability', 'comfort', 'patience', 'sensuality', 'persistence'],
@@ -201,12 +239,15 @@ export function generateDailyHoroscope(sign: ZodiacSign, date: string): {
   const seed = dateNum + signNum;
   const random = seededRandom(seed);
 
-  const colors = ['Gold', 'Silver', 'Crimson', 'Azure', 'Emerald', 'Violet', 'Rose', 'Amber', 'Ivory', 'Obsidian'];
+  const colors = localizedColors();
+  const general = localizedTemplates('general');
+  const love = localizedTemplates('love');
+  const career = localizedTemplates('career');
 
   return {
-    general: templates.general[Math.floor(random() * templates.general.length)],
-    love: templates.love[Math.floor(random() * templates.love.length)],
-    career: templates.career[Math.floor(random() * templates.career.length)],
+    general: general[Math.floor(random() * general.length)],
+    love: love[Math.floor(random() * love.length)],
+    career: career[Math.floor(random() * career.length)],
     energy: Math.floor(random() * 5) + 1,
     luckyNumber: Math.floor(random() * 99) + 1,
     luckyColor: colors[Math.floor(random() * colors.length)],
@@ -219,7 +260,7 @@ export function generateEnhancedHoroscope(sign: ZodiacSign, date: string): Enhan
   const seed = dateNum + signNum;
   const random = seededRandom(seed);
 
-  const colors = ['Gold', 'Silver', 'Crimson', 'Azure', 'Emerald', 'Violet', 'Rose', 'Amber', 'Ivory', 'Obsidian'];
+  const colors = localizedColors();
   const dayOfWeek = new Date(date).getDay();
 
   const signTagSet = signTags[sign];
@@ -227,17 +268,23 @@ export function generateEnhancedHoroscope(sign: ZodiacSign, date: string): Enhan
   const selectedSignTags = signTagSet.slice(0, 2 + Math.floor(random() * 2));
   const selectedDayTags = dayTagSet.slice(0, 1 + Math.floor(random() * 2));
 
+  const general = localizedTemplates('general');
+  const love = localizedTemplates('love');
+  const career = localizedTemplates('career');
+  const mood = localizedTemplates('mood');
+  const actionSteps = localizedTemplates('actionSteps');
+
   return {
     sign,
     date,
-    general: templates.general[Math.floor(random() * templates.general.length)],
-    love: templates.love[Math.floor(random() * templates.love.length)],
-    career: templates.career[Math.floor(random() * templates.career.length)],
-    mood: templates.mood[Math.floor(random() * templates.mood.length)],
+    general: general[Math.floor(random() * general.length)],
+    love: love[Math.floor(random() * love.length)],
+    career: career[Math.floor(random() * career.length)],
+    mood: mood[Math.floor(random() * mood.length)],
     energy: Math.floor(random() * 5) + 1,
     luckyNumber: Math.floor(random() * 99) + 1,
     luckyColor: colors[Math.floor(random() * colors.length)],
-    actionStep: templates.actionSteps[Math.floor(random() * templates.actionSteps.length)],
+    actionStep: actionSteps[Math.floor(random() * actionSteps.length)],
     tags: [...selectedSignTags, ...selectedDayTags],
   };
 }
@@ -302,10 +349,21 @@ export const goalBasedPrompts: Record<string, string[]> = {
   ],
 };
 
+function localizedDailyPrompts(): string[] {
+  const bundle = HOROSCOPE_BUNDLES[getLocale()] as (HoroscopeBundle & { dailyPrompts?: string[] }) | undefined;
+  return bundle?.dailyPrompts ?? dailyPrompts;
+}
+
+function localizedGoalPrompts(goal: string): string[] | undefined {
+  const bundle = HOROSCOPE_BUNDLES[getLocale()] as (HoroscopeBundle & { goalBasedPrompts?: Record<string, string[]> }) | undefined;
+  return bundle?.goalBasedPrompts?.[goal] ?? goalBasedPrompts[goal];
+}
+
 export function getDailyPrompt(date: string): string {
   const dateNum = new Date(date).getTime();
   const random = seededRandom(dateNum);
-  return dailyPrompts[Math.floor(random() * dailyPrompts.length)];
+  const prompts = localizedDailyPrompts();
+  return prompts[Math.floor(random() * prompts.length)];
 }
 
 export function getPersonalizedPrompt(date: string, goals: string[]): string {
@@ -314,13 +372,14 @@ export function getPersonalizedPrompt(date: string, goals: string[]): string {
 
   if (goals.length > 0) {
     const primaryGoal = goals[Math.floor(random() * goals.length)];
-    const prompts = goalBasedPrompts[primaryGoal];
+    const prompts = localizedGoalPrompts(primaryGoal);
     if (prompts && prompts.length > 0) {
       return prompts[Math.floor(random() * prompts.length)];
     }
   }
 
-  return dailyPrompts[Math.floor(random() * dailyPrompts.length)];
+  const prompts = localizedDailyPrompts();
+  return prompts[Math.floor(random() * prompts.length)];
 }
 
 export function getHoroscopeTags(sign: ZodiacSign): string[] {

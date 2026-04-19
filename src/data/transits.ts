@@ -1,4 +1,5 @@
 import type { Planet, AspectType } from '../types/astrology';
+import { getLocalizedTransit, getLocalizedGenericTransit } from '../i18n/localizeTransit';
 
 interface TransitInterp {
   theme: string;
@@ -187,12 +188,18 @@ const aspectDurations: Record<string, Record<string, string>> = {
 };
 
 export function getTransitInterp(transit: Planet, natal: Planet, type: AspectType): TransitInterp | null {
-  return interpretations[`${transit}-${natal}-${type}`] || null;
+  return getLocalizedTransit(transit, natal, type) ?? interpretations[`${transit}-${natal}-${type}`] ?? null;
 }
 
 export function getGenericTransitInterp(transit: Planet, natal: Planet, type: AspectType): TransitInterp {
+  const localizedSpecific = getLocalizedTransit(transit, natal, type);
+  if (localizedSpecific) return localizedSpecific;
+
   const specific = interpretations[`${transit}-${natal}-${type}`];
   if (specific) return specific;
+
+  const localizedGeneric = getLocalizedGenericTransit(transit, natal, type);
+  if (localizedGeneric) return localizedGeneric;
 
   const transitTheme = transitPlanetThemes[transit] || 'planetary influence';
   const natalTheme = natalPlanetThemes[natal] || 'this area of your life';

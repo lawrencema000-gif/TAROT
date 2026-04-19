@@ -1,4 +1,5 @@
 import type { Planet, ZodiacSign } from '../types/astrology';
+import { getLocalizedPlanetInSign } from '../i18n/localizePlanetInSign';
 
 interface PlanetInSignInterp {
   core: string;
@@ -521,5 +522,7 @@ const interpretations: Record<string, PlanetInSignInterp> = {
 };
 
 export function getPlanetInSign(planet: Planet | 'Rising', sign: ZodiacSign): PlanetInSignInterp | null {
-  return interpretations[`${planet}-${sign}`] || null;
+  // The localizer only knows real Planet values; 'Rising' passes through as-is.
+  const localized = getLocalizedPlanetInSign(planet as Planet, sign);
+  return localized ?? interpretations[`${planet}-${sign}`] ?? null;
 }

@@ -1,6 +1,16 @@
 # TAROT i18n — Manual Tasks for You
 
-Everything that can be automated is **done, deployed, and live**. Below is what still requires you to touch an external dashboard or an Android build environment.
+## Status (2026-04-20)
+
+| # | Task | Status |
+|---|---|---|
+| 1 | Supabase email templates | ✅ **Done** — pushed via `supabase config push` from [`supabase/config.toml`](supabase/config.toml) |
+| 2 | Play Store listings | ✅ **Done by user** — listing already live in Play Store |
+| 3 | Android AAB rebuild + sign + upload | ⏳ **Pending (user)** — requires keystore, user will do last |
+
+---
+
+Everything else that can be automated is **done, deployed, and live**. Below is what still requires you to touch an external dashboard or an Android build environment.
 
 ---
 

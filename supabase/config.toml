@@ -1,0 +1,25 @@
+# Minimal Supabase CLI config for the TAROT project.
+# Only the email template section is declared here so `supabase config push`
+# updates the multilingual auth emails without touching any other setting.
+
+project_id = "ulzlthhkqjuohzjangcq"
+
+[auth.email.template.confirmation]
+subject = "Confirm your Arcana email / メールアドレスを確認 / 이메일 확인 / 确认您的电子邮箱"
+content_path = "./supabase/email-templates/confirm-signup.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Arcana password / パスワードリセット / 비밀번호 재설정 / 重置密码"
+content_path = "./supabase/email-templates/reset-password.html"
+
+[auth.email.template.magic_link]
+subject = "Your Arcana sign-in link / ログインリンク / 로그인 링크 / 登录链接"
+content_path = "./supabase/email-templates/magic-link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new Arcana email / 新しいメールアドレス確認 / 새 이메일 확인 / 确认新邮箱"
+content_path = "./supabase/email-templates/change-email.html"
+
+[auth.email.template.invite]
+subject = "You're invited to Arcana / Arcanaへの招待 / Arcana 초대 / Arcana邀请"
+content_path = "./supabase/email-templates/invite.html"

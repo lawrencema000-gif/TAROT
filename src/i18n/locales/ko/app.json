@@ -583,7 +583,14 @@
     "contactSupport": "지원팀 문의",
     "version": "버전 {{v}}",
     "about": "Arcana 소개",
-    "aboutText": "Arcana는 타로, 점성술, 저널링, 자기 발견을 위한 데일리 동반자예요."
+    "aboutText": "Arcana는 타로, 점성술, 저널링, 자기 발견을 위한 데일리 동반자예요.",
+    "emailNotChangeable": "이메일은 변경할 수 없습니다",
+    "typeMinChars": "2자 이상 입력하여 검색하세요",
+    "saveChanges": "변경 사항 저장",
+    "dailyReminders": "일일 알림",
+    "getNotified": "매일의 의식에 대한 알림 받기",
+    "noTransits": "이 기간 동안의 트랜짓을 찾을 수 없습니다",
+    "chartUnavailable": "차트 데이터를 사용할 수 없습니다"
   },
   "search": {
     "placeholder": "카드, 저널, 별자리 운세 검색…",

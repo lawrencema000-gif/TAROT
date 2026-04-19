@@ -583,7 +583,14 @@
     "contactSupport": "联系支持",
     "version": "版本 {{v}}",
     "about": "关于 Arcana",
-    "aboutText": "Arcana 是塔罗、占星、日记与自我发现的每日伙伴。"
+    "aboutText": "Arcana 是塔罗、占星、日记与自我发现的每日伙伴。",
+    "emailNotChangeable": "电子邮箱无法更改",
+    "typeMinChars": "请至少输入 2 个字符进行搜索",
+    "saveChanges": "保存更改",
+    "dailyReminders": "每日提醒",
+    "getNotified": "接收每日仪式的提醒",
+    "noTransits": "此期间未找到流年",
+    "chartUnavailable": "星盘数据不可用"
   },
   "search": {
     "placeholder": "搜索卡牌、日记、运势…",

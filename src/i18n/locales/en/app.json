@@ -583,7 +583,14 @@
     "contactSupport": "Contact support",
     "version": "Version {{v}}",
     "about": "About Arcana",
-    "aboutText": "Arcana is your daily companion for tarot, astrology, journaling, and self-discovery."
+    "aboutText": "Arcana is your daily companion for tarot, astrology, journaling, and self-discovery.",
+    "emailNotChangeable": "Email cannot be changed",
+    "typeMinChars": "Type at least 2 characters to search",
+    "saveChanges": "Save Changes",
+    "dailyReminders": "Daily Reminders",
+    "getNotified": "Get notified for your daily ritual",
+    "noTransits": "No transits found for this period",
+    "chartUnavailable": "Chart data not available"
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",

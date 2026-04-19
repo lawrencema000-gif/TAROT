@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trophy, Sparkles, X } from 'lucide-react';
 import { Button, Sheet } from '../ui';
+import { useT } from '../../i18n/useT';
 
 interface LevelUpCelebrationProps {
   open: boolean;
@@ -17,6 +18,7 @@ export function LevelUpCelebration({
   seekerRank,
   xpEarned,
 }: LevelUpCelebrationProps) {
+  const { t } = useT('app');
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export function LevelUpCelebration({
             )}
           </div>
 
-          <h2 className="font-display text-3xl text-gold mb-2">Level Up!</h2>
+          <h2 className="font-display text-3xl text-gold mb-2">{t('celebration.levelUp.title')}</h2>
           <p className="text-mystic-300 mb-6">
             Congratulations! You've reached a new level on your spiritual journey.
           </p>
@@ -68,7 +70,7 @@ export function LevelUpCelebration({
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="text-center">
                 <div className="text-5xl font-bold text-gold mb-1">{newLevel}</div>
-                <div className="text-sm text-mystic-400">Level</div>
+                <div className="text-sm text-mystic-400">{t('celebration.levelUp.level')}</div>
               </div>
               <div className="h-12 w-px bg-mystic-700" />
               <div className="text-center">
@@ -87,7 +89,7 @@ export function LevelUpCelebration({
 
           <div className="space-y-3 mb-6">
             <div className="bg-mystic-800/50 rounded-xl p-4">
-              <h3 className="font-medium text-mystic-100 mb-2">New Abilities Unlocked</h3>
+              <h3 className="font-medium text-mystic-100 mb-2">{t('celebration.levelUp.newAbilities')}</h3>
               <p className="text-sm text-mystic-400">
                 Continue your journey to unlock deeper insights and features
               </p>

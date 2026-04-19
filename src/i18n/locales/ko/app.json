@@ -1210,5 +1210,17 @@
       "cardsDrawn": "뽑은 카드",
       "interpretation": "해석"
     }
+  },
+  "celebration": {
+    "streak": {
+      "dedication": "놀라운 헌신입니다!",
+      "ritualComplete": "의식 완료!",
+      "keepFlowing": "우주의 에너지를 계속 유지하세요!"
+    },
+    "levelUp": {
+      "title": "레벨 업!",
+      "level": "레벨",
+      "newAbilities": "새로운 능력 해제"
+    }
   }
 }

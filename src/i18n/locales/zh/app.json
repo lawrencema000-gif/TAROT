@@ -1210,5 +1210,17 @@
       "cardsDrawn": "抽取的牌",
       "interpretation": "解读"
     }
+  },
+  "celebration": {
+    "streak": {
+      "dedication": "令人惊叹的坚持!",
+      "ritualComplete": "仪式完成!",
+      "keepFlowing": "继续保持宇宙能量的流动!"
+    },
+    "levelUp": {
+      "title": "升级!",
+      "level": "等级",
+      "newAbilities": "新能力解锁"
+    }
   }
 }

@@ -1210,5 +1210,17 @@
       "cardsDrawn": "引いたカード",
       "interpretation": "解釈"
     }
+  },
+  "celebration": {
+    "streak": {
+      "dedication": "素晴らしい継続です!",
+      "ritualComplete": "儀式完了!",
+      "keepFlowing": "このまま宇宙のエネルギーを保ちましょう!"
+    },
+    "levelUp": {
+      "title": "レベルアップ!",
+      "level": "レベル",
+      "newAbilities": "新しい能力を獲得"
+    }
   }
 }

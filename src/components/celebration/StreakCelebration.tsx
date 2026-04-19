@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Flame, Star, X } from 'lucide-react';
 import { Button } from '../ui';
+import { useT } from '../../i18n/useT';
 
 interface StreakCelebrationProps {
   streak: number;
@@ -9,6 +10,7 @@ interface StreakCelebrationProps {
 }
 
 export function StreakCelebration({ streak, open, onClose }: StreakCelebrationProps) {
+  const { t } = useT('app');
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -82,13 +84,13 @@ export function StreakCelebration({ streak, open, onClose }: StreakCelebrationPr
             {milestoneMessage ? (
               <>
                 <h2 className="font-display text-3xl text-gold">{milestoneMessage}</h2>
-                <p className="text-mystic-300">Amazing dedication to your cosmic journey!</p>
+                <p className="text-mystic-300">{t('celebration.streak.dedication')}</p>
               </>
             ) : (
               <>
-                <p className="text-mystic-400">Ritual Complete!</p>
+                <p className="text-mystic-400">{t('celebration.streak.ritualComplete')}</p>
                 <h2 className="font-display text-4xl text-gold">{streak} Day Streak</h2>
-                <p className="text-mystic-300">Keep the cosmic energy flowing!</p>
+                <p className="text-mystic-300">{t('celebration.streak.keepFlowing')}</p>
               </>
             )}
           </div>

@@ -52,7 +52,9 @@
   "zodiac": {
     "tag": "The Zodiac",
     "heading": "Written in the stars",
-    "sub": "Personalized horoscopes for all 12 signs, updated daily with cosmic precision."
+    "sub": "Personalized horoscopes for all 12 signs, updated daily with cosmic precision.",
+    "theZodiac": "The Zodiac",
+    "hoverToExplore": "Hover to explore"
   },
   "ritual": {
     "tag": "Your Daily Ritual",

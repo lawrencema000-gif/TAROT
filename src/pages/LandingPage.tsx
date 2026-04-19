@@ -218,8 +218,8 @@ function ZodiacWheel() {
           <div className="lp-chart-ci-dates">{ZODIAC[active].dates}</div>
         </>) : (<>
           <div className="lp-chart-ci-sym" style={{ color: 'var(--g)', fontSize: '1.6rem' }}>☉</div>
-          <div className="lp-chart-ci-name">The Zodiac</div>
-          <div className="lp-chart-ci-el" style={{ opacity: 0.35 }}>Hover to explore</div>
+          <div className="lp-chart-ci-name">{t('zodiac.theZodiac')}</div>
+          <div className="lp-chart-ci-el" style={{ opacity: 0.35 }}>{t('zodiac.hoverToExplore')}</div>
         </>)}
       </div>
       {active !== null && (

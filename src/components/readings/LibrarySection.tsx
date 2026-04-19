@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useT } from '../../i18n/useT';
 import {
   Bookmark,
   Sparkles,
@@ -157,6 +158,7 @@ const guides = [
 ];
 
 export function LibrarySection() {
+  const { t } = useT('app');
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<LibraryTab>('saved');
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
@@ -551,8 +553,8 @@ export function LibrarySection() {
               {filteredHighlights.length === 0 && tarotReadings.length === 0 && (
                 <div className="text-center py-12">
                   <Bookmark className="w-12 h-12 text-mystic-700 mx-auto mb-3" />
-                  <h3 className="font-medium text-mystic-300 mb-1">No saved items yet</h3>
-                  <p className="text-sm text-mystic-500">Save readings and horoscopes to view them here</p>
+                  <h3 className="font-medium text-mystic-300 mb-1">{t('saved.empty')}</h3>
+                  <p className="text-sm text-mystic-500">{t('saved.emptySubAlt')}</p>
                 </div>
               )}
             </>

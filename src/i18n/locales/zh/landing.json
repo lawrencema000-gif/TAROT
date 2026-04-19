@@ -52,7 +52,9 @@
   "zodiac": {
     "tag": "十二星座",
     "heading": "写在星辰之中",
-    "sub": "12 星座专属运势,每日精准更新。"
+    "sub": "12 星座专属运势,每日精准更新。",
+    "theZodiac": "十二星座",
+    "hoverToExplore": "悬停探索"
   },
   "ritual": {
     "tag": "你的每日仪式",

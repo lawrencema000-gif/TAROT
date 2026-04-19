@@ -44,6 +44,26 @@ interface ReadingRequest {
   zodiacSign?: string;
   goals?: string[];
   focusArea?: "love" | "career" | "general";
+  /** Locale code ('en', 'ja', 'ko', 'zh'). Controls the language of the generated reading. Defaults to 'en'. */
+  locale?: string;
+}
+
+/**
+ * Map each supported locale to a short instruction Gemini will follow when
+ * producing the reading. We pin the whole response to the user's language
+ * so every section — overview, per-card paragraphs, actions, closing — lands
+ * in the same language as the UI they just came from.
+ */
+const LOCALE_INSTRUCTIONS: Record<string, string> = {
+  en: "Respond entirely in English.",
+  ja: "回答は日本語で書いてください。自然で温かみのある日本語を使用し、すべてのセクション(概要、カード解釈、実践的なアクション、締めくくり)を日本語で完結させてください。",
+  ko: "전체 답변을 한국어로 작성해 주세요. 자연스럽고 따뜻한 한국어를 사용하며, 모든 섹션(개요, 카드 해석, 실용적 행동, 마무리)을 한국어로 완성하세요.",
+  zh: "请使用简体中文完整回答。使用自然、温暖的中文,所有部分(概览、牌意解读、实用行动、结尾)都用中文完成。",
+};
+
+function localeInstruction(locale: string | undefined): string {
+  const normalized = (locale || "en").toLowerCase().split("-")[0];
+  return LOCALE_INSTRUCTIONS[normalized] || LOCALE_INSTRUCTIONS.en;
 }
 
 interface UserContext {
@@ -117,11 +137,12 @@ function buildPrompt(
   request: ReadingRequest,
   userContext?: UserContext
 ): string {
-  const { cards, spreadType, zodiacSign, goals, focusArea } = request;
+  const { cards, spreadType, zodiacSign, goals, focusArea, locale } = request;
   const question = request.question ? sanitizeUserInput(request.question) : undefined;
   const positions = spreadPositions[spreadType] || spreadPositions.single;
 
-  let prompt = "";
+  // Start with the language instruction so it applies to the whole response.
+  let prompt = `${localeInstruction(locale)}\n\n`;
 
   if (zodiacSign) {
     prompt += `Zodiac: ${zodiacSign}\n`;

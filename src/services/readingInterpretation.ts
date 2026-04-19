@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard, ZodiacSign, Goal } from '../types';
+import { getLocale } from '../i18n/config';
 
 export interface ReadingCard {
   id: number;
@@ -19,6 +20,8 @@ export interface ReadingRequest {
   zodiacSign?: ZodiacSign;
   goals?: Goal[];
   focusArea?: 'love' | 'career' | 'general';
+  /** BCP-47 locale code (e.g. 'en', 'ja', 'ko', 'zh'). Server instructs Gemini to respond in this language. */
+  locale?: string;
 }
 
 export interface ReadingResponse {
@@ -39,6 +42,10 @@ export async function generatePremiumReading(
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+  // Inject the active UI locale into the request so Gemini responds in the
+  // user's language. Callers can override by passing `locale` explicitly.
+  const requestWithLocale = { locale: getLocale(), ...request };
+
   const response = await fetch(`${supabaseUrl}/functions/v1/generate-reading`, {
     method: 'POST',
     headers: {
@@ -46,7 +53,7 @@ export async function generatePremiumReading(
       'apikey': anonKey,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(request),
+    body: JSON.stringify(requestWithLocale),
   });
 
   if (!response.ok) {

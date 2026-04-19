@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import i18n from './i18n/config';
+import { syncHreflangTags } from './i18n/hreflang';
 import { AppProvider } from './context/AppContext';
 import { useUI } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
@@ -124,6 +126,16 @@ function AppContent() {
     initializeNativeFeatures();
     loadPersistedLogs();
   }, []);
+
+  // Keep hreflang <link> and og:locale <meta> tags on <head> in sync with
+  // the active route and locale. Search engines need hreflang per page;
+  // social crawlers need og:locale to match the active language.
+  useEffect(() => {
+    syncHreflangTags(location.pathname);
+    const handler = () => syncHreflangTags(location.pathname);
+    i18n.on('languageChanged', handler);
+    return () => i18n.off('languageChanged', handler);
+  }, [location.pathname]);
 
   useEffect(() => {
     // Web: cold visitors land on the marketing LandingPage (social proof,

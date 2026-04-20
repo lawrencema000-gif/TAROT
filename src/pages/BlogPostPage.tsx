@@ -7,7 +7,7 @@ import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
 import { ListSkeleton } from '../components/ui';
 import { useT } from '../i18n/useT';
-import i18n from '../i18n/config';
+import { getLocale } from '../i18n/config';
 
 const DATE_LOCALES: Record<string, string> = {
   en: 'en-US',
@@ -59,7 +59,7 @@ export function BlogPostPage() {
     );
   }
 
-  const dateLocale = DATE_LOCALES[i18n.language] || DATE_LOCALES.en;
+  const dateLocale = DATE_LOCALES[getLocale()] || DATE_LOCALES.en;
 
   return (
     <div className="space-y-4 pt-2 pb-8">

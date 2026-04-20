@@ -1,4 +1,9 @@
 import { supabase } from '../lib/supabase';
+// TODO(Phase 2): services should not import from components/. The streak
+// milestone notification should be emitted via an event/callback the UI
+// subscribes to, not by calling `toast()` directly. Tracked under
+// SCALABILITY-PLAN.md Part 3 (no upward arrows).
+// eslint-disable-next-line boundaries/element-types
 import { toast } from '../components/ui';
 import { checkAchievementProgress, checkLevelMilestones, type UnlockedAchievement } from './achievements';
 

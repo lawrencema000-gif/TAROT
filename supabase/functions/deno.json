@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "zod": "npm:zod@3.24.1"
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  }
+}

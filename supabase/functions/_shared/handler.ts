@@ -21,6 +21,7 @@
  */
 
 import { createClient, SupabaseClient, User } from "npm:@supabase/supabase-js@2.57.4";
+import { z } from "zod";
 import { getCorsHeaders, handleCorsPreFlight } from "./cors.ts";
 import { callerKey, checkRateLimit, rateLimitHeaders } from "./rate-limit.ts";
 import { createLogger, getOrCreateCorrelationId, type Logger } from "./log.ts";
@@ -76,7 +77,7 @@ export class AppError extends Error {
   }
 }
 
-export interface HandlerOptions<TBody> {
+export interface HandlerOptions<TBody, TResp> {
   /** Stable function name, lowercased kebab. Used for logs and error envelopes. */
   fn: string;
   /** `"required"` rejects with 401 if no valid session; `"optional"` passes
@@ -88,13 +89,29 @@ export interface HandlerOptions<TBody> {
   methods?: string[];
   /** If provided, enforces per-isolate rate limit. Keyed by userId or IP. */
   rateLimit?: { max: number; windowMs: number };
+  /**
+   * Zod schema for the request body. When set, the body is parsed + validated
+   * before `run` is called. Invalid bodies return 400 INVALID_REQUEST with
+   * the field-level issues under error.details.
+   *
+   * Optional in Phase 1/2 to let unmigrated functions keep running; new
+   * functions SHOULD provide one.
+   */
+  requestSchema?: z.ZodType<TBody>;
+  /**
+   * Zod schema for the response body. When set AND `run` returns a plain
+   * object (not a Response), the object is validated before being returned
+   * to the client. Mismatches throw an INTERNAL 500 (the client would've
+   * failed anyway — fail loudly server-side too).
+   */
+  responseSchema?: z.ZodType<TResp>;
   /** The business logic. Return plain JSON (wrapped in `{data}` automatically)
    *  or throw `AppError`. */
-  run: (ctx: HandlerContext, body: TBody) => Promise<unknown>;
+  run: (ctx: HandlerContext, body: TBody) => Promise<TResp | Response | unknown>;
 }
 
 /** Factory: returns a `Deno.serve`-compatible request handler. */
-export function handler<TBody = unknown>(opts: HandlerOptions<TBody>) {
+export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<TBody, TResp>) {
   const authMode: AuthMode = opts.auth ?? "required";
   const allowedMethods = opts.methods ?? ["POST"];
 
@@ -205,7 +222,7 @@ export function handler<TBody = unknown>(opts: HandlerOptions<TBody>) {
         }
       }
 
-      // ── Body parse ──
+      // ── Body parse + optional schema validation ──
       let body: TBody = {} as TBody;
       if (req.method !== "GET" && req.method !== "HEAD") {
         try {
@@ -218,6 +235,24 @@ export function handler<TBody = unknown>(opts: HandlerOptions<TBody>) {
             status: 400,
           }, cors, correlationId);
         }
+      }
+      if (opts.requestSchema) {
+        const parsed = opts.requestSchema.safeParse(body);
+        if (!parsed.success) {
+          return errorEnvelope({
+            code: "INVALID_REQUEST",
+            message: "Request body failed validation",
+            status: 400,
+            details: {
+              issues: parsed.error.issues.map((i) => ({
+                path: i.path.join("."),
+                message: i.message,
+                code: i.code,
+              })),
+            },
+          }, cors, correlationId);
+        }
+        body = parsed.data as TBody;
       }
 
       // ── Run user code ──
@@ -242,6 +277,26 @@ export function handler<TBody = unknown>(opts: HandlerOptions<TBody>) {
       if (result instanceof Response) {
         result.headers.set("X-Correlation-Id", correlationId);
         return result;
+      }
+
+      // Optional response-shape validation. Catches server-side drift:
+      // if a handler starts returning a new shape without updating its
+      // schema, we log + fail loudly rather than silently leaking.
+      if (opts.responseSchema) {
+        const parsed = opts.responseSchema.safeParse(result);
+        if (!parsed.success) {
+          log.error("handler.response_shape_mismatch", {
+            issues: parsed.error.issues.map((i) => ({
+              path: i.path.join("."),
+              message: i.message,
+            })),
+          });
+          return errorEnvelope({
+            code: "INTERNAL",
+            message: "Internal server error",
+            status: 500,
+          }, cors, correlationId);
+        }
       }
 
       // Otherwise wrap in {data} envelope. Callers that want a different

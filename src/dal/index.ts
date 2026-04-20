@@ -26,5 +26,6 @@ export * as dailyReadingsCache from './dailyReadingsCache';
 export * as premiumReadings from './premiumReadings';
 export * as contentInteractions from './contentInteractions';
 export * as rewardedAdUnlocks from './rewardedAdUnlocks';
+export * as featureFlags from './featureFlags';
 
 export type { Result } from './dailyRituals';

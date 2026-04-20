@@ -6,6 +6,7 @@ import i18n from './i18n/config';
 import { useT } from './i18n/useT';
 import { syncHreflangTags } from './i18n/hreflang';
 import { AppProvider } from './context/AppContext';
+import { FeatureFlagProvider } from './context/FeatureFlagContext';
 import { useUI } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
@@ -445,12 +446,14 @@ function AppWithProviders() {
     <BrowserRouter>
       <DiagnosticsProvider>
         <AuthProvider>
-          <AppProvider>
-            <DiagnosticsSync />
-            <AppContent />
-            <GlobalDiagnosticsSheet />
-            <ToastContainer />
-          </AppProvider>
+          <FeatureFlagProvider>
+            <AppProvider>
+              <DiagnosticsSync />
+              <AppContent />
+              <GlobalDiagnosticsSheet />
+              <ToastContainer />
+            </AppProvider>
+          </FeatureFlagProvider>
         </AuthProvider>
       </DiagnosticsProvider>
     </BrowserRouter>

@@ -1,6 +1,6 @@
 import type { ZodiacSign, Goal } from '../types';
 import {
-  zodiacProfiles,
+  getZodiacProfile,
   elementThemes,
   planetaryInfluences,
   dailyThemesByDay,
@@ -134,7 +134,7 @@ function buildContext(
   date: Date,
   random: () => number
 ): Record<string, string> {
-  const profile = zodiacProfiles[sign];
+  const profile = getZodiacProfile(sign);
   const enDayTheme = dailyThemesByDay[date.getDay()];
   const enElement = elementThemes[profile.element];
   const planetKey = profile.rulingPlanet.toLowerCase() as keyof typeof planetaryInfluences;
@@ -200,7 +200,7 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
   const random = seededRandom(seed);
   const dateObj = new Date(date);
   const context = buildContext(sign, dateObj, random);
-  const profile = zodiacProfiles[sign];
+  const profile = getZodiacProfile(sign);
   const dayTheme = dailyThemesByDay[dateObj.getDay()];
 
   const generalTemplate    = selectFromArray(dailyI18n.general(generalInsights), random);
@@ -282,7 +282,7 @@ export function generateWeeklyOverview(sign: ZodiacSign, startDate: string): {
 } {
   const seed = generateSeed(sign, startDate);
   const random = seededRandom(seed);
-  const profile = zodiacProfiles[sign];
+  const profile = getZodiacProfile(sign);
   const element = elementThemes[profile.element];
 
   const weekThemes = [

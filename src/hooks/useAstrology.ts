@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
+import { apiCall, ApiError, ApiContractError } from '../lib/apiClient';
+import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse } from '../schema';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
@@ -236,11 +238,22 @@ export function useDailyHoroscope() {
     setLoading(true);
     setError(null);
     try {
-      const data = await callFn<DailyContent>('astrology-daily', date ? { date } : {});
-      setContent(data);
-      setCache(key, data);
+      const { data } = await apiCall({
+        fn: 'astrology-daily',
+        body: { ...(date ? { date } : {}), locale: getLocale() },
+        response: DailyResponse,
+      });
+      // Schema-validated; cast covers the legacy types/astrology.ts shape
+      // that still uses readonly strings instead of the zod-inferred unions.
+      const content = data as unknown as DailyContent;
+      setContent(content);
+      setCache(key, content);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load daily horoscope');
+      if (e instanceof ApiError || e instanceof ApiContractError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to load daily horoscope');
+      }
     } finally {
       setLoading(false);
     }
@@ -267,11 +280,20 @@ export function useWeeklyForecast() {
     setLoading(true);
     setError(null);
     try {
-      const data = await callFn<WeeklyContent>('astrology-weekly');
-      setContent(data);
-      setCache(cacheKey, data);
+      const { data } = await apiCall({
+        fn: 'astrology-weekly',
+        body: { locale: getLocale() },
+        response: WeeklyResponse,
+      });
+      const content = data as unknown as WeeklyContent;
+      setContent(content);
+      setCache(cacheKey, content);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load weekly forecast');
+      if (e instanceof ApiError || e instanceof ApiContractError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to load weekly forecast');
+      }
     } finally {
       setLoading(false);
     }
@@ -298,11 +320,20 @@ export function useMonthlyForecast() {
     setLoading(true);
     setError(null);
     try {
-      const data = await callFn<MonthlyContent>('astrology-monthly');
-      setContent(data);
-      setCache(cacheKey, data);
+      const { data } = await apiCall({
+        fn: 'astrology-monthly',
+        body: { locale: getLocale() },
+        response: MonthlyResponse,
+      });
+      const content = data as unknown as MonthlyContent;
+      setContent(content);
+      setCache(cacheKey, content);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load monthly forecast');
+      if (e instanceof ApiError || e instanceof ApiContractError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to load monthly forecast');
+      }
     } finally {
       setLoading(false);
     }
@@ -329,13 +360,25 @@ export function useTransitCalendar() {
     setLoading(true);
     setError(null);
     try {
-      const params: Record<string, unknown> = { days: 30 };
-      if (natalPlanet) params.natalPlanet = natalPlanet;
-      const data = await callFn<{ events: TransitEvent[] }>('astrology-transit-calendar', params);
-      setEvents(data.events || []);
-      setCache(cacheKey, data);
+      const body: { days: number; natalPlanet?: string; locale: string } = {
+        days: 30,
+        locale: getLocale(),
+      };
+      if (natalPlanet) body.natalPlanet = natalPlanet;
+      const { data } = await apiCall({
+        fn: 'astrology-transit-calendar',
+        body,
+        response: TransitCalendarResponse,
+      });
+      const typed = data as unknown as { events: TransitEvent[] };
+      setEvents(typed.events || []);
+      setCache(cacheKey, typed);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load transits');
+      if (e instanceof ApiError || e instanceof ApiContractError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to load transits');
+      }
     } finally {
       setLoading(false);
     }

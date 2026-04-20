@@ -1,9 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
-
-interface AdConfigRequest {
-  platform?: "android" | "ios";
-}
+import { AdConfigRequest, type AdConfigRequest as TAdConfigRequest } from "../_schema/reading.ts";
 
 /**
  * Returns the client's ad configuration (ad-unit IDs, show/hide flags, daily
@@ -14,11 +11,15 @@ interface AdConfigRequest {
  * the business logic.
  */
 Deno.serve(
-  handler<AdConfigRequest>({
+  handler<TAdConfigRequest>({
     fn: "ad-config",
     auth: "optional",
     methods: ["GET", "POST"],
     rateLimit: { max: 60, windowMs: 60_000 },
+    // Phase 2: body shape validated. GET requests use query string instead
+    // of body, so the schema is only applied to POST payloads (handler skips
+    // validation when there's no body).
+    requestSchema: AdConfigRequest,
     run: async (ctx, body) => {
       // Platform can come from query string (GET) or body (POST).
       const url = new URL(ctx.req.url);

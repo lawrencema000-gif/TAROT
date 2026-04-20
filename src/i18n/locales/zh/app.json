@@ -834,6 +834,15 @@
       "master": "大师探索者",
       "oracle": "神谕探索者",
       "xpToNext": "距离{{name}}还差 {{xp}} XP"
+    },
+    "stats": {
+      "totalXP": "总XP",
+      "streak": "连续",
+      "streakDays_one": "{{count}}天",
+      "streakDays_other": "{{count}}天",
+      "readings": "解读",
+      "journal": "日记",
+      "quizzes": "测试"
     }
   },
   "blog": {

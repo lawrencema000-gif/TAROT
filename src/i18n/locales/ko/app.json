@@ -834,6 +834,15 @@
       "master": "고수 탐구자",
       "oracle": "오라클 탐구자",
       "xpToNext": "{{name}}까지 {{xp}} XP"
+    },
+    "stats": {
+      "totalXP": "총 XP",
+      "streak": "연속",
+      "streakDays_one": "{{count}}일",
+      "streakDays_other": "{{count}}일",
+      "readings": "리딩",
+      "journal": "저널",
+      "quizzes": "퀴즈"
     }
   },
   "blog": {

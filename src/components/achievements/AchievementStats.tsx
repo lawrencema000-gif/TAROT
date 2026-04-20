@@ -1,4 +1,5 @@
 import { Trophy, Flame, Sparkles, BookOpen, Brain } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 interface AchievementStatsProps {
   totalXP: number;
@@ -15,38 +16,39 @@ export function AchievementStats({
   totalJournalEntries,
   quizzesCompleted,
 }: AchievementStatsProps) {
+  const { t } = useT('app');
   const stats = [
     {
       icon: Sparkles,
-      label: 'Total XP',
+      label: t('achievements.stats.totalXP', { defaultValue: 'Total XP' }),
       value: totalXP.toLocaleString(),
       color: 'text-gold',
       bgColor: 'bg-gold/10',
     },
     {
       icon: Flame,
-      label: 'Streak',
-      value: `${streak} days`,
+      label: t('achievements.stats.streak', { defaultValue: 'Streak' }),
+      value: t('achievements.stats.streakDays', { count: streak, defaultValue: `${streak} days` }),
       color: 'text-orange-400',
       bgColor: 'bg-orange-400/10',
     },
     {
       icon: Trophy,
-      label: 'Readings',
+      label: t('achievements.stats.readings', { defaultValue: 'Readings' }),
       value: totalReadings.toString(),
       color: 'text-blue-400',
       bgColor: 'bg-blue-400/10',
     },
     {
       icon: BookOpen,
-      label: 'Journal',
+      label: t('achievements.stats.journal', { defaultValue: 'Journal' }),
       value: totalJournalEntries.toString(),
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-400/10',
     },
     {
       icon: Brain,
-      label: 'Quizzes',
+      label: t('achievements.stats.quizzes', { defaultValue: 'Quizzes' }),
       value: quizzesCompleted.toString(),
       color: 'text-fuchsia-400',
       bgColor: 'bg-fuchsia-400/10',

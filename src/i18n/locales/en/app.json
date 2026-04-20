@@ -834,6 +834,15 @@
       "master": "Master Seeker",
       "oracle": "Oracle Seeker",
       "xpToNext": "{{xp}} XP to {{name}}"
+    },
+    "stats": {
+      "totalXP": "Total XP",
+      "streak": "Streak",
+      "streakDays_one": "{{count}} day",
+      "streakDays_other": "{{count}} days",
+      "readings": "Readings",
+      "journal": "Journal",
+      "quizzes": "Quizzes"
     }
   },
   "blog": {

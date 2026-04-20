@@ -834,6 +834,15 @@
       "master": "達人の探求者",
       "oracle": "神秘の探求者",
       "xpToNext": "{{name}}まで {{xp}} XP"
+    },
+    "stats": {
+      "totalXP": "合計XP",
+      "streak": "ストリーク",
+      "streakDays_one": "{{count}}日",
+      "streakDays_other": "{{count}}日",
+      "readings": "リーディング",
+      "journal": "ジャーナル",
+      "quizzes": "診断"
     }
   },
   "blog": {

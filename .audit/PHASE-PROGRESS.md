@@ -84,12 +84,12 @@ Shipped commits: `cbb90d6` `446154b`
 
 ---
 
-## 🟡 Phase 5 — Scale infrastructure (not started)
+## 🟡 Phase 5 — Scale infrastructure (in progress)
 
 Per SCALABILITY-PLAN.md Part 4 Phase 5. Key items:
 
 - Upstash Redis global rate limiter (replaces in-memory `_shared/rate-limit.ts`)
-- `ai_usage_ledger` partitioned table + Gemini cost tracking
+- ✓ `ai_usage_ledger` partitioned table + Gemini cost tracking (`20260424000000_ai_usage_ledger.sql`, `_shared/ai-usage.ts`, wired into `generate-reading`). Monthly range partitions; RLS lets users read their own rows; service-role-only INSERT; pg_cron 13-month retention.
 - Sentry alert rules + UptimeRobot (5-min sign-in / horoscope / reading probes)
 - Core Web Vitals reporting (onLCP/onCLS/onINP to GA4)
 - Feature flags (`feature_flags` table + `useFlag()` hook)

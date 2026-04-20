@@ -223,7 +223,25 @@
     "toasts": {
       "cardsNotFound": "部分选中的牌无法找到。请重新洗牌后再试。",
       "saveFailed": "保存解读失败",
-      "readingSaved": "解读已保存"
+      "readingSaved": "解读已保存",
+      "aiReady": "AI解读已就绪",
+      "interpretationReady": "解读已就绪",
+      "aiFailed": "生成解读失败"
+    },
+    "positions": {
+      "yourCard": "你的牌",
+      "past": "过去",
+      "present": "现在",
+      "future": "未来",
+      "generic": "位置 {{index}}"
+    },
+    "focusInterpretation": {
+      "loveRelationships": "爱情与关系",
+      "careerFinance": "事业与财运"
+    },
+    "paywall": {
+      "unlimited": "无限次解读",
+      "aiInterpretation": "AI解读"
     }
   },
   "journal": {
@@ -702,6 +720,14 @@
       "milestones": "里程碑",
       "quiz_results": "测试结果",
       "special": "特殊"
+    },
+    "ranks": {
+      "novice": "初学探索者",
+      "apprentice": "学徒探索者",
+      "adept": "熟练探索者",
+      "master": "大师探索者",
+      "oracle": "神谕探索者",
+      "xpToNext": "距离{{name}}还差 {{xp}} XP"
     }
   },
   "blog": {

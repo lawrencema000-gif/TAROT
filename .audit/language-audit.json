@@ -1,176 +1,193 @@
 {
   "ja": {
     "home": [
-      "Today\n\nYour daily ritual awaits"
+      "Today\n\nYour daily ritual awaits\n\nGood morning",
+      "Today's Ritual\n\nYour daily dose",
+      "cosmic wisdom awaits\n\nStart Today's Ritual\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "readings": [
-      "Readings\n\nExplore the cards"
+      "Readings\n\nExplore the cards\n\nReadings\nTarot\nHoroscope\nCompatibility\nLibrary\nDaily Draw\n\nTap",
+      "begin your reading\n\nSpreads",
+      "Card Daily\n\nQuick guidance\n\nPast",
+      "card spread\n\nCeltic Cross",
+      "card deep reading\n\nRelationship Spread",
+      "card love reading\n\nCareer Decision",
+      "card career insight\n\nShadow Work",
+      "card inner work\n\nBrowse Deck\nAll",
+      "Cards\n\nLearn card meanings\n\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "horoscope": [
-      "Readings\n\nExplore the cards",
-      "Energized and magnetic",
-      "your Gemini nature asks",
-      "where are you avoiding truth?",
-      "The cosmos advises against rushing",
-      "what feels urgent may not",
-      "Saturn teaches valuable lessons"
+      "Readings\n\nExplore the cards\n\nReadings\nTarot\nHoroscope\nCompatibility\nLibrary\nToday\nThis Week\nThis Month",
+      "GENERAL\n\nYour inner strength",
+      "Trust that you have everything you need.",
+      "Love\n\nSomething unspoken between you and someone close",
+      "Create the space for",
+      "Work\n\nNetworking brings valuable connections.",
+      "Put yourself out there with confidence.",
+      "Mood\n\nYour energy levels indicate",
+      "reflective day ahead.",
+      "LUCKY FOCUS\n\nColor\n\nRose\n\nNumber",
+      "Vibe\n\nIntrospective\n\nToday's Mood\n\nCreative and inspired\n\nShadow Insight\n\nToday asks",
+      "can you hold outgoing and scattered",
+      "the same time without choosing sides?",
+      "Caution\n\nYour air nature may push too hard",
+      "ease off where resistance feels wrong.",
+      "Planetary Transit\n\nMars energizes your ambitions",
+      "take decisive action\n\nDaily Affirmation",
+      "Hard work\n\nShow More Insights\nJournal\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "quizzes": [
-      "Quizzes\n\nDiscover yourself",
-      "journal prompt for your current state",
+      "Quizzes\n\nDiscover yourself\n\nQuizzes\n\nDiscover your inner landscape\n\nMood Check-In",
+      "journal prompt for your current state\nPersonality Type Assessment",
       "ESTJ\nYour type profile with strengths",
       "blind spots\nStress mode patterns",
       "recovery strategies\nRelationship style notes",
+      "communication tips\nLove Language Assessment",
       "secondary love language",
       "insight\nClear ways",
+      "your language\nBig Five Assessment",
       "min\nFive trait scores with real-life interpretation\nStrengths",
-      "potential pitfalls for each trait\nLifestyle and relationship suggestions",
+      "potential pitfalls for each trait\nLifestyle and relationship suggestions\nEnneagram Type Assessment",
       "Your Enneagram type",
       "wing\nGrowth and stress direction paths\nCore motivation",
+      "and desire\nAttachment Style Assessment",
       "min\nYour primary attachment pattern\nTriggers",
-      "activation behaviors\nWhat you need from"
+      "activation behaviors\nWhat you need from",
+      "feel safe\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
-    "horoscope/今日": [
-      "Horoscope\n\nYour cosmic blueprint",
-      "Clear Communication\n\nSocial connections energize you today.",
-      "casual conversation could spark",
-      "Uranus flows harmoniously with your Venus",
-      "Moon challenges your natal Mercury",
-      "revealing what needs balancing.",
-      "Neptune flows harmoniously with your Mercury",
-      "Mars creates friction with your Jupiter",
-      "motivating necessary change.",
-      "opportunity through your Venus.",
-      "Intellectual compatibility matters most right now.",
-      "Connect through ideas.",
-      "Multiple income streams suit your versatile nature.",
-      "Presenting your ideas clearly wins allies and supporters.",
-      "Fresh air and open spaces clear mental fog.",
-      "meaningful conversation you've been avoiding.",
-      "Network\nWrite your thoughts\nAsk thoughtful questions",
-      "Scattered attention\nBreaking commitments\nCold detachment",
-      "Write three things you're curious about",
-      "What idea has been circling",
-      "mind that deserves exploration?"
+    "horoscope/Forecast": [
+      "Horoscope\n\nYour cosmic blueprint\n\nToday\nChart\nForecast\nExplore\nThis Week\nThis Month\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
-    "horoscope/チャート": [
-      "Horoscope\n\nYour cosmic blueprint"
+    "horoscope/Explore": [
+      "Horoscope\n\nYour cosmic blueprint\n\nToday\nChart\nForecast\nExplore\nTransits\nHouses\nAspects\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ]
   },
   "ko": {
     "home": [
-      "Today\n\nYour daily ritual awaits"
+      "Today\n\nYour daily ritual awaits\n\nGood morning",
+      "Today's Ritual\n\nYour daily dose",
+      "cosmic wisdom awaits\n\nStart Today's Ritual\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "readings": [
-      "Readings\n\nExplore the cards"
+      "Readings\n\nExplore the cards\n\nReadings\nTarot\nHoroscope\nCompatibility\nLibrary\nDaily Draw\n\nTap",
+      "begin your reading\n\nSpreads",
+      "Card Daily\n\nQuick guidance\n\nPast",
+      "card spread\n\nCeltic Cross",
+      "card deep reading\n\nRelationship Spread",
+      "card love reading\n\nCareer Decision",
+      "card career insight\n\nShadow Work",
+      "card inner work\n\nBrowse Deck\nAll",
+      "Cards\n\nLearn card meanings\n\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "horoscope": [
-      "Readings\n\nExplore the cards",
-      "Energized and magnetic",
-      "your Gemini nature asks",
-      "where are you avoiding truth?",
-      "The cosmos advises against rushing",
-      "what feels urgent may not",
-      "Saturn teaches valuable lessons"
+      "Readings\n\nExplore the cards\n\nReadings\nTarot\nHoroscope\nCompatibility\nLibrary\nToday\nThis Week\nThis Month",
+      "GENERAL\n\nYour inner strength",
+      "Trust that you have everything you need.",
+      "Love\n\nSomething unspoken between you and someone close",
+      "Create the space for",
+      "Work\n\nNetworking brings valuable connections.",
+      "Put yourself out there with confidence.",
+      "Mood\n\nYour energy levels indicate",
+      "reflective day ahead.",
+      "LUCKY FOCUS\n\nColor\n\nRose\n\nNumber",
+      "Vibe\n\nIntrospective\n\nToday's Mood\n\nCreative and inspired\n\nShadow Insight\n\nToday asks",
+      "can you hold outgoing and scattered",
+      "the same time without choosing sides?",
+      "Caution\n\nYour air nature may push too hard",
+      "ease off where resistance feels wrong.",
+      "Planetary Transit\n\nMars energizes your ambitions",
+      "take decisive action\n\nDaily Affirmation",
+      "Hard work\n\nShow More Insights\nJournal\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "quizzes": [
-      "Quizzes\n\nDiscover yourself",
-      "journal prompt for your current state",
+      "Quizzes\n\nDiscover yourself\n\nQuizzes\n\nDiscover your inner landscape\n\nMood Check-In",
+      "journal prompt for your current state\nPersonality Type Assessment",
       "ESTJ\nYour type profile with strengths",
       "blind spots\nStress mode patterns",
       "recovery strategies\nRelationship style notes",
+      "communication tips\nLove Language Assessment",
       "secondary love language",
       "insight\nClear ways",
+      "your language\nBig Five Assessment",
       "min\nFive trait scores with real-life interpretation\nStrengths",
-      "potential pitfalls for each trait\nLifestyle and relationship suggestions",
+      "potential pitfalls for each trait\nLifestyle and relationship suggestions\nEnneagram Type Assessment",
       "Your Enneagram type",
       "wing\nGrowth and stress direction paths\nCore motivation",
+      "and desire\nAttachment Style Assessment",
       "min\nYour primary attachment pattern\nTriggers",
-      "activation behaviors\nWhat you need from"
+      "activation behaviors\nWhat you need from",
+      "feel safe\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
-    "horoscope/今日": [
-      "Horoscope\n\nYour cosmic blueprint",
-      "Clear Communication\n\nSocial connections energize you today.",
-      "casual conversation could spark",
-      "Uranus flows harmoniously with your Venus",
-      "Moon challenges your natal Mercury",
-      "revealing what needs balancing.",
-      "Neptune flows harmoniously with your Mercury",
-      "Mars creates friction with your Jupiter",
-      "motivating necessary change.",
-      "opportunity through your Venus.",
-      "Intellectual compatibility matters most right now.",
-      "Connect through ideas.",
-      "Multiple income streams suit your versatile nature.",
-      "Presenting your ideas clearly wins allies and supporters.",
-      "Fresh air and open spaces clear mental fog.",
-      "meaningful conversation you've been avoiding.",
-      "Network\nWrite your thoughts\nAsk thoughtful questions",
-      "Scattered attention\nBreaking commitments\nCold detachment",
-      "Write three things you're curious about",
-      "What idea has been circling",
-      "mind that deserves exploration?"
+    "horoscope/Forecast": [
+      "Horoscope\n\nYour cosmic blueprint\n\nToday\nChart\nForecast\nExplore\nThis Week\nThis Month\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
-    "horoscope/チャート": [
-      "Horoscope\n\nYour cosmic blueprint"
+    "horoscope/Explore": [
+      "Horoscope\n\nYour cosmic blueprint\n\nToday\nChart\nForecast\nExplore\nTransits\nHouses\nAspects\n\nFailed",
+      "fetch\n\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ]
   },
   "zh": {
     "home": [
-      "Today\n\nYour daily ritual awaits"
+      "Today\n\nYour daily ritual awaits\n\nGood morning",
+      "Today's Ritual\n\nYour daily dose",
+      "cosmic wisdom awaits\n\nStart Today's Ritual\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "readings": [
-      "Readings\n\nExplore the cards"
+      "Readings\n\nExplore the cards\n\nReadings\nTarot\nHoroscope\nCompatibility\nLibrary\nDaily Draw\n\nTap",
+      "begin your reading\n\nSpreads",
+      "Card Daily\n\nQuick guidance\n\nPast",
+      "card spread\n\nCeltic Cross",
+      "card deep reading\n\nRelationship Spread",
+      "card love reading\n\nCareer Decision",
+      "card career insight\n\nShadow Work",
+      "card inner work\n\nBrowse Deck\nAll",
+      "Cards\n\nLearn card meanings\n\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "horoscope": [
-      "Readings\n\nExplore the cards",
-      "Energized and magnetic",
-      "your Gemini nature asks",
-      "where are you avoiding truth?",
-      "The cosmos advises against rushing",
-      "what feels urgent may not",
-      "Saturn teaches valuable lessons"
+      "Readings\n\nExplore the cards\n\nReadings\nTarot\nHoroscope\nCompatibility\nLibrary\nToday\nThis Week\nThis Month",
+      "GENERAL\n\nYour inner strength",
+      "Trust that you have everything you need.",
+      "Love\n\nSomething unspoken between you and someone close",
+      "Create the space for",
+      "Work\n\nNetworking brings valuable connections.",
+      "Put yourself out there with confidence.",
+      "Mood\n\nYour energy levels indicate",
+      "reflective day ahead.",
+      "LUCKY FOCUS\n\nColor\n\nRose\n\nNumber",
+      "Vibe\n\nIntrospective\n\nToday's Mood\n\nCreative and inspired\n\nShadow Insight\n\nToday asks",
+      "can you hold outgoing and scattered",
+      "the same time without choosing sides?",
+      "Caution\n\nYour air nature may push too hard",
+      "ease off where resistance feels wrong.",
+      "Planetary Transit\n\nMars energizes your ambitions",
+      "take decisive action\n\nDaily Affirmation",
+      "Hard work\n\nShow More Insights\nJournal\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
     "quizzes": [
-      "Quizzes\n\nDiscover yourself",
-      "journal prompt for your current state",
+      "Quizzes\n\nDiscover yourself\n\nQuizzes\n\nDiscover your inner landscape\n\nMood Check-In",
+      "journal prompt for your current state\nPersonality Type Assessment",
       "ESTJ\nYour type profile with strengths",
       "blind spots\nStress mode patterns",
       "recovery strategies\nRelationship style notes",
+      "communication tips\nLove Language Assessment",
       "secondary love language",
       "insight\nClear ways",
+      "your language\nBig Five Assessment",
       "min\nFive trait scores with real-life interpretation\nStrengths",
-      "potential pitfalls for each trait\nLifestyle and relationship suggestions",
+      "potential pitfalls for each trait\nLifestyle and relationship suggestions\nEnneagram Type Assessment",
       "Your Enneagram type",
       "wing\nGrowth and stress direction paths\nCore motivation",
+      "and desire\nAttachment Style Assessment",
       "min\nYour primary attachment pattern\nTriggers",
-      "activation behaviors\nWhat you need from"
+      "activation behaviors\nWhat you need from",
+      "feel safe\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
-    "horoscope/今日": [
-      "Horoscope\n\nYour cosmic blueprint",
-      "Clear Communication\n\nSocial connections energize you today.",
-      "casual conversation could spark",
-      "Uranus flows harmoniously with your Venus",
-      "Moon challenges your natal Mercury",
-      "revealing what needs balancing.",
-      "Neptune flows harmoniously with your Mercury",
-      "Mars creates friction with your Jupiter",
-      "motivating necessary change.",
-      "opportunity through your Venus.",
-      "Intellectual compatibility matters most right now.",
-      "Connect through ideas.",
-      "Multiple income streams suit your versatile nature.",
-      "Presenting your ideas clearly wins allies and supporters.",
-      "Fresh air and open spaces clear mental fog.",
-      "meaningful conversation you've been avoiding.",
-      "Network\nWrite your thoughts\nAsk thoughtful questions",
-      "Scattered attention\nBreaking commitments\nCold detachment",
-      "Write three things you're curious about",
-      "What idea has been circling",
-      "mind that deserves exploration?"
+    "horoscope/Forecast": [
+      "Horoscope\n\nYour cosmic blueprint\n\nToday\nChart\nForecast\nExplore\nThis Week\nThis Month\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ],
-    "horoscope/チャート": [
-      "Horoscope\n\nYour cosmic blueprint"
+    "horoscope/Explore": [
+      "Horoscope\n\nYour cosmic blueprint\n\nToday\nChart\nForecast\nExplore\nTransits\nHouses\nAspects\n\nFailed",
+      "fetch\n\nHome\nReadings\nHoroscope\nQuizzes\nMore"
     ]
   }
 }

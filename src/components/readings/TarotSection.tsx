@@ -216,7 +216,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         setPendingSpreadId(null);
         setShowWatchAdSheet(true);
       } else {
-        onShowPaywall('Unlimited Readings');
+        onShowPaywall(t('readings.paywall.unlimited'));
       }
       return;
     }
@@ -425,7 +425,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
   const handleGetAIInterpretation = async () => {
     if (!profile?.isPremium) {
-      onShowPaywall('AI Interpretation');
+      onShowPaywall(t('readings.paywall.aiInterpretation'));
       return;
     }
 
@@ -449,10 +449,13 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
       setAiInterpretation(result.interpretation);
       setShowAIInterpretation(true);
-      toast(result.usedLlm ? 'AI interpretation ready' : 'Interpretation ready', 'success');
+      toast(
+        result.usedLlm ? t('readings.toasts.aiReady') : t('readings.toasts.interpretationReady'),
+        'success',
+      );
     } catch (error) {
       console.error('Failed to generate AI interpretation:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate interpretation';
+      const errorMessage = error instanceof Error ? error.message : t('readings.toasts.aiFailed');
       toast(errorMessage, 'error');
     } finally {
       setLoadingAI(false);
@@ -460,11 +463,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   const getPositionLabel = (index: number): string => {
-    if (currentSpread === 'single') return 'Your Card';
-    if (currentSpread === 'three-card') return ['Past', 'Present', 'Future'][index] || `Position ${index + 1}`;
+    if (currentSpread === 'single') return t('readings.positions.yourCard');
+    if (currentSpread === 'three-card') {
+      const keys = ['past', 'present', 'future'] as const;
+      const key = keys[index];
+      return key
+        ? t(`readings.positions.${key}`)
+        : t('readings.positions.generic', { index: index + 1 });
+    }
 
     const positions = getSpreadPositions(currentSpread);
-    return positions[index] || `Position ${index + 1}`;
+    return positions[index] || t('readings.positions.generic', { index: index + 1 });
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -223,7 +223,25 @@
     "toasts": {
       "cardsNotFound": "選択されたカードが見つかりませんでした。再シャッフルしてやり直してください。",
       "saveFailed": "リーディングの保存に失敗しました",
-      "readingSaved": "リーディングを保存しました"
+      "readingSaved": "リーディングを保存しました",
+      "aiReady": "AI解釈の準備ができました",
+      "interpretationReady": "解釈の準備ができました",
+      "aiFailed": "解釈の生成に失敗しました"
+    },
+    "positions": {
+      "yourCard": "あなたのカード",
+      "past": "過去",
+      "present": "現在",
+      "future": "未来",
+      "generic": "ポジション{{index}}"
+    },
+    "focusInterpretation": {
+      "loveRelationships": "恋愛と人間関係",
+      "careerFinance": "キャリアとお金"
+    },
+    "paywall": {
+      "unlimited": "無制限リーディング",
+      "aiInterpretation": "AIによる解釈"
     }
   },
   "journal": {
@@ -702,6 +720,14 @@
       "milestones": "マイルストーン",
       "quiz_results": "診断結果",
       "special": "スペシャル"
+    },
+    "ranks": {
+      "novice": "初心者の探求者",
+      "apprentice": "見習いの探求者",
+      "adept": "熟練の探求者",
+      "master": "達人の探求者",
+      "oracle": "神秘の探求者",
+      "xpToNext": "{{name}}まで {{xp}} XP"
     }
   },
   "blog": {

@@ -223,7 +223,25 @@
     "toasts": {
       "cardsNotFound": "선택한 카드 중 일부를 찾을 수 없습니다. 다시 섞어서 시도하세요.",
       "saveFailed": "리딩 저장에 실패했습니다",
-      "readingSaved": "리딩이 저장되었습니다"
+      "readingSaved": "리딩이 저장되었습니다",
+      "aiReady": "AI 해석 준비 완료",
+      "interpretationReady": "해석 준비 완료",
+      "aiFailed": "해석 생성에 실패했습니다"
+    },
+    "positions": {
+      "yourCard": "당신의 카드",
+      "past": "과거",
+      "present": "현재",
+      "future": "미래",
+      "generic": "위치 {{index}}"
+    },
+    "focusInterpretation": {
+      "loveRelationships": "사랑과 관계",
+      "careerFinance": "커리어와 재정"
+    },
+    "paywall": {
+      "unlimited": "무제한 리딩",
+      "aiInterpretation": "AI 해석"
     }
   },
   "journal": {
@@ -702,6 +720,14 @@
       "milestones": "이정표",
       "quiz_results": "퀴즈 결과",
       "special": "스페셜"
+    },
+    "ranks": {
+      "novice": "초보 탐구자",
+      "apprentice": "수습 탐구자",
+      "adept": "숙련 탐구자",
+      "master": "고수 탐구자",
+      "oracle": "오라클 탐구자",
+      "xpToNext": "{{name}}까지 {{xp}} XP"
     }
   },
   "blog": {

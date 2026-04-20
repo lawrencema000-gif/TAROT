@@ -223,7 +223,25 @@
     "toasts": {
       "cardsNotFound": "Some selected cards could not be found. Please reshuffle and try again.",
       "saveFailed": "Failed to save reading",
-      "readingSaved": "Reading saved"
+      "readingSaved": "Reading saved",
+      "aiReady": "AI interpretation ready",
+      "interpretationReady": "Interpretation ready",
+      "aiFailed": "Failed to generate interpretation"
+    },
+    "positions": {
+      "yourCard": "Your Card",
+      "past": "Past",
+      "present": "Present",
+      "future": "Future",
+      "generic": "Position {{index}}"
+    },
+    "focusInterpretation": {
+      "loveRelationships": "Love & Relationships",
+      "careerFinance": "Career & Finance"
+    },
+    "paywall": {
+      "unlimited": "Unlimited Readings",
+      "aiInterpretation": "AI Interpretation"
     }
   },
   "journal": {
@@ -702,6 +720,14 @@
       "milestones": "Milestones",
       "quiz_results": "Quiz Results",
       "special": "Special"
+    },
+    "ranks": {
+      "novice": "Novice Seeker",
+      "apprentice": "Apprentice Seeker",
+      "adept": "Adept Seeker",
+      "master": "Master Seeker",
+      "oracle": "Oracle Seeker",
+      "xpToNext": "{{xp}} XP to {{name}}"
     }
   },
   "blog": {

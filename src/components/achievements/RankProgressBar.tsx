@@ -1,19 +1,23 @@
 import { Star, Sparkles, Crown, Sun, Eye } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 interface RankProgressBarProps {
   currentRank: string;
   currentXP: number;
 }
 
+// `name` is the canonical English identifier stored in profiles.seeker_rank
+// (and the achievements.ranks table); `key` is the i18n path for display.
 const RANKS = [
-  { name: 'Novice Seeker', minXP: 0, icon: Star },
-  { name: 'Apprentice Seeker', minXP: 2930, icon: Sparkles },
-  { name: 'Adept Seeker', minXP: 10700, icon: Eye },
-  { name: 'Master Seeker', minXP: 47350, icon: Crown },
-  { name: 'Oracle Seeker', minXP: 182790, icon: Sun },
+  { name: 'Novice Seeker', key: 'novice', minXP: 0, icon: Star },
+  { name: 'Apprentice Seeker', key: 'apprentice', minXP: 2930, icon: Sparkles },
+  { name: 'Adept Seeker', key: 'adept', minXP: 10700, icon: Eye },
+  { name: 'Master Seeker', key: 'master', minXP: 47350, icon: Crown },
+  { name: 'Oracle Seeker', key: 'oracle', minXP: 182790, icon: Sun },
 ];
 
 export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps) {
+  const { t } = useT('app');
   const currentRankIndex = RANKS.findIndex(r => r.name === currentRank);
   const activeIndex = currentRankIndex >= 0 ? currentRankIndex : 0;
 
@@ -70,7 +74,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
                   ${isCurrent ? 'text-gold' : isActive ? 'text-mystic-400' : 'text-mystic-600'}
                 `}
               >
-                {rank.name.replace(' Seeker', '')}
+                {t(`achievements.ranks.${rank.key}`).replace(/\s*(Seeker|探求者|탐구자|探索者)\s*$/u, '')}
               </span>
             </div>
           );
@@ -96,7 +100,10 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
 
       {nextRank && (
         <p className="mt-2 text-center text-xs text-mystic-500">
-          {(nextRank.minXP - currentXP).toLocaleString()} XP to {nextRank.name}
+          {t('achievements.ranks.xpToNext', {
+            xp: (nextRank.minXP - currentXP).toLocaleString(),
+            name: t(`achievements.ranks.${nextRank.key}`),
+          })}
         </p>
       )}
     </div>

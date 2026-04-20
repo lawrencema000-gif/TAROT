@@ -98,7 +98,7 @@ Shipped commits: `9fc3062` `c96a3e2` `a9efe57`
 Remaining (needs your vendor call):
 
 - ⬜ **Global rate limiter** (replaces in-memory `_shared/rate-limit.ts`). Options: Upstash Redis (~$10/mo, REST API, ~1 ms edge latency), Supabase's own pg_net + a DB function (free, slower), or rolled using PostgreSQL's `pg_advisory_lock` (free but contention-prone).
-- ⬜ **Sentry alert rules + UptimeRobot** (5-min sign-in / horoscope / reading probes). Both are UI-driven — I can draft the rules as a doc/runbook but you configure in each vendor.
+- 🟡 **Sentry alert rules + UptimeRobot** — runbook drafted at [`.audit/ALERTING-RUNBOOK.md`](./ALERTING-RUNBOOK.md) with 6 Sentry rules + 7 UptimeRobot monitors, copy-paste ready. Your action: paste into each vendor dashboard (~20 min). Flips to ✓ once the runbook checklist is complete.
 - ⬜ **CloudFlare in front of Netlify** for edge caching of `/tarot-meanings/*`, `/blog/*`, `/locales/*`. Requires DNS migration + CF account. Significant win at 500k+ DAU.
 - ⬜ **God-object splits behind feature flags** — QuizzesPage (1412 LOC), JournalPage (1179), TarotSection (1166), SettingsSheet (1166), AuthContext (1074). Each split goes behind a flag, rolled out incrementally.
 

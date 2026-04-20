@@ -242,6 +242,52 @@
     "paywall": {
       "unlimited": "무제한 리딩",
       "aiInterpretation": "AI 해석"
+    },
+    "spreadPositions": {
+      "single": [
+        "당신의 카드"
+      ],
+      "threeCard": [
+        "과거",
+        "현재",
+        "미래"
+      ],
+      "relationship": [
+        "당신",
+        "상대방",
+        "연결의 강점",
+        "도전/마찰",
+        "안내/다음 단계"
+      ],
+      "career": [
+        "당신이 있는 곳",
+        "당신을 움직이는 것",
+        "장애물/압박점",
+        "개발할 것",
+        "취할 수 있는 행동",
+        "예상되는 결과"
+      ],
+      "shadow": [
+        "당신이 쓰는 가면",
+        "그림자 측면",
+        "근본 원인",
+        "촉발 요인",
+        "숨겨진 선물",
+        "통합의 단계",
+        "지원/다음 단계"
+      ],
+      "celticCross": [
+        "현재 상황",
+        "도전 또는 장애",
+        "무의식적 영향",
+        "최근 과거",
+        "최선의 결과",
+        "가까운 미래",
+        "당신의 태도",
+        "외부 영향",
+        "희망과 두려움",
+        "최종 결과"
+      ]
     }
   },
   "journal": {
@@ -1908,5 +1954,38 @@
       "오닉스",
       "메리골드"
     ]
+  },
+  "errorBoundary": {
+    "title": "별들이 움직였습니다",
+    "message": "예기치 않은 일이 당신의 우주 여행을 방해했습니다. 우주는 신비롭게 작동하지만, 다시 시도할 수 있습니다.",
+    "tryAgain": "다시 시도",
+    "returnHome": "홈으로",
+    "viewDiagnostics": "진단 보기",
+    "hideDetails": "세부 숨기기",
+    "showDetails": "세부 보기",
+    "errorDetails": "오류 세부 정보",
+    "copy": "복사",
+    "copied": "복사됨",
+    "tailFooter": "계속 발생하면, 우주가 재조정할 시간이 필요할지도 모릅니다.",
+    "networkTitle": "별들과의 연결이 끊어졌습니다",
+    "networkMessage": "우주의 서버에 도달할 수 없었습니다. 연결을 확인하고 길이 맑아지면 다시 시도하세요.",
+    "notFoundTitle": "이 길은 막다른 길입니다",
+    "notFoundMessage": "당신이 찾는 페이지는 공허 속으로 사라졌습니다. 별들이 다른 목적지를 염두에 두고 있는지도 모릅니다."
+  },
+  "astrologyErrors": {
+    "noChart": "차트를 찾을 수 없습니다",
+    "loadChart": "차트 불러오기 실패",
+    "computeChart": "차트 계산 실패",
+    "dailyHoroscope": "일일 운세 불러오기 실패",
+    "weeklyForecast": "주간 예보 불러오기 실패",
+    "monthlyForecast": "월간 예보 불러오기 실패",
+    "transits": "트랜짓 불러오기 실패"
+  },
+  "savedSheet": {
+    "threeCardSpread": "세 장 스프레드",
+    "morningReflection": "아침 성찰",
+    "morningReflectionSub": "감사와 의도",
+    "loveLanguageResult": "사랑의 언어 결과",
+    "wordsOfAffirmation": "인정하는 말"
   }
 }

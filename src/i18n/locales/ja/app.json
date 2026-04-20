@@ -242,6 +242,52 @@
     "paywall": {
       "unlimited": "無制限リーディング",
       "aiInterpretation": "AIによる解釈"
+    },
+    "spreadPositions": {
+      "single": [
+        "あなたのカード"
+      ],
+      "threeCard": [
+        "過去",
+        "現在",
+        "未来"
+      ],
+      "relationship": [
+        "あなた",
+        "相手",
+        "つながりの強み",
+        "課題/摩擦",
+        "導き/次の一歩"
+      ],
+      "career": [
+        "今あなたがいる場所",
+        "あなたを動かすもの",
+        "障害/プレッシャー",
+        "育てるべきもの",
+        "取れる行動",
+        "起こりうる結果"
+      ],
+      "shadow": [
+        "あなたがつけている仮面",
+        "影の側面",
+        "根本原因",
+        "引き金",
+        "隠された贈り物",
+        "統合の一歩",
+        "サポート/次の一歩"
+      ],
+      "celticCross": [
+        "現在の状況",
+        "課題または障害",
+        "無意識の影響",
+        "近い過去",
+        "最良の結果",
+        "近い未来",
+        "あなたの態度",
+        "外的影響",
+        "希望と恐れ",
+        "最終結果"
+      ]
     }
   },
   "journal": {
@@ -1908,5 +1954,38 @@
       "オニキス",
       "マリーゴールド"
     ]
+  },
+  "errorBoundary": {
+    "title": "星々が移り変わりました",
+    "message": "予期せぬ出来事があなたの宇宙の旅を妨げました。宇宙は不思議な仕方で働きますが、もう一度試せます。",
+    "tryAgain": "もう一度試す",
+    "returnHome": "ホームに戻る",
+    "viewDiagnostics": "診断を表示",
+    "hideDetails": "詳細を隠す",
+    "showDetails": "詳細を表示",
+    "errorDetails": "エラーの詳細",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "tailFooter": "これが続くようなら、宇宙が再調整する時間が必要かもしれません。",
+    "networkTitle": "星々への接続が途絶えました",
+    "networkMessage": "宇宙のサーバーに到達できませんでした。接続を確認し、道がクリアになったら再試行してください。",
+    "notFoundTitle": "この道は行き止まりです",
+    "notFoundMessage": "あなたが探しているページは消えてしまいました。星々は異なる目的地を心に描いているのかもしれません。"
+  },
+  "astrologyErrors": {
+    "noChart": "チャートが見つかりません",
+    "loadChart": "チャートの読み込みに失敗しました",
+    "computeChart": "チャートの計算に失敗しました",
+    "dailyHoroscope": "デイリー占いの読み込みに失敗しました",
+    "weeklyForecast": "週間予報の読み込みに失敗しました",
+    "monthlyForecast": "月間予報の読み込みに失敗しました",
+    "transits": "トランジットの読み込みに失敗しました"
+  },
+  "savedSheet": {
+    "threeCardSpread": "3枚スプレッド",
+    "morningReflection": "朝のリフレクション",
+    "morningReflectionSub": "感謝と意図",
+    "loveLanguageResult": "愛の言語の結果",
+    "wordsOfAffirmation": "肯定の言葉"
   }
 }

@@ -18,36 +18,38 @@ const filters: { value: SavedFilter; labelKey: string }[] = [
   { value: 'quizzes', labelKey: 'saved.filters.quizzes' },
 ];
 
-const mockSavedItems = [
-  {
-    id: '1',
-    type: 'reading',
-    title: 'Three Card Spread',
-    subtitle: 'Past, Present, Future',
-    date: 'Dec 28, 2025',
-    icon: Sparkles,
-  },
-  {
-    id: '2',
-    type: 'journal',
-    title: 'Morning Reflection',
-    subtitle: 'Gratitude and intentions',
-    date: 'Dec 27, 2025',
-    icon: BookOpen,
-  },
-  {
-    id: '3',
-    type: 'quiz',
-    title: 'Love Language Result',
-    subtitle: 'Words of Affirmation',
-    date: 'Dec 25, 2025',
-    icon: Brain,
-  },
-];
-
 export function SavedSheet({ open, onClose }: SavedSheetProps) {
   const { t } = useT('app');
   const [activeFilter, setActiveFilter] = useState<SavedFilter>('all');
+
+  // Demo preview items. Localized at render so ja/ko/zh users see
+  // translated labels.
+  const mockSavedItems = [
+    {
+      id: '1',
+      type: 'reading',
+      title: t('savedSheet.threeCardSpread'),
+      subtitle: t('readings.spreads.threeCard.name'),
+      date: 'Dec 28, 2025',
+      icon: Sparkles,
+    },
+    {
+      id: '2',
+      type: 'journal',
+      title: t('savedSheet.morningReflection'),
+      subtitle: t('savedSheet.morningReflectionSub'),
+      date: 'Dec 27, 2025',
+      icon: BookOpen,
+    },
+    {
+      id: '3',
+      type: 'quiz',
+      title: t('savedSheet.loveLanguageResult'),
+      subtitle: t('savedSheet.wordsOfAffirmation'),
+      date: 'Dec 25, 2025',
+      icon: Brain,
+    },
+  ];
 
   const filteredItems = mockSavedItems.filter(
     item => activeFilter === 'all' || item.type === activeFilter.replace('s', '')

@@ -242,6 +242,52 @@
     "paywall": {
       "unlimited": "无限次解读",
       "aiInterpretation": "AI解读"
+    },
+    "spreadPositions": {
+      "single": [
+        "你的牌"
+      ],
+      "threeCard": [
+        "过去",
+        "现在",
+        "未来"
+      ],
+      "relationship": [
+        "你",
+        "对方",
+        "连结的优势",
+        "挑战/摩擦",
+        "指引/下一步"
+      ],
+      "career": [
+        "你现在的位置",
+        "驱动你的事物",
+        "障碍/压力点",
+        "需要发展的",
+        "你可以采取的行动",
+        "可能的结果"
+      ],
+      "shadow": [
+        "你戴的面具",
+        "阴影面向",
+        "根本原因",
+        "触发",
+        "隐藏的礼物",
+        "整合的步骤",
+        "支持/下一步"
+      ],
+      "celticCross": [
+        "当前情况",
+        "挑战或障碍",
+        "潜意识影响",
+        "近期过去",
+        "最佳可能结果",
+        "近期未来",
+        "你的态度",
+        "外部影响",
+        "希望与恐惧",
+        "最终结果"
+      ]
     }
   },
   "journal": {
@@ -1908,5 +1954,38 @@
       "缟玛瑙",
       "金盏花"
     ]
+  },
+  "errorBoundary": {
+    "title": "星辰已经移位",
+    "message": "意外的事情打断了你的宇宙旅程。宇宙以神秘的方式运作，但我们可以再试一次。",
+    "tryAgain": "再试一次",
+    "returnHome": "返回首页",
+    "viewDiagnostics": "查看诊断",
+    "hideDetails": "隐藏详情",
+    "showDetails": "显示详情",
+    "errorDetails": "错误详情",
+    "copy": "复制",
+    "copied": "已复制",
+    "tailFooter": "如果情况持续，宇宙可能需要时间重新对齐。",
+    "networkTitle": "与星辰的连接已中断",
+    "networkMessage": "我们无法到达宇宙服务器。请检查你的连接，道路畅通时再试。",
+    "notFoundTitle": "此路不通",
+    "notFoundMessage": "你寻找的页面已消失于虚空。也许星辰心中另有目的地。"
+  },
+  "astrologyErrors": {
+    "noChart": "未找到星盘",
+    "loadChart": "星盘加载失败",
+    "computeChart": "星盘计算失败",
+    "dailyHoroscope": "每日运势加载失败",
+    "weeklyForecast": "每周预报加载失败",
+    "monthlyForecast": "每月预报加载失败",
+    "transits": "过境加载失败"
+  },
+  "savedSheet": {
+    "threeCardSpread": "三张牌阵",
+    "morningReflection": "晨间反思",
+    "morningReflectionSub": "感恩与意图",
+    "loveLanguageResult": "爱的语言结果",
+    "wordsOfAffirmation": "肯定的话语"
   }
 }

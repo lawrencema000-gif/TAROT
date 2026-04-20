@@ -242,6 +242,52 @@
     "paywall": {
       "unlimited": "Unlimited Readings",
       "aiInterpretation": "AI Interpretation"
+    },
+    "spreadPositions": {
+      "single": [
+        "Your Card"
+      ],
+      "threeCard": [
+        "Past",
+        "Present",
+        "Future"
+      ],
+      "relationship": [
+        "You",
+        "Them",
+        "Strengths of the connection",
+        "Challenges / friction",
+        "Guidance / next step"
+      ],
+      "career": [
+        "Where you are now",
+        "What drives you",
+        "Obstacle / pressure point",
+        "What to develop",
+        "Action you can take",
+        "Likely outcome"
+      ],
+      "shadow": [
+        "The mask you wear",
+        "The shadow aspect",
+        "Root cause",
+        "Trigger",
+        "Hidden gift",
+        "Integration step",
+        "Support / next step"
+      ],
+      "celticCross": [
+        "Present situation",
+        "Challenge or obstacle",
+        "Subconscious influences",
+        "Recent past",
+        "Best possible outcome",
+        "Near future",
+        "Your attitude",
+        "External influences",
+        "Hopes and fears",
+        "Final outcome"
+      ]
     }
   },
   "journal": {
@@ -1908,5 +1954,38 @@
       "Onyx",
       "Marigold"
     ]
+  },
+  "errorBoundary": {
+    "title": "The Stars Have Shifted",
+    "message": "Something unexpected disrupted your cosmic journey. The universe works in mysterious ways, but we can try again.",
+    "tryAgain": "Try Again",
+    "returnHome": "Return Home",
+    "viewDiagnostics": "View Diagnostics",
+    "hideDetails": "Hide Details",
+    "showDetails": "Show Details",
+    "errorDetails": "Error Details",
+    "copy": "Copy",
+    "copied": "Copied",
+    "tailFooter": "If this continues, the cosmos may need a moment to realign.",
+    "networkTitle": "Connection Lost to the Stars",
+    "networkMessage": "We couldn't reach the cosmic servers. Check your connection and try again when the path is clear.",
+    "notFoundTitle": "This Path Leads Nowhere",
+    "notFoundMessage": "The page you seek has vanished into the void. Perhaps the stars have a different destination in mind."
+  },
+  "astrologyErrors": {
+    "noChart": "No chart found",
+    "loadChart": "Failed to load chart",
+    "computeChart": "Failed to compute chart",
+    "dailyHoroscope": "Failed to load daily horoscope",
+    "weeklyForecast": "Failed to load weekly forecast",
+    "monthlyForecast": "Failed to load monthly forecast",
+    "transits": "Failed to load transits"
+  },
+  "savedSheet": {
+    "threeCardSpread": "Three Card Spread",
+    "morningReflection": "Morning Reflection",
+    "morningReflectionSub": "Gratitude and intentions",
+    "loveLanguageResult": "Love Language Result",
+    "wordsOfAffirmation": "Words of Affirmation"
   }
 }

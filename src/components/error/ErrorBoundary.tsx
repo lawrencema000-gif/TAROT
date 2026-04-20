@@ -1,6 +1,7 @@
 import { Component, type ReactNode, useState } from 'react';
 import { AlertTriangle, RefreshCw, Home, Moon, Bug, Copy, CheckCircle } from 'lucide-react';
 import { captureException, generateCorrelationId, getCurrentCorrelationId, isDevMode } from '../../utils/telemetry';
+import { useT } from '../../i18n/useT';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -88,14 +89,17 @@ export function MysticErrorFallback({
   onRetry,
   onGoHome,
   onOpenDiagnostics,
-  title = 'The Stars Have Shifted',
-  message = 'Something unexpected disrupted your cosmic journey. The universe works in mysterious ways, but we can try again.',
+  title,
+  message,
   error,
   errorInfo,
   correlationId,
 }: MysticErrorFallbackProps) {
+  const { t } = useT('app');
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
+  const displayTitle = title ?? t('errorBoundary.title');
+  const displayMessage = message ?? t('errorBoundary.message');
 
   const handleCopyError = async () => {
     const errorReport = {
@@ -131,8 +135,8 @@ export function MysticErrorFallback({
           <div className="absolute top-1/3 right-1/5 w-1 h-1 bg-gold/60 rounded-full animate-pulse delay-700" />
         </div>
 
-        <h2 className="text-2xl font-serif text-mystic-100 mb-3">{title}</h2>
-        <p className="text-mystic-400 mb-8 leading-relaxed">{message}</p>
+        <h2 className="text-2xl font-serif text-mystic-100 mb-3">{displayTitle}</h2>
+        <p className="text-mystic-400 mb-8 leading-relaxed">{displayMessage}</p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {onRetry && (
@@ -141,7 +145,7 @@ export function MysticErrorFallback({
               className="flex items-center justify-center gap-2 px-6 py-3 bg-gold text-mystic-950 rounded-xl font-medium hover:bg-gold transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
-              Try Again
+              {t('errorBoundary.tryAgain')}
             </button>
           )}
           {onGoHome && (
@@ -150,7 +154,7 @@ export function MysticErrorFallback({
               className="flex items-center justify-center gap-2 px-6 py-3 bg-mystic-800 text-mystic-100 rounded-xl font-medium hover:bg-mystic-700 transition-colors border border-mystic-700/30"
             >
               <Home className="w-4 h-4" />
-              Return Home
+              {t('errorBoundary.returnHome')}
             </button>
           )}
         </div>
@@ -162,7 +166,7 @@ export function MysticErrorFallback({
               className="flex items-center gap-1.5 text-xs text-mystic-500 hover:text-mystic-300 transition-colors"
             >
               <Bug className="w-3.5 h-3.5" />
-              View Diagnostics
+              {t('errorBoundary.viewDiagnostics')}
             </button>
           )}
           {(isDevMode() || error) && (
@@ -170,7 +174,7 @@ export function MysticErrorFallback({
               onClick={() => setShowDetails(!showDetails)}
               className="text-xs text-mystic-500 hover:text-mystic-300 transition-colors"
             >
-              {showDetails ? 'Hide Details' : 'Show Details'}
+              {showDetails ? t('errorBoundary.hideDetails') : t('errorBoundary.showDetails')}
             </button>
           )}
         </div>
@@ -178,7 +182,7 @@ export function MysticErrorFallback({
         {showDetails && error && (
           <div className="mt-4 text-left bg-mystic-900/80 border border-mystic-700/30 rounded-xl p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-mystic-500">Error Details</span>
+              <span className="text-xs text-mystic-500">{t('errorBoundary.errorDetails')}</span>
               <button
                 onClick={handleCopyError}
                 className="flex items-center gap-1 text-xs text-gold hover:text-gold transition-colors"
@@ -186,12 +190,12 @@ export function MysticErrorFallback({
                 {copied ? (
                   <>
                     <CheckCircle className="w-3 h-3" />
-                    Copied
+                    {t('errorBoundary.copied')}
                   </>
                 ) : (
                   <>
                     <Copy className="w-3 h-3" />
-                    Copy
+                    {t('errorBoundary.copy')}
                   </>
                 )}
               </button>
@@ -216,7 +220,7 @@ export function MysticErrorFallback({
         )}
 
         <p className="mt-8 text-xs text-mystic-600">
-          If this continues, the cosmos may need a moment to realign.
+          {t('errorBoundary.tailFooter')}
         </p>
       </div>
     </div>
@@ -224,20 +228,22 @@ export function MysticErrorFallback({
 }
 
 export function NetworkErrorFallback({ onRetry }: { onRetry?: () => void }) {
+  const { t } = useT('app');
   return (
     <MysticErrorFallback
-      title="Connection Lost to the Stars"
-      message="We couldn't reach the cosmic servers. Check your connection and try again when the path is clear."
+      title={t('errorBoundary.networkTitle')}
+      message={t('errorBoundary.networkMessage')}
       onRetry={onRetry}
     />
   );
 }
 
 export function NotFoundFallback({ onGoHome }: { onGoHome?: () => void }) {
+  const { t } = useT('app');
   return (
     <MysticErrorFallback
-      title="This Path Leads Nowhere"
-      message="The page you seek has vanished into the void. Perhaps the stars have a different destination in mind."
+      title={t('errorBoundary.notFoundTitle')}
+      message={t('errorBoundary.notFoundMessage')}
       onGoHome={onGoHome}
     />
   );

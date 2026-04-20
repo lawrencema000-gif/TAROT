@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { TarotCard, ZodiacSign, Goal } from '../types';
 import { getLocale } from '../i18n/config';
+import i18n from '../i18n/config';
 
 export interface ReadingCard {
   id: number;
@@ -166,11 +167,26 @@ export function generateLocalReading(
   return paragraphs.join('\n\n');
 }
 
+function spreadPositionsI18nKey(spreadType: string): string {
+  if (spreadType === 'three-card') return 'threeCard';
+  if (spreadType === 'celtic-cross') return 'celticCross';
+  return spreadType;
+}
+
 export function getSpreadPositions(spreadType: string): string[] {
-  return spreadPositions[spreadType] || spreadPositions.single;
+  const fallback = spreadPositions[spreadType] || spreadPositions.single;
+  const key = spreadPositionsI18nKey(spreadType);
+  const v = i18n.t(`readings.spreadPositions.${key}`, {
+    ns: 'app',
+    returnObjects: true,
+    defaultValue: fallback,
+  });
+  return Array.isArray(v) && v.length > 0 ? (v as string[]) : fallback;
 }
 
 export function getSpreadCardCount(spreadType: string): number {
+  // Card count is structural and never changes per locale, so read from the
+  // canonical English table.
   return (spreadPositions[spreadType] || spreadPositions.single).length;
 }
 

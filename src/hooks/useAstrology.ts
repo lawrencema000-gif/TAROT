@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
+import i18n from '../i18n/config';
+const tErr = (key: string, fallback: string) => i18n.t(`astrologyErrors.${key}`, { ns: 'app', defaultValue: fallback });
 import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
 import { apiCall, ApiError, ApiContractError } from '../lib/apiClient';
 import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse } from '../schema';
@@ -181,7 +183,7 @@ export function useNatalChart() {
         setCache('chart', data);
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to load chart';
+      const msg = e instanceof Error ? e.message : tErr('loadChart', 'Failed to load chart');
       if (msg.includes('No chart found')) {
         setChart(null);
       } else {
@@ -214,7 +216,7 @@ export function useNatalChart() {
       setCache('chart', data);
       return data;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to compute chart');
+      setError(e instanceof Error ? e.message : tErr('computeChart', 'Failed to compute chart'));
       throw e;
     } finally {
       setLoading(false);
@@ -252,7 +254,7 @@ export function useDailyHoroscope() {
       if (e instanceof ApiError || e instanceof ApiContractError) {
         setError(e.message);
       } else {
-        setError(e instanceof Error ? e.message : 'Failed to load daily horoscope');
+        setError(e instanceof Error ? e.message : tErr('dailyHoroscope', 'Failed to load daily horoscope'));
       }
     } finally {
       setLoading(false);
@@ -292,7 +294,7 @@ export function useWeeklyForecast() {
       if (e instanceof ApiError || e instanceof ApiContractError) {
         setError(e.message);
       } else {
-        setError(e instanceof Error ? e.message : 'Failed to load weekly forecast');
+        setError(e instanceof Error ? e.message : tErr('weeklyForecast', 'Failed to load weekly forecast'));
       }
     } finally {
       setLoading(false);
@@ -332,7 +334,7 @@ export function useMonthlyForecast() {
       if (e instanceof ApiError || e instanceof ApiContractError) {
         setError(e.message);
       } else {
-        setError(e instanceof Error ? e.message : 'Failed to load monthly forecast');
+        setError(e instanceof Error ? e.message : tErr('monthlyForecast', 'Failed to load monthly forecast'));
       }
     } finally {
       setLoading(false);
@@ -377,7 +379,7 @@ export function useTransitCalendar() {
       if (e instanceof ApiError || e instanceof ApiContractError) {
         setError(e.message);
       } else {
-        setError(e instanceof Error ? e.message : 'Failed to load transits');
+        setError(e instanceof Error ? e.message : tErr('transits', 'Failed to load transits'));
       }
     } finally {
       setLoading(false);

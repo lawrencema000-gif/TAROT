@@ -100,9 +100,10 @@ export default tseslint.config(
         {
           default: 'disallow',
           rules: [
-            // UI: pages + components. May use hooks, services (transiently
-            // until DAL lands), context, utils, i18n, data, config, types,
-            // styles, and peer components. MAY NOT import lib/supabase.
+            // UI: pages + components. May use hooks, services, DAL (direct
+            // read/write through typed modules), context, utils, i18n,
+            // data, config, types, styles, and peer components. MAY NOT
+            // import lib/supabase.
             {
               from: ['pages', 'components'],
               allow: [
@@ -110,6 +111,7 @@ export default tseslint.config(
                 'components',
                 'hooks',
                 'services',
+                'dal',
                 'context',
                 'utils',
                 'i18n',
@@ -119,15 +121,17 @@ export default tseslint.config(
                 'styles',
               ],
             },
-            // Hooks: may use services, context, utils, i18n, lib, data,
-            // config, types, plus peer hooks. Hooks are NOT allowed to
-            // reach lib/supabase directly — `no-restricted-imports` below
-            // enforces that with a clearer error message.
+            // Hooks: may use services, DAL (typed data-access modules),
+            // context, utils, i18n, lib, data, config, types, plus peer
+            // hooks. Hooks are NOT allowed to reach lib/supabase directly
+            // — `no-restricted-imports` below enforces that with a clearer
+            // error message.
             {
               from: ['hooks'],
               allow: [
                 'hooks',
                 'services',
+                'dal',
                 'context',
                 'utils',
                 'i18n',

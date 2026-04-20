@@ -152,3 +152,27 @@ npm run build
 npm run android:build
 npm run android:run
 ```
+
+## Observability
+
+### Core Web Vitals → GA4
+
+Every page load auto-reports the five standard Core Web Vitals (LCP, CLS,
+INP, FCP, TTFB) to GA4 as `web_vital` custom events. Each event carries
+the build SHA (`VITE_BUILD_SHA`) so regressions surface per-deploy.
+
+- Wired in `src/utils/webVitals.ts`, called from `src/main.tsx` after
+  `initAnalytics()` so the gtag queue is primed first.
+- On slow connections (`navigator.connection.effectiveType` = 2g/3g),
+  reporting is deferred through `requestIdleCallback` with a 1-second
+  timeout to avoid stealing CPU from render.
+- If gtag is blocked (DNT, ad-block, Capacitor), reporting silently
+  no-ops — same contract as the rest of `analytics.ts`.
+
+**View the data:** GA4 → Reports → Engagement → Events → filter on
+`web_vital`. Pivot by the `release` param to compare builds.
+
+**Custom timings:** emit any additional timing (e.g. sign-in duration,
+horoscope fetch time) via `reportCustomVital(name, value)` from
+`src/utils/webVitals.ts`. It lands in the same `web_vital` stream with
+`rating = 'custom'`.

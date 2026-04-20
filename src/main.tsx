@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import App from './App.tsx';
 import { initAnalytics } from './services/analytics';
 import { captureAttributionFromUrl } from './utils/attribution';
+import { initWebVitals } from './utils/webVitals';
 import './i18n/config'; // must load before any component that calls useT()
 import './index.css';
 import './styles/landing.css';
@@ -28,6 +29,9 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 }
 
 initAnalytics();
+// Must come AFTER initAnalytics() so the gtag queue is primed before
+// web-vitals starts reporting. See obs-audit C3 / SCALABILITY-PLAN Part 3.
+initWebVitals();
 captureAttributionFromUrl();
 
 createRoot(document.getElementById('root')!).render(

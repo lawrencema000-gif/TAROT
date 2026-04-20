@@ -84,18 +84,23 @@ Shipped commits: `cbb90d6` `446154b`
 
 ---
 
-## 🟡 Phase 5 — Scale infrastructure (in progress)
+## 🟢 Phase 5 — Scale infrastructure (4 of 7 done)
 
-Per SCALABILITY-PLAN.md Part 4 Phase 5. Key items:
+Per SCALABILITY-PLAN.md Part 4 Phase 5.
 
-- Upstash Redis global rate limiter (replaces in-memory `_shared/rate-limit.ts`)
-- ✓ `ai_usage_ledger` partitioned table + Gemini cost tracking (`20260424000000_ai_usage_ledger.sql`, `_shared/ai-usage.ts`, wired into `generate-reading`). Monthly range partitions; RLS lets users read their own rows; service-role-only INSERT; pg_cron 13-month retention.
-- Sentry alert rules + UptimeRobot (5-min sign-in / horoscope / reading probes)
-- Core Web Vitals reporting (onLCP/onCLS/onINP to GA4)
-- Feature flags (`feature_flags` table + `useFlag()` hook)
-- CloudFlare in front of Netlify for edge caching
-- Gemini 2.0 Flash switch (10-20× cost reduction)
-- God-object splits behind feature flags
+Shipped commits: `9fc3062` `c96a3e2` `a9efe57`
+
+- ✓ **`ai_usage_ledger` partitioned table + Gemini cost tracking** (`20260424000000_ai_usage_ledger.sql`, `_shared/ai-usage.ts`, wired into `generate-reading`). Monthly range partitions; RLS lets users read their own rows; service-role-only INSERT; pg_cron 13-month retention. Every LLM call now writes `{user_id, model, prompt_tokens, completion_tokens, total_tokens, cost_cents, correlation_id, function_name}`.
+- ✓ **Core Web Vitals → GA4** (`src/utils/webVitals.ts`, wired from `main.tsx`). onCLS/onINP/onLCP/onFCP/onTTFB emitted as `web_vital` events tagged with `release = VITE_BUILD_SHA`. Low-end connections (2g/3g) deferred via `requestIdleCallback`. Inlined into main chunk so no extra first-paint cost.
+- ✓ **Feature flags** — `feature_flags` table (`20260425000000_feature_flags.sql`), `useFeatureFlag(key)` React hook (`FeatureFlagContext.tsx` wrapping `AuthContext`), matching Deno-side `_shared/feature-flags.ts` evaluator. FNV-1a hash bucketing keeps every user deterministic across sessions. Query-string overrides (`?ff_<key>=on|off`) for local testing. Flag fetches cached 60s server-side, 5 min client-side.
+- ✓ **Gemini 2.0 Flash switch (flag-gated)** — `generate-reading` picks model per user via `gemini-flash-default` flag. Starts OFF; flip rollout_percent to 10/100 in the DB (no deploy) to roll out. `ai_usage_ledger` writes the actual model used so cost comparison is one SQL query.
+
+Remaining (needs your vendor call):
+
+- ⬜ **Global rate limiter** (replaces in-memory `_shared/rate-limit.ts`). Options: Upstash Redis (~$10/mo, REST API, ~1 ms edge latency), Supabase's own pg_net + a DB function (free, slower), or rolled using PostgreSQL's `pg_advisory_lock` (free but contention-prone).
+- ⬜ **Sentry alert rules + UptimeRobot** (5-min sign-in / horoscope / reading probes). Both are UI-driven — I can draft the rules as a doc/runbook but you configure in each vendor.
+- ⬜ **CloudFlare in front of Netlify** for edge caching of `/tarot-meanings/*`, `/blog/*`, `/locales/*`. Requires DNS migration + CF account. Significant win at 500k+ DAU.
+- ⬜ **God-object splits behind feature flags** — QuizzesPage (1412 LOC), JournalPage (1179), TarotSection (1166), SettingsSheet (1166), AuthContext (1074). Each split goes behind a flag, rolled out incrementally.
 
 ---
 

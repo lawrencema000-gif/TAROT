@@ -28,7 +28,7 @@ import tseslint from 'typescript-eslint';
 // --------------------------------------------------------------------------
 
 export default tseslint.config(
-  { ignores: ['dist', 'android', 'node_modules', 'scripts', 'supabase/functions'] },
+  { ignores: ['dist', 'android', 'node_modules', 'scripts', 'supabase/functions', 'e2e', 'playwright-report', 'test-results'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

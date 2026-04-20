@@ -2072,6 +2072,13 @@
   },
   "billing": {
     "purchaseCancelled": "Purchase cancelled",
-    "purchaseFailed": "Purchase failed"
+    "purchaseFailed": "Purchase failed",
+    "webNotAvailableOnMobile": "Web billing is not available on mobile. Please use the app store.",
+    "userNotAuthenticated": "User not authenticated",
+    "alreadyPremium": "Already have premium",
+    "stripeNotConfigured": "Stripe is not configured. Please contact support.",
+    "notAuthenticated": "Not authenticated",
+    "checkoutSessionFailed": "Failed to create checkout session",
+    "noCheckoutUrl": "No checkout URL returned"
   }
 }

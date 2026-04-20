@@ -2072,6 +2072,13 @@
   },
   "billing": {
     "purchaseCancelled": "購入がキャンセルされました",
-    "purchaseFailed": "購入に失敗しました"
+    "purchaseFailed": "購入に失敗しました",
+    "webNotAvailableOnMobile": "ウェブ決済はモバイルでは利用できません。アプリストアをご利用ください。",
+    "userNotAuthenticated": "ユーザーが認証されていません",
+    "alreadyPremium": "すでにプレミアムをお持ちです",
+    "stripeNotConfigured": "Stripeが構成されていません。サポートにお問い合わせください。",
+    "notAuthenticated": "認証されていません",
+    "checkoutSessionFailed": "チェックアウトセッションの作成に失敗しました",
+    "noCheckoutUrl": "チェックアウトURLが返されませんでした"
   }
 }

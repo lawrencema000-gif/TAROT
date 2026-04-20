@@ -2072,6 +2072,13 @@
   },
   "billing": {
     "purchaseCancelled": "구매가 취소되었습니다",
-    "purchaseFailed": "구매에 실패했습니다"
+    "purchaseFailed": "구매에 실패했습니다",
+    "webNotAvailableOnMobile": "웹 결제는 모바일에서 이용할 수 없습니다. 앱 스토어를 이용해 주세요.",
+    "userNotAuthenticated": "사용자가 인증되지 않았습니다",
+    "alreadyPremium": "이미 프리미엄을 사용 중입니다",
+    "stripeNotConfigured": "Stripe가 구성되지 않았습니다. 지원팀에 문의하세요.",
+    "notAuthenticated": "인증되지 않았습니다",
+    "checkoutSessionFailed": "체크아웃 세션 생성에 실패했습니다",
+    "noCheckoutUrl": "체크아웃 URL이 반환되지 않았습니다"
   }
 }

@@ -444,6 +444,7 @@ class WebBillingService implements BillingService {
       console.error('[WebBilling] Stripe purchase attempted on native platform - this should not happen');
       return {
         success: false,
+        errorKey: 'billing.webNotAvailableOnMobile',
         error: 'Web billing is not available on mobile. Please use the app store.',
       };
     }
@@ -452,6 +453,7 @@ class WebBillingService implements BillingService {
       if (!this.userId) {
         return {
           success: false,
+          errorKey: 'billing.userNotAuthenticated',
           error: 'User not authenticated',
         };
       }
@@ -460,6 +462,7 @@ class WebBillingService implements BillingService {
       if (!billingCheck.allowed) {
         return {
           success: false,
+          errorKey: 'billing.alreadyPremium',
           error: billingCheck.reason || 'Already have premium',
         };
       }
@@ -468,6 +471,7 @@ class WebBillingService implements BillingService {
       if (!priceId) {
         return {
           success: false,
+          errorKey: 'billing.stripeNotConfigured',
           error: 'Stripe is not configured. Please contact support.',
         };
       }
@@ -480,6 +484,7 @@ class WebBillingService implements BillingService {
       if (sessionError || !session) {
         return {
           success: false,
+          errorKey: 'billing.notAuthenticated',
           error: 'Not authenticated',
         };
       }
@@ -504,6 +509,7 @@ class WebBillingService implements BillingService {
         const error = await response.json();
         return {
           success: false,
+          errorKey: 'billing.checkoutSessionFailed',
           error: error.error || 'Failed to create checkout session',
         };
       }
@@ -520,6 +526,7 @@ class WebBillingService implements BillingService {
 
       return {
         success: false,
+        errorKey: 'billing.noCheckoutUrl',
         error: 'No checkout URL returned',
       };
     } catch (error) {

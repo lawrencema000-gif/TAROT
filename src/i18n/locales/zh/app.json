@@ -2072,6 +2072,13 @@
   },
   "billing": {
     "purchaseCancelled": "购买已取消",
-    "purchaseFailed": "购买失败"
+    "purchaseFailed": "购买失败",
+    "webNotAvailableOnMobile": "网页结算在移动设备上不可用。请使用应用商店。",
+    "userNotAuthenticated": "用户未认证",
+    "alreadyPremium": "已经拥有高级会员",
+    "stripeNotConfigured": "Stripe未配置。请联系支持。",
+    "notAuthenticated": "未认证",
+    "checkoutSessionFailed": "创建结账会话失败",
+    "noCheckoutUrl": "未返回结账URL"
   }
 }

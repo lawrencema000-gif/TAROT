@@ -278,6 +278,54 @@ function PlayBadge() {
   );
 }
 
+// ─── Bento Feature Card ────────────────────────────────────────
+// Extracted so `useReveal` isn't called inside .map(). Each card gets its
+// own observer state instance. `t` is passed in rather than re-invoked as
+// a hook inside the card.
+type TFn = (k: string, o?: Record<string, unknown>) => string;
+function BentoItem({ feature, index, t }: {
+  feature: { icon: string; key: string; size: string };
+  index: number;
+  t: TFn;
+}) {
+  const { ref, v } = useReveal();
+  return (
+    <div
+      ref={ref}
+      className={`lp-bento-card ${feature.size} ${v ? 'vis' : ''}`}
+      style={{ transitionDelay: `${index * 80}ms` }}
+    >
+      <div className="lp-bento-icon">{feature.icon}</div>
+      <h3 className="lp-bento-title">{t(`features.items.${feature.key}.title`)}</h3>
+      <p className="lp-bento-desc">{t(`features.items.${feature.key}.desc`)}</p>
+    </div>
+  );
+}
+
+// ─── Ritual Timeline Step ──────────────────────────────────────
+function RitualStep({ step, index, t }: {
+  step: { n: string; icon: string; key: string };
+  index: number;
+  t: TFn;
+}) {
+  const { ref, v } = useReveal();
+  return (
+    <div
+      ref={ref}
+      className={`lp-timeline-item ${index % 2 === 1 ? 'right' : 'left'} ${v ? 'vis' : ''}`}
+      style={{ transitionDelay: `${index * 150}ms` }}
+    >
+      <div className="lp-timeline-dot" />
+      <div className="lp-timeline-card">
+        <div className="lp-timeline-watermark">{step.n}</div>
+        <div className="lp-timeline-icon">{step.icon}</div>
+        <h3 className="lp-timeline-title">{t(`ritual.steps.${step.key}.title`)}</h3>
+        <p className="lp-timeline-desc">{t(`ritual.steps.${step.key}.desc`)}</p>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════════════════════════════
@@ -407,16 +455,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <p className="lp-sub">{t('features.sub')}</p>
           </div>
           <div className="lp-bento">
-            {FEATURES_I18N.map((f, i) => {
-              const { ref, v } = useReveal();
-              return (
-                <div ref={ref} key={f.key} className={`lp-bento-card ${f.size} ${v ? 'vis' : ''}`} style={{ transitionDelay: `${i * 80}ms` }}>
-                  <div className="lp-bento-icon">{f.icon}</div>
-                  <h3 className="lp-bento-title">{t(`features.items.${f.key}.title`)}</h3>
-                  <p className="lp-bento-desc">{t(`features.items.${f.key}.desc`)}</p>
-                </div>
-              );
-            })}
+            {FEATURES_I18N.map((f, i) => (
+              <BentoItem key={f.key} feature={f} index={i} t={t} />
+            ))}
           </div>
         </div>
       </Sec>
@@ -461,20 +502,9 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <p className="lp-sub">{t('ritual.sub')}</p>
           </div>
           <div className="lp-timeline">
-            {RITUAL_STEPS_I18N.map((s, i) => {
-              const { ref, v } = useReveal();
-              return (
-                <div ref={ref} key={s.n} className={`lp-timeline-item ${i % 2 === 1 ? 'right' : 'left'} ${v ? 'vis' : ''}`} style={{ transitionDelay: `${i * 150}ms` }}>
-                  <div className="lp-timeline-dot" />
-                  <div className="lp-timeline-card">
-                    <div className="lp-timeline-watermark">{s.n}</div>
-                    <div className="lp-timeline-icon">{s.icon}</div>
-                    <h3 className="lp-timeline-title">{t(`ritual.steps.${s.key}.title`)}</h3>
-                    <p className="lp-timeline-desc">{t(`ritual.steps.${s.key}.desc`)}</p>
-                  </div>
-                </div>
-              );
-            })}
+            {RITUAL_STEPS_I18N.map((s, i) => (
+              <RitualStep key={s.n} step={s} index={i} t={t} />
+            ))}
             <div className="lp-timeline-line" />
           </div>
         </div>

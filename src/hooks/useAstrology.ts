@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
+import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
@@ -33,6 +34,12 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 
 async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<T> {
   const headers = await getAuthHeaders();
+  // Per-call correlation ID — mirrored back in the response's X-Correlation-Id
+  // header and present on every edge-function log line, so Sentry events can
+  // pivot to the exact server log entry that produced them.
+  const correlationId = newCorrelationId(`astrology:${name}`);
+  headers[CORRELATION_ID_HEADER] = correlationId;
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   // Always include the current locale so astrology functions can localize content
@@ -54,6 +61,9 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${data.session.access_token}`,
             'apikey': ANON_KEY,
+            // Re-use the same correlation ID so the retry shows up in the
+            // same trace as the original 401.
+            [CORRELATION_ID_HEADER]: correlationId,
           };
           const controller2 = new AbortController();
           const timeout2 = setTimeout(() => controller2.abort(), 15000);

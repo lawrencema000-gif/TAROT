@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { isAndroid } from '../utils/platform';
+import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
 
 interface AdUnitConfig {
   adUnitId: string;
@@ -96,8 +97,10 @@ class AdConfigService {
   private async _doFetch(): Promise<AdConfig | null> {
     try {
       const platform = isAndroid() ? 'android' : 'ios';
+      const correlationId = newCorrelationId('ad-config');
       const { data, error } = await supabase.functions.invoke('ad-config', {
         body: { platform },
+        headers: { [CORRELATION_ID_HEADER]: correlationId },
       });
 
       if (error) {
@@ -168,8 +171,10 @@ class AdConfigService {
     if (events.length === 0) return 0;
 
     try {
+      const correlationId = newCorrelationId('ad-events');
       const { data, error } = await supabase.functions.invoke('ad-events', {
         body: { events },
+        headers: { [CORRELATION_ID_HEADER]: correlationId },
       });
 
       if (error) {

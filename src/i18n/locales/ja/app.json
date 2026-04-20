@@ -1623,7 +1623,11 @@
     "loadMoreSaved": "さらに保存したアイテムを表示",
     "loadMoreReadings": "さらにリーディングを表示",
     "contentComingSoon": "コンテンツ準備中...",
-    "continueExploring": "ガイドを探求し続け、精神的な実践を深めましょう"
+    "continueExploring": "ガイドを探求し続け、精神的な実践を深めましょう",
+    "savedSpreads": "保存したスプレッド",
+    "savedCards": "保存したカード",
+    "savedHoroscopes": "保存した占い",
+    "periodDaily": "デイリー"
   },
   "celebration": {
     "streak": {

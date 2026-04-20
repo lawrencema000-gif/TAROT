@@ -1623,7 +1623,11 @@
     "loadMoreSaved": "加载更多已保存项目",
     "loadMoreReadings": "加载更多解读",
     "contentComingSoon": "内容即将推出...",
-    "continueExploring": "继续探索指南，深化你的灵性实践"
+    "continueExploring": "继续探索指南，深化你的灵性实践",
+    "savedSpreads": "已保存的牌阵",
+    "savedCards": "已保存的牌",
+    "savedHoroscopes": "已保存的运势",
+    "periodDaily": "每日"
   },
   "celebration": {
     "streak": {

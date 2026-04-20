@@ -270,7 +270,7 @@ export function LibrarySection() {
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-mystic-400 flex items-center gap-2">
                     <Layers className="w-4 h-4" />
-                    Saved Spreads
+                    {t('library.savedSpreads', { defaultValue: 'Saved Spreads' })}
                   </h3>
                   {tarotReadings.map(reading => (
                     <Card key={reading.id} padding="md" className="relative group">
@@ -352,7 +352,7 @@ export function LibrarySection() {
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-mystic-400 flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    Saved Cards
+                    {t('library.savedCards', { defaultValue: 'Saved Cards' })}
                   </h3>
                   {filteredHighlights
                     .filter(h => h.highlight_type === 'tarot')
@@ -402,7 +402,7 @@ export function LibrarySection() {
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-mystic-400 flex items-center gap-2">
                     <Star className="w-4 h-4" />
-                    Saved Horoscopes
+                    {t('library.savedHoroscopes', { defaultValue: 'Saved Horoscopes' })}
                   </h3>
                   {filteredHighlights
                     .filter(h => h.highlight_type === 'horoscope')
@@ -422,7 +422,7 @@ export function LibrarySection() {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-medium text-mystic-100 text-sm capitalize">
-                                {content.zodiacSign} - {content.period || 'Daily'}
+                                {content.zodiacSign} - {content.period ?? t('library.periodDaily', { defaultValue: 'Daily' })}
                               </h4>
                               <div className="flex items-center gap-1 text-xs text-mystic-500">
                                 <Calendar className="w-3 h-3" />

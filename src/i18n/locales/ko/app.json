@@ -1623,7 +1623,11 @@
     "loadMoreSaved": "저장된 항목 더 보기",
     "loadMoreReadings": "리딩 더 보기",
     "contentComingSoon": "콘텐츠 준비 중...",
-    "continueExploring": "가이드를 계속 탐구하여 영적 실천을 깊게 하세요"
+    "continueExploring": "가이드를 계속 탐구하여 영적 실천을 깊게 하세요",
+    "savedSpreads": "저장된 스프레드",
+    "savedCards": "저장된 카드",
+    "savedHoroscopes": "저장된 운세",
+    "periodDaily": "데일리"
   },
   "celebration": {
     "streak": {

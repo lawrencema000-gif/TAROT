@@ -1623,7 +1623,11 @@
     "loadMoreSaved": "Load more saved items",
     "loadMoreReadings": "Load more readings",
     "contentComingSoon": "Content coming soon...",
-    "continueExploring": "Continue exploring the guides to deepen your spiritual practice"
+    "continueExploring": "Continue exploring the guides to deepen your spiritual practice",
+    "savedSpreads": "Saved Spreads",
+    "savedCards": "Saved Cards",
+    "savedHoroscopes": "Saved Horoscopes",
+    "periodDaily": "Daily"
   },
   "celebration": {
     "streak": {

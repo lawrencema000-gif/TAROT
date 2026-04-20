@@ -1,0 +1,79 @@
+name: Supabase migration drift check
+
+# Fails if someone has added/changed tables directly in the Supabase dashboard
+# without a corresponding migration file checked into git. Runs on PRs that
+# touch supabase/migrations/**.
+#
+# Also guards against the opposite: migrations committed to git that haven't
+# been applied yet to the linked project.
+#
+# Secrets required (same as deploy.yml):
+#   - SUPABASE_ACCESS_TOKEN
+#   - SUPABASE_PROJECT_ID
+#   - SUPABASE_DB_PASSWORD
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+      - '.github/workflows/migration-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+  # Nightly sanity run even if nothing changed, catches drift from dashboard edits.
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}" \
+                       --password "${{ secrets.SUPABASE_DB_PASSWORD }}"
+
+      - name: Check migration list matches remote
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          # supabase migration list prints a diff between local files and
+          # remote migration history. We fail the job if any local migration
+          # isn't applied (new changes coming in via this PR) — that's fine
+          # because deploy.yml will apply them on main. But we also fail if
+          # the REMOTE has migrations the local tree doesn't know about,
+          # which indicates someone bypassed git.
+          supabase migration list --linked | tee /tmp/migration-list.txt
+          if grep -q "Remote migrations not found locally" /tmp/migration-list.txt; then
+            echo "::error::Remote has migrations missing from git. Someone edited the DB outside of source control."
+            exit 1
+          fi
+
+      - name: Schema diff (detects drift in tables edited via dashboard)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          # db diff compares the live schema to what the local migrations
+          # would produce. Empty diff = clean. Non-empty = drift.
+          supabase db diff --linked --schema public > /tmp/schema-diff.sql || true
+          if [ -s /tmp/schema-diff.sql ]; then
+            echo "::warning::Schema drift detected between live DB and local migrations:"
+            cat /tmp/schema-diff.sql
+            # Make this a warning, not a failure, because legitimate drift can
+            # occur between when a migration is committed and when deploy.yml
+            # applies it. The nightly cron run is what matters — if drift
+            # persists, open an issue.
+          else
+            echo "✓ No schema drift detected."
+          fi

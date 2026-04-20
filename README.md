@@ -92,6 +92,50 @@ Dev mode shows additional details like full stack traces:
 - Toggle "Dev Mode" switch in the diagnostics panel
 - Or set `import.meta.env.DEV` to `true` in your build
 
+## Deploys
+
+Production deploys are fully automated. No more `netlify deploy --prod` by hand.
+
+### Flow
+
+- **Push to `main`** -> `.github/workflows/deploy.yml` runs: CI (`typecheck` + `lint` + `test` + `build`) -> Netlify prod deploy of `dist/` -> `supabase db push --linked` -> `supabase functions deploy` for each function folder changed in the last commit. Deploy URL and list of deployed functions are written to the GitHub Actions step summary.
+- **Open a PR** -> `.github/workflows/preview.yml` runs CI + ships a Netlify deploy preview and comments the unique URL on the PR.
+- **Android AAB** still comes from the existing `android` job in `ci.yml` on main.
+
+### Required GitHub secrets
+
+Add these at <https://github.com/lawrencema000-gif/TAROT/settings/secrets/actions>:
+
+| Secret | Source |
+| --- | --- |
+| `NETLIFY_AUTH_TOKEN` | <https://app.netlify.com/user/applications#personal-access-tokens> |
+| `NETLIFY_SITE_ID` | `ff59834d-82e1-44a8-8ae5-0aef6d1621e1` |
+| `SUPABASE_ACCESS_TOKEN` | <https://supabase.com/dashboard/account/tokens> |
+| `SUPABASE_DB_PASSWORD` | DB password for project `ulzlthhkqjuohzjangcq` |
+| `SUPABASE_PROJECT_ID` | `ulzlthhkqjuohzjangcq` |
+| `VITE_SUPABASE_URL` | Same value as in local `.env` |
+| `VITE_SUPABASE_ANON_KEY` | Same value as in local `.env` |
+
+### What's live right now
+
+Every build emits `/version.json` with the git SHA, build time, and package version. It's served with `Cache-Control: no-store`.
+
+```bash
+curl https://tarotlife.app/version.json
+npm run deploy:check              # compare live SHA vs local HEAD
+npm run deploy:check -- <preview-url>
+```
+
+### Rollback
+
+One click, no CLI:
+
+1. Open <https://app.netlify.com/sites/arcana-ritual-app/deploys>
+2. Find the last known-good deploy
+3. Click **Publish deploy** (Netlify keeps every prior build and republishes instantly).
+
+For DB migrations, roll back by pushing a forward-fix migration — do not `supabase db reset` against prod.
+
 ## Development
 
 ```bash

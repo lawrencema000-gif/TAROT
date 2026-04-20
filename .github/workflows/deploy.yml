@@ -1,0 +1,99 @@
+# Auto-deploy on push to main (Phase 0 of SCALABILITY-PLAN.md).
+#
+# Required GitHub secrets (Settings -> Secrets and variables -> Actions):
+#   NETLIFY_AUTH_TOKEN   https://app.netlify.com/user/applications#personal-access-tokens
+#   NETLIFY_SITE_ID      ff59834d-82e1-44a8-8ae5-0aef6d1621e1
+#   SUPABASE_ACCESS_TOKEN  https://supabase.com/dashboard/account/tokens
+#   SUPABASE_DB_PASSWORD (DB password for ulzlthhkqjuohzjangcq)
+#   SUPABASE_PROJECT_ID  ulzlthhkqjuohzjangcq
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_ANON_KEY
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          VITE_BUILD_SHA: ${{ github.sha }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      - name: Deploy to Netlify (prod)
+        id: netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: dist
+          production-deploy: true
+          deploy-message: "sha ${{ github.sha }}"
+          enable-commit-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with: { version: latest }
+
+      - name: Push DB migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase db push --linked --yes
+
+      - name: Deploy changed edge functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- supabase/functions/ \
+            | awk -F/ 'NF>=3 && $3!="_shared" {print $3}' | sort -u)
+          if [ -z "$CHANGED" ]; then
+            echo "No edge function changes."
+            exit 0
+          fi
+          echo "Deploying: $CHANGED"
+          for fn in $CHANGED; do
+            [ -d "supabase/functions/$fn" ] || continue
+            supabase functions deploy "$fn" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          done
+          echo "$CHANGED" > /tmp/deployed-fns.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Deploy result"
+            echo "- **URL:** ${{ steps.netlify.outputs.deploy-url }}"
+            echo "- **SHA:** \`${{ github.sha }}\`"
+            echo "- **Version check:** https://tarotlife.app/version.json"
+            if [ -s /tmp/deployed-fns.txt ]; then
+              echo "- **Edge functions deployed:**"
+              sed 's/^/  - /' /tmp/deployed-fns.txt
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

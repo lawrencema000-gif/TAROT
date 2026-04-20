@@ -3,6 +3,11 @@
   publish = "dist"
 
 [[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"

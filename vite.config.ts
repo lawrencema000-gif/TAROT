@@ -1,10 +1,31 @@
-import { defineConfig, type UserConfig } from 'vite';
+import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'node:fs';
+
+// Emits dist/version.json at build time. Served with no-store via netlify.toml.
+function versionJsonPlugin(): Plugin {
+  const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+  return {
+    name: 'emit-version-json',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({
+          sha: process.env.VITE_BUILD_SHA ?? 'local',
+          builtAt: new Date().toISOString(),
+          version: pkg.version,
+        }),
+      });
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig((): UserConfig => {
   const config: UserConfig = {
-    plugins: [react()],
+    plugins: [react(), versionJsonPlugin()],
     optimizeDeps: {
       exclude: ['lucide-react'],
     },

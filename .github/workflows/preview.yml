@@ -1,0 +1,43 @@
+# Netlify deploy preview per PR (Phase 0 of SCALABILITY-PLAN.md).
+# Uses the same secrets as deploy.yml (NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID,
+# VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
+name: Preview
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - name: Build
+        env:
+          VITE_BUILD_SHA: ${{ github.event.pull_request.head.sha }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+      - name: Netlify deploy preview
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: dist
+          production-deploy: false
+          deploy-message: "PR #${{ github.event.pull_request.number }}"
+          alias: pr-${{ github.event.pull_request.number }}
+          enable-pull-request-comment: true
+          overwrites-pull-request-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

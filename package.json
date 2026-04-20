@@ -17,6 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "create-stripe-products": "node scripts/create-stripe-products.mjs",
+    "deploy:check": "node scripts/deploy-check.mjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:open:android": "npx cap open android",
     "android:build": "npm run build && npx cap sync android",

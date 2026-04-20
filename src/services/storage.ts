@@ -1,4 +1,5 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // retained for user_preferences (internal-only service table)
+import { savedHighlights, contentInteractions, tarotReadings as tarotReadingsDal } from '../dal';
 import type { TarotReading } from '../types';
 import { appStorage } from '../lib/appStorage';
 
@@ -35,34 +36,23 @@ export async function saveItem(
   notes?: string,
   tags: string[] = []
 ): Promise<{ success: boolean; id?: string; error?: string }> {
-  const { data: existing } = await supabase
-    .from('saved_highlights')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('highlight_type', itemType)
-    .eq('content->>itemId', itemId)
-    .maybeSingle();
-
-  if (existing) {
-    return { success: true, id: existing.id };
+  const existingRes = await savedHighlights.findByItem(userId, itemType, itemId);
+  if (existingRes.ok && existingRes.data) {
+    return { success: true, id: existingRes.data.id };
   }
 
-  const { data, error } = await supabase
-    .from('saved_highlights')
-    .insert({
-      user_id: userId,
-      highlight_type: itemType,
-      date: new Date().toISOString().split('T')[0],
-      content: { itemId, title, ...content, notes, tags },
-    })
-    .select('id')
-    .single();
+  const res = await savedHighlights.insertReturningId({
+    userId,
+    highlightType: itemType,
+    date: new Date().toISOString().split('T')[0],
+    content: { itemId, title, ...content, notes, tags },
+  });
 
-  if (error) {
-    return { success: false, error: error.message };
+  if (!res.ok) {
+    return { success: false, error: res.error };
   }
 
-  return { success: true, id: data.id };
+  return { success: true, id: res.data.id };
 }
 
 export async function unsaveItem(
@@ -70,17 +60,10 @@ export async function unsaveItem(
   itemType: SavedItemType,
   itemId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const { error } = await supabase
-    .from('saved_highlights')
-    .delete()
-    .eq('user_id', userId)
-    .eq('highlight_type', itemType)
-    .eq('content->>itemId', itemId);
-
-  if (error) {
-    return { success: false, error: error.message };
+  const res = await savedHighlights.deleteByItem(userId, itemType, itemId);
+  if (!res.ok) {
+    return { success: false, error: res.error };
   }
-
   return { success: true };
 }
 
@@ -89,15 +72,8 @@ export async function isItemSaved(
   itemType: SavedItemType,
   itemId: string
 ): Promise<boolean> {
-  const { data } = await supabase
-    .from('saved_highlights')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('highlight_type', itemType)
-    .eq('content->>itemId', itemId)
-    .maybeSingle();
-
-  return !!data;
+  const res = await savedHighlights.findByItem(userId, itemType, itemId);
+  return res.ok && res.data !== null;
 }
 
 export async function getSavedItems(
@@ -106,33 +82,24 @@ export async function getSavedItems(
   limit = 50,
   offset = 0
 ): Promise<SavedItem[]> {
-  let query = supabase
-    .from('saved_highlights')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+  const res = await savedHighlights.listForUser(userId, {
+    highlightType: itemType,
+    limit,
+    offset,
+  });
 
-  if (itemType) {
-    query = query.eq('highlight_type', itemType);
-  }
+  if (!res.ok) return [];
 
-  const { data, error } = await query;
-
-  if (error || !data) {
-    return [];
-  }
-
-  return data.map(item => ({
+  return res.data.map(item => ({
     id: item.id,
-    userId: item.user_id,
-    itemType: item.highlight_type as SavedItemType,
-    itemId: item.content?.itemId as string || item.id,
-    title: item.content?.title as string || 'Saved Item',
-    content: item.content as Record<string, unknown>,
+    userId: item.userId,
+    itemType: item.highlightType as SavedItemType,
+    itemId: (item.content?.itemId as string) || item.id,
+    title: (item.content?.title as string) || 'Saved Item',
+    content: item.content,
     notes: item.content?.notes as string | undefined,
     tags: (item.content?.tags as string[]) || [],
-    createdAt: item.created_at,
+    createdAt: item.createdAt,
   }));
 }
 
@@ -141,29 +108,21 @@ export async function updateSavedItemNotes(
   savedItemId: string,
   notes: string
 ): Promise<{ success: boolean; error?: string }> {
-  const { data: existing } = await supabase
-    .from('saved_highlights')
-    .select('content')
-    .eq('id', savedItemId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (!existing) {
+  const existingRes = await savedHighlights.getContentById(userId, savedItemId);
+  if (!existingRes.ok) {
+    return { success: false, error: existingRes.error };
+  }
+  if (!existingRes.data) {
     return { success: false, error: 'Item not found' };
   }
 
-  const { error } = await supabase
-    .from('saved_highlights')
-    .update({
-      content: { ...existing.content, notes },
-    })
-    .eq('id', savedItemId)
-    .eq('user_id', userId);
-
-  if (error) {
-    return { success: false, error: error.message };
+  const res = await savedHighlights.updateContentById(userId, savedItemId, {
+    ...existingRes.data,
+    notes,
+  });
+  if (!res.ok) {
+    return { success: false, error: res.error };
   }
-
   return { success: true };
 }
 
@@ -174,11 +133,11 @@ export async function addToHistory(
   title: string,
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
-  await supabase.from('content_interactions').insert({
-    user_id: userId,
-    content_type: itemType,
-    content_id: itemId,
-    interaction_type: 'view',
+  await contentInteractions.insert({
+    userId,
+    contentType: itemType,
+    contentId: itemId,
+    interactionType: 'view',
     metadata: { title, ...metadata },
   });
 }
@@ -191,27 +150,17 @@ export async function getHistory(
   const since = new Date();
   since.setDate(since.getDate() - days);
 
-  let query = supabase
-    .from('content_interactions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('interaction_type', 'view')
-    .gte('created_at', since.toISOString())
-    .order('created_at', { ascending: false })
-    .range(0, 99);
+  const res = await contentInteractions.listRecent(userId, {
+    sinceIso: since.toISOString(),
+    interactionType: 'view',
+    contentType: itemType,
+    range: [0, 99],
+  });
 
-  if (itemType) {
-    query = query.eq('content_type', itemType);
-  }
-
-  const { data, error } = await query;
-
-  if (error || !data) {
-    return [];
-  }
+  if (!res.ok) return [];
 
   const uniqueItems = new Map<string, HistoryItem>();
-  data.forEach(item => {
+  res.data.forEach(item => {
     const key = `${item.content_type}-${item.content_id}`;
     if (!uniqueItems.has(key)) {
       uniqueItems.set(key, {
@@ -219,8 +168,8 @@ export async function getHistory(
         userId: item.user_id,
         itemType: item.content_type as SavedItemType,
         itemId: item.content_id || item.id,
-        title: (item.metadata as Record<string, unknown>)?.title as string || 'History Item',
-        metadata: item.metadata as Record<string, unknown>,
+        title: (item.metadata?.title as string) || 'History Item',
+        metadata: item.metadata,
         viewedAt: item.created_at,
       });
     }
@@ -233,46 +182,22 @@ export async function saveReading(
   userId: string,
   reading: Omit<TarotReading, 'id' | 'saved'>
 ): Promise<{ success: boolean; id?: string; error?: string }> {
-  const { data, error } = await supabase
-    .from('tarot_readings')
-    .insert({
-      user_id: userId,
-      date: reading.date,
-      spread_type: reading.spreadType,
-      cards: reading.cards,
-      interpretation: reading.interpretation,
-    })
-    .select('id')
-    .single();
-
-  if (error) {
-    return { success: false, error: error.message };
+  const res = await tarotReadingsDal.insertReturningId({
+    userId,
+    date: reading.date,
+    spreadType: reading.spreadType,
+    cards: reading.cards,
+    interpretation: reading.interpretation,
+  });
+  if (!res.ok) {
+    return { success: false, error: res.error };
   }
-
-  return { success: true, id: data.id };
+  return { success: true, id: res.data.id };
 }
 
 export async function getReadingHistory(userId: string, limit = 30, offset = 0): Promise<TarotReading[]> {
-  const { data, error } = await supabase
-    .from('tarot_readings')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  if (error || !data) {
-    return [];
-  }
-
-  return data.map(r => ({
-    id: r.id,
-    userId: r.user_id,
-    date: r.date,
-    spreadType: r.spread_type,
-    cards: r.cards as TarotReading['cards'],
-    interpretation: r.interpretation,
-    saved: true,
-  }));
+  const res = await tarotReadingsDal.listHistory(userId, limit, offset);
+  return res.ok ? res.data : [];
 }
 
 export async function saveFavoriteCard(userId: string, cardId: number): Promise<void> {
@@ -400,19 +325,17 @@ export async function migrateGuestData(userId: string): Promise<{ migrated: numb
 
   const savedItems = await getLocalSavedItems();
   if (savedItems.length > 0) {
-    const rows = savedItems.map(item => ({
-      user_id: userId,
-      highlight_type: item.itemType,
-      date: item.createdAt.split('T')[0],
-      content: { itemId: item.itemId, title: item.title, ...item.content, notes: item.notes, tags: item.tags },
-    }));
+    const res = await savedHighlights.upsertMany(
+      savedItems.map(item => ({
+        userId,
+        highlightType: item.itemType,
+        date: item.createdAt.split('T')[0],
+        content: { itemId: item.itemId, title: item.title, ...item.content, notes: item.notes, tags: item.tags },
+      })),
+      { onConflict: 'user_id,highlight_type,date' },
+    );
 
-    const { error } = await supabase
-      .from('saved_highlights')
-      .upsert(rows, { onConflict: 'user_id,highlight_type,date' })
-      .select('id');
-
-    if (!error) {
+    if (res.ok) {
       migrated += savedItems.length;
       savedMigrated = true;
     }
@@ -420,19 +343,19 @@ export async function migrateGuestData(userId: string): Promise<{ migrated: numb
 
   const history = await getLocalHistory();
   if (history.length > 0) {
-    const rows = history.map(item => ({
-      user_id: userId,
-      interaction_type: item.itemType,
-      content_id: item.itemId,
-      metadata: { title: item.title, ...item.metadata },
-      created_at: item.viewedAt,
-    }));
+    // Preserves pre-DAL behavior: interaction_type was set to the item type,
+    // content_type column was not set (relies on its DB default).
+    const res = await contentInteractions.insertMany(
+      history.map(item => ({
+        userId,
+        interactionType: item.itemType,
+        contentId: item.itemId,
+        metadata: { title: item.title, ...item.metadata },
+        createdAt: item.viewedAt,
+      })),
+    );
 
-    const { error } = await supabase
-      .from('content_interactions')
-      .insert(rows);
-
-    if (!error) {
+    if (res.ok) {
       migrated += history.length;
       historyMigrated = true;
     }

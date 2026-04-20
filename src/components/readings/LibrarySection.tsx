@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Chip, Sheet, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
 
 type LibraryTab = 'saved' | 'guides' | 'ai-readings';
 type SavedFilter = 'all' | 'tarot' | 'horoscope' | 'spreads';
@@ -188,43 +188,29 @@ export function LibrarySection() {
 
     try {
       const [highlightsRes, readingsRes, premiumRes] = await Promise.all([
-        supabase
-          .from('saved_highlights')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .range(0, PAGE_SIZE - 1),
-        supabase
-          .from('tarot_readings')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('saved', true)
-          .order('created_at', { ascending: false })
-          .range(0, PAGE_SIZE - 1),
-        supabase
-          .from('premium_readings')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .range(0, PAGE_SIZE - 1),
+        savedHighlightsDalRef.listRawForUser(user.id, { limit: PAGE_SIZE }),
+        tarotReadingsDal.listSaved(user.id, { limit: PAGE_SIZE }),
+        premiumReadingsDal.listRawForUser(user.id, { limit: PAGE_SIZE }),
       ]);
 
-      if (highlightsRes.data) {
+      if (!highlightsRes.ok || !readingsRes.ok || !premiumRes.ok) {
+        toast(t('library.toasts.loadSavedFailed'), 'error');
+      }
+
+      if (highlightsRes.ok) {
         setSavedHighlights(highlightsRes.data as SavedItem[]);
         setHasMoreHighlights(highlightsRes.data.length === PAGE_SIZE);
       }
 
-      if (readingsRes.data) {
+      if (readingsRes.ok) {
         setTarotReadings(readingsRes.data as TarotReading[]);
         setHasMoreReadings(readingsRes.data.length === PAGE_SIZE);
       }
 
-      if (premiumRes.data) {
+      if (premiumRes.ok) {
         setPremiumReadings(premiumRes.data as PremiumReading[]);
         setHasMorePremium(premiumRes.data.length === PAGE_SIZE);
       }
-    } catch {
-      toast(t('library.toasts.loadSavedFailed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -237,58 +223,45 @@ export function LibrarySection() {
     try {
       if (type === 'highlights') {
         const offset = savedHighlights.length;
-        const { data } = await supabase
-          .from('saved_highlights')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .range(offset, offset + PAGE_SIZE - 1);
-        if (data) {
-          setSavedHighlights(prev => [...prev, ...(data as SavedItem[])]);
-          setHasMoreHighlights(data.length === PAGE_SIZE);
+        const res = await savedHighlightsDalRef.listRawForUser(user.id, { limit: PAGE_SIZE, offset });
+        if (res.ok) {
+          setSavedHighlights(prev => [...prev, ...(res.data as SavedItem[])]);
+          setHasMoreHighlights(res.data.length === PAGE_SIZE);
+        } else {
+          toast(t('library.toasts.loadMoreFailed'), 'error');
         }
       } else if (type === 'readings') {
         const offset = tarotReadings.length;
-        const { data } = await supabase
-          .from('tarot_readings')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('saved', true)
-          .order('created_at', { ascending: false })
-          .range(offset, offset + PAGE_SIZE - 1);
-        if (data) {
-          setTarotReadings(prev => [...prev, ...(data as TarotReading[])]);
-          setHasMoreReadings(data.length === PAGE_SIZE);
+        const res = await tarotReadingsDal.listSaved(user.id, { limit: PAGE_SIZE, offset });
+        if (res.ok) {
+          setTarotReadings(prev => [...prev, ...(res.data as TarotReading[])]);
+          setHasMoreReadings(res.data.length === PAGE_SIZE);
+        } else {
+          toast(t('library.toasts.loadMoreFailed'), 'error');
         }
       } else {
         const offset = premiumReadings.length;
-        const { data } = await supabase
-          .from('premium_readings')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .range(offset, offset + PAGE_SIZE - 1);
-        if (data) {
-          setPremiumReadings(prev => [...prev, ...(data as PremiumReading[])]);
-          setHasMorePremium(data.length === PAGE_SIZE);
+        const res = await premiumReadingsDal.listRawForUser(user.id, { limit: PAGE_SIZE, offset });
+        if (res.ok) {
+          setPremiumReadings(prev => [...prev, ...(res.data as PremiumReading[])]);
+          setHasMorePremium(res.data.length === PAGE_SIZE);
+        } else {
+          toast(t('library.toasts.loadMoreFailed'), 'error');
         }
       }
-    } catch {
-      toast(t('library.toasts.loadMoreFailed'), 'error');
     } finally {
       setLoadingMore(false);
     }
   };
 
   const handleDelete = async (type: 'highlight' | 'reading' | 'premium', id: string) => {
-    const table = type === 'highlight' ? 'saved_highlights' : type === 'premium' ? 'premium_readings' : 'tarot_readings';
+    const res = type === 'highlight'
+      ? await savedHighlightsDalRef.deleteById(id)
+      : type === 'premium'
+        ? await premiumReadingsDal.deleteByIdOnly(id)
+        : await tarotReadingsDal.deleteById(id);
 
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    if (!res.ok) {
       toast(t('library.toasts.deleteFailed'), 'error');
     } else {
       if (type === 'highlight') {

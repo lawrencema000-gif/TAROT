@@ -31,7 +31,8 @@ import {
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase'; // still used for profile read/write + delete_user_account RPC
+import { journalEntries, tarotReadings, quizResults } from '../../dal';
 import { PaywallSheet } from '../premium/PaywallSheet';
 import { SubscriptionSheet } from '../premium/SubscriptionSheet';
 import { DiagnosticsSheet } from '../diagnostics';
@@ -260,23 +261,23 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     try {
       const [profileRes, journalRes, readingsRes, quizRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        supabase.from('journal_entries').select('*').eq('user_id', user.id),
-        supabase.from('tarot_readings').select('*').eq('user_id', user.id),
-        supabase.from('quiz_results').select('*').eq('user_id', user.id),
+        journalEntries.listAllForUser(user.id),
+        tarotReadings.listAllForUser(user.id),
+        quizResults.listAllForUser(user.id),
       ]);
 
       // Check for query errors
-      const errors = [profileRes.error, journalRes.error, readingsRes.error, quizRes.error].filter(Boolean);
-      if (errors.length > 0) {
+      const hadError = !!profileRes.error || !journalRes.ok || !readingsRes.ok || !quizRes.ok;
+      if (hadError) {
         toast(tAppSettings('settings.toasts.exportPartial'), 'error');
       }
 
       const exportData = {
         exportedAt: new Date().toISOString(),
         profile: profileRes.data || null,
-        journalEntries: journalRes.data || [],
-        tarotReadings: readingsRes.data || [],
-        quizResults: quizRes.data || [],
+        journalEntries: journalRes.ok ? journalRes.data : [],
+        tarotReadings: readingsRes.ok ? readingsRes.data : [],
+        quizResults: quizRes.ok ? quizRes.data : [],
       };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });

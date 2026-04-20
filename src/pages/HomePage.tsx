@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useUI } from '../context/UIContext';
 import { useRitual } from '../context/RitualContext';
 import { useGamification } from '../context/GamificationContext';
-import { supabase } from '../lib/supabase';
+import { dailyRituals, savedHighlights } from '../dal';
 import { getZodiacSign } from '../utils/zodiac';
 // horoscopes loaded lazily to keep main bundle small
 import { getAllTarotCards } from '../services/tarotCards';
@@ -83,50 +83,38 @@ export function HomePage() {
     try {
       // Run all 3 queries in parallel instead of sequentially
       const [ritualResult, savesResult, countResult] = await Promise.all([
-        supabase
-          .from('daily_rituals')
-          .select('horoscope_viewed, tarot_viewed, prompt_viewed, completed')
-          .eq('user_id', user.id)
-          .eq('date', today)
-          .maybeSingle(),
-        supabase
-          .from('saved_highlights')
-          .select('highlight_type')
-          .eq('user_id', user.id)
-          .eq('date', today),
-        supabase
-          .from('daily_rituals')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id),
+        dailyRituals.getByDate(user.id, today),
+        savedHighlights.listForUserDate(user.id, today),
+        dailyRituals.countForUser(user.id),
       ]);
 
-      if (ritualResult.data) {
-        const ritual = ritualResult.data;
-        const state = {
-          horoscopeViewed: ritual.horoscope_viewed,
-          tarotViewed: ritual.tarot_viewed,
-          promptViewed: ritual.prompt_viewed,
-          completed: ritual.completed,
-        };
+      if (ritualResult.ok && ritualResult.data) {
+        const state = ritualResult.data;
         setRitualState(state);
-        setRitualStarted(ritual.horoscope_viewed || ritual.tarot_viewed || ritual.prompt_viewed);
+        setRitualStarted(state.horoscopeViewed || state.tarotViewed || state.promptViewed);
         cacheDailyRitual(user.id, { ...state, date: today });
       }
 
-      if (savesResult.data) {
-        const mappedSaves: SavedHighlight[] = savesResult.data.map((s: Record<string, unknown>) => ({
-          id: s.id as string,
-          userId: s.user_id as string,
-          highlightType: s.highlight_type as 'horoscope' | 'tarot' | 'prompt',
-          date: s.date as string,
-          content: s.content as Record<string, unknown>,
-          createdAt: s.created_at as string,
-        }));
+      if (savesResult.ok) {
+        const mappedSaves: SavedHighlight[] = savesResult.data
+          .filter((s): s is typeof s & { highlightType: 'horoscope' | 'tarot' | 'prompt' } =>
+            s.highlightType === 'horoscope' || s.highlightType === 'tarot' || s.highlightType === 'prompt',
+          )
+          .map(s => ({
+            id: s.id,
+            userId: user.id,
+            highlightType: s.highlightType,
+            date: today,
+            content: s.content,
+            createdAt: s.createdAt,
+          }));
         setSavedToday(mappedSaves);
         setTarotSaved(mappedSaves.some(s => s.highlightType === 'tarot'));
       }
 
-      setIsFirstTime(countResult.count === 0);
+      if (countResult.ok) {
+        setIsFirstTime(countResult.data === 0);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -179,12 +167,12 @@ export function HomePage() {
     setRitualState(newState);
     cacheDailyRitual(user.id, { ...newState, completed: newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed, date: today });
 
-    await supabase.from('daily_rituals').upsert({
-      user_id: user.id,
+    await dailyRituals.upsert({
+      userId: user.id,
       date: today,
-      horoscope_viewed: newState.horoscopeViewed,
-      tarot_viewed: newState.tarotViewed,
-      prompt_viewed: newState.promptViewed,
+      horoscopeViewed: newState.horoscopeViewed,
+      tarotViewed: newState.tarotViewed,
+      promptViewed: newState.promptViewed,
       completed: newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed,
     });
 
@@ -234,22 +222,25 @@ export function HomePage() {
     if (!user || !drawnTarot) return;
 
     if (tarotSaved) {
-      await supabase
-        .from('saved_highlights')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .eq('highlight_type', 'tarot');
+      const res = await savedHighlights.deleteByTypeAndDate(user.id, 'tarot', today);
+      if (!res.ok) {
+        toast(t('home.removedFromSaved'), 'error');
+        return;
+      }
       setTarotSaved(false);
       setSavedToday(prev => prev.filter(s => s.highlightType !== 'tarot'));
       toast(t('home.removedFromSaved'), 'info');
     } else {
-      await supabase.from('saved_highlights').insert({
-        user_id: user.id,
+      const res = await savedHighlights.insert({
+        userId: user.id,
         date: today,
-        highlight_type: 'tarot',
+        highlightType: 'tarot',
         content: { card: drawnTarot.card, reversed: drawnTarot.reversed },
       });
+      if (!res.ok) {
+        toast(t('home.savedToHighlights'), 'error');
+        return;
+      }
       setTarotSaved(true);
       updateRitualProgress('tarotViewed');
       toast(t('home.savedToHighlights'), 'success');

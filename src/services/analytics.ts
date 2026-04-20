@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { contentInteractions } from '../dal';
 import { appStorage } from '../lib/appStorage';
 
 // ─── Google Analytics / Google Ads conversion bridge ──────────────
@@ -147,18 +147,25 @@ async function flushEvents(): Promise<void> {
 
   try {
     if (userId) {
-      await supabase.from('content_interactions').insert(
-        eventsToSend.map(e => ({
-          user_id: e.userId,
-          content_type: 'analytics',
-          content_id: e.event,
-          interaction_type: 'event',
+      const rows = eventsToSend
+        .filter((e): e is AnalyticsPayload & { userId: string } => !!e.userId)
+        .map(e => ({
+          userId: e.userId,
+          contentType: 'analytics',
+          contentId: e.event,
+          interactionType: 'event',
           metadata: {
             properties: e.properties,
             sessionId: e.sessionId,
           },
-        }))
-      );
+        }));
+      if (rows.length > 0) {
+        const res = await contentInteractions.insertMany(rows);
+        if (!res.ok) {
+          // Mirror prior behavior of throwing-to-catch so queue backs off
+          throw new Error(res.error);
+        }
+      }
     }
 
     if (import.meta.env.DEV) {

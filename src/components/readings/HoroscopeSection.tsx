@@ -21,7 +21,7 @@ import {
 import { Card, Button, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
-import { supabase } from '../../lib/supabase';
+import { savedHighlights } from '../../dal';
 import { getZodiacSign, zodiacData, getElementColor } from '../../utils/zodiac';
 import { localizeSignName } from '../../i18n/localizeNames';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
@@ -107,14 +107,14 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
   const handleSave = async () => {
     if (!user) return;
 
-    const { error } = await supabase.from('saved_highlights').insert({
-      user_id: user.id,
+    const res = await savedHighlights.insert({
+      userId: user.id,
       date: today,
-      highlight_type: 'horoscope',
+      highlightType: 'horoscope',
       content: { period, horoscope, zodiacSign },
     });
 
-    if (error) {
+    if (!res.ok) {
       toast(t('horoscope.toasts.saveFailed'), 'error');
     } else {
       setIsSaved(true);

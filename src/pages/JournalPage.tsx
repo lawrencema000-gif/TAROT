@@ -28,7 +28,7 @@ import {
 import { Card, Button, Sheet, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
-import { supabase } from '../lib/supabase';
+import { journalEntries, tarotReadings } from '../dal';
 // horoscopes loaded lazily to keep journal chunk small
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
 import { adsService } from '../services/ads';
@@ -158,16 +158,10 @@ export function JournalPage() {
       return;
     }
 
-    const { data } = await supabase
-      .from('journal_entries')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false })
-      .range(0, ENTRIES_PAGE_SIZE - 1);
-
-    if (data) {
-      setEntries(data as JournalEntry[]);
-      setHasMoreEntries(data.length === ENTRIES_PAGE_SIZE);
+    const res = await journalEntries.listForUser(user.id, { limit: ENTRIES_PAGE_SIZE });
+    if (res.ok) {
+      setEntries(res.data as unknown as JournalEntry[]);
+      setHasMoreEntries(res.data.length === ENTRIES_PAGE_SIZE);
     }
     setLoading(false);
   };
@@ -177,16 +171,14 @@ export function JournalPage() {
     setLoadingMore(true);
 
     const offset = entries.length;
-    const { data } = await supabase
-      .from('journal_entries')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false })
-      .range(offset, offset + ENTRIES_PAGE_SIZE - 1);
+    const res = await journalEntries.listForUser(user.id, {
+      limit: ENTRIES_PAGE_SIZE,
+      offset,
+    });
 
-    if (data) {
-      setEntries(prev => [...prev, ...(data as JournalEntry[])]);
-      setHasMoreEntries(data.length === ENTRIES_PAGE_SIZE);
+    if (res.ok) {
+      setEntries(prev => [...prev, ...(res.data as unknown as JournalEntry[])]);
+      setHasMoreEntries(res.data.length === ENTRIES_PAGE_SIZE);
     }
     setLoadingMore(false);
   };
@@ -194,15 +186,9 @@ export function JournalPage() {
   const loadRecentReadings = async () => {
     if (!user) return;
 
-    const { data } = await supabase
-      .from('tarot_readings')
-      .select('id, date, spread_type, cards')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    if (data) {
-      setRecentReadings(data as TarotReading[]);
+    const res = await tarotReadings.listRecent(user.id, 10);
+    if (res.ok) {
+      setRecentReadings(res.data as unknown as TarotReading[]);
     }
   };
 
@@ -284,26 +270,23 @@ export function JournalPage() {
       ? `${selectedTemplate.title}: ${selectedTemplate.prompts.join(' | ')}`
       : null;
 
-    const entryData = {
-      user_id: user.id,
+    const entryInput = {
+      userId: user.id,
       title: title.trim(),
       content: content.trim(),
       mood: selectedMood,
-      mood_tags: selectedMood ? [selectedMood] : [],
+      moodTags: selectedMood ? [selectedMood] : [],
       tags: selectedTags,
-      prompt: editingEntry ? editingEntry.prompt : (templatePrompt || todayPrompt),
+      prompt: editingEntry ? (editingEntry.prompt ?? null) : (templatePrompt || todayPrompt),
       date: editingEntry ? editingEntry.date : today,
-      linked_reading_id: linkedReadingId,
-      is_locked: lock,
+      linkedReadingId: linkedReadingId,
+      isLocked: lock,
     };
 
     if (editingEntry) {
-      await supabase
-        .from('journal_entries')
-        .update(entryData)
-        .eq('id', editingEntry.id);
+      await journalEntries.updateById(editingEntry.id, entryInput);
     } else {
-      await supabase.from('journal_entries').insert(entryData);
+      await journalEntries.insert(entryInput);
     }
 
     setShowEditor(false);
@@ -331,7 +314,7 @@ export function JournalPage() {
   const deleteEntry = async (entryId: string) => {
     if (!confirm(t('journal.toast.deleteConfirm'))) return;
 
-    await supabase.from('journal_entries').delete().eq('id', entryId);
+    await journalEntries.deleteById(entryId);
     loadEntries();
     toast(t('journal.toast.deleted'), 'success');
   };

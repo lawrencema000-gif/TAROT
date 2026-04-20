@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { dailyReadingsCache, premiumReadings } from '../dal';
 import type { ZodiacSign, Goal } from '../types';
 import { generateDailyReading, type DailyReading } from './dailyContent';
 
@@ -10,23 +10,14 @@ export async function getCachedDailyReading(
   sign: ZodiacSign,
   date: string
 ): Promise<CachedReading> {
-  const { data: cached } = await supabase
-    .from('daily_readings_cache')
-    .select('content')
-    .eq('sign', sign)
-    .eq('date', date)
-    .maybeSingle();
-
-  if (cached?.content) {
-    return { ...(cached.content as DailyReading), cached: true };
+  const cachedRes = await dailyReadingsCache.getBySignAndDate<DailyReading>(sign, date);
+  if (cachedRes.ok && cachedRes.data) {
+    return { ...cachedRes.data, cached: true };
   }
 
   const reading = generateDailyReading({ sign, date });
 
-  supabase
-    .from('daily_readings_cache')
-    .insert({ sign, date, content: reading })
-    .then(() => {});
+  dailyReadingsCache.insertManyDetached([{ sign, date, content: reading }]);
 
   return { ...reading, cached: false };
 }
@@ -46,17 +37,17 @@ export async function getAllSignsDaily(date: string): Promise<Map<ZodiacSign, Da
     'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
   ];
 
-  const { data: cached } = await supabase
-    .from('daily_readings_cache')
-    .select('sign, content')
-    .eq('date', date);
+  const cachedRes = await dailyReadingsCache.listByDate<DailyReading>(date);
 
   const readings = new Map<ZodiacSign, DailyReading>();
-  const cachedSigns = new Set(cached?.map(c => c.sign) || []);
+  const cachedSigns = new Set<string>();
 
-  cached?.forEach(c => {
-    readings.set(c.sign as ZodiacSign, c.content as DailyReading);
-  });
+  if (cachedRes.ok) {
+    cachedRes.data.forEach(c => {
+      readings.set(c.sign, c.content);
+      cachedSigns.add(c.sign);
+    });
+  }
 
   const uncachedSigns = signs.filter(s => !cachedSigns.has(s));
   const newReadings: { sign: string; date: string; content: DailyReading }[] = [];
@@ -68,7 +59,7 @@ export async function getAllSignsDaily(date: string): Promise<Map<ZodiacSign, Da
   }
 
   if (newReadings.length > 0) {
-    supabase.from('daily_readings_cache').insert(newReadings).then(() => {});
+    dailyReadingsCache.insertManyDetached(newReadings);
   }
 
   return readings;
@@ -91,106 +82,44 @@ export async function savePremiumReading(
   context: Record<string, unknown> = {},
   cards: { id: number; name: string; reversed: boolean }[] = []
 ): Promise<PremiumReading | null> {
-  const { data, error } = await supabase
-    .from('premium_readings')
-    .insert({
-      user_id: userId,
-      reading_type: readingType,
-      content,
-      context,
-      cards,
-    })
-    .select()
-    .single();
-
-  if (error || !data) {
-    console.error('Error saving premium reading:', error);
-    return null;
-  }
-
-  return {
-    id: data.id,
-    userId: data.user_id,
-    readingType: data.reading_type,
-    context: data.context,
-    content: data.content,
-    cards: data.cards,
-    createdAt: data.created_at,
-  };
+  const res = await premiumReadings.insert({
+    userId,
+    readingType,
+    content,
+    context,
+    cards,
+  });
+  if (!res.ok) return null;
+  return res.data;
 }
 
 export async function getUserPremiumReadings(
   userId: string,
   limit = 20
 ): Promise<PremiumReading[]> {
-  const { data, error } = await supabase
-    .from('premium_readings')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error || !data) {
-    return [];
-  }
-
-  return data.map(r => ({
-    id: r.id,
-    userId: r.user_id,
-    readingType: r.reading_type,
-    context: r.context,
-    content: r.content,
-    cards: r.cards,
-    createdAt: r.created_at,
-  }));
+  const res = await premiumReadings.listForUser(userId, limit);
+  return res.ok ? res.data : [];
 }
 
 export async function getPremiumReadingById(
   userId: string,
   readingId: string
 ): Promise<PremiumReading | null> {
-  const { data, error } = await supabase
-    .from('premium_readings')
-    .select('*')
-    .eq('id', readingId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return {
-    id: data.id,
-    userId: data.user_id,
-    readingType: data.reading_type,
-    context: data.context,
-    content: data.content,
-    cards: data.cards,
-    createdAt: data.created_at,
-  };
+  const res = await premiumReadings.getById(userId, readingId);
+  return res.ok ? res.data : null;
 }
 
 export async function deletePremiumReading(
   userId: string,
   readingId: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('premium_readings')
-    .delete()
-    .eq('id', readingId)
-    .eq('user_id', userId);
-
-  return !error;
+  const res = await premiumReadings.deleteById(userId, readingId);
+  return res.ok;
 }
 
 export async function cleanupOldCache(daysToKeep = 7): Promise<void> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
   const cutoffStr = cutoffDate.toISOString().split('T')[0];
-
-  await supabase
-    .from('daily_readings_cache')
-    .delete()
-    .lt('date', cutoffStr);
+  await dailyReadingsCache.deleteOlderThan(cutoffStr);
 }

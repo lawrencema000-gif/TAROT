@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Newspaper, ChevronDown, ChevronUp, Trash2, Archive, Eye, EyeOff } from 'lucide-react';
 import { toast } from '../ui';
-import { supabase } from '../../lib/supabase';
+import { blogPosts } from '../../dal';
 import type { BlogPost } from '../../types/blog';
 
 interface BlogManagerProps {
@@ -20,11 +20,8 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
   });
 
   const toggleArchive = async (post: BlogPost) => {
-    const { error } = await supabase
-      .from('blog_posts')
-      .update({ archived: !post.archived, updated_at: new Date().toISOString() })
-      .eq('id', post.id);
-    if (error) {
+    const res = await blogPosts.setArchived(post.id, !post.archived);
+    if (!res.ok) {
       toast('Failed to update post', 'error');
     } else {
       toast(post.archived ? 'Post restored' : 'Post archived', 'success');
@@ -33,15 +30,8 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
   };
 
   const togglePublish = async (post: BlogPost) => {
-    const { error } = await supabase
-      .from('blog_posts')
-      .update({
-        published: !post.published,
-        published_at: !post.published ? new Date().toISOString() : post.published_at,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', post.id);
-    if (error) {
+    const res = await blogPosts.setPublished(post.id, !post.published, post.published_at);
+    if (!res.ok) {
       toast('Failed to update post', 'error');
     } else {
       toast(post.published ? 'Post unpublished' : 'Post published', 'success');
@@ -51,8 +41,8 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
 
   const deletePost = async (post: BlogPost) => {
     if (!confirm(`Delete "${post.title}" permanently? This cannot be undone.`)) return;
-    const { error } = await supabase.from('blog_posts').delete().eq('id', post.id);
-    if (error) {
+    const res = await blogPosts.deleteById(post.id);
+    if (!res.ok) {
       toast('Failed to delete post', 'error');
     } else {
       toast('Post deleted', 'success');

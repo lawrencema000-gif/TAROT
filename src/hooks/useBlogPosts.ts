@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { blogPosts } from '../dal';
 import type { BlogPost } from '../types/blog';
 
 const PAGE_SIZE = 12;
@@ -17,19 +17,12 @@ export function useBlogPosts(page = 1) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    const { data, error: err, count } = await supabase
-      .from('blog_posts')
-      .select('*', { count: 'exact' })
-      .eq('published', true)
-      .neq('archived', true)
-      .order('published_at', { ascending: false })
-      .range(from, to);
-
-    if (err) {
-      setError(err.message);
+    const res = await blogPosts.listPublished({ from, to });
+    if (!res.ok) {
+      setError(res.error);
     } else {
-      setPosts(data || []);
-      setTotal(count || 0);
+      setPosts(res.data.posts);
+      setTotal(res.data.total);
     }
     setLoading(false);
   }, [page]);
@@ -50,17 +43,17 @@ export function useBlogPost(slug: string) {
     if (!slug) return;
 
     setLoading(true);
-    supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('slug', slug)
-      .eq('published', true)
-      .single()
-      .then(({ data, error: err }) => {
-        if (err) setError(err.message);
-        else setPost(data);
-        setLoading(false);
-      });
+    let cancelled = false;
+    blogPosts.getBySlug(slug).then(res => {
+      if (cancelled) return;
+      if (!res.ok) {
+        setError(res.error);
+      } else {
+        setPost(res.data);
+      }
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
   }, [slug]);
 
   return { post, loading, error };

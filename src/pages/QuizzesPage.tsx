@@ -38,7 +38,8 @@ import {
 import { Card, Button, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // still used for profile writes (owned by AuthContext pattern)
+import { quizResults as quizResultsDal } from '../dal';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { ratePromptService } from '../services/ratePrompt';
@@ -124,14 +125,9 @@ export function QuizzesPage() {
   const loadPastResults = async () => {
     if (!user) return;
 
-    const { data } = await supabase
-      .from('quiz_results')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('completed_at', { ascending: false });
-
-    if (data) {
-      setPastResults(data as QuizResultData[]);
+    const res = await quizResultsDal.listForUser(user.id);
+    if (res.ok) {
+      setPastResults(res.data as unknown as QuizResultData[]);
     }
     setLoading(false);
   };
@@ -284,12 +280,12 @@ export function QuizzesPage() {
         const quizType = progress.quiz.id === 'mood-check-v1' ? 'mood-check' :
                          progress.quiz.id === 'attachment-v1' ? 'attachment' :
                          progress.quiz.type;
-        await supabase.from('quiz_results').insert({
-          user_id: user.id,
-          quiz_type: quizType,
-          quiz_id: progress.quiz.id,
+        await quizResultsDal.insert({
+          userId: user.id,
+          quizType,
+          quizId: progress.quiz.id,
           result: resultLabel,
-          scores: calculatedResult,
+          scores: calculatedResult as unknown as Record<string, unknown>,
           label: resultLabel,
         });
         loadPastResults();

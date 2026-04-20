@@ -21,7 +21,7 @@ import {
   getCategoryDisplayName,
 } from '../services/achievements';
 import { Skeleton } from '../components/ui';
-import { supabase } from '../lib/supabase';
+import { quizResults } from '../dal';
 import { useT } from '../i18n/useT';
 
 type FilterCategory = 'all' | AchievementCategory;
@@ -61,11 +61,10 @@ export function AchievementsPage() {
 
   async function loadQuizCount() {
     if (!user?.id) return;
-    const { count } = await supabase
-      .from('quiz_results')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-    setQuizzesCompleted(count || 0);
+    const res = await quizResults.countForUser(user.id);
+    if (res.ok) {
+      setQuizzesCompleted(res.data);
+    }
   }
 
   async function loadAchievements() {

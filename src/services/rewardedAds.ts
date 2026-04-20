@@ -2,7 +2,7 @@ import { isNative } from '../utils/platform';
 import type { PremiumFeature } from './premium';
 import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';
-import { supabase } from '../lib/supabase';
+import { rewardedAdUnlocks } from '../dal';
 
 const DAILY_LIMIT = 5;
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
@@ -166,15 +166,15 @@ class RewardedAdsService {
 
     try {
       // Insert unlock record (server-side FIRST, then increment local count)
-      const { error } = await supabase.from('rewarded_ad_unlocks').insert({
-        user_id: this.currentUserId,
+      const res = await rewardedAdUnlocks.insert({
+        userId: this.currentUserId,
         feature,
-        spread_type: spreadType,
-        ad_unit_id: adUnitId,
+        spreadType,
+        adUnitId,
       });
 
-      if (error) {
-        console.error('[RewardedAds] Failed to save unlock:', error);
+      if (!res.ok) {
+        console.error('[RewardedAds] Failed to save unlock:', res.error);
       }
 
       // Only increment local count AFTER server confirms
@@ -198,64 +198,18 @@ class RewardedAdsService {
   async hasTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
     if (!this.currentUserId) return false;
 
-    try {
-      let query = supabase
-        .from('rewarded_ad_unlocks')
-        .select('id')
-        .eq('user_id', this.currentUserId)
-        .eq('feature', feature)
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString()); // Only count non-expired unlocks
-
-      if (spreadType) {
-        query = query.eq('spread_type', spreadType);
-      }
-
-      const { data, error } = await query.limit(1).maybeSingle();
-
-      if (error) return false;
-
-      return !!data;
-    } catch {
-      return false;
-    }
+    const res = await rewardedAdUnlocks.hasActiveUnused(this.currentUserId, feature, spreadType);
+    return res.ok && res.data;
   }
 
   async consumeTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
     if (!this.currentUserId) return false;
 
-    try {
-      let query = supabase
-        .from('rewarded_ad_unlocks')
-        .select('id')
-        .eq('user_id', this.currentUserId)
-        .eq('feature', feature)
-        .eq('used', false);
+    const found = await rewardedAdUnlocks.findOldestUnused(this.currentUserId, feature, spreadType);
+    if (!found.ok || !found.data) return false;
 
-      if (spreadType) {
-        query = query.eq('spread_type', spreadType);
-      }
-
-      const { data, error: selectError } = await query
-        .order('unlocked_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      if (selectError || !data) {
-        return false;
-      }
-
-      const { error: updateError } = await supabase
-        .from('rewarded_ad_unlocks')
-        .update({ used: true })
-        .eq('id', data.id);
-
-      if (updateError) return false;
-
-      return true;
-    } catch {
-      return false;
-    }
+    const updated = await rewardedAdUnlocks.markUsed(found.data.id);
+    return updated.ok;
   }
 
   // --- Local storage fallback for daily count ---

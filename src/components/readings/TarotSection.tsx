@@ -22,7 +22,7 @@ import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { useRitual } from '../../context/RitualContext';
 import { useGamification } from '../../context/GamificationContext';
-import { supabase } from '../../lib/supabase';
+import { tarotReadings } from '../../dal';
 import { getAllTarotCards } from '../../services/tarotCards';
 import { TarotCardDetail } from './TarotCardDetail';
 import { CelticCrossLayout } from './CelticCrossLayout';
@@ -390,11 +390,11 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const handleSaveReading = async () => {
     if (!user || drawnCards.length === 0) return;
 
-    const { error } = await supabase.from('tarot_readings').insert({
-      user_id: user.id,
+    const res = await tarotReadings.insert({
+      userId: user.id,
       date: today,
-      spread_type: currentSpread,
-      focus_area: selectedFocus,
+      spreadType: currentSpread,
+      focusArea: selectedFocus,
       cards: drawnCards.map((d, i) => ({
         cardId: d.card.id,
         cardName: d.card.name,
@@ -404,7 +404,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
       saved: true,
     });
 
-    if (error) {
+    if (!res.ok) {
       toast(t('readings.toasts.saveFailed'), 'error');
     } else {
       setIsSaved(true);

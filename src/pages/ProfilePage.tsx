@@ -20,7 +20,7 @@ import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useAuth } from '../context/AuthContext';
 import { useGeocode } from '../hooks/useAstrology';
-import { supabase } from '../lib/supabase';
+import { savedHighlights as savedHighlightsDal } from '../dal';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
@@ -105,14 +105,16 @@ export function ProfilePage() {
   const loadSavedHighlights = async () => {
     if (!user) return;
     setLoadingSaved(true);
-    const { data } = await supabase
-      .from('saved_highlights')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(20);
-    if (data) {
-      setSavedHighlights(data as SavedHighlight[]);
+    const res = await savedHighlightsDal.listForUser(user.id, { limit: 20 });
+    if (res.ok) {
+      setSavedHighlights(
+        res.data.map(row => ({
+          id: row.id,
+          highlight_type: row.highlightType,
+          date: row.date,
+          content: row.content,
+        })),
+      );
     }
     setLoadingSaved(false);
   };

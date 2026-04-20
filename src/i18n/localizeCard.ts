@@ -60,3 +60,42 @@ export function localizeCards(cards: TarotCard[], locale: SupportedLocale = getL
   if (locale === 'en') return cards;
   return cards.map(c => localizeCard(c, locale));
 }
+
+let deckIndexCache: Map<string, TarotCard> | null = null;
+async function getDeckIndex(): Promise<Map<string, TarotCard>> {
+  if (!deckIndexCache) {
+    const { fullDeck } = await import('../data/tarotDeck');
+    deckIndexCache = new Map(fullDeck.map((c) => [c.name, c]));
+  }
+  return deckIndexCache;
+}
+
+/**
+ * Resolve a card name saved to the DB (canonical English) to the
+ * locale-appropriate display name. Async because the tarot deck is
+ * lazy-loaded via dynamic import. For synchronous contexts, use
+ * localizeCardNameSync which returns the English name unchanged if the
+ * deck has not been loaded yet (UI will update on the next render).
+ */
+export async function localizeCardName(englishName: string, locale: SupportedLocale = getLocale()): Promise<string> {
+  if (locale === 'en') return englishName;
+  const idx = await getDeckIndex();
+  const match = idx.get(englishName);
+  if (!match) return englishName;
+  return localizeCard(match, locale).name;
+}
+
+/** Sync version: returns the English name immediately if the deck is not
+ *  yet in memory. Components that render saved card names repeatedly will
+ *  usually have the deck already cached by the first render. */
+export function localizeCardNameSync(englishName: string, locale: SupportedLocale = getLocale()): string {
+  if (locale === 'en') return englishName;
+  if (!deckIndexCache) {
+    // Fire-and-forget prefetch so subsequent renders hit the cache
+    void getDeckIndex();
+    return englishName;
+  }
+  const match = deckIndexCache.get(englishName);
+  if (!match) return englishName;
+  return localizeCard(match, locale).name;
+}

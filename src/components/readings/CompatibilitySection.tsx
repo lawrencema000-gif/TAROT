@@ -533,7 +533,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         <div className="flex gap-2 flex-wrap">
           {getTopMatches(userSign).map(sign => (
             <span key={sign} className="px-3 py-1.5 bg-mystic-800 rounded-full text-sm text-mystic-300">
-              {zodiacData[sign].name}
+              {localizeSignName(zodiacData[sign].name as ZodiacSignPC)}
             </span>
           ))}
         </div>

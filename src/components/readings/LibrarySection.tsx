@@ -14,6 +14,7 @@ import {
 import { Card, Button, Chip, Sheet, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
+import { localizeCardNameSync } from '../../i18n/localizeCard';
 
 type LibraryTab = 'saved' | 'guides' | 'ai-readings';
 type SavedFilter = 'all' | 'tarot' | 'horoscope' | 'spreads';
@@ -317,7 +318,7 @@ export function LibrarySection() {
                           <div className="flex flex-wrap gap-1 mb-2">
                             {reading.cards.slice(0, 3).map((card, i) => (
                               <span key={i} className="text-xs text-mystic-400">
-                                {card.cardName}{card.reversed ? ' (R)' : ''}{i < Math.min(reading.cards.length - 1, 2) ? ',' : ''}
+                                {localizeCardNameSync(card.cardName)}{card.reversed ? ' (R)' : ''}{i < Math.min(reading.cards.length - 1, 2) ? ',' : ''}
                               </span>
                             ))}
                             {reading.cards.length > 3 && (

@@ -245,8 +245,9 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         }
         toast(t('premium.paywall.toasts.welcome'), 'success');
         onClose();
-      } else if (result.error) {
-        toast(result.error, 'error');
+      } else if (result.error || result.errorKey) {
+        const msg = result.errorKey ? t(result.errorKey, { defaultValue: result.error ?? '' }) : result.error ?? '';
+        if (msg) toast(msg, 'error');
       }
     } catch {
       toast(t('premium.paywall.toasts.purchaseFailed'), 'error');

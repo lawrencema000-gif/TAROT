@@ -2056,5 +2056,9 @@
         "no": "이 카드의 {{keywords}} 에너지는 도전이나 지연을 시사합니다."
       }
     }
+  },
+  "billing": {
+    "purchaseCancelled": "구매가 취소되었습니다",
+    "purchaseFailed": "구매에 실패했습니다"
   }
 }

@@ -2056,5 +2056,9 @@
         "no": "这张牌{{keywords}}的能量暗示挑战或延迟。"
       }
     }
+  },
+  "billing": {
+    "purchaseCancelled": "购买已取消",
+    "purchaseFailed": "购买失败"
   }
 }

@@ -30,6 +30,9 @@ export interface PurchaseResult {
   transactionId?: string;
   productId?: string;
   error?: string;
+  /** i18n key for the error so UI can translate without inspecting the raw
+   *  English message. Falls back to `error` if missing. */
+  errorKey?: string;
 }
 
 export interface BillingService {
@@ -309,6 +312,7 @@ class NativeBillingService implements BillingService {
       if (purchaseError.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
         return {
           success: false,
+          errorKey: 'billing.purchaseCancelled',
           error: 'Purchase cancelled',
         };
       }
@@ -316,6 +320,7 @@ class NativeBillingService implements BillingService {
       console.error('[RevenueCat] Purchase failed:', error);
       return {
         success: false,
+        errorKey: 'billing.purchaseFailed',
         error: purchaseError.message || 'Purchase failed',
       };
     }

@@ -2056,5 +2056,9 @@
         "no": "このカードの{{keywords}}のエネルギーは課題や遅延を示唆します。"
       }
     }
+  },
+  "billing": {
+    "purchaseCancelled": "購入がキャンセルされました",
+    "purchaseFailed": "購入に失敗しました"
   }
 }

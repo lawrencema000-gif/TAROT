@@ -2056,5 +2056,9 @@
         "no": "This card's energy of {{keywords}} suggests challenges or delays."
       }
     }
+  },
+  "billing": {
+    "purchaseCancelled": "Purchase cancelled",
+    "purchaseFailed": "Purchase failed"
   }
 }

@@ -1,0 +1,69 @@
+name: E2E critical paths
+
+# Playwright smoke tests that protect the critical user paths called out in
+# .audit/SCALABILITY-PLAN.md Phase 4.
+#
+# Runs on:
+#   - every PR to main (against the Netlify deploy preview URL)
+#   - every push to main, AFTER the main deploy workflow finishes (against prod)
+#   - a nightly cron (against prod) so long-tail drift surfaces quickly
+#
+# Secrets required:
+#   - E2E_EMAIL, E2E_PASSWORD — test account used for authed specs
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_run:
+    workflows: ['Deploy']
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '15 4 * * *'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    # Skip the workflow_run trigger if the upstream deploy didn't succeed.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Resolve target URL
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # PR previews use Netlify's deploy-preview URL pattern.
+            echo "url=https://deploy-preview-${{ github.event.pull_request.number }}--arcana-ritual-app.netlify.app" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://tarotlife.app" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Playwright tests
+        env:
+          E2E_BASE_URL: ${{ steps.target.outputs.url }}
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+        run: npx playwright test
+
+      - name: Upload HTML report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

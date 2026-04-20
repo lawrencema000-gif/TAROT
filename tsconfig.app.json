@@ -18,7 +18,14 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Shared zod schemas under supabase/functions/_schema use Deno's
+     * `npm:zod@x.y.z` specifier. Map it back to the Node package so tsc
+     * and vite both find the same module. */
+    "paths": {
+      "npm:zod@*": ["./node_modules/zod"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "supabase/functions/_schema"]
 }

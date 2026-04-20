@@ -29,6 +29,15 @@ export default defineConfig((): UserConfig => {
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
+    resolve: {
+      alias: [
+        // Shared zod schemas under supabase/functions/_schema/ use Deno's
+        // `npm:zod@x.y.z` specifier so Supabase's edge-function bundler
+        // resolves them correctly. For the client (Vite), we alias the
+        // specifier to the package installed in node_modules.
+        { find: /^npm:zod@[^/]+$/, replacement: 'zod' },
+      ],
+    },
     build: {
       target: 'esnext',
       minify: 'esbuild',

@@ -21,7 +21,7 @@
  */
 
 import { createClient, SupabaseClient, User } from "npm:@supabase/supabase-js@2.57.4";
-import { z } from "zod";
+import { z } from "npm:zod@3.24.1";
 import { getCorsHeaders, handleCorsPreFlight } from "./cors.ts";
 import { callerKey, checkRateLimit, rateLimitHeaders } from "./rate-limit.ts";
 import { createLogger, getOrCreateCorrelationId, type Logger } from "./log.ts";

@@ -10,10 +10,10 @@
  *   Client:         import { z, ErrorResponse } from "../schema";
  */
 
-// The `"zod"` specifier resolves via the import map in supabase/functions/deno.json
-// when compiled by Deno (edge functions), and via package.json dependency when
-// compiled by Vite/tsc (client). Same schema code runs in both environments.
-import { z } from "zod";
+// Use Deno's explicit `npm:` specifier. Client-side Vite + tsc resolve this
+// via a path alias configured in vite.config.ts and tsconfig.app.json, so
+// both environments bundle the same schema files from a single source.
+import { z } from "npm:zod@3.24.1";
 export { z };
 
 /**

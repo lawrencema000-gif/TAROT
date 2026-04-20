@@ -360,27 +360,69 @@
     "definitions": {
       "mbti": {
         "title": "Personality Type Assessment",
-        "description": "This assessment explores the way you naturally process information, make decisions, and move through the world. Instead of judging personality as right or wrong, it highlights your default strengths, your blind spots under stress, and what you tend to need from relationships and environments to thrive."
+        "description": "This assessment explores the way you naturally process information, make decisions, and move through the world. Instead of judging personality as right or wrong, it highlights your default strengths, your blind spots under stress, and what you tend to need from relationships and environments to thrive.",
+        "timeEstimate": "10-15 min",
+        "whatYouGet": [
+          "Your type profile with strengths + blind spots",
+          "Stress mode patterns + recovery strategies",
+          "Relationship style notes + communication tips",
+          "Tarot archetype alignment"
+        ]
       },
       "loveLanguage": {
         "title": "Love Language Assessment",
-        "description": "This assessment helps you discover how you most naturally give and receive love. Many relationship conflicts are not a lack of love — they are a mismatch of expression. You will receive a primary and secondary love language with clear ways to ask for what you need."
+        "description": "This assessment helps you discover how you most naturally give and receive love. Many relationship conflicts are not a lack of love — they are a mismatch of expression. You will receive a primary and secondary love language with clear ways to ask for what you need.",
+        "timeEstimate": "5-7 min",
+        "whatYouGet": [
+          "Primary + secondary love language",
+          "\"When healthy\" vs \"when deprived\" insight",
+          "Clear ways to ask for love in your language",
+          "Partner tips for supporting you"
+        ]
       },
       "enneagram": {
         "title": "Enneagram Type Assessment",
-        "description": "This assessment identifies your core motivation and the emotional pattern that drives your choices. You will discover your primary type, your wing, growth directions, and stress signatures."
+        "description": "This assessment identifies your core motivation and the emotional pattern that drives your choices. You will discover your primary type, your wing, growth directions, and stress signatures.",
+        "timeEstimate": "10-12 min",
+        "whatYouGet": [
+          "Your Enneagram type + wing",
+          "Growth and stress direction paths",
+          "Core motivation, fear, and desire",
+          "Tarot archetype alignment"
+        ]
       },
       "bigfive": {
         "title": "Big Five Assessment",
-        "description": "This assessment measures five core personality dimensions: openness, conscientiousness, extraversion, agreeableness, and emotional stability. The most research-validated personality framework."
+        "description": "This assessment measures five core personality dimensions: openness, conscientiousness, extraversion, agreeableness, and emotional stability. The most research-validated personality framework.",
+        "timeEstimate": "8-10 min",
+        "whatYouGet": [
+          "Five trait scores with real-life interpretation",
+          "Strengths + potential pitfalls for each trait",
+          "Lifestyle and relationship suggestions",
+          "A \"growth lever\" for meaningful change"
+        ]
       },
       "attachment": {
         "title": "Attachment Style Assessment",
-        "description": "This assessment reveals how you form and maintain close bonds. You will identify your default attachment pattern in relationships and learn strategies for earning secure attachment."
+        "description": "This assessment reveals how you form and maintain close bonds. You will identify your default attachment pattern in relationships and learn strategies for earning secure attachment.",
+        "timeEstimate": "5-7 min",
+        "whatYouGet": [
+          "Your primary attachment pattern",
+          "Triggers + deactivation/activation behaviors",
+          "What you need from a partner to feel safe",
+          "A path toward secure attachment"
+        ]
       },
       "mood": {
         "title": "Mood Check-In",
-        "description": "A short daily check-in to track how you are feeling and what your emotional needs are today."
+        "description": "A short daily check-in to track how you are feeling and what your emotional needs are today.",
+        "timeEstimate": "30 sec",
+        "whatYouGet": [
+          "A mood profile (calm/charged/drained/steady)",
+          "A \"best next step\" recommendation",
+          "A journal prompt for your current state",
+          "Optional tarot archetype suggestion"
+        ]
       }
     },
     "types": {

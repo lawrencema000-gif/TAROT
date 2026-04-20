@@ -44,7 +44,7 @@ import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { ratePromptService } from '../services/ratePrompt';
 import { useT } from '../i18n/useT';
-import { localizeQuiz } from '../i18n/localizeQuiz';
+import { localizeQuiz, localizeQuizMetadata } from '../i18n/localizeQuiz';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -155,32 +155,32 @@ export function QuizzesPage() {
     {
       quiz: localizeQuiz(moodCheckQuiz),
       type: 'mood-check',
-      metadata: quizMetadata['mood-check'],
+      metadata: localizeQuizMetadata('mood-check', quizMetadata['mood-check']),
     },
     {
       quiz: localizeQuiz(mbtiQuiz),
       type: 'mbti',
-      metadata: quizMetadata.mbti,
+      metadata: localizeQuizMetadata('mbti', quizMetadata.mbti),
     },
     {
       quiz: localizeQuiz(loveLanguageQuiz),
       type: 'love-language',
-      metadata: quizMetadata['love-language'],
+      metadata: localizeQuizMetadata('love-language', quizMetadata['love-language']),
     },
     {
       quiz: localizeQuiz(bigFiveQuiz),
       type: 'big-five',
-      metadata: quizMetadata['big-five'],
+      metadata: localizeQuizMetadata('big-five', quizMetadata['big-five']),
     },
     {
       quiz: localizeQuiz(enneagramQuiz),
       type: 'enneagram',
-      metadata: quizMetadata.enneagram,
+      metadata: localizeQuizMetadata('enneagram', quizMetadata.enneagram),
     },
     {
       quiz: localizeQuiz(attachmentQuiz),
       type: 'attachment',
-      metadata: quizMetadata.attachment,
+      metadata: localizeQuizMetadata('attachment', quizMetadata.attachment),
     },
   ];
 

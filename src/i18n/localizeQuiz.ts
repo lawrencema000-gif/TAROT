@@ -58,3 +58,30 @@ function quizDefinitionKey(id: string, type: string): string | null {
   if (id.startsWith('mood')) return 'mood';
   return null;
 }
+
+/**
+ * Return the locale-appropriate `timeEstimate` and `whatYouGet` for a quiz
+ * type key (as stored in quizMetadata in data/quizzes.ts — e.g. 'mood-check',
+ * 'big-five'). Falls back to the data-file value if the translation is
+ * missing.
+ */
+export function localizeQuizMetadata<T extends { timeEstimate: string; whatYouGet: readonly string[] }>(
+  typeKey: string,
+  fallback: T,
+): T {
+  const definitionKey =
+    typeKey === 'mood-check' ? 'mood' :
+    typeKey === 'love-language' ? 'loveLanguage' :
+    typeKey === 'big-five' ? 'bigfive' :
+    typeKey;
+  const timeEstimate = i18n.t(
+    `quizzes.definitions.${definitionKey}.timeEstimate`,
+    { ns: 'app', defaultValue: fallback.timeEstimate },
+  );
+  const whatYouGetRaw = i18n.t(
+    `quizzes.definitions.${definitionKey}.whatYouGet`,
+    { ns: 'app', returnObjects: true, defaultValue: fallback.whatYouGet },
+  );
+  const whatYouGet = Array.isArray(whatYouGetRaw) ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
+  return { ...fallback, timeEstimate, whatYouGet };
+}

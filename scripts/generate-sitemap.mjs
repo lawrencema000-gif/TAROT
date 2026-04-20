@@ -64,20 +64,28 @@ function hreflangLinks(baseLoc) {
   return lines.join('\n');
 }
 
-async function generate() {
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  // Fetch published blog posts
-  const { data: posts, error } = await supabase
-    .from('blog_posts')
-    .select('slug, updated_at, published_at')
-    .eq('published', true)
-    .order('published_at', { ascending: false });
-
-  if (error) {
-    console.error('Failed to fetch blog posts:', error.message);
-    process.exit(1);
+async function fetchBlogPosts() {
+  if (!supabaseUrl || !supabaseKey) return [];
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at, published_at')
+      .eq('published', true)
+      .order('published_at', { ascending: false });
+    if (error) {
+      console.warn(`Failed to fetch blog posts (non-fatal): ${error.message}`);
+      return [];
+    }
+    return data ?? [];
+  } catch (err) {
+    console.warn(`Supabase fetch crashed (non-fatal): ${err.message}`);
+    return [];
   }
+}
+
+async function generate() {
+  const posts = await fetchBlogPosts();
 
   const today = new Date().toISOString().split('T')[0];
 

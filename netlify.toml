@@ -49,6 +49,16 @@
   to = "/google-play-badge.png"
   status = 200
 
+[[redirects]]
+  from = "/version.json"
+  to = "/version.json"
+  status = 200
+
+[[redirects]]
+  from = "/manifest.json"
+  to = "/manifest.json"
+  status = 200
+
 # SPA fallback — all routes serve index.html for react-router
 [[redirects]]
   from = "/*"

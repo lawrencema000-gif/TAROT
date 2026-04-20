@@ -1362,5 +1362,336 @@
       "title": "Admin",
       "subtitle": "Manage uploads"
     }
+  },
+  "dailyInsights": {
+    "general": [
+      "The cosmic energies align to support your {focus} today.",
+      "Trust the universe as it guides you toward {theme}.",
+      "Your {strength} serves you well in today's energies.",
+      "The stars encourage you to embrace your {element} nature.",
+      "Today's planetary influences highlight your natural {talent}.",
+      "Your ruling planet {planet} strengthens your resolve today.",
+      "Cosmic wisdom suggests focusing on {area} today.",
+      "Something stirs beneath the surface today — your {element} instincts can guide you.",
+      "Today's energy favors depth over speed — let your {talent} unfold naturally.",
+      "The celestial tide carries you toward {area} with {quality} energy."
+    ],
+    "love": [
+      "Your {loveStyle} approach to love attracts meaningful connections.",
+      "Venus energy enhances your natural charm and magnetism.",
+      "Emotional authenticity deepens your romantic bonds today.",
+      "Your {element} nature brings {quality} to relationships.",
+      "The stars support heartfelt communication with loved ones.",
+      "Your {sign} energy creates magnetic attraction — but use it for depth, not just allure.",
+      "Today favors {loveAction} in your romantic life.",
+      "Someone close to you needs to hear something you've been holding back.",
+      "The way you love — {loveStyle} — is exactly what someone in your life needs right now.",
+      "Today's energy supports healing an old wound in how you give and receive love."
+    ],
+    "career": [
+      "Your {careerStrength} brings professional opportunities today.",
+      "The stars favor {workActivity} in your career path.",
+      "Trust your {sign} instincts in business decisions.",
+      "Your natural {talent} opens doors today.",
+      "Career advancement comes through {approach}.",
+      "The cosmos supports ambitious pursuits and goals.",
+      "Today rewards the kind of quiet competence you carry naturally.",
+      "A professional opportunity may not look obvious at first — your {sign} instincts will recognize it.",
+      "Today favors strategy over speed at work — use your {careerStrength} deliberately.",
+      "Someone in your professional sphere is paying closer attention than you realize."
+    ],
+    "wellness": [
+      "Honor your {element} nature with {selfCareActivity}.",
+      "Your energy benefits from {wellnessAction} today.",
+      "Balance your {sign} tendencies with mindful rest.",
+      "Your body is asking for {wellnessAction} — listen before it shouts.",
+      "The {element} in you needs {nurturing} today — it is not a luxury, it is fuel.",
+      "Self-care rituals align with cosmic energies today.",
+      "A short practice of {selfCareActivity} could shift your entire energy for the day.",
+      "Your {sign} tendency to push through needs a counterbalance today.",
+      "The cosmos reminds you: rest is productive when your body is asking for it.",
+      "Mind-body connection strengthens through awareness."
+    ],
+    "reflection": [
+      "How can you honor your {sign} nature more fully today?",
+      "What would embracing your {strength} look like right now?",
+      "Where might your {challenge} be holding you back?",
+      "How does your {element} element guide your decisions?",
+      "What message does {planet} have for you today?",
+      "What would your highest self choose in this moment?",
+      "How can you transform {challenge} into strength?",
+      "What is your intuition telling you about {area}?",
+      "If your {element} nature could speak freely, what would it ask for today?",
+      "What is one thing you are avoiding that your {sign} instincts already know the answer to?"
+    ],
+    "shadow": [
+      "Your {challenge} may surface today — notice it without judgment.",
+      "The shadow of your {sign} nature asks: where are you avoiding truth?",
+      "Today's tension point is {challenge} — awareness alone begins to dissolve it.",
+      "{planet}'s influence stirs something unresolved — sit with it rather than running.",
+      "Your {element} shadow might pull you toward {challenge} — choose {strength} instead.",
+      "Notice where you default to {challenge} today and ask what you really need underneath.",
+      "The cosmos highlights a pattern you have been circling.",
+      "Your shadow is not your enemy — it is {challenge} asking to be understood.",
+      "Something today may trigger your {challenge} — growth is in responding differently.",
+      "Today asks: can you hold {strength} and {challenge} at the same time?"
+    ],
+    "caution": [
+      "Avoid making permanent decisions from a temporary emotional state.",
+      "Watch for {challenge} disguising itself as confidence today.",
+      "Not every battle today needs your energy — choose wisely.",
+      "Be careful with promises today — say less and deliver more.",
+      "Your {element} nature may push too hard — ease off where resistance feels wrong.",
+      "Today is not the day to force resolution — let some things breathe.",
+      "Boundaries need reinforcement today, especially around your energy and time.",
+      "The cosmos advises against rushing — what feels urgent may not be important.",
+      "Protect your peace today — not everything that demands a response deserves one.",
+      "Be mindful of projecting your {challenge} onto others."
+    ],
+    "ritual": [
+      "Close your eyes for 60 seconds and visualize your {element} element surrounding you.",
+      "Write the word \"{strength}\" on your palm or a piece of paper. Carry it today.",
+      "Place one hand over your heart and say quietly: \"I trust my {sign} instincts.\"",
+      "Step outside for 30 seconds. Feel the air. Let your {element} nature reset.",
+      "Take three slow breaths and with each exhale, release one worry about {challenge}.",
+      "Hold something warm. Invite {planet}'s energy into your awareness for one minute.",
+      "Ask: \"What does my {element} self need right now?\" Listen for the first word that arrives.",
+      "Write one sentence about what {dayTheme} means to you today. Fold the paper and keep it close.",
+      "Touch something grounding — wood, stone, your own skin — and breathe your {strength} in.",
+      "Whisper your daily affirmation three times. Let it settle in your chest."
+    ],
+    "moodDescriptors": [
+      "Quietly powerful",
+      "Restless but purposeful",
+      "Open and receptive",
+      "Tender and raw",
+      "Grounded and resolute",
+      "Playful and light",
+      "Contemplative and wise",
+      "Energized and magnetic",
+      "Clear-headed and decisive",
+      "Protective and fierce",
+      "Hopeful and forward-looking",
+      "Patient and steady",
+      "Emotionally honest",
+      "Resilient and recovering",
+      "Creative and inspired"
+    ],
+    "actionSteps": [
+      "Take 5 minutes to journal about what you are grateful for today.",
+      "Reach out to someone you have been thinking about.",
+      "Set one clear intention for the day and write it down.",
+      "Spend 10 minutes in quiet meditation or reflection.",
+      "Do one thing that scares you a little.",
+      "Name one emotion you are carrying right now without judging it.",
+      "Tell someone what you appreciate about them, with one specific example.",
+      "Make one decision you have been postponing.",
+      "Do something physical for 10 minutes — walk, stretch, dance.",
+      "Before bed tonight, write one sentence about what today taught you.",
+      "Replace one complaint today with a request for what you need.",
+      "Choose one relationship and invest 10 minutes of genuine attention."
+    ],
+    "planets": {
+      "sun": {
+        "theme": "vitality and self-expression",
+        "positive": "Your authentic self shines brightly today",
+        "focus": "identity, creativity, and leadership"
+      },
+      "moon": {
+        "theme": "emotions and intuition",
+        "positive": "Your emotional wisdom guides you well",
+        "focus": "feelings, home, and nurturing"
+      },
+      "mercury": {
+        "theme": "communication and thinking",
+        "positive": "Clear communication opens doors",
+        "focus": "ideas, learning, and connections"
+      },
+      "venus": {
+        "theme": "love and beauty",
+        "positive": "Harmony and beauty surround you",
+        "focus": "relationships, aesthetics, and values"
+      },
+      "mars": {
+        "theme": "action and energy",
+        "positive": "Your drive and determination are strong",
+        "focus": "initiative, courage, and ambition"
+      },
+      "jupiter": {
+        "theme": "expansion and luck",
+        "positive": "Abundance and opportunity flow toward you",
+        "focus": "growth, optimism, and wisdom"
+      },
+      "saturn": {
+        "theme": "structure and discipline",
+        "positive": "Your efforts build lasting foundations",
+        "focus": "responsibility, achievement, and mastery"
+      },
+      "uranus": {
+        "theme": "innovation and change",
+        "positive": "Unexpected breakthroughs are possible",
+        "focus": "originality, freedom, and revolution"
+      },
+      "neptune": {
+        "theme": "dreams and spirituality",
+        "positive": "Your imagination and intuition are heightened",
+        "focus": "creativity, compassion, and transcendence"
+      },
+      "pluto": {
+        "theme": "transformation and power",
+        "positive": "Deep transformation brings renewal",
+        "focus": "rebirth, intensity, and hidden truths"
+      }
+    },
+    "dayThemes": [
+      {
+        "theme": "reflection",
+        "focus": "rest and spiritual renewal",
+        "energy": "contemplative"
+      },
+      {
+        "theme": "new beginnings",
+        "focus": "setting intentions and fresh starts",
+        "energy": "initiating"
+      },
+      {
+        "theme": "action",
+        "focus": "courage and determination",
+        "energy": "dynamic"
+      },
+      {
+        "theme": "communication",
+        "focus": "ideas and connections",
+        "energy": "expressive"
+      },
+      {
+        "theme": "expansion",
+        "focus": "growth and abundance",
+        "energy": "optimistic"
+      },
+      {
+        "theme": "love",
+        "focus": "relationships and pleasure",
+        "energy": "harmonious"
+      },
+      {
+        "theme": "discipline",
+        "focus": "structure and achievement",
+        "energy": "grounded"
+      }
+    ],
+    "elements": {
+      "fire": {
+        "energy": "dynamic and action-oriented",
+        "advice": "Channel your passion into meaningful pursuits",
+        "challenge": "Practice patience and consider others' perspectives"
+      },
+      "earth": {
+        "energy": "grounded and practical",
+        "advice": "Build steadily toward your goals",
+        "challenge": "Embrace change as an opportunity for growth"
+      },
+      "air": {
+        "energy": "intellectual and communicative",
+        "advice": "Share your ideas and connect with others",
+        "challenge": "Balance thinking with feeling and action"
+      },
+      "water": {
+        "energy": "emotional and intuitive",
+        "advice": "Trust your inner wisdom and emotional intelligence",
+        "challenge": "Set healthy boundaries while remaining compassionate"
+      }
+    },
+    "focusAreas": [
+      "personal growth",
+      "relationships",
+      "career advancement",
+      "self-discovery",
+      "creative expression",
+      "emotional healing",
+      "spiritual development",
+      "financial wisdom",
+      "health and vitality",
+      "meaningful connections"
+    ],
+    "loveActions": [
+      "expressing affection",
+      "deepening bonds",
+      "opening your heart",
+      "honest communication",
+      "romantic gestures",
+      "quality time together"
+    ],
+    "workActivities": [
+      "strategic planning",
+      "collaboration",
+      "creative problem-solving",
+      "networking",
+      "skill development",
+      "leadership opportunities"
+    ],
+    "selfCareActivities": [
+      "grounding meditation",
+      "creative expression",
+      "nature walks",
+      "journaling",
+      "restorative rest",
+      "mindful movement"
+    ],
+    "careerActions": [
+      "taking initiative",
+      "building connections",
+      "showcasing expertise",
+      "strategic planning",
+      "collaborative projects",
+      "skill development"
+    ],
+    "aspirations": [
+      "deeper connection",
+      "romantic harmony",
+      "authentic love"
+    ],
+    "approaches": [
+      "authentic expression",
+      "dedicated effort",
+      "strategic thinking"
+    ],
+    "healingActivities": [
+      "reflection",
+      "release",
+      "restoration"
+    ],
+    "nurturing": [
+      "rest",
+      "movement",
+      "creativity"
+    ],
+    "healthFocuses": [
+      "balance",
+      "vitality",
+      "mindfulness"
+    ],
+    "colors": [
+      "Crimson",
+      "Gold",
+      "Silver",
+      "Azure",
+      "Emerald",
+      "Amber",
+      "Rose",
+      "Ivory",
+      "Sapphire",
+      "Coral",
+      "Jade",
+      "Obsidian",
+      "Pearl",
+      "Copper",
+      "Lavender",
+      "Turquoise",
+      "Burgundy",
+      "Champagne",
+      "Onyx",
+      "Marigold"
+    ]
   }
 }

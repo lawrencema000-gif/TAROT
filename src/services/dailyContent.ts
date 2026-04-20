@@ -13,6 +13,7 @@ import {
   cautionInsights,
   miniRitualTemplates,
 } from '../data/zodiacContent';
+import { dailyI18n } from '../i18n/localizeDailyInsights';
 
 export interface DailyReading {
   sign: ZodiacSign;
@@ -58,39 +59,41 @@ function selectFromArray<T>(array: T[], random: () => number): T {
   return array[Math.floor(random() * array.length)];
 }
 
-const colors = [
+// English fallback vocabulary. At runtime we pull the locale-appropriate
+// lists from dailyInsights.* in app.json via dailyI18n.*(fallback).
+const COLORS_EN = [
   'Crimson', 'Gold', 'Silver', 'Azure', 'Emerald', 'Amber', 'Rose',
   'Ivory', 'Sapphire', 'Coral', 'Jade', 'Obsidian', 'Pearl', 'Copper',
   'Lavender', 'Turquoise', 'Burgundy', 'Champagne', 'Onyx', 'Marigold',
 ];
 
-const focusAreas = [
+const FOCUS_AREAS_EN = [
   'personal growth', 'relationships', 'career advancement', 'self-discovery',
   'creative expression', 'emotional healing', 'spiritual development',
   'financial wisdom', 'health and vitality', 'meaningful connections',
 ];
 
-const loveActions = [
+const LOVE_ACTIONS_EN = [
   'expressing affection', 'deepening bonds', 'opening your heart',
   'honest communication', 'romantic gestures', 'quality time together',
 ];
 
-const workActivities = [
+const WORK_ACTIVITIES_EN = [
   'strategic planning', 'collaboration', 'creative problem-solving',
   'networking', 'skill development', 'leadership opportunities',
 ];
 
-const selfCareActivities = [
+const SELF_CARE_EN = [
   'grounding meditation', 'creative expression', 'nature walks',
   'journaling', 'restorative rest', 'mindful movement',
 ];
 
-const careerActions = [
+const CAREER_ACTIONS_EN = [
   'taking initiative', 'building connections', 'showcasing expertise',
   'strategic planning', 'collaborative projects', 'skill development',
 ];
 
-const moodDescriptors = [
+const MOOD_EN = [
   'Quietly powerful', 'Restless but purposeful', 'Open and receptive',
   'Tender and raw', 'Grounded and resolute', 'Playful and light',
   'Contemplative and wise', 'Energized and magnetic', 'Clear-headed and decisive',
@@ -98,7 +101,7 @@ const moodDescriptors = [
   'Emotionally honest', 'Resilient and recovering', 'Creative and inspired',
 ];
 
-const actionStepPool = [
+const ACTION_STEPS_EN = [
   'Take 5 minutes to journal about what you are grateful for today.',
   'Reach out to someone you have been thinking about.',
   'Set one clear intention for the day and write it down.',
@@ -113,6 +116,12 @@ const actionStepPool = [
   'Choose one relationship and invest 10 minutes of genuine attention.',
 ];
 
+const ASPIRATIONS_EN = ['deeper connection', 'romantic harmony', 'authentic love'];
+const APPROACHES_EN = ['authentic expression', 'dedicated effort', 'strategic thinking'];
+const HEALING_EN = ['reflection', 'release', 'restoration'];
+const NURTURING_EN = ['rest', 'movement', 'creativity'];
+const HEALTH_FOCUS_EN = ['balance', 'vitality', 'mindfulness'];
+
 function interpolateTemplate(
   template: string,
   context: Record<string, string>
@@ -126,10 +135,28 @@ function buildContext(
   random: () => number
 ): Record<string, string> {
   const profile = zodiacProfiles[sign];
-  const dayTheme = dailyThemesByDay[date.getDay()];
-  const element = elementThemes[profile.element];
+  const enDayTheme = dailyThemesByDay[date.getDay()];
+  const enElement = elementThemes[profile.element];
   const planetKey = profile.rulingPlanet.toLowerCase() as keyof typeof planetaryInfluences;
-  const planet = planetaryInfluences[planetKey] || planetaryInfluences.sun;
+  const enPlanet = planetaryInfluences[planetKey] || planetaryInfluences.sun;
+
+  // Pull the locale-appropriate strings from app.json (dailyInsights.*).
+  // Each getter falls back to the English data-file value when the locale
+  // bundle is missing an entry.
+  const dayTheme = dailyI18n.dayTheme(date.getDay(), enDayTheme);
+  const element = dailyI18n.element(profile.element, enElement);
+  const planet = dailyI18n.planet(planetKey, enPlanet);
+
+  const focusAreas       = dailyI18n.focusAreas(FOCUS_AREAS_EN);
+  const loveActions      = dailyI18n.loveActions(LOVE_ACTIONS_EN);
+  const workActivities   = dailyI18n.workActivities(WORK_ACTIVITIES_EN);
+  const selfCareActivities = dailyI18n.selfCareActivities(SELF_CARE_EN);
+  const careerActions    = dailyI18n.careerActions(CAREER_ACTIONS_EN);
+  const aspirations      = dailyI18n.aspirations(ASPIRATIONS_EN);
+  const approaches       = dailyI18n.approaches(APPROACHES_EN);
+  const healingActivities= dailyI18n.healingActivities(HEALING_EN);
+  const nurturing        = dailyI18n.nurturing(NURTURING_EN);
+  const healthFocuses    = dailyI18n.healthFocuses(HEALTH_FOCUS_EN);
 
   return {
     sign: sign.charAt(0).toUpperCase() + sign.slice(1),
@@ -155,15 +182,15 @@ function buildContext(
     activity: selectFromArray(workActivities, random),
     pursuit: selectFromArray(focusAreas, random),
     loveAction: selectFromArray(loveActions, random),
-    aspiration: selectFromArray(['deeper connection', 'romantic harmony', 'authentic love'], random),
+    aspiration: selectFromArray(aspirations, random),
     workActivity: selectFromArray(workActivities, random),
-    approach: selectFromArray(['authentic expression', 'dedicated effort', 'strategic thinking'], random),
+    approach: selectFromArray(approaches, random),
     careerAction: selectFromArray(careerActions, random),
     selfCareActivity: selectFromArray(selfCareActivities, random),
     wellnessAction: selectFromArray(selfCareActivities, random),
-    healingActivity: selectFromArray(['reflection', 'release', 'restoration'], random),
-    nurturing: selectFromArray(['rest', 'movement', 'creativity'], random),
-    healthFocus: selectFromArray(['balance', 'vitality', 'mindfulness'], random),
+    healingActivity: selectFromArray(healingActivities, random),
+    nurturing: selectFromArray(nurturing, random),
+    healthFocus: selectFromArray(healthFocuses, random),
   };
 }
 
@@ -176,22 +203,25 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
   const profile = zodiacProfiles[sign];
   const dayTheme = dailyThemesByDay[dateObj.getDay()];
 
-  const generalTemplate = selectFromArray(generalInsights, random);
-  const loveTemplate = selectFromArray(loveInsights, random);
-  const careerTemplate = selectFromArray(careerInsights, random);
-  const wellnessTemplate = selectFromArray(wellnessInsights, random);
-  const reflectionTemplate = selectFromArray(reflectionPrompts, random);
-  const shadowTemplate = selectFromArray(shadowInsights, random);
-  const cautionTemplate = selectFromArray(cautionInsights, random);
-  const ritualTemplate = selectFromArray(miniRitualTemplates, random);
+  const generalTemplate    = selectFromArray(dailyI18n.general(generalInsights), random);
+  const loveTemplate       = selectFromArray(dailyI18n.love(loveInsights), random);
+  const careerTemplate     = selectFromArray(dailyI18n.career(careerInsights), random);
+  const wellnessTemplate   = selectFromArray(dailyI18n.wellness(wellnessInsights), random);
+  const reflectionTemplate = selectFromArray(dailyI18n.reflection(reflectionPrompts), random);
+  const shadowTemplate     = selectFromArray(dailyI18n.shadow(shadowInsights), random);
+  const cautionTemplate    = selectFromArray(dailyI18n.caution(cautionInsights), random);
+  const ritualTemplate     = selectFromArray(dailyI18n.ritual(miniRitualTemplates), random);
 
-  let focusArea = dayTheme.focus;
-  if (goals.includes('love')) focusArea = 'relationships and connection';
-  else if (goals.includes('career')) focusArea = 'professional growth';
-  else if (goals.includes('healing')) focusArea = 'emotional wellness';
-
+  const localizedDayTheme = dailyI18n.dayTheme(dateObj.getDay(), dayTheme);
   const planetKey = profile.rulingPlanet.toLowerCase() as keyof typeof planetaryInfluences;
-  const planet = planetaryInfluences[planetKey] || planetaryInfluences.sun;
+  const enPlanet = planetaryInfluences[planetKey] || planetaryInfluences.sun;
+  const localizedPlanet = dailyI18n.planet(planetKey, enPlanet);
+
+  let focusArea = localizedDayTheme.focus;
+  const focusAreasL = dailyI18n.focusAreas(FOCUS_AREAS_EN);
+  if (goals.includes('love')) focusArea = focusAreasL[1] ?? focusArea;
+  else if (goals.includes('career')) focusArea = focusAreasL[2] ?? focusArea;
+  else if (goals.includes('healing')) focusArea = focusAreasL[5] ?? focusArea;
 
   return {
     sign,
@@ -202,15 +232,15 @@ export function generateDailyReading(ctx: ReadingContext): DailyReading {
     wellness: interpolateTemplate(wellnessTemplate, context),
     reflection: interpolateTemplate(reflectionTemplate, context),
     luckyNumber: Math.floor(random() * 99) + 1,
-    luckyColor: selectFromArray(colors, random),
+    luckyColor: selectFromArray(dailyI18n.colors(COLORS_EN), random),
     energy: Math.floor(random() * 5) + 1,
     focusArea,
-    planetaryInfluence: planet.positive,
+    planetaryInfluence: localizedPlanet.positive,
     shadow: interpolateTemplate(shadowTemplate, context),
     caution: interpolateTemplate(cautionTemplate, context),
     miniRitual: interpolateTemplate(ritualTemplate, context),
-    mood: selectFromArray(moodDescriptors, random),
-    actionStep: selectFromArray(actionStepPool, random),
+    mood: selectFromArray(dailyI18n.moodDescriptors(MOOD_EN), random),
+    actionStep: selectFromArray(dailyI18n.actionSteps(ACTION_STEPS_EN), random),
   };
 }
 
@@ -225,10 +255,10 @@ export function generateExtendedReading(
   const context = buildContext(sign, dateObj, random);
 
   const templates = focusArea === 'love'
-    ? loveInsights
+    ? dailyI18n.love(loveInsights)
     : focusArea === 'career'
-      ? careerInsights
-      : generalInsights;
+      ? dailyI18n.career(careerInsights)
+      : dailyI18n.general(generalInsights);
 
   const readings: string[] = [];
   const usedIndices = new Set<number>();

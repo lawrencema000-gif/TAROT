@@ -478,7 +478,25 @@
       "loveLanguage": "사랑의 언어",
       "attachment": "애착 유형",
       "mood": "무드 체크"
-    }
+    },
+    "resultSections": {
+      "strengths": "강점",
+      "blindSpots": "사각지대",
+      "underStress": "스트레스 상황에서",
+      "inRelationships": "관계에서",
+      "atWork": "업무에서",
+      "growthQuests": "성장 퀘스트",
+      "stressSignature": "스트레스 징후",
+      "recoveryPath": "회복 경로",
+      "realLifeExamples": "실생활 예시",
+      "bigFiveProfile": "빅 파이브 프로필",
+      "emotionalStability": "정서적 안정성",
+      "higherThanAverage": "평균보다 높음",
+      "lowerThanAverage": "평균보다 낮음",
+      "averageRange": "평균 범위",
+      "compatibleTypes": "궁합이 좋은 유형"
+    },
+    "takeAnother": "다른 퀴즈 풀기"
   },
   "horoscope": {
     "title": "별자리 운세",

@@ -266,7 +266,7 @@ export function QuizzesPage() {
           resultLabel = calculatedResult.style;
         } else {
           calculatedResult = calculateBigFive(newAnswers);
-          resultLabel = 'Big Five Profile';
+          resultLabel = tApp('quizzes.resultSections.bigFiveProfile');
         }
       } else if (progress.quiz.type === 'enneagram') {
         calculatedResult = calculateEnneagram(newAnswers);
@@ -485,7 +485,7 @@ export function QuizzesPage() {
           )}
 
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
-            Take Another Quiz
+            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
         </div>
       );
@@ -577,7 +577,7 @@ export function QuizzesPage() {
             </ul>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Blind Spots" icon={AlertTriangle} sectionKey="blindspots">
+          <CollapsibleSection title={tApp('quizzes.resultSections.blindSpots')} icon={AlertTriangle} sectionKey="blindspots">
             <ul className="space-y-2">
               {typeInfo?.blindSpots.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -590,7 +590,7 @@ export function QuizzesPage() {
             </ul>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Under Stress" icon={Zap} sectionKey="stress">
+          <CollapsibleSection title={tApp('quizzes.resultSections.underStress')} icon={Zap} sectionKey="stress">
             <ul className="space-y-2">
               {typeInfo?.underStress.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -603,7 +603,7 @@ export function QuizzesPage() {
             </ul>
           </CollapsibleSection>
 
-          <CollapsibleSection title="In Relationships" icon={HeartHandshake} sectionKey="relationships">
+          <CollapsibleSection title={tApp('quizzes.resultSections.inRelationships')} icon={HeartHandshake} sectionKey="relationships">
             <ul className="space-y-2">
               {typeInfo?.inRelationships.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -614,7 +614,7 @@ export function QuizzesPage() {
             </ul>
           </CollapsibleSection>
 
-          <CollapsibleSection title="At Work" icon={Briefcase} sectionKey="work">
+          <CollapsibleSection title={tApp('quizzes.resultSections.atWork')} icon={Briefcase} sectionKey="work">
             <ul className="space-y-2">
               {typeInfo?.atWork.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -627,7 +627,7 @@ export function QuizzesPage() {
             </ul>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Growth Quests" icon={Target} sectionKey="growth">
+          <CollapsibleSection title={tApp('quizzes.resultSections.growthQuests')} icon={Target} sectionKey="growth">
             <div className="space-y-4">
               {typeInfo?.growthQuests.map((quest, i) => (
                 <div key={i} className="p-4 bg-gold/5 border border-gold/20 rounded-xl">
@@ -639,11 +639,11 @@ export function QuizzesPage() {
           </CollapsibleSection>
 
           {typeInfo?.stressSignature && (
-            <CollapsibleSection title="Stress Signature" icon={Zap} sectionKey="stressSignature">
+            <CollapsibleSection title={tApp('quizzes.resultSections.stressSignature')} icon={Zap} sectionKey="stressSignature">
               <p className="text-mystic-300 text-sm leading-relaxed">{typeInfo.stressSignature}</p>
               {typeInfo.recoveryPath && (
                 <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/20 rounded-xl">
-                  <p className="text-xs text-emerald-400 uppercase tracking-wide mb-2">Recovery Path</p>
+                  <p className="text-xs text-emerald-400 uppercase tracking-wide mb-2">{tApp('quizzes.resultSections.recoveryPath')}</p>
                   <p className="text-mystic-300 text-sm">{typeInfo.recoveryPath}</p>
                 </div>
               )}
@@ -651,7 +651,7 @@ export function QuizzesPage() {
           )}
 
           {typeInfo?.realLifeExamples && typeInfo.realLifeExamples.length > 0 && (
-            <CollapsibleSection title="Real Life Examples" icon={Compass} sectionKey="realLife">
+            <CollapsibleSection title={tApp('quizzes.resultSections.realLifeExamples')} icon={Compass} sectionKey="realLife">
               <ul className="space-y-2">
                 {typeInfo.realLifeExamples.map((example, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -693,7 +693,7 @@ export function QuizzesPage() {
           <Card padding="lg">
             <div className="flex items-center gap-3 mb-4">
               <Users className="w-5 h-5 text-gold" />
-              <h3 className="font-medium text-mystic-200">Compatible Types</h3>
+              <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.compatibleTypes', { defaultValue: 'Compatible Types' })}</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               {typeInfo?.compatibility.map((type, i) => (
@@ -705,7 +705,7 @@ export function QuizzesPage() {
           </Card>
 
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
-            Take Another Quiz
+            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
         </div>
       );
@@ -718,7 +718,7 @@ export function QuizzesPage() {
         { key: 'conscientiousness', label: 'Conscientiousness', color: 'emerald-400' },
         { key: 'extraversion', label: 'Extraversion', color: 'gold' },
         { key: 'agreeableness', label: 'Agreeableness', color: 'cosmic-rose' },
-        { key: 'neuroticism', label: 'Emotional Stability', color: 'mystic-300' },
+        { key: 'neuroticism', label: tApp('quizzes.resultSections.emotionalStability'), color: 'mystic-300' },
       ];
 
       return (
@@ -749,7 +749,7 @@ export function QuizzesPage() {
                     </div>
                     <Progress value={score} variant={score >= 50 ? 'gold' : 'default'} size="sm" />
                     <p className="text-xs text-mystic-500 mt-1">
-                      {isHigh ? 'Higher than average' : isLow ? 'Lower than average' : 'Average range'}
+                      {isHigh ? tApp('quizzes.resultSections.higherThanAverage') : isLow ? tApp('quizzes.resultSections.lowerThanAverage') : tApp('quizzes.resultSections.averageRange')}
                     </p>
                   </div>
                 );
@@ -797,7 +797,7 @@ export function QuizzesPage() {
           })}
 
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
-            Take Another Quiz
+            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
         </div>
       );
@@ -972,7 +972,7 @@ export function QuizzesPage() {
           )}
 
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
-            Take Another Quiz
+            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
         </div>
       );
@@ -1143,7 +1143,7 @@ export function QuizzesPage() {
           )}
 
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
-            Take Another Quiz
+            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
         </div>
       );

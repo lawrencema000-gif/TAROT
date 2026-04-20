@@ -478,7 +478,25 @@
       "loveLanguage": "Love Language",
       "attachment": "Attachment Style",
       "mood": "Mood Check"
-    }
+    },
+    "resultSections": {
+      "strengths": "Strengths",
+      "blindSpots": "Blind Spots",
+      "underStress": "Under Stress",
+      "inRelationships": "In Relationships",
+      "atWork": "At Work",
+      "growthQuests": "Growth Quests",
+      "stressSignature": "Stress Signature",
+      "recoveryPath": "Recovery Path",
+      "realLifeExamples": "Real Life Examples",
+      "bigFiveProfile": "Big Five Profile",
+      "emotionalStability": "Emotional Stability",
+      "higherThanAverage": "Higher than average",
+      "lowerThanAverage": "Lower than average",
+      "averageRange": "Average range",
+      "compatibleTypes": "Compatible Types"
+    },
+    "takeAnother": "Take Another Quiz"
   },
   "horoscope": {
     "title": "Horoscope",

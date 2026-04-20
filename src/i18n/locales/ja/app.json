@@ -478,7 +478,25 @@
       "loveLanguage": "ラブランゲージ",
       "attachment": "アタッチメントスタイル",
       "mood": "ムードチェック"
-    }
+    },
+    "resultSections": {
+      "strengths": "強み",
+      "blindSpots": "盲点",
+      "underStress": "ストレス下で",
+      "inRelationships": "人間関係では",
+      "atWork": "仕事では",
+      "growthQuests": "成長のクエスト",
+      "stressSignature": "ストレスのサイン",
+      "recoveryPath": "回復への道",
+      "realLifeExamples": "実例",
+      "bigFiveProfile": "ビッグファイブ プロフィール",
+      "emotionalStability": "情緒安定性",
+      "higherThanAverage": "平均より高い",
+      "lowerThanAverage": "平均より低い",
+      "averageRange": "平均の範囲",
+      "compatibleTypes": "相性の良いタイプ"
+    },
+    "takeAnother": "別の診断を受ける"
   },
   "horoscope": {
     "title": "星占い",

@@ -478,7 +478,25 @@
       "loveLanguage": "爱的语言",
       "attachment": "依恋类型",
       "mood": "心情记录"
-    }
+    },
+    "resultSections": {
+      "strengths": "优势",
+      "blindSpots": "盲点",
+      "underStress": "压力下",
+      "inRelationships": "在关系中",
+      "atWork": "在工作中",
+      "growthQuests": "成长挑战",
+      "stressSignature": "压力特征",
+      "recoveryPath": "恢复路径",
+      "realLifeExamples": "真实案例",
+      "bigFiveProfile": "五大性格档案",
+      "emotionalStability": "情绪稳定性",
+      "higherThanAverage": "高于平均",
+      "lowerThanAverage": "低于平均",
+      "averageRange": "平均范围",
+      "compatibleTypes": "相容的类型"
+    },
+    "takeAnother": "进行另一个测试"
   },
   "horoscope": {
     "title": "星座运势",

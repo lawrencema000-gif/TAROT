@@ -1,147 +1,210 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14.10.0";
+import { AppError, handler } from "../_shared/handler.ts";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2024-11-20.acacia",
-  httpClient: Stripe.createFetchHttpClient(),
-});
+/**
+ * Stripe webhook handler.
+ *
+ * Auth: `auth: "optional"` — we do NOT use the handler's generic webhook
+ * secret check because Stripe's HMAC signature scheme is non-trivial (it
+ * includes a timestamp plus scheme-specific payload serialization). Instead
+ * we keep Stripe's own `webhooks.constructEvent` inside `run`.
+ *
+ * Idempotency: the first DB call is an INSERT into `webhook_events`. If the
+ * event_id already exists, ON CONFLICT makes the INSERT a no-op, and we
+ * return `{received:true, duplicate:true}` without touching profiles /
+ * subscriptions / audit_events.
+ */
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, Stripe-Signature",
-};
-
-async function updateUserPremiumStatus(
-  userId: string,
-  isPremium: boolean,
-  subscriptionData?: {
-    provider: string;
-    productId: string;
-    status: string;
-    period: string;
-    transactionId: string;
-    startedAt?: string;
-    expiresAt?: string;
-  }
-) {
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({ is_premium: isPremium })
-    .eq("id", userId);
-
-  if (profileError) {
-    console.error("[Stripe] Error updating profile:", profileError);
-    throw profileError;
-  }
-
-  if (subscriptionData) {
-    const { error: subError } = await supabase.from("subscriptions").upsert(
-      {
-        user_id: userId,
-        provider: subscriptionData.provider,
-        product_id: subscriptionData.productId,
-        status: subscriptionData.status,
-        period: subscriptionData.period,
-        transaction_id: subscriptionData.transactionId,
-        started_at: subscriptionData.startedAt,
-        expires_at: subscriptionData.expiresAt,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "transaction_id",
-      }
-    );
-
-    if (subError) {
-      console.error("[Stripe] Error updating subscription:", subError);
-    }
-  }
-
-  const { error: auditError } = await supabase.from("audit_events").insert({
-    user_id: userId,
-    event_name: isPremium ? "premium_activated" : "premium_deactivated",
-    payload: {
-      provider: "stripe",
-      ...subscriptionData,
-    },
-  });
-
-  if (auditError) {
-    console.error("[Stripe] Error logging audit event:", auditError);
-  }
+interface StripeSubscriptionMetadata {
+  provider: string;
+  productId: string;
+  status: string;
+  period: string;
+  transactionId: string;
+  startedAt?: string;
+  expiresAt?: string;
 }
 
 function getPeriodFromInterval(interval: string): string {
   switch (interval) {
-    case "month":
-      return "monthly";
-    case "year":
-      return "yearly";
-    case "week":
-      return "weekly";
-    default:
-      return "monthly";
+    case "month": return "monthly";
+    case "year":  return "yearly";
+    case "week":  return "weekly";
+    default:      return "monthly";
   }
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+Deno.serve(
+  handler({
+    fn: "stripe-webhook",
+    auth: "optional",
+    // Stripe retries on 5xx; keep idle headroom for bursts.
+    rateLimit: { max: 300, windowMs: 60_000 },
+    run: async (ctx) => {
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+        apiVersion: "2024-11-20.acacia",
+        httpClient: Stripe.createFetchHttpClient(),
+      });
+      const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 
-  try {
-    const signature = req.headers.get("stripe-signature");
-    if (!signature) {
-      console.error("[Stripe] Missing stripe-signature header");
-      return new Response(
-        JSON.stringify({ error: "Missing signature" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+      const signature = ctx.req.headers.get("stripe-signature");
+      if (!signature) {
+        ctx.log.warn("stripe_webhook.missing_signature");
+        throw new AppError("STRIPE_SIGNATURE_MISSING", "Missing Stripe signature", 400);
+      }
+      if (!webhookSecret) {
+        ctx.log.error("stripe_webhook.secret_not_configured");
+        throw new AppError("WEBHOOK_SECRET_MISSING", "Stripe webhook secret not configured", 500);
+      }
 
-    const body = await req.text();
-    let event: Stripe.Event;
+      // Stripe signature verification needs the RAW body — it was NOT parsed
+      // by the handler wrapper because there's no JSON content-type match for
+      // the handler's default parse path on Stripe's POST (Stripe sends JSON
+      // but we need the raw text for HMAC). We re-read via clone().
+      const rawBody = await ctx.req.clone().text();
 
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } catch (err) {
-      console.error("[Stripe] Webhook signature verification failed:", err);
-      return new Response(
-        JSON.stringify({ error: "Invalid signature" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+      let event: Stripe.Event;
+      try {
+        event = await stripe.webhooks.constructEventAsync(rawBody, signature, webhookSecret);
+      } catch (err) {
+        ctx.log.warn("stripe_webhook.signature_invalid", { err });
+        throw new AppError("STRIPE_SIGNATURE_INVALID", "Invalid Stripe signature", 400);
+      }
 
-    console.log(`[Stripe] Webhook received: ${event.type}`);
+      // ── Idempotency: insert event.id into webhook_events. If already
+      // present, bail with a success no-op so Stripe stops retrying.
+      const { data: inserted, error: idemErr } = await ctx.supabase
+        .from("webhook_events")
+        .insert({ source: "stripe", event_id: event.id })
+        .select("id")
+        .maybeSingle();
 
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.client_reference_id || session.metadata?.user_id;
-        const productId = session.metadata?.product_id;
+      if (idemErr && idemErr.code !== "23505") {
+        // 23505 = unique_violation; anything else is a real problem.
+        ctx.log.error("stripe_webhook.idempotency_insert_failed", { err: idemErr, eventId: event.id });
+        throw new AppError("IDEMPOTENCY_WRITE_FAILED", "Could not record webhook event", 500);
+      }
 
-        if (!userId) {
-          console.error("[Stripe] No user ID in checkout session");
+      if (!inserted) {
+        ctx.log.info("stripe_webhook.duplicate", { eventId: event.id, type: event.type });
+        return new Response(
+          JSON.stringify({ received: true, duplicate: true }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      ctx.log.info("stripe_webhook.received", { eventId: event.id, type: event.type });
+
+      async function updateUserPremiumStatus(
+        userId: string,
+        isPremium: boolean,
+        subscriptionData?: StripeSubscriptionMetadata,
+      ): Promise<void> {
+        const { error: profileError } = await ctx.supabase
+          .from("profiles")
+          .update({ is_premium: isPremium })
+          .eq("id", userId);
+
+        if (profileError) {
+          ctx.log.error("stripe_webhook.profile_update_failed", { err: profileError, userId });
+          throw profileError;
+        }
+
+        if (subscriptionData) {
+          const { error: subError } = await ctx.supabase.from("subscriptions").upsert(
+            {
+              user_id: userId,
+              provider: subscriptionData.provider,
+              product_id: subscriptionData.productId,
+              status: subscriptionData.status,
+              period: subscriptionData.period,
+              transaction_id: subscriptionData.transactionId,
+              started_at: subscriptionData.startedAt,
+              expires_at: subscriptionData.expiresAt,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "transaction_id" },
+          );
+
+          if (subError) {
+            ctx.log.error("stripe_webhook.subscription_upsert_failed", { err: subError, userId });
+          }
+        }
+
+        const { error: auditError } = await ctx.supabase.from("audit_events").insert({
+          user_id: userId,
+          event_name: isPremium ? "premium_activated" : "premium_deactivated",
+          payload: {
+            provider: "stripe",
+            ...subscriptionData,
+          },
+        });
+
+        if (auditError) {
+          ctx.log.error("stripe_webhook.audit_insert_failed", { err: auditError, userId });
+        }
+      }
+
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          const userId = session.client_reference_id || session.metadata?.user_id;
+          const productId = session.metadata?.product_id;
+
+          if (!userId) {
+            ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+            break;
+          }
+
+          if (session.mode === "subscription") {
+            const subscription = await stripe.subscriptions.retrieve(
+              session.subscription as string,
+            );
+
+            await updateUserPremiumStatus(userId, true, {
+              provider: "stripe",
+              productId: productId || subscription.items.data[0].price.id,
+              status: subscription.status === "trialing" ? "trial" : "active",
+              period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
+              transactionId: subscription.id,
+              startedAt: new Date(subscription.created * 1000).toISOString(),
+              expiresAt: subscription.current_period_end
+                ? new Date(subscription.current_period_end * 1000).toISOString()
+                : undefined,
+            });
+
+            ctx.log.info("stripe_webhook.user_subscribed", { userId });
+          } else if (session.mode === "payment") {
+            await updateUserPremiumStatus(userId, true, {
+              provider: "stripe",
+              productId: productId || "lifetime",
+              status: "active",
+              period: "lifetime",
+              transactionId: session.payment_intent as string,
+              startedAt: new Date().toISOString(),
+            });
+
+            ctx.log.info("stripe_webhook.user_lifetime", { userId });
+          }
           break;
         }
 
-        if (session.mode === "subscription") {
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string
-          );
+        case "customer.subscription.updated": {
+          const subscription = event.data.object as Stripe.Subscription;
+          const userId = subscription.metadata?.user_id;
 
-          await updateUserPremiumStatus(userId, true, {
+          if (!userId) {
+            ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+            break;
+          }
+
+          const isActive = ["active", "trialing"].includes(subscription.status);
+
+          await updateUserPremiumStatus(userId, isActive, {
             provider: "stripe",
-            productId: productId || subscription.items.data[0].price.id,
-            status: subscription.status === "trialing" ? "trial" : "active",
+            productId: subscription.items.data[0].price.id,
+            status: subscription.status === "trialing" ? "trial" : subscription.status,
             period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
             transactionId: subscription.id,
             startedAt: new Date(subscription.created * 1000).toISOString(),
@@ -150,109 +213,67 @@ Deno.serve(async (req: Request) => {
               : undefined,
           });
 
-          console.log(`[Stripe] User ${userId} subscribed (trial or active)`);
-        } else if (session.mode === "payment") {
-          await updateUserPremiumStatus(userId, true, {
+          ctx.log.info("stripe_webhook.subscription_updated", { subscriptionId: subscription.id, status: subscription.status });
+          break;
+        }
+
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object as Stripe.Subscription;
+          const userId = subscription.metadata?.user_id;
+
+          if (!userId) {
+            ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+            break;
+          }
+
+          await updateUserPremiumStatus(userId, false, {
             provider: "stripe",
-            productId: productId || "lifetime",
-            status: "active",
-            period: "lifetime",
-            transactionId: session.payment_intent as string,
-            startedAt: new Date().toISOString(),
+            productId: subscription.items.data[0].price.id,
+            status: "cancelled",
+            period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
+            transactionId: subscription.id,
+            startedAt: new Date(subscription.created * 1000).toISOString(),
+            expiresAt: subscription.ended_at
+              ? new Date(subscription.ended_at * 1000).toISOString()
+              : undefined,
           });
 
-          console.log(`[Stripe] User ${userId} purchased lifetime access`);
-        }
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata?.user_id;
-
-        if (!userId) {
-          console.error("[Stripe] No user ID in subscription metadata");
+          ctx.log.info("stripe_webhook.subscription_cancelled", { subscriptionId: subscription.id });
           break;
         }
 
-        const isActive = ["active", "trialing"].includes(subscription.status);
+        case "invoice.payment_failed": {
+          const invoice = event.data.object as Stripe.Invoice;
+          const subscriptionId = invoice.subscription;
 
-        await updateUserPremiumStatus(userId, isActive, {
-          provider: "stripe",
-          productId: subscription.items.data[0].price.id,
-          status: subscription.status === "trialing" ? "trial" : subscription.status,
-          period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
-          transactionId: subscription.id,
-          startedAt: new Date(subscription.created * 1000).toISOString(),
-          expiresAt: subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000).toISOString()
-            : undefined,
-        });
+          if (subscriptionId) {
+            const sub = await stripe.subscriptions.retrieve(subscriptionId as string);
+            const userId = sub.metadata?.user_id;
 
-        console.log(`[Stripe] Subscription ${subscription.id} updated: ${subscription.status}`);
-        break;
-      }
+            if (userId) {
+              const { error } = await ctx.supabase
+                .from("subscriptions")
+                .update({ status: "grace_period" })
+                .eq("transaction_id", subscriptionId as string);
 
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata?.user_id;
+              if (error) {
+                ctx.log.error("stripe_webhook.grace_period_update_failed", { err: error, userId });
+              }
 
-        if (!userId) {
-          console.error("[Stripe] No user ID in subscription metadata");
-          break;
-        }
-
-        await updateUserPremiumStatus(userId, false, {
-          provider: "stripe",
-          productId: subscription.items.data[0].price.id,
-          status: "cancelled",
-          period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
-          transactionId: subscription.id,
-          startedAt: new Date(subscription.created * 1000).toISOString(),
-          expiresAt: new Date(subscription.ended_at! * 1000).toISOString(),
-        });
-
-        console.log(`[Stripe] Subscription ${subscription.id} cancelled`);
-        break;
-      }
-
-      case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subscription = invoice.subscription;
-
-        if (subscription) {
-          const sub = await stripe.subscriptions.retrieve(subscription as string);
-          const userId = sub.metadata?.user_id;
-
-          if (userId) {
-            const { error } = await supabase
-              .from("subscriptions")
-              .update({ status: "grace_period" })
-              .eq("transaction_id", subscription as string);
-
-            if (error) {
-              console.error("[Stripe] Error updating subscription status:", error);
+              ctx.log.info("stripe_webhook.payment_failed_grace", { userId });
             }
-
-            console.log(`[Stripe] Payment failed for user ${userId}, subscription in grace period`);
           }
+          break;
         }
-        break;
+
+        default:
+          ctx.log.info("stripe_webhook.unhandled_event", { type: event.type });
       }
 
-      default:
-        console.log(`[Stripe] Unhandled event type: ${event.type}`);
-    }
-
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.error("[Stripe] Webhook error:", err);
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-});
+      return new Response(
+        JSON.stringify({ received: true }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    },
+  }),
+);

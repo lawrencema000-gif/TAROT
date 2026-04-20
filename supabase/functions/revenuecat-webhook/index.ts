@@ -1,15 +1,17 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { AppError, handler } from "../_shared/handler.ts";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const revenuecatWebhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET") || "";
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// No CORS headers — this is a server-to-server webhook, not called from browsers
-const responseHeaders = {
-  "Content-Type": "application/json",
-};
+/**
+ * RevenueCat webhook handler.
+ *
+ * RC's signature scheme is a shared-secret Bearer token in the Authorization
+ * header, which the generic `auth: "webhook"` mode in the handler wrapper
+ * already supports. We use `webhookSecretEnv: "REVENUECAT_WEBHOOK_SECRET"`
+ * to delegate that check.
+ *
+ * Idempotency uses the webhook_events ledger with source='revenuecat'. The
+ * unique key is `event.id` as issued by RevenueCat.
+ */
 
 interface RevenueCatEvent {
   api_version: string;
@@ -37,200 +39,175 @@ interface RevenueCatEvent {
   };
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204 });
-  }
-
-  try {
-    if (!revenuecatWebhookSecret) {
-      console.error("[RevenueCat] REVENUECAT_WEBHOOK_SECRET is not configured — rejecting all requests");
-      return new Response(
-        JSON.stringify({ error: "Webhook secret not configured" }),
-        { status: 500, headers: responseHeaders }
-      );
-    }
-
-    const authHeader = req.headers.get("Authorization");
-    const expectedAuth = `Bearer ${revenuecatWebhookSecret}`;
-
-    if (!authHeader || authHeader !== expectedAuth) {
-      console.error("[RevenueCat] Invalid or missing authorization header");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: responseHeaders }
-      );
-    }
-
-    const rawBody = await req.text();
-    // Do NOT log raw webhook body — contains user identifiers, transaction IDs,
-    // and store-issued tokens. Log safe fields only after parsing.
-
-    let webhookData: RevenueCatEvent;
-    try {
-      webhookData = JSON.parse(rawBody);
-    } catch (parseError) {
-      console.error("[RevenueCat] Failed to parse JSON:", parseError);
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON payload" }),
-        { status: 400, headers: responseHeaders }
-      );
-    }
-
-    if (!webhookData.event) {
-      console.log("[RevenueCat] Test webhook received (no event data)");
-      return new Response(
-        JSON.stringify({ success: true, message: "Test webhook received" }),
-        { status: 200, headers: responseHeaders }
-      );
-    }
-
-    const eventType = webhookData.event.type;
-    const userId = webhookData.event.app_user_id;
-    const productId = webhookData.event.product_id || "";
-    const entitlements = webhookData.event.entitlement_ids || [];
-
-    console.log("[RevenueCat] Webhook received:", {
-      type: eventType,
-      userId,
-      productId,
-      entitlements,
-    });
-
-    const hasPremium = entitlements.includes("premium");
-
-    if (
-      eventType === "INITIAL_PURCHASE" ||
-      eventType === "RENEWAL" ||
-      eventType === "UNCANCELLATION"
-    ) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          is_premium: hasPremium,
-        })
-        .eq("id", userId);
-
-      if (error) {
-        console.error("[RevenueCat] Error updating profile:", error);
+Deno.serve(
+  handler<RevenueCatEvent>({
+    fn: "revenuecat-webhook",
+    auth: "webhook",
+    webhookSecretEnv: "REVENUECAT_WEBHOOK_SECRET",
+    rateLimit: { max: 300, windowMs: 60_000 },
+    run: async (ctx, body) => {
+      // Test webhook (no event body) — RC uses these to validate the endpoint.
+      if (!body?.event) {
+        ctx.log.info("revenuecat_webhook.test_ping");
         return new Response(
-          JSON.stringify({ error: "Failed to update profile" }),
-          {
-            status: 500,
-            headers: responseHeaders,
-          }
+          JSON.stringify({ success: true, message: "Test webhook received" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }
 
-      const period = productId.includes("lifetime")
-        ? "lifetime"
-        : productId.includes("yearly")
-        ? "yearly"
-        : "monthly";
+      const eventId = body.event.id;
+      const eventType = body.event.type;
+      const userId = body.event.app_user_id;
+      const productId = body.event.product_id || "";
+      const entitlements = body.event.entitlement_ids || [];
 
-      const { error: subError } = await supabase.from("subscriptions").upsert(
-        {
-          user_id: userId,
-          provider: "google",
-          product_id: productId,
-          status: webhookData.event.period_type === "TRIAL" ? "trial" : "active",
-          period,
-          transaction_id: webhookData.event.original_transaction_id,
-          started_at: new Date(webhookData.event.purchased_at_ms).toISOString(),
-          expires_at: webhookData.event.expiration_at_ms
-            ? new Date(webhookData.event.expiration_at_ms).toISOString()
-            : null,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "transaction_id",
+      if (!eventId) {
+        ctx.log.warn("revenuecat_webhook.missing_event_id");
+        throw new AppError("EVENT_ID_MISSING", "event.id required for idempotency", 400);
+      }
+
+      // ── Idempotency gate ──
+      const { data: inserted, error: idemErr } = await ctx.supabase
+        .from("webhook_events")
+        .insert({ source: "revenuecat", event_id: eventId })
+        .select("id")
+        .maybeSingle();
+
+      if (idemErr && idemErr.code !== "23505") {
+        ctx.log.error("revenuecat_webhook.idempotency_insert_failed", { err: idemErr, eventId });
+        throw new AppError("IDEMPOTENCY_WRITE_FAILED", "Could not record webhook event", 500);
+      }
+
+      if (!inserted) {
+        ctx.log.info("revenuecat_webhook.duplicate", { eventId, type: eventType });
+        return new Response(
+          JSON.stringify({ received: true, duplicate: true }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      ctx.log.info("revenuecat_webhook.received", {
+        eventId,
+        type: eventType,
+        userId,
+        productId,
+        entitlementCount: entitlements.length,
+      });
+
+      const hasPremium = entitlements.includes("premium");
+
+      if (
+        eventType === "INITIAL_PURCHASE" ||
+        eventType === "RENEWAL" ||
+        eventType === "UNCANCELLATION"
+      ) {
+        const { error } = await ctx.supabase
+          .from("profiles")
+          .update({ is_premium: hasPremium })
+          .eq("id", userId);
+
+        if (error) {
+          ctx.log.error("revenuecat_webhook.profile_update_failed", { err: error, userId });
+          throw new AppError("PROFILE_UPDATE_FAILED", "Failed to update profile", 500);
         }
+
+        const period = productId.includes("lifetime")
+          ? "lifetime"
+          : productId.includes("yearly")
+          ? "yearly"
+          : "monthly";
+
+        const { error: subError } = await ctx.supabase.from("subscriptions").upsert(
+          {
+            user_id: userId,
+            provider: "google",
+            product_id: productId,
+            status: body.event.period_type === "TRIAL" ? "trial" : "active",
+            period,
+            transaction_id: body.event.original_transaction_id,
+            started_at: new Date(body.event.purchased_at_ms).toISOString(),
+            expires_at: body.event.expiration_at_ms
+              ? new Date(body.event.expiration_at_ms).toISOString()
+              : null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "transaction_id" },
+        );
+
+        if (subError) {
+          ctx.log.error("revenuecat_webhook.subscription_upsert_failed", { err: subError, userId });
+        }
+
+        ctx.log.info("revenuecat_webhook.user_premium", { userId, productId });
+
+        const { error: logError } = await ctx.supabase.from("audit_events").insert({
+          user_id: userId,
+          event_name: "premium_purchase",
+          payload: {
+            product_id: productId,
+            transaction_id: body.event.transaction_id,
+            environment: body.event.environment,
+            store: body.event.store,
+            provider: "revenuecat",
+          },
+        });
+
+        if (logError) {
+          ctx.log.error("revenuecat_webhook.audit_insert_failed", { err: logError, userId });
+        }
+      }
+
+      if (
+        eventType === "CANCELLATION" ||
+        eventType === "EXPIRATION" ||
+        eventType === "BILLING_ISSUE"
+      ) {
+        const { error } = await ctx.supabase
+          .from("profiles")
+          .update({ is_premium: false })
+          .eq("id", userId);
+
+        if (error) {
+          ctx.log.error("revenuecat_webhook.profile_update_failed", { err: error, userId });
+        }
+
+        const newStatus = eventType === "BILLING_ISSUE" ? "grace_period" : "cancelled";
+        const { error: subError } = await ctx.supabase
+          .from("subscriptions")
+          .update({
+            status: newStatus,
+            cancelled_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId)
+          .eq("provider", "google")
+          .in("status", ["active", "trial"]);
+
+        if (subError) {
+          ctx.log.error("revenuecat_webhook.subscription_update_failed", { err: subError, userId });
+        }
+
+        ctx.log.info("revenuecat_webhook.user_cancelled", { userId, eventType });
+
+        const { error: logError } = await ctx.supabase.from("audit_events").insert({
+          user_id: userId,
+          event_name: "premium_cancelled",
+          payload: {
+            product_id: productId,
+            reason: eventType,
+            provider: "revenuecat",
+          },
+        });
+
+        if (logError) {
+          ctx.log.error("revenuecat_webhook.audit_insert_failed", { err: logError, userId });
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
-
-      if (subError) {
-        console.error("[RevenueCat] Error updating subscription:", subError);
-      }
-
-      console.log(`[RevenueCat] User ${userId} upgraded to premium via ${productId}`);
-
-      const { error: logError } = await supabase.from("audit_events").insert({
-        user_id: userId,
-        event_name: "premium_purchase",
-        payload: {
-          product_id: productId,
-          transaction_id: webhookData.event.transaction_id,
-          environment: webhookData.event.environment,
-          store: webhookData.event.store,
-          provider: "revenuecat",
-        },
-      });
-
-      if (logError) {
-        console.error("[RevenueCat] Error logging purchase:", logError);
-      }
-    }
-
-    if (
-      eventType === "CANCELLATION" ||
-      eventType === "EXPIRATION" ||
-      eventType === "BILLING_ISSUE"
-    ) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          is_premium: false,
-        })
-        .eq("id", userId);
-
-      if (error) {
-        console.error("[RevenueCat] Error updating profile:", error);
-      }
-
-      const newStatus = eventType === "BILLING_ISSUE" ? "grace_period" : "cancelled";
-      const { error: subError } = await supabase
-        .from("subscriptions")
-        .update({
-          status: newStatus,
-          cancelled_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId)
-        .eq("provider", "google")
-        .in("status", ["active", "trial"]);
-
-      if (subError) {
-        console.error("[RevenueCat] Error updating subscription:", subError);
-      }
-
-      console.log(`[RevenueCat] User ${userId} premium expired/cancelled`);
-
-      const { error: logError } = await supabase.from("audit_events").insert({
-        user_id: userId,
-        event_name: "premium_cancelled",
-        payload: {
-          product_id: productId,
-          reason: eventType,
-          provider: "revenuecat",
-        },
-      });
-
-      if (logError) {
-        console.error("[RevenueCat] Error logging cancellation:", logError);
-      }
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: responseHeaders,
-    });
-  } catch (err) {
-    console.error("[RevenueCat] Webhook error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: responseHeaders,
-      }
-    );
-  }
-});
+    },
+  }),
+);

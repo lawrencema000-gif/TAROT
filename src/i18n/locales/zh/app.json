@@ -1175,9 +1175,18 @@
     "languageSub": "选择你喜欢的语言",
     "theme": "主题",
     "themes": {
-      "dark": "深色",
-      "light": "浅色",
-      "system": "跟随系统"
+      "dark": {
+        "name": "暗黑",
+        "desc": "对眼睛温和"
+      },
+      "midnight": {
+        "name": "午夜",
+        "desc": "深邃宇宙蓝"
+      },
+      "celestial": {
+        "name": "天界",
+        "desc": "星空主题"
+      }
     },
     "fontSize": "字号",
     "fontSizes": {
@@ -1227,6 +1236,25 @@
       "profileUpdateFailed": "更新个人资料失败",
       "updateFailed": "更新失败",
       "devModeEnabled": "已启用开发者模式"
+    },
+    "editProfile": {
+      "title": "编辑个人资料",
+      "displayName": "显示名称",
+      "displayNamePlaceholder": "你的名字",
+      "birthDate": "出生日期",
+      "birthTime": "出生时间(可选)"
+    },
+    "helpCenter": {
+      "title": "帮助中心"
+    },
+    "deleteAccount": {
+      "title": "删除账户",
+      "dataWarning": "你的所有数据将被永久删除，包括个人资料、日记条目、塔罗解读和已保存项目。",
+      "exportRecommendation": "我们建议在删除账户前导出你的数据。",
+      "exportFirst": "先导出数据",
+      "exporting": "导出中...",
+      "deleteMyAccount": "删除我的账户",
+      "deleting": "删除中..."
     }
   },
   "search": {

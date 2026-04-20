@@ -1123,7 +1123,7 @@ export function JournalPage() {
       <Sheet
         open={showAttachmentPicker}
         onClose={() => setShowAttachmentPicker(false)}
-        title="Link Reading"
+        title={t('journal.linkReading', { defaultValue: 'Link Reading' })}
       >
         <div className="space-y-3">
           {recentReadings.length === 0 ? (

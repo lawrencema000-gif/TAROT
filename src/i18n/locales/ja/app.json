@@ -1175,9 +1175,18 @@
     "languageSub": "お好みの言語を選んでください",
     "theme": "テーマ",
     "themes": {
-      "dark": "ダーク",
-      "light": "ライト",
-      "system": "システム"
+      "dark": {
+        "name": "ダーク",
+        "desc": "目にやさしい"
+      },
+      "midnight": {
+        "name": "ミッドナイト",
+        "desc": "深い宇宙の青"
+      },
+      "celestial": {
+        "name": "セレスティアル",
+        "desc": "星空のテーマ"
+      }
     },
     "fontSize": "文字サイズ",
     "fontSizes": {
@@ -1227,6 +1236,25 @@
       "profileUpdateFailed": "プロフィールの更新に失敗しました",
       "updateFailed": "更新に失敗しました",
       "devModeEnabled": "開発者モードを有効にしました"
+    },
+    "editProfile": {
+      "title": "プロフィールを編集",
+      "displayName": "表示名",
+      "displayNamePlaceholder": "あなたの名前",
+      "birthDate": "生年月日",
+      "birthTime": "出生時刻(任意)"
+    },
+    "helpCenter": {
+      "title": "ヘルプセンター"
+    },
+    "deleteAccount": {
+      "title": "アカウントを削除",
+      "dataWarning": "プロフィール、ジャーナル、タロットリーディング、保存済みアイテムを含め、すべてのデータが永久に削除されます。",
+      "exportRecommendation": "アカウントを削除する前にデータをエクスポートすることをおすすめします。",
+      "exportFirst": "最初にデータをエクスポート",
+      "exporting": "エクスポート中...",
+      "deleteMyAccount": "アカウントを削除",
+      "deleting": "削除中..."
     }
   },
   "search": {

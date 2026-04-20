@@ -61,6 +61,7 @@ interface SettingsSheetProps {
 }
 
 interface SettingItem {
+  id?: string;
   icon: typeof Bell;
   label: string;
   value?: string;
@@ -420,8 +421,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     {
       title: tAppSettings('settings.sections.privacy'),
       items: [
-        { icon: Download, label: tAppSettings('settings.menu.exportData'), action: handleExportData },
-        { icon: Trash2, label: tAppSettings('settings.menu.deleteAccount'), action: () => setActiveSheet('deleteConfirm'), danger: true },
+        { id: 'exportData', icon: Download, label: tAppSettings('settings.menu.exportData'), action: handleExportData },
+        { id: 'deleteAccount', icon: Trash2, label: tAppSettings('settings.menu.deleteAccount'), action: () => setActiveSheet('deleteConfirm'), danger: true },
       ],
     },
     {
@@ -458,19 +459,19 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
   if (activeSheet === 'editProfile') {
     return (
-      <Sheet open={open} onClose={onClose} title="Edit Profile">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.editProfile.title')}>
         {renderBackButton()}
         <div className="space-y-5">
           <Input
-            label="Display Name"
+            label={tAppSettings('settings.editProfile.displayName')}
             value={editForm.displayName}
             onChange={e => setEditForm(f => ({ ...f, displayName: e.target.value }))}
-            placeholder="Your name"
+            placeholder={tAppSettings('settings.editProfile.displayNamePlaceholder')}
             icon={<User className="w-4 h-4" />}
           />
 
           <Input
-            label="Birth Date"
+            label={tAppSettings('settings.editProfile.birthDate')}
             type="date"
             value={editForm.birthDate}
             onChange={e => setEditForm(f => ({ ...f, birthDate: e.target.value }))}
@@ -478,7 +479,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           />
 
           <Input
-            label="Birth Time (optional)"
+            label={tAppSettings('settings.editProfile.birthTime')}
             type="time"
             value={editForm.birthTime}
             onChange={e => setEditForm(f => ({ ...f, birthTime: e.target.value }))}
@@ -592,9 +593,9 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
   if (activeSheet === 'appearance') {
     const themes: { id: 'dark' | 'midnight' | 'celestial'; name: string; desc: string }[] = [
-      { id: 'dark', name: 'Dark', desc: 'Easy on the eyes' },
-      { id: 'midnight', name: 'Midnight', desc: 'Deep cosmic blue' },
-      { id: 'celestial', name: 'Celestial', desc: 'Starry night theme' },
+      { id: 'dark',       name: tAppSettings('settings.themes.dark.name'),       desc: tAppSettings('settings.themes.dark.desc') },
+      { id: 'midnight',   name: tAppSettings('settings.themes.midnight.name'),   desc: tAppSettings('settings.themes.midnight.desc') },
+      { id: 'celestial',  name: tAppSettings('settings.themes.celestial.name'),  desc: tAppSettings('settings.themes.celestial.desc') },
     ];
 
     return (
@@ -656,7 +657,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
   if (activeSheet === 'help') {
     return (
-      <Sheet open={open} onClose={onClose} title="Help Center">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.helpCenter.title')}>
         {renderBackButton()}
         <div className="space-y-4">
           <a
@@ -866,7 +867,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
   if (activeSheet === 'deleteConfirm') {
     return (
-      <Sheet open={open} onClose={onClose} title="Delete Account">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.deleteAccount.title')}>
         {renderBackButton()}
         <div className="space-y-6">
           <div className="flex items-start gap-4 p-4 bg-coral/10 border border-coral/20 rounded-xl">
@@ -874,13 +875,13 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             <div>
               <h3 className="font-medium text-coral mb-1">{tAppSettings('settings.actionCannotBeUndone')}</h3>
               <p className="text-sm text-mystic-300">
-                All your data will be permanently deleted, including your profile, journal entries, tarot readings, and saved items.
+                {tAppSettings('settings.deleteAccount.dataWarning')}
               </p>
             </div>
           </div>
 
           <p className="text-sm text-mystic-400">
-            We recommend exporting your data before deleting your account.
+            {tAppSettings('settings.deleteAccount.exportRecommendation')}
           </p>
 
           <div className="space-y-3">
@@ -891,7 +892,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               disabled={isExporting}
             >
               <Download className="w-4 h-4" />
-              {isExporting ? 'Exporting...' : 'Export Data First'}
+              {isExporting ? tAppSettings('settings.deleteAccount.exporting') : tAppSettings('settings.deleteAccount.exportFirst')}
             </Button>
 
             <Button
@@ -901,7 +902,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               className="bg-coral hover:bg-coral/90 text-white"
             >
               <Trash2 className="w-4 h-4" />
-              {isDeleting ? 'Deleting...' : 'Delete My Account'}
+              {isDeleting ? tAppSettings('settings.deleteAccount.deleting') : tAppSettings('settings.deleteAccount.deleteMyAccount')}
             </Button>
 
             <Button
@@ -909,7 +910,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               fullWidth
               onClick={() => setActiveSheet('main')}
             >
-              Cancel
+              {tI18n('actions.cancel')}
             </Button>
           </div>
         </div>
@@ -934,7 +935,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   <button
                     key={itemIndex}
                     onClick={item.action}
-                    disabled={item.label === 'Export My Data' && isExporting}
+                    disabled={item.id === 'exportData' && isExporting}
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all
                       ${item.danger
@@ -946,7 +947,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   >
                     <Icon className={`w-5 h-5 ${item.danger ? 'text-coral' : 'text-mystic-400'}`} />
                     <span className="flex-1 text-left">
-                      {item.label === 'Export My Data' && isExporting ? 'Exporting...' : item.label}
+                      {item.id === 'exportData' && isExporting ? tAppSettings('settings.deleteAccount.exporting') : item.label}
                     </span>
                     {item.value && (
                       <span className="text-sm text-mystic-500">{item.value}</span>

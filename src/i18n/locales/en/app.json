@@ -1175,9 +1175,18 @@
     "languageSub": "Choose your preferred language",
     "theme": "Theme",
     "themes": {
-      "dark": "Dark",
-      "light": "Light",
-      "system": "System"
+      "dark": {
+        "name": "Dark",
+        "desc": "Easy on the eyes"
+      },
+      "midnight": {
+        "name": "Midnight",
+        "desc": "Deep cosmic blue"
+      },
+      "celestial": {
+        "name": "Celestial",
+        "desc": "Starry night theme"
+      }
     },
     "fontSize": "Font size",
     "fontSizes": {
@@ -1227,6 +1236,25 @@
       "profileUpdateFailed": "Failed to update profile",
       "updateFailed": "Failed to update",
       "devModeEnabled": "Developer mode enabled"
+    },
+    "editProfile": {
+      "title": "Edit Profile",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "Your name",
+      "birthDate": "Birth Date",
+      "birthTime": "Birth Time (optional)"
+    },
+    "helpCenter": {
+      "title": "Help Center"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "dataWarning": "All your data will be permanently deleted, including your profile, journal entries, tarot readings, and saved items.",
+      "exportRecommendation": "We recommend exporting your data before deleting your account.",
+      "exportFirst": "Export Data First",
+      "exporting": "Exporting...",
+      "deleteMyAccount": "Delete My Account",
+      "deleting": "Deleting..."
     }
   },
   "search": {

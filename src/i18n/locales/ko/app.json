@@ -1175,9 +1175,18 @@
     "languageSub": "선호하는 언어를 선택하세요",
     "theme": "테마",
     "themes": {
-      "dark": "다크",
-      "light": "라이트",
-      "system": "시스템"
+      "dark": {
+        "name": "다크",
+        "desc": "눈에 편안한"
+      },
+      "midnight": {
+        "name": "미드나잇",
+        "desc": "깊은 우주의 파랑"
+      },
+      "celestial": {
+        "name": "셀레스티얼",
+        "desc": "별이 빛나는 밤 테마"
+      }
     },
     "fontSize": "글자 크기",
     "fontSizes": {
@@ -1227,6 +1236,25 @@
       "profileUpdateFailed": "프로필 업데이트에 실패했습니다",
       "updateFailed": "업데이트에 실패했습니다",
       "devModeEnabled": "개발자 모드가 활성화되었습니다"
+    },
+    "editProfile": {
+      "title": "프로필 편집",
+      "displayName": "표시 이름",
+      "displayNamePlaceholder": "당신의 이름",
+      "birthDate": "생년월일",
+      "birthTime": "태어난 시간(선택)"
+    },
+    "helpCenter": {
+      "title": "도움말 센터"
+    },
+    "deleteAccount": {
+      "title": "계정 삭제",
+      "dataWarning": "프로필, 저널 기록, 타로 리딩, 저장한 항목 등 모든 데이터가 영구적으로 삭제됩니다.",
+      "exportRecommendation": "계정을 삭제하기 전에 데이터를 내보내는 것을 권장합니다.",
+      "exportFirst": "먼저 데이터 내보내기",
+      "exporting": "내보내는 중...",
+      "deleteMyAccount": "내 계정 삭제",
+      "deleting": "삭제 중..."
     }
   },
   "search": {

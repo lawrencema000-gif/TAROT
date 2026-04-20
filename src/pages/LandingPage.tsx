@@ -433,7 +433,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <Sec className="lp-trust">
         <div className="lp-wrap">
           <div className="lp-trust-grid">
-            {[{ n: 78, l: 'Tarot Cards', s: 'Full traditional deck' }, { n: 6, l: 'Spread Types', s: 'Daily to Celtic Cross' }, { n: 5, l: 'Personality Tests', s: 'MBTI, Enneagram & more' }, { n: 12, l: 'Zodiac Signs', s: 'Updated daily' }].map(st => (
+            {(t('trust.stats', { returnObjects: true, defaultValue: [] }) as Array<{ n: number; l: string; s: string }>).map(st => (
               <div key={st.l} className="lp-trust-item">
                 <div className="lp-trust-num"><AnimNum to={st.n} /></div>
                 <div className="lp-trust-label">{st.l}</div>

@@ -132,5 +132,29 @@
     "upright": "Upright",
     "fullCta": "Get your full reading →",
     "drawAnother": "Draw another card"
+  },
+  "trust": {
+    "stats": [
+      {
+        "n": 78,
+        "l": "Tarot Cards",
+        "s": "Full traditional deck"
+      },
+      {
+        "n": 6,
+        "l": "Spread Types",
+        "s": "Daily to Celtic Cross"
+      },
+      {
+        "n": 5,
+        "l": "Personality Tests",
+        "s": "MBTI, Enneagram & more"
+      },
+      {
+        "n": 12,
+        "l": "Zodiac Signs",
+        "s": "Updated daily"
+      }
+    ]
   }
 }

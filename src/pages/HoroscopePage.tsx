@@ -80,7 +80,7 @@ function NonPremiumView({ onShowPaywall, showPaywall, onClosePaywall }: { onShow
         </p>
       </div>
 
-      <PaywallSheet open={showPaywall} onClose={onClosePaywall} feature="Horoscope Hub" />
+      <PaywallSheet open={showPaywall} onClose={onClosePaywall} feature={t('horoscope.hub.paywallFeature', { defaultValue: 'Horoscope Hub' })} />
     </>
   );
 }

@@ -296,10 +296,17 @@ export function LibrarySection() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium text-mystic-100 text-sm">
-                              {reading.spread_type === 'single' ? 'Single Card' :
-                               reading.spread_type === 'three-card' ? '3-Card Spread' :
-                               reading.spread_type === 'celtic-cross' ? 'Celtic Cross' :
-                               reading.spread_type}
+                              {(() => {
+                                const k = {
+                                  'single': 'single',
+                                  'three-card': 'threeCard',
+                                  'celtic-cross': 'celticCross',
+                                  'relationship': 'relationship',
+                                  'career': 'careerSpread',
+                                  'shadow': 'shadow',
+                                }[reading.spread_type];
+                                return k ? t(`readings.spreads.${k}.name`) : reading.spread_type;
+                              })()}
                             </h4>
                             {reading.focus_area && (
                               <span className="px-2 py-0.5 bg-mystic-800 rounded text-xs text-mystic-400">
@@ -632,13 +639,17 @@ export function LibrarySection() {
               <Brain className="w-6 h-6 text-gold flex-shrink-0" />
               <div>
                 <h3 className="font-medium text-mystic-100">
-                  {selectedReading.reading_type === 'single' ? 'Single Card Reading' :
-                   selectedReading.reading_type === 'three-card' ? '3-Card Spread' :
-                   selectedReading.reading_type === 'celtic-cross' ? 'Celtic Cross' :
-                   selectedReading.reading_type === 'relationship' ? 'Relationship Reading' :
-                   selectedReading.reading_type === 'career' ? 'Career Reading' :
-                   selectedReading.reading_type === 'shadow' ? 'Shadow Work Reading' :
-                   selectedReading.reading_type}
+                  {(() => {
+                    const k = {
+                      'single': 'single',
+                      'three-card': 'threeCard',
+                      'celtic-cross': 'celticCross',
+                      'relationship': 'relationship',
+                      'career': 'careerSpread',
+                      'shadow': 'shadow',
+                    }[selectedReading.reading_type];
+                    return k ? t(`readings.spreads.${k}.name`) : selectedReading.reading_type;
+                  })()}
                 </h3>
                 <p className="text-xs text-mystic-400">
                   {new Date(selectedReading.created_at).toLocaleDateString('en-US', {

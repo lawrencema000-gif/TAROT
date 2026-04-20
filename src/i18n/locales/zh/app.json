@@ -903,12 +903,46 @@
     "title": "解锁高级版",
     "subtitle": "让每日修习走得更深。",
     "features": {
-      "unlimitedReadings": "无限牌阵",
-      "allSpreads": "全部 6 种牌阵",
-      "birthChart": "完整出生星盘",
-      "transits": "实时行运",
-      "noAds": "无广告体验",
-      "priorityAi": "优先 AI 解读"
+      "unlimited_saves": {
+        "name": "无限保存",
+        "description": "想保存多少解读和洞察就保存多少"
+      },
+      "celtic_cross": {
+        "name": "凯尔特十字牌阵",
+        "description": "深度洞察的终极十张牌阵"
+      },
+      "three_card": {
+        "name": "三张牌阵",
+        "description": "过去、现在、未来解读"
+      },
+      "compatibility_full": {
+        "name": "完整配对分析",
+        "description": "完整的伴侣配对分析"
+      },
+      "deep_interpretations": {
+        "name": "深度解读",
+        "description": "扩展的含义和个性化指导"
+      },
+      "guided_prompts": {
+        "name": "引导性提示",
+        "description": "基于你的解读由AI生成的反思提示"
+      },
+      "journal_insights": {
+        "name": "日记洞察",
+        "description": "高级情绪追踪与模式分析"
+      },
+      "personalization": {
+        "name": "个性化引擎",
+        "description": "根据你的风格和目标量身定制的内容"
+      },
+      "birth_chart": {
+        "name": "出生星盘分析",
+        "description": "完整的占星出生星盘解析"
+      },
+      "extra_reading": {
+        "name": "额外解读",
+        "description": "超出每日限制的一次额外塔罗解读"
+      }
     },
     "monthly": "月付",
     "yearly": "年付",

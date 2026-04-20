@@ -903,12 +903,46 @@
     "title": "Unlock Premium",
     "subtitle": "Go deeper with your daily practice.",
     "features": {
-      "unlimitedReadings": "Unlimited readings",
-      "allSpreads": "All 6 spread types",
-      "birthChart": "Full birth chart",
-      "transits": "Live transits",
-      "noAds": "Ad-free experience",
-      "priorityAi": "Priority AI interpretation"
+      "unlimited_saves": {
+        "name": "Unlimited Saves",
+        "description": "Save as many readings and insights as you want"
+      },
+      "celtic_cross": {
+        "name": "Celtic Cross Spread",
+        "description": "The ultimate 10-card spread for deep insight"
+      },
+      "three_card": {
+        "name": "Three Card Spread",
+        "description": "Past, present, future readings"
+      },
+      "compatibility_full": {
+        "name": "Full Compatibility",
+        "description": "Complete partner compatibility analysis"
+      },
+      "deep_interpretations": {
+        "name": "Deep Interpretations",
+        "description": "Extended meanings and personalized guidance"
+      },
+      "guided_prompts": {
+        "name": "Guided Prompts",
+        "description": "AI-crafted reflection prompts based on your readings"
+      },
+      "journal_insights": {
+        "name": "Journal Insights",
+        "description": "Advanced mood tracking and pattern analysis"
+      },
+      "personalization": {
+        "name": "Personalization Engine",
+        "description": "Content tailored to your tone and goals"
+      },
+      "birth_chart": {
+        "name": "Birth Chart Analysis",
+        "description": "Complete astrological birth chart breakdown"
+      },
+      "extra_reading": {
+        "name": "Extra Reading",
+        "description": "One additional tarot reading beyond your daily limit"
+      }
     },
     "monthly": "Monthly",
     "yearly": "Yearly",

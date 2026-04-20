@@ -903,12 +903,46 @@
     "title": "프리미엄 해제",
     "subtitle": "당신의 하루 수행을 더 깊이.",
     "features": {
-      "unlimitedReadings": "무제한 리딩",
-      "allSpreads": "6가지 모든 스프레드",
-      "birthChart": "전체 출생 차트",
-      "transits": "실시간 트랜짓",
-      "noAds": "광고 없음",
-      "priorityAi": "우선 AI 해석"
+      "unlimited_saves": {
+        "name": "무제한 저장",
+        "description": "원하는 만큼의 리딩과 통찰을 저장하세요"
+      },
+      "celtic_cross": {
+        "name": "켈틱 크로스 스프레드",
+        "description": "깊은 통찰을 위한 궁극의 10장 카드 스프레드"
+      },
+      "three_card": {
+        "name": "세 장 카드 스프레드",
+        "description": "과거, 현재, 미래 리딩"
+      },
+      "compatibility_full": {
+        "name": "완전 궁합 분석",
+        "description": "파트너와의 완전한 궁합 분석"
+      },
+      "deep_interpretations": {
+        "name": "심층 해석",
+        "description": "확장된 의미와 개인화된 가이드"
+      },
+      "guided_prompts": {
+        "name": "가이드 프롬프트",
+        "description": "당신의 리딩을 바탕으로 AI가 만든 성찰 프롬프트"
+      },
+      "journal_insights": {
+        "name": "저널 인사이트",
+        "description": "고급 감정 추적과 패턴 분석"
+      },
+      "personalization": {
+        "name": "개인화 엔진",
+        "description": "당신의 톤과 목표에 맞춘 콘텐츠"
+      },
+      "birth_chart": {
+        "name": "출생 차트 분석",
+        "description": "완전한 점성술 출생 차트 분석"
+      },
+      "extra_reading": {
+        "name": "추가 리딩",
+        "description": "일일 한도를 넘는 타로 리딩 한 번 추가"
+      }
     },
     "monthly": "월간",
     "yearly": "연간",

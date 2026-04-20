@@ -5,6 +5,7 @@ import { PaywallSheet } from './PaywallSheet';
 import { WatchAdSheet } from './WatchAdSheet';
 import type { PremiumFeature } from '../../services/premium';
 import { PREMIUM_FEATURES, isFeatureUnlockable } from '../../services/premium';
+import { localizedFeature, localizedFeatureName } from '../../i18n/localizePremium';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { isNative } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
@@ -71,7 +72,7 @@ export function PremiumGate({ feature, children, fallback, showBadge = true }: P
       <PaywallSheet
         open={showPaywall}
         onClose={() => setShowPaywall(false)}
-        feature={PREMIUM_FEATURES[feature].name}
+        feature={localizedFeatureName(feature)}
       />
       <WatchAdSheet
         open={showWatchAd}
@@ -111,7 +112,7 @@ interface PremiumLockOverlayProps {
 
 export function PremiumLockOverlay({ feature, onUnlock, showAdOption, onWatchAd }: PremiumLockOverlayProps) {
   const { t } = useT('app');
-  const featureDef = PREMIUM_FEATURES[feature];
+  const featureDef = localizedFeature(PREMIUM_FEATURES[feature]);
   const [canWatch, setCanWatch] = useState(false);
 
   useEffect(() => {

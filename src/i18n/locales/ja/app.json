@@ -903,12 +903,46 @@
     "title": "プレミアムを解放",
     "subtitle": "毎日の実践をさらに深く。",
     "features": {
-      "unlimitedReadings": "無制限リーディング",
-      "allSpreads": "6種類すべてのスプレッド",
-      "birthChart": "出生図フル解析",
-      "transits": "リアルタイムトランジット",
-      "noAds": "広告なし体験",
-      "priorityAi": "優先 AI 解釈"
+      "unlimited_saves": {
+        "name": "無制限保存",
+        "description": "リーディングや洞察を何件でも保存できます"
+      },
+      "celtic_cross": {
+        "name": "ケルト十字スプレッド",
+        "description": "深い洞察のための究極の10枚カードスプレッド"
+      },
+      "three_card": {
+        "name": "スリーカードスプレッド",
+        "description": "過去・現在・未来のリーディング"
+      },
+      "compatibility_full": {
+        "name": "フル相性診断",
+        "description": "完全なパートナー相性分析"
+      },
+      "deep_interpretations": {
+        "name": "深層解釈",
+        "description": "拡張された意味とパーソナライズされたガイダンス"
+      },
+      "guided_prompts": {
+        "name": "ガイド付きプロンプト",
+        "description": "あなたのリーディングに基づくAI生成リフレクションプロンプト"
+      },
+      "journal_insights": {
+        "name": "ジャーナル分析",
+        "description": "高度な気分トラッキングとパターン分析"
+      },
+      "personalization": {
+        "name": "パーソナライゼーション",
+        "description": "あなたの個性と目標に合わせたコンテンツ"
+      },
+      "birth_chart": {
+        "name": "出生チャート分析",
+        "description": "占星術的な出生チャートの完全な解析"
+      },
+      "extra_reading": {
+        "name": "追加リーディング",
+        "description": "デイリー上限を超えてタロットリーディングを1回追加"
+      }
     },
     "monthly": "月額",
     "yearly": "年額",

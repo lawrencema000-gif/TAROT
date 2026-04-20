@@ -3,6 +3,7 @@ import { Play, X, Gift, Clock, Crown, Sparkles, BookOpen } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { PREMIUM_FEATURES, type PremiumFeature } from '../../services/premium';
+import { localizedFeature } from '../../i18n/localizePremium';
 import { useT } from '../../i18n/useT';
 
 interface WatchAdSheetProps {
@@ -42,7 +43,7 @@ export function WatchAdSheet({
       rewardedAdsService.getRemainingUnlocks().then(setRemainingUnlocks);
     }
   }, [open]);
-  const featureDef = PREMIUM_FEATURES[feature];
+  const featureDef = localizedFeature(PREMIUM_FEATURES[feature]);
   const context = FEATURE_CONTEXT[feature];
 
   if (!open) return null;

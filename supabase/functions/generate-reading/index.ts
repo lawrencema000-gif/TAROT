@@ -1,35 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-import {
-  callerKey,
-  checkRateLimit,
-  rateLimitHeaders,
-} from "../_shared/rate-limit.ts";
-
-const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-  "http://localhost:4173",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:4173",
-  "https://arcana.app",
-  "https://www.arcana.app",
-  "https://tarotlife.app",
-  "https://www.tarotlife.app",
-  "https://arcana-ritual-app.netlify.app",
-  "capacitor://localhost",
-  "http://localhost",
-];
-
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get("Origin") || "";
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-    "Vary": "Origin",
-  };
-}
+import { AppError, handler } from "../_shared/handler.ts";
 
 interface TarotCard {
   id: number;
@@ -282,205 +252,139 @@ function generateFallbackReading(request: ReadingRequest): string {
   return reading;
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: getCorsHeaders(req),
-    });
-  }
-
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Authorization required" }),
-        {
-          status: 401,
-          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_ANON_KEY") || "",
-      {
-        global: { headers: { Authorization: authHeader } },
+Deno.serve(
+  handler<ReadingRequest>({
+    fn: "generate-reading",
+    auth: "required",
+    // Burst rate limit: 5 requests / 60s per user, layered before DB queries
+    // so hammering the endpoint can't spam the database. The daily limit below
+    // is the durable per-user quota enforced against premium_readings.
+    rateLimit: { max: 5, windowMs: 60_000 },
+    run: async (ctx, body) => {
+      // --- Input validation ---
+      if (!body.cards || body.cards.length === 0) {
+        throw new AppError("CARDS_REQUIRED", "Cards are required", 400);
       }
-    );
+      if (body.cards.length > MAX_CARDS) {
+        throw new AppError("TOO_MANY_CARDS", `Maximum ${MAX_CARDS} cards allowed`, 400);
+      }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      // --- Daily limit: count today's readings for this user ---
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
 
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
-        {
-          status: 401,
-          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-        }
-      );
-    }
+      const { count: todayCount, error: countError } = await ctx.supabase
+        .from("premium_readings")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", ctx.userId!)
+        .gte("created_at", todayStart.toISOString());
 
-    // --- Burst rate limit: 5 requests / 60s per user, in-memory. ---
-    // Layered *before* DB queries so hammering the endpoint can't spam the
-    // database. The daily limit below is the durable per-user quota.
-    const burst = checkRateLimit(callerKey(req, user.id), 5, 60_000);
-    if (!burst.allowed) {
-      return new Response(
-        JSON.stringify({ error: "Too many requests" }),
-        {
-          status: 429,
-          headers: {
-            ...getCorsHeaders(req),
-            ...rateLimitHeaders(burst),
-            "Content-Type": "application/json",
+      if (countError) {
+        ctx.log.warn("generate_reading.count_failed", { err: countError });
+      }
+
+      const { data: profileData } = await ctx.supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", ctx.userId!)
+        .maybeSingle();
+
+      const isPremium = profileData?.is_premium === true;
+      const dailyLimit = isPremium ? 20 : 3;
+      const readingsToday = todayCount ?? 0;
+
+      if (readingsToday >= dailyLimit) {
+        throw new AppError(
+          "DAILY_LIMIT_REACHED",
+          "Daily reading limit reached",
+          429,
+          {
+            limit: dailyLimit,
+            used: readingsToday,
+            isPremium,
+            resetsAt: new Date(todayStart.getTime() + 86400000).toISOString(),
           },
-        }
-      );
-    }
+        );
+      }
 
-    // --- Rate limiting: count today's readings for this user ---
-    const todayStart = new Date();
-    todayStart.setUTCHours(0, 0, 0, 0);
+      // --- Gather journal context for personalized prompt ---
+      const { data: journalData } = await ctx.supabase
+        .from("journal_entries")
+        .select("tags")
+        .eq("user_id", ctx.userId!)
+        .order("created_at", { ascending: false })
+        .limit(10);
 
-    const { count: todayCount, error: countError } = await supabase
-      .from("premium_readings")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", todayStart.toISOString());
+      const journalThemes: string[] = [];
+      if (journalData) {
+        const tagCounts: Record<string, number> = {};
+        journalData.forEach((entry) => {
+          entry.tags?.forEach((tag: string) => {
+            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          });
+        });
+        Object.entries(tagCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .forEach(([tag]) => journalThemes.push(tag));
+      }
 
-    if (countError) {
-      console.error("Error checking rate limit:", countError);
-    }
+      // --- Call Gemini (with fallback) ---
+      const prompt = buildPrompt(body, { journalThemes });
+      let interpretation: string;
+      let usedLlm = false;
 
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("is_premium")
-      .eq("id", user.id)
-      .maybeSingle();
+      try {
+        interpretation = await callGemini(prompt);
+        usedLlm = true;
+        ctx.log.info("generate_reading.llm_success", { spreadType: body.spreadType });
+      } catch (llmError) {
+        ctx.log.warn("generate_reading.llm_failed", { err: llmError });
+        interpretation = generateFallbackReading(body);
+      }
 
-    const isPremium = profileData?.is_premium === true;
-    const dailyLimit = isPremium ? 20 : 3;
-    const readingsToday = todayCount ?? 0;
+      // --- Save to premium_readings ---
+      const { error: saveError } = await ctx.supabase.from("premium_readings").insert({
+        user_id: ctx.userId!,
+        reading_type: body.spreadType,
+        content: interpretation,
+        context: {
+          question: body.question,
+          zodiacSign: body.zodiacSign,
+          goals: body.goals,
+          focusArea: body.focusArea,
+          usedLlm,
+        },
+        cards: body.cards.map((c) => ({
+          id: c.id,
+          name: c.name,
+          reversed: c.reversed,
+        })),
+      });
 
-    if (readingsToday >= dailyLimit) {
+      if (saveError) {
+        ctx.log.error("generate_reading.save_failed", { err: saveError });
+        // Do NOT leak the raw DB error message to the client — it can expose
+        // schema details. The correlation ID in the envelope is enough for
+        // us to find the full error in our logs.
+        throw new AppError(
+          "READING_SAVE_FAILED",
+          "Could not save your reading. Please try again.",
+          500,
+        );
+      }
+
+      // Return the legacy shape for now (callers consume {interpretation,usedLlm,cardCount}
+      // directly, not via {data}). Phase 2 zod migration will move callers to
+      // the enveloped shape.
       return new Response(
         JSON.stringify({
-          error: "Daily reading limit reached",
-          limit: dailyLimit,
-          used: readingsToday,
-          isPremium,
-          resetsAt: new Date(todayStart.getTime() + 86400000).toISOString(),
+          interpretation,
+          usedLlm,
+          cardCount: body.cards.length,
         }),
-        {
-          status: 429,
-          headers: {
-            ...getCorsHeaders(req),
-            "Content-Type": "application/json",
-            "Retry-After": "3600",
-          },
-        }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
-    }
-
-    const request: ReadingRequest = await req.json();
-
-    if (!request.cards || request.cards.length === 0 || request.cards.length > MAX_CARDS) {
-      return new Response(
-        JSON.stringify({ error: request.cards?.length > MAX_CARDS ? "Too many cards" : "Cards are required" }),
-        {
-          status: 400,
-          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const { data: journalData } = await supabase
-      .from("journal_entries")
-      .select("tags")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    const journalThemes: string[] = [];
-    if (journalData) {
-      const tagCounts: Record<string, number> = {};
-      journalData.forEach((entry) => {
-        entry.tags?.forEach((tag: string) => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
-      });
-      Object.entries(tagCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .forEach(([tag]) => journalThemes.push(tag));
-    }
-
-    const prompt = buildPrompt(request, { journalThemes });
-
-    let interpretation: string;
-    let usedLlm = false;
-
-    try {
-      interpretation = await callGemini(prompt);
-      usedLlm = true;
-    } catch (llmError) {
-      console.error("LLM call failed, using fallback:", llmError);
-      interpretation = generateFallbackReading(request);
-    }
-
-    const { error: saveError } = await supabase.from("premium_readings").insert({
-      user_id: user.id,
-      reading_type: request.spreadType,
-      content: interpretation,
-      context: {
-        question: request.question,
-        zodiacSign: request.zodiacSign,
-        goals: request.goals,
-        focusArea: request.focusArea,
-        usedLlm,
-      },
-      cards: request.cards.map((c) => ({
-        id: c.id,
-        name: c.name,
-        reversed: c.reversed,
-      })),
-    });
-
-    if (saveError) {
-      console.error("Error saving reading:", saveError);
-      return new Response(
-        JSON.stringify({ error: `Database error: ${saveError.message}` }),
-        {
-          status: 500,
-          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        interpretation,
-        usedLlm,
-        cardCount: request.cards.length,
-      }),
-      {
-        status: 200,
-        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-      }
-    );
-  } catch (error) {
-    console.error("Error in generate-reading:", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    return new Response(
-      JSON.stringify({ error: `Server error: ${errorMessage}` }),
-      {
-        status: 500,
-        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-      }
-    );
-  }
-});
+    },
+  }),
+);

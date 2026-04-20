@@ -1,10 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getCorsHeaders } from "../_shared/cors.ts";
-import {
-  callerKey,
-  checkRateLimit,
-  rateLimitHeaders,
-} from "../_shared/rate-limit.ts";
+import { AppError, handler } from "../_shared/handler.ts";
 
 interface GeocodeResult {
   lat: string;
@@ -12,9 +7,13 @@ interface GeocodeResult {
   display_name: string;
 }
 
+interface GeocodeRequest {
+  birthPlace?: unknown;
+}
+
 const MAX_BIRTH_PLACE_LEN = 200;
-// Strip ASCII control chars (except tab/newline will also be stripped — we
-// don't want either in a place name).
+// Strip ASCII control chars (including tab / newline — neither belongs in a
+// place name).
 const CONTROL_CHAR_RE = /[\x00-\x1F\x7F]/g;
 
 function sanitizeBirthPlace(raw: unknown): string | null {
@@ -24,98 +23,63 @@ function sanitizeBirthPlace(raw: unknown): string | null {
   return trimmed;
 }
 
-Deno.serve(async (req: Request) => {
-  const corsHeaders = getCorsHeaders(req, "GET, POST, OPTIONS");
+/**
+ * Forward-geocode a birth place string via Nominatim. Called during
+ * onboarding BEFORE the user is signed in, so auth is optional.
+ * Rate limit (20 req / 60s / IP) is enforced by the handler wrapper using
+ * the same in-isolate sliding window as before.
+ */
+Deno.serve(
+  handler<GeocodeRequest>({
+    fn: "astrology-geocode",
+    auth: "optional",
+    rateLimit: { max: 20, windowMs: 60_000 },
+    run: async (ctx, body) => {
+      const birthPlace = sanitizeBirthPlace(body.birthPlace);
 
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
+      if (!birthPlace) {
+        throw new AppError(
+          "INVALID_BIRTH_PLACE",
+          "birthPlace is required (string, 1..200 chars)",
+          400,
+        );
+      }
 
-  // Rate limit first (IP-keyed — this function runs pre-sign-in during
-  // onboarding, so there's no user id yet). 20 req / 60s per caller.
-  const rl = checkRateLimit(callerKey(req, null), 20, 60_000);
-  if (!rl.allowed) {
-    return new Response(
-      JSON.stringify({ error: "Too many requests", results: [] }),
-      {
-        status: 429,
-        headers: {
-          ...corsHeaders,
-          ...rateLimitHeaders(rl),
-          "Content-Type": "application/json",
-        },
-      },
-    );
-  }
+      const encodedPlace = encodeURIComponent(birthPlace);
+      const nominatimUrl =
+        `https://nominatim.openstreetmap.org/search?q=${encodedPlace}&format=json&limit=5&addressdetails=1`;
 
-  try {
-    const body = await req.json().catch(() => ({}));
-    const birthPlace = sanitizeBirthPlace((body as { birthPlace?: unknown }).birthPlace);
+      const response = await fetch(nominatimUrl, {
+        headers: { "User-Agent": "Arcana-Astrology-App/1.0" },
+      });
 
-    if (!birthPlace) {
+      if (!response.ok) {
+        ctx.log.error("astrology_geocode.nominatim_failed", {
+          status: response.status,
+          statusText: response.statusText,
+        });
+        throw new AppError(
+          "GEOCODE_UPSTREAM_FAILED",
+          "Geocoding service unavailable",
+          502,
+        );
+      }
+
+      const data = (await response.json()) as GeocodeResult[];
+
+      const results = data.map((item) => ({
+        lat: parseFloat(item.lat),
+        lon: parseFloat(item.lon),
+        displayName: item.display_name,
+      }));
+
+      ctx.log.info("astrology_geocode.served", { resultCount: results.length });
+
+      // Preserve the `{ results }` shape callers already consume.
       return new Response(
-        JSON.stringify({
-          error: "birthPlace is required (string, 1..200 chars)",
-          results: [],
-        }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        },
+        JSON.stringify({ results }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
-    }
-
-    const encodedPlace = encodeURIComponent(birthPlace);
-    const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodedPlace}&format=json&limit=5&addressdetails=1`;
-
-    const response = await fetch(nominatimUrl, {
-      headers: {
-        "User-Agent": "Arcana-Astrology-App/1.0",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Geocoding failed: ${response.statusText}`);
-    }
-
-    const data: GeocodeResult[] = await response.json();
-
-    const results = data.map((item) => ({
-      lat: parseFloat(item.lat),
-      lon: parseFloat(item.lon),
-      displayName: item.display_name,
-    }));
-
-    return new Response(
-      JSON.stringify({ results }),
-      {
-        headers: {
-          ...corsHeaders,
-          ...rateLimitHeaders(rl),
-          "Content-Type": "application/json",
-        },
-      },
-    );
-  } catch (error) {
-    console.error("Geocoding error:", error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Geocoding failed",
-        results: [],
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-  }
-});
+    },
+  }),
+);

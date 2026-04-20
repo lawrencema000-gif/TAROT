@@ -1,102 +1,61 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.4";
+import { AppError, handler } from "../_shared/handler.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+/**
+ * Returns the caller's saved natal chart (single row from
+ * `astrology_natal_charts`). Response shape is the legacy one the client
+ * reads directly — `{ natalChart, bigThree, dominants, aspects }` — so we
+ * return a raw Response to bypass the default `{data}` envelope.
+ */
+Deno.serve(
+  handler({
+    fn: "astrology-get-chart",
+    auth: "required",
+    rateLimit: { max: 60, windowMs: 60_000 },
+    run: async (ctx) => {
+      const { data: chart, error: chartError } = await ctx.supabase
+        .from("astrology_natal_charts")
+        .select("*")
+        .eq("user_id", ctx.userId!)
+        .maybeSingle();
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      if (chartError) {
+        ctx.log.error("astrology_get_chart.query_failed", { err: chartError });
+        throw new AppError("CHART_FETCH_FAILED", "Failed to retrieve chart", 500);
+      }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
+      if (!chart) {
+        ctx.log.info("astrology_get_chart.not_found");
+        return new Response(
+          JSON.stringify({
+            error: "No chart found",
+            natalChart: null,
+            bigThree: null,
+            dominants: null,
+            aspects: null,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
 
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header");
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-    });
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) {
-      throw new Error("Unauthorized");
-    }
-
-    const { data: chart, error: chartError } = await supabase
-      .from("astrology_natal_charts")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (chartError) {
-      console.error("Error fetching chart:", chartError);
-      throw chartError;
-    }
-
-    if (!chart) {
-      return new Response(
-        JSON.stringify({
-          error: "No chart found",
-          natalChart: null,
-          bigThree: null,
-          dominants: null,
-          aspects: null,
-        }),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    const natalChart = {
-      ...(chart.natal_json || {}),
-      bigThree: chart.big_three_json || null,
-      dominants: chart.dominants_json || null,
-      aspects: chart.aspects_json || [],
-    };
-
-    return new Response(
-      JSON.stringify({
-        natalChart,
+      const natalChart = {
+        ...(chart.natal_json || {}),
         bigThree: chart.big_three_json || null,
         dominants: chart.dominants_json || null,
         aspects: chart.aspects_json || [],
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  } catch (error) {
-    console.error("Chart retrieval error:", error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to retrieve chart",
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  }
-});
+      };
+
+      ctx.log.info("astrology_get_chart.served");
+
+      return new Response(
+        JSON.stringify({
+          natalChart,
+          bigThree: chart.big_three_json || null,
+          dominants: chart.dominants_json || null,
+          aspects: chart.aspects_json || [],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    },
+  }),
+);

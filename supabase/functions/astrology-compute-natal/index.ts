@@ -1,16 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Client-Info, Apikey",
-};
-
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+import { AppError, handler } from "../_shared/handler.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -35,6 +25,15 @@ const SIGN_RULERS: Record<string, string> = {
   Sagittarius: "Jupiter", Capricorn: "Saturn", Aquarius: "Uranus", Pisces: "Neptune",
 };
 
+interface ComputeNatalRequest {
+  birthDate?: string;
+  birthTime?: string | null;
+  lat?: number;
+  lon?: number;
+  timezone?: string;
+  chartMode?: string;
+}
+
 function normDeg(d: number): number {
   return ((d % 360) + 360) % 360;
 }
@@ -48,7 +47,7 @@ function lonToSign(lon: number) {
 function localToUTC(
   birthDate: string,
   birthTime: string | null,
-  timezone: string
+  timezone: string,
 ): Date {
   const timeStr = birthTime || "12:00:00";
   const dtStr = `${birthDate}T${timeStr}`;
@@ -133,7 +132,7 @@ function isRetrograde(body: Astronomy.Body, utcDate: Date): boolean {
 
 function computePlanets(
   utcDate: Date,
-  houseCusps: number[] | null
+  houseCusps: number[] | null,
 ): PlanetData[] {
   const planets: PlanetData[] = [];
 
@@ -246,131 +245,111 @@ function computeDominants(planets: PlanetData[], ascSign: string | null) {
   return { elements, modalities, chartRuler, dominantPlanets };
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+Deno.serve(
+  handler<ComputeNatalRequest>({
+    fn: "astrology-compute-natal",
+    auth: "required",
+    rateLimit: { max: 10, windowMs: 60_000 },
+    run: async (ctx, body) => {
+      const { birthDate, birthTime, lat, lon, timezone, chartMode } = body;
 
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+      if (!birthDate || lat === undefined || lon === undefined) {
+        throw new AppError(
+          "MISSING_REQUIRED_PARAMETERS",
+          "birthDate, lat, and lon are required",
+          400,
+        );
+      }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-    });
+      const tz = timezone || "UTC";
+      const utcDate = localToUTC(birthDate, birthTime || null, tz);
+      const hasBirthTime = !!birthTime && chartMode !== "unknown";
 
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(token);
-    if (userError || !user) throw new Error("Unauthorized");
+      let ascendant: number | null = null;
+      let houseCusps: number[] | null = null;
 
-    const { birthDate, birthTime, lat, lon, timezone, chartMode } =
-      await req.json();
+      if (hasBirthTime) {
+        ascendant = computeAscendant(utcDate, lat, lon);
+        houseCusps = computeEqualHouses(ascendant);
+      }
 
-    if (!birthDate || lat === undefined || lon === undefined) {
-      return new Response(
-        JSON.stringify({ error: "Missing required parameters" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
+      const planets = computePlanets(utcDate, houseCusps);
+      const aspects = computeAspects(planets);
 
-    const tz = timezone || "UTC";
-    const utcDate = localToUTC(birthDate, birthTime || null, tz);
-    const hasBirthTime = !!birthTime && chartMode !== "unknown";
+      const sunData = planets.find((p) => p.planet === "Sun")!;
+      const moonData = planets.find((p) => p.planet === "Moon")!;
+      const ascSign = ascendant !== null ? lonToSign(ascendant) : null;
 
-    let ascendant: number | null = null;
-    let houseCusps: number[] | null = null;
+      const dominants = computeDominants(planets, ascSign?.sign || null);
 
-    if (hasBirthTime) {
-      ascendant = computeAscendant(utcDate, lat, lon);
-      houseCusps = computeEqualHouses(ascendant);
-    }
-
-    const planets = computePlanets(utcDate, houseCusps);
-    const aspects = computeAspects(planets);
-
-    const sunData = planets.find((p) => p.planet === "Sun")!;
-    const moonData = planets.find((p) => p.planet === "Moon")!;
-    const ascSign = ascendant !== null ? lonToSign(ascendant) : null;
-
-    const dominants = computeDominants(planets, ascSign?.sign || null);
-
-    const bigThree = {
-      sun: { sign: sunData.sign, degree: sunData.degree, house: sunData.house },
-      moon: {
-        sign: moonData.sign,
-        degree: moonData.degree,
-        house: moonData.house,
-      },
-      rising: ascSign
-        ? { sign: ascSign.sign, degree: ascSign.degree }
-        : null,
-    };
-
-    const natalChart = {
-      planets: planets.map((p) => ({
-        planet: p.planet,
-        sign: p.sign,
-        degree: p.degree,
-        longitude: p.longitude,
-        house: p.house,
-      })),
-      houses: houseCusps || [],
-      ascendant,
-      bigThree,
-      aspects,
-      dominants,
-      chartMode: chartMode || (hasBirthTime ? "exact" : "unknown"),
-      computedAt: new Date().toISOString(),
-    };
-
-    const { error: insertError } = await supabase
-      .from("astrology_natal_charts")
-      .upsert(
-        {
-          user_id: user.id,
-          chart_version: 1,
-          natal_json: natalChart,
-          big_three_json: bigThree,
-          dominants_json: dominants,
-          aspects_json: aspects,
-          computed_at: new Date().toISOString(),
+      const bigThree = {
+        sun: { sign: sunData.sign, degree: sunData.degree, house: sunData.house },
+        moon: {
+          sign: moonData.sign,
+          degree: moonData.degree,
+          house: moonData.house,
         },
-        { onConflict: "user_id" }
+        rising: ascSign
+          ? { sign: ascSign.sign, degree: ascSign.degree }
+          : null,
+      };
+
+      const natalChart = {
+        planets: planets.map((p) => ({
+          planet: p.planet,
+          sign: p.sign,
+          degree: p.degree,
+          longitude: p.longitude,
+          house: p.house,
+        })),
+        houses: houseCusps || [],
+        ascendant,
+        bigThree,
+        aspects,
+        dominants,
+        chartMode: chartMode || (hasBirthTime ? "exact" : "unknown"),
+        computedAt: new Date().toISOString(),
+      };
+
+      const { error: insertError } = await ctx.supabase
+        .from("astrology_natal_charts")
+        .upsert(
+          {
+            user_id: ctx.userId!,
+            chart_version: 1,
+            natal_json: natalChart,
+            big_three_json: bigThree,
+            dominants_json: dominants,
+            aspects_json: aspects,
+            computed_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+
+      if (insertError) {
+        ctx.log.error("astrology_compute_natal.save_failed", { err: insertError });
+        throw new AppError(
+          "CHART_SAVE_FAILED",
+          "Could not save your natal chart. Please try again.",
+          500,
+        );
+      }
+
+      ctx.log.info("astrology_compute_natal.computed", {
+        hasBirthTime,
+        chartMode: natalChart.chartMode,
+      });
+
+      // Preserve the legacy response shape the client reads directly.
+      return new Response(
+        JSON.stringify({
+          natalChart,
+          bigThree: natalChart.bigThree,
+          dominants: natalChart.dominants,
+          aspects: natalChart.aspects,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
-
-    if (insertError) {
-      console.error("Error saving chart:", insertError);
-      throw insertError;
-    }
-
-    return new Response(
-      JSON.stringify({
-        natalChart,
-        bigThree: natalChart.bigThree,
-        dominants: natalChart.dominants,
-        aspects: natalChart.aspects,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  } catch (error) {
-    console.error("Chart computation error:", error);
-    return new Response(
-      JSON.stringify({
-        error:
-          error instanceof Error ? error.message : "Failed to compute chart",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
-});
+    },
+  }),
+);

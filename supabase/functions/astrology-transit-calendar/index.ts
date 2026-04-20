@@ -1,16 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Client-Info, Apikey",
-};
-
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+import { AppError, handler } from "../_shared/handler.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -19,6 +9,11 @@ const SIGNS = [
 type ZodiacSign = typeof SIGNS[number];
 type Planet = "Sun" | "Moon" | "Mercury" | "Venus" | "Mars" | "Jupiter" | "Saturn" | "Uranus" | "Neptune" | "Pluto";
 type AspectType = "conjunction" | "opposition" | "trine" | "square" | "sextile";
+
+interface TransitCalendarRequest {
+  days?: number;
+  natalPlanet?: string;
+}
 
 function normDeg(d: number): number {
   return ((d % 360) + 360) % 360;
@@ -76,119 +71,105 @@ function getPlanetLongitude(body: Astronomy.Body | "Sun", date: Date): number {
   return Astronomy.EclipticLongitude(body as Astronomy.Body, date);
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+Deno.serve(
+  handler<TransitCalendarRequest>({
+    fn: "astrology-transit-calendar",
+    auth: "required",
+    rateLimit: { max: 20, windowMs: 60_000 },
+    run: async (ctx, body) => {
+      let days = 30;
+      let natalPlanetFilter: string | undefined;
+      if (typeof body.days === "number") days = Math.min(body.days, 90);
+      if (typeof body.natalPlanet === "string") natalPlanetFilter = body.natalPlanet;
 
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+      const { data: chartRow } = await ctx.supabase
+        .from("astrology_natal_charts")
+        .select("natal_json")
+        .eq("user_id", ctx.userId!)
+        .maybeSingle();
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-    });
+      if (!chartRow?.natal_json) {
+        throw new AppError(
+          "NATAL_CHART_MISSING",
+          "No natal chart found. Please compute your chart first.",
+          404,
+          { events: [] },
+        );
+      }
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) throw new Error("Unauthorized");
-
-    let days = 30;
-    let natalPlanetFilter: string | undefined;
-    try {
-      const body = await req.json();
-      if (body.days && typeof body.days === "number") days = Math.min(body.days, 90);
-      if (body.natalPlanet) natalPlanetFilter = body.natalPlanet;
-    } catch { /* empty body is fine */ }
-
-    const { data: chartRow } = await supabase
-      .from("astrology_natal_charts")
-      .select("natal_json")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!chartRow?.natal_json) {
-      return new Response(
-        JSON.stringify({ error: "No natal chart found. Please compute your chart first.", events: [] }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      let natalPlanets: NatalPlanet[] = (chartRow.natal_json.planets || []).map(
+        (p: { planet: string; longitude: number; sign: string }) => ({
+          planet: p.planet,
+          longitude: p.longitude,
+          sign: p.sign,
+        }),
       );
-    }
 
-    let natalPlanets: NatalPlanet[] = (chartRow.natal_json.planets || []).map(
-      (p: { planet: string; longitude: number; sign: string }) => ({
-        planet: p.planet, longitude: p.longitude, sign: p.sign,
-      })
-    );
+      if (natalPlanetFilter) {
+        natalPlanets = natalPlanets.filter((np) => np.planet === natalPlanetFilter);
+      }
 
-    if (natalPlanetFilter) {
-      natalPlanets = natalPlanets.filter((np) => np.planet === natalPlanetFilter);
-    }
+      const events: TransitEvent[] = [];
+      const seen = new Set<string>();
+      const now = new Date();
 
-    const events: TransitEvent[] = [];
-    const seen = new Set<string>();
-    const now = new Date();
+      for (let d = 0; d < days; d++) {
+        const date = new Date(now);
+        date.setUTCDate(date.getUTCDate() + d);
+        date.setUTCHours(12, 0, 0, 0);
 
-    for (let d = 0; d < days; d++) {
-      const date = new Date(now);
-      date.setUTCDate(date.getUTCDate() + d);
-      date.setUTCHours(12, 0, 0, 0);
+        for (const [tName, tBody] of transitBodies) {
+          const tLon = getPlanetLongitude(tBody, date);
+          const tSignData = lonToSign(tLon);
 
-      for (const [tName, tBody] of transitBodies) {
-        const tLon = getPlanetLongitude(tBody, date);
-        const tSignData = lonToSign(tLon);
+          for (const np of natalPlanets) {
+            if (tName === np.planet) continue;
 
-        for (const np of natalPlanets) {
-          if (tName === np.planet) continue;
+            let diff = Math.abs(tLon - np.longitude);
+            if (diff > 180) diff = 360 - diff;
 
-          let diff = Math.abs(tLon - np.longitude);
-          if (diff > 180) diff = 360 - diff;
-
-          for (const def of aspectDefs) {
-            const orb = Math.abs(diff - def.angle);
-            if (orb <= def.maxOrb) {
-              const key = `${tName}-${np.planet}-${def.type}`;
-              if (!seen.has(key)) {
-                seen.add(key);
-                events.push({
-                  date: formatDate(date),
-                  transitPlanet: tName,
-                  natalPlanet: np.planet as Planet,
-                  aspectType: def.type,
-                  orb: Math.round(orb * 10) / 10,
-                  transitSign: tSignData.sign,
-                  natalSign: np.sign as ZodiacSign,
-                });
+            for (const def of aspectDefs) {
+              const orb = Math.abs(diff - def.angle);
+              if (orb <= def.maxOrb) {
+                const key = `${tName}-${np.planet}-${def.type}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  events.push({
+                    date: formatDate(date),
+                    transitPlanet: tName,
+                    natalPlanet: np.planet as Planet,
+                    aspectType: def.type,
+                    orb: Math.round(orb * 10) / 10,
+                    transitSign: tSignData.sign,
+                    natalSign: np.sign as ZodiacSign,
+                  });
+                }
+                break;
               }
-              break;
             }
           }
         }
       }
-    }
 
-    events.sort((a, b) => {
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const parseShort = (s: string) => {
-        const [m, day] = s.split(" ");
-        return months.indexOf(m) * 100 + parseInt(day);
-      };
-      return parseShort(a.date) - parseShort(b.date);
-    });
+      events.sort((a, b) => {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const parseShort = (s: string) => {
+          const [m, day] = s.split(" ");
+          return months.indexOf(m) * 100 + parseInt(day);
+        };
+        return parseShort(a.date) - parseShort(b.date);
+      });
 
-    return new Response(JSON.stringify({ events }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Transit calendar error:", error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to compute transits",
-        events: [],
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
-});
+      ctx.log.info("astrology_transit_calendar.generated", {
+        days,
+        natalPlanetFilter,
+        eventCount: events.length,
+      });
+
+      return new Response(JSON.stringify({ events }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    },
+  }),
+);

@@ -1233,7 +1233,11 @@
     "placeholder": "搜索卡牌、日记、运势…",
     "noResults": "没有匹配结果",
     "noResultsSub": "试试别的关键词",
-    "recent": "最近",
+    "recent": {
+      "towerMeaning": "塔牌的含义",
+      "loveCompatibilityAries": "白羊座爱情配对",
+      "threeCardSpread": "三张牌阵"
+    },
     "suggestions": "推荐",
     "recentSearches": "最近搜索",
     "quickLinks": "快捷入口",

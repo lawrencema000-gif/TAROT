@@ -1233,7 +1233,11 @@
     "placeholder": "카드, 저널, 별자리 운세 검색…",
     "noResults": "일치하는 결과가 없어요",
     "noResultsSub": "다른 키워드를 시도해 보세요",
-    "recent": "최근",
+    "recent": {
+      "towerMeaning": "타워 카드 의미",
+      "loveCompatibilityAries": "양자리 연애 궁합",
+      "threeCardSpread": "세 장 스프레드"
+    },
     "suggestions": "추천",
     "recentSearches": "최근 검색",
     "quickLinks": "빠른 링크",

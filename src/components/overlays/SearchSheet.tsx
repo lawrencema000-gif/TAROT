@@ -9,12 +9,6 @@ interface SearchSheetProps {
   onClose: () => void;
 }
 
-const recentSearches = [
-  'The Tower meaning',
-  'Love compatibility Aries',
-  'Three card spread',
-];
-
 const quickLinks = [
   { icon: Sparkles, labelKey: 'search.quickLink.horoscope', category: 'readings' },
   { icon: BookOpen, labelKey: 'search.quickLink.journalPrompts', category: 'journal' },
@@ -24,6 +18,11 @@ const quickLinks = [
 export function SearchSheet({ open, onClose }: SearchSheetProps) {
   const { t } = useT(['app', 'common']);
   const [query, setQuery] = useState('');
+  const recentSearches = [
+    t('search.recent.towerMeaning'),
+    t('search.recent.loveCompatibilityAries'),
+    t('search.recent.threeCardSpread'),
+  ];
 
   return (
     <Sheet open={open} onClose={onClose} title={t('common:nav.search')}>

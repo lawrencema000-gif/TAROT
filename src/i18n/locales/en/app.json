@@ -1233,7 +1233,11 @@
     "placeholder": "Search cards, journal entries, horoscopes…",
     "noResults": "No matches",
     "noResultsSub": "Try different keywords",
-    "recent": "Recent",
+    "recent": {
+      "towerMeaning": "The Tower meaning",
+      "loveCompatibilityAries": "Love compatibility Aries",
+      "threeCardSpread": "Three card spread"
+    },
     "suggestions": "Suggestions",
     "recentSearches": "Recent Searches",
     "quickLinks": "Quick Links",

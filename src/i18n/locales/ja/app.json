@@ -1233,7 +1233,11 @@
     "placeholder": "カード、ジャーナル、星占いを検索…",
     "noResults": "一致するものがありません",
     "noResultsSub": "別のキーワードをお試しください",
-    "recent": "最近",
+    "recent": {
+      "towerMeaning": "塔の意味",
+      "loveCompatibilityAries": "牡羊座との恋愛相性",
+      "threeCardSpread": "3枚スプレッド"
+    },
     "suggestions": "おすすめ",
     "recentSearches": "最近の検索",
     "quickLinks": "クイックリンク",

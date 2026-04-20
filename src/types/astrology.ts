@@ -60,6 +60,14 @@ export interface DailyContent {
   theme: string;
   summary: string;
   moonSign: ZodiacSign;
+  /**
+   * Localized display name for the moon sign (e.g. "双子座" for ja).
+   * Added by astrology-daily's locale-aware pass. Falls back to the English
+   * ZodiacSign enum value if the edge function hasn't been redeployed yet —
+   * which is why this is optional and callers should prefer localizeSignName()
+   * over reading this field directly.
+   */
+  moonSignLocalized?: string;
   moonHouse: number | null;
   transitHighlights: { planet: Planet; aspect: AspectType; natalPlanet: Planet; brief: string }[];
   categories: { love: string; career: string; money: string; energy: string };

@@ -10,10 +10,15 @@ import './styles/landing.css';
 import './styles/tarot-meanings.css';
 
 if (import.meta.env.VITE_SENTRY_DSN) {
+  // VITE_BUILD_SHA is injected by the deploy workflow (see .github/workflows/deploy.yml).
+  // Falls back to package.json version when running locally.
+  const release = import.meta.env.VITE_BUILD_SHA
+    ? `arcana@${import.meta.env.VITE_BUILD_SHA}`
+    : `arcana@${import.meta.env.VITE_APP_VERSION || 'dev'}`;
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: import.meta.env.MODE,
-    release: `arcana@1.1.0`,
+    release,
     integrations: [
       Sentry.browserTracingIntegration(),
     ],

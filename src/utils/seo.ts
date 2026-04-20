@@ -92,12 +92,12 @@ export function setPageMeta(title: string, description?: string, image?: string)
  */
 export function setArticleMeta(post: {
   title: string;
-  excerpt?: string;
-  cover_image?: string;
-  author?: string;
-  published_at?: string;
-  updated_at?: string;
-  tags?: string[];
+  excerpt?: string | null;
+  cover_image?: string | null;
+  author?: string | null;
+  published_at?: string | null;
+  updated_at?: string | null;
+  tags?: string[] | null;
   slug: string;
 }) {
   const url = `${SITE_URL}/blog/${post.slug}`;

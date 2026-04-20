@@ -710,7 +710,7 @@ export function LibrarySection() {
                     <h4 className="font-medium text-mystic-100">{section}</h4>
                   </div>
                   <p className="text-sm text-mystic-300 leading-relaxed pl-10">
-                    {(selectedGuide.content as Record<string, string>)?.[section] || 'Content coming soon...'}
+                    {(selectedGuide.content as unknown as Record<string, string>)?.[section] || 'Content coming soon...'}
                   </p>
                 </div>
               ))}

@@ -6,7 +6,6 @@ import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 import { localizeCards } from '../i18n/localizeCard';
 import { getLocale } from '../i18n/config';
-import type { TarotCard } from '../types';
 
 type Filter = 'all' | 'major' | 'wands' | 'cups' | 'swords' | 'pentacles';
 
@@ -18,10 +17,6 @@ const FILTERS: { id: Filter; labelKey: string }[] = [
   { id: 'swords', labelKey: 'tarot.swords' },
   { id: 'pentacles', labelKey: 'tarot.pentacles' },
 ];
-
-function cardToSlug(card: TarotCard): string {
-  return card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-}
 
 // Slug lookup always uses English names so URLs stay stable across locales.
 const enNameById: Map<number, string> = new Map(fullDeck.map(c => [c.id, c.name]));

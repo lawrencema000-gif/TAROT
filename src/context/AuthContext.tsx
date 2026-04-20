@@ -1042,6 +1042,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  // Keep Sentry's user context in sync with the auth session.
+  // Setting user id + email lets "how many users affected?" and "reach out to
+  // them" work on Sentry events. Clearing on sign-out prevents leakage across
+  // accounts on shared devices.
+  useEffect(() => {
+    import('@sentry/react').then((Sentry) => {
+      if (user) {
+        Sentry.setUser({
+          id: user.id,
+          email: user.email ?? undefined,
+        });
+      } else {
+        Sentry.setUser(null);
+      }
+    }).catch(() => { /* Sentry not initialized / offline */ });
+  }, [user]);
+
   const isAdmin = isAdminVerified;
 
   return (

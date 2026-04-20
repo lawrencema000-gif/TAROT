@@ -494,7 +494,8 @@
       "higherThanAverage": "平均より高い",
       "lowerThanAverage": "平均より低い",
       "averageRange": "平均の範囲",
-      "compatibleTypes": "相性の良いタイプ"
+      "compatibleTypes": "相性の良いタイプ",
+      "enneagramType": "タイプ{{n}}"
     },
     "takeAnother": "別の診断を受ける"
   },
@@ -1636,7 +1637,18 @@
     "savedSpreads": "保存したスプレッド",
     "savedCards": "保存したカード",
     "savedHoroscopes": "保存した占い",
-    "periodDaily": "デイリー"
+    "periodDaily": "デイリー",
+    "tabs": {
+      "saved": "保存済み",
+      "aiReadings": "AIリーディング",
+      "guides": "ガイド"
+    },
+    "filters": {
+      "all": "すべて",
+      "tarot": "タロット",
+      "horoscope": "占星術",
+      "spreads": "スプレッド"
+    }
   },
   "celebration": {
     "streak": {

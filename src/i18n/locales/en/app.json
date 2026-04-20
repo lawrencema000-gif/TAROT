@@ -494,7 +494,8 @@
       "higherThanAverage": "Higher than average",
       "lowerThanAverage": "Lower than average",
       "averageRange": "Average range",
-      "compatibleTypes": "Compatible Types"
+      "compatibleTypes": "Compatible Types",
+      "enneagramType": "Type {{n}}"
     },
     "takeAnother": "Take Another Quiz"
   },
@@ -1636,7 +1637,18 @@
     "savedSpreads": "Saved Spreads",
     "savedCards": "Saved Cards",
     "savedHoroscopes": "Saved Horoscopes",
-    "periodDaily": "Daily"
+    "periodDaily": "Daily",
+    "tabs": {
+      "saved": "Saved",
+      "aiReadings": "AI Readings",
+      "guides": "Guides"
+    },
+    "filters": {
+      "all": "All",
+      "tarot": "Tarot",
+      "horoscope": "Horoscope",
+      "spreads": "Spreads"
+    }
   },
   "celebration": {
     "streak": {

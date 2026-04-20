@@ -494,7 +494,8 @@
       "higherThanAverage": "평균보다 높음",
       "lowerThanAverage": "평균보다 낮음",
       "averageRange": "평균 범위",
-      "compatibleTypes": "궁합이 좋은 유형"
+      "compatibleTypes": "궁합이 좋은 유형",
+      "enneagramType": "유형 {{n}}"
     },
     "takeAnother": "다른 퀴즈 풀기"
   },
@@ -1636,7 +1637,18 @@
     "savedSpreads": "저장된 스프레드",
     "savedCards": "저장된 카드",
     "savedHoroscopes": "저장된 운세",
-    "periodDaily": "데일리"
+    "periodDaily": "데일리",
+    "tabs": {
+      "saved": "저장됨",
+      "aiReadings": "AI 리딩",
+      "guides": "가이드"
+    },
+    "filters": {
+      "all": "전체",
+      "tarot": "타로",
+      "horoscope": "운세",
+      "spreads": "스프레드"
+    }
   },
   "celebration": {
     "streak": {

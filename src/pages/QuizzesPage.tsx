@@ -889,9 +889,9 @@ export function QuizzesPage() {
             </div>
             <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-mystic-400">Type {enResult.primaryType}</span>
+                <span className="text-mystic-400">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: enResult.primaryType })}</span>
                 <ArrowRight className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-400 font-medium">Type {typeInfo.growthPath.direction}</span>
+                <span className="text-emerald-400 font-medium">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: typeInfo.growthPath.direction })}</span>
               </div>
               <p className="text-mystic-300 text-sm">{typeInfo.growthPath.description}</p>
             </div>
@@ -904,9 +904,9 @@ export function QuizzesPage() {
             </div>
             <div className="p-4 bg-orange-900/20 border border-orange-500/30 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-mystic-400">Type {enResult.primaryType}</span>
+                <span className="text-mystic-400">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: enResult.primaryType })}</span>
                 <ArrowRight className="w-4 h-4 text-orange-400" />
-                <span className="text-orange-400 font-medium">Type {typeInfo.stressPath.direction}</span>
+                <span className="text-orange-400 font-medium">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: typeInfo.stressPath.direction })}</span>
               </div>
               <p className="text-mystic-300 text-sm">{typeInfo.stressPath.description}</p>
             </div>

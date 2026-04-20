@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Trophy, Sparkles, ChevronRight, Crown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { localizeSeekerRank } from '../i18n/localizeRank';
 import {
   AchievementCard,
   CategoryProgress,
@@ -193,7 +194,7 @@ export function AchievementsPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-5 h-5 text-gold" />
                 <span className="text-sm font-semibold text-gold">
-                  {profile?.seekerRank || t('achievements.novicesSeeker')}
+                  {localizeSeekerRank(profile?.seekerRank)}
                 </span>
               </div>
               <h2 className="text-xl font-bold text-white mb-1">
@@ -215,7 +216,7 @@ export function AchievementsPage() {
         <div className="p-4 space-y-6">
           <div className="bg-mystic-800/30 rounded-2xl p-4 border border-mystic-700/30">
             <RankProgressBar
-              currentRank={profile?.seekerRank || t('achievements.novicesSeeker')}
+              currentRank={profile?.seekerRank || 'Novice Seeker'}
               currentXP={profile?.xp || 0}
             />
           </div>

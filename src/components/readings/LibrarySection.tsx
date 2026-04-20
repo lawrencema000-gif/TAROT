@@ -217,17 +217,17 @@ export function LibrarySection() {
         >
           <Chip selected={activeTab === 'saved'} onClick={() => setActiveTab('saved')}>
             <Bookmark className="w-3.5 h-3.5" />
-            Saved
+            {t('library.tabs.saved', { defaultValue: 'Saved' })}
           </Chip>
           {profile?.isPremium && (
             <Chip selected={activeTab === 'ai-readings'} onClick={() => setActiveTab('ai-readings')}>
               <Brain className="w-3.5 h-3.5" />
-              AI Readings
+              {t('library.tabs.aiReadings', { defaultValue: 'AI Readings' })}
             </Chip>
           )}
           <Chip selected={activeTab === 'guides'} onClick={() => setActiveTab('guides')}>
             <Book className="w-3.5 h-3.5" />
-            Guides
+            {t('library.tabs.guides', { defaultValue: 'Guides' })}
           </Chip>
         </div>
       </div>
@@ -253,7 +253,7 @@ export function LibrarySection() {
                       : 'text-mystic-400 hover:text-mystic-300'
                   }`}
                 >
-                  {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  {t(`library.filters.${filter}`, { defaultValue: filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1) })}
                 </button>
               ))}
             </div>

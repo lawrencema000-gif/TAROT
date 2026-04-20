@@ -494,7 +494,8 @@
       "higherThanAverage": "高于平均",
       "lowerThanAverage": "低于平均",
       "averageRange": "平均范围",
-      "compatibleTypes": "相容的类型"
+      "compatibleTypes": "相容的类型",
+      "enneagramType": "类型{{n}}"
     },
     "takeAnother": "进行另一个测试"
   },
@@ -1636,7 +1637,18 @@
     "savedSpreads": "已保存的牌阵",
     "savedCards": "已保存的牌",
     "savedHoroscopes": "已保存的运势",
-    "periodDaily": "每日"
+    "periodDaily": "每日",
+    "tabs": {
+      "saved": "已保存",
+      "aiReadings": "AI解读",
+      "guides": "指南"
+    },
+    "filters": {
+      "all": "全部",
+      "tarot": "塔罗",
+      "horoscope": "运势",
+      "spreads": "牌阵"
+    }
   },
   "celebration": {
     "streak": {

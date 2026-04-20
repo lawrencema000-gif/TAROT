@@ -546,17 +546,33 @@ const affirmationsBySign: Record<ZodiacSign, string[]> = {
   ],
 };
 
+function localeBundle(): { planetaryTransits?: string[]; affirmationsBySign?: Record<ZodiacSign, string[]> } | null {
+  const locale = getLocale();
+  if (locale === 'ja') return jaHoroscopes as unknown as Record<string, unknown>;
+  if (locale === 'ko') return koHoroscopes as unknown as Record<string, unknown>;
+  if (locale === 'zh') return zhHoroscopes as unknown as Record<string, unknown>;
+  return null;
+}
+
 export function getPlanetaryTransit(date: string): string {
   const dateNum = new Date(date).getTime();
   const random = seededRandom(dateNum);
-  return planetaryTransits[Math.floor(random() * planetaryTransits.length)];
+  const locBundle = localeBundle();
+  const list = (locBundle && Array.isArray(locBundle.planetaryTransits) && locBundle.planetaryTransits.length > 0)
+    ? locBundle.planetaryTransits
+    : planetaryTransits;
+  return list[Math.floor(random() * list.length)];
 }
 
 export function getDailyAffirmation(sign: ZodiacSign, date: string): string {
   const dateNum = new Date(date).getTime();
   const random = seededRandom(dateNum);
-  const affirmations = affirmationsBySign[sign];
-  return affirmations[Math.floor(random() * affirmations.length)];
+  const locBundle = localeBundle();
+  const signList = locBundle?.affirmationsBySign?.[sign];
+  const list = Array.isArray(signList) && signList.length > 0
+    ? signList
+    : affirmationsBySign[sign];
+  return list[Math.floor(random() * list.length)];
 }
 
 export function getLuckyNumbers(date: string, count: number = 6): number[] {

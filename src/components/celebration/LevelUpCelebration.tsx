@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Trophy, Sparkles, X } from 'lucide-react';
 import { Button, Sheet } from '../ui';
 import { useT } from '../../i18n/useT';
+import { localizeSeekerRank } from '../../i18n/localizeRank';
 
 interface LevelUpCelebrationProps {
   open: boolean;
@@ -75,9 +76,9 @@ export function LevelUpCelebration({
               <div className="h-12 w-px bg-mystic-700" />
               <div className="text-center">
                 <div className="text-lg font-semibold text-mystic-100 mb-1">
-                  {seekerRank}
+                  {localizeSeekerRank(seekerRank)}
                 </div>
-                <div className="text-sm text-mystic-400">Rank</div>
+                <div className="text-sm text-mystic-400">{t('celebration.levelUp.rank', { defaultValue: 'Rank' })}</div>
               </div>
             </div>
 

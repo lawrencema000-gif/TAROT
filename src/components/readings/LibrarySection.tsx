@@ -50,112 +50,16 @@ interface PremiumReading {
   created_at: string;
 }
 
-const guides = [
-  {
-    id: 'tarot-basics',
-    title: 'Tarot Basics',
-    description: 'Learn the fundamentals of tarot reading',
-    sections: ['Major vs Minor Arcana', 'The Four Suits', 'Reading Spreads', 'Reversed Cards'],
-    content: {
-      'Major vs Minor Arcana': 'The Major Arcana consists of 22 cards representing life\'s major themes and spiritual lessons. The Minor Arcana has 56 cards divided into four suits, representing day-to-day experiences.',
-      'The Four Suits': 'Wands (Fire - Passion), Cups (Water - Emotions), Swords (Air - Thoughts), Pentacles (Earth - Material)',
-      'Reading Spreads': 'Different card layouts like the Three-Card Spread (Past-Present-Future) and Celtic Cross provide various perspectives on questions.',
-      'Reversed Cards': 'When cards appear upside down, they can indicate blocked energy, internalized energy, or the opposite meaning.',
-    },
-  },
-  {
-    id: 'mbti-guide',
-    title: 'MBTI Explained',
-    description: 'Understanding the 16 personality types',
-    sections: ['The Four Dichotomies', 'Cognitive Functions', 'Your Type\'s Strengths', 'Growth Areas'],
-    content: {
-      'The Four Dichotomies': 'E/I (Energy direction), S/N (Information processing), T/F (Decision making), J/P (Lifestyle approach)',
-      'Cognitive Functions': 'Each type uses eight cognitive functions in a specific order, determining how they perceive and judge the world.',
-      'Your Type\'s Strengths': 'Every type has unique gifts - INTJs excel at strategic thinking, ENFPs at inspiring others, ISTJs at reliability.',
-      'Growth Areas': 'Understanding your inferior function helps identify areas for personal development and stress management.',
-    },
-  },
-  {
-    id: 'love-languages',
-    title: 'Love Languages',
-    description: 'The 5 ways we give and receive love',
-    sections: ['Words of Affirmation', 'Acts of Service', 'Receiving Gifts', 'Quality Time', 'Physical Touch'],
-    content: {
-      'Words of Affirmation': 'Verbal compliments, encouragement, and expressions of appreciation make you feel most loved.',
-      'Acts of Service': 'Actions speak louder than words - doing helpful things shows care and consideration.',
-      'Receiving Gifts': 'Thoughtful presents, big or small, represent love and show you were thought of.',
-      'Quality Time': 'Undivided attention and meaningful shared experiences are how you feel valued.',
-      'Physical Touch': 'Appropriate physical connection - hugs, hand-holding, closeness - communicates love.',
-    },
-  },
-  {
-    id: 'zodiac-elements',
-    title: 'Zodiac Elements',
-    description: 'Fire, Earth, Air, and Water signs',
-    sections: ['Fire Signs', 'Earth Signs', 'Air Signs', 'Water Signs', 'Element Compatibility'],
-    content: {
-      'Fire Signs': 'Aries, Leo, Sagittarius - Passionate, enthusiastic, bold, and inspirational. They lead with action.',
-      'Earth Signs': 'Taurus, Virgo, Capricorn - Grounded, practical, reliable, and focused on tangible results.',
-      'Air Signs': 'Gemini, Libra, Aquarius - Intellectual, communicative, social, and idea-oriented.',
-      'Water Signs': 'Cancer, Scorpio, Pisces - Emotional, intuitive, empathetic, and deeply feeling.',
-      'Element Compatibility': 'Fire and Air energize each other. Earth and Water nurture each other. Similar elements understand each other.',
-    },
-  },
-  {
-    id: 'moon-phases',
-    title: 'Moon Phases & Rituals',
-    description: 'Harness lunar energy for manifestation',
-    sections: ['New Moon', 'Waxing Moon', 'Full Moon', 'Waning Moon', 'Moon Rituals'],
-    content: {
-      'New Moon': 'Time for new beginnings, setting intentions, and planting seeds for the future.',
-      'Waxing Moon': 'Building energy phase - take action on your goals, make progress, attract what you want.',
-      'Full Moon': 'Peak energy for manifestation, celebration, and releasing what no longer serves you.',
-      'Waning Moon': 'Time for reflection, rest, letting go, and clearing space for new opportunities.',
-      'Moon Rituals': 'Write intentions on new moons, charge crystals during full moons, and practice gratitude journaling.',
-    },
-  },
-  {
-    id: 'crystals-guide',
-    title: 'Crystals & Stones',
-    description: 'Energy healing with gemstones',
-    sections: ['Clear Quartz', 'Amethyst', 'Rose Quartz', 'Black Tourmaline', 'Citrine'],
-    content: {
-      'Clear Quartz': 'The master healer - amplifies energy, clarifies thoughts, enhances spiritual awareness.',
-      'Amethyst': 'Calming and protective - promotes peaceful sleep, intuition, and spiritual connection.',
-      'Rose Quartz': 'The love stone - attracts love, promotes self-love, heals emotional wounds.',
-      'Black Tourmaline': 'Protective shield - grounds energy, repels negativity, provides emotional stability.',
-      'Citrine': 'Abundance and joy - attracts prosperity, enhances creativity, radiates positive energy.',
-    },
-  },
-  {
-    id: 'chakras',
-    title: 'Chakra System',
-    description: 'Balance your energy centers',
-    sections: ['Root Chakra', 'Sacral Chakra', 'Solar Plexus', 'Heart Chakra', 'Throat Chakra', 'Third Eye', 'Crown Chakra'],
-    content: {
-      'Root Chakra': 'Red - Grounding, security, survival. Located at the base of spine. Balanced = stable and secure.',
-      'Sacral Chakra': 'Orange - Creativity, sexuality, emotions. Below navel. Balanced = passionate and creative.',
-      'Solar Plexus': 'Yellow - Personal power, confidence, will. Upper abdomen. Balanced = confident and purposeful.',
-      'Heart Chakra': 'Green - Love, compassion, connection. Center of chest. Balanced = loving and accepting.',
-      'Throat Chakra': 'Blue - Communication, truth, expression. Throat. Balanced = authentic and expressive.',
-      'Third Eye': 'Indigo - Intuition, wisdom, insight. Between eyebrows. Balanced = intuitive and wise.',
-      'Crown Chakra': 'Violet - Spiritual connection, enlightenment. Top of head. Balanced = spiritually connected.',
-    },
-  },
-  {
-    id: 'numerology',
-    title: 'Numerology Basics',
-    description: 'The mystical significance of numbers',
-    sections: ['Life Path Number', 'Expression Number', 'Soul Urge', 'Personality Number', 'Master Numbers'],
-    content: {
-      'Life Path Number': 'Calculated from birthdate - reveals your life\'s purpose and the path you\'re meant to walk.',
-      'Expression Number': 'From your full name - shows your natural talents, abilities, and how you express yourself.',
-      'Soul Urge': 'From vowels in your name - reveals your innermost desires, motivations, and what drives you.',
-      'Personality Number': 'From consonants - how others perceive you, the mask you show to the world.',
-      'Master Numbers': '11, 22, 33 carry powerful spiritual significance and heightened potential for growth.',
-    },
-  },
-];
+interface GuideSection { title: string; content: string; }
+interface Guide { id: string; title: string; description: string; sections: GuideSection[]; }
+
+// Canonical guide IDs. Titles / descriptions / section content are all
+// pulled from i18n (library.guides.<id>) at render time so every locale
+// gets its own copy.
+const GUIDE_IDS = [
+  'tarot-basics', 'mbti-guide', 'love-languages', 'zodiac-elements',
+  'moon-phases', 'crystals-guide', 'chakras', 'numerology',
+] as const;
 
 export function LibrarySection() {
   const { t } = useT('app');
@@ -165,7 +69,20 @@ export function LibrarySection() {
   const [savedHighlights, setSavedHighlights] = useState<SavedItem[]>([]);
   const [tarotReadings, setTarotReadings] = useState<TarotReading[]>([]);
   const [premiumReadings, setPremiumReadings] = useState<PremiumReading[]>([]);
-  const [selectedGuide, setSelectedGuide] = useState<typeof guides[0] | null>(null);
+  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
+
+  // Build the guide list from i18n at render time so ja/ko/zh users see
+  // localized titles, descriptions, and section content. Guide ids are the
+  // stable identifier; everything else is translation-driven.
+  const guides: Guide[] = GUIDE_IDS.map((id) => {
+    const title = t(`library.guides.${id}.title`, { defaultValue: id });
+    const description = t(`library.guides.${id}.description`, { defaultValue: '' });
+    const rawSections = t(`library.guides.${id}.sections`, { returnObjects: true, defaultValue: [] });
+    const sections: GuideSection[] = Array.isArray(rawSections)
+      ? (rawSections as GuideSection[])
+      : [];
+    return { id, title, description, sections };
+  });
   const [selectedReading, setSelectedReading] = useState<PremiumReading | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -416,7 +333,7 @@ export function LibrarySection() {
                       disabled={loadingMore}
                       className="w-full"
                     >
-                      {loadingMore ? 'Loading...' : 'Load more spreads'}
+                      {loadingMore ? t('library.loading') : t('library.loadMoreSpreads')}
                     </Button>
                   )}
                 </div>
@@ -519,7 +436,7 @@ export function LibrarySection() {
                   disabled={loadingMore}
                   className="w-full"
                 >
-                  {loadingMore ? 'Loading...' : 'Load more saved items'}
+                  {loadingMore ? t('library.loading') : t('library.loadMoreSaved')}
                 </Button>
               )}
 
@@ -573,13 +490,19 @@ export function LibrarySection() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-medium text-mystic-100 text-sm">
-                            {reading.reading_type === 'single' ? 'Single Card' :
-                             reading.reading_type === 'three-card' ? '3-Card Spread' :
-                             reading.reading_type === 'celtic-cross' ? 'Celtic Cross' :
-                             reading.reading_type === 'relationship' ? 'Relationship' :
-                             reading.reading_type === 'career' ? 'Career' :
-                             reading.reading_type === 'shadow' ? 'Shadow Work' :
-                             reading.reading_type}
+                            {(() => {
+                              const spreadKey = {
+                                'single': 'single',
+                                'three-card': 'threeCard',
+                                'celtic-cross': 'celticCross',
+                                'relationship': 'relationship',
+                                'career': 'careerSpread',
+                                'shadow': 'shadow',
+                              }[reading.reading_type];
+                              return spreadKey
+                                ? t(`readings.spreads.${spreadKey}.name`)
+                                : reading.reading_type;
+                            })()}
                           </h4>
                           {reading.context.usedLlm && (
                             <span className="px-2 py-0.5 bg-gold/10 border border-gold/20 rounded text-xs text-gold">
@@ -622,7 +545,7 @@ export function LibrarySection() {
                   disabled={loadingMore}
                   className="w-full"
                 >
-                  {loadingMore ? 'Loading...' : 'Load more readings'}
+                  {loadingMore ? t('library.loading') : t('library.loadMoreReadings')}
                 </Button>
               )}
             </div>
@@ -680,10 +603,10 @@ export function LibrarySection() {
                     <span className="w-7 h-7 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center text-sm text-gold font-medium">
                       {i + 1}
                     </span>
-                    <h4 className="font-medium text-mystic-100">{section}</h4>
+                    <h4 className="font-medium text-mystic-100">{section.title}</h4>
                   </div>
                   <p className="text-sm text-mystic-300 leading-relaxed pl-10">
-                    {(selectedGuide.content as unknown as Record<string, string>)?.[section] || 'Content coming soon...'}
+                    {section.content || t('library.contentComingSoon')}
                   </p>
                 </div>
               ))}
@@ -691,7 +614,7 @@ export function LibrarySection() {
 
             <Card padding="md" className="bg-gradient-to-r from-gold/5 to-cosmic-blue/5 border-gold/20">
               <p className="text-xs text-mystic-400 text-center">
-                Continue exploring the guides to deepen your spiritual practice
+                {t('library.continueExploring')}
               </p>
             </Card>
           </div>

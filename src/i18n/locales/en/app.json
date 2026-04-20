@@ -1312,7 +1312,222 @@
       "yourQuestion": "Your Question",
       "cardsDrawn": "Cards Drawn",
       "interpretation": "Interpretation"
-    }
+    },
+    "guides": {
+      "tarot-basics": {
+        "title": "Tarot Basics",
+        "description": "Learn the fundamentals of tarot reading",
+        "sections": [
+          {
+            "title": "Major vs Minor Arcana",
+            "content": "The Major Arcana consists of 22 cards representing life's major themes and spiritual lessons. The Minor Arcana has 56 cards divided into four suits, representing day-to-day experiences."
+          },
+          {
+            "title": "The Four Suits",
+            "content": "Wands (Fire - Passion), Cups (Water - Emotions), Swords (Air - Thoughts), Pentacles (Earth - Material)"
+          },
+          {
+            "title": "Reading Spreads",
+            "content": "Different card layouts like the Three-Card Spread (Past-Present-Future) and Celtic Cross provide various perspectives on questions."
+          },
+          {
+            "title": "Reversed Cards",
+            "content": "When cards appear upside down, they can indicate blocked energy, internalized energy, or the opposite meaning."
+          }
+        ]
+      },
+      "mbti-guide": {
+        "title": "MBTI Explained",
+        "description": "Understanding the 16 personality types",
+        "sections": [
+          {
+            "title": "The Four Dichotomies",
+            "content": "E/I (Energy direction), S/N (Information processing), T/F (Decision making), J/P (Lifestyle approach)"
+          },
+          {
+            "title": "Cognitive Functions",
+            "content": "Each type uses eight cognitive functions in a specific order, determining how they perceive and judge the world."
+          },
+          {
+            "title": "Your Type's Strengths",
+            "content": "Every type has unique gifts — INTJs excel at strategic thinking, ENFPs at inspiring others, ISTJs at reliability."
+          },
+          {
+            "title": "Growth Areas",
+            "content": "Understanding your inferior function helps identify areas for personal development and stress management."
+          }
+        ]
+      },
+      "love-languages": {
+        "title": "Love Languages",
+        "description": "The 5 ways we give and receive love",
+        "sections": [
+          {
+            "title": "Words of Affirmation",
+            "content": "Verbal compliments, encouragement, and expressions of appreciation make you feel most loved."
+          },
+          {
+            "title": "Acts of Service",
+            "content": "Actions speak louder than words — doing helpful things shows care and consideration."
+          },
+          {
+            "title": "Receiving Gifts",
+            "content": "Thoughtful presents, big or small, represent love and show you were thought of."
+          },
+          {
+            "title": "Quality Time",
+            "content": "Undivided attention and meaningful shared experiences are how you feel valued."
+          },
+          {
+            "title": "Physical Touch",
+            "content": "Appropriate physical connection — hugs, hand-holding, closeness — communicates love."
+          }
+        ]
+      },
+      "zodiac-elements": {
+        "title": "Zodiac Elements",
+        "description": "Fire, Earth, Air, and Water signs",
+        "sections": [
+          {
+            "title": "Fire Signs",
+            "content": "Aries, Leo, Sagittarius — Passionate, enthusiastic, bold, and inspirational. They lead with action."
+          },
+          {
+            "title": "Earth Signs",
+            "content": "Taurus, Virgo, Capricorn — Grounded, practical, reliable, and focused on tangible results."
+          },
+          {
+            "title": "Air Signs",
+            "content": "Gemini, Libra, Aquarius — Intellectual, communicative, social, and idea-oriented."
+          },
+          {
+            "title": "Water Signs",
+            "content": "Cancer, Scorpio, Pisces — Emotional, intuitive, empathetic, and deeply feeling."
+          },
+          {
+            "title": "Element Compatibility",
+            "content": "Fire and Air energize each other. Earth and Water nurture each other. Similar elements understand each other."
+          }
+        ]
+      },
+      "moon-phases": {
+        "title": "Moon Phases & Rituals",
+        "description": "Harness lunar energy for manifestation",
+        "sections": [
+          {
+            "title": "New Moon",
+            "content": "Time for new beginnings, setting intentions, and planting seeds for the future."
+          },
+          {
+            "title": "Waxing Moon",
+            "content": "Building energy phase — take action on your goals, make progress, attract what you want."
+          },
+          {
+            "title": "Full Moon",
+            "content": "Peak energy for manifestation, celebration, and releasing what no longer serves you."
+          },
+          {
+            "title": "Waning Moon",
+            "content": "Time for reflection, rest, letting go, and clearing space for new opportunities."
+          },
+          {
+            "title": "Moon Rituals",
+            "content": "Write intentions on new moons, charge crystals during full moons, and practice gratitude journaling."
+          }
+        ]
+      },
+      "crystals-guide": {
+        "title": "Crystals & Stones",
+        "description": "Energy healing with gemstones",
+        "sections": [
+          {
+            "title": "Clear Quartz",
+            "content": "The master healer — amplifies energy, clarifies thoughts, enhances spiritual awareness."
+          },
+          {
+            "title": "Amethyst",
+            "content": "Calming and protective — promotes peaceful sleep, intuition, and spiritual connection."
+          },
+          {
+            "title": "Rose Quartz",
+            "content": "The love stone — attracts love, promotes self-love, heals emotional wounds."
+          },
+          {
+            "title": "Black Tourmaline",
+            "content": "Protective shield — grounds energy, repels negativity, provides emotional stability."
+          },
+          {
+            "title": "Citrine",
+            "content": "Abundance and joy — attracts prosperity, enhances creativity, radiates positive energy."
+          }
+        ]
+      },
+      "chakras": {
+        "title": "Chakra System",
+        "description": "Balance your energy centers",
+        "sections": [
+          {
+            "title": "Root Chakra",
+            "content": "Red — Grounding, security, survival. Located at the base of spine. Balanced = stable and secure."
+          },
+          {
+            "title": "Sacral Chakra",
+            "content": "Orange — Creativity, sexuality, emotions. Below navel. Balanced = passionate and creative."
+          },
+          {
+            "title": "Solar Plexus",
+            "content": "Yellow — Personal power, confidence, will. Upper abdomen. Balanced = confident and purposeful."
+          },
+          {
+            "title": "Heart Chakra",
+            "content": "Green — Love, compassion, connection. Center of chest. Balanced = loving and accepting."
+          },
+          {
+            "title": "Throat Chakra",
+            "content": "Blue — Communication, truth, expression. Throat. Balanced = authentic and expressive."
+          },
+          {
+            "title": "Third Eye",
+            "content": "Indigo — Intuition, wisdom, insight. Between eyebrows. Balanced = intuitive and wise."
+          },
+          {
+            "title": "Crown Chakra",
+            "content": "Violet — Spiritual connection, enlightenment. Top of head. Balanced = spiritually connected."
+          }
+        ]
+      },
+      "numerology": {
+        "title": "Numerology Basics",
+        "description": "The mystical significance of numbers",
+        "sections": [
+          {
+            "title": "Life Path Number",
+            "content": "Calculated from birthdate — reveals your life's purpose and the path you're meant to walk."
+          },
+          {
+            "title": "Expression Number",
+            "content": "From your full name — shows your natural talents, abilities, and how you express yourself."
+          },
+          {
+            "title": "Soul Urge",
+            "content": "From vowels in your name — reveals your innermost desires, motivations, and what drives you."
+          },
+          {
+            "title": "Personality Number",
+            "content": "From consonants — how others perceive you, the mask you show to the world."
+          },
+          {
+            "title": "Master Numbers",
+            "content": "11, 22, 33 carry powerful spiritual significance and heightened potential for growth."
+          }
+        ]
+      }
+    },
+    "loadMoreSpreads": "Load more spreads",
+    "loadMoreSaved": "Load more saved items",
+    "loadMoreReadings": "Load more readings",
+    "contentComingSoon": "Content coming soon...",
+    "continueExploring": "Continue exploring the guides to deepen your spiritual practice"
   },
   "celebration": {
     "streak": {

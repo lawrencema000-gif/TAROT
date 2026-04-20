@@ -146,6 +146,9 @@
     "profileLoadFailed": "加载个人资料失败。请尝试刷新。",
     "sessionExpired": "登录会话已过期。请重试。",
     "signInFailed": "登录失败。请重试。",
-    "signInFailedWith": "登录失败: {{error}}"
+    "signInFailedWith": "登录失败: {{error}}",
+    "signInCancelled": "登录已取消",
+    "signInSessionExpired": "登录会话已过期。请重试。",
+    "googleNotConfigured": "未配置 Google 登录。请使用邮箱/密码。"
   }
 }

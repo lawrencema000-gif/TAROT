@@ -1987,5 +1987,24 @@
     "morningReflectionSub": "感恩与意图",
     "loveLanguageResult": "爱的语言结果",
     "wordsOfAffirmation": "肯定的话语"
+  },
+  "cardMeaning": {
+    "yesNo": {
+      "answer": {
+        "yes": "是",
+        "no": "否",
+        "maybe": "也许"
+      },
+      "keywordSeparator": "与",
+      "explanation": {
+        "yes": "{{name}}承载着正向与肯定的能量。这张牌支持前进与有利的结果。",
+        "no": "{{name}}暗示障碍、动荡或需要暂停。时机可能不对，或需要不同的方式。",
+        "maybe": "{{name}}依情境而定。答案取决于周围的牌与你的具体情况。"
+      },
+      "explanationKeywords": {
+        "yes": "这张牌{{keywords}}的能量偏向正面的结果。",
+        "no": "这张牌{{keywords}}的能量暗示挑战或延迟。"
+      }
+    }
   }
 }

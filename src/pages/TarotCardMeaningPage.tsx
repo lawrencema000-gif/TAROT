@@ -31,18 +31,34 @@ const NO_CARDS = new Set([
 ]);
 // Everything else is "Maybe" — depends on context
 
-function getYesNo(card: TarotCard): { answer: string; explanation: string } {
-  if (YES_CARDS.has(card.name)) return { answer: 'Yes', explanation: `${card.name} carries positive, affirming energy. This card supports forward movement and favorable outcomes.` };
-  if (NO_CARDS.has(card.name)) return { answer: 'No', explanation: `${card.name} suggests obstacles, upheaval, or the need to pause. The timing may not be right, or a different approach is needed.` };
-  // Check minor arcana by keywords
+type YesNoVerdict = 'yes' | 'no' | 'maybe';
+
+function getYesNoVerdict(card: TarotCard): { verdict: YesNoVerdict; keywords: string[] } {
+  if (YES_CARDS.has(card.name)) return { verdict: 'yes', keywords: [] };
+  if (NO_CARDS.has(card.name)) return { verdict: 'no', keywords: [] };
   const positiveKeywords = ['success', 'joy', 'abundance', 'victory', 'celebration', 'love', 'harmony', 'fulfillment', 'completion'];
   const negativeKeywords = ['loss', 'defeat', 'betrayal', 'grief', 'conflict', 'anxiety', 'burden', 'deception', 'stagnation'];
-  const kw = card.keywords.map(k => k.toLowerCase());
-  const posMatch = kw.some(k => positiveKeywords.some(p => k.includes(p)));
-  const negMatch = kw.some(k => negativeKeywords.some(n => k.includes(n)));
-  if (posMatch && !negMatch) return { answer: 'Yes', explanation: `This card's energy of ${card.keywords.slice(0, 2).join(' and ')} leans toward a positive outcome.` };
-  if (negMatch && !posMatch) return { answer: 'No', explanation: `This card's energy of ${card.keywords.slice(0, 2).join(' and ')} suggests challenges or delays.` };
-  return { answer: 'Maybe', explanation: `${card.name} is context-dependent. The answer depends on surrounding cards and your specific situation.` };
+  const kw = card.keywords.map((k) => k.toLowerCase());
+  const posMatch = kw.some((k) => positiveKeywords.some((p) => k.includes(p)));
+  const negMatch = kw.some((k) => negativeKeywords.some((n) => k.includes(n)));
+  const first2 = card.keywords.slice(0, 2);
+  if (posMatch && !negMatch) return { verdict: 'yes', keywords: first2 };
+  if (negMatch && !posMatch) return { verdict: 'no', keywords: first2 };
+  return { verdict: 'maybe', keywords: [] };
+}
+
+/** Render-time localized Yes/No for the active locale. */
+function getYesNo(card: TarotCard, t: (key: string, opts?: Record<string, unknown>) => string, localizedName: string): { answer: string; explanation: string } {
+  const { verdict, keywords } = getYesNoVerdict(card);
+  const answer = t(`cardMeaning.yesNo.answer.${verdict}`);
+  const kw = keywords.join(
+    t('cardMeaning.yesNo.keywordSeparator', { defaultValue: ' and ' }),
+  );
+  const explanationKey = keywords.length > 0
+    ? `cardMeaning.yesNo.explanationKeywords.${verdict}`
+    : `cardMeaning.yesNo.explanation.${verdict}`;
+  const explanation = t(explanationKey, { name: localizedName, keywords: kw });
+  return { answer, explanation };
 }
 
 // Get cards in same group for navigation grid
@@ -73,7 +89,7 @@ export function TarotCardMeaningPage() {
     () => (enCard ? getRelatedCards(enCard).map(c => localizeCard(c, locale)) : []),
     [enCard, locale],
   );
-  const yesNo = enCard ? getYesNo(enCard) : null;
+  const yesNo = enCard && card ? getYesNo(enCard, t, card.name) : null;
 
   useEffect(() => {
     if (!card || !enCard) return;
@@ -105,7 +121,21 @@ export function TarotCardMeaningPage() {
       ],
     });
     // FAQPage schema — drives "People also ask" rich results
-    const yn = getYesNo(enCard);
+    // SEO JSON-LD always uses English — Google indexes canonical EN URLs.
+    const { verdict, keywords } = getYesNoVerdict(enCard);
+    const yn = {
+      answer: verdict === 'yes' ? 'Yes' : verdict === 'no' ? 'No' : 'Maybe',
+      explanation:
+        verdict === 'yes' && keywords.length === 0
+          ? `${enCard.name} carries positive, affirming energy. This card supports forward movement and favorable outcomes.`
+          : verdict === 'no' && keywords.length === 0
+          ? `${enCard.name} suggests obstacles, upheaval, or the need to pause. The timing may not be right, or a different approach is needed.`
+          : verdict === 'maybe'
+          ? `${enCard.name} is context-dependent. The answer depends on surrounding cards and your specific situation.`
+          : verdict === 'yes'
+          ? `This card's energy of ${keywords.join(' and ')} leans toward a positive outcome.`
+          : `This card's energy of ${keywords.join(' and ')} suggests challenges or delays.`,
+    };
     addJsonLd({
       '@context': 'https://schema.org', '@type': 'FAQPage',
       mainEntity: [

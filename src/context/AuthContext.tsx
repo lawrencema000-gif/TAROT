@@ -405,13 +405,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return true;
         }
 
-        let userMessage = errorDesc || 'Sign in failed';
+        let userMessage = errorDesc || i18n.t('auth.signInFailed', { ns: 'common' });
         if (errorCode === 'access_denied') {
-          userMessage = 'Sign in was cancelled';
+          userMessage = i18n.t('auth.signInCancelled', { ns: 'common' });
         } else if (errorCode === 'invalid_flow_state' || errorDesc?.includes('flow state')) {
-          userMessage = 'Sign in session expired. Please try again.';
+          userMessage = i18n.t('auth.signInSessionExpired', { ns: 'common' });
         } else if (errorDesc?.includes('provider')) {
-          userMessage = 'Google sign-in is not configured. Please use email/password.';
+          userMessage = i18n.t('auth.googleNotConfigured', { ns: 'common' });
         }
 
         toast(userMessage, 'error', createDiagnosticsAction());

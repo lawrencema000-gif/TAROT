@@ -1987,5 +1987,24 @@
     "morningReflectionSub": "Gratitude and intentions",
     "loveLanguageResult": "Love Language Result",
     "wordsOfAffirmation": "Words of Affirmation"
+  },
+  "cardMeaning": {
+    "yesNo": {
+      "answer": {
+        "yes": "Yes",
+        "no": "No",
+        "maybe": "Maybe"
+      },
+      "keywordSeparator": " and ",
+      "explanation": {
+        "yes": "{{name}} carries positive, affirming energy. This card supports forward movement and favorable outcomes.",
+        "no": "{{name}} suggests obstacles, upheaval, or the need to pause. The timing may not be right, or a different approach is needed.",
+        "maybe": "{{name}} is context-dependent. The answer depends on surrounding cards and your specific situation."
+      },
+      "explanationKeywords": {
+        "yes": "This card's energy of {{keywords}} leans toward a positive outcome.",
+        "no": "This card's energy of {{keywords}} suggests challenges or delays."
+      }
+    }
   }
 }

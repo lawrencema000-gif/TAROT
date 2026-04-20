@@ -1987,5 +1987,24 @@
     "morningReflectionSub": "感謝と意図",
     "loveLanguageResult": "愛の言語の結果",
     "wordsOfAffirmation": "肯定の言葉"
+  },
+  "cardMeaning": {
+    "yesNo": {
+      "answer": {
+        "yes": "はい",
+        "no": "いいえ",
+        "maybe": "かもしれません"
+      },
+      "keywordSeparator": "と",
+      "explanation": {
+        "yes": "{{name}}はポジティブで肯定的なエネルギーを持ちます。このカードは前進と好ましい結果を支えます。",
+        "no": "{{name}}は障害、動揺、または一時停止の必要性を示します。タイミングが合わないか、別のアプローチが必要かもしれません。",
+        "maybe": "{{name}}は状況依存です。答えは周囲のカードと具体的な状況に依存します。"
+      },
+      "explanationKeywords": {
+        "yes": "このカードの{{keywords}}のエネルギーはポジティブな結果に傾きます。",
+        "no": "このカードの{{keywords}}のエネルギーは課題や遅延を示唆します。"
+      }
+    }
   }
 }

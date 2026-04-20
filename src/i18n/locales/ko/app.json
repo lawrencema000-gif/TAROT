@@ -1987,5 +1987,24 @@
     "morningReflectionSub": "감사와 의도",
     "loveLanguageResult": "사랑의 언어 결과",
     "wordsOfAffirmation": "인정하는 말"
+  },
+  "cardMeaning": {
+    "yesNo": {
+      "answer": {
+        "yes": "네",
+        "no": "아니요",
+        "maybe": "아마도"
+      },
+      "keywordSeparator": "와/과 ",
+      "explanation": {
+        "yes": "{{name}}은(는) 긍정적이고 확신적인 에너지를 지닙니다. 이 카드는 전진과 긍정적인 결과를 지지합니다.",
+        "no": "{{name}}은(는) 장애, 격변, 혹은 잠시 멈춤이 필요함을 시사합니다. 타이밍이 맞지 않거나 다른 접근이 필요합니다.",
+        "maybe": "{{name}}은(는) 맥락 의존적입니다. 답은 주변 카드와 구체적 상황에 달려 있습니다."
+      },
+      "explanationKeywords": {
+        "yes": "이 카드의 {{keywords}} 에너지는 긍정적인 결과로 기울어집니다.",
+        "no": "이 카드의 {{keywords}} 에너지는 도전이나 지연을 시사합니다."
+      }
+    }
   }
 }

@@ -146,6 +146,9 @@
     "profileLoadFailed": "プロフィールの読み込みに失敗しました。更新してお試しください。",
     "sessionExpired": "サインインセッションの有効期限が切れました。もう一度お試しください。",
     "signInFailed": "サインインに失敗しました。もう一度お試しください。",
-    "signInFailedWith": "サインインに失敗: {{error}}"
+    "signInFailedWith": "サインインに失敗: {{error}}",
+    "signInCancelled": "サインインがキャンセルされました",
+    "signInSessionExpired": "サインインセッションの有効期限が切れました。もう一度お試しください。",
+    "googleNotConfigured": "Googleサインインが構成されていません。メール/パスワードをご使用ください。"
   }
 }

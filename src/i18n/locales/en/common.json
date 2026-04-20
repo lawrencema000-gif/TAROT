@@ -146,6 +146,9 @@
     "profileLoadFailed": "Failed to load your profile. Please try refreshing.",
     "sessionExpired": "Sign in session expired. Please try again.",
     "signInFailed": "Sign in failed. Please try again.",
-    "signInFailedWith": "Sign in failed: {{error}}"
+    "signInFailedWith": "Sign in failed: {{error}}",
+    "signInCancelled": "Sign in was cancelled",
+    "signInSessionExpired": "Sign in session expired. Please try again.",
+    "googleNotConfigured": "Google sign-in is not configured. Please use email/password."
   }
 }

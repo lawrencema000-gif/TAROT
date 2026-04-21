@@ -9,6 +9,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
+import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
 import { useAuth } from '../context/AuthContext';
@@ -340,7 +341,7 @@ export function HomePage() {
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-gold">{t('home.level', { n: profile.level })}</span>
               <span className="text-xs text-mystic-500">•</span>
-              <span className="text-xs text-mystic-400">{profile.seekerRank}</span>
+              <span className="text-xs text-mystic-400">{localizeSeekerRank(profile.seekerRank)}</span>
             </div>
           )}
         </div>

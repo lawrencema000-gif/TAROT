@@ -15,6 +15,9 @@ import { Card, Button, Chip, Sheet, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
 import { localizeCardNameSync } from '../../i18n/localizeCard';
+import { localizeSignName } from '../../i18n/localizeNames';
+import { getLocale } from '../../i18n/config';
+import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 
 type LibraryTab = 'saved' | 'guides' | 'ai-readings';
 type SavedFilter = 'all' | 'tarot' | 'horoscope' | 'spreads';
@@ -198,7 +201,8 @@ export function LibrarySection() {
     : savedHighlights.filter(h => h.highlight_type === savedFilter);
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    const localeToBcp47: Record<string, string> = { en: 'en-US', ja: 'ja-JP', ko: 'ko-KR', zh: 'zh-CN' };
+    return new Date(dateStr).toLocaleDateString(localeToBcp47[getLocale()] ?? 'en-US', {
       month: 'short',
       day: 'numeric',
     });
@@ -311,7 +315,7 @@ export function LibrarySection() {
                             </h4>
                             {reading.focus_area && (
                               <span className="px-2 py-0.5 bg-mystic-800 rounded text-xs text-mystic-400">
-                                {reading.focus_area}
+                                {t(`readings.focusAreas.${reading.focus_area.toLowerCase()}`, { defaultValue: reading.focus_area })}
                               </span>
                             )}
                           </div>
@@ -421,8 +425,8 @@ export function LibrarySection() {
                               <Star className="w-5 h-5 text-gold" />
                             </div>
                             <div className="flex-1">
-                              <h4 className="font-medium text-mystic-100 text-sm capitalize">
-                                {content.zodiacSign} - {content.period ?? t('library.periodDaily', { defaultValue: 'Daily' })}
+                              <h4 className="font-medium text-mystic-100 text-sm">
+                                {content.zodiacSign ? localizeSignName(content.zodiacSign as ZodiacSignPC) : ''} - {content.period ?? t('library.periodDaily', { defaultValue: 'Daily' })}
                               </h4>
                               <div className="flex items-center gap-1 text-xs text-mystic-500">
                                 <Calendar className="w-3 h-3" />
@@ -653,11 +657,14 @@ export function LibrarySection() {
                   })()}
                 </h3>
                 <p className="text-xs text-mystic-400">
-                  {new Date(selectedReading.created_at).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {(() => {
+                    const localeToBcp47: Record<string, string> = { en: 'en-US', ja: 'ja-JP', ko: 'ko-KR', zh: 'zh-CN' };
+                    return new Date(selectedReading.created_at).toLocaleDateString(localeToBcp47[getLocale()] ?? 'en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    });
+                  })()}
                 </p>
               </div>
             </div>

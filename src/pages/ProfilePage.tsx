@@ -17,6 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
+import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useAuth } from '../context/AuthContext';
 import { useGeocode } from '../hooks/useAstrology';
@@ -224,7 +225,7 @@ export function ProfilePage() {
               <Star className="w-4 h-4 text-cosmic-blue" />
               <span className="text-2xl font-display text-mystic-100">{t('profile.level', { n: profile?.level || 1 })}</span>
             </div>
-            <p className="text-xs text-mystic-500">{profile?.seekerRank || t('achievements.novicesSeeker')}</p>
+            <p className="text-xs text-mystic-500">{localizeSeekerRank(profile?.seekerRank)}</p>
           </div>
         </div>
 

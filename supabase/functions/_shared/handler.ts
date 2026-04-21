@@ -272,9 +272,16 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
       const durationMs = Math.round(performance.now() - started);
       log.info("request.end", { durationMs, status: 200 });
 
-      // If the handler returned a full Response, pass through (after tagging
-      // the correlation ID header).
+      // If the handler returned a full Response, pass through after tagging
+      // the correlation ID + CORS headers. Without re-applying CORS here,
+      // functions that hand back a pre-built Response (astrology-daily,
+      // astrology-weekly, astrology-get-chart etc.) end up with responses
+      // missing Access-Control-Allow-Origin, and the browser blocks the
+      // payload even though the preflight succeeded.
       if (result instanceof Response) {
+        for (const [k, v] of Object.entries(cors)) {
+          if (!result.headers.has(k)) result.headers.set(k, v);
+        }
         result.headers.set("X-Correlation-Id", correlationId);
         return result;
       }

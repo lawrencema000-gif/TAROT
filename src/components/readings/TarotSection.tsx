@@ -41,6 +41,8 @@ import { spreadTypeToFeature, FREE_TIER, type PremiumFeature } from '../../servi
 import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
 import { appStorage } from '../../lib/appStorage';
+import { useFeatureFlag } from '../../context/FeatureFlagContext';
+import { TarotFocusView } from './tarot/TarotFocusView';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
@@ -103,6 +105,10 @@ type SpreadConfig = typeof spreadConfigs[number];
 
 export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const { t } = useT('app');
+  // Phase-5 rollout: when ON, render the extracted view components
+  // from ./tarot/. Starts OFF at 0% — flip rollout_percent in the DB to
+  // 10/50/100 after smoke-testing in prod.
+  const useSplitViews = useFeatureFlag('tarot-section-split');
   const spreadName = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.name`);
   const spreadDesc = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.description`);
   const focusLabel = (f: FocusArea) => t(focusAreaI18nKey[f]);
@@ -519,6 +525,16 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   if (view === 'focus') {
+    if (useSplitViews) {
+      return (
+        <TarotFocusView
+          selectedFocus={selectedFocus}
+          onBack={() => setView('home')}
+          onSelect={handleFocusSelect}
+          onContinue={handleDraw}
+        />
+      );
+    }
     return (
       <div className="space-y-6">
         <button

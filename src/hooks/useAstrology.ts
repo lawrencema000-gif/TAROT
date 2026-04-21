@@ -12,7 +12,7 @@ const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ── In-memory cache (survives tab switches, clears on page reload) ──
-const cache: Record<string, { data: unknown; ts: number }> = {};
+let cache: Record<string, { data: unknown; ts: number }> = {};
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 function getCached<T>(key: string): T | null {
@@ -22,6 +22,24 @@ function getCached<T>(key: string): T | null {
 }
 function setCache(key: string, data: unknown) {
   cache[key] = { data, ts: Date.now() };
+}
+
+/**
+ * Locale changes must invalidate the in-memory cache so the next render
+ * refetches in the new language. Without this the user sees the old
+ * locale's horoscope content until the 5-min TTL elapses — and the
+ * in-component useEffect early-returns on a cache hit, so nothing triggers
+ * a refetch on its own.
+ *
+ * Bound once at module load. Clears synchronously before any consumer
+ * re-reads on the next render.
+ */
+if (typeof window !== 'undefined') {
+  import('../i18n/config').then((mod) => {
+    mod.default.on('languageChanged', () => {
+      cache = {};
+    });
+  }).catch(() => { /* no-op in test environments */ });
 }
 
 async function getAuthHeaders(): Promise<Record<string, string>> {

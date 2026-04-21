@@ -45,7 +45,8 @@ a4c1823 fix(i18n): translate TarotSection position labels + paywall + toasts + r
 | After batches 1–13 (cbe82b2) | 11 | 13 | 6 | 10 |
 | After batch 14 (c43b149) | 10 | 12 | 5 | 10 |
 | After batch 15 (f1d7a47) | 4 | 6 | 3 | 5 |
-| After batch 16 (85fac4e) expected | 3 | 3 | 3 | 3 |
+| After batch 16 (85fac4e) measured | 3 | 5 | 3 | 4 |
+| After batch 17 (cb1db9c) expected | 3 | 3 | 3 | 3 |
 
 ## The original screenshot bug — FIXED (batch 1, commit a4c1823)
 

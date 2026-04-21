@@ -44,6 +44,7 @@ import { appStorage } from '../../lib/appStorage';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
+import { TarotSelectView } from './tarot/TarotSelectView';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
@@ -648,6 +649,20 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   if (view === 'select') {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
     const needsMore = spread ? spread.count - selectedIndices.length : 0;
+
+    if (useSplitViews) {
+      return (
+        <TarotSelectView
+          deckCards={deckCards}
+          selectedIndices={selectedIndices}
+          needsMore={needsMore}
+          cardBackUrl={profile?.card_back_url}
+          onBack={() => setView('shuffle')}
+          onCardSelect={handleCardSelect}
+          onReveal={handleRevealSelected}
+        />
+      );
+    }
 
     return (
       <div className="flex flex-col h-full space-y-4">

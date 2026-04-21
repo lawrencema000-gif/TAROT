@@ -5,7 +5,7 @@
   },
   "welcome": {
     "heading": "毎日のリチュアル、はじまる。",
-    "subheading": "タロット、占星術、性格診断 — すべてを美しく、ひとつに。",
+    "subheading": "タロット、占星術、性格診断——ぜんぶを、ひとつの美しい場所に。",
     "cta": "はじめる",
     "alreadyHaveAccount": "すでにアカウントをお持ちの方"
   },
@@ -40,38 +40,38 @@
   },
   "oauth": {
     "welcome": "ようこそ、{{name}} さん!",
-    "welcomeSub": "いくつかのステップであなた専用の体験をつくりましょう",
+    "welcomeSub": "いくつかのステップで、あなただけの体験をつくっていきます",
     "goals": {
       "heading": "どんなサポートが必要ですか?",
       "hint": "当てはまるものをすべて選んでください"
     },
     "basics": {
-      "heading": "あなたのコスミック基本情報",
-      "hint": "星座を決定します",
+      "heading": "基本のプロフィール",
+      "hint": "星座を決めるのに使います",
       "birthDate": "生年月日",
       "birthTime": "出生時刻",
       "optional": "(任意)",
       "birthTimeHint": "より正確な出生図のために",
       "birthPlace": "出生地",
-      "birthPlaceHint": "後ほど出生図の計算に使います",
+      "birthPlaceHint": "のちほど出生図の計算に使います",
       "searchPlaceholder": "都市や町を検索...",
       "locationVerified": "位置情報を確認しました",
-      "invalidBirthDate": "生年月日が無効です"
+      "invalidBirthDate": "生年月日が正しくありません"
     },
     "tone": {
-      "heading": "あなたのコスミックトーン",
-      "hint": "どのように話しかけましょうか?",
+      "heading": "言葉のトーン",
+      "hint": "どんな語り口がお好みですか?",
       "gentle": {
-        "label": "やさしく・寄り添う",
-        "desc": "温かく、支えになるガイダンス"
+        "label": "やさしく・寄り添って",
+        "desc": "温かく、そっと支えるようなガイダンス"
       },
       "direct": {
-        "label": "率直・はっきり",
-        "desc": "明快でストレートなインサイト"
+        "label": "率直に・まっすぐ",
+        "desc": "明快で、迷いのない洞察"
       },
       "playful": {
-        "label": "遊び心・神秘的",
-        "desc": "幻想的で魅力的な知恵"
+        "label": "遊び心をもって・神秘的に",
+        "desc": "ふしぎで、心を惹きつける知恵"
       }
     },
     "notifications": {

@@ -4,7 +4,7 @@
     "subtitle": "설정에서 언제든지 변경할 수 있어요."
   },
   "welcome": {
-    "heading": "당신의 데일리 의식이 시작됩니다.",
+    "heading": "매일의 의식이 시작됩니다.",
     "subheading": "타로, 점성술, 성격 통찰이 하나로 아름답게 어우러집니다.",
     "cta": "시작하기",
     "alreadyHaveAccount": "이미 계정이 있어요"
@@ -25,9 +25,9 @@
   "toast": {
     "invalidEmail": "유효한 이메일을 입력하세요.",
     "invalidPassword": "비밀번호가 올바르지 않습니다.",
-    "userExists": "대신 로그인해 보세요.",
+    "userExists": "이미 가입된 이메일이에요. 로그인해 보세요.",
     "profileSaveFailed": "프로필 저장에 실패했습니다. 다시 시도해 주세요.",
-    "accountCreated": "계정이 생성되었습니다! 맞춤 설정을 시작해 볼까요."
+    "accountCreated": "계정이 만들어졌어요! 이제 나만의 설정으로 꾸며볼까요."
   },
   "signIn": {
     "heading": "다시 오신 것을 환영합니다",
@@ -40,37 +40,37 @@
   },
   "oauth": {
     "welcome": "환영해요, {{name}}님!",
-    "welcomeSub": "몇 가지 단계로 맞춤 경험을 만들어 볼게요",
+    "welcomeSub": "몇 단계만 거치면, 당신만을 위한 경험이 준비돼요",
     "goals": {
       "heading": "어떤 도움을 받고 싶으세요?",
       "hint": "해당되는 모든 항목을 선택하세요"
     },
     "basics": {
-      "heading": "당신의 우주 기본 정보",
-      "hint": "별자리가 결정돼요",
+      "heading": "기본 프로필",
+      "hint": "별자리를 정하는 데 사용돼요",
       "birthDate": "생년월일",
       "birthTime": "출생 시각",
       "optional": "(선택)",
       "birthTimeHint": "더 정확한 차트를 위해",
       "birthPlace": "출생지",
-      "birthPlaceHint": "나중에 네이털 차트를 계산하는 데 사용돼요",
+      "birthPlaceHint": "나중에 네이탈 차트를 계산할 때 써요",
       "searchPlaceholder": "도시 또는 마을 검색...",
       "locationVerified": "위치가 확인되었어요",
-      "invalidBirthDate": "생년월일이 유효하지 않아요"
+      "invalidBirthDate": "생년월일이 올바르지 않아요"
     },
     "tone": {
-      "heading": "당신의 우주 톤",
-      "hint": "어떻게 말해드릴까요?",
+      "heading": "어울리는 말투",
+      "hint": "어떤 어조가 좋을까요?",
       "gentle": {
-        "label": "부드럽고 따뜻하게",
-        "desc": "포근하고 지지하는 안내"
+        "label": "부드럽게 · 다정하게",
+        "desc": "포근하고, 곁에서 받쳐주는 안내"
       },
       "direct": {
-        "label": "솔직하고 직접적으로",
-        "desc": "또렷하고 담백한 인사이트"
+        "label": "솔직하게 · 또렷하게",
+        "desc": "군더더기 없는 선명한 통찰"
       },
       "playful": {
-        "label": "재치 있고 신비롭게",
+        "label": "장난기 있게 · 신비롭게",
         "desc": "환상적이고 매혹적인 지혜"
       }
     },

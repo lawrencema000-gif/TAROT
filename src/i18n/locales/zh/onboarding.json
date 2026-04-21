@@ -4,8 +4,8 @@
     "subtitle": "稍后可在设置中更改。"
   },
   "welcome": {
-    "heading": "你的每日仪式从这里开始。",
-    "subheading": "塔罗、占星和人格洞察,精致融合为一。",
+    "heading": "你的每日仪式,从这里开始。",
+    "subheading": "塔罗、占星、性格洞察——合成一个温柔的空间。",
     "cta": "开始使用",
     "alreadyHaveAccount": "我已有账号"
   },
@@ -25,9 +25,9 @@
   "toast": {
     "invalidEmail": "请输入有效的邮箱地址。",
     "invalidPassword": "密码无效。",
-    "userExists": "请尝试直接登录。",
+    "userExists": "这个邮箱已经注册过了,直接登录就好。",
     "profileSaveFailed": "保存资料失败,请稍后重试。",
-    "accountCreated": "账号已创建!让我们开始个性化吧。"
+    "accountCreated": "账号建好了!来把这里打造成你的专属空间吧。"
   },
   "signIn": {
     "heading": "欢迎回来",
@@ -40,38 +40,38 @@
   },
   "oauth": {
     "welcome": "欢迎,{{name}}!",
-    "welcomeSub": "用几个步骤定制你的专属体验",
+    "welcomeSub": "只要几个步骤,就能做出专属你的体验",
     "goals": {
       "heading": "你想要什么样的帮助?",
       "hint": "可多选"
     },
     "basics": {
-      "heading": "你的宇宙基础信息",
-      "hint": "决定你的星座",
+      "heading": "基本资料",
+      "hint": "用来定下你的星座",
       "birthDate": "出生日期",
       "birthTime": "出生时间",
       "optional": "(可选)",
       "birthTimeHint": "让星盘更精准",
       "birthPlace": "出生地",
-      "birthPlaceHint": "用于之后计算本命星盘",
+      "birthPlaceHint": "之后会用来计算你的本命星盘",
       "searchPlaceholder": "搜索城市或城镇...",
       "locationVerified": "位置已确认",
-      "invalidBirthDate": "出生日期无效"
+      "invalidBirthDate": "出生日期不正确"
     },
     "tone": {
-      "heading": "你的宇宙语气",
-      "hint": "我们该用怎样的口吻与你交流?",
+      "heading": "你喜欢的语气",
+      "hint": "我们该用怎样的口吻跟你说话?",
       "gentle": {
-        "label": "温柔 & 支持",
-        "desc": "温暖且给予滋养的指引"
+        "label": "温柔、陪伴",
+        "desc": "温暖、轻轻撑着你的指引"
       },
       "direct": {
-        "label": "直接 & 坦诚",
-        "desc": "清晰明了的洞察"
+        "label": "直接、坦白",
+        "desc": "清晰、不拐弯的洞察"
       },
       "playful": {
-        "label": "俏皮 & 神秘",
-        "desc": "奇幻又迷人的智慧"
+        "label": "俏皮、神秘",
+        "desc": "带点奇幻,又让人想再看一眼的智慧"
       }
     },
     "notifications": {

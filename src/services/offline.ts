@@ -142,6 +142,30 @@ export async function getCachedDailyRitual(userId: string, date: string): Promis
   return null;
 }
 
+// Keys that identify per-user state and must be cleared on sign-out
+// to prevent User A's data leaking into User B's session. Device-level
+// preferences (onboarding, locale, anon_id, attribution) are preserved.
+const PER_USER_EXACT_KEYS = [
+  'arcana_daily_readings',
+  'arcana_daily_readings_date',
+  'arcana_rewarded_ad_count',
+  'arcana_rewarded_ad_date',
+  'arcana_last_ad_time',
+  'arcana_session_count',
+  'arcana_lifetime_completions',
+  'arcana_daily_interstitial_count',
+  'arcana_daily_interstitial_date',
+  'arcana_guest_saved',
+  'arcana_guest_history',
+  'arcana_guest_favorites',
+];
+
+const PER_USER_PREFIXES = [
+  'arcana_daily_horoscope_',
+  'arcana_daily_ritual_',
+  'arcana_horoscope_xp_',
+];
+
 export async function clearUserCache(): Promise<void> {
   for (const key of Object.values(CACHE_KEYS)) {
     if (key.startsWith('arcana_')) {
@@ -149,9 +173,13 @@ export async function clearUserCache(): Promise<void> {
     }
   }
 
+  for (const key of PER_USER_EXACT_KEYS) {
+    await appStorage.remove(key);
+  }
+
   const allKeys = await appStorage.keys();
   for (const key of allKeys) {
-    if (key.startsWith('arcana_daily_horoscope_')) {
+    if (PER_USER_PREFIXES.some((prefix) => key.startsWith(prefix))) {
       await appStorage.remove(key);
     }
   }

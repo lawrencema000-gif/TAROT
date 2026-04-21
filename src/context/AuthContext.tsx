@@ -1013,6 +1013,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       adsService.setUserId(null);
     } catch { /* ignore */ }
 
+    // 6. Purge per-user caches and counters so next sign-in starts clean.
+    //    Device-level preferences (onboarding, locale, anon_id, attribution)
+    //    are preserved by clearUserCache's allowlist-by-omission.
+    try {
+      const { clearUserCache } = await import('../services/offline');
+      await clearUserCache();
+    } catch (e) {
+      logError('auth.signOut.clearCache', 'Cache clear failed', { error: e });
+    }
+
     logInfo('auth.signOut.complete', 'Sign out complete');
     endSpan(span, 'success');
   };

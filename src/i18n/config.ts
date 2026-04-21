@@ -116,10 +116,13 @@ i18n
       useSuspense: false, // safer default — components decide per-hook
     },
 
-    // Enable the missingKey event so we can log/alert when a key is
-    // referenced in code but not present in the active bundle.
-    saveMissing: true,
-    missingKeyHandler: undefined, // handled via i18n.on('missingKey') below
+    // Enable the missingKey event in DEV only. In production the HttpBackend
+    // would POST to loadPath and log 404s in the console, spooking users.
+    // The missingKey listener below still fires in all modes.
+    saveMissing: import.meta.env.DEV,
+    saveMissingTo: 'current',
+    updateMissing: false,
+    missingKeyHandler: undefined,
   });
 
 /** Change language at runtime + persist to localStorage. */

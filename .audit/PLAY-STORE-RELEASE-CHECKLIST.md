@@ -13,25 +13,33 @@ Owner: lawrencema000-gif
 - [x] i18next `saveMissing` gated to DEV (silences 404 spam in prod)
 - [x] i18n coverage at 3 acceptable residuals per locale (see I18N-PROGRESS.md)
 
-## Gate 1 — Config (USER ACTION REQUIRED)
+## Gate 1 — Config
 
-These cannot be completed autonomously. Without them the signed AAB will
-likely ship with Google Sign-In broken or no crash telemetry.
+- [x] **Supabase OAuth redirect URI** — `com.arcana.app://auth` already in
+  `supabase/config.toml` and confirmed live via `supabase config push`
+  on 2026-04-20 (output: "Remote Auth config is up to date").
 
-- [ ] **google-services.json** placed at `android/app/google-services.json`
-  - Get from: Firebase console → Project settings → Android app `com.arcana.app` → Download
-  - Without this, GoogleAuth.initialize() falls back to web OAuth via in-app browser
 - [ ] **Play Store App Signing SHA-1** registered in Google Cloud Console
-  - Get from: Play Console → Setup → App signing → SHA-1 certificate fingerprint
-  - Register at: Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 client (Android) for `com.arcana.app`
-  - Without this, native sign-in returns `ApiException: 10 DEVELOPER_ERROR`
-- [ ] **Supabase OAuth redirect URI** includes `com.arcana.app://auth`
-  - Check at: Supabase dashboard → Authentication → URL Configuration → Redirect URLs
-- [ ] **VITE_SENTRY_DSN** set in Netlify env for production
-  - Create project at: sentry.io (React + Vite template)
-  - Set at: Netlify → Site settings → Environment variables
-  - Also set `VITE_BUILD_SHA` (already wired via deploy workflow)
+  (USER ACTION REQUIRED — CLI can't access your Play Console account)
+  - Get from: Play Console → Setup → App signing → copy SHA-1 fingerprint
+  - Register at: Google Cloud Console → APIs & Services → Credentials →
+    OAuth 2.0 Android client for `com.arcana.app`, paste the SHA-1
+  - Without this, native Google Sign-In returns `ApiException: 10 DEVELOPER_ERROR`
+    and the plugin falls back to the in-app browser flow
+
+- [ ] **VITE_SENTRY_DSN** set in Netlify (USER ACTION + optional CLI assist)
+  - You must create the Sentry project (requires login):
+    sentry.io → Create Project → React + Vite → copy DSN
+  - Once you have the DSN, I can set it in Netlify for you via:
+    `netlify env:set VITE_SENTRY_DSN <dsn>` + trigger redeploy
   - Without this, zero production crash reports
+
+- [ ] **google-services.json** — **NOT required for current build**
+  - Plugin `@codetrix-studio/capacitor-google-auth` uses the Web OAuth Client ID
+    pattern (already set in `capacitor.config.ts`), NOT Firebase.
+  - `android/app/build.gradle` already conditionally skips the google-services
+    plugin when the file is absent.
+  - Only add this if you later enable Firebase Cloud Messaging (push notifications).
 
 ## Gate 2 — Pre-build verification (web)
 

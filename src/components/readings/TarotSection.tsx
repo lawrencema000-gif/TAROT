@@ -45,6 +45,7 @@ import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
 import { TarotSelectView } from './tarot/TarotSelectView';
+import { TarotRevealView } from './tarot/TarotRevealView';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
@@ -743,6 +744,38 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
   if (view === 'reveal') {
     const spread = spreadConfigs.find(s => s.id === currentSpread);
+
+    if (useSplitViews) {
+      return (
+        <TarotRevealView
+          drawnCards={drawnCards}
+          currentSpread={currentSpread}
+          spreadTitle={spread ? spreadName(spread) : ''}
+          selectedFocus={selectedFocus}
+          allRevealed={allRevealed}
+          isSaved={isSaved}
+          isPremium={!!profile?.isPremium}
+          cardBackUrl={profile?.card_back_url}
+          showAIInterpretation={showAIInterpretation}
+          aiInterpretation={aiInterpretation}
+          loadingAI={loadingAI}
+          interpretationView={interpretationView}
+          focusReadingLabel={selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}
+          getCardImage={getCardImage}
+          getPositionLabel={getPositionLabel}
+          getFocusInterpretation={getFocusInterpretation}
+          onBack={() => setView('home')}
+          onSave={handleSaveReading}
+          onRevealCard={handleRevealCard}
+          onRevealAll={revealAll}
+          onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
+          onGetAIInterpretation={handleGetAIInterpretation}
+          onHideAIInterpretation={() => setShowAIInterpretation(false)}
+          onSetInterpretationView={setInterpretationView}
+          onNewReading={() => setView('home')}
+        />
+      );
+    }
 
     return (
       <div className="space-y-6">

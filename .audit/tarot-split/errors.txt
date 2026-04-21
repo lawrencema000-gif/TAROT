@@ -1,0 +1,2 @@
+console.error: Access to fetch at 'https://ulzlthhkqjuohzjangcq.supabase.co/functions/v1/ad-config' from origin 'https://tarotlife.app' has been blocked by CORS policy: Request header field x-correlation-id is not a
+console.error: Failed to load resource: net::ERR_FAILED

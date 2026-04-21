@@ -181,7 +181,32 @@ When an alert fires, in order:
    table has `updated_at` — `select key, enabled, rollout_percent, updated_at
    from feature_flags order by updated_at desc`.
 
-Escalation only needed if #1–5 don't resolve within 30 min.
+6. **If the symptom is "every edge function fails from the browser"** — this
+   is almost always CORS, not an outage. Learned the hard way in
+   `fe41844` + `11aa6d0`:
+
+   - **Check the preflight**: `curl -sX OPTIONS .../functions/v1/astrology-daily -H "Origin: https://tarotlife.app" -H "Access-Control-Request-Headers: x-correlation-id,authorization" -i`.
+     The response's `access-control-allow-headers` list MUST include every
+     header the client sends, including `X-Correlation-Id`. This lives in
+     [`supabase/functions/_shared/cors.ts`](../supabase/functions/_shared/cors.ts).
+   - **Check the actual response**: `curl -sX POST .../functions/v1/astrology-daily -H "Origin: https://tarotlife.app" -H "Authorization: Bearer <jwt>" -H "apikey: <anon>" -d '{}' -i`.
+     MUST have `Access-Control-Allow-Origin: https://tarotlife.app` on the
+     **response**, not just on the preflight. If a handler returns
+     `new Response(...)` directly (bypassing the `{data, correlationId}`
+     envelope), [`_shared/handler.ts`](../supabase/functions/_shared/handler.ts)
+     must copy the cors map onto that response — see the `if (result instanceof Response)` branch.
+   - **Force-redeploy after any `_shared/*` change**: the Deploy workflow
+     only redeploys edge functions whose own files changed; shared-helper
+     edits need manual `supabase functions deploy <name>` for every
+     function (they all import `_shared`). Script it if this happens again:
+     ```bash
+     for fn in $(ls supabase/functions/ | grep -v '^_'); do
+       [ -d "supabase/functions/$fn" ] || continue
+       supabase functions deploy "$fn" --project-ref ulzlthhkqjuohzjangcq --no-verify-jwt
+     done
+     ```
+
+Escalation only needed if #1–6 don't resolve within 30 min.
 
 ---
 

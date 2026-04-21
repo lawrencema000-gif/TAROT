@@ -46,7 +46,47 @@ a4c1823 fix(i18n): translate TarotSection position labels + paywall + toasts + r
 | After batch 14 (c43b149) | 10 | 12 | 5 | 10 |
 | After batch 15 (f1d7a47) | 4 | 6 | 3 | 5 |
 | After batch 16 (85fac4e) measured | 3 | 5 | 3 | 4 |
-| After batch 17 (cb1db9c) expected | 3 | 3 | 3 | 3 |
+| After batch 17 (cb1db9c) measured | 3 | 3 | 3 | 3 |
+| After native-polish pass 5 (52112cf) re-measured | 3 | 3 | 3 | 3 |
+
+## Native-polish passes (later session)
+
+After the coverage passes above landed a hard "3 English runs per locale"
+floor (all acceptable: user name + MBTI brand codes), the user flagged
+that while _coverage_ was complete, the _quality_ still read like Google
+Translate in places — especially the horoscope daily-insight content.
+
+Five additional polish passes rewrote ~720 user-facing strings for
+natural tone without changing semantics or placeholder tokens:
+
+| Pass | Commit | Area | Strings |
+|---|---|---|---|
+| 1 | `245f6d7` | home + horoscope chrome + dailyInsights templates | 251 |
+| 2 | `7b9ed57` | context vocab (focusAreas / loveActions / element descriptors) | 69 |
+| 3 | `aba0524` | planets + dayThemes + moodDescriptors + actionSteps | ~150 |
+| 4 | `e31f43b` | library guides content (8 guides × ~4 sections × 3 locales) | ~200 |
+| 5 | `52112cf` | onboarding first-impression chrome | 49 |
+
+Common patterns fixed:
+
+- **Dropped pronouns** (JA `あなたの`, KO `당신의`, ZH `你的`) where English's
+  explicit possessive didn't translate — repetition was making the voice
+  feel translated rather than written.
+- **Mixed noun/verb forms in interpolated arrays** normalized — templates
+  like "今日の恋愛は{loveAction}が吉" grammatically broke on verb-form
+  selections. Now uniform.
+- **Em-dashes** (——) replaced with sentence breaks or native separators.
+- **"Cosmic X" head-noun compounds** (JA `コスミックトーン`, KO `우주 톤`,
+  ZH `宇宙语气`) rephrased to natural alternatives.
+- **Repetitive "supports"** — JA `支えています` / KO `지지합니다` / ZH `支持着`
+  — varied across sentences to match rhythm.
+- **Real translation bug caught**: ZH `home.dayStreakLabel` was `天连胜`
+  (lit. "day-winning-streak", sports sense) → `天连续`.
+
+Live audit after all 5 polish passes landed: **3 / 3 / 3** — unchanged
+from the coverage floor, confirming the polish didn't regress anything
+and the only remaining English items are still the 3 acceptable ones
+(user display name, MBTI acronym, 16 four-letter type codes).
 
 ## The original screenshot bug — FIXED (batch 1, commit a4c1823)
 

@@ -43,6 +43,7 @@ import { ratePromptService } from '../../services/ratePrompt';
 import { appStorage } from '../../lib/appStorage';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { TarotFocusView } from './tarot/TarotFocusView';
+import { TarotShuffleView } from './tarot/TarotShuffleView';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
@@ -576,6 +577,16 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   }
 
   if (view === 'shuffle') {
+    if (useSplitViews) {
+      return (
+        <TarotShuffleView
+          isShuffling={isShuffling}
+          cardBackUrl={profile?.card_back_url}
+          onBack={() => setView('focus')}
+          onShuffle={handleShuffleComplete}
+        />
+      );
+    }
     return (
       <div className="space-y-6">
         <button

@@ -29,18 +29,11 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="com.arcana.app" />
-            </intent-filter>
-
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="arcana.app"
+                <data android:scheme="https" android:host="tarotlife.app"
                     android:pathPrefix="/reading" />
-                <data android:scheme="https" android:host="arcana.app"
+                <data android:scheme="https" android:host="tarotlife.app"
                     android:pathPrefix="/card" />
-                <data android:scheme="https" android:host="arcana.app"
+                <data android:scheme="https" android:host="tarotlife.app"
                     android:pathPrefix="/horoscope" />
             </intent-filter>
 

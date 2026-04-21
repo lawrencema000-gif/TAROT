@@ -288,12 +288,16 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       <div className="relative h-full flex flex-col overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}
+          className="absolute right-4 z-10 p-2.5 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
         >
           <X className="w-5 h-5 text-mystic-400" />
         </button>
 
-        <div className="flex-1 flex flex-col items-center px-6 pt-12 pb-6">
+        <div
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1.5rem)' }}
+          className="flex-1 flex flex-col items-center px-6 pt-12"
+        >
           <div className="relative mb-6">
             <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center shadow-2xl shadow-gold/20">
               <Crown className="w-12 h-12 text-mystic-950" />

@@ -1193,7 +1193,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[70vh] overflow-y-auto pb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[70dvh] overflow-y-auto pb-4">
             {filteredDeck.map(card => (
               <button
                 key={card.id}

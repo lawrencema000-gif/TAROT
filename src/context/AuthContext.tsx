@@ -200,6 +200,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearOAuthTimeout]);
 
   const fetchProfileInFlight = useRef<string | null>(null);
+  // Tracks the currently-signed-in user id so fetchProfile() can skip
+  // state writes if the user signed out (or switched accounts) while the
+  // profile query was in flight. Set in the onAuthStateChange listener.
+  const activeUserIdRef = useRef<string | null>(null);
 
   const fetchProfile = useCallback(async (userId: string) => {
     // Deduplicate: skip if already fetching for this user
@@ -212,12 +216,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('id', userId)
       .maybeSingle();
 
+    // Stale-write guard: if the user logged out, switched accounts, or the
+    // provider unmounted while the query was in flight, do not write state.
+    // Without this, a fetched profile for User A can land after SIGNED_OUT
+    // and leave `profile` populated while `user` is null — the inconsistent
+    // render crashes consumers that read `profile.X` under a `user &&` guard.
+    if (!mountedRef.current || activeUserIdRef.current !== userId) {
+      fetchProfileInFlight.current = null;
+      return;
+    }
+
     if (error) {
       logError('auth.fetchProfile.failed', 'Failed to fetch profile', {
         errorCode: error.code,
         errorMessage: error.message,
       });
       toast(i18n.t('auth.profileLoadFailed', { ns: 'common' }), 'error');
+      fetchProfileInFlight.current = null;
       return;
     }
 
@@ -254,6 +269,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .update({ streak: newStreak, last_ritual_date: today })
           .eq('id', userId);
+
+        // Re-check stale-write guard: streak update is a second await hop,
+        // so the user may have signed out between the read and the write.
+        if (!mountedRef.current || activeUserIdRef.current !== userId) {
+          fetchProfileInFlight.current = null;
+          return;
+        }
 
         setProfile(prev => prev ? { ...prev, streak: newStreak, lastRitualDate: today } : prev);
 
@@ -706,6 +728,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      // Update the stale-write guard BEFORE setting state, so any
+      // setProfile() racing inside an in-flight fetchProfile() sees the
+      // new activeUserIdRef and bails out cleanly.
+      activeUserIdRef.current = session?.user?.id ?? null;
+
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -947,6 +974,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     const span = startSpan('auth.signOut');
     logInfo('auth.signOut.start', 'Signing out');
+
+    // 0. Flip the stale-write guard IMMEDIATELY so any in-flight
+    //    fetchProfile() call for this user bails before touching state.
+    activeUserIdRef.current = null;
 
     try {
       // 1. Clear persisted Supabase session FIRST so even if native

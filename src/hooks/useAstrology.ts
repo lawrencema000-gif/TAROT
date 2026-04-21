@@ -40,6 +40,14 @@ if (typeof window !== 'undefined') {
       cache = {};
     });
   }).catch(() => { /* no-op in test environments */ });
+
+  // Also flush on auth transitions so User A's horoscope / chart doesn't
+  // leak to User B if they sign in on the same device. SIGNED_OUT +
+  // SIGNED_IN + USER_UPDATED all fire through this handler — safe to
+  // over-invalidate; next read refetches with the right token.
+  supabase.auth.onAuthStateChange(() => {
+    cache = {};
+  });
 }
 
 async function getAuthHeaders(): Promise<Record<string, string>> {

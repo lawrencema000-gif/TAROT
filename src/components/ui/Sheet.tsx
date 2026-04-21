@@ -46,7 +46,7 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
       />
       <div
         ref={sheetRef}
-        className={`absolute bottom-0 left-0 right-0 rounded-t-3xl animate-slide-up max-h-[90vh] overflow-hidden flex flex-col ${sheetStyles}`}
+        className={`absolute bottom-0 left-0 right-0 rounded-t-3xl animate-slide-up max-h-[90dvh] overflow-hidden flex flex-col ${sheetStyles}`}
       >
         <div className="flex items-center justify-center pt-3 pb-2">
           <div className={`w-12 h-1 rounded-full ${variant === 'glow' ? 'bg-gold/40' : 'bg-mystic-600'}`} />

@@ -5,8 +5,7 @@
       "expected": "ja"
     },
     "home": [
-      "Lawrence Ma.",
-      "Novice Seeker"
+      "Lawrence Ma."
     ],
     "readings": [],
     "horoscope": [],
@@ -23,11 +22,11 @@
       "INTJ\nINTP\nENTJ\nENTP\nINFJ\nINFP\nENFJ"
     ],
     "readings/library": [
-      "Self\nThe Empress",
-      "Self\nFour of Swords",
+      "The Empress",
+      "Four of Swords",
       "Seven of Cups",
-      "Three of Cups\nJan",
-      "Gemini - Today\nJan"
+      "Three of Cups",
+      "gemini - today"
     ]
   },
   "ko": {
@@ -36,8 +35,7 @@
       "expected": "ko"
     },
     "home": [
-      "Lawrence Ma.",
-      "Novice Seeker"
+      "Lawrence Ma."
     ],
     "readings": [],
     "horoscope": [],
@@ -56,11 +54,11 @@
       "INTJ\nINTP\nENTJ\nENTP\nINFJ\nINFP\nENFJ"
     ],
     "readings/library": [
-      "Self\nThe Empress",
-      "Self\nFour of Swords",
+      "The Empress",
+      "Four of Swords",
       "Seven of Cups",
-      "Three of Cups\nJan",
-      "Gemini - Today\nJan"
+      "Three of Cups",
+      "gemini - today"
     ]
   },
   "zh": {
@@ -69,8 +67,7 @@
       "expected": "zh"
     },
     "home": [
-      "Lawrence Ma.",
-      "Novice Seeker"
+      "Lawrence Ma."
     ],
     "readings": [],
     "horoscope": [],

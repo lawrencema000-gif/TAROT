@@ -1648,7 +1648,9 @@
       "tarot": "Tarot",
       "horoscope": "Horoscope",
       "spreads": "Spreads"
-    }
+    },
+    "periodWeekly": "Weekly",
+    "periodMonthly": "Monthly"
   },
   "celebration": {
     "streak": {

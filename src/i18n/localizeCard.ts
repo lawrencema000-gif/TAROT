@@ -62,12 +62,22 @@ export function localizeCards(cards: TarotCard[], locale: SupportedLocale = getL
 }
 
 let deckIndexCache: Map<string, TarotCard> | null = null;
+let deckIndexPromise: Promise<Map<string, TarotCard>> | null = null;
 async function getDeckIndex(): Promise<Map<string, TarotCard>> {
-  if (!deckIndexCache) {
-    const { fullDeck } = await import('../data/tarotDeck');
-    deckIndexCache = new Map(fullDeck.map((c) => [c.name, c]));
+  if (deckIndexCache) return deckIndexCache;
+  if (!deckIndexPromise) {
+    deckIndexPromise = import('../data/tarotDeck').then(({ fullDeck }) => {
+      deckIndexCache = new Map(fullDeck.map((c) => [c.name, c]));
+      return deckIndexCache;
+    });
   }
-  return deckIndexCache;
+  return deckIndexPromise;
+}
+
+/** Prefetch the deck index so subsequent localizeCardNameSync calls hit
+ *  the cache on first render. Safe to call from a useEffect. */
+export function prefetchCardNameIndex(): void {
+  void getDeckIndex();
 }
 
 /**

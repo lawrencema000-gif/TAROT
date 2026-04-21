@@ -1648,7 +1648,9 @@
       "tarot": "塔罗",
       "horoscope": "运势",
       "spreads": "牌阵"
-    }
+    },
+    "periodWeekly": "每周",
+    "periodMonthly": "每月"
   },
   "celebration": {
     "streak": {

@@ -14,7 +14,7 @@ import {
 import { Card, Button, Chip, Sheet, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
-import { localizeCardNameSync } from '../../i18n/localizeCard';
+import { localizeCardNameSync, prefetchCardNameIndex } from '../../i18n/localizeCard';
 import { localizeSignName } from '../../i18n/localizeNames';
 import { getLocale } from '../../i18n/config';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
@@ -69,6 +69,13 @@ export function LibrarySection() {
   const { t } = useT('app');
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<LibraryTab>('saved');
+
+  // Warm the tarot deck lookup cache so card name localization hits on
+  // first paint of saved reading previews.
+  useEffect(() => {
+    prefetchCardNameIndex();
+  }, []);
+
   const [savedFilter, setSavedFilter] = useState<SavedFilter>('all');
   const [savedHighlights, setSavedHighlights] = useState<SavedItem[]>([]);
   const [tarotReadings, setTarotReadings] = useState<TarotReading[]>([]);
@@ -426,7 +433,22 @@ export function LibrarySection() {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-medium text-mystic-100 text-sm">
-                                {content.zodiacSign ? localizeSignName(content.zodiacSign as ZodiacSignPC) : ''} - {content.period ?? t('library.periodDaily', { defaultValue: 'Daily' })}
+                                {(() => {
+                                  if (!content.zodiacSign) return '';
+                                  // Some DB records store 'gemini', others 'Gemini'. Normalise
+                                  // to the lowercase form that localizeSignName expects.
+                                  const normalised = content.zodiacSign.charAt(0).toLowerCase() + content.zodiacSign.slice(1).toLowerCase();
+                                  return localizeSignName(normalised as ZodiacSignPC);
+                                })()} - {(() => {
+                                  const p = content.period;
+                                  if (!p) return t('library.periodDaily', { defaultValue: 'Daily' });
+                                  // Translate common period values stored in the DB
+                                  const key = p.toLowerCase();
+                                  if (key === 'today' || key === 'daily') return t('library.periodDaily', { defaultValue: 'Daily' });
+                                  if (key === 'weekly' || key === 'week') return t('library.periodWeekly', { defaultValue: 'Weekly' });
+                                  if (key === 'monthly' || key === 'month') return t('library.periodMonthly', { defaultValue: 'Monthly' });
+                                  return p;
+                                })()}
                               </h4>
                               <div className="flex items-center gap-1 text-xs text-mystic-500">
                                 <Calendar className="w-3 h-3" />

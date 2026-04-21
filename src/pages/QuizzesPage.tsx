@@ -270,7 +270,7 @@ export function QuizzesPage() {
         }
       } else if (progress.quiz.type === 'enneagram') {
         calculatedResult = calculateEnneagram(newAnswers);
-        resultLabel = `Type ${calculatedResult.primaryType}${calculatedResult.wing ? `w${calculatedResult.wing}` : ''}`;
+        resultLabel = `${tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: calculatedResult.primaryType })}${calculatedResult.wing ? `w${calculatedResult.wing}` : ''}`;
       } else {
         calculatedResult = calculateMoodCheck(newAnswers);
         resultLabel = calculatedResult.overallMood;
@@ -1383,7 +1383,10 @@ export function QuizzesPage() {
                       <div className="mb-3">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gold/10 text-gold">
                           <Zap className="w-3 h-3" />
-                          {lastResult.label}
+                          {/* DB labels may still contain the English "Type N" prefix from prior
+                              quiz runs before the enneagramType i18n lookup landed — translate
+                              it on render so historical results don't stay English. */}
+                          {lastResult.label.replace(/^Type\s+(\d+)/, (_m, n) => tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n }))}
                         </span>
                       </div>
                     )}

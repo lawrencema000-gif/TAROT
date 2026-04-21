@@ -1648,7 +1648,9 @@
       "tarot": "타로",
       "horoscope": "운세",
       "spreads": "스프레드"
-    }
+    },
+    "periodWeekly": "주간",
+    "periodMonthly": "월간"
   },
   "celebration": {
     "streak": {

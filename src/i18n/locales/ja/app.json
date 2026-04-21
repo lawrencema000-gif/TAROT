@@ -1648,7 +1648,9 @@
       "tarot": "タロット",
       "horoscope": "占星術",
       "spreads": "スプレッド"
-    }
+    },
+    "periodWeekly": "週間",
+    "periodMonthly": "月間"
   },
   "celebration": {
     "streak": {

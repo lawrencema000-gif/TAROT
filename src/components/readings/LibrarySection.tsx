@@ -435,10 +435,10 @@ export function LibrarySection() {
                               <h4 className="font-medium text-mystic-100 text-sm">
                                 {(() => {
                                   if (!content.zodiacSign) return '';
-                                  // Some DB records store 'gemini', others 'Gemini'. Normalise
-                                  // to the lowercase form that localizeSignName expects.
-                                  const normalised = content.zodiacSign.charAt(0).toLowerCase() + content.zodiacSign.slice(1).toLowerCase();
-                                  return localizeSignName(normalised as ZodiacSignPC);
+                                  // DB stores either 'gemini' or 'Gemini'; localizeSignName
+                                  // expects Pascal case. Normalise both.
+                                  const pascal = content.zodiacSign.charAt(0).toUpperCase() + content.zodiacSign.slice(1).toLowerCase();
+                                  return localizeSignName(pascal as ZodiacSignPC);
                                 })()} - {(() => {
                                   const p = content.period;
                                   if (!p) return t('library.periodDaily', { defaultValue: 'Daily' });

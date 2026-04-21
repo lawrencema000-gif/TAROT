@@ -9,12 +9,8 @@
     ],
     "readings": [],
     "horoscope": [],
-    "quizzes": [
-      "Type"
-    ],
-    "more": [
-      "Type"
-    ],
+    "quizzes": [],
+    "more": [],
     "readings/tarot": [],
     "horoscope/today": [],
     "readings/compatibility": [
@@ -22,11 +18,7 @@
       "INTJ\nINTP\nENTJ\nENTP\nINFJ\nINFP\nENFJ"
     ],
     "readings/library": [
-      "The Empress",
-      "Four of Swords",
-      "Seven of Cups",
-      "Three of Cups",
-      "gemini - today"
+      "gemini -"
     ]
   },
   "ko": {
@@ -40,12 +32,10 @@
     "readings": [],
     "horoscope": [],
     "quizzes": [
-      "Big Five",
-      "Type"
+      "Big Five"
     ],
     "more": [
-      "Big Five",
-      "Type"
+      "Big Five"
     ],
     "readings/tarot": [],
     "horoscope/today": [],
@@ -54,11 +44,7 @@
       "INTJ\nINTP\nENTJ\nENTP\nINFJ\nINFP\nENFJ"
     ],
     "readings/library": [
-      "The Empress",
-      "Four of Swords",
-      "Seven of Cups",
-      "Three of Cups",
-      "gemini - today"
+      "gemini -"
     ]
   },
   "zh": {
@@ -71,12 +57,8 @@
     ],
     "readings": [],
     "horoscope": [],
-    "quizzes": [
-      "Type"
-    ],
-    "more": [
-      "Type"
-    ],
+    "quizzes": [],
+    "more": [],
     "readings/tarot": [],
     "horoscope/today": [],
     "readings/compatibility": [

@@ -29,8 +29,14 @@ export function getCorsHeaders(
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": methods,
+    // Correlation ID header was added in Phase 1 i18n work (handler.ts
+    // reads X-Correlation-Id from the client and propagates it into logs
+    // + the response). It MUST be listed here or every authed
+    // /functions/v1/* call fails preflight in the browser — horoscope,
+    // generate-reading, ad-config, all of them.
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Client-Info, Apikey",
+      "Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id",
+    "Access-Control-Expose-Headers": "X-Correlation-Id",
     Vary: "Origin",
   };
 }

@@ -1,0 +1,62 @@
+{
+  "1-tarot-meanings-index": {
+    "url": "https://tarotlife.app/tarot-meanings",
+    "bodyChars": 256,
+    "htmlBytes": 3380,
+    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+  },
+  "2-tarot-meanings-the-fool": {
+    "url": "https://tarotlife.app/tarot-meanings/the-fool",
+    "bodyChars": 256,
+    "htmlBytes": 3380,
+    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+  },
+  "3-tarot-meanings-the-tower": {
+    "url": "https://tarotlife.app/tarot-meanings/the-tower",
+    "bodyChars": 256,
+    "htmlBytes": 3380,
+    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+  },
+  "4-tarot-meanings-three-of-cups": {
+    "url": "https://tarotlife.app/tarot-meanings/three-of-cups",
+    "bodyChars": 256,
+    "htmlBytes": 3380,
+    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+  },
+  "5-post-signin-home": {
+    "url": "https://tarotlife.app/",
+    "bodyChars": 238,
+    "htmlBytes": 25338,
+    "firstLines": "Today |  | Your daily ritual awaits |  | Good afternoon, |  | Lawrence Ma. | Level 2 | • | Novice Seeker | 3 | day streak"
+  },
+  "6-horoscope-today": {
+    "url": "https://tarotlife.app/horoscope",
+    "bodyChars": 127,
+    "htmlBytes": 24966,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore |  | Failed to fetch |  | Try Again"
+  },
+  "7-horoscope-chart": {
+    "url": "https://tarotlife.app/horoscope",
+    "bodyChars": 99,
+    "htmlBytes": 25225,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | Home | Readings | Horoscope | Quizzes"
+  },
+  "8-horoscope-forecast": {
+    "url": "https://tarotlife.app/horoscope",
+    "bodyChars": 138,
+    "htmlBytes": 25266,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | This Week | This Month |  | Failed to fetch"
+  },
+  "9-horoscope-explore": {
+    "url": "https://tarotlife.app/horoscope",
+    "bodyChars": 123,
+    "htmlBytes": 26845,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | Transits | Houses | Aspects | Home"
+  },
+  "10-readings-horoscope-subtab": {
+    "url": "https://tarotlife.app/horoscope",
+    "bodyChars": 427,
+    "htmlBytes": 32260,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Readings | Tarot | Horoscope | Compatibility | Library | Daily Draw |  | Tap to begin your reading"
+  }
+}

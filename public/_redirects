@@ -1,0 +1,17 @@
+# Netlify _redirects fallback. netlify.toml already declares these but some
+# Netlify deploys fail to apply the TOML rules; this file is processed with
+# higher priority and acts as a belt-and-suspenders guarantee.
+#
+# Order matters — specific files first, SPA catch-all last.
+
+/ads.txt              /ads.txt              200
+/app-ads.txt          /app-ads.txt          200
+/privacy-policy.html  /privacy-policy.html  200
+/robots.txt           /robots.txt           200
+/sitemap.xml          /sitemap.xml          200
+/google-play-badge.png /google-play-badge.png 200
+/version.json         /version.json         200
+/manifest.json        /manifest.json        200
+
+# SPA fallback — every other path renders the React app.
+/*                    /index.html           200

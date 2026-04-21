@@ -6,6 +6,169 @@ Today
 Chart
 Forecast
 Explore
+Your Big Three
+♊
+Sun
+Gemini
+♑
+Moon
+Capricorn
+♈
+Rising
+Aries
+♈
+♉
+♊
+♋
+♌
+♍
+♎
+♏
+♐
+♑
+♒
+♓
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+☉
+☽
+☿
+♀
+♂
+♃
+♄
+♅
+♆
+♇
+ASC
+Placements
+☉
+Sun
+♊
+Gemini 17°
+H3
+☽
+Moon
+♑
+Capricorn 11°
+H10
+☿
+Mercury
+♐
+Sagittarius 2°
+H8
+♀
+Venus
+♒
+Aquarius 1°
+H10
+♂
+Mars
+♐
+Sagittarius 20°
+H9
+♃
+Jupiter
+♊
+Gemini 23°
+H3
+♄
+Saturn
+♊
+Gemini 5°
+H2
+♅
+Uranus
+♒
+Aquarius 22°
+H11
+♆
+Neptune
+♒
+Aquarius 7°
+H10
+♇
+Pluto
+♐
+Sagittarius 14°
+H9
+Element Balance
+Air
+6
+Fire
+3
+Earth
+1
+Water
+0
+Modality Balance
+Fixed
+3
+Mutable
+6
+Cardinal
+1
+Key Aspects
+☉
+☍
+♂
+Sun opposition Mars
+2.2°
+☉
+☌
+♃
+Sun conjunction Jupiter
+5.6°
+☉
+△
+♅
+Sun trine Uranus
+4.7°
+☉
+☍
+♇
+Sun opposition Pluto
+3.5°
+☿
+✱
+♀
+Mercury sextile Venus
+1.2°
+☿
+☍
+♄
+Mercury opposition Saturn
+2.6°
+☿
+✱
+♆
+Mercury sextile Neptune
+4.8°
+♀
+△
+♄
+Venus trine Saturn
+3.9°
+♀
+☌
+♆
+Venus conjunction Neptune
+6.0°
+♂
+☍
+♃
+Mars opposition Jupiter
+3.3°
 Home
 Readings
 Horoscope

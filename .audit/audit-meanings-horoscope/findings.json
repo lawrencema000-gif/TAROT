@@ -1,62 +1,62 @@
 {
   "1-tarot-meanings-index": {
     "url": "https://tarotlife.app/tarot-meanings",
-    "bodyChars": 256,
-    "htmlBytes": 3380,
-    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+    "bodyChars": 4221,
+    "htmlBytes": 37271,
+    "firstLines": "☽ Arcana | Card Meanings | Blog | Sign In | 78 CARDS · FULL MEANINGS | Tarot Card Meanings |  | A complete guide to every card in the tarot deck — upright and reversed meanings, love and career interpretations, and reflection prompts. |  | All Cards | Major Arcana | Wands"
   },
   "2-tarot-meanings-the-fool": {
     "url": "https://tarotlife.app/tarot-meanings/the-fool",
-    "bodyChars": 256,
-    "htmlBytes": 3380,
-    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+    "bodyChars": 2605,
+    "htmlBytes": 23077,
+    "firstLines": "☽ Arcana | Card Meanings | Blog | Sign In | All Cards›The Fool | MAJOR ARCANA | The Fool | New beginnings | Innocence | Spontaneity | Free spirit | Quick Reference"
   },
   "3-tarot-meanings-the-tower": {
     "url": "https://tarotlife.app/tarot-meanings/the-tower",
-    "bodyChars": 256,
-    "htmlBytes": 3380,
-    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+    "bodyChars": 7149,
+    "htmlBytes": 31270,
+    "firstLines": "☽ Arcana | Card Meanings | Blog | Sign In | All Cards›The Tower | MAJOR ARCANA | The Tower | Sudden change | Upheaval | Chaos | Revelation | Quick Reference"
   },
   "4-tarot-meanings-three-of-cups": {
     "url": "https://tarotlife.app/tarot-meanings/three-of-cups",
-    "bodyChars": 256,
-    "htmlBytes": 3380,
-    "firstLines": "Page not found |  | Looks like you’ve followed a broken link or entered a URL that doesn’t exist on this site. |  | If this is your site, and you weren’t expecting a 404 for this path, please visit Netlify’s “page not found” support guide for troubleshooting tips."
+    "bodyChars": 2793,
+    "htmlBytes": 22237,
+    "firstLines": "☽ Arcana | Card Meanings | Blog | Sign In | All Cards›Cups›Three of Cups | CUPS · MINOR ARCANA | Three of Cups | Celebration | Friendship | Joy | Creativity | Quick Reference"
   },
   "5-post-signin-home": {
     "url": "https://tarotlife.app/",
     "bodyChars": 238,
-    "htmlBytes": 25338,
+    "htmlBytes": 25246,
     "firstLines": "Today |  | Your daily ritual awaits |  | Good afternoon, |  | Lawrence Ma. | Level 2 | • | Novice Seeker | 3 | day streak"
   },
   "6-horoscope-today": {
     "url": "https://tarotlife.app/horoscope",
-    "bodyChars": 127,
-    "htmlBytes": 24966,
-    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore |  | Failed to fetch |  | Try Again"
+    "bodyChars": 1352,
+    "htmlBytes": 36136,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | Today For You | Intellectual Curiosity |  | Curiosity drives you toward fascinating discoveries. Follow the thread of an interesting idea wherever it leads."
   },
   "7-horoscope-chart": {
     "url": "https://tarotlife.app/horoscope",
-    "bodyChars": 99,
-    "htmlBytes": 25225,
-    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | Home | Readings | Horoscope | Quizzes"
+    "bodyChars": 949,
+    "htmlBytes": 52047,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | Your Big Three | ♊ | Sun | Gemini"
   },
   "8-horoscope-forecast": {
     "url": "https://tarotlife.app/horoscope",
-    "bodyChars": 138,
-    "htmlBytes": 25266,
-    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | This Week | This Month |  | Failed to fetch"
+    "bodyChars": 120,
+    "htmlBytes": 25329,
+    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | This Week | This Month | Home | Readings"
   },
   "9-horoscope-explore": {
     "url": "https://tarotlife.app/horoscope",
     "bodyChars": 123,
-    "htmlBytes": 26845,
+    "htmlBytes": 26753,
     "firstLines": "Horoscope |  | Your cosmic blueprint |  | Today | Chart | Forecast | Explore | Transits | Houses | Aspects | Home"
   },
   "10-readings-horoscope-subtab": {
-    "url": "https://tarotlife.app/horoscope",
-    "bodyChars": 427,
-    "htmlBytes": 32260,
-    "firstLines": "Horoscope |  | Your cosmic blueprint |  | Readings | Tarot | Horoscope | Compatibility | Library | Daily Draw |  | Tap to begin your reading"
+    "url": "https://tarotlife.app/readings",
+    "bodyChars": 1046,
+    "htmlBytes": 38241,
+    "firstLines": "Readings |  | Explore the cards |  | Readings | Tarot | Horoscope | Compatibility | Library | Today | This Week | This Month"
   }
 }

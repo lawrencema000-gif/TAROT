@@ -866,4 +866,16 @@ export const quizMetadata = {
     icon: 'crown',
     color: 'gold',
   },
+  'shadow-archetype': {
+    timeEstimate: '6 min',
+    whatYouGet: ['Your dominant Jungian archetype (Lover, Warrior, Magician, Sovereign, Sage, Innocent, Explorer)', 'The gift it brings when healthy', 'The shadow it casts when wounded', 'A path toward integration + tarot pairing'],
+    icon: 'moon',
+    color: 'cosmic-violet',
+  },
+  'element-affinity': {
+    timeEstimate: '2 min',
+    whatYouGet: ['Your behavioural element (fire/water/air/earth)', 'How it differs from your astrology chart element', 'Strengths, shadow, and when it\'s running the show', 'An affirmation to carry'],
+    icon: 'flame',
+    color: 'emerald-400',
+  },
 };

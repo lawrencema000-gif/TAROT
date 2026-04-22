@@ -62,7 +62,10 @@ import { enneagramQuiz, calculateEnneagram, enneagramDescriptions } from '../dat
 import { attachmentQuiz, calculateAttachment, attachmentDescriptions } from '../data/attachmentQuiz';
 import { mbtiQuickQuiz } from '../data/mbtiQuickQuiz';
 import { tarotCourtQuiz, calculateCourtMatch, getCourtCardInfo } from '../data/tarotCourtQuiz';
+import { shadowArchetypeQuiz, calculateShadowArchetype, SHADOW_ARCHETYPES } from '../data/shadowArchetypeQuiz';
+import { elementAffinityQuiz, calculateElementAffinity, ELEMENT_INFO } from '../data/elementAffinityQuiz';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { getZodiacElement } from '../utils/zodiac';
 
 import type { QuizDefinition } from '../types';
 
@@ -178,6 +181,18 @@ function computeSneakPeek(
     });
   }
 
+  if (quiz.type === 'shadow-archetype') {
+    return tApp('quizzes.sneakPeek.shadowArchetype', {
+      defaultValue: 'An archetype pattern is forming...',
+    });
+  }
+
+  if (quiz.type === 'element-affinity') {
+    return tApp('quizzes.sneakPeek.elementAffinity', {
+      defaultValue: 'An elemental current is emerging...',
+    });
+  }
+
   if (quiz.type === 'enneagram') {
     return tApp('quizzes.sneakPeek.enneagram', {
       defaultValue: 'A type pattern is forming — keep going for your wing.',
@@ -263,6 +278,16 @@ export function QuizzesPage() {
       quiz: localizeQuiz(tarotCourtQuiz),
       type: 'court-match',
       metadata: localizeQuizMetadata('court-match', quizMetadata['court-match']),
+    },
+    {
+      quiz: localizeQuiz(elementAffinityQuiz),
+      type: 'element-affinity',
+      metadata: localizeQuizMetadata('element-affinity', quizMetadata['element-affinity']),
+    },
+    {
+      quiz: localizeQuiz(shadowArchetypeQuiz),
+      type: 'shadow-archetype',
+      metadata: localizeQuizMetadata('shadow-archetype', quizMetadata['shadow-archetype']),
     },
     {
       quiz: localizeQuiz(mbtiQuiz),
@@ -364,6 +389,12 @@ export function QuizzesPage() {
       } else if (progress.quiz.type === 'court-match') {
         calculatedResult = calculateCourtMatch(newAnswers);
         resultLabel = calculatedResult.courtCard;
+      } else if (progress.quiz.type === 'shadow-archetype') {
+        calculatedResult = calculateShadowArchetype(newAnswers);
+        resultLabel = calculatedResult.archetype;
+      } else if (progress.quiz.type === 'element-affinity') {
+        calculatedResult = calculateElementAffinity(newAnswers);
+        resultLabel = calculatedResult.primary;
       } else if (progress.quiz.type === 'love-language') {
         calculatedResult = calculateLoveLanguage(newAnswers);
         resultLabel = calculatedResult.primary;
@@ -613,6 +644,204 @@ export function QuizzesPage() {
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
+        </div>
+      );
+    }
+
+    if (result.quiz.type === 'shadow-archetype') {
+      const shadowResult = result.result as ReturnType<typeof calculateShadowArchetype>;
+      const info = SHADOW_ARCHETYPES[shadowResult.archetype];
+      const key = shadowResult.archetype;
+      const localized = (path: string, fallback: string) =>
+        tApp(`quizzes.shadowArchetypes.${key}.${path}`, { defaultValue: fallback }) as string;
+      const name = localized('name', info.name);
+      const tagline = localized('tagline', info.tagline);
+      const gift = localized('gift', info.gift);
+      const shadow = localized('shadow', info.shadow);
+      const integration = localized('integration', info.integration);
+      const affirmation = localized('affirmation', info.affirmation);
+      const tarotPairing = localized('tarotPairing', info.tarotPairing);
+
+      return (
+        <div className="space-y-4 pb-6">
+          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          </button>
+
+          <Card variant="glow" padding="lg" className="text-center">
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
+              <Sparkles className="w-10 h-10 text-gold" />
+            </div>
+            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-emerald-400 mb-3">{tApp('quizzes.resultSections.gift', { defaultValue: 'The gift' })}</h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{gift}</p>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-pink-400 mb-3">{tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}</h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{shadow}</p>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-cosmic-blue mb-3">{tApp('quizzes.resultSections.integration', { defaultValue: 'Integration' })}</h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{integration}</p>
+          </Card>
+
+          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {tApp('quizzes.resultSections.affirmation', { defaultValue: 'Your affirmation' })}
+            </h3>
+            <p className="text-mystic-200 italic leading-relaxed mb-4">"{affirmation}"</p>
+            <p className="text-xs text-mystic-500">
+              {tApp('quizzes.resultSections.tarotPairing', { defaultValue: 'Tarot pairing' })}: <span className="text-gold/80">{tarotPairing}</span>
+            </p>
+          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              fullWidth
+              className="min-h-[48px]"
+              onClick={async () => {
+                try {
+                  const blob = await renderShareCard({
+                    title: name,
+                    subtitle: tagline,
+                    tagline: tarotPairing,
+                    affirmation,
+                    brand: 'Arcana · Shadow Archetype',
+                  });
+                  const outcome = await shareOrDownload(blob, `arcana-shadow-${key}.png`, `My shadow archetype is ${name}. ${tagline}`);
+                  if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                } catch {
+                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                }
+              }}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (result.quiz.type === 'element-affinity') {
+      const elResult = result.result as ReturnType<typeof calculateElementAffinity>;
+      const info = ELEMENT_INFO[elResult.primary];
+      const key = elResult.primary;
+      const localized = (path: string, fallback: string) =>
+        tApp(`quizzes.elements.${key}.${path}`, { defaultValue: fallback }) as string;
+      const name = localized('name', info.name);
+      const tagline = localized('tagline', info.tagline);
+      const description = localized('description', info.description);
+      const strengths = tApp(`quizzes.elements.${key}.strengths`, { returnObjects: true, defaultValue: info.strengths }) as string[];
+      const shadow = tApp(`quizzes.elements.${key}.shadow`, { returnObjects: true, defaultValue: info.shadow }) as string[];
+      const whenDominant = localized('whenDominant', info.whenDominant);
+      const affirmation = localized('affirmation', info.affirmation);
+
+      // Compare behavioural element vs astro chart element (from profile.zodiacSign)
+      const natalElement = profile?.zodiacSign ? getZodiacElement(profile.zodiacSign) : null;
+      const elementsMatch = natalElement && natalElement === elResult.primary;
+
+      const glyphMap: Record<string, string> = { fire: '🔥', water: '🌊', air: '🌬️', earth: '🌱' };
+
+      return (
+        <div className="space-y-4 pb-6">
+          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          </button>
+
+          <Card variant="glow" padding="lg" className="text-center">
+            <div className="text-6xl mb-3">{glyphMap[key] || '✦'}</div>
+            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
+          </Card>
+
+          <Card padding="lg">
+            <p className="text-mystic-300 text-sm leading-relaxed">{description}</p>
+          </Card>
+
+          {natalElement && (
+            <Card padding="lg" className={elementsMatch ? 'border-emerald-400/30' : 'border-cosmic-blue/30'}>
+              <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                {tApp('quizzes.elements.chartVsBehaviour', { defaultValue: 'Chart vs. behaviour' })}
+              </h3>
+              <p className="text-sm text-mystic-300 leading-relaxed">
+                {elementsMatch
+                  ? tApp('quizzes.elements.matchNote', { defaultValue: 'Your behavioural element matches your astrology chart — you\'re living in alignment with your native energy.', element: name })
+                  : tApp('quizzes.elements.differNote', { defaultValue: 'Your chart says {{natal}} but your behaviour says {{behaviour}} — worth noticing where you\'re stretching.', natal: natalElement, behaviour: name })}
+              </p>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card padding="lg">
+              <h3 className="font-medium text-emerald-400 mb-3">{tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}</h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {strengths.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </Card>
+            <Card padding="lg">
+              <h3 className="font-medium text-pink-400 mb-3">{tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}</h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {shadow.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </Card>
+          </div>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-cosmic-blue mb-3">{tApp('quizzes.resultSections.whenDominant', { defaultValue: 'When this element is dominant' })}</h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{whenDominant}</p>
+          </Card>
+
+          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {tApp('quizzes.resultSections.affirmation', { defaultValue: 'Your affirmation' })}
+            </h3>
+            <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
+          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              fullWidth
+              className="min-h-[48px]"
+              onClick={async () => {
+                try {
+                  const blob = await renderShareCard({
+                    title: name,
+                    subtitle: tagline,
+                    tagline: affirmation,
+                    affirmation: whenDominant,
+                    brand: 'Arcana · Element Affinity',
+                  });
+                  const outcome = await shareOrDownload(blob, `arcana-element-${key}.png`, `My element is ${name}. ${tagline}`);
+                  if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                } catch {
+                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                }
+              }}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+            </Button>
+          </div>
         </div>
       );
     }

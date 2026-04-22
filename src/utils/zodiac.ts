@@ -140,6 +140,10 @@ export function getZodiacSign(birthDate: string): ZodiacSign {
   return 'pisces';
 }
 
+export function getZodiacElement(sign: ZodiacSign): 'fire' | 'earth' | 'air' | 'water' {
+  return zodiacData[sign].element;
+}
+
 export function getElementColor(element: 'fire' | 'earth' | 'air' | 'water'): string {
   const colors = {
     fire: 'text-orange-400',

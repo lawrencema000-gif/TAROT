@@ -639,6 +639,185 @@
             }
           }
         }
+      },
+      "shadowArchetype": {
+        "title": "Shadow Archetype",
+        "description": "Which inner archetype is running the room right now? This reading maps you to one of the seven deep patterns — Lover, Warrior, Magician, Sovereign, Sage, Innocent, or Explorer — with the gift each one brings, the shadow it casts when wounded, and a path toward integration.",
+        "timeEstimate": "6 min",
+        "whatYouGet": [
+          "Your dominant Jungian archetype (Lover, Warrior, Magician, Sovereign, Sage, Innocent, Explorer)",
+          "The gift it brings when healthy",
+          "The shadow it casts when wounded",
+          "A path toward integration + tarot pairing"
+        ],
+        "questions": {
+          "lov1": {
+            "text": "Deep emotional intimacy is what makes life worth living."
+          },
+          "lov2": {
+            "text": "I often feel other people's emotions as vividly as my own."
+          },
+          "lov3": {
+            "text": "I give myself fully when I love someone or something."
+          },
+          "war1": {
+            "text": "I am willing to fight — literally or metaphorically — for what I believe in."
+          },
+          "war2": {
+            "text": "Discipline and follow-through are core to who I am."
+          },
+          "war3": {
+            "text": "I step up to protect people who can't protect themselves."
+          },
+          "mag1": {
+            "text": "I'm drawn to hidden knowledge — the underneath of things."
+          },
+          "mag2": {
+            "text": "I see patterns and connections others often miss."
+          },
+          "mag3": {
+            "text": "Helping someone transform the way they see themselves is one of my deepest pleasures."
+          },
+          "sov1": {
+            "text": "People naturally look to me to set the direction."
+          },
+          "sov2": {
+            "text": "I feel responsible for the well-being of the systems I'm part of."
+          },
+          "sov3": {
+            "text": "I have a clear sense of what I am the standard-bearer for."
+          },
+          "sag1": {
+            "text": "I'm happier as a teacher / witness than as the main character."
+          },
+          "sag2": {
+            "text": "I need long solitary stretches to think things through."
+          },
+          "sag3": {
+            "text": "I value understanding a thing deeply more than acting on it quickly."
+          },
+          "inn1": {
+            "text": "I lead with hope, even when things look hard."
+          },
+          "inn2": {
+            "text": "The simple pleasures (a walk, a meal, good light) matter enormously to me."
+          },
+          "inn3": {
+            "text": "I trust people by default, not by evidence."
+          },
+          "exp1": {
+            "text": "Routine feels like slow suffocation."
+          },
+          "exp2": {
+            "text": "I've reinvented my life more than once."
+          },
+          "exp3": {
+            "text": "Being somewhere unfamiliar is one of my favourite feelings."
+          }
+        }
+      },
+      "elementAffinity": {
+        "title": "Element Affinity",
+        "description": "Ten quick questions to discover which of the four classical elements most echoes how you actually live — fire, water, air, or earth. Pairs with your astrology chart's native element for a \"chart says X, behaviour says Y\" comparison.",
+        "timeEstimate": "2 min",
+        "whatYouGet": [
+          "Your behavioural element (fire/water/air/earth)",
+          "How it differs from your astrology chart element",
+          "Strengths, shadow, and when it's running the show",
+          "An affirmation to carry"
+        ],
+        "questions": {
+          "el1": {
+            "text": "My natural pace is best described as…",
+            "options": {
+              "1": "Fast and forward.",
+              "2": "Ebbs and flows with my mood.",
+              "3": "Mental before physical.",
+              "4": "Steady and unhurried."
+            }
+          },
+          "el2": {
+            "text": "What do you crave most when the day gets rough?",
+            "options": {
+              "1": "Movement — something physical or creative.",
+              "2": "Softness — a bath, a hug, good food.",
+              "3": "Information — a podcast, a conversation, a reframe.",
+              "4": "Grounding — routine, garden, body work."
+            }
+          },
+          "el3": {
+            "text": "My creative fuel is…",
+            "options": {
+              "1": "Passion — I make from heat.",
+              "2": "Emotion — I make from feeling.",
+              "3": "Ideas — I make from concepts.",
+              "4": "Craft — I make from refinement and skill."
+            }
+          },
+          "el4": {
+            "text": "A meaningful gift to me is…",
+            "options": {
+              "1": "An experience or adventure.",
+              "2": "A hand-written note or something sentimental.",
+              "3": "A book, a conversation, or a new idea.",
+              "4": "Something beautifully made or useful for my home."
+            }
+          },
+          "el5": {
+            "text": "I get stuck when…",
+            "options": {
+              "1": "I'm forced to sit still for too long.",
+              "2": "I'm disconnected from people I love.",
+              "3": "I don't understand what's going on.",
+              "4": "My routine / environment feels chaotic."
+            }
+          },
+          "el6": {
+            "text": "My ideal environment has…",
+            "options": {
+              "1": "Light, energy, movement.",
+              "2": "Water, softness, warmth.",
+              "3": "Books, conversation, airy space.",
+              "4": "Plants, texture, materials I can touch."
+            }
+          },
+          "el7": {
+            "text": "What do you spend money on most easily?",
+            "options": {
+              "1": "Experiences, travel, tickets.",
+              "2": "Beauty, care, gifts for loved ones.",
+              "3": "Books, courses, information.",
+              "4": "Home, quality tools, long-lasting items."
+            }
+          },
+          "el8": {
+            "text": "Under pressure, my default move is…",
+            "options": {
+              "1": "Push harder and move faster.",
+              "2": "Withdraw into feelings, people, comfort.",
+              "3": "Analyse and rework the strategy.",
+              "4": "Simplify, slow down, return to basics."
+            }
+          },
+          "el9": {
+            "text": "A compliment that would land hardest is…",
+            "options": {
+              "1": "\"You make things happen.\"",
+              "2": "\"You make people feel seen.\"",
+              "3": "\"You make things make sense.\"",
+              "4": "\"You make things last.\""
+            }
+          },
+          "el10": {
+            "text": "The season I love most is…",
+            "options": {
+              "1": "Summer — heat, long days, intensity.",
+              "2": "Autumn — the poetry of change.",
+              "3": "Spring — fresh ideas, new light.",
+              "4": "Winter — stillness, depth, root time."
+            }
+          }
+        }
       }
     },
     "types": {
@@ -668,7 +847,11 @@
       "enneagramType": "Type {{n}}",
       "whenDrawn": "When this card appears",
       "shadow": "Shadow side",
-      "affirmation": "Your affirmation"
+      "affirmation": "Your affirmation",
+      "gift": "The gift",
+      "integration": "Integration",
+      "tarotPairing": "Tarot pairing",
+      "whenDominant": "When this element is dominant"
     },
     "takeAnother": "Take Another Quiz",
     "courtCards": {
@@ -957,14 +1140,162 @@
       "loveLanguage": "Your primary love language is starting to emerge...",
       "enneagram": "A type pattern is forming — keep going for your wing.",
       "attachment": "Your attachment style is coming into focus...",
-      "bigFive": "Your trait profile is taking shape..."
+      "bigFive": "Your trait profile is taking shape...",
+      "shadowArchetype": "An archetype pattern is forming...",
+      "elementAffinity": "An elemental current is emerging..."
     },
     "share": {
       "button": "Share",
       "downloaded": "Saved to your device",
       "failed": "Could not create share image"
     },
-    "backToQuizzes": "Back to Quizzes"
+    "backToQuizzes": "Back to Quizzes",
+    "shadowArchetypes": {
+      "lover": {
+        "name": "The Lover",
+        "tagline": "The one who stays open.",
+        "gift": "You lead with connection. When you are in your power, life feels warm, sensual, and meaningful. You create belonging wherever you go.",
+        "shadow": "When wounded, the Lover drowns — co-dependence, obsession, or losing yourself in someone else. The shadow can also show up as the opposite: shutting down entirely to avoid being hurt.",
+        "integration": "Anchor in self-knowledge so your giving is a choice, not a compulsion. Practice loving without needing to merge.",
+        "affirmation": "I open my heart from fullness, not fear — and I remain myself inside the love.",
+        "tarotPairing": "The Lovers / Two of Cups"
+      },
+      "warrior": {
+        "name": "The Warrior",
+        "tagline": "The one who acts for what matters.",
+        "gift": "You bring discipline, courage, and follow-through. You protect what you love and move when others freeze. Your word is your weapon.",
+        "shadow": "The wounded Warrior becomes the bully — fighting for the sake of fighting, turning every conversation into combat, or burning out in service of a cause. The shadow can also collapse into the coward who stays silent.",
+        "integration": "Fight for, not just against. Rest is not retreat. The sword and the sheath both belong to the Warrior.",
+        "affirmation": "I act with discipline and care — I know when to move and when to rest.",
+        "tarotPairing": "The Chariot / Knight of Swords"
+      },
+      "magician": {
+        "name": "The Magician",
+        "tagline": "The one who sees beneath.",
+        "gift": "You read the hidden patterns. You transform — yourself, a room, a relationship, a problem — by seeing what others don't. Knowledge is your weapon and your gift.",
+        "shadow": "The wounded Magician manipulates. Uses insight to control, withholds truth as power, or becomes a detached observer who refuses to live. The shadow can also be the charlatan — mistaking knowing about for knowing.",
+        "integration": "Translate your insight into real service to other people. Teach what you know. Let yourself be transformed, not just be the one who transforms.",
+        "affirmation": "I use my sight to illuminate, not to dominate.",
+        "tarotPairing": "The Magician / The High Priestess"
+      },
+      "sovereign": {
+        "name": "The Sovereign",
+        "tagline": "The one who sets the standard.",
+        "gift": "You see the whole field and take responsibility for it. You create order, set vision, and hold the wellbeing of the group. Others find their place near you.",
+        "shadow": "The wounded Sovereign becomes the tyrant — controlling, rigid, taking everything personally. Or collapses into the abdicator: refusing the throne out of fear of its weight.",
+        "integration": "Lead for the people, not from the ego. Delegate. Let others be sovereigns too.",
+        "affirmation": "I hold my power in service of something larger than myself.",
+        "tarotPairing": "The Emperor / The Empress"
+      },
+      "sage": {
+        "name": "The Sage",
+        "tagline": "The one who sees clearly from the edge.",
+        "gift": "You stay calm in chaos. You ask the questions no one else is asking. You bring long-range wisdom and the patience to tell the truth without needing the credit.",
+        "shadow": "The wounded Sage becomes the cynic — knowing, detached, refusing to act or feel. Or the ivory-tower recluse who won't come down from the mountain.",
+        "integration": "Wisdom that stays inside you becomes bitter. Teach. Get close. Risk being wrong.",
+        "affirmation": "I step down from the mountain and walk among the people I love.",
+        "tarotPairing": "The Hermit / The Hierophant"
+      },
+      "innocent": {
+        "name": "The Innocent",
+        "tagline": "The one who keeps faith.",
+        "gift": "You protect hope. You see goodness where others see rot. Your trust, optimism, and simplicity are a gift to the people around you.",
+        "shadow": "The wounded Innocent refuses to see shadow at all — naive to harm, stuck in fantasy, or trapped in a perpetual \"it will be fine\" that blocks real action.",
+        "integration": "Keep your faith but earn your eyes. You can be hopeful AND clear-eyed. Both / and.",
+        "affirmation": "I keep hope with open eyes.",
+        "tarotPairing": "The Fool / The Star"
+      },
+      "explorer": {
+        "name": "The Explorer",
+        "tagline": "The one who keeps moving.",
+        "gift": "You find the edge. You know new territory is where you come alive, and you show others that the life they have is not the only life possible. Freedom is your medicine.",
+        "shadow": "The wounded Explorer runs — from intimacy, from follow-through, from the ordinary life that would actually grow them. The shadow keeps leaving just before anything gets real.",
+        "integration": "Stay. Go deep in one place. The new territory you haven't explored yet may be intimacy, not geography.",
+        "affirmation": "I travel both outward and inward — some of my deepest exploration happens in staying.",
+        "tarotPairing": "The Fool / Knight of Wands"
+      }
+    },
+    "elements": {
+      "fire": {
+        "name": "Fire",
+        "tagline": "Spark, passion, forward motion.",
+        "description": "Fire lives through passion and velocity. You create from heat — inspired action, bold initiative, the will to begin. When you are in your element, life feels intense, creative, and directional.",
+        "strengths": [
+          "Initiative",
+          "Courage",
+          "Charisma",
+          "Creative drive"
+        ],
+        "shadow": [
+          "Burnout",
+          "Impatience",
+          "Scattered follow-through",
+          "Explosive temper"
+        ],
+        "whenDominant": "You start more than you finish — not a weakness, a signature. Build structure around you that finishes for you, or partner with an Earth-leaning teammate.",
+        "affirmation": "My spark is valuable — I honour both when to ignite and when to rest the embers."
+      },
+      "water": {
+        "name": "Water",
+        "tagline": "Feeling, intuition, connection.",
+        "description": "Water lives through emotion and attunement. You know the room before anyone speaks. You create from feeling, love from depth, and heal by holding space. You are porous by design.",
+        "strengths": [
+          "Empathy",
+          "Intuition",
+          "Emotional depth",
+          "Capacity for intimacy"
+        ],
+        "shadow": [
+          "Overwhelm",
+          "Absorbing others' feelings",
+          "Moodiness",
+          "Merger / loss of self"
+        ],
+        "whenDominant": "Your gift is your permeability — also your hardest edge. Learn to tend your own cup first. Water without banks becomes a flood.",
+        "affirmation": "I feel everything and I stay myself."
+      },
+      "air": {
+        "name": "Air",
+        "tagline": "Thought, language, clarity.",
+        "description": "Air lives through mind. You connect ideas, name what others can't, and move by understanding. Conversations, books, language, breath — these are your medicine and your medium.",
+        "strengths": [
+          "Clarity",
+          "Curiosity",
+          "Communication",
+          "Adaptability"
+        ],
+        "shadow": [
+          "Overthinking",
+          "Detachment from the body",
+          "Intellectualising emotion",
+          "Difficulty landing a decision"
+        ],
+        "whenDominant": "Get in your body. Let thoughts turn into action without needing another round of analysis. The mind is a great servant and a terrible master.",
+        "affirmation": "I think to understand, and I live to land."
+      },
+      "earth": {
+        "name": "Earth",
+        "tagline": "Craft, body, steady building.",
+        "description": "Earth lives through matter. You create with your hands, know through your body, and build for the long road. Stability is not boring to you — it is the ground for everything else.",
+        "strengths": [
+          "Patience",
+          "Craftsmanship",
+          "Reliability",
+          "Sensory wisdom"
+        ],
+        "shadow": [
+          "Rigidity",
+          "Resistance to change",
+          "Materialism",
+          "Shutting down when plans break"
+        ],
+        "whenDominant": "Your gift is durability. Your risk is staying too long. Let some things end so new things can root.",
+        "affirmation": "I build for the long road and allow seasons to turn."
+      },
+      "chartVsBehaviour": "Chart vs. behaviour",
+      "matchNote": "Your behavioural element matches your astrology chart — you're living in alignment with your native energy.",
+      "differNote": "Your chart says {{natal}} but your behaviour says {{behaviour}} — worth noticing where you're stretching."
+    }
   },
   "horoscope": {
     "title": "Horoscope",
@@ -1272,7 +1603,16 @@
       "searchCity": "Search city or town…"
     },
     "disclaimer": "This app is for entertainment and self-reflection purposes only.",
-    "elementSign": "{{element}} Sign"
+    "elementSign": "{{element}} Sign",
+    "cosmic": {
+      "title": "Cosmic Profile",
+      "sun": "Sun",
+      "animal": "Animal",
+      "lifePath": "Life Path",
+      "shareButton": "Share Cosmic Profile",
+      "shareSubtitle": "Sun · Animal · Life Path",
+      "myProfile": "My Cosmic Profile"
+    }
   },
   "achievements": {
     "title": "Trophies",
@@ -2561,5 +2901,249 @@
     "notAuthenticated": "Not authenticated",
     "checkoutSessionFailed": "Failed to create checkout session",
     "noCheckoutUrl": "No checkout URL returned"
+  },
+  "lifePath": {
+    "1": {
+      "title": "The Pioneer",
+      "tagline": "Independence, initiative, leadership.",
+      "purpose": "You are here to lead, originate, and carve paths where none existed. Your lesson is learning to trust your own direction without needing permission.",
+      "strengths": [
+        "Self-reliance",
+        "Courage",
+        "Drive",
+        "Originality"
+      ],
+      "challenges": [
+        "Impatience",
+        "Going it alone when collaboration would serve",
+        "Resistance to being helped"
+      ],
+      "affirmation": "I set my own direction — and I let others walk alongside me."
+    },
+    "2": {
+      "title": "The Diplomat",
+      "tagline": "Partnership, harmony, sensitivity.",
+      "purpose": "You are here to harmonize — to hold the space between people, to read nuance, to build through connection rather than force. Your lesson is finding your own voice inside the bridge you build.",
+      "strengths": [
+        "Empathy",
+        "Intuition",
+        "Cooperation",
+        "Patience"
+      ],
+      "challenges": [
+        "Codependence",
+        "Over-accommodating",
+        "Avoiding healthy conflict"
+      ],
+      "affirmation": "I hold the space between — and I stay myself inside the bridge."
+    },
+    "3": {
+      "title": "The Expresser",
+      "tagline": "Creativity, communication, joy.",
+      "purpose": "You are here to express, inspire, and spark joy. Language, art, performance, teaching — these are your native mediums. Your lesson is letting depth and discipline shape the gift.",
+      "strengths": [
+        "Creativity",
+        "Charisma",
+        "Optimism",
+        "Expression"
+      ],
+      "challenges": [
+        "Scattering energy",
+        "Avoiding hard feelings by staying bright",
+        "Superficial reach without depth"
+      ],
+      "affirmation": "I create, express, and go deep — brightness and depth belong together."
+    },
+    "4": {
+      "title": "The Builder",
+      "tagline": "Stability, craft, long-range order.",
+      "purpose": "You are here to build what lasts. Systems, institutions, crafts, homes. Your lesson is allowing the work to breathe — rigidity is the enemy of durability.",
+      "strengths": [
+        "Discipline",
+        "Reliability",
+        "Craftsmanship",
+        "Patience"
+      ],
+      "challenges": [
+        "Over-rigidity",
+        "Workaholism",
+        "Fear of change"
+      ],
+      "affirmation": "I build for the long road and allow the structure to evolve."
+    },
+    "5": {
+      "title": "The Explorer",
+      "tagline": "Freedom, change, adventure.",
+      "purpose": "You are here to experience. To move, travel, transform. You are the one who shows others that the life they have is not the only life possible. Your lesson is staying long enough to let experiences land.",
+      "strengths": [
+        "Curiosity",
+        "Adaptability",
+        "Magnetism",
+        "Restless evolution"
+      ],
+      "challenges": [
+        "Flightiness",
+        "Avoiding roots and depth",
+        "Chasing stimulation over substance"
+      ],
+      "affirmation": "I travel widely — and I stay long enough to be changed."
+    },
+    "6": {
+      "title": "The Nurturer",
+      "tagline": "Love, responsibility, service.",
+      "purpose": "You are here to love and tend — family, community, the vulnerable, the home. Your lesson is loving without losing yourself inside the caretaking.",
+      "strengths": [
+        "Compassion",
+        "Devotion",
+        "Responsibility",
+        "Artistic sense of beauty"
+      ],
+      "challenges": [
+        "Over-giving",
+        "Martyrdom",
+        "Control disguised as care"
+      ],
+      "affirmation": "I give from fullness and tend my own garden first."
+    },
+    "7": {
+      "title": "The Seeker",
+      "tagline": "Wisdom, solitude, depth.",
+      "purpose": "You are here to go deep. Study, reflect, uncover what is true. You bring the long-range wisdom that holds a community steady. Your lesson is sharing what you know instead of hoarding it.",
+      "strengths": [
+        "Analytical mind",
+        "Intuition",
+        "Depth",
+        "Authenticity"
+      ],
+      "challenges": [
+        "Isolation",
+        "Distrust",
+        "Intellectualising feeling",
+        "Spiritual perfectionism"
+      ],
+      "affirmation": "I bring my depth into the world — wisdom is meant to be shared."
+    },
+    "8": {
+      "title": "The Architect",
+      "tagline": "Power, abundance, stewardship.",
+      "purpose": "You are here to lead at scale — to move resources, build enterprises, steward power responsibly. Your lesson is remembering that material mastery and spiritual integrity are one path, not two.",
+      "strengths": [
+        "Vision",
+        "Executive ability",
+        "Resilience",
+        "Capacity for abundance"
+      ],
+      "challenges": [
+        "Money-as-identity",
+        "Over-work",
+        "Using power for control",
+        "Fear of loss"
+      ],
+      "affirmation": "I build wealth and power in service of what I love."
+    },
+    "9": {
+      "title": "The Humanitarian",
+      "tagline": "Completion, compassion, wide love.",
+      "purpose": "You are here to love broadly — causes, humanity, the planet. You finish what needs ending and give what needs giving. Your lesson is staying present inside your own life while also holding the bigger picture.",
+      "strengths": [
+        "Idealism",
+        "Compassion",
+        "Wisdom",
+        "Endings and transitions"
+      ],
+      "challenges": [
+        "Martyrdom",
+        "Emotional distance via \"saving the world\"",
+        "Grief carried too long"
+      ],
+      "affirmation": "I love wide and I live close — both at once."
+    },
+    "11": {
+      "title": "The Intuitive Messenger",
+      "tagline": "Vision, inspiration, spiritual sight.",
+      "purpose": "A master path. You are here to see what others can't and translate it into language people can carry. Your lesson is grounding the vision — channel it, don't be consumed by it.",
+      "strengths": [
+        "Vision",
+        "Spiritual attunement",
+        "Inspiration",
+        "Artistic sensitivity"
+      ],
+      "challenges": [
+        "Nervous system overwhelm",
+        "Feeling like an outsider",
+        "Over-idealising"
+      ],
+      "affirmation": "I channel the vision and stay rooted in my body."
+    },
+    "22": {
+      "title": "The Master Builder",
+      "tagline": "Vision into form at large scale.",
+      "purpose": "A master path. You are here to build something enduring — an institution, a body of work, a movement. Your lesson is trusting the scale of your own capability.",
+      "strengths": [
+        "Vision + execution",
+        "Organisational genius",
+        "Long-range stamina"
+      ],
+      "challenges": [
+        "Feeling the weight of your own potential",
+        "Self-doubt at pivotal moments",
+        "Sacrificing relationships for the work"
+      ],
+      "affirmation": "I trust my capacity — and I build with others, not in isolation."
+    },
+    "33": {
+      "title": "The Master Teacher",
+      "tagline": "Love in service at a collective scale.",
+      "purpose": "The rarest master path. You are here to love, heal, and teach at a scale that shapes communities. Your lesson is self-care — you cannot pour from an empty cup, and your cup is asked for often.",
+      "strengths": [
+        "Unconditional love",
+        "Healing presence",
+        "Teaching by being"
+      ],
+      "challenges": [
+        "Martyrdom",
+        "Overwhelm",
+        "Forgetting to be a person, not just a role"
+      ],
+      "affirmation": "I love and serve from fullness — my own life matters as much as anyone's."
+    }
+  },
+  "chineseZodiac": {
+    "rat": {
+      "name": "Rat"
+    },
+    "ox": {
+      "name": "Ox"
+    },
+    "tiger": {
+      "name": "Tiger"
+    },
+    "rabbit": {
+      "name": "Rabbit"
+    },
+    "dragon": {
+      "name": "Dragon"
+    },
+    "snake": {
+      "name": "Snake"
+    },
+    "horse": {
+      "name": "Horse"
+    },
+    "goat": {
+      "name": "Goat"
+    },
+    "monkey": {
+      "name": "Monkey"
+    },
+    "rooster": {
+      "name": "Rooster"
+    },
+    "dog": {
+      "name": "Dog"
+    },
+    "pig": {
+      "name": "Pig"
+    }
   }
 }

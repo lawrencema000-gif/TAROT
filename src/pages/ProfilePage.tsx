@@ -19,6 +19,7 @@ import {
 import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
+import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
 import { useAuth } from '../context/AuthContext';
 import { useGeocode } from '../hooks/useAstrology';
 import { savedHighlights as savedHighlightsDal } from '../dal';
@@ -280,6 +281,13 @@ export function ProfilePage() {
             </div>
           </div>
         </Card>
+      )}
+
+      {profile?.birthDate && (
+        <CosmicProfileSection
+          birthDate={profile.birthDate}
+          displayName={profile.displayName}
+        />
       )}
 
       {profile?.goals && profile.goals.length > 0 && (

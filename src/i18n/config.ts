@@ -102,7 +102,11 @@ i18n
     },
 
     detection: {
-      order: ['querystring', 'localStorage', 'navigator'],
+      // Intentionally excludes 'navigator' — users on Japanese-locale phones
+      // would otherwise see a Japanese UI before they get a chance to pick.
+      // English is the fallback (fallbackLng above); users opt into ja/ko/zh
+      // via the onboarding language picker or settings sheet.
+      order: ['querystring', 'localStorage'],
       lookupQuerystring: 'lang',
       lookupLocalStorage: LOCALE_STORAGE_KEY,
       caches: ['localStorage'],

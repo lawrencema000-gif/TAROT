@@ -354,7 +354,7 @@ function AppContent() {
 
   return (
     <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-      <div className="min-h-screen pb-24 relative constellation-bg">
+      <div className="min-h-screen pb-nav relative constellation-bg">
         {profile?.background_url ? (
           <div className="fixed inset-0 z-0">
             <div

@@ -241,16 +241,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(profile);
 
       // Sync locale between profile and client i18n state.
-      // Server profile wins if it's set — otherwise push the locale the user
-      // picked while anonymous (from localStorage) up to their profile.
+      // Client wins: the locale the user just picked on this device is always
+      // authoritative over a stale `profile.locale` from a prior session or
+      // another device. We only fall BACK to profile.locale when this device
+      // has no saved choice yet (first install, empty localStorage).
       try {
-        const { getLocale, setLocale, normalizeLocale } = await import('../i18n/config');
+        const { getLocale, setLocale, normalizeLocale, LOCALE_STORAGE_KEY } = await import('../i18n/config');
         const profileLocale = normalizeLocale(profile.locale ?? null);
         const clientLocale = getLocale();
-        if (profileLocale && profileLocale !== clientLocale) {
+        const hasExplicitClientChoice = (() => {
+          try { return !!localStorage.getItem(LOCALE_STORAGE_KEY); } catch { return false; }
+        })();
+
+        if (hasExplicitClientChoice) {
+          // Push client → server so other devices pick it up on next sign-in.
+          if (profileLocale !== clientLocale) {
+            await supabase.from('profiles').update({ locale: clientLocale }).eq('id', userId);
+          }
+        } else if (profileLocale && profileLocale !== clientLocale) {
+          // No local choice yet — adopt the profile's saved preference.
           await setLocale(profileLocale);
-        } else if (!profileLocale && clientLocale !== 'en') {
-          await supabase.from('profiles').update({ locale: clientLocale }).eq('id', userId);
         }
       } catch (e) {
         console.warn('[Auth] Locale sync failed:', e);

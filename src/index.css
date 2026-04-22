@@ -211,6 +211,13 @@
     padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
   }
 
+  /* Reserve scroll room for the fixed BottomNav PLUS the gesture-pill inset.
+     Use on page wrappers that sit under BottomNav so the last content row
+     isn't hidden behind the nav on gesture-navigation Androids. */
+  .pb-nav {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+
   .safe-top {
     padding-top: max(env(safe-area-inset-top, 0px), 16px);
   }

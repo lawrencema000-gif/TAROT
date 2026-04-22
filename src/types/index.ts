@@ -131,7 +131,7 @@ export interface QuizQuestion {
 
 export interface QuizDefinition {
   id: string;
-  type: 'mbti' | 'love-language' | 'big-five' | 'enneagram' | 'attachment';
+  type: 'mbti' | 'love-language' | 'big-five' | 'enneagram' | 'attachment' | 'court-match';
   title: string;
   description: string;
   questions: QuizQuestion[];

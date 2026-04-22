@@ -2,16 +2,17 @@ import type { QuizDefinition } from '../types';
 import i18n from './config';
 
 /**
- * Localize a quiz definition's title, description, and Likert option labels
- * to the active UI locale. Individual question text is NOT translated yet —
- * that's a separate (much larger) content migration, so non-English locales
- * currently still see the question stems in English while the surrounding
- * scaffolding is translated.
+ * Localize a quiz definition's title, description, question text, and option
+ * labels to the active UI locale.
  *
- * The quiz id determines which translation key to use. `likertKey` maps the
- * numeric option value (1–5) to a translated Likert label. Options whose
- * value falls outside 1–5 keep their original label (e.g. single-answer
- * quizzes like love language self-identification).
+ * The older quizzes (full MBTI, Big Five, Enneagram, Attachment) only have
+ * translations for title/description/Likert labels — their individual
+ * question stems currently still render in English because translating
+ * ~200 items to 4 locales is a separate content job.
+ *
+ * Newer quizzes (Quick MBTI, Tarot Court Match) ship with per-question
+ * translations under `quizzes.definitions.<id>.questions.<qid>.text` and
+ * per-option labels under `quizzes.definitions.<id>.questions.<qid>.options.<value>`.
  */
 export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
   const t = (key: string, fallback: string): string => {
@@ -21,6 +22,7 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
   };
 
   const definitionKey = quizDefinitionKey(quiz.id, quiz.type);
+  const isLikertQuiz = quiz.questions.every((q) => q.options.length === 5);
 
   const title = definitionKey
     ? t(`quizzes.definitions.${definitionKey}.title`, quiz.title)
@@ -29,16 +31,29 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
     ? t(`quizzes.definitions.${definitionKey}.description`, quiz.description)
     : quiz.description;
 
-  const localizedQuestions = quiz.questions.map((q) => ({
-    ...q,
-    options: q.options.map((opt) => {
-      // Likert 1–5 options share a single translation block
-      if (opt.value >= 1 && opt.value <= 5) {
+  const localizedQuestions = quiz.questions.map((q) => {
+    const questionText = definitionKey
+      ? t(`quizzes.definitions.${definitionKey}.questions.${q.id}.text`, q.text)
+      : q.text;
+
+    const options = q.options.map((opt) => {
+      // Per-quiz per-question option translation (forced-choice quizzes)
+      if (definitionKey) {
+        const perOptionKey = `quizzes.definitions.${definitionKey}.questions.${q.id}.options.${opt.value}`;
+        const translated = i18n.t(perOptionKey, { ns: 'app' });
+        if (translated !== perOptionKey) {
+          return { ...opt, label: translated };
+        }
+      }
+      // Shared Likert 1–5 labels (applies only to classic Likert quizzes)
+      if (isLikertQuiz && opt.value >= 1 && opt.value <= 5) {
         return { ...opt, label: t(`quizzes.likert.${opt.value}`, opt.label) };
       }
       return opt;
-    }),
-  }));
+    });
+
+    return { ...q, text: questionText, options };
+  });
 
   return {
     ...quiz,
@@ -50,6 +65,8 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
 
 function quizDefinitionKey(id: string, type: string): string | null {
   // Keys match what exists in app.json quizzes.definitions.*
+  if (id.startsWith('mbti-quick')) return 'mbtiQuick';
+  if (id.startsWith('court-match') || type === 'court-match') return 'courtMatch';
   if (id.startsWith('mbti')) return 'mbti';
   if (id.startsWith('love-language')) return 'loveLanguage';
   if (id.startsWith('enneagram')) return 'enneagram';
@@ -73,6 +90,8 @@ export function localizeQuizMetadata<T extends { timeEstimate: string; whatYouGe
     typeKey === 'mood-check' ? 'mood' :
     typeKey === 'love-language' ? 'loveLanguage' :
     typeKey === 'big-five' ? 'bigfive' :
+    typeKey === 'mbti-quick' ? 'mbtiQuick' :
+    typeKey === 'court-match' ? 'courtMatch' :
     typeKey;
   const timeEstimate = i18n.t(
     `quizzes.definitions.${definitionKey}.timeEstimate`,

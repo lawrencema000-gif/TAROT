@@ -60,6 +60,9 @@ import {
 import { bigFiveQuiz, calculateBigFive, bigFiveDescriptions } from '../data/bigFiveQuiz';
 import { enneagramQuiz, calculateEnneagram, enneagramDescriptions } from '../data/enneagramQuiz';
 import { attachmentQuiz, calculateAttachment, attachmentDescriptions } from '../data/attachmentQuiz';
+import { mbtiQuickQuiz } from '../data/mbtiQuickQuiz';
+import { tarotCourtQuiz, calculateCourtMatch, getCourtCardInfo } from '../data/tarotCourtQuiz';
+import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
 import type { QuizDefinition } from '../types';
 
@@ -101,6 +104,100 @@ const encouragementMessages = [
   "Your honesty leads to better results.",
   "Keep up the momentum!",
 ];
+
+/**
+ * Mid-quiz hint: at ~25/50/75% progress, peek at the leading dimension
+ * based on answers so far. Returns a short localized string or null.
+ *
+ * Deliberately only fires at threshold crossings so it appears once per
+ * quarter — not every question. Mood-check is skipped (too short).
+ */
+function computeSneakPeek(
+  quiz: QuizDefinition,
+  answers: Record<string, number>,
+  currentQ: number,
+  total: number,
+  tApp: (key: string, opts?: Record<string, unknown>) => string,
+): string | null {
+  if (quiz.id === 'mood-check-v1') return null;
+  if (total < 8) return null;
+  const percent = (currentQ / total) * 100;
+  // Fire only when we JUST crossed 25/50/75
+  const hit25 = percent >= 25 && (currentQ - 1) / total * 100 < 25;
+  const hit50 = percent >= 50 && (currentQ - 1) / total * 100 < 50;
+  const hit75 = percent >= 75 && (currentQ - 1) / total * 100 < 75;
+  if (!hit25 && !hit50 && !hit75) return null;
+
+  const answered = Object.keys(answers).length;
+  if (answered < 2) return null;
+
+  if (quiz.type === 'mbti') {
+    const sums: Record<string, number> = { EI: 0, SN: 0, TF: 0, JP: 0 };
+    const counts: Record<string, number> = { EI: 0, SN: 0, TF: 0, JP: 0 };
+    quiz.questions.forEach((q) => {
+      if (!q.dimension) return;
+      const v = answers[q.id];
+      if (v !== undefined) {
+        sums[q.dimension] = (sums[q.dimension] || 0) + v;
+        counts[q.dimension] = (counts[q.dimension] || 0) + 1;
+      }
+    });
+    const leaning: string[] = [];
+    for (const dim of ['EI', 'SN', 'TF', 'JP']) {
+      if (!counts[dim]) continue;
+      const avg = sums[dim] / counts[dim];
+      if (avg >= 3.5) leaning.push(dim[1]);
+      else if (avg <= 2.5) leaning.push(dim[0]);
+    }
+    if (leaning.length === 0) return null;
+    return tApp('quizzes.sneakPeek.mbti', {
+      letters: leaning.join(''),
+      defaultValue: `You're leaning ${leaning.join('')} so far — keep going to confirm.`,
+    });
+  }
+
+  if (quiz.type === 'court-match') {
+    const elementCount: Record<string, number> = { wands: 0, cups: 0, swords: 0, pentacles: 0 };
+    const rankCount: Record<string, number> = { page: 0, knight: 0, queen: 0, king: 0 };
+    const elementMap: Record<number, string> = { 1: 'wands', 2: 'cups', 3: 'swords', 4: 'pentacles' };
+    const rankMap: Record<number, string> = { 1: 'page', 2: 'knight', 3: 'queen', 4: 'king' };
+    Object.entries(answers).forEach(([qid, v]) => {
+      if (qid.startsWith('ce') && elementMap[v]) elementCount[elementMap[v]]++;
+      if (qid.startsWith('cr') && rankMap[v]) rankCount[rankMap[v]]++;
+    });
+    const topElement = Object.entries(elementCount).sort((a, b) => b[1] - a[1])[0];
+    if (!topElement || topElement[1] === 0) return null;
+    return tApp(`quizzes.sneakPeek.courtMatchElement.${topElement[0]}`, {
+      defaultValue: `A ${topElement[0]} card is taking shape...`,
+    });
+  }
+
+  if (quiz.type === 'love-language') {
+    return tApp('quizzes.sneakPeek.loveLanguage', {
+      defaultValue: 'Your primary love language is starting to emerge...',
+    });
+  }
+
+  if (quiz.type === 'enneagram') {
+    return tApp('quizzes.sneakPeek.enneagram', {
+      defaultValue: 'A type pattern is forming — keep going for your wing.',
+    });
+  }
+
+  if (quiz.type === 'attachment') {
+    return tApp('quizzes.sneakPeek.attachment', {
+      defaultValue: 'Your attachment style is coming into focus...',
+    });
+  }
+
+  if (quiz.type === 'big-five') {
+    return tApp('quizzes.sneakPeek.bigFive', {
+      defaultValue: 'Your trait profile is taking shape...',
+    });
+  }
+
+  return null;
+}
 
 export function QuizzesPage() {
   const { t: tApp } = useT('app');
@@ -156,6 +253,16 @@ export function QuizzesPage() {
       quiz: localizeQuiz(moodCheckQuiz),
       type: 'mood-check',
       metadata: localizeQuizMetadata('mood-check', quizMetadata['mood-check']),
+    },
+    {
+      quiz: localizeQuiz(mbtiQuickQuiz),
+      type: 'mbti',
+      metadata: localizeQuizMetadata('mbti-quick', quizMetadata['mbti-quick']),
+    },
+    {
+      quiz: localizeQuiz(tarotCourtQuiz),
+      type: 'court-match',
+      metadata: localizeQuizMetadata('court-match', quizMetadata['court-match']),
     },
     {
       quiz: localizeQuiz(mbtiQuiz),
@@ -254,6 +361,9 @@ export function QuizzesPage() {
       if (progress.quiz.type === 'mbti') {
         calculatedResult = calculateMBTI(newAnswers);
         resultLabel = calculatedResult.type;
+      } else if (progress.quiz.type === 'court-match') {
+        calculatedResult = calculateCourtMatch(newAnswers);
+        resultLabel = calculatedResult.courtCard;
       } else if (progress.quiz.type === 'love-language') {
         calculatedResult = calculateLoveLanguage(newAnswers);
         resultLabel = calculatedResult.primary;
@@ -338,6 +448,10 @@ export function QuizzesPage() {
     const showEncouragement = isMBTI && currentQ % 6 === 0 && currentQ < totalQuestions;
     const encouragement = encouragementMessages[Math.floor(currentQ / 6) % encouragementMessages.length];
 
+    // Mid-quiz sneak-peek: show the leaning dimension at 25/50/75% marks.
+    // Skipped for the 30-second mood check (too short to bother).
+    const sneakPeek = computeSneakPeek(progress.quiz, progress.answers, currentQ, totalQuestions, tApp);
+
     return (
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-4">
@@ -353,7 +467,19 @@ export function QuizzesPage() {
           </div>
         </div>
 
-        {showEncouragement && (
+        {sneakPeek && (
+          <Card padding="md" className="bg-gradient-to-r from-gold/10 via-mystic-900 to-mystic-900 border-gold/20 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-gold shrink-0" />
+              <p className="text-sm text-mystic-200 leading-relaxed">
+                <span className="text-gold/80">{tApp('quizzes.sneakPeek.label', { defaultValue: 'Early reading:' })}</span>{' '}
+                {sneakPeek}
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {showEncouragement && !sneakPeek && (
           <div className="text-center py-2">
             <p className="text-sm text-gold/80 italic">{encouragement}</p>
           </div>
@@ -487,6 +613,112 @@ export function QuizzesPage() {
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
+        </div>
+      );
+    }
+
+    if (result.quiz.type === 'court-match') {
+      const courtResult = result.result as ReturnType<typeof calculateCourtMatch>;
+      const info = getCourtCardInfo(courtResult.courtCard);
+      const cardKey = courtResult.courtCard;
+      const localized = (path: string, fallback: string | string[]) =>
+        tApp(`quizzes.courtCards.${cardKey}.${path}`, { defaultValue: fallback });
+      const name = localized('name', info.name) as string;
+      const tagline = localized('tagline', info.tagline) as string;
+      const archetype = localized('archetype', info.archetype) as string;
+      const strengths = tApp(`quizzes.courtCards.${cardKey}.strengths`, { returnObjects: true, defaultValue: info.strengths }) as string[];
+      const shadow = tApp(`quizzes.courtCards.${cardKey}.shadow`, { returnObjects: true, defaultValue: info.shadow }) as string[];
+      const whenDrawn = localized('whenDrawn', info.whenDrawn) as string;
+      const affirmation = localized('affirmation', info.affirmation) as string;
+
+      return (
+        <div className="space-y-4 pb-6">
+          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          </button>
+
+          <Card variant="glow" padding="lg" className="text-center">
+            <div className="mx-auto mb-4 w-28 h-40 rounded-xl bg-gradient-to-br from-gold/30 via-mystic-800 to-mystic-900 border-2 border-gold/30 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.2)_0%,transparent_70%)]" />
+              <div className="relative">
+                <Sparkles className="w-8 h-8 text-gold mx-auto mb-1" />
+                <span className="text-xs tracking-widest text-gold/70 uppercase">{archetype}</span>
+              </div>
+            </div>
+            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-mystic-200 mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-gold" />
+              {tApp('quizzes.resultSections.whenDrawn', { defaultValue: 'When this card appears' })}
+            </h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{whenDrawn}</p>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card padding="lg">
+              <h3 className="font-medium text-emerald-400 mb-3">
+                {tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}
+              </h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {strengths.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </Card>
+            <Card padding="lg">
+              <h3 className="font-medium text-pink-400 mb-3">
+                {tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}
+              </h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {shadow.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </Card>
+          </div>
+
+          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {tApp('quizzes.resultSections.affirmation', { defaultValue: 'Your affirmation' })}
+            </h3>
+            <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
+          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              fullWidth
+              className="min-h-[48px]"
+              onClick={async () => {
+                try {
+                  const blob = await renderShareCard({
+                    title: name,
+                    subtitle: archetype,
+                    tagline,
+                    affirmation,
+                    brand: 'Arcana · Tarot Court Card Match',
+                  });
+                  const outcome = await shareOrDownload(
+                    blob,
+                    `arcana-${cardKey}.png`,
+                    `My tarot court card is the ${name}. ${tagline}`,
+                  );
+                  if (outcome === 'downloaded') {
+                    toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                  }
+                } catch {
+                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                }
+              }}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+            </Button>
+          </div>
         </div>
       );
     }

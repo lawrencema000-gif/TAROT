@@ -854,4 +854,16 @@ export const quizMetadata = {
     icon: 'link',
     color: 'pink-400',
   },
+  'mbti-quick': {
+    timeEstimate: '3 min',
+    whatYouGet: ['Your 4-letter type, fast', 'Where your strengths live', 'Upgrade path to the full 70-question deep read', 'Tarot archetype alignment'],
+    icon: 'zap',
+    color: 'cosmic-blue',
+  },
+  'court-match': {
+    timeEstimate: '4 min',
+    whatYouGet: ['Which of 16 tarot court cards mirrors you', 'Your elemental style (fire/water/air/earth)', 'Your current maturity rank (page/knight/queen/king)', 'Strengths, shadow, and an affirmation to carry'],
+    icon: 'crown',
+    color: 'gold',
+  },
 };

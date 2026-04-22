@@ -469,6 +469,176 @@
           "A journal prompt for your current state",
           "Optional tarot archetype suggestion"
         ]
+      },
+      "mbtiQuick": {
+        "title": "Quick Personality Type",
+        "description": "A fast 12-question read on how you recharge, perceive, decide, and structure your life. Great as an intro — upgrade to the full 70-question deep dive any time for a more precise result.",
+        "timeEstimate": "3 min",
+        "whatYouGet": [
+          "Your 4-letter type, fast",
+          "Where your strengths live",
+          "Upgrade path to the full 70-question deep read",
+          "Tarot archetype alignment"
+        ],
+        "questions": {
+          "qei1": {
+            "text": "I recharge best around energetic groups of people."
+          },
+          "qei2": {
+            "text": "After a long social event, I need solo time to recover."
+          },
+          "qei3": {
+            "text": "I process ideas best by talking them out with others."
+          },
+          "qsn1": {
+            "text": "I trust concrete facts and details more than hunches."
+          },
+          "qsn2": {
+            "text": "I love imagining future possibilities and abstract ideas."
+          },
+          "qsn3": {
+            "text": "Proven, practical methods appeal to me more than novel theories."
+          },
+          "qtf1": {
+            "text": "Logic and fairness matter more to me than sparing feelings when I decide."
+          },
+          "qtf2": {
+            "text": "My first thought when deciding is how it affects the people involved."
+          },
+          "qtf3": {
+            "text": "Getting to the objective truth matters more than keeping the peace."
+          },
+          "qjp1": {
+            "text": "I feel calmer when plans and schedules are set in advance."
+          },
+          "qjp2": {
+            "text": "I prefer to keep options open and see what unfolds."
+          },
+          "qjp3": {
+            "text": "Deadlines and structure bring out my best work."
+          }
+        }
+      },
+      "courtMatch": {
+        "title": "Tarot Court Card Match",
+        "description": "Twelve cards. One verdict. Which of the sixteen court cards of the tarot best mirrors your current energy? This reading pairs elemental style (Wands / Cups / Swords / Pentacles) with rank (Page / Knight / Queen / King) so you get a living archetype — not just a trait.",
+        "timeEstimate": "4 min",
+        "whatYouGet": [
+          "Which of 16 tarot court cards mirrors you",
+          "Your elemental style (fire/water/air/earth)",
+          "Your current maturity rank (page/knight/queen/king)",
+          "Strengths, shadow, and an affirmation to carry"
+        ],
+        "questions": {
+          "ce1": {
+            "text": "When faced with a problem, I first…",
+            "options": {
+              "1": "Burn through it with passion and force.",
+              "2": "Feel it in my body and follow my gut.",
+              "3": "Break it down and analyze every angle.",
+              "4": "Build a practical, step-by-step plan."
+            }
+          },
+          "ce2": {
+            "text": "My ideal day looks like…",
+            "options": {
+              "1": "Adventure — something bold and new.",
+              "2": "Cozy time with the people I love.",
+              "3": "Deep conversation about meaningful ideas.",
+              "4": "Building or making something tangible."
+            }
+          },
+          "ce3": {
+            "text": "Friends describe me as…",
+            "options": {
+              "1": "Energetic and bold.",
+              "2": "Warm and empathetic.",
+              "3": "Sharp and analytical.",
+              "4": "Reliable and grounded."
+            }
+          },
+          "ce4": {
+            "text": "I lose track of time when I'm…",
+            "options": {
+              "1": "Creating, performing, or leading.",
+              "2": "Connecting deeply with someone.",
+              "3": "Writing, debating, or puzzling something out.",
+              "4": "Crafting, gardening, or working with my hands."
+            }
+          },
+          "ce5": {
+            "text": "Under stress I tend to…",
+            "options": {
+              "1": "Act out impulsively or explode.",
+              "2": "Withdraw into my feelings.",
+              "3": "Overthink and detach.",
+              "4": "Double down on rigid routines."
+            }
+          },
+          "ce6": {
+            "text": "What draws me most is…",
+            "options": {
+              "1": "Flames — inspiration, movement, spark.",
+              "2": "Water — emotion, depth, flow.",
+              "3": "Air — thought, language, clarity.",
+              "4": "Earth — craft, body, solidity."
+            }
+          },
+          "cr1": {
+            "text": "My relationship with authority is…",
+            "options": {
+              "1": "I question it — I'm still learning the ropes.",
+              "2": "I challenge it through action.",
+              "3": "I guide others around me.",
+              "4": "I've become it — I set the standard."
+            }
+          },
+          "cr2": {
+            "text": "In groups I tend to…",
+            "options": {
+              "1": "Ask a lot of questions and soak it all in.",
+              "2": "Push everyone toward action.",
+              "3": "Hold space and listen deeply.",
+              "4": "Make the final call."
+            }
+          },
+          "cr3": {
+            "text": "My relationship with change is…",
+            "options": {
+              "1": "Exciting — I'm curious and wide-eyed.",
+              "2": "I chase it — I want to make it happen.",
+              "3": "I adapt and nurture others through it.",
+              "4": "I steady the ship so nothing breaks."
+            }
+          },
+          "cr4": {
+            "text": "Experience has taught me…",
+            "options": {
+              "1": "I still have so much to learn.",
+              "2": "To trust my instincts and move.",
+              "3": "Empathy is strength.",
+              "4": "Structure and accountability matter."
+            }
+          },
+          "cr5": {
+            "text": "When I master something I…",
+            "options": {
+              "1": "Share the excitement of discovering it.",
+              "2": "Teach through doing — lead by example.",
+              "3": "Mentor gently, one person at a time.",
+              "4": "Set the bar others aspire to."
+            }
+          },
+          "cr6": {
+            "text": "My emotional style is…",
+            "options": {
+              "1": "Open and fresh — I feel things vividly.",
+              "2": "Intense and driven.",
+              "3": "Deep and containing — I hold others' feelings too.",
+              "4": "Measured and sovereign."
+            }
+          }
+        }
       }
     },
     "types": {
@@ -495,9 +665,306 @@
       "lowerThanAverage": "Lower than average",
       "averageRange": "Average range",
       "compatibleTypes": "Compatible Types",
-      "enneagramType": "Type {{n}}"
+      "enneagramType": "Type {{n}}",
+      "whenDrawn": "When this card appears",
+      "shadow": "Shadow side",
+      "affirmation": "Your affirmation"
     },
-    "takeAnother": "Take Another Quiz"
+    "takeAnother": "Take Another Quiz",
+    "courtCards": {
+      "page-of-wands": {
+        "name": "Page of Wands",
+        "tagline": "The curious spark.",
+        "archetype": "Beginner adventurer",
+        "strengths": [
+          "Enthusiasm",
+          "Fresh ideas",
+          "Contagious energy"
+        ],
+        "shadow": [
+          "Impulsiveness",
+          "Half-finished projects",
+          "Flakiness"
+        ],
+        "whenDrawn": "A new creative fire is lighting — explore it before planning it.",
+        "affirmation": "I follow what lights me up without needing it to be perfect yet."
+      },
+      "knight-of-wands": {
+        "name": "Knight of Wands",
+        "tagline": "The bold quester.",
+        "archetype": "Action-driven pioneer",
+        "strengths": [
+          "Momentum",
+          "Courage",
+          "Charisma"
+        ],
+        "shadow": [
+          "Recklessness",
+          "Burnout",
+          "Impatience"
+        ],
+        "whenDrawn": "Move — but watch the cost of speed. The fire wants direction.",
+        "affirmation": "I move with passion and pace myself for the long road."
+      },
+      "queen-of-wands": {
+        "name": "Queen of Wands",
+        "tagline": "The radiant sovereign.",
+        "archetype": "Magnetic leader",
+        "strengths": [
+          "Confidence",
+          "Warmth",
+          "Creative authority"
+        ],
+        "shadow": [
+          "Ego flare-ups",
+          "Jealousy",
+          "Attention-dependence"
+        ],
+        "whenDrawn": "Step fully into your light. Others follow the one who burns clearly.",
+        "affirmation": "My presence is my power — I take up the space that is mine."
+      },
+      "king-of-wands": {
+        "name": "King of Wands",
+        "tagline": "The visionary founder.",
+        "archetype": "Mature creator",
+        "strengths": [
+          "Vision",
+          "Leadership",
+          "Sustained passion"
+        ],
+        "shadow": [
+          "Tyranny",
+          "Over-control",
+          "Pride"
+        ],
+        "whenDrawn": "You are ready to build long-range. Lead from purpose, not pressure.",
+        "affirmation": "I lead with clear vision and trust others to carry their part."
+      },
+      "page-of-cups": {
+        "name": "Page of Cups",
+        "tagline": "The open-hearted dreamer.",
+        "archetype": "Intuitive newcomer",
+        "strengths": [
+          "Imagination",
+          "Empathy",
+          "Emotional openness"
+        ],
+        "shadow": [
+          "Naivety",
+          "Over-sensitivity",
+          "Escapism"
+        ],
+        "whenDrawn": "A tender feeling or creative spark wants attention — honour it.",
+        "affirmation": "I let my softness be a source of information, not a liability."
+      },
+      "knight-of-cups": {
+        "name": "Knight of Cups",
+        "tagline": "The romantic quester.",
+        "archetype": "Heart-led seeker",
+        "strengths": [
+          "Deep feeling",
+          "Artistry",
+          "Devotion"
+        ],
+        "shadow": [
+          "Idealization",
+          "Moodiness",
+          "Avoidance of hard truths"
+        ],
+        "whenDrawn": "Follow the feeling — but ground it with action, not fantasy alone.",
+        "affirmation": "I pursue what I love with both heart and feet on the ground."
+      },
+      "queen-of-cups": {
+        "name": "Queen of Cups",
+        "tagline": "The empath-oracle.",
+        "archetype": "Emotional sage",
+        "strengths": [
+          "Intuition",
+          "Compassion",
+          "Emotional holding"
+        ],
+        "shadow": [
+          "Absorbing others' pain",
+          "Martyrdom",
+          "Loss of self"
+        ],
+        "whenDrawn": "Your emotional intelligence is a gift. Also — tend your own cup first.",
+        "affirmation": "I feel deeply and also know where I end and others begin."
+      },
+      "king-of-cups": {
+        "name": "King of Cups",
+        "tagline": "The steady current.",
+        "archetype": "Compassionate authority",
+        "strengths": [
+          "Emotional maturity",
+          "Counsel",
+          "Resilience under pressure"
+        ],
+        "shadow": [
+          "Suppressed feelings",
+          "Over-caretaking",
+          "Quiet resentment"
+        ],
+        "whenDrawn": "You are the calm others rely on — make sure you have somewhere to feel, too.",
+        "affirmation": "I hold space for others because I know how to hold space for myself."
+      },
+      "page-of-swords": {
+        "name": "Page of Swords",
+        "tagline": "The sharp apprentice.",
+        "archetype": "Curious thinker",
+        "strengths": [
+          "Quick mind",
+          "Curiosity",
+          "Questioning spirit"
+        ],
+        "shadow": [
+          "Gossip",
+          "Overthinking",
+          "Cutting words"
+        ],
+        "whenDrawn": "A new idea wants investigating — ask before you assume.",
+        "affirmation": "I ask questions before I draw conclusions."
+      },
+      "knight-of-swords": {
+        "name": "Knight of Swords",
+        "tagline": "The charging mind.",
+        "archetype": "Relentless debater",
+        "strengths": [
+          "Clarity",
+          "Drive",
+          "Moral conviction"
+        ],
+        "shadow": [
+          "Arrogance",
+          "Tunnel vision",
+          "Verbal harm"
+        ],
+        "whenDrawn": "Your truth is strong — deliver it without running people over.",
+        "affirmation": "I speak truth with both edge and care."
+      },
+      "queen-of-swords": {
+        "name": "Queen of Swords",
+        "tagline": "The clear-eyed witness.",
+        "archetype": "Discerning wise one",
+        "strengths": [
+          "Clarity",
+          "Boundaries",
+          "Honest insight"
+        ],
+        "shadow": [
+          "Coldness",
+          "Harsh judgement",
+          "Isolation"
+        ],
+        "whenDrawn": "Your clarity is needed — let honesty and warmth arrive together.",
+        "affirmation": "I see clearly and speak kindly."
+      },
+      "king-of-swords": {
+        "name": "King of Swords",
+        "tagline": "The sovereign intellect.",
+        "archetype": "Principled authority",
+        "strengths": [
+          "Strategic thinking",
+          "Fairness",
+          "Decisiveness"
+        ],
+        "shadow": [
+          "Rigidity",
+          "Emotional distance",
+          "Abstraction"
+        ],
+        "whenDrawn": "You are the one others trust to cut clean — lead from ethics, not ego.",
+        "affirmation": "I decide from principle and remain open to new evidence."
+      },
+      "page-of-pentacles": {
+        "name": "Page of Pentacles",
+        "tagline": "The eager builder.",
+        "archetype": "Patient student",
+        "strengths": [
+          "Willingness to learn",
+          "Practicality",
+          "Follow-through"
+        ],
+        "shadow": [
+          "Perfectionism",
+          "Slowness to start",
+          "Penny-pinching"
+        ],
+        "whenDrawn": "A new skill or venture is worth investing in — start small, stay steady.",
+        "affirmation": "I begin where I am and trust the accumulation of small steps."
+      },
+      "knight-of-pentacles": {
+        "name": "Knight of Pentacles",
+        "tagline": "The determined worker.",
+        "archetype": "Reliable executor",
+        "strengths": [
+          "Consistency",
+          "Discipline",
+          "Trustworthiness"
+        ],
+        "shadow": [
+          "Rigidity",
+          "Workaholism",
+          "Fear of risk"
+        ],
+        "whenDrawn": "Steady wins here — but occasionally, the slow path needs a shake.",
+        "affirmation": "I honour my discipline and allow myself moments of play."
+      },
+      "queen-of-pentacles": {
+        "name": "Queen of Pentacles",
+        "tagline": "The abundant provider.",
+        "archetype": "Nurturing creator",
+        "strengths": [
+          "Generosity",
+          "Practical care",
+          "Sensory wisdom"
+        ],
+        "shadow": [
+          "Over-giving",
+          "Material anxiety",
+          "Losing self in caretaking"
+        ],
+        "whenDrawn": "You tend to everyone's garden — remember to plant in your own.",
+        "affirmation": "I give from fullness, not from fear."
+      },
+      "king-of-pentacles": {
+        "name": "King of Pentacles",
+        "tagline": "The mountain.",
+        "archetype": "Established master",
+        "strengths": [
+          "Wealth-building",
+          "Legacy",
+          "Grounded leadership"
+        ],
+        "shadow": [
+          "Materialism",
+          "Control",
+          "Stubbornness"
+        ],
+        "whenDrawn": "You have built something real — now shape what it means, not just what it has.",
+        "affirmation": "I measure wealth by what I protect and what I give, not only by what I hold."
+      }
+    },
+    "sneakPeek": {
+      "label": "Early reading:",
+      "mbti": "You're leaning {{letters}} so far — keep going to confirm.",
+      "courtMatchElement": {
+        "wands": "A Wands card is taking shape — fire energy leads.",
+        "cups": "A Cups card is emerging — water leads.",
+        "swords": "A Swords card is forming — air leads.",
+        "pentacles": "A Pentacles card is building — earth leads."
+      },
+      "loveLanguage": "Your primary love language is starting to emerge...",
+      "enneagram": "A type pattern is forming — keep going for your wing.",
+      "attachment": "Your attachment style is coming into focus...",
+      "bigFive": "Your trait profile is taking shape..."
+    },
+    "share": {
+      "button": "Share",
+      "downloaded": "Saved to your device",
+      "failed": "Could not create share image"
+    },
+    "backToQuizzes": "Back to Quizzes"
   },
   "horoscope": {
     "title": "Horoscope",

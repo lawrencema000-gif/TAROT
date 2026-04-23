@@ -20,6 +20,13 @@ additional_redirect_urls = [
   "https://tarotlife.app/?lang=ja",
   "https://tarotlife.app/?lang=ko",
   "https://tarotlife.app/?lang=zh",
+  # Netlify preview deploys (--alias=<name> builds) — allowed so audit /
+  # smoke-test previews can complete Google OAuth. Wildcard covers every
+  # alias name.
+  "https://*--arcana-ritual-app.netlify.app",
+  "https://*--arcana-ritual-app.netlify.app/**",
+  "https://arcana-ritual-app.netlify.app",
+  "https://arcana-ritual-app.netlify.app/**",
   "com.arcana.app://auth",
   "com.arcana.app://**",
 ]

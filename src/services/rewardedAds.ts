@@ -64,10 +64,15 @@ class RewardedAdsService {
     });
 
     AdMob.addListener(RewardAdPluginEvents.Rewarded, async () => {
+      // Only resolve true when the unlock row actually landed in the DB.
+      // Before this fix, a failed INSERT (RLS, network) still resolved true,
+      // the UI said "unlocked!", then a fresh hasTemporaryAccess check
+      // returned false — the card stayed locked.
+      let persisted = false;
       if (this.pendingFeature) {
-        await this.grantTemporaryAccess(this.pendingFeature, this.pendingSpreadType);
+        persisted = await this.grantTemporaryAccess(this.pendingFeature, this.pendingSpreadType);
       }
-      this.resolveAdWatch?.(true);
+      this.resolveAdWatch?.(persisted);
       this.resolveAdWatch = null;
       this.pendingFeature = null;
       this.pendingSpreadType = null;
@@ -140,9 +145,18 @@ class RewardedAdsService {
 
     if (!this.pluginAvailable || !AdMob) return false;
 
+    // Bug fix: before, this returned false immediately when the ad hadn't
+    // preloaded yet — producing spurious "ads not available" toasts on
+    // first open or right after a dismissed ad. Now we trigger a preload
+    // and wait up to ~4s (AdMob typically takes 500-2000ms). If still
+    // not ready, honestly report no ad.
     if (!this.isAdReady) {
-      await this.preloadRewardedAd();
-      return false;
+      this.preloadRewardedAd();
+      const started = Date.now();
+      while (!this.isAdReady && Date.now() - started < 4000) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      if (!this.isAdReady) return false;
     }
 
     this.pendingFeature = feature;
@@ -159,40 +173,56 @@ class RewardedAdsService {
     });
   }
 
-  private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<void> {
-    if (!this.currentUserId) return;
+  /**
+   * Persist the reward on the server. Returns true if the unlock row was
+   * successfully written. On transient failures (network blip, etc), we
+   * retry twice with 500ms + 1s backoff before giving up.
+   *
+   * Return value is what the Promise at showRewardedAd resolves to — i.e.
+   * whether the UI should treat the feature as unlocked. Only a confirmed
+   * server write counts.
+   */
+  private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<boolean> {
+    if (!this.currentUserId) return false;
 
     const adUnitId = USE_TEST_ADS ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
 
-    try {
-      // Insert unlock record (server-side FIRST, then increment local count)
+    let persisted = false;
+    const backoffs = [0, 500, 1000];  // immediate, 0.5s, 1s
+    for (const delay of backoffs) {
+      if (delay > 0) await new Promise((r) => setTimeout(r, delay));
       const res = await rewardedAdUnlocks.insert({
         userId: this.currentUserId,
         feature,
         spreadType,
         adUnitId,
       });
-
-      if (!res.ok) {
-        console.error('[RewardedAds] Failed to save unlock:', res.error);
+      if (res.ok) {
+        persisted = true;
+        break;
       }
+      console.warn('[RewardedAds] Unlock insert failed (will retry):', res.error);
+    }
 
-      // Only increment local count AFTER server confirms
-      this.incrementLocalDailyCount();
+    if (!persisted) {
+      console.error('[RewardedAds] Unlock insert failed after retries — user will not see feature unlocked');
+      return false;
+    }
 
-      // Track rewarded ad event via backend
+    // Only after confirmed server write: increment local count + track.
+    this.incrementLocalDailyCount();
+    try {
       await adConfigService.trackEvent('rewarded', 'feature_unlock', {
         completed: true,
         rewardAmount: 1,
         rewardType: feature,
       });
-
-      // Refresh config to get updated daily stats from server
       adConfigService.invalidate();
       adConfigService.fetchConfig().catch(() => {});
     } catch {
-      /* empty */
+      /* best-effort analytics — already unlocked */
     }
+    return true;
   }
 
   async hasTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {

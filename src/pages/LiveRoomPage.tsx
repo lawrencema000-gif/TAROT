@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mic, Clock, Users, Heart } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, Heart, Play, Lock, Sparkles } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,9 @@ interface LiveRoom {
   duration_minutes: number;
   capacity: number;
   state: 'scheduled' | 'live' | 'completed' | 'cancelled';
+  recording_url: string | null;
+  replay_price_moonstones: number | null;
+  replay_duration_seconds: number | null;
 }
 
 const TIP_AMOUNTS = [5, 10, 25, 50, 100];
@@ -39,6 +42,8 @@ export function LiveRoomPage() {
   const [rsvpd, setRsvpd] = useState(false);
   const [listenerCount, setListenerCount] = useState(0);
   const [tipping, setTipping] = useState<number | null>(null);
+  const [replayUnlocked, setReplayUnlocked] = useState(false);
+  const [unlockingReplay, setUnlockingReplay] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -61,6 +66,16 @@ export function LiveRoomPage() {
       .select('user_id', { count: 'exact', head: true })
       .eq('room_id', id);
     setListenerCount(count ?? 0);
+
+    if (user) {
+      const { data: unlock } = await supabase
+        .from('live_room_replay_unlocks')
+        .select('source')
+        .eq('room_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setReplayUnlocked(!!unlock);
+    }
 
     setLoading(false);
   }, [id, user]);
@@ -86,6 +101,24 @@ export function LiveRoomPage() {
       setRsvpd(true);
       setListenerCount((n) => n + 1);
     }
+  };
+
+  const unlockReplay = async () => {
+    if (!id) return;
+    setUnlockingReplay(true);
+    const { error } = await supabase.rpc('live_room_replay_unlock_moonstones', { p_room_id: id });
+    setUnlockingReplay(false);
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes('insufficient')) {
+        toast(t('liveRoom.replayInsufficient', { defaultValue: 'Not enough Moonstones to unlock.' }), 'error');
+      } else {
+        toast(error.message, 'error');
+      }
+      return;
+    }
+    setReplayUnlocked(true);
+    toast(t('liveRoom.replayUnlocked', { defaultValue: 'Replay unlocked' }), 'success');
   };
 
   const sendTip = async (amount: number) => {
@@ -182,6 +215,48 @@ export function LiveRoomPage() {
           </p>
         </Card>
       ) : null}
+
+      {/* Replay (for completed rooms with a recording) */}
+      {room.state === 'completed' && room.recording_url && (
+        <Card padding="md" className={replayUnlocked ? 'border-emerald-400/30' : ''}>
+          <div className="flex items-center gap-2 mb-3">
+            {replayUnlocked ? <Play className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4 text-mystic-400" />}
+            <p className="text-xs font-medium tracking-wide uppercase text-mystic-300">
+              {t('liveRoom.replayHeading', { defaultValue: 'Replay' })}
+            </p>
+          </div>
+          {replayUnlocked ? (
+            <audio controls src={room.recording_url} className="w-full" />
+          ) : room.replay_price_moonstones != null ? (
+            <div>
+              <p className="text-sm text-mystic-300 mb-3">
+                {t('liveRoom.replayLocked', {
+                  defaultValue: 'Listen anytime for {{n}} Moonstones.',
+                  n: room.replay_price_moonstones,
+                })}
+              </p>
+              {user ? (
+                <Button variant="gold" onClick={unlockReplay} disabled={unlockingReplay} className="w-full">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {unlockingReplay
+                    ? t('liveRoom.unlocking', { defaultValue: 'Unlocking…' })
+                    : t('liveRoom.unlockReplay', {
+                        defaultValue: 'Unlock replay — {{n}} Moonstones',
+                        n: room.replay_price_moonstones,
+                      })}
+                </Button>
+              ) : (
+                <p className="text-xs text-mystic-500 italic">{t('liveRoom.signInToUnlock', { defaultValue: 'Sign in to unlock the replay' })}</p>
+              )}
+            </div>
+          ) : (
+            <Button variant="primary" onClick={unlockReplay} disabled={unlockingReplay || !user} className="w-full">
+              <Play className="w-4 h-4 mr-2" />
+              {t('liveRoom.listenFree', { defaultValue: 'Listen — free' })}
+            </Button>
+          )}
+        </Card>
+      )}
 
       {isLive && !isHost && user && (
         <Card padding="md">

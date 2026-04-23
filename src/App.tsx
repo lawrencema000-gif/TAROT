@@ -52,6 +52,8 @@ const CompatInvitePage = lazy(() => import('./pages/CompatInvitePage').then(m =>
 const AdvisorBookingPage = lazy(() => import('./pages/AdvisorBookingPage').then(m => ({ default: m.AdvisorBookingPage })));
 const AdvisorSessionPage = lazy(() => import('./pages/AdvisorSessionPage').then(m => ({ default: m.AdvisorSessionPage })));
 const AdvisorDashboardPage = lazy(() => import('./pages/AdvisorDashboardPage').then(m => ({ default: m.AdvisorDashboardPage })));
+const AdvisorVerifyPage = lazy(() => import('./pages/AdvisorVerifyPage').then(m => ({ default: m.AdvisorVerifyPage })));
+const SandboxPage = lazy(() => import('./pages/SandboxPage').then(m => ({ default: m.SandboxPage })));
 const QuickReadingPage = lazy(() => import('./pages/QuickReadingPage').then(m => ({ default: m.QuickReadingPage })));
 const TarotCompanionPage = lazy(() => import('./pages/TarotCompanionPage').then(m => ({ default: m.TarotCompanionPage })));
 const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage').then(m => ({ default: m.LiveRoomsPage })));
@@ -429,6 +431,8 @@ function AppContent() {
                   <Route path="/ai/tarot" element={<TarotCompanionPage />} />
                   <Route path="/live-rooms" element={<LiveRoomsPage />} />
                   <Route path="/live-rooms/:id" element={<LiveRoomPage />} />
+                  <Route path="/advisors/verify" element={<AdvisorVerifyPage />} />
+                  <Route path="/sandbox" element={<SandboxPage />} />
                   <Route path="/advisors/dashboard" element={<AdvisorDashboardPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

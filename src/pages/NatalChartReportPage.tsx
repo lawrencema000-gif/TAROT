@@ -77,9 +77,20 @@ export function NatalChartReportPage() {
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const transitOverlayEnabled = useFeatureFlag('chart-transits');
-  const [variant, setVariant] = useState<'natal' | 'transits'>('natal');
+  const chartVariantsEnabled = useFeatureFlag('chart-variants');
+  type Variant = 'natal' | 'transits' | 'progressions' | 'solar-return' | 'synastry';
+  const [variant, setVariant] = useState<Variant>('natal');
   const [transitPlanets, setTransitPlanets] = useState<OverlayPlanet[] | null>(null);
-  const [loadingTransits, setLoadingTransits] = useState(false);
+  const [progressedPlanets, setProgressedPlanets] = useState<OverlayPlanet[] | null>(null);
+  const [progressedLabel, setProgressedLabel] = useState<string | null>(null);
+  const [solarReturnPlanets, setSolarReturnPlanets] = useState<OverlayPlanet[] | null>(null);
+  const [solarReturnLabel, setSolarReturnLabel] = useState<string | null>(null);
+  const [partnerPlanets, setPartnerPlanets] = useState<OverlayPlanet[] | null>(null);
+  const [partnerBirthDate, setPartnerBirthDate] = useState<string>('');
+  const [partnerBirthTime, setPartnerBirthTime] = useState<string>('');
+  const [partnerName, setPartnerName] = useState<string>('');
+  const [partnerAspects, setPartnerAspects] = useState<Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>>([]);
+  const [loadingVariant, setLoadingVariant] = useState(false);
 
   const reference = profile?.birthDate ?? 'no-birth';
   const hasBirthData = !!profile?.birthDate;
@@ -102,18 +113,90 @@ export function NatalChartReportPage() {
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
 
   const loadTransits = useCallback(async () => {
-    if (transitPlanets || loadingTransits) return;
-    setLoadingTransits(true);
+    if (transitPlanets) return;
+    setLoadingVariant(true);
     const { data, error } = await supabase.functions.invoke('astrology-current-positions', { body: {} });
-    setLoadingTransits(false);
+    setLoadingVariant(false);
     if (error) return;
     const payload = (data?.data ?? data) as { positions?: OverlayPlanet[] } | null;
     if (payload?.positions) setTransitPlanets(payload.positions);
-  }, [transitPlanets, loadingTransits]);
+  }, [transitPlanets]);
+
+  const loadProgressions = useCallback(async () => {
+    if (progressedPlanets) return;
+    setLoadingVariant(true);
+    const { data, error } = await supabase.functions.invoke('astrology-progressions', { body: {} });
+    setLoadingVariant(false);
+    if (error) return;
+    const payload = (data?.data ?? data) as { positions?: OverlayPlanet[]; progressedAge?: number } | null;
+    if (payload?.positions) {
+      setProgressedPlanets(payload.positions);
+      setProgressedLabel(
+        payload.progressedAge != null
+          ? t('natalReport.progressedAge', { defaultValue: 'Age {{n}}', n: payload.progressedAge })
+          : null,
+      );
+    }
+  }, [progressedPlanets, t]);
+
+  const loadSolarReturn = useCallback(async () => {
+    if (solarReturnPlanets) return;
+    setLoadingVariant(true);
+    const year = new Date().getFullYear();
+    const { data, error } = await supabase.functions.invoke('astrology-solar-return', { body: { year } });
+    setLoadingVariant(false);
+    if (error) return;
+    const payload = (data?.data ?? data) as { positions?: OverlayPlanet[]; returnMoment?: string; year?: number } | null;
+    if (payload?.positions) {
+      setSolarReturnPlanets(payload.positions);
+      setSolarReturnLabel(`${payload.year}`);
+    }
+  }, [solarReturnPlanets]);
+
+  const loadSynastry = useCallback(async () => {
+    if (!partnerBirthDate) return;
+    setLoadingVariant(true);
+    const { data, error } = await supabase.functions.invoke('astrology-synastry', {
+      body: {
+        partnerBirthDate,
+        partnerBirthTime: partnerBirthTime || undefined,
+        partnerName: partnerName || undefined,
+      },
+    });
+    setLoadingVariant(false);
+    if (error) {
+      toast(t('natalReport.synastryFailed', { defaultValue: 'Could not compute synastry.' }), 'error');
+      return;
+    }
+    const payload = (data?.data ?? data) as {
+      partnerPositions?: OverlayPlanet[];
+      crossAspects?: Array<{ partnerPlanet: string; natalPlanet: string; type: string; orb: number }>;
+    } | null;
+    if (payload?.partnerPositions) {
+      setPartnerPlanets(payload.partnerPositions);
+      setPartnerAspects(payload.crossAspects ?? []);
+    }
+  }, [partnerBirthDate, partnerBirthTime, partnerName, t]);
 
   useEffect(() => {
     if (variant === 'transits') loadTransits();
-  }, [variant, loadTransits]);
+    else if (variant === 'progressions') loadProgressions();
+    else if (variant === 'solar-return') loadSolarReturn();
+  }, [variant, loadTransits, loadProgressions, loadSolarReturn]);
+
+  const currentOverlay =
+    variant === 'transits'     ? transitPlanets
+    : variant === 'progressions' ? progressedPlanets
+    : variant === 'solar-return' ? solarReturnPlanets
+    : variant === 'synastry'   ? partnerPlanets
+    : null;
+
+  const currentOverlayLabel =
+    variant === 'transits'     ? new Date().toLocaleDateString()
+    : variant === 'progressions' ? progressedLabel
+    : variant === 'solar-return' ? solarReturnLabel
+    : variant === 'synastry'   ? (partnerName || 'Partner')
+    : null;
 
   const handleUnlock = async () => {
     setUnlocking(true);
@@ -297,39 +380,109 @@ export function NatalChartReportPage() {
         <p className="text-[10px] uppercase tracking-widest text-gold mb-3 text-center">
           {t('natalReport.wheelHeading', { defaultValue: 'Your chart wheel' })}
         </p>
-        {transitOverlayEnabled && (
-          <div className="flex gap-2 mb-3 justify-center">
-            <button
-              onClick={() => setVariant('natal')}
-              className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
-                variant === 'natal'
-                  ? 'bg-gold/20 text-gold border-gold/40'
-                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
-              }`}
-            >
-              {t('natalReport.variantNatal', { defaultValue: 'Natal' })}
-            </button>
-            <button
-              onClick={() => setVariant('transits')}
-              className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
-                variant === 'transits'
-                  ? 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/40'
-                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
-              }`}
-            >
-              {t('natalReport.variantTransits', { defaultValue: 'Transits today' })}
-            </button>
+        {(transitOverlayEnabled || chartVariantsEnabled) && (
+          <div className="flex gap-2 mb-3 justify-center flex-wrap">
+            {(['natal', 'transits', 'progressions', 'solar-return', 'synastry'] as Variant[])
+              .filter((v) => {
+                if (v === 'natal') return true;
+                if (v === 'transits') return transitOverlayEnabled;
+                return chartVariantsEnabled;
+              })
+              .map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setVariant(v)}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
+                    variant === v
+                      ? v === 'natal'         ? 'bg-gold/20 text-gold border-gold/40'
+                      : v === 'transits'      ? 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/40'
+                      : v === 'progressions'  ? 'bg-cosmic-violet/20 text-cosmic-violet border-cosmic-violet/40'
+                      : v === 'solar-return'  ? 'bg-gold/20 text-gold border-gold/40'
+                      : 'bg-pink-400/20 text-pink-400 border-pink-400/40'
+                      : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
+                  }`}
+                >
+                  {t(`natalReport.variant.${v}`, {
+                    defaultValue:
+                      v === 'natal' ? 'Natal'
+                      : v === 'transits' ? 'Transits today'
+                      : v === 'progressions' ? 'Progressions'
+                      : v === 'solar-return' ? 'Solar return'
+                      : 'Synastry',
+                  })}
+                </button>
+              ))}
           </div>
         )}
+
+        {variant === 'synastry' && !partnerPlanets && (
+          <div className="bg-mystic-800/40 rounded-xl p-3 mb-3 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-pink-400">
+              {t('natalReport.synastryPrompt', { defaultValue: 'Partner birth data' })}
+            </p>
+            <input
+              type="text"
+              value={partnerName}
+              onChange={(e) => setPartnerName(e.target.value)}
+              placeholder={t('natalReport.partnerNamePlaceholder', { defaultValue: 'Partner name (optional)' })}
+              maxLength={80}
+              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-sm text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-pink-400/40"
+            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={partnerBirthDate}
+                onChange={(e) => setPartnerBirthDate(e.target.value)}
+                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-sm text-mystic-100"
+              />
+              <input
+                type="time"
+                value={partnerBirthTime}
+                onChange={(e) => setPartnerBirthTime(e.target.value)}
+                placeholder="optional"
+                className="bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-sm text-mystic-100"
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={loadSynastry}
+              disabled={loadingVariant || !partnerBirthDate}
+              className="w-full"
+            >
+              {loadingVariant
+                ? t('natalReport.computing', { defaultValue: 'Computing…' })
+                : t('natalReport.synastryCta', { defaultValue: 'Overlay partner chart' })}
+            </Button>
+          </div>
+        )}
+
         <ChartWheel
           chart={natal}
-          overlay={variant === 'transits' ? transitPlanets ?? undefined : undefined}
-          overlayLabel={variant === 'transits' ? new Date().toLocaleDateString() : undefined}
+          overlay={currentOverlay ?? undefined}
+          overlayLabel={currentOverlayLabel ?? undefined}
         />
-        {variant === 'transits' && loadingTransits && (
+        {loadingVariant && (
           <p className="text-[10px] text-center text-mystic-500 mt-2">
-            {t('natalReport.loadingTransits', { defaultValue: 'Computing current positions…' })}
+            {t('natalReport.computing', { defaultValue: 'Computing…' })}
           </p>
+        )}
+
+        {variant === 'synastry' && partnerAspects.length > 0 && (
+          <div className="mt-4 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1.5">
+              {t('natalReport.crossAspects', { defaultValue: 'Top cross-aspects' })}
+            </p>
+            {partnerAspects.slice(0, 8).map((a, i) => (
+              <div key={i} className="text-xs text-mystic-300 flex items-center justify-between">
+                <span>
+                  <span className="text-pink-400">{a.partnerPlanet}</span>
+                  {' '}{a.type}{' '}
+                  <span className="text-gold">{a.natalPlanet}</span>
+                </span>
+                <span className="text-[10px] text-mystic-500">orb {a.orb.toFixed(1)}°</span>
+              </div>
+            ))}
+          </div>
         )}
       </Card>
 

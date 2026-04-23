@@ -62,6 +62,7 @@ export default defineConfig((): UserConfig => {
               // lazy-imported voice hook. Keep it in its own chunk so the
               // main bundle doesn't pay for users who never join voice.
               if (id.includes('livekit-client')) return 'vendor-livekit';
+              if (id.includes('three')) return 'vendor-three';
               return 'vendor';
             }
             // Split large data files into their own chunks

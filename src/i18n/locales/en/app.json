@@ -3276,5 +3276,50 @@
     "another": "Another dream",
     "genericTitle": "Dream Reading",
     "genericReflection": "Dreams bring messages — honour the question they leave with you."
+  },
+  "extraQuizzes": {
+    "dark-triad": {
+      "title": "Dark Triad Shadow",
+      "description": "Three shadow traits psychologists call the 'dark triad' — narcissism, Machiavellianism, and psychopathy — exist to some degree in all of us. Surface where your shadow runs strongest."
+    },
+    "disc": {
+      "title": "DISC Behavioural Profile",
+      "description": "A four-quadrant model of workplace behaviour: Dominance, Influence, Steadiness, Conscientiousness. See which style leads for you and how you naturally contribute to a team."
+    },
+    "money-personality": {
+      "title": "Money Personality",
+      "description": "Five distinct patterns of relating to money — the Saver, the Spender, the Avoider, the Monk, the Status-Seeker. See which script your money self is running."
+    },
+    "boundaries": {
+      "title": "Boundaries Check-In",
+      "description": "Where are your boundaries strong, where are they weak, and where do they shift depending on who's asking? Four patterns: rigid walls, porous openness, healthy flex, situation-dependent."
+    },
+    "burnout": {
+      "title": "Burnout Check",
+      "description": "Burnout has three measurable dimensions: exhaustion (drained energy), cynicism (distance from the work), and efficacy-loss (I'm not effective anymore). See where you are today."
+    },
+    "communication": {
+      "title": "Communication Style",
+      "description": "Four styles emerge under difficulty: passive (hide), aggressive (attack), passive-aggressive (sideways), assertive (clear + respectful). See your default and which is available when you're regulated."
+    },
+    "conflict": {
+      "title": "Conflict Style",
+      "description": "The Thomas-Kilmann model identifies five modes for handling conflict: competing, collaborating, compromising, avoiding, accommodating. See your preferred response — and which modes you need to practice."
+    },
+    "chronotype": {
+      "title": "Sleep Chronotype",
+      "description": "Four sleep-wake personalities by Dr. Michael Breus: the Lion (morning), the Bear (daytime), the Wolf (evening), the Dolphin (restless). Find your rhythm — and when your real peak hours are."
+    },
+    "creative-type": {
+      "title": "Creative Type",
+      "description": "Five ways of being creative — five roles in the creative process. The Maker, the Dreamer, the Performer, the Organiser, the Analyser. See which you take on naturally — and who you partner best with."
+    },
+    "spiritual-type": {
+      "title": "Spiritual Type",
+      "description": "Five ways of relating to the sacred, across all traditions: the Mystic (direct experience), the Ritualist (ceremony), the Seeker (study), the Servant (devotion through action), the Warrior (discipline as path)."
+    },
+    "common": {
+      "scoreDistribution": "Score distribution"
+    }
   }
 }

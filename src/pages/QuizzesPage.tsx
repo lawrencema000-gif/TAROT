@@ -65,6 +65,13 @@ import { tarotCourtQuiz, calculateCourtMatch, getCourtCardInfo } from '../data/t
 import { shadowArchetypeQuiz, calculateShadowArchetype, SHADOW_ARCHETYPES } from '../data/shadowArchetypeQuiz';
 import { elementAffinityQuiz, calculateElementAffinity, ELEMENT_INFO } from '../data/elementAffinityQuiz';
 import { ayurvedaQuiz, calculateDosha, DOSHA_INFO } from '../data/ayurvedaQuiz';
+import {
+  EXTRA_QUIZZES,
+  EXTRA_QUIZ_METADATA,
+  EXTRA_QUIZ_SCORING,
+  calculateExtraQuiz,
+  type DimensionalResult,
+} from '../data/extraQuizzes';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacElement } from '../utils/zodiac';
@@ -266,6 +273,7 @@ export function QuizzesPage() {
   };
 
   const ayurvedaEnabled = useFeatureFlag('ayurveda-dosha');
+  const extraQuizzesEnabled = useFeatureFlag('extra-quizzes');
 
   const quizzes = [
     {
@@ -278,6 +286,11 @@ export function QuizzesPage() {
       type: 'ayurveda-dosha',
       metadata: localizeQuizMetadata('ayurveda-dosha', quizMetadata['ayurveda-dosha']),
     }] : []),
+    ...(extraQuizzesEnabled ? EXTRA_QUIZZES.map((q) => ({
+      quiz: localizeQuiz(q),
+      type: 'extra-dimensional',
+      metadata: EXTRA_QUIZ_METADATA[q.id],
+    })) : []),
     {
       quiz: localizeQuiz(mbtiQuickQuiz),
       type: 'mbti',
@@ -407,6 +420,12 @@ export function QuizzesPage() {
       } else if (progress.quiz.type === 'ayurveda-dosha') {
         calculatedResult = calculateDosha(newAnswers);
         resultLabel = calculatedResult.primary;
+      } else if (progress.quiz.type === 'extra-dimensional') {
+        const extra = calculateExtraQuiz(progress.quiz.id, newAnswers);
+        if (extra) {
+          calculatedResult = extra;
+          resultLabel = extra.primary;
+        }
       } else if (progress.quiz.type === 'love-language') {
         calculatedResult = calculateLoveLanguage(newAnswers);
         resultLabel = calculatedResult.primary;
@@ -656,6 +675,134 @@ export function QuizzesPage() {
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
+        </div>
+      );
+    }
+
+    if (result.quiz.type === 'extra-dimensional') {
+      const extraResult = result.result as DimensionalResult;
+      const scoringEntry = EXTRA_QUIZ_SCORING[result.quiz.id];
+      if (!scoringEntry) return null;
+      const info = scoringEntry.info[extraResult.primary];
+      if (!info) return null;
+      const quizKey = result.quiz.id.replace(/-v\d+$/, '');
+      const resultKey = extraResult.primary;
+
+      const localized = (path: string, fallback: string) =>
+        tApp(`extraQuizzes.${quizKey}.results.${resultKey}.${path}`, { defaultValue: fallback }) as string;
+      const name = localized('name', info.name);
+      const tagline = localized('tagline', info.tagline);
+      const summary = localized('summary', info.summary);
+      const strengths = tApp(`extraQuizzes.${quizKey}.results.${resultKey}.strengths`, {
+        returnObjects: true,
+        defaultValue: info.strengths,
+      }) as string[];
+      const shadow = tApp(`extraQuizzes.${quizKey}.results.${resultKey}.shadow`, {
+        returnObjects: true,
+        defaultValue: info.shadow,
+      }) as string[];
+      const affirmation = localized('affirmation', info.affirmation);
+
+      const maxScore = Math.max(...Object.values(extraResult.scores));
+
+      const handleShare = async () => {
+        try {
+          const blob = await renderShareCard({
+            title: name,
+            subtitle: result.quiz.title,
+            tagline,
+            affirmation,
+            brand: `Arcana · ${result.quiz.title}`,
+          });
+          const out = await shareOrDownload(blob, `arcana-${result.quiz.id}-${resultKey}.png`, `My ${result.quiz.title}: ${name}`);
+          if (out === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+        } catch {
+          toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+        }
+      };
+
+      return (
+        <div className="space-y-4 pb-6">
+          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          </button>
+
+          <Card variant="glow" padding="lg" className="text-center">
+            <div className="text-5xl mb-3">{scoringEntry.emoji}</div>
+            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <p className="text-gold/80 text-sm mt-3 italic">"{tagline}"</p>
+          </Card>
+
+          <Card padding="lg">
+            <p className="text-mystic-300 text-sm leading-relaxed">{summary}</p>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-mystic-200 mb-3">
+              {tApp('extraQuizzes.common.scoreDistribution', { defaultValue: 'Score distribution' })}
+            </h3>
+            <div className="space-y-2">
+              {scoringEntry.dimensions.map((d) => {
+                const score = extraResult.scores[d] ?? 0;
+                const isPrimary = d === extraResult.primary;
+                const dimName = tApp(`extraQuizzes.${quizKey}.results.${d}.name`, {
+                  defaultValue: scoringEntry.info[d]?.name ?? d,
+                }) as string;
+                return (
+                  <div key={d} className="flex items-center gap-3">
+                    <span className={`text-xs flex-1 ${isPrimary ? 'text-gold font-medium' : 'text-mystic-400'}`}>
+                      {dimName}
+                    </span>
+                    <div className="flex-1 bg-mystic-800/40 rounded-full h-2 overflow-hidden max-w-[140px]">
+                      <div
+                        className={`h-full ${isPrimary ? 'bg-gold' : 'bg-mystic-600'}`}
+                        style={{ width: `${maxScore > 0 ? (score / maxScore) * 100 : 0}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-mystic-500 w-6 text-right">{score}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card padding="lg">
+              <h3 className="font-medium text-emerald-400 mb-3">
+                {tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}
+              </h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {strengths.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </Card>
+            <Card padding="lg">
+              <h3 className="font-medium text-pink-400 mb-3">
+                {tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}
+              </h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {shadow.map((s, i) => <li key={i}>• {s}</li>)}
+              </ul>
+            </Card>
+          </div>
+
+          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {tApp('quizzes.resultSections.affirmation', { defaultValue: 'Your affirmation' })}
+            </h3>
+            <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
+          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
+              <Sparkles className="w-4 h-4 mr-2" />
+              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+            </Button>
+          </div>
         </div>
       );
     }

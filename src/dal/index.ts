@@ -32,5 +32,7 @@ export * as moonstones from './moonstones';
 export * as advisors from './advisors';
 export * as referrals from './referrals';
 export * as reportUnlocks from './reportUnlocks';
+export * as compatInvites from './compatInvites';
+export * as advisorSessions from './advisorSessions';
 
 export type { Result } from './dailyRituals';

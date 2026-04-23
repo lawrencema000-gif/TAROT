@@ -734,6 +734,7 @@ export const SPIRITUAL_INFO: Record<SpiritualType, DimensionalResultInfo> = {
 // ---------------------------------------------------------------
 
 import { EXTRA_QUIZZES_PART2 } from './extraQuizzesPart2';
+import { EXTRA_QUIZZES_PART3 } from './extraQuizzesPart3';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars — used via spread below
 export const EXTRA_QUIZZES: QuizDefinition[] = [
@@ -748,6 +749,7 @@ export const EXTRA_QUIZZES: QuizDefinition[] = [
   creativeQuiz,
   spiritualQuiz,
   ...Object.values(EXTRA_QUIZZES_PART2).map((e) => e.quiz),
+  ...Object.values(EXTRA_QUIZZES_PART3).map((e) => e.quiz),
 ];
 
 export const EXTRA_QUIZ_METADATA: Record<string, { timeEstimate: string; whatYouGet: string[]; icon: string; color: string }> = {
@@ -768,6 +770,11 @@ export const EXTRA_QUIZ_METADATA: Record<string, { timeEstimate: string; whatYou
   'empath-hsp-v1':         { timeEstimate: '3 min', whatYouGet: ['Empath, HSP, both, or neither', 'What each means neurologically', 'Practical self-care'], icon: 'heart', color: 'cosmic-violet' },
   'self-compassion-v1':    { timeEstimate: '3 min', whatYouGet: ['Your dominant self-compassion stance', 'Where you self-judge vs self-kind', 'Next-step affirmation'], icon: 'heart', color: 'pink-400' },
   'mood-screener-v1':      { timeEstimate: '3 min', whatYouGet: ['A 2-week mood signal read', 'NON-diagnostic self-reflection', 'Crisis resources if needed'], icon: 'activity', color: 'cosmic-blue' },
+  'anxiety-profile-v1':       { timeEstimate: '3 min', whatYouGet: ['Where anxiety shows up for you', 'What tools tend to work', 'Non-diagnostic self-reflection'],   icon: 'wind',         color: 'cosmic-blue' },
+  'leadership-style-v1':      { timeEstimate: '3 min', whatYouGet: ['Your default leadership mode', 'Who to pair with', 'Where the style breaks'],                     icon: 'compass',      color: 'gold' },
+  'productivity-style-v1':    { timeEstimate: '3 min', whatYouGet: ['Your work-rhythm profile', 'Ideal environment', 'What to stop forcing'],                          icon: 'settings',     color: 'emerald-400' },
+  'relationship-readiness-v1':{ timeEstimate: '3 min', whatYouGet: ['Where you are in readiness', 'What to tend first', 'Non-judgmental mirror'],                      icon: 'heart',        color: 'pink-400' },
+  'wellness-type-v1':         { timeEstimate: '3 min', whatYouGet: ['How you best restore', 'Which tools work for you', 'How to design your week'],                    icon: 'leaf',         color: 'emerald-400' },
 };
 
 // Dispatch table from quiz id → (calc, info dictionary)
@@ -790,6 +797,12 @@ export const EXTRA_QUIZ_SCORING: Record<string, QuizScoringEntry> = {
   'spiritual-type-v1':    { dimensions: ['mystic', 'ritualist', 'seeker', 'servant', 'warrior'], info: SPIRITUAL_INFO, emoji: '✨' },
   ...Object.fromEntries(
     Object.entries(EXTRA_QUIZZES_PART2).map(([id, cfg]) => [
+      id,
+      { dimensions: cfg.dimensions as unknown as readonly string[], info: cfg.info, emoji: cfg.emoji },
+    ]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(EXTRA_QUIZZES_PART3).map(([id, cfg]) => [
       id,
       { dimensions: cfg.dimensions as unknown as readonly string[], info: cfg.info, emoji: cfg.emoji },
     ]),

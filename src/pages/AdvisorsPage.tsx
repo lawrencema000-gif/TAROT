@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Star, Clock, Globe, Users, Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Sparkles, Star, Clock, Globe, Users, Send, Calendar } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { advisors } from '../dal';
 import type { AdvisorProfile } from '../dal/advisors';
 
@@ -11,6 +13,8 @@ type View = 'directory' | 'profile';
 export function AdvisorsPage() {
   const { t } = useT('app');
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const bookingEnabled = useFeatureFlag('advisor-booking');
   const [view, setView] = useState<View>('directory');
   const [list, setList] = useState<AdvisorProfile[]>([]);
   const [selected, setSelected] = useState<AdvisorProfile | null>(null);
@@ -119,6 +123,18 @@ export function AdvisorsPage() {
             <p className="text-xs text-mystic-500 mb-1">{t('advisors.rateLabel', { defaultValue: 'Indicative rate' })}</p>
             <p className="text-mystic-200 text-sm">${(selected.hourlyRateCents / 100).toFixed(0)} / hour</p>
           </Card>
+        )}
+
+        {bookingEnabled && user && (
+          <Button
+            variant="gold"
+            fullWidth
+            onClick={() => navigate(`/advisors/${selected.slug}/book`)}
+            className="min-h-[52px]"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            {t('advisors.bookCta', { defaultValue: 'Book a session' })}
+          </Button>
         )}
 
         {/* Interest capture */}

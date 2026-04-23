@@ -132,7 +132,16 @@ export function CelticCrossLayout({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3" style={{ width: '56px' }}>
+        {/*
+          Traditional Celtic Cross staff is read BOTTOM-to-TOP:
+            idx 6 (Your attitude)       → bottom of staff
+            idx 7 (External influences) → ↑
+            idx 8 (Hopes and fears)     → ↑
+            idx 9 (Final outcome)       → top of staff
+          `flex-col-reverse` renders the array bottom-up so visual order
+          matches the position semantics.
+        */}
+        <div className="flex flex-col-reverse gap-3" style={{ width: '56px' }}>
           {[6, 7, 8, 9].map((idx) => (
             <div key={idx} style={{ width: '56px', height: '84px' }}>
               {renderCard(drawnCards[idx], idx)}

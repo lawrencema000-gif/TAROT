@@ -77,7 +77,9 @@ export interface ApiCallOptions<TReq, TRes> {
   /** Whether authentication is required. Default true. When false, the
    *  call proceeds without a bearer token (for pre-sign-in endpoints). */
   requireAuth?: boolean;
-  /** Timeout in ms. Default 15s. */
+  /** Timeout in ms. Default 30s — Gemini-backed endpoints can take 10–20s
+   *  server-side, which leaves little budget for slow 3G round-trips under
+   *  the old 15s default. */
   timeoutMs?: number;
   /** Override correlation ID (otherwise auto-generated). */
   correlationId?: string;
@@ -101,7 +103,7 @@ export async function apiCall<TReq, TRes>(options: ApiCallOptions<TReq, TRes>): 
     request,
     response,
     requireAuth = true,
-    timeoutMs = 15_000,
+    timeoutMs = 30_000,
     correlationId = newCorrelationId(fn),
   } = options;
 

@@ -49,7 +49,7 @@ export function TarotSelectView({
         <p className="text-mystic-400 text-sm">{t('readings.selectView.trustIntuition')}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-20">
+      <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-40">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
           {deckCards.map((cardId) => {
             const isSelected = selectedIndices.includes(cardId);
@@ -91,7 +91,16 @@ export function TarotSelectView({
         </div>
       </div>
 
-      <div className="fixed bottom-20 left-0 right-0 px-4 bg-gradient-to-t from-mystic-950 via-mystic-950 to-transparent pt-4 pb-4">
+      {/*
+        CTA sits above the BottomNav. `bottom-20` alone wasn't enough on
+        devices with a gesture home-indicator — the inset-bottom safe area
+        would push the nav up and clip the button. Anchor via calc so the
+        CTA always clears nav + safe area.
+      */}
+      <div
+        className="fixed left-0 right-0 px-4 bg-gradient-to-t from-mystic-950 via-mystic-950 to-transparent pt-4 pb-4"
+        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
+      >
         <Button
           variant="gold"
           fullWidth

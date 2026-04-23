@@ -394,6 +394,13 @@ function AppContent() {
             onSavedClick={() => openOverlay('saved')}
             onSettingsClick={() => openOverlay('settings')}
           />
+          {/* Inner ErrorBoundary — a crash in a single route shows a
+              contained error card instead of tearing down the entire app
+              shell. Reset on location change so navigating away recovers. */}
+          <ErrorBoundary
+            key={location.pathname}
+            onOpenDiagnostics={openDiagnostics}
+          >
           <Suspense fallback={<ListSkeleton count={3} />}>
             <AnimatePresence mode="wait">
               <motion.div
@@ -439,6 +446,7 @@ function AppContent() {
               </motion.div>
             </AnimatePresence>
           </Suspense>
+          </ErrorBoundary>
         </main>
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
 

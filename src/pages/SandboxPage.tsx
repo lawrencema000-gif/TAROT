@@ -39,6 +39,7 @@ export function SandboxPage() {
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [loadingInterpretation, setLoadingInterpretation] = useState(false);
   const [threeReady, setThreeReady] = useState(false);
+  const [webglError, setWebglError] = useState<string | null>(null);
   const sceneRef = useRef<{
     renderer: unknown;
     scene: unknown;
@@ -53,13 +54,28 @@ export function SandboxPage() {
     let cancelled = false;
     let cleanup: (() => void) | null = null;
     (async () => {
-      const THREE = await import('three');
+      let THREE: typeof import('three');
+      try {
+        THREE = await import('three');
+      } catch (err) {
+        setWebglError(err instanceof Error ? err.message : 'Failed to load 3D engine');
+        return;
+      }
       if (cancelled || !canvasRef.current) return;
 
       const canvas = canvasRef.current;
       const w = canvas.clientWidth || 320;
       const h = canvas.clientHeight || 320;
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+
+      // Some Android WebView builds disable WebGL; constructing the renderer
+      // throws. Fall back to the static panel instead of crashing the page.
+      let renderer: import('three').WebGLRenderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      } catch (err) {
+        setWebglError(err instanceof Error ? err.message : 'WebGL not supported');
+        return;
+      }
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(w, h, false);
 
@@ -127,6 +143,16 @@ export function SandboxPage() {
       cleanup = () => {
         cancelAnimationFrame(frame);
         window.removeEventListener('resize', onResize);
+        // Dispose every mesh in the scene — geometries, materials, textures.
+        // Without this, revisiting SandboxPage leaks GPU memory each cycle.
+        scene.traverse((obj) => {
+          const mesh = obj as import('three').Mesh;
+          if (mesh.geometry) mesh.geometry.dispose();
+          if (mesh.material) {
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            for (const m of mats) m.dispose();
+          }
+        });
         renderer.dispose();
       };
 
@@ -261,11 +287,29 @@ export function SandboxPage() {
       </Card>
 
       <Card padding="md" className="overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          style={{ width: '100%', height: 320, display: 'block', borderRadius: 12 }}
-          aria-label="Archetypal sandbox 3D scene"
-        />
+        {webglError ? (
+          <div
+            className="flex flex-col items-center justify-center text-center p-6"
+            style={{ minHeight: 320 }}
+          >
+            <Box className="w-10 h-10 text-mystic-500 mb-3" />
+            <p className="text-sm font-medium text-mystic-300 mb-1">
+              {t('sandbox.webglUnavailableTitle', { defaultValue: '3D preview is not available' })}
+            </p>
+            <p className="text-xs text-mystic-500 max-w-xs leading-relaxed">
+              {t('sandbox.webglUnavailableBody', {
+                defaultValue:
+                  "Your browser or device doesn't support WebGL. You can still place archetypal objects and get an interpretation — the reading doesn't require the 3D view.",
+              })}
+            </p>
+          </div>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            style={{ width: '100%', height: 320, display: 'block', borderRadius: 12 }}
+            aria-label="Archetypal sandbox 3D scene"
+          />
+        )}
       </Card>
 
       <Card padding="lg">

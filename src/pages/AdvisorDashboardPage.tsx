@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight, Wallet, CreditCard } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -294,14 +294,14 @@ export function AdvisorDashboardPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <input
+              <Input
                 type="number"
                 value={cashoutAmount}
                 onChange={(e) => setCashoutAmount(e.target.value)}
                 placeholder="100"
                 min={100}
                 max={cashable}
-                className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-lg px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
+                className="flex-1"
               />
               <Button
                 variant="gold"

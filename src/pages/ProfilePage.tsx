@@ -15,11 +15,16 @@ import {
   Search,
   Loader2,
   Check,
+  Gift,
+  Briefcase,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
+import { ReferralSheet } from '../components/referral/ReferralSheet';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { useAuth } from '../context/AuthContext';
 import { useGeocode } from '../hooks/useAstrology';
 import { savedHighlights as savedHighlightsDal } from '../dal';
@@ -52,7 +57,11 @@ export function ProfilePage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const referralEnabled = useFeatureFlag('referral');
+  const careerReportEnabled = useFeatureFlag('career-report');
+  const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [savedHighlights, setSavedHighlights] = useState<SavedHighlight[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
@@ -334,6 +343,46 @@ export function ProfilePage() {
           </button>
         )}
 
+        {careerReportEnabled && profile?.mbtiType && (
+          <button
+            onClick={() => navigate('/reports/career')}
+            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
+              <Briefcase className="w-6 h-6 text-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-mystic-100">
+                {t('profile.careerReportTitle', { defaultValue: 'Career Archetype Report' })}
+              </h3>
+              <p className="text-sm text-mystic-400">
+                {t('profile.careerReportSub', { defaultValue: 'Deep coaching read for {{mbti}}', mbti: profile.mbtiType })}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
+          </button>
+        )}
+
+        {referralEnabled && (
+          <button
+            onClick={() => setShowReferral(true)}
+            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/15 to-cosmic-violet/15 flex items-center justify-center flex-shrink-0">
+              <Gift className="w-6 h-6 text-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-mystic-100">
+                {t('profile.referralTitle', { defaultValue: 'Invite friends' })}
+              </h3>
+              <p className="text-sm text-mystic-400">
+                {t('profile.referralSub', { defaultValue: 'Earn 100 Moonstones per friend' })}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
+          </button>
+        )}
+
         <button
           onClick={() => { setShowSaved(true); loadSavedHighlights(); }}
           className="w-full p-4 flex items-center gap-4 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
@@ -469,6 +518,11 @@ export function ProfilePage() {
       <PaywallSheet
         open={showPaywall}
         onClose={() => setShowPaywall(false)}
+      />
+
+      <ReferralSheet
+        open={showReferral}
+        onClose={() => setShowReferral(false)}
       />
     </div>
   );

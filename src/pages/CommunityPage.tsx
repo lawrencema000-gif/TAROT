@@ -4,6 +4,8 @@ import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
+import { moderateContent, type ModerationSurface } from '../services/moderation';
+import { CrisisBanner } from '../components/community/CrisisBanner';
 import type {
   CommunityPost,
   CommunityComment,
@@ -63,6 +65,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [selectedTopic, setSelectedTopic] = useState<CommunityTopic | 'all'>('all');
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
+  const [crisisBannerOpen, setCrisisBannerOpen] = useState(false);
 
   const isWhisperingWell = mode === 'whispering-well';
 
@@ -155,28 +158,37 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   // Composer
   if (view === 'composer') {
     return (
-      <Composer
-        mode={mode}
-        topic={selectedTopic === 'all' ? 'general' : selectedTopic}
-        onBack={() => setView('feed')}
-        onSuccess={() => {
-          setView('feed');
-          loadFeed();
-        }}
-      />
+      <>
+        <Composer
+          mode={mode}
+          topic={selectedTopic === 'all' ? 'general' : selectedTopic}
+          onBack={() => setView('feed')}
+          onSuccess={() => {
+            setView('feed');
+            loadFeed();
+          }}
+          onCrisisDetected={() => setCrisisBannerOpen(true)}
+        />
+        <CrisisBanner open={crisisBannerOpen} onClose={() => setCrisisBannerOpen(false)} />
+      </>
     );
   }
 
   // Post detail with comments
   if (view === 'post-detail' && selectedPost) {
     return (
-      <PostDetail
-        post={selectedPost}
-        onBack={() => { setView('feed'); setSelectedPost(null); loadFeed(); }}
-        onReact={handleReact}
-        onReport={handleReport}
-        onBlock={handleBlock}
-      />
+      <>
+        <PostDetail
+          post={selectedPost}
+          onBack={() => { setView('feed'); setSelectedPost(null); loadFeed(); }}
+          onReact={handleReact}
+          onReport={handleReport}
+          onBlock={handleBlock}
+          onCrisisDetected={() => setCrisisBannerOpen(true)}
+          surface={isWhisperingWell ? 'whispering-well' : 'comment'}
+        />
+        <CrisisBanner open={crisisBannerOpen} onClose={() => setCrisisBannerOpen(false)} />
+      </>
     );
   }
 
@@ -402,11 +414,13 @@ function Composer({
   topic,
   onBack,
   onSuccess,
+  onCrisisDetected,
 }: {
   mode: 'normal' | 'whispering-well';
   topic: CommunityTopic;
   onBack: () => void;
   onSuccess: () => void;
+  onCrisisDetected: () => void;
 }) {
   const { t } = useT('app');
   const { user } = useAuth();
@@ -432,6 +446,23 @@ function Composer({
       return;
     }
     setSubmitting(true);
+
+    const surface: ModerationSurface = mode === 'whispering-well' ? 'whispering-well' : 'post';
+    const moderation = await moderateContent(content, surface);
+
+    if (moderation.crisis) onCrisisDetected();
+
+    if (moderation.verdict === 'block') {
+      setSubmitting(false);
+      toast(
+        t('community.contentBlocked', {
+          defaultValue: 'This post conflicts with our community guidelines.',
+        }),
+        'error',
+      );
+      return;
+    }
+
     const res = await community.createPost({
       userId: user.id,
       topic: selectedTopic,
@@ -440,7 +471,16 @@ function Composer({
     });
     setSubmitting(false);
     if (res.ok) {
-      toast(t('community.posted', { defaultValue: 'Posted' }), 'success');
+      if (moderation.verdict === 'review') {
+        toast(
+          t('community.postedUnderReview', {
+            defaultValue: 'Posted — our team will review shortly.',
+          }),
+          'info',
+        );
+      } else {
+        toast(t('community.posted', { defaultValue: 'Posted' }), 'success');
+      }
       onSuccess();
     } else {
       toast(t('community.postFailed', { defaultValue: 'Could not post' }), 'error');
@@ -535,9 +575,11 @@ interface PostDetailProps {
   onReact: (post: CommunityPost, r: ReactionType) => void;
   onReport: (post: CommunityPost, reason: ReportReason) => void;
   onBlock: (post: CommunityPost) => void;
+  onCrisisDetected: () => void;
+  surface: ModerationSurface;
 }
 
-function PostDetail({ post, onBack, onReact, onReport, onBlock }: PostDetailProps) {
+function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected, surface }: PostDetailProps) {
   const { t } = useT('app');
   const { user } = useAuth();
   const [comments, setComments] = useState<CommunityComment[]>([]);
@@ -563,6 +605,20 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock }: PostDetailProp
       return;
     }
     setSubmitting(true);
+
+    const moderation = await moderateContent(newComment, surface);
+    if (moderation.crisis) onCrisisDetected();
+    if (moderation.verdict === 'block') {
+      setSubmitting(false);
+      toast(
+        t('community.contentBlocked', {
+          defaultValue: 'This comment conflicts with our community guidelines.',
+        }),
+        'error',
+      );
+      return;
+    }
+
     const res = await community.createComment({
       postId: post.id,
       userId: user.id,
@@ -573,6 +629,14 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock }: PostDetailProp
     if (res.ok) {
       setComments((prev) => [...prev, res.data]);
       setNewComment('');
+      if (moderation.verdict === 'review') {
+        toast(
+          t('community.commentUnderReview', {
+            defaultValue: 'Comment posted — our team will review shortly.',
+          }),
+          'info',
+        );
+      }
     } else {
       toast(t('community.commentFailed', { defaultValue: 'Could not post comment' }), 'error');
     }

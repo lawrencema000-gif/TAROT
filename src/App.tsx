@@ -45,6 +45,7 @@ const AiCompanionPage = lazy(() => import('./pages/AiCompanionPage').then(m => (
 const AdvisorsPage = lazy(() => import('./pages/AdvisorsPage').then(m => ({ default: m.AdvisorsPage })));
 const RunesPage = lazy(() => import('./pages/RunesPage').then(m => ({ default: m.RunesPage })));
 const DicePage = lazy(() => import('./pages/DicePage').then(m => ({ default: m.DicePage })));
+const CareerReportPage = lazy(() => import('./pages/CareerReportPage').then(m => ({ default: m.CareerReportPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -408,6 +409,7 @@ function AppContent() {
                   <Route path="/advisors" element={<AdvisorsPage />} />
                   <Route path="/runes" element={<RunesPage />} />
                   <Route path="/dice" element={<DicePage />} />
+                  <Route path="/reports/career" element={<CareerReportPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

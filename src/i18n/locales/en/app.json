@@ -1573,6 +1573,10 @@
     "xpProgress": "XP Progress",
     "upgradeToPremium": "Upgrade to Premium",
     "upgradeSub": "Unlock all spreads, charts & more",
+    "referralTitle": "Invite friends",
+    "referralSub": "Earn 100 Moonstones per friend",
+    "careerReportTitle": "Career Archetype Report",
+    "careerReportSub": "Deep coaching read for {{mbti}}",
     "premiumMember": "Premium Member",
     "premiumSub": "Full access to all features",
     "manageSubscription": "Manage subscription",
@@ -3463,6 +3467,9 @@
     "posting": "Posting...",
     "posted": "Posted",
     "postFailed": "Could not post",
+    "postedUnderReview": "Posted — our team will review shortly.",
+    "commentUnderReview": "Comment posted — our team will review shortly.",
+    "contentBlocked": "This content conflicts with our community guidelines.",
     "contentTooLong": "Post is too long (max 2000)",
     "contentDisallowed": "That phrase is not allowed",
     "contentEmpty": "Write something first",
@@ -3658,5 +3665,78 @@
     "rollButton": "Roll the dice",
     "rollAgain": "Roll again",
     "rolling": "Rolling..."
+  },
+  "crisis": {
+    "title": "You are not alone",
+    "subtitle": "We noticed some of what you wrote. If you are hurting right now, please reach for one of these — they are free and confidential.",
+    "phone": {
+      "title": "988 Suicide & Crisis Lifeline",
+      "body": "Call or text 988 · 24/7 · US",
+      "cta": "Call"
+    },
+    "text": {
+      "title": "Crisis Text Line",
+      "body": "Text HOME to 741741 · US/UK/CA/IE",
+      "cta": "Text"
+    },
+    "international": {
+      "title": "International helplines"
+    },
+    "footer": "Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.",
+    "closeButton": "I'm okay for now"
+  },
+  "referral": {
+    "title": "Invite & earn",
+    "heading": "Share Arcana, earn Moonstones",
+    "subtitle": "Each friend who joins with your code earns you 100 Moonstones. They get 100 too.",
+    "yourCodeLabel": "Your code",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy",
+    "share": "Share",
+    "shareText": "I've been using Arcana for tarot + astrology — use my code for 100 free Moonstones: {{url}}",
+    "invitesCount": "{{n}} friends joined with your code",
+    "redeemLabel": "Got a code?",
+    "redeemHelper": "Enter a friend's code in your first 30 days to claim 100 Moonstones.",
+    "codePlaceholder": "ABCD1234",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming…",
+    "redeemSuccess": "+{{n}} Moonstones — welcome!",
+    "alreadyRedeemed": "You've already redeemed a referral code.",
+    "errors": {
+      "alreadyRedeemed": "You've already redeemed a code.",
+      "notFound": "Code not found.",
+      "selfRedeem": "You can't use your own code.",
+      "accountTooOld": "Referral codes only work in the first 30 days.",
+      "generic": "Could not redeem code."
+    }
+  },
+  "careerReport": {
+    "title": "Career Archetype",
+    "needsMbti": "Take the personality quiz first",
+    "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.",
+    "shareLabel": "Career Archetype",
+    "locked": {
+      "body": "A ~900-word coaching-grade report tailored to your type — best-fit roles, drains, collaboration patterns, blind spots, and a first-90-days plan.",
+      "feat1": "10 best-fit roles across industries",
+      "feat2": "Which environments drain you",
+      "feat3": "Your collaboration counterweight",
+      "feat4": "First-90-days plan in a new role"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Report unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "bestFit": "Best-fit roles",
+    "drains": "Environments that drain you",
+    "collaboration": "Collaboration pattern",
+    "blindSpots": "Blind spots",
+    "ninetyDays": "First 90 days",
+    "monthLabel": "Month {{n}}",
+    "reflection": "Sit with these questions",
+    "share": "Share my archetype"
   }
 }

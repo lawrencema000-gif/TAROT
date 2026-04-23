@@ -30,5 +30,7 @@ export * as featureFlags from './featureFlags';
 export * as community from './community';
 export * as moonstones from './moonstones';
 export * as advisors from './advisors';
+export * as referrals from './referrals';
+export * as reportUnlocks from './reportUnlocks';
 
 export type { Result } from './dailyRituals';

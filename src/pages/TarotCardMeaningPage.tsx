@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { fullDeck } from '../data/tarotDeck';
 import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
@@ -71,6 +73,7 @@ export function TarotCardMeaningPage() {
   const { t } = useT('app');
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const locale = getLocale();
@@ -248,6 +251,16 @@ export function TarotCardMeaningPage() {
         <h2 className="tm-section-h2">{t('tarot.cardDescription')}</h2>
         <p className="tm-description-text">{card.description}</p>
       </div>
+
+      {user && (
+        <div className="my-4">
+          <AskOracleButton
+            variant="card"
+            context={`the meaning of ${card.name} tarot card for me`}
+            label={t('tarot.askOracleCta', { defaultValue: 'Read this card for me' }) as string}
+          />
+        </div>
+      )}
 
       {/* Upright & Reversed Meanings */}
       <div className="tm-meanings">

@@ -73,6 +73,7 @@ import {
   type DimensionalResult,
 } from '../data/extraQuizzes';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
+import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacElement, getZodiacSign } from '../utils/zodiac';
 
@@ -793,6 +794,12 @@ export function QuizzesPage() {
             </h3>
             <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
           </Card>
+
+          <AskOracleButton
+            variant="card"
+            context={`my ${result.quiz.title} result: ${name} (${tagline})`}
+            label={tApp('quizzes.askOracleCta', { defaultValue: 'Read this result for me' }) as string}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>

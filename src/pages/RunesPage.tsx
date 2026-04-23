@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { castRunes, type RuneCastResult } from '../data/runes';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
@@ -167,6 +168,12 @@ export function RunesPage() {
             </div>
           </Card>
         ))}
+
+        <AskOracleButton
+          variant="card"
+          context={`my rune cast — ${cast.runes.map((r) => `${r.rune.name}${r.reversed ? ' (reversed)' : ''} in ${r.position}`).join(', ')}`}
+          label={t('runes.askOracleCta', { defaultValue: 'Read the cast as a whole' }) as string}
+        />
 
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>

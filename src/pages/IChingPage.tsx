@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Sparkles, Coins, RotateCcw } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import {
   castReading,
   HEXAGRAMS,
@@ -258,6 +259,12 @@ export function IChingPage() {
           </h3>
           <p className="text-mystic-200 italic leading-relaxed">"{localizedJournal}"</p>
         </Card>
+
+        <AskOracleButton
+          variant="card"
+          context={`hexagram ${primary.number} — ${primary.name} (${primary.chinese}) — for my situation`}
+          label={t('iching.askOracleCta', { defaultValue: 'Read this hexagram for me' }) as string}
+        />
 
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>

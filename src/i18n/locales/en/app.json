@@ -3544,6 +3544,18 @@
     "claimFailed": "Could not claim today's reward",
     "topUp": "Top up"
   },
+  "askOracle": {
+    "cta": "Ask the Oracle about this",
+    "sheetTitle": "The Oracle reads",
+    "subtitle": "Personalized read based on your chart and memory",
+    "question": "Read this for me — {{context}}. What is it pointing to in my life right now?",
+    "contextLabel": "Your question",
+    "cardLabel": "Card drawn",
+    "drawing": "Drawing…",
+    "errorGeneric": "Could not reach the Oracle. Try again.",
+    "share": "Share",
+    "redraw": "New read"
+  },
   "moonstoneTopUp": {
     "title": "Top up Moonstones",
     "subtitle": "Unlock readings, tip live hosts, and book advisor sessions.",

@@ -29,6 +29,7 @@ import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { DailyWisdomCard } from '../components/home/DailyWisdomCard';
+import { MoonstoneWidget } from '../components/home/MoonstoneWidget';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -44,6 +45,7 @@ export function HomePage() {
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
   const { triggerLevelUp } = useGamification();
   const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
+  const moonstonesEnabled = useFeatureFlag('moonstones');
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
@@ -357,6 +359,8 @@ export function HomePage() {
           <span className="text-mystic-400 text-sm">{t('home.dayStreakLabel')}</span>
         </button>
       </div>
+
+      {moonstonesEnabled && <MoonstoneWidget />}
 
       {dailyWisdomEnabled && <DailyWisdomCard />}
 

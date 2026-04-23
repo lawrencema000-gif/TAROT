@@ -41,9 +41,17 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   const [moreOpen, setMoreOpen] = useState(false);
   const communityEnabled = useFeatureFlag('community');
   const whisperingWellEnabled = useFeatureFlag('whispering-well');
+  const companionEnabled = useFeatureFlag('ai-companion');
+  const advisorsEnabled = useFeatureFlag('advisors');
 
   // Build the list of items inside the More menu
   const moreItems: MoreItem[] = [...moreMenuTabs];
+  if (companionEnabled) {
+    moreItems.push({ id: 'companion' as Tab, labelKey: 'nav.companion', icon: Sparkles });
+  }
+  if (advisorsEnabled) {
+    moreItems.push({ id: 'advisors' as Tab, labelKey: 'nav.advisors', icon: User });
+  }
   if (communityEnabled) {
     moreItems.push({ id: 'community' as Tab, labelKey: 'nav.community', icon: MessageCircle });
   }

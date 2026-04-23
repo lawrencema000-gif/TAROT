@@ -3512,5 +3512,72 @@
   "common": {
     "loading": "Loading…",
     "cancel": "Cancel"
+  },
+  "moonstones": {
+    "balanceLabel": "Moonstones",
+    "claimButton": "Claim daily",
+    "claiming": "Claiming...",
+    "alreadyClaimed": "Come back tomorrow",
+    "claimed": "+{{n}} Moonstones · Day {{d}} streak",
+    "claimFailed": "Could not claim today's reward"
+  },
+  "companion": {
+    "title": "Companion",
+    "newConversation": "New",
+    "emptyState": "Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.",
+    "placeholder": "Ask the companion...",
+    "thinking": "thinking…",
+    "sendFailed": "Could not reach the companion: {{err}}",
+    "dailyLimitReached": "Daily message limit reached — come back tomorrow.",
+    "dailyRemaining": "{{n}} / {{limit}} today",
+    "personas": {
+      "sage": {
+        "name": "Sage",
+        "intro": "Calm, wise, measured. Draws on contemplative traditions east and west. Offers questions, not performance."
+      },
+      "oracle": {
+        "name": "Oracle",
+        "intro": "Speaks in images and archetypes. Metaphor-rich. Maps the symbolic weather of the moment."
+      },
+      "mystic": {
+        "name": "Mystic",
+        "intro": "Direct, brief, comfortable with paradox. Zen-shaped. Sometimes answers with a sharper question."
+      },
+      "priestess": {
+        "name": "Priestess",
+        "intro": "Warm, embodied, intuitive. Tracks the person behind the question. Offers practices as often as wisdom."
+      }
+    }
+  },
+  "advisors": {
+    "title": "Advisors",
+    "intro": "Meet the readers joining Arcana. Paid sessions are rolling out gradually. Express interest to be notified when each advisor opens bookings.",
+    "back": "All advisors",
+    "empty": "No advisors available yet. Check back soon.",
+    "yearsLabel": "Experience",
+    "years": "years",
+    "languagesLabel": "Languages",
+    "specialtiesLabel": "Specialties",
+    "rateLabel": "Indicative rate",
+    "expressInterest": "Express interest",
+    "bookingsComingSoon": "Paid sessions are rolling out gradually. Tell us what you'd like help with and we'll notify you when this advisor opens bookings.",
+    "topicPlaceholder": "What would you like to work on? (optional)",
+    "notifyMe": "Notify me when bookings open",
+    "submitting": "Submitting...",
+    "interestSubmitted": "Interest noted — we'll notify you when {{n}} opens bookings.",
+    "interestFailed": "Could not submit interest",
+    "signInToExpress": "Sign in to express interest",
+    "specialties": {
+      "tarot": "tarot",
+      "astrology": "astrology",
+      "natal-chart": "natal chart",
+      "i-ching": "I-Ching",
+      "bazi": "bazi",
+      "career": "career",
+      "dreams": "dreams",
+      "shadow-work": "shadow work",
+      "creativity": "creativity",
+      "breakup-recovery": "breakup recovery"
+    }
   }
 }

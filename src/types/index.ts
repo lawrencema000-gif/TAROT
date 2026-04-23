@@ -159,7 +159,7 @@ export interface JournalEntry {
   updatedAt: string;
 }
 
-export type Tab = 'home' | 'readings' | 'quizzes' | 'horoscope' | 'achievements' | 'journal' | 'blog' | 'profile' | 'admin' | 'community' | 'whispering-well';
+export type Tab = 'home' | 'readings' | 'quizzes' | 'horoscope' | 'achievements' | 'journal' | 'blog' | 'profile' | 'admin' | 'community' | 'whispering-well' | 'companion' | 'advisors';
 
 export interface RitualCard {
   type: 'horoscope' | 'tarot' | 'prompt';

@@ -3706,5 +3706,72 @@
   "common": {
     "loading": "불러오는 중…",
     "cancel": "취소"
+  },
+  "moonstones": {
+    "balanceLabel": "문스톤",
+    "claimButton": "오늘의 보상 받기",
+    "claiming": "받는 중…",
+    "alreadyClaimed": "내일 다시 오세요",
+    "claimed": "+{{n}} 문스톤 · {{d}}일 연속 접속",
+    "claimFailed": "오늘의 보상을 받을 수 없었어요"
+  },
+  "companion": {
+    "title": "컴패니언",
+    "newConversation": "새로 시작",
+    "emptyState": "무엇이든 물어 보세요 — 가슴에 품은 질문, 해석되길 바라는 꿈, 이해하고 싶은 이름.",
+    "placeholder": "컴패니언에게 물어보세요...",
+    "thinking": "생각 중…",
+    "sendFailed": "컴패니언에게 닿지 못했어요: {{err}}",
+    "dailyLimitReached": "오늘의 메시지 한도에 도달했어요 — 내일 다시 오세요",
+    "dailyRemaining": "{{n}} / {{limit}} 오늘",
+    "personas": {
+      "sage": {
+        "name": "현자",
+        "intro": "차분하고, 지혜롭고, 균형 잡힌 목소리. 동서양의 관조 전통을 아우릅니다. 공연이 아니라 질문을 돌려줍니다."
+      },
+      "oracle": {
+        "name": "오라클",
+        "intro": "이미지와 원형으로 말합니다. 은유가 풍부하고, 순간의 상징적 날씨를 그립니다."
+      },
+      "mystic": {
+        "name": "신비가",
+        "intro": "직접적이고 간결하며, 역설에 편안합니다. 선의 결. 때때로 더 날카로운 질문으로 답합니다."
+      },
+      "priestess": {
+        "name": "여사제",
+        "intro": "따뜻하고, 몸으로 현존하며, 직관적입니다. 질문 뒤의 사람을 봅니다. 지혜만큼 실천도 함께."
+      }
+    }
+  },
+  "advisors": {
+    "title": "어드바이저",
+    "intro": "Arcana에 합류하는 리더들을 만나 보세요. 유료 세션은 단계적으로 공개되고 있어요. 관심을 표시하면 각 어드바이저가 예약을 열 때 알려드립니다.",
+    "back": "어드바이저 전체",
+    "empty": "아직 어드바이저가 없어요. 곧 다시 찾아 주세요.",
+    "yearsLabel": "경력",
+    "years": "년",
+    "languagesLabel": "언어",
+    "specialtiesLabel": "전문",
+    "rateLabel": "참고 요금",
+    "expressInterest": "관심 표시",
+    "bookingsComingSoon": "유료 세션은 단계적으로 열리고 있어요. 어떤 점을 돕길 원하는지 알려주시면 이 어드바이저가 예약을 열 때 알려드려요.",
+    "topicPlaceholder": "어떤 주제로 이야기하고 싶나요? (선택)",
+    "notifyMe": "예약이 열리면 알려주세요",
+    "submitting": "제출 중…",
+    "interestSubmitted": "관심을 기록했어요 — {{n}}님이 예약을 열면 알려드립니다.",
+    "interestFailed": "관심을 제출할 수 없었어요",
+    "signInToExpress": "관심 표시를 하려면 로그인해 주세요",
+    "specialties": {
+      "tarot": "타로",
+      "astrology": "점성술",
+      "natal-chart": "네이탈 차트",
+      "i-ching": "주역",
+      "bazi": "바지",
+      "career": "커리어",
+      "dreams": "꿈",
+      "shadow-work": "그림자 작업",
+      "creativity": "창조성",
+      "breakup-recovery": "이별 회복"
+    }
   }
 }

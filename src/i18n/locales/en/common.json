@@ -27,7 +27,9 @@
     "more": "More",
     "shop": "Shop",
     "community": "Community",
-    "whisperingWell": "Whispering Well"
+    "whisperingWell": "Whispering Well",
+    "companion": "Companion",
+    "advisors": "Advisors"
   },
   "actions": {
     "continue": "Continue",

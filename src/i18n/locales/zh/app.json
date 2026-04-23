@@ -3706,5 +3706,72 @@
   "common": {
     "loading": "加载中…",
     "cancel": "取消"
+  },
+  "moonstones": {
+    "balanceLabel": "月光石",
+    "claimButton": "领取今日",
+    "claiming": "领取中…",
+    "alreadyClaimed": "明天再来",
+    "claimed": "+{{n}} 月光石 · 连续第 {{d}} 天",
+    "claimFailed": "无法领取今日奖励"
+  },
+  "companion": {
+    "title": "灵伴",
+    "newConversation": "重新开始",
+    "emptyState": "就从任何问题开始吧——压在你心口的一个疑问，一个想被读懂的梦，一个想理解的名字。",
+    "placeholder": "向灵伴发问……",
+    "thinking": "思考中……",
+    "sendFailed": "没能连上灵伴：{{err}}",
+    "dailyLimitReached": "今日消息已达上限——明天再来",
+    "dailyRemaining": "{{n}} / {{limit}} 今日",
+    "personas": {
+      "sage": {
+        "name": "智者",
+        "intro": "沉稳、智慧、有度的声音。横跨东西方的观照传统。返还问题，而不演出。"
+      },
+      "oracle": {
+        "name": "神谕",
+        "intro": "以意象与原型说话。富有隐喻。描绘此刻的象征天气。"
+      },
+      "mystic": {
+        "name": "神秘家",
+        "intro": "直接、简练、能与悖论共处。禅的气味。有时以更锋利的问题回应。"
+      },
+      "priestess": {
+        "name": "女祭司",
+        "intro": "温暖、具身、直觉。看见问题背后的那个人。以同样的分量给出智慧与实修。"
+      }
+    }
+  },
+  "advisors": {
+    "title": "顾问",
+    "intro": "来见见加入 Arcana 的读者。付费会话正逐步开放。表达兴趣，当该顾问开启预约时我们会通知你。",
+    "back": "全部顾问",
+    "empty": "暂时还没有顾问，稍后再来。",
+    "yearsLabel": "经验",
+    "years": "年",
+    "languagesLabel": "语言",
+    "specialtiesLabel": "专长",
+    "rateLabel": "参考价",
+    "expressInterest": "表达兴趣",
+    "bookingsComingSoon": "付费会话正在逐步开放。告诉我们你想处理什么，当这位顾问开启预约时我们会通知你。",
+    "topicPlaceholder": "你希望就哪方面被支持？（可选）",
+    "notifyMe": "开放预约时通知我",
+    "submitting": "提交中…",
+    "interestSubmitted": "兴趣已记录——当 {{n}} 开放预约时会通知你。",
+    "interestFailed": "无法提交兴趣",
+    "signInToExpress": "请登录后表达兴趣",
+    "specialties": {
+      "tarot": "塔罗",
+      "astrology": "占星",
+      "natal-chart": "本命盘",
+      "i-ching": "易经",
+      "bazi": "八字",
+      "career": "事业",
+      "dreams": "梦境",
+      "shadow-work": "阴影工作",
+      "creativity": "创造力",
+      "breakup-recovery": "分手复原"
+    }
   }
 }

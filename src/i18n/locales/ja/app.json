@@ -3706,5 +3706,72 @@
   "common": {
     "loading": "読み込み中……",
     "cancel": "キャンセル"
+  },
+  "moonstones": {
+    "balanceLabel": "ムーンストーン",
+    "claimButton": "今日の分を受け取る",
+    "claiming": "受け取り中……",
+    "alreadyClaimed": "また明日",
+    "claimed": "+{{n}} ムーンストーン · {{d}}日目の連続ログイン",
+    "claimFailed": "今日の報酬を受け取れませんでした"
+  },
+  "companion": {
+    "title": "コンパニオン",
+    "newConversation": "新規",
+    "emptyState": "何でも尋ねて始めてください——胸に抱えている問い、読んでほしい夢、理解したい名前。",
+    "placeholder": "コンパニオンに問う……",
+    "thinking": "考えています……",
+    "sendFailed": "コンパニオンに届きませんでした：{{err}}",
+    "dailyLimitReached": "今日の上限に達しました——また明日",
+    "dailyRemaining": "{{n}} / {{limit}} 今日",
+    "personas": {
+      "sage": {
+        "name": "賢者",
+        "intro": "落ち着いた、賢く、測ろうとする声。東西の観照の伝統に触れる。問いを返す——演出ではなく。"
+      },
+      "oracle": {
+        "name": "神託",
+        "intro": "イメージと元型で語る。メタファーが豊か。瞬間の象徴的な天気を描く。"
+      },
+      "mystic": {
+        "name": "神秘家",
+        "intro": "直接的で簡潔。矛盾を恐れない。禅の形。鋭い問いで返すこともある。"
+      },
+      "priestess": {
+        "name": "巫女",
+        "intro": "温かく、身体的、直感的。問いの背後にいる人を見る。知恵と同じくらい、実践を差し出す。"
+      }
+    }
+  },
+  "advisors": {
+    "title": "アドバイザー",
+    "intro": "Arcanaに参加する読み手たち。有料セッションは段階的に公開中です。興味を伝えると、そのアドバイザーが予約を開くときに通知します。",
+    "back": "アドバイザー一覧",
+    "empty": "まだアドバイザーがいません。またお越しください。",
+    "yearsLabel": "経験",
+    "years": "年",
+    "languagesLabel": "言語",
+    "specialtiesLabel": "得意",
+    "rateLabel": "参考レート",
+    "expressInterest": "興味を伝える",
+    "bookingsComingSoon": "有料セッションは段階的に公開中です。何について助けが欲しいかを教えてください。このアドバイザーが予約を開いたときにお知らせします。",
+    "topicPlaceholder": "何について相談したいですか？（任意）",
+    "notifyMe": "予約開始時に通知を受ける",
+    "submitting": "送信中……",
+    "interestSubmitted": "興味を記録しました——{{n}}が予約を開いたときにお知らせします。",
+    "interestFailed": "興味を送信できませんでした",
+    "signInToExpress": "興味を伝えるにはサインインしてください",
+    "specialties": {
+      "tarot": "タロット",
+      "astrology": "占星術",
+      "natal-chart": "出生図",
+      "i-ching": "易経",
+      "bazi": "八字",
+      "career": "キャリア",
+      "dreams": "夢",
+      "shadow-work": "シャドウワーク",
+      "creativity": "創造性",
+      "breakup-recovery": "別れからの回復"
+    }
   }
 }

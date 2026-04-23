@@ -27,7 +27,9 @@
     "more": "更多",
     "shop": "商店",
     "community": "社区",
-    "whisperingWell": "低语之井"
+    "whisperingWell": "低语之井",
+    "companion": "灵伴",
+    "advisors": "顾问"
   },
   "actions": {
     "continue": "继续",

@@ -27,7 +27,9 @@
     "more": "その他",
     "shop": "ショップ",
     "community": "コミュニティ",
-    "whisperingWell": "ささやきの井戸"
+    "whisperingWell": "ささやきの井戸",
+    "companion": "コンパニオン",
+    "advisors": "アドバイザー"
   },
   "actions": {
     "continue": "続ける",

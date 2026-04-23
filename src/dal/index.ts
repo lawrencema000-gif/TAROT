@@ -28,5 +28,7 @@ export * as contentInteractions from './contentInteractions';
 export * as rewardedAdUnlocks from './rewardedAdUnlocks';
 export * as featureFlags from './featureFlags';
 export * as community from './community';
+export * as moonstones from './moonstones';
+export * as advisors from './advisors';
 
 export type { Result } from './dailyRituals';

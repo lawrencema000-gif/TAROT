@@ -41,6 +41,8 @@ const TarotMeaningsPage = lazy(() => import('./pages/TarotMeaningsPage').then(m 
 const TarotCardMeaningPage = lazy(() => import('./pages/TarotCardMeaningPage').then(m => ({ default: m.TarotCardMeaningPage })));
 const IChingPage = lazy(() => import('./pages/IChingPage').then(m => ({ default: m.IChingPage })));
 const CommunityPage = lazy(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
+const AiCompanionPage = lazy(() => import('./pages/AiCompanionPage').then(m => ({ default: m.AiCompanionPage })));
+const AdvisorsPage = lazy(() => import('./pages/AdvisorsPage').then(m => ({ default: m.AdvisorsPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -400,6 +402,8 @@ function AppContent() {
                   <Route path="/iching" element={<IChingPage />} />
                   <Route path="/community" element={<CommunityPage mode="normal" />} />
                   <Route path="/whispering-well" element={<CommunityPage mode="whispering-well" />} />
+                  <Route path="/companion" element={<AiCompanionPage />} />
+                  <Route path="/advisors" element={<AdvisorsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

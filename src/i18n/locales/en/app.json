@@ -83,7 +83,8 @@
       "tarot": "Tarot",
       "horoscope": "Horoscope",
       "compatibility": "Compatibility",
-      "library": "Library"
+      "library": "Library",
+      "iching": "I-Ching"
     },
     "dailyRemaining": "{{used}} / {{limit}} free readings today",
     "upgradeForUnlimited": "Upgrade for unlimited",
@@ -3145,5 +3146,24 @@
     "pig": {
       "name": "Pig"
     }
+  },
+  "iching": {
+    "title": "I-Ching Oracle",
+    "intro": "The I-Ching — the Book of Changes — is the oldest divination system in the world. Hold a question in mind. Throw the coins six times. The hexagram that appears reflects the moving energies around your question.",
+    "questionLabel": "Your question (optional)",
+    "questionPlaceholder": "What would be most helpful for me to understand right now?",
+    "castButton": "Cast the coins",
+    "casting": "Casting...",
+    "hexagramLabel": "Hexagram",
+    "judgement": "The Judgement",
+    "interpretation": "Interpretation",
+    "strengths": "Strengths",
+    "cautions": "Cautions",
+    "transformsInto": "Transforms into",
+    "transformNote": "The changing lines show the energy moving toward this second hexagram — read as \"where this situation is heading\".",
+    "journalPrompt": "Journal prompt",
+    "backToStart": "Cast again",
+    "castAgain": "Cast again",
+    "yourQuestion": "Your question"
   }
 }

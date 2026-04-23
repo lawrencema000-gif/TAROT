@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Sun, Sparkles, Heart, BookOpen } from 'lucide-react';
+import { lazy, Suspense, useState } from 'react';
+import { Sun, Sparkles, Heart, BookOpen, Coins } from 'lucide-react';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   TarotSection,
@@ -8,14 +8,24 @@ import {
   LibrarySection,
 } from '../components/readings';
 import { useT } from '../i18n/useT';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 
-type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'library';
+// Lazy-load the I-Ching page — keeps the ~40 KB hexagram data out of the
+// main ReadingsPage bundle and only downloads it when the user opens the
+// tab. Safe fallback ensures users without the flag see nothing new.
+const IChingSection = lazy(() => import('./IChingPage').then(m => ({ default: m.IChingPage })));
+
+type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'library';
 
 export function ReadingsPage() {
   const { t } = useT('app');
   const [activeTab, setActiveTab] = useState<ReadingTab>('tarot');
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState('');
+
+  // Feature-flag gated — defaults off in production. Flip the flag per-user
+  // or globally in Supabase `feature_flags` table to roll out.
+  const ichingEnabled = useFeatureFlag('iching');
 
   const handleShowPaywall = (feature: string) => {
     setPaywallFeature(feature);
@@ -26,6 +36,7 @@ export function ReadingsPage() {
     { id: 'tarot' as const, labelKey: 'readings.tabs.tarot', icon: Sparkles },
     { id: 'horoscope' as const, labelKey: 'readings.tabs.horoscope', icon: Sun },
     { id: 'compatibility' as const, labelKey: 'readings.tabs.compatibility', icon: Heart },
+    ...(ichingEnabled ? [{ id: 'iching' as const, labelKey: 'readings.tabs.iching', icon: Coins }] : []),
     { id: 'library' as const, labelKey: 'readings.tabs.library', icon: BookOpen },
   ];
 
@@ -77,6 +88,12 @@ export function ReadingsPage() {
 
       {activeTab === 'compatibility' && (
         <CompatibilitySection onShowPaywall={handleShowPaywall} />
+      )}
+
+      {activeTab === 'iching' && ichingEnabled && (
+        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+          <IChingSection />
+        </Suspense>
       )}
 
       {activeTab === 'library' && (

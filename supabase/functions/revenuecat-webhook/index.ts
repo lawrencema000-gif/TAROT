@@ -96,6 +96,45 @@ Deno.serve(
 
       const hasPremium = entitlements.includes("premium");
 
+      // ── Moonstone pack credit (non-subscription IAP) ──────────────────
+      // Product IDs encode the pack size: arcana_moonstones_<N>. We parse N
+      // out rather than hard-code the table here so new packs require only
+      // a Play Console + RevenueCat dashboard change, not a code deploy.
+      const moonstonePackMatch = /^arcana_moonstones_(\d+)$/i.exec(productId);
+      if (moonstonePackMatch && eventType === "NON_RENEWING_PURCHASE") {
+        const amount = parseInt(moonstonePackMatch[1], 10);
+        if (amount > 0 && amount <= 100_000) {
+          const { error: ledgerErr } = await ctx.supabase
+            .from("moonstone_transactions")
+            .insert({
+              user_id: userId,
+              amount,
+              kind: "purchase",
+              reference: body.event.transaction_id,
+              note: `Pack: ${productId}`,
+            });
+          if (ledgerErr) {
+            ctx.log.error("revenuecat_webhook.moonstone_ledger_failed", {
+              err: ledgerErr, userId, productId, amount,
+            });
+            // Don't throw — idempotency already claimed the eventId.
+            // A stuck ledger insert means manual reconciliation, not a
+            // double-credit on retry.
+          } else {
+            ctx.log.info("revenuecat_webhook.moonstones_credited", {
+              userId, productId, amount,
+            });
+          }
+        } else {
+          ctx.log.warn("revenuecat_webhook.invalid_pack_amount", { productId, amount });
+        }
+        // Return early — Moonstone packs are not subscriptions.
+        return new Response(
+          JSON.stringify({ success: true, kind: "moonstone-pack" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
       if (
         eventType === "INITIAL_PURCHASE" ||
         eventType === "RENEWAL" ||

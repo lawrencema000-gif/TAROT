@@ -24,3 +24,14 @@ export function isIOS(): boolean {
 export function isWeb(): boolean {
   return getPlatform() === 'web';
 }
+
+/**
+ * Google Play's billing policy requires Play Store IAP for digital content
+ * consumed in the app. Hide every third-party card-payment CTA on native.
+ * iOS follows the same rule under App Store guidelines.
+ *
+ * Web (PWA / browser) keeps Stripe direct-pay as a legitimate channel.
+ */
+export function canPayWithCard(): boolean {
+  return !isNative();
+}

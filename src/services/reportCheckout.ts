@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { getPlatform } from '../utils/platform';
 
 export type ReportKey = 'career-archetype' | 'natal-chart-pdf' | 'year-ahead';
 
@@ -20,7 +21,7 @@ export async function startReportCheckout(opts: {
   const cancelUrl  = `${origin}/reports/${reportKey === 'natal-chart-pdf' ? 'natal-chart' : reportKey === 'year-ahead' ? 'year-ahead' : 'career'}?unlock=cancelled`;
 
   const { data, error } = await supabase.functions.invoke('create-report-checkout', {
-    body: { reportKey, reference, successUrl, cancelUrl },
+    body: { reportKey, reference, successUrl, cancelUrl, clientPlatform: getPlatform() },
   });
 
   if (error) {

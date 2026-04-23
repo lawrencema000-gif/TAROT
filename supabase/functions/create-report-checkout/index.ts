@@ -49,6 +49,13 @@ const RequestSchema = z.object({
   reference: z.string().min(1).max(64),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
+  /**
+   * Client platform. Required for compliance defence-in-depth: we refuse
+   * Stripe checkout from the native apps where Google Play / App Store
+   * require in-app billing. The client UI already hides the button on
+   * native, but a modified client could still hit the endpoint directly.
+   */
+  clientPlatform: z.enum(['web', 'android', 'ios']).optional(),
 });
 
 type Req = z.infer<typeof RequestSchema>;
@@ -65,10 +72,20 @@ export default handler<Req, Resp>({
   rateLimit: { max: 10, windowMs: 10 * 60_000 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
-    const { reportKey, reference, successUrl, cancelUrl } = body;
+    const { reportKey, reference, successUrl, cancelUrl, clientPlatform } = body;
 
     if (!allowedRedirect(successUrl) || !allowedRedirect(cancelUrl)) {
       throw new AppError("INVALID_REDIRECT_URL", "Redirect URLs must be on an approved host", 400);
+    }
+
+    // Defence-in-depth: refuse Stripe checkout from native platforms.
+    // Play Store + App Store require in-app billing for digital content.
+    if (clientPlatform === "android" || clientPlatform === "ios") {
+      throw new AppError(
+        "USE_IAP_ON_NATIVE",
+        "Use in-app billing on native platforms",
+        403,
+      );
     }
 
     const price = REPORT_PRICES[reportKey];

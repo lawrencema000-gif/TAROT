@@ -6,6 +6,7 @@ import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { supabase } from '../lib/supabase';
+import { isNative } from '../utils/platform';
 import { advisorSessions } from '../dal';
 import type { AdvisorAvailability, AdvisorSession } from '../dal/advisorSessions';
 
@@ -27,7 +28,12 @@ export function AdvisorDashboardPage() {
   const { t } = useT('app');
   const { user } = useAuth();
   const navigate = useNavigate();
-  const payoutsEnabled = useFeatureFlag('advisor-payouts');
+  // Advisor payouts UI is a Stripe Connect surface. Hide on native — the
+  // onboarding link opens the Stripe hosted page which can be argued as
+  // outbound (payouts TO the advisor, not inbound IAP), but Play Store
+  // auditors can flag the third-party billing pattern. Let advisors complete
+  // onboarding on the web app instead.
+  const payoutsEnabled = useFeatureFlag('advisor-payouts') && !isNative();
 
   const [advisorId, setAdvisorId] = useState<string | null>(null);
   const [advisorName, setAdvisorName] = useState<string | null>(null);

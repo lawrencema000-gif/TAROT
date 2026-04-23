@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { startReportCheckout } from '../services/reportCheckout';
+import { canPayWithCard } from '../utils/platform';
 import {
   SIGN_SYMBOLS,
   PLANET_SYMBOLS,
@@ -320,20 +321,22 @@ export function NatalChartReportPage() {
               {t('natalReport.balance', { defaultValue: 'Balance: {{n}} Moonstones', n: balance })}
             </p>
           )}
-          <button
-            onClick={async () => {
-              const res = await startReportCheckout({ reportKey: 'natal-chart-pdf', reference });
-              if (!res.ok && res.error !== 'already-unlocked') {
-                toast(t('natalReport.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
-              }
-            }}
-            className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
-          >
-            {t('natalReport.payWithStripe', {
-              defaultValue: 'Or pay ${{price}} with card',
-              price: NATAL_USD.toFixed(2),
-            })}
-          </button>
+          {canPayWithCard() && (
+            <button
+              onClick={async () => {
+                const res = await startReportCheckout({ reportKey: 'natal-chart-pdf', reference });
+                if (!res.ok && res.error !== 'already-unlocked') {
+                  toast(t('natalReport.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+                }
+              }}
+              className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+            >
+              {t('natalReport.payWithStripe', {
+                defaultValue: 'Or pay ${{price}} with card',
+                price: NATAL_USD.toFixed(2),
+              })}
+            </button>
+          )}
         </Card>
       </div>
     );

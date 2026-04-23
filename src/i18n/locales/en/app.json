@@ -3541,7 +3541,25 @@
     "claiming": "Claiming...",
     "alreadyClaimed": "Come back tomorrow",
     "claimed": "+{{n}} Moonstones · Day {{d}} streak",
-    "claimFailed": "Could not claim today's reward"
+    "claimFailed": "Could not claim today's reward",
+    "topUp": "Top up"
+  },
+  "moonstoneTopUp": {
+    "title": "Top up Moonstones",
+    "subtitle": "Unlock readings, tip live hosts, and book advisor sessions.",
+    "popular": "Popular",
+    "packLabel": {
+      "starter": "Starter",
+      "regular": "Regular",
+      "generous": "Generous",
+      "devotee": "Devotee"
+    },
+    "success": "{{n}} Moonstones on the way — takes a few seconds to land.",
+    "packNotFound": "Pack not available in store.",
+    "stripeFailed": "Could not open checkout",
+    "generic": "Purchase failed",
+    "securePayment": "Secure checkout powered by Stripe. One-time purchase — cancel anytime.",
+    "playStorePurchase": "Charged through Google Play. Manage purchases in your Google account."
   },
   "companion": {
     "title": "Companion",

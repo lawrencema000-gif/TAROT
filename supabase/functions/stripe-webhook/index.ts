@@ -158,6 +158,32 @@ Deno.serve(
             break;
           }
 
+          // Moonstone pack branch: credit ledger.
+          if (purchaseType === "moonstones") {
+            const packId = session.metadata?.product_id || "";
+            const amountRaw = session.metadata?.moonstones;
+            const amount = amountRaw ? parseInt(amountRaw, 10) : 0;
+            if (!Number.isFinite(amount) || amount <= 0 || amount > 100_000) {
+              ctx.log.warn("stripe_webhook.moonstone_bad_amount", { packId, amountRaw });
+              break;
+            }
+            const { error: ledgerErr } = await ctx.supabase
+              .from("moonstone_transactions")
+              .insert({
+                user_id: userId,
+                amount,
+                kind: "purchase",
+                reference: session.payment_intent as string,
+                note: `Pack: ${packId}`,
+              });
+            if (ledgerErr) {
+              ctx.log.error("stripe_webhook.moonstone_ledger_failed", { err: ledgerErr.message });
+            } else {
+              ctx.log.info("stripe_webhook.moonstones_credited", { userId, packId, amount });
+            }
+            break;
+          }
+
           // Pay-per-report branch: insert report_unlocks + optional affiliate accrual.
           if (purchaseType === "report") {
             const reportKey = session.metadata?.report_key;

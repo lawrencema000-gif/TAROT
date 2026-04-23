@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { startReportCheckout } from '../services/reportCheckout';
 import { supabase } from '../lib/supabase';
+import { canPayWithCard } from '../utils/platform';
 
 /**
  * Year-Ahead Forecast — pay-per-report #2. $12.99 / 300 Moonstones.
@@ -239,20 +240,22 @@ export function YearAheadReportPage() {
               })}
             </p>
           )}
-          <button
-            onClick={async () => {
-              const res = await startReportCheckout({ reportKey: 'year-ahead', reference: String(currentYear) });
-              if (!res.ok && res.error !== 'already-unlocked') {
-                toast(t('yearAhead.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
-              }
-            }}
-            className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
-          >
-            {t('yearAhead.payWithStripe', {
-              defaultValue: 'Or pay ${{price}} with card',
-              price: YEAR_AHEAD_USD.toFixed(2),
-            })}
-          </button>
+          {canPayWithCard() && (
+            <button
+              onClick={async () => {
+                const res = await startReportCheckout({ reportKey: 'year-ahead', reference: String(currentYear) });
+                if (!res.ok && res.error !== 'already-unlocked') {
+                  toast(t('yearAhead.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+                }
+              }}
+              className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+            >
+              {t('yearAhead.payWithStripe', {
+                defaultValue: 'Or pay ${{price}} with card',
+                price: YEAR_AHEAD_USD.toFixed(2),
+              })}
+            </button>
+          )}
         </Card>
       </div>
     );

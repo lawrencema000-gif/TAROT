@@ -46,7 +46,11 @@
       "meaning": "의미"
     },
     "xpEarned": "+{{xp}} XP 획득!",
-    "removedFromSaved": "저장에서 지웠어요"
+    "removedFromSaved": "저장에서 지웠어요",
+    "quickReading": "3-second reading",
+    "quickReadingSub": "Ask anything",
+    "tarotCompanion": "Tarot companion",
+    "tarotCompanionSub": "Pull a card, talk it through"
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
@@ -90,7 +94,9 @@
       "dream": "꿈",
       "mood": "무드",
       "partner": "궁합",
-      "fengshui": "풍수"
+      "fengshui": "풍수",
+      "runes": "Runes",
+      "dice": "Dice"
     },
     "dailyRemaining": "오늘 무료 리딩 {{used}} / {{limit}}",
     "upgradeForUnlimited": "무제한 이용으로 업그레이드",
@@ -1618,8 +1624,21 @@
       "lifePath": "라이프 패스",
       "shareButton": "코스믹 프로파일 공유",
       "shareSubtitle": "태양 · 띠 · 라이프 패스",
-      "myProfile": "나의 코스믹 프로파일"
-    }
+      "myProfile": "나의 코스믹 프로파일",
+      "expression": "Expression",
+      "soulUrge": "Soul Urge",
+      "personality": "Personality"
+    },
+    "referralTitle": "Invite friends",
+    "referralSub": "Earn 100 Moonstones per friend",
+    "careerReportTitle": "Career Archetype Report",
+    "careerReportSub": "Deep coaching read for {{mbti}}",
+    "yearAheadTitle": "Year Ahead Forecast",
+    "yearAheadSub": "12 months of transits to your chart",
+    "natalReportTitle": "Full Natal Chart",
+    "natalReportSub": "Printable deep chart reading",
+    "compatInviteTitle": "Compatibility invite",
+    "compatInviteSub": "Share a link to get a joint reading"
   },
   "achievements": {
     "title": "트로피",
@@ -3701,7 +3720,10 @@
       "placeholder": "말해야 하지만 들을 곳이 없는 말은?",
       "send": "속삭임 보내기",
       "empty": "우물은 조용해요. 첫 속삭임을 남겨 보세요."
-    }
+    },
+    "postedUnderReview": "Posted — our team will review shortly.",
+    "commentUnderReview": "Comment posted — our team will review shortly.",
+    "contentBlocked": "This content conflicts with our community guidelines."
   },
   "common": {
     "loading": "불러오는 중…",
@@ -3773,5 +3795,478 @@
       "creativity": "창조성",
       "breakup-recovery": "이별 회복"
     }
+  },
+  "moon": {
+    "title": "Tonight's Moon",
+    "illumination": "{{pct}}% illuminated · day {{day}} of ~29.5",
+    "ritual": "Tonight's ritual",
+    "nextPhase": "Next: {{name}} in {{days}} days",
+    "phase": {
+      "new": {
+        "name": "New Moon",
+        "guidance": "A quiet threshold. Name what you are beginning — not what is finished. Do not force clarity; just set direction.",
+        "ritual": "Write three intentions for the coming cycle. Fold the paper, keep it somewhere private until the full moon."
+      },
+      "waxing-crescent": {
+        "name": "Waxing Crescent",
+        "guidance": "Take the first small action toward what you named at the new moon. Consistency beats intensity here.",
+        "ritual": "Light a candle and list three tiny steps you can take this week. Take the first one today."
+      },
+      "first-quarter": {
+        "name": "First Quarter",
+        "guidance": "Expect resistance now — this is when momentum meets doubt. Recommit or adjust; do not abandon.",
+        "ritual": "Name one obstacle standing between you and your intention. Write the exact next action that moves past it."
+      },
+      "waxing-gibbous": {
+        "name": "Waxing Gibbous",
+        "guidance": "The result is close but needs polish. Do the boring, careful work now — editing, checking, repairing.",
+        "ritual": "Review what you have built this cycle. What one detail, if improved, would change the whole?"
+      },
+      "full": {
+        "name": "Full Moon",
+        "guidance": "Harvest what is ripe. Celebrate progress; acknowledge what is now clearly not working. Emotions run high — move slowly.",
+        "ritual": "Under moonlight (or facing a window), name three things completed this cycle. Speak one truth you have been avoiding."
+      },
+      "waning-gibbous": {
+        "name": "Waning Gibbous",
+        "guidance": "Share what you learned. Teach, thank, record. This is integration — not striving.",
+        "ritual": "Send one message of thanks to someone who supported you this cycle. Write one lesson in your journal."
+      },
+      "last-quarter": {
+        "name": "Last Quarter",
+        "guidance": "Clear space. Finish what is finishable; release what is not. Do not start new projects yet.",
+        "ritual": "Name one habit, item, or commitment to release. Write it down, then cross it out."
+      },
+      "waning-crescent": {
+        "name": "Waning Crescent",
+        "guidance": "Do less. Sleep more. Dream. This is not procrastination — it is the nervous system restoring before the next cycle.",
+        "ritual": "Unplug for an hour. No screens, no productivity. Sit, walk, lie down. Notice what surfaces when you stop."
+      }
+    }
+  },
+  "runes": {
+    "title": "Rune Casting",
+    "intro": "Three staves from the Elder Futhark — past, present, future. Hold a question, then cast.",
+    "castButton": "Cast the runes",
+    "casting": "Casting...",
+    "castAgain": "Cast again",
+    "positions": {
+      "past": "Past",
+      "present": "Present",
+      "future": "Future"
+    },
+    "reversedLabel": "Reversed",
+    "meaningLabel": "Meaning",
+    "journalPrompt": "Journal prompt",
+    "shareButton": "Share this cast",
+    "elementLabel": "Element"
+  },
+  "dice": {
+    "title": "Dice Oracle",
+    "intro": "The simplest divination — three dice fall, their sum speaks. Hold a question, then roll. Sixteen possible readings from 3 to 18.",
+    "sumLabel": "Sum",
+    "promptLabel": "Hold this question",
+    "rollButton": "Roll the dice",
+    "rollAgain": "Roll again",
+    "rolling": "Rolling..."
+  },
+  "crisis": {
+    "title": "You are not alone",
+    "subtitle": "We noticed some of what you wrote. If you are hurting right now, please reach for one of these — they are free and confidential.",
+    "phone": {
+      "title": "988 Suicide & Crisis Lifeline",
+      "body": "Call or text 988 · 24/7 · US",
+      "cta": "Call"
+    },
+    "text": {
+      "title": "Crisis Text Line",
+      "body": "Text HOME to 741741 · US/UK/CA/IE",
+      "cta": "Text"
+    },
+    "international": {
+      "title": "International helplines"
+    },
+    "footer": "Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.",
+    "closeButton": "I'm okay for now"
+  },
+  "referral": {
+    "title": "Invite & earn",
+    "heading": "Share Arcana, earn Moonstones",
+    "subtitle": "Each friend who joins with your code earns you 100 Moonstones. They get 100 too.",
+    "yourCodeLabel": "Your code",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy",
+    "share": "Share",
+    "shareText": "I've been using Arcana for tarot + astrology — use my code for 100 free Moonstones: {{url}}",
+    "invitesCount": "{{n}} friends joined with your code",
+    "redeemLabel": "Got a code?",
+    "redeemHelper": "Enter a friend's code in your first 30 days to claim 100 Moonstones.",
+    "codePlaceholder": "ABCD1234",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming…",
+    "redeemSuccess": "+{{n}} Moonstones — welcome!",
+    "alreadyRedeemed": "You've already redeemed a referral code.",
+    "errors": {
+      "alreadyRedeemed": "You've already redeemed a code.",
+      "notFound": "Code not found.",
+      "selfRedeem": "You can't use your own code.",
+      "accountTooOld": "Referral codes only work in the first 30 days.",
+      "generic": "Could not redeem code."
+    }
+  },
+  "yearAhead": {
+    "title": "Year Ahead",
+    "cardTitle": "{{year}} — 12 monthly briefings",
+    "cardSub": "A month-by-month map of the biggest transits to your natal chart.",
+    "needsBirthData": "Add your full birth data first",
+    "needsBirthDataBody": "Year-ahead forecasts need date, time, and place of birth to compute transits to your natal chart. Add them in Profile → Edit profile.",
+    "locked": {
+      "feat1": "12 monthly theme briefings",
+      "feat2": "Outer-planet transits to your personal planets",
+      "feat3": "Start/end dates for each transit window",
+      "feat4": "Overall year-long narrative"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Forecast unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "computing": "Mapping your year…",
+    "errorNatalMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
+    "errorGeneric": "Could not load forecast. Try again in a moment.",
+    "overall": "Overall arc",
+    "emptyMonth": "A quiet month, astrologically. Use it to rest.",
+    "disclaimer": "Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
+  },
+  "natalReport": {
+    "title": "Full Natal Chart",
+    "cardTitle": "Your complete birth chart — printable",
+    "cardSub": "Every planet in its sign and house, every aspect, with interpretations.",
+    "needsBirthData": "Add your birth data first",
+    "needsBirthDataBody": "The full natal chart needs date, time, and place of birth. Add them in Profile → Edit profile.",
+    "locked": {
+      "feat1": "Big Three with deeper readings",
+      "feat2": "All 10 planets in signs + houses",
+      "feat3": "Aspect grid with exact orbs",
+      "feat4": "Save as PDF or print from your browser"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Chart unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "errorChartMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
+    "printCta": "Save as PDF",
+    "bigThreeHeading": "The Big Three",
+    "planetsHeading": "Planets in signs and houses",
+    "elementsHeading": "Elemental & modal balance",
+    "aspectsHeading": "Aspects — the wiring between planets",
+    "wheelHeading": "Your chart wheel",
+    "variantNatal": "Natal",
+    "variantTransits": "Transits today",
+    "loadingTransits": "Computing current positions…",
+    "variant": {
+      "natal": "Natal",
+      "transits": "Transits today",
+      "progressions": "Progressions",
+      "solar-return": "Solar return",
+      "synastry": "Synastry"
+    },
+    "computing": "Computing…",
+    "progressedAge": "Age {{n}}",
+    "synastryPrompt": "Partner birth data",
+    "partnerNamePlaceholder": "Partner name (optional)",
+    "synastryCta": "Overlay partner chart",
+    "synastryFailed": "Could not compute synastry.",
+    "crossAspects": "Top cross-aspects",
+    "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
+  },
+  "careerReport": {
+    "title": "Career Archetype",
+    "needsMbti": "Take the personality quiz first",
+    "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.",
+    "shareLabel": "Career Archetype",
+    "locked": {
+      "body": "A ~900-word coaching-grade report tailored to your type — best-fit roles, drains, collaboration patterns, blind spots, and a first-90-days plan.",
+      "feat1": "10 best-fit roles across industries",
+      "feat2": "Which environments drain you",
+      "feat3": "Your collaboration counterweight",
+      "feat4": "First-90-days plan in a new role"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Report unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "bestFit": "Best-fit roles",
+    "drains": "Environments that drain you",
+    "collaboration": "Collaboration pattern",
+    "blindSpots": "Blind spots",
+    "ninetyDays": "First 90 days",
+    "monthLabel": "Month {{n}}",
+    "reflection": "Sit with these questions",
+    "share": "Share my archetype",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
+  },
+  "compatInvite": {
+    "createTitle": "Invite someone",
+    "createSubtitle": "Send a link. They take their side; you both see the joint reading.",
+    "createFailed": "Could not create invite",
+    "pickKind": "Compatibility kind",
+    "nothingToShare": "Take the personality quiz or add your birth date first.",
+    "generateLink": "Generate invite link",
+    "generating": "Generating…",
+    "yourLink": "Your invite link",
+    "expiresNote": "Link expires in 90 days.",
+    "fromNamed": "{{name}} wants to see how you vibe",
+    "fromAnon": "Someone wants to see how you vibe",
+    "readyBody": "Your existing profile already has what this reading needs. Tap below to reveal the joint result.",
+    "reveal": "Reveal our compatibility",
+    "revealing": "Revealing…",
+    "needMbti": "You need to take the personality quiz first.",
+    "needBirthDate": "Add your birth date in Profile first.",
+    "goToQuiz": "Take the quiz",
+    "goToProfile": "Open Profile",
+    "notFound": "This invite could not be found or has expired.",
+    "ownInvite": "This is your own invite. Share the link with a friend or partner — they need to respond.",
+    "signInTitle": "Sign in to see your match",
+    "signInBody": "Create a free account or sign in to take your side of the compatibility reading.",
+    "signInCta": "Continue",
+    "resultLabel": "Compatibility",
+    "mbtiSection": "Personality compatibility",
+    "astroSection": "Astrological compatibility",
+    "strengths": "Strengths",
+    "growth": "Growth edges",
+    "advice": "For you two",
+    "noScore": "Your responses are recorded. A richer joint reading is coming for this kind of quiz soon.",
+    "yourSides": "What you shared",
+    "inviterDefault": "Inviter",
+    "responderDefault": "You",
+    "shareText": "Take this compatibility reading with me on Arcana: {{url}}",
+    "errors": {
+      "selfInvite": "You can't respond to your own invite.",
+      "expired": "This invite has expired.",
+      "notFound": "Invite not found.",
+      "generic": "Could not respond."
+    },
+    "kinds": {
+      "mbti": "Personality (MBTI)",
+      "love-language": "Love Language",
+      "attachment": "Attachment Style",
+      "big-five": "Big Five",
+      "enneagram": "Enneagram",
+      "zodiac": "Zodiac",
+      "element": "Element"
+    }
+  },
+  "advisorBooking": {
+    "back": "Back",
+    "notFound": "Advisor not found.",
+    "rate": "Indicative rate: ${{dollars}}/hr",
+    "durationLabel": "Session length",
+    "costPreview": "{{n}} Moonstones",
+    "pickSlot": "Pick a time (next 7 days)",
+    "noAvailability": "This advisor has not published availability yet. Check back soon.",
+    "topicLabel": "What do you want help with? (optional)",
+    "topicPlaceholder": "Anything specific — a decision, a relationship, a transit…",
+    "bookCta": "Book for {{n}} Moonstones",
+    "booking": "Booking…",
+    "bookedToast": "Session booked — we debited {{n}} Moonstones.",
+    "insufficientBalance": "Not enough Moonstones. Top up and try again.",
+    "slotTaken": "That slot just got taken. Pick another.",
+    "bookFailed": "Could not book that slot.",
+    "disclaimer": "Cancel for a full refund any time before the session starts."
+  },
+  "advisorSession": {
+    "back": "Back to advisors",
+    "title": "Session",
+    "notFound": "Session not found.",
+    "startsIn": "Starts in {{n}} minutes. Start any time within 5 minutes of the scheduled time.",
+    "readyToStart": "Ready when you are.",
+    "cancel": "Cancel",
+    "start": "Start session",
+    "started": "Session started",
+    "ended": "Session ended",
+    "end": "End session",
+    "cancelled": "This session was cancelled.",
+    "cancelledToast": "Cancelled. {{n}} Moonstones refunded.",
+    "noMessages": "Say hi to get started.",
+    "composerPlaceholder": "Write a message…",
+    "sendFailed": "Could not send",
+    "rateTitle": "How was it?",
+    "reviewPlaceholder": "Anything to share? (optional)",
+    "submitRating": "Submit rating",
+    "ratingThanks": "Thanks for the feedback"
+  },
+  "advisorDashboard": {
+    "title": "Advisor dashboard",
+    "notAdvisorTitle": "Become an advisor",
+    "notAdvisorBody": "You are not set up as an advisor yet. Advisors are hand-vetted — reach out to apply.",
+    "apply": "Email advisors@tarotlife.app",
+    "upcomingTitle": "Upcoming sessions",
+    "noUpcoming": "No sessions booked yet.",
+    "availabilityTitle": "Weekly availability",
+    "availabilityHint": "Clients can book 30-min buckets within these windows. Times are in your device timezone.",
+    "noSlots": "No availability yet — add one above.",
+    "addSlot": "Add slot",
+    "saveCta": "Save availability",
+    "saving": "Saving…",
+    "saved": "Availability saved",
+    "invalidSlot": "End time must be after start time.",
+    "payoutsTitle": "Payouts",
+    "payoutsSetupBody": "Complete Stripe Connect onboarding to cash out your Moonstones as real money.",
+    "setupPayouts": "Set up payouts",
+    "continueOnboarding": "Continue onboarding",
+    "opening": "Opening…",
+    "cashableLabel": "Cashable Moonstones",
+    "rateNote": "10 Moonstones = $1.00 · 30% platform fee · 70% to you",
+    "cashoutCta": "Cash out",
+    "cashingOut": "Sending…",
+    "cashoutMinimum": "Minimum cashout is 100 Moonstones.",
+    "cashoutExceeds": "Amount exceeds your cashable balance.",
+    "cashoutSent": "Sent ${{usd}} to your Stripe account.",
+    "cashoutMinNote": "Minimum 100 Moonstones ($10 gross / $7 to you).",
+    "stripeFailed": "Could not start Stripe onboarding",
+    "onboardingRequired": "Complete Stripe onboarding first."
+  },
+  "voice": {
+    "join": "Join voice",
+    "joining": "Joining…",
+    "leave": "Leave",
+    "notConnected": "Voice off",
+    "state": {
+      "idle": "",
+      "connecting": "Connecting…",
+      "connected": "Voice on",
+      "disconnected": "Voice ended",
+      "error": "Voice error",
+      "unavailable": "Voice coming soon"
+    }
+  },
+  "liveRoom": {
+    "back": "All rooms",
+    "notFound": "Room not found.",
+    "listeners": "{{n}} RSVPd / cap {{cap}}",
+    "rsvp": "RSVP",
+    "rsvpd": "You're in",
+    "notLiveYet": "Voice opens when the host starts the room.",
+    "rsvpToJoin": "RSVP first to join voice.",
+    "tipHost": "Tip the host",
+    "tipSent": "Sent {{n}} Moonstones to the host.",
+    "replayHeading": "Replay",
+    "replayLocked": "Listen anytime for {{n}} Moonstones.",
+    "unlockReplay": "Unlock replay — {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "replayUnlocked": "Replay unlocked",
+    "replayInsufficient": "Not enough Moonstones to unlock.",
+    "signInToUnlock": "Sign in to unlock the replay",
+    "listenFree": "Listen — free"
+  },
+  "advisorVerify": {
+    "title": "Advisor verification",
+    "startTitle": "Verify to go live",
+    "startBody": "Before clients can book you, we confirm identity. Upload a government ID plus a short selfie video saying your full name and today's date. Reviewed within 72 hours.",
+    "pendingTitle": "Under review",
+    "pendingBody": "Submitted {{date}}. We review within 72 hours.",
+    "approvedTitle": "Verified",
+    "approvedBody": "Your advisor profile is live in the directory.",
+    "rejectedTitle": "Not approved",
+    "reasonLabel": "Reason:",
+    "rejectedHelp": "Contact advisors@tarotlife.app if you believe this is wrong.",
+    "goDashboard": "Open dashboard",
+    "legalNameLabel": "Legal name",
+    "countryLabel": "Country (2-letter code, e.g. US)",
+    "idLabel": "Government ID (image)",
+    "uploadId": "Upload ID",
+    "selfieLabel": "Selfie video (say your name + today's date)",
+    "uploadSelfie": "Upload video",
+    "submitCta": "Submit for review",
+    "submitting": "Submitting…",
+    "submitted": "Submitted. We'll review within 72 hours.",
+    "incomplete": "Fill in every field and upload both files.",
+    "privacyNote": "Documents are encrypted and only visible to admin reviewers."
+  },
+  "sandbox": {
+    "title": "Archetypal sandbox",
+    "intro": "Pick symbolic objects, place them on the plinth, and the oracle reads the arrangement. Preview release — positions are spiralled automatically, drag-drop is coming.",
+    "pickObject": "Choose an object",
+    "place": "Place on plinth",
+    "reset": "Reset",
+    "placedLabel": "On the plinth",
+    "placeMore": "Place at least two objects.",
+    "interpretCta": "Read the arrangement",
+    "reading": "Reading the arrangement…",
+    "readingLabel": "The oracle reads",
+    "rearrange": "Rearrange",
+    "interpretFailed": "Could not interpret.",
+    "preview": "Preview — drag-to-place and save/share are coming."
+  },
+  "quickReading": {
+    "title": "3-second reading",
+    "intro": "Ask anything. A single card is drawn, woven with your signals, and returned as a short reading to sit with.",
+    "questionLabel": "Your question",
+    "questionPlaceholder": "What is mine to focus on this week? Where is the friction in my work coming from? What am I avoiding?",
+    "draw": "Draw and read",
+    "drawing": "Drawing…",
+    "yourQuestion": "Your question",
+    "cardLabel": "Card drawn",
+    "memoryUsed": "Drawing on what we've talked about before.",
+    "share": "Share",
+    "askAnother": "Ask another",
+    "disclaimer": "Readings are for self-reflection, not prediction or professional advice.",
+    "errorRateLimit": "You're asking fast — slow down and try again in a moment.",
+    "errorUnavailable": "Readings are temporarily unavailable.",
+    "errorGeneric": "Could not generate a reading. Try again."
+  },
+  "tarotCompanion": {
+    "title": "Tarot companion",
+    "redraw": "New card",
+    "drawing": "Drawing…",
+    "drawCta": "Draw a card",
+    "empty": "Pull a card to begin a conversation.",
+    "upright": "Upright",
+    "reversed": "Reversed",
+    "composerPlaceholder": "Ask a follow-up…",
+    "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
+    "aiFailed": "Could not reach the oracle"
+  },
+  "journalCoach": {
+    "askCta": "Ask the journal coach",
+    "thinking": "Reading…",
+    "failed": "Could not reach coach",
+    "observationLabel": "An observation",
+    "promptsLabel": "Sit with these",
+    "dismiss": "Dismiss"
+  },
+  "chartWheel": {
+    "tapPrompt": "Tap a planet, house, or aspect line.",
+    "planetLabel": "Planet",
+    "transitLabel": "Transit",
+    "houseLabel": "House {{n}}",
+    "aspectLabel": "Aspect"
+  },
+  "liveRooms": {
+    "title": "Live rooms",
+    "intro": "Scheduled live gatherings — full moon circles, Mercury retrograde debriefs, live tarot pulls. Audio-first, soon. RSVP to reserve your seat.",
+    "empty": "No live rooms on the calendar yet — check back soon.",
+    "capacity": "up to {{n}} listeners",
+    "rsvp": "RSVP",
+    "rsvpd": "You're in",
+    "rsvpConfirmed": "You're on the list — we'll notify you.",
+    "rsvpCancelled": "RSVP cancelled",
+    "signInToRsvp": "Sign in to RSVP",
+    "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
   }
 }

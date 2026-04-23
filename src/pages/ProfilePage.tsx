@@ -17,6 +17,8 @@ import {
   Check,
   Gift,
   Briefcase,
+  Calendar,
+  ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
@@ -61,6 +63,8 @@ export function ProfilePage() {
   const [showSaved, setShowSaved] = useState(false);
   const referralEnabled = useFeatureFlag('referral');
   const careerReportEnabled = useFeatureFlag('career-report');
+  const yearAheadEnabled = useFeatureFlag('year-ahead-report');
+  const natalReportEnabled = useFeatureFlag('natal-chart-report');
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [savedHighlights, setSavedHighlights] = useState<SavedHighlight[]>([]);
@@ -357,6 +361,46 @@ export function ProfilePage() {
               </h3>
               <p className="text-sm text-mystic-400">
                 {t('profile.careerReportSub', { defaultValue: 'Deep coaching read for {{mbti}}', mbti: profile.mbtiType })}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
+          </button>
+        )}
+
+        {yearAheadEnabled && profile?.birthDate && profile?.birthTime && profile?.birthPlace && (
+          <button
+            onClick={() => navigate('/reports/year-ahead')}
+            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cosmic-blue/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-6 h-6 text-cosmic-blue" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-mystic-100">
+                {t('profile.yearAheadTitle', { defaultValue: 'Year Ahead Forecast' })}
+              </h3>
+              <p className="text-sm text-mystic-400">
+                {t('profile.yearAheadSub', { defaultValue: '12 months of transits to your chart' })}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
+          </button>
+        )}
+
+        {natalReportEnabled && profile?.birthDate && (
+          <button
+            onClick={() => navigate('/reports/natal-chart')}
+            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cosmic-violet/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
+              <ScrollText className="w-6 h-6 text-cosmic-violet" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-mystic-100">
+                {t('profile.natalReportTitle', { defaultValue: 'Full Natal Chart' })}
+              </h3>
+              <p className="text-sm text-mystic-400">
+                {t('profile.natalReportSub', { defaultValue: 'Printable deep chart reading' })}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />

@@ -120,13 +120,16 @@ export function AiCompanionPage() {
         },
       });
 
-      if (error || !data?.reply) {
+      // New handler envelope wraps the result as `{ data: { reply, ... }, correlationId }`.
+      // Fall back to the legacy flat shape for rollback safety.
+      const payload = (data?.data ?? data) as { reply?: string } | null;
+      if (error || !payload?.reply) {
         throw new Error(error?.message || 'No reply');
       }
 
       const assistantMsg: Message = {
         role: 'assistant',
-        content: data.reply as string,
+        content: payload.reply,
         timestamp: Date.now(),
       };
       const finalHistory = [...newHistory, assistantMsg];

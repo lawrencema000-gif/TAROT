@@ -147,11 +147,27 @@ export async function checkAndAwardStreakMilestone(
   for (const milestone of milestones) {
     if (newStreak === milestone.streak) {
       const result = await awardXP(userId, milestone.type);
+
+      // Also award Moonstones via the streak RPC. Idempotent per
+      // (user, streak_day) — safe to call on every milestone hit.
+      let moonstonesAwarded = 0;
+      try {
+        const { data: streakData } = await supabase.rpc('moonstone_award_streak_milestone', {
+          p_streak_day: milestone.streak,
+        });
+        const row = Array.isArray(streakData) ? streakData[0] : streakData;
+        if (row?.amount_awarded && !row.is_duplicate) {
+          moonstonesAwarded = row.amount_awarded as number;
+        }
+      } catch {
+        // RPC errors shouldn't block the XP toast.
+      }
+
       if (result) {
-        toast(
-          `${milestone.streak}-day streak milestone! +${result.xp_earned} XP`,
-          'success'
-        );
+        const label = moonstonesAwarded > 0
+          ? `${milestone.streak}-day streak! +${result.xp_earned} XP · +${moonstonesAwarded} Moonstones`
+          : `${milestone.streak}-day streak milestone! +${result.xp_earned} XP`;
+        toast(label, 'success');
       }
       return result;
     }

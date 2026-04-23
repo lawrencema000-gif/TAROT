@@ -6,6 +6,8 @@ import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisorSessions } from '../dal';
 import type { AdvisorSession, SessionMessage } from '../dal/advisorSessions';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
+import { VoiceStrip } from '../components/voice/VoiceStrip';
 
 /**
  * In-session chat room backed by Supabase Realtime.
@@ -36,6 +38,7 @@ export function AdvisorSessionPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const voiceEnabled = useFeatureFlag('advisor-voice');
   const [session, setSession] = useState<AdvisorSession | null>(null);
   const [messages, setMessages] = useState<SessionMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,6 +228,10 @@ export function AdvisorSessionPage() {
             {t('advisorSession.cancelled', { defaultValue: 'This session was cancelled.' })}
           </p>
         </Card>
+      )}
+
+      {session.state === 'active' && id && (
+        <VoiceStrip roomName={`advisor-session:${id}`} enabled={voiceEnabled} />
       )}
 
       {(session.state === 'active' || session.state === 'completed') && (

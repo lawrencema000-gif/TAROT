@@ -3775,6 +3775,9 @@
     "elementsHeading": "Elemental & modal balance",
     "aspectsHeading": "Aspects — the wiring between planets",
     "wheelHeading": "Your chart wheel",
+    "variantNatal": "Natal",
+    "variantTransits": "Transits today",
+    "loadingTransits": "Computing current positions…",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
     "stripeFailed": "Could not start checkout",
     "payWithStripe": "Or pay ${{price}} with card"
@@ -3913,7 +3916,47 @@
     "saveCta": "Save availability",
     "saving": "Saving…",
     "saved": "Availability saved",
-    "invalidSlot": "End time must be after start time."
+    "invalidSlot": "End time must be after start time.",
+    "payoutsTitle": "Payouts",
+    "payoutsSetupBody": "Complete Stripe Connect onboarding to cash out your Moonstones as real money.",
+    "setupPayouts": "Set up payouts",
+    "continueOnboarding": "Continue onboarding",
+    "opening": "Opening…",
+    "cashableLabel": "Cashable Moonstones",
+    "rateNote": "10 Moonstones = $1.00 · 30% platform fee · 70% to you",
+    "cashoutCta": "Cash out",
+    "cashingOut": "Sending…",
+    "cashoutMinimum": "Minimum cashout is 100 Moonstones.",
+    "cashoutExceeds": "Amount exceeds your cashable balance.",
+    "cashoutSent": "Sent ${{usd}} to your Stripe account.",
+    "cashoutMinNote": "Minimum 100 Moonstones ($10 gross / $7 to you).",
+    "stripeFailed": "Could not start Stripe onboarding",
+    "onboardingRequired": "Complete Stripe onboarding first."
+  },
+  "voice": {
+    "join": "Join voice",
+    "joining": "Joining…",
+    "leave": "Leave",
+    "notConnected": "Voice off",
+    "state": {
+      "idle": "",
+      "connecting": "Connecting…",
+      "connected": "Voice on",
+      "disconnected": "Voice ended",
+      "error": "Voice error",
+      "unavailable": "Voice coming soon"
+    }
+  },
+  "liveRoom": {
+    "back": "All rooms",
+    "notFound": "Room not found.",
+    "listeners": "{{n}} RSVPd / cap {{cap}}",
+    "rsvp": "RSVP",
+    "rsvpd": "You're in",
+    "notLiveYet": "Voice opens when the host starts the room.",
+    "rsvpToJoin": "RSVP first to join voice.",
+    "tipHost": "Tip the host",
+    "tipSent": "Sent {{n}} Moonstones to the host."
   },
   "quickReading": {
     "title": "3-second reading",
@@ -3955,6 +3998,7 @@
   "chartWheel": {
     "tapPrompt": "Tap a planet, house, or aspect line.",
     "planetLabel": "Planet",
+    "transitLabel": "Transit",
     "houseLabel": "House {{n}}",
     "aspectLabel": "Aspect"
   },

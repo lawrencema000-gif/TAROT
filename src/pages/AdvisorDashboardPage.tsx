@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight, Wallet, CreditCard } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { supabase } from '../lib/supabase';
 import { advisorSessions } from '../dal';
 import type { AdvisorAvailability, AdvisorSession } from '../dal/advisorSessions';
@@ -26,6 +27,7 @@ export function AdvisorDashboardPage() {
   const { t } = useT('app');
   const { user } = useAuth();
   const navigate = useNavigate();
+  const payoutsEnabled = useFeatureFlag('advisor-payouts');
 
   const [advisorId, setAdvisorId] = useState<string | null>(null);
   const [advisorName, setAdvisorName] = useState<string | null>(null);
@@ -33,6 +35,11 @@ export function AdvisorDashboardPage() {
   const [upcoming, setUpcoming] = useState<AdvisorSession[]>([]);
   const [slots, setSlots] = useState<DraftSlot[]>([]);
   const [saving, setSaving] = useState(false);
+  const [payoutAcct, setPayoutAcct] = useState<{ stripe_account_id: string; payouts_enabled: boolean } | null>(null);
+  const [cashable, setCashable] = useState<number>(0);
+  const [cashingOut, setCashingOut] = useState(false);
+  const [cashoutAmount, setCashoutAmount] = useState<string>('');
+  const [onboardingLoading, setOnboardingLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -59,6 +66,28 @@ export function AdvisorDashboardPage() {
         );
       }
       if (upRes.ok) setUpcoming(upRes.data);
+
+      const [payoutRes, eligRes] = await Promise.all([
+        supabase
+          .from('advisor_payout_accounts')
+          .select('stripe_account_id, payouts_enabled')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('v_advisor_cashout_eligibility')
+          .select('moonstones_cashable')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ]);
+      if (payoutRes.data) {
+        setPayoutAcct({
+          stripe_account_id: payoutRes.data.stripe_account_id as string,
+          payouts_enabled: !!payoutRes.data.payouts_enabled,
+        });
+      } else {
+        setPayoutAcct(null);
+      }
+      setCashable(Number(eligRes.data?.moonstones_cashable ?? 0));
     }
     setLoading(false);
   }, [user]);
@@ -75,6 +104,57 @@ export function AdvisorDashboardPage() {
 
   const updateSlot = (idx: number, patch: Partial<DraftSlot>) => {
     setSlots((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
+  };
+
+  const startOnboarding = async () => {
+    setOnboardingLoading(true);
+    const returnUrl = `${window.location.origin}/advisors/dashboard?stripe=return`;
+    const { data, error } = await supabase.functions.invoke('advisor-stripe-onboard', {
+      body: { returnUrl },
+    });
+    setOnboardingLoading(false);
+    if (error) {
+      toast(t('advisorDashboard.stripeFailed', { defaultValue: 'Could not start Stripe onboarding' }), 'error');
+      return;
+    }
+    const payload = (data?.data ?? data) as { url?: string } | null;
+    if (payload?.url) window.location.assign(payload.url);
+  };
+
+  const requestCashout = async () => {
+    const n = parseInt(cashoutAmount);
+    if (!Number.isFinite(n) || n < 100) {
+      toast(t('advisorDashboard.cashoutMinimum', { defaultValue: 'Minimum cashout is 100 Moonstones.' }), 'error');
+      return;
+    }
+    if (n > cashable) {
+      toast(t('advisorDashboard.cashoutExceeds', { defaultValue: 'Amount exceeds your cashable balance.' }), 'error');
+      return;
+    }
+    setCashingOut(true);
+    const { data, error } = await supabase.functions.invoke('advisor-cashout', { body: { moonstones: n } });
+    setCashingOut(false);
+    if (error) {
+      const anyErr = error as { context?: { status?: number }; message?: string };
+      if (anyErr?.context?.status === 402) {
+        toast(t('advisorDashboard.onboardingRequired', { defaultValue: 'Complete Stripe onboarding first.' }), 'error');
+      } else {
+        toast(anyErr?.message || 'Cashout failed', 'error');
+      }
+      return;
+    }
+    const payload = (data?.data ?? data) as { payoutCents?: number } | null;
+    if (payload?.payoutCents) {
+      toast(
+        t('advisorDashboard.cashoutSent', {
+          defaultValue: 'Sent ${{usd}} to your Stripe account.',
+          usd: (payload.payoutCents / 100).toFixed(2),
+        }),
+        'success',
+      );
+      setCashoutAmount('');
+      load();
+    }
   };
 
   const handleSave = async () => {
@@ -171,6 +251,70 @@ export function AdvisorDashboardPage() {
           </div>
         )}
       </Card>
+
+      {payoutsEnabled && (
+      <Card padding="lg">
+        <h3 className="text-sm font-medium text-gold tracking-wide mb-3 flex items-center gap-1.5">
+          <Wallet className="w-4 h-4" />
+          {t('advisorDashboard.payoutsTitle', { defaultValue: 'Payouts' })}
+        </h3>
+        {!payoutAcct || !payoutAcct.payouts_enabled ? (
+          <div>
+            <p className="text-xs text-mystic-400 mb-3">
+              {t('advisorDashboard.payoutsSetupBody', {
+                defaultValue: 'Complete Stripe Connect onboarding to cash out your Moonstones as real money.',
+              })}
+            </p>
+            <Button variant="gold" onClick={startOnboarding} disabled={onboardingLoading} className="min-h-[44px]">
+              <CreditCard className="w-4 h-4 mr-2" />
+              {onboardingLoading
+                ? t('advisorDashboard.opening', { defaultValue: 'Opening…' })
+                : payoutAcct
+                  ? t('advisorDashboard.continueOnboarding', { defaultValue: 'Continue onboarding' })
+                  : t('advisorDashboard.setupPayouts', { defaultValue: 'Set up payouts' })}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="bg-mystic-800/40 rounded-lg p-3">
+              <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1">
+                {t('advisorDashboard.cashableLabel', { defaultValue: 'Cashable Moonstones' })}
+              </p>
+              <p className="text-2xl font-display text-gold">{cashable.toLocaleString()}</p>
+              <p className="text-[10px] text-mystic-500 mt-1">
+                {t('advisorDashboard.rateNote', {
+                  defaultValue: '10 Moonstones = $1.00 · 30% platform fee · 70% to you',
+                })}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={cashoutAmount}
+                onChange={(e) => setCashoutAmount(e.target.value)}
+                placeholder="100"
+                min={100}
+                max={cashable}
+                className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-lg px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
+              />
+              <Button
+                variant="gold"
+                onClick={requestCashout}
+                disabled={cashingOut || cashable < 100}
+                className="min-h-[40px] px-4"
+              >
+                {cashingOut
+                  ? t('advisorDashboard.cashingOut', { defaultValue: 'Sending…' })
+                  : t('advisorDashboard.cashoutCta', { defaultValue: 'Cash out' })}
+              </Button>
+            </div>
+            <p className="text-[10px] text-mystic-500 italic">
+              {t('advisorDashboard.cashoutMinNote', { defaultValue: 'Minimum 100 Moonstones ($10 gross / $7 to you).' })}
+            </p>
+          </div>
+        )}
+      </Card>
+      )}
 
       <Card padding="lg">
         <div className="flex items-center justify-between mb-3">

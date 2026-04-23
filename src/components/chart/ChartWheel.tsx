@@ -27,8 +27,19 @@ import { useT } from '../../i18n/useT';
  *   - Aspects are chord lines drawn only for major aspects with orb <2°.
  */
 
+export interface OverlayPlanet {
+  planet: Planet;
+  sign: ZodiacSign;
+  degree: number;
+  longitude?: number;
+}
+
 interface ChartWheelProps {
   chart: NatalChart;
+  /** Optional transit (or progressed) planets drawn as an outer ring. */
+  overlay?: OverlayPlanet[];
+  /** Label for the overlay (e.g. "Today" or "2026-05-01"). */
+  overlayLabel?: string;
 }
 
 const ASPECT_COLORS: Record<AspectType, string> = {
@@ -41,6 +52,7 @@ const ASPECT_COLORS: Record<AspectType, string> = {
 
 type Selection =
   | { kind: 'planet'; planet: Planet; sign: ZodiacSign; degree: number; house: number | null }
+  | { kind: 'transit'; planet: Planet; sign: ZodiacSign; degree: number }
   | { kind: 'house'; index: number }
   | { kind: 'aspect'; planet1: Planet; planet2: Planet; type: AspectType; orb: number }
   | null;
@@ -87,18 +99,33 @@ function shouldShowAspect(type: AspectType, orb: number): boolean {
   return orb <= tight[type];
 }
 
-export function ChartWheel({ chart }: ChartWheelProps) {
+export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
   const { t } = useT('app');
   const [selection, setSelection] = useState<Selection>(null);
 
   const cx = 160, cy = 160;
-  const rOuter = 150;   // outer sign ring
-  const rSign  = 135;   // inner edge of sign ring
-  const rHouse = 115;   // inner edge of house ring
-  const rPlanet = 90;   // planet ring
-  const rAspectEdge = 82; // endpoints of aspect lines
+  const rOuter = 150;      // outer sign ring
+  const rSign  = 135;      // inner edge of sign ring
+  const rTransit = 122;    // transit glyph ring (outside of house spokes)
+  const rHouse = 115;      // inner edge of house ring
+  const rPlanet = 90;      // natal planet ring
+  const rAspectEdge = 82;  // endpoints of aspect lines
 
   const ascLon = chart.ascendant;
+
+  const placedOverlay = useMemo(() => {
+    if (!overlay) return [];
+    const list = overlay
+      .filter((o) => typeof o.longitude === 'number')
+      .map((o) => ({ ...o, svgAngle: lonToSvgAngle(o.longitude as number, ascLon) }))
+      .sort((a, b) => a.svgAngle - b.svgAngle);
+    const spread = 6;
+    for (let i = 1; i < list.length; i++) {
+      const gap = list[i].svgAngle - list[i - 1].svgAngle;
+      if (Math.abs(gap) < spread) list[i].svgAngle = list[i - 1].svgAngle + spread;
+    }
+    return list;
+  }, [overlay, ascLon]);
 
   // Spread planets that are within ~4° of each other so glyphs don't collide.
   const placedPlanets = useMemo(() => {
@@ -247,6 +274,38 @@ export function ChartWheel({ chart }: ChartWheelProps) {
             );
           })}
 
+          {/* Overlay planets (transits / progressions) */}
+          {placedOverlay.map((p) => {
+            const pos = polar(cx, cy, rTransit, p.svgAngle);
+            const isSelected = selection?.kind === 'transit' && selection.planet === p.planet;
+            return (
+              <g
+                key={`t-${p.planet}`}
+                onClick={() =>
+                  setSelection({ kind: 'transit', planet: p.planet, sign: p.sign, degree: p.degree })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                <circle
+                  cx={pos.x} cy={pos.y} r={8}
+                  fill={isSelected ? '#60a5fa' : 'rgba(10,10,15,0.9)'}
+                  stroke={isSelected ? '#fff' : 'rgba(96,165,250,0.7)'}
+                  strokeWidth={isSelected ? 1.5 : 1}
+                  strokeDasharray="2 2"
+                />
+                <text
+                  x={pos.x} y={pos.y + 3}
+                  textAnchor="middle"
+                  fontSize={9}
+                  fill={isSelected ? '#0a0a0f' : '#60a5fa'}
+                  style={{ userSelect: 'none', pointerEvents: 'none' }}
+                >
+                  {PLANET_SYMBOLS[p.planet]}
+                </text>
+              </g>
+            );
+          })}
+
           {/* ASC marker */}
           {ascLon !== null && (
             <g>
@@ -282,6 +341,18 @@ export function ChartWheel({ chart }: ChartWheelProps) {
             <p className="text-xs text-mystic-400 mt-0.5">
               {selection.degree.toFixed(1)}°{selection.house ? ` · House ${selection.house}` : ''}
             </p>
+          </div>
+        )}
+        {selection?.kind === 'transit' && (
+          <div className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3">
+            <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
+              {t('chartWheel.transitLabel', { defaultValue: 'Transit' })}
+              {overlayLabel ? ` · ${overlayLabel}` : ''}
+            </p>
+            <p className="text-sm font-medium text-mystic-100">
+              {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
+            </p>
+            <p className="text-xs text-mystic-400 mt-0.5">{selection.degree.toFixed(1)}°</p>
           </div>
         )}
         {selection?.kind === 'house' && (

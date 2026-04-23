@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
@@ -28,6 +29,7 @@ interface LiveRoom {
 export function LiveRoomsPage() {
   const { t } = useT('app');
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [rooms, setRooms] = useState<LiveRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [rsvpSet, setRsvpSet] = useState<Set<string>>(new Set());
@@ -115,7 +117,8 @@ export function LiveRoomsPage() {
           const when = new Date(room.scheduled_at);
           const isLive = room.state === 'live';
           return (
-            <Card key={room.id} padding="lg" className={isLive ? 'border-gold/40' : ''}>
+            <Card key={room.id} padding="lg" className={isLive ? 'border-gold/40 cursor-pointer' : 'cursor-pointer'}>
+              <div onClick={() => navigate(`/live-rooms/${room.id}`)} className="cursor-pointer">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-display text-lg text-mystic-100">{room.title}</h3>
@@ -142,7 +145,7 @@ export function LiveRoomsPage() {
                   <Button
                     variant={attending ? 'outline' : 'primary'}
                     size="sm"
-                    onClick={() => toggleRsvp(room.id)}
+                    onClick={(e) => { e.stopPropagation(); toggleRsvp(room.id); }}
                   >
                     {attending ? (
                       <>
@@ -161,6 +164,7 @@ export function LiveRoomsPage() {
                     {t('liveRooms.signInToRsvp', { defaultValue: 'Sign in to RSVP' })}
                   </p>
                 )}
+              </div>
               </div>
             </Card>
           );

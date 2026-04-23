@@ -323,6 +323,30 @@ Deno.serve(
           break;
         }
 
+        case "account.updated": {
+          const account = event.data.object as Stripe.Account;
+          const onboardingComplete = !!account.details_submitted;
+          const payoutsEnabled = !!account.payouts_enabled;
+          const { error } = await ctx.supabase
+            .from("advisor_payout_accounts")
+            .update({
+              onboarding_complete: onboardingComplete,
+              payouts_enabled: payoutsEnabled,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("stripe_account_id", account.id);
+          if (error) {
+            ctx.log.error("stripe_webhook.account_updated_failed", { err: error.message });
+          } else {
+            ctx.log.info("stripe_webhook.account_updated", {
+              accountId: account.id,
+              onboardingComplete,
+              payoutsEnabled,
+            });
+          }
+          break;
+        }
+
         default:
           ctx.log.info("stripe_webhook.unhandled_event", { type: event.type });
       }

@@ -3,9 +3,11 @@ import { ScrollText, Lock, Printer, Sparkles, CheckCircle2, AlertCircle, Circle,
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
+import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
-import { ChartWheel } from '../components/chart/ChartWheel';
+import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { startReportCheckout } from '../services/reportCheckout';
 import {
   SIGN_SYMBOLS,
@@ -74,6 +76,10 @@ export function NatalChartReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const transitOverlayEnabled = useFeatureFlag('chart-transits');
+  const [variant, setVariant] = useState<'natal' | 'transits'>('natal');
+  const [transitPlanets, setTransitPlanets] = useState<OverlayPlanet[] | null>(null);
+  const [loadingTransits, setLoadingTransits] = useState(false);
 
   const reference = profile?.birthDate ?? 'no-birth';
   const hasBirthData = !!profile?.birthDate;
@@ -94,6 +100,20 @@ export function NatalChartReportPage() {
   }, [user, hasBirthData, reference]);
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
+
+  const loadTransits = useCallback(async () => {
+    if (transitPlanets || loadingTransits) return;
+    setLoadingTransits(true);
+    const { data, error } = await supabase.functions.invoke('astrology-current-positions', { body: {} });
+    setLoadingTransits(false);
+    if (error) return;
+    const payload = (data?.data ?? data) as { positions?: OverlayPlanet[] } | null;
+    if (payload?.positions) setTransitPlanets(payload.positions);
+  }, [transitPlanets, loadingTransits]);
+
+  useEffect(() => {
+    if (variant === 'transits') loadTransits();
+  }, [variant, loadTransits]);
 
   const handleUnlock = async () => {
     setUnlocking(true);
@@ -277,7 +297,40 @@ export function NatalChartReportPage() {
         <p className="text-[10px] uppercase tracking-widest text-gold mb-3 text-center">
           {t('natalReport.wheelHeading', { defaultValue: 'Your chart wheel' })}
         </p>
-        <ChartWheel chart={natal} />
+        {transitOverlayEnabled && (
+          <div className="flex gap-2 mb-3 justify-center">
+            <button
+              onClick={() => setVariant('natal')}
+              className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
+                variant === 'natal'
+                  ? 'bg-gold/20 text-gold border-gold/40'
+                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
+              }`}
+            >
+              {t('natalReport.variantNatal', { defaultValue: 'Natal' })}
+            </button>
+            <button
+              onClick={() => setVariant('transits')}
+              className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
+                variant === 'transits'
+                  ? 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/40'
+                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
+              }`}
+            >
+              {t('natalReport.variantTransits', { defaultValue: 'Transits today' })}
+            </button>
+          </div>
+        )}
+        <ChartWheel
+          chart={natal}
+          overlay={variant === 'transits' ? transitPlanets ?? undefined : undefined}
+          overlayLabel={variant === 'transits' ? new Date().toLocaleDateString() : undefined}
+        />
+        {variant === 'transits' && loadingTransits && (
+          <p className="text-[10px] text-center text-mystic-500 mt-2">
+            {t('natalReport.loadingTransits', { defaultValue: 'Computing current positions…' })}
+          </p>
+        )}
       </Card>
 
       <Card padding="lg" variant="glow" className="card-print bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">

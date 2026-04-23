@@ -84,7 +84,10 @@
       "horoscope": "Horoscope",
       "compatibility": "Compatibility",
       "library": "Library",
-      "iching": "I-Ching"
+      "iching": "I-Ching",
+      "humanDesign": "Human Design",
+      "bazi": "Bazi",
+      "dream": "Dreams"
     },
     "dailyRemaining": "{{used}} / {{limit}} free readings today",
     "upgradeForUnlimited": "Upgrade for unlimited",
@@ -3165,5 +3168,113 @@
     "backToStart": "Cast again",
     "castAgain": "Cast again",
     "yourQuestion": "Your question"
+  },
+  "humanDesign": {
+    "title": "Human Design",
+    "intro": "Human Design maps the unique way you are built to engage with the world. Your type, strategy, authority, and profile show the path of least resistance — the way you are designed to make decisions, do work, and find alignment.",
+    "birthDate": "Birth date",
+    "birthTime": "Birth time (optional, sharpens result)",
+    "calculate": "Reveal my design",
+    "calcFailed": "Could not calculate chart",
+    "needBirthDate": "Birth date is required",
+    "disclaimer": "This is a lightweight reading. A full Human Design chart uses planetary positions from your exact birth moment. For the complete 9-centre bodygraph, export your birth data and visit a dedicated Human Design site.",
+    "signatureLabel": "Signature",
+    "notSelfLabel": "Not-self theme",
+    "authorityLabel": "Authority",
+    "profileLabel": "Profile",
+    "strengthsLabel": "Strengths",
+    "challengesLabel": "Challenges",
+    "affirmationLabel": "Your affirmation",
+    "tarotPairingLabel": "Tarot pairing",
+    "backToInput": "Recalculate",
+    "recalculate": "Recalculate",
+    "types": {
+      "manifestor": {
+        "name": "Manifestor"
+      },
+      "generator": {
+        "name": "Generator"
+      },
+      "manifesting-generator": {
+        "name": "Manifesting Generator"
+      },
+      "projector": {
+        "name": "Projector"
+      },
+      "reflector": {
+        "name": "Reflector"
+      }
+    }
+  },
+  "bazi": {
+    "title": "Bazi — Four Pillars of Destiny",
+    "intro": "Bazi — \"eight characters\" — is the traditional Chinese reading of your birth moment as four pillars: year, month, day, and hour. Each pillar carries one of the five elements (wood, fire, earth, metal, water) and a yin or yang polarity. Together they show your Day Master — the axis of your nature — and where the elements of your life run rich or run thin.",
+    "birthDate": "Birth date",
+    "birthTime": "Birth time (optional)",
+    "calculate": "Cast the four pillars",
+    "calcFailed": "Could not compute Bazi",
+    "needBirthDate": "Birth date is required",
+    "pillarsLabel": "Your Four Pillars",
+    "year": "Year",
+    "month": "Month",
+    "day": "Day",
+    "hour": "Hour",
+    "elementBalanceLabel": "Element Balance",
+    "guidanceLabel": "Element Guidance",
+    "dayMasterLabel": "Day Master",
+    "strengthsLabel": "Strengths",
+    "challengesLabel": "Challenges",
+    "thrivingLabel": "When you thrive",
+    "strugglingLabel": "When you struggle",
+    "affirmationLabel": "Your affirmation",
+    "back": "Recalculate",
+    "recalculate": "Recalculate",
+    "elements": {
+      "wood": "Wood",
+      "fire": "Fire",
+      "earth": "Earth",
+      "metal": "Metal",
+      "water": "Water"
+    }
+  },
+  "ayurveda": {
+    "withSecondary": "with secondary {{sec}}",
+    "scoresLabel": "Your dosha balance",
+    "thrivingLabel": "When you're in balance",
+    "imbalancedLabel": "When you're out of balance",
+    "dietLabel": "Diet that suits you",
+    "lifestyleLabel": "Lifestyle that balances you",
+    "affirmationLabel": "Your affirmation",
+    "doshas": {
+      "vata": {
+        "name": "Vata"
+      },
+      "pitta": {
+        "name": "Pitta"
+      },
+      "kapha": {
+        "name": "Kapha"
+      }
+    }
+  },
+  "dream": {
+    "title": "Dream Interpreter",
+    "intro": "Describe your dream in as much detail as you remember. Don't worry about order or clarity — the mind works in symbols. We'll match archetypal patterns and offer reflective questions to sit with. Dreams don't have single meanings; they have invitations.",
+    "label": "Tell me about your dream",
+    "placeholder": "I was standing by a dark ocean and couldn't find my way home. A bird flew overhead carrying something in its beak...",
+    "privacy": "Your dream text is not saved. It is analysed locally on your device.",
+    "interpret": "Interpret my dream",
+    "needLonger": "Please share a bit more about the dream (at least a few sentences).",
+    "yourDream": "What the symbols say",
+    "noMatch": "No immediately common archetypes surfaced in this dream text — but that doesn't mean it's silent. Often the most personal dreams use symbols unique to your life. Sit with the strongest image from the dream. Ask: what is it the opposite of? What in my life does it rhyme with?",
+    "symbolsLabel": "The symbols",
+    "reflectionLabel": "Hold this question",
+    "practiceLabel": "Dream practice",
+    "practiceBody": "Keep a notebook by your bed. Record dreams the moment you wake, before they fade. Over time, recurring symbols reveal the language your unconscious uses with you.",
+    "archetypeLabel": "A dream symbol reading",
+    "back": "Interpret another dream",
+    "another": "Another dream",
+    "genericTitle": "Dream Reading",
+    "genericReflection": "Dreams bring messages — honour the question they leave with you."
   }
 }

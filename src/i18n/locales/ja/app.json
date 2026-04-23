@@ -84,7 +84,10 @@
       "horoscope": "星占い",
       "compatibility": "相性",
       "library": "ライブラリ",
-      "iching": "易経"
+      "iching": "易経",
+      "humanDesign": "HD",
+      "bazi": "八字",
+      "dream": "夢"
     },
     "dailyRemaining": "今日の無料リーディング {{used}} / {{limit}}",
     "upgradeForUnlimited": "無制限にアップグレード",
@@ -3359,5 +3362,113 @@
         "name": "未濟・完成の前"
       }
     }
+  },
+  "humanDesign": {
+    "title": "ヒューマンデザイン",
+    "intro": "ヒューマンデザインは、あなたが世界と関わるための独自の設計を地図にします。タイプ・戦略・オーソリティ・プロファイルが、無理なく進むための道筋——決断・仕事・整合のとり方——を示します。",
+    "birthDate": "生年月日",
+    "birthTime": "出生時刻（任意、結果がより精密になります）",
+    "calculate": "私のデザインを見る",
+    "calcFailed": "チャートを計算できませんでした",
+    "needBirthDate": "生年月日が必要です",
+    "disclaimer": "これは簡易版です。本格的なヒューマンデザインのチャートには、出生時点の正確な惑星位置が必要です。9センターのボディグラフ全体を見たい場合は、専用のHuman Designサイトへ出生データを持って行ってください。",
+    "signatureLabel": "シグネチャー",
+    "notSelfLabel": "不本来（ノット・セルフ）テーマ",
+    "authorityLabel": "オーソリティ",
+    "profileLabel": "プロファイル",
+    "strengthsLabel": "強み",
+    "challengesLabel": "課題",
+    "affirmationLabel": "あなたへのアファメーション",
+    "tarotPairingLabel": "タロットとの対応",
+    "backToInput": "再計算",
+    "recalculate": "再計算",
+    "types": {
+      "manifestor": {
+        "name": "マニフェスター"
+      },
+      "generator": {
+        "name": "ジェネレーター"
+      },
+      "manifesting-generator": {
+        "name": "マニジェネ（マニフェスティング・ジェネレーター）"
+      },
+      "projector": {
+        "name": "プロジェクター"
+      },
+      "reflector": {
+        "name": "リフレクター"
+      }
+    }
+  },
+  "bazi": {
+    "title": "八字（四柱推命）",
+    "intro": "八字——「8つの字」——は、出生時を年柱・月柱・日柱・時柱の4本の柱として読む伝統中国の読み方です。各柱は五行（木・火・土・金・水）と陰陽を持ちます。日干（日柱の天干）があなたの本質軸となり、五行の多寡はあなたの人生のどこが豊かでどこが薄いかを示します。",
+    "birthDate": "生年月日",
+    "birthTime": "出生時刻（任意）",
+    "calculate": "四柱を立てる",
+    "calcFailed": "八字を計算できませんでした",
+    "needBirthDate": "生年月日が必要です",
+    "pillarsLabel": "あなたの四柱",
+    "year": "年柱",
+    "month": "月柱",
+    "day": "日柱",
+    "hour": "時柱",
+    "elementBalanceLabel": "五行のバランス",
+    "guidanceLabel": "五行ガイダンス",
+    "dayMasterLabel": "日主（日干）",
+    "strengthsLabel": "強み",
+    "challengesLabel": "課題",
+    "thrivingLabel": "輝くとき",
+    "strugglingLabel": "苦しむとき",
+    "affirmationLabel": "アファメーション",
+    "back": "再計算",
+    "recalculate": "再計算",
+    "elements": {
+      "wood": "木",
+      "fire": "火",
+      "earth": "土",
+      "metal": "金",
+      "water": "水"
+    }
+  },
+  "ayurveda": {
+    "withSecondary": "（副ドーシャ：{{sec}}）",
+    "scoresLabel": "あなたのドーシャ バランス",
+    "thrivingLabel": "バランスが取れているとき",
+    "imbalancedLabel": "バランスを失っているとき",
+    "dietLabel": "あなたに合う食事",
+    "lifestyleLabel": "あなたを整える暮らし方",
+    "affirmationLabel": "アファメーション",
+    "doshas": {
+      "vata": {
+        "name": "ヴァータ"
+      },
+      "pitta": {
+        "name": "ピッタ"
+      },
+      "kapha": {
+        "name": "カパ"
+      }
+    }
+  },
+  "dream": {
+    "title": "夢解きインタープリター",
+    "intro": "覚えている限り、夢の内容を詳しく書いてください。順番や整合性は気にしなくて大丈夫です——心は象徴で働きます。原型的なパターンを見つけ、そこに座って考えるための問いをお返しします。夢に「唯一の意味」はありません。夢は招待状です。",
+    "label": "あなたの夢を教えてください",
+    "placeholder": "暗い海辺に立っていて、家への道が見つからなかった。鳥が何かをくちばしにくわえて飛んでいった……",
+    "privacy": "夢の文章は保存されません。あなたの端末内でのみ解析されます。",
+    "interpret": "夢を読み解く",
+    "needLonger": "もう少しだけ詳しく教えてください（数文程度）。",
+    "yourDream": "象徴たちの声",
+    "noMatch": "よくある原型は今回の文章には表れませんでした——でも沈黙しているわけではありません。もっとも個人的な夢は、あなたの人生に固有の象徴を使います。夢の中で最も強い像のそばに座ってください。問うてみましょう：それは何の反対にある？　自分の人生のどこと韻を踏んでいる？",
+    "symbolsLabel": "象徴",
+    "reflectionLabel": "この問いを抱えて",
+    "practiceLabel": "夢の練習",
+    "practiceBody": "枕元にノートを置いて。目覚めた瞬間、消える前に夢を書き留めましょう。時間が経つと、繰り返し現れる象徴が、無意識があなたに話しかける言語を明かしてくれます。",
+    "archetypeLabel": "夢の象徴の読み",
+    "back": "もう一度夢を読む",
+    "another": "別の夢",
+    "genericTitle": "夢の読み",
+    "genericReflection": "夢はメッセージを運ぶ——残される問いを大切に。"
   }
 }

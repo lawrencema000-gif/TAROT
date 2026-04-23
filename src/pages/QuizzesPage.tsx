@@ -64,6 +64,8 @@ import { mbtiQuickQuiz } from '../data/mbtiQuickQuiz';
 import { tarotCourtQuiz, calculateCourtMatch, getCourtCardInfo } from '../data/tarotCourtQuiz';
 import { shadowArchetypeQuiz, calculateShadowArchetype, SHADOW_ARCHETYPES } from '../data/shadowArchetypeQuiz';
 import { elementAffinityQuiz, calculateElementAffinity, ELEMENT_INFO } from '../data/elementAffinityQuiz';
+import { ayurvedaQuiz, calculateDosha, DOSHA_INFO } from '../data/ayurvedaQuiz';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacElement } from '../utils/zodiac';
 
@@ -263,12 +265,19 @@ export function QuizzesPage() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const ayurvedaEnabled = useFeatureFlag('ayurveda-dosha');
+
   const quizzes = [
     {
       quiz: localizeQuiz(moodCheckQuiz),
       type: 'mood-check',
       metadata: localizeQuizMetadata('mood-check', quizMetadata['mood-check']),
     },
+    ...(ayurvedaEnabled ? [{
+      quiz: localizeQuiz(ayurvedaQuiz),
+      type: 'ayurveda-dosha',
+      metadata: localizeQuizMetadata('ayurveda-dosha', quizMetadata['ayurveda-dosha']),
+    }] : []),
     {
       quiz: localizeQuiz(mbtiQuickQuiz),
       type: 'mbti',
@@ -394,6 +403,9 @@ export function QuizzesPage() {
         resultLabel = calculatedResult.archetype;
       } else if (progress.quiz.type === 'element-affinity') {
         calculatedResult = calculateElementAffinity(newAnswers);
+        resultLabel = calculatedResult.primary;
+      } else if (progress.quiz.type === 'ayurveda-dosha') {
+        calculatedResult = calculateDosha(newAnswers);
         resultLabel = calculatedResult.primary;
       } else if (progress.quiz.type === 'love-language') {
         calculatedResult = calculateLoveLanguage(newAnswers);
@@ -644,6 +656,153 @@ export function QuizzesPage() {
           <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
             {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
+        </div>
+      );
+    }
+
+    if (result.quiz.type === 'ayurveda-dosha') {
+      const ayResult = result.result as ReturnType<typeof calculateDosha>;
+      const primaryInfo = DOSHA_INFO[ayResult.primary];
+      const secondaryInfo = ayResult.secondary ? DOSHA_INFO[ayResult.secondary] : null;
+      const key = ayResult.primary;
+
+      const localized = (path: string, fallback: string) =>
+        tApp(`ayurveda.doshas.${key}.${path}`, { defaultValue: fallback }) as string;
+      const primaryName = localized('name', primaryInfo.name);
+      const elements = localized('elements', primaryInfo.elements);
+      const tagline = localized('tagline', primaryInfo.tagline);
+      const summary = localized('summary', primaryInfo.summary);
+      const thriving = localized('thriving', primaryInfo.thriving);
+      const outOfBalance = localized('outOfBalance', primaryInfo.outOfBalance);
+      const dietTips = tApp(`ayurveda.doshas.${key}.dietTips`, {
+        returnObjects: true,
+        defaultValue: primaryInfo.dietTips,
+      }) as string[];
+      const lifestyleTips = tApp(`ayurveda.doshas.${key}.lifestyleTips`, {
+        returnObjects: true,
+        defaultValue: primaryInfo.lifestyleTips,
+      }) as string[];
+      const affirmation = localized('affirmation', primaryInfo.affirmation);
+
+      const emoji: Record<string, string> = { vata: '🌬️', pitta: '🔥', kapha: '⛰️' };
+
+      return (
+        <div className="space-y-4 pb-6">
+          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          </button>
+
+          <Card variant="glow" padding="lg" className="text-center">
+            <div className="text-6xl mb-3">{emoji[key] || '✦'}</div>
+            <p className="text-xs text-mystic-500 tracking-widest uppercase">{elements}</p>
+            <h2 className="font-display text-3xl text-mystic-100 mt-2">{primaryName}</h2>
+            {secondaryInfo && (
+              <p className="text-sm text-cosmic-blue mt-2">
+                {tApp('ayurveda.withSecondary', {
+                  defaultValue: 'with secondary {{sec}}',
+                  sec: tApp(`ayurveda.doshas.${ayResult.secondary}.name`, {
+                    defaultValue: secondaryInfo.name,
+                  }),
+                })}
+              </p>
+            )}
+            <p className="text-gold/80 text-sm mt-3 italic">"{tagline}"</p>
+          </Card>
+
+          <Card padding="lg">
+            <p className="text-mystic-300 text-sm leading-relaxed">{summary}</p>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-mystic-200 mb-3">
+              {tApp('ayurveda.scoresLabel', { defaultValue: 'Your dosha balance' })}
+            </h3>
+            <div className="space-y-2">
+              {(['vata', 'pitta', 'kapha'] as const).map((d) => (
+                <div key={d} className="flex items-center gap-3">
+                  <span className="text-lg w-8 text-center">{emoji[d]}</span>
+                  <span className="text-sm text-mystic-300 flex-1">
+                    {tApp(`ayurveda.doshas.${d}.name`, { defaultValue: DOSHA_INFO[d].name })}
+                  </span>
+                  <div className="flex-1 bg-mystic-800/40 rounded-full h-2 overflow-hidden max-w-[140px]">
+                    <div
+                      className={`h-full ${ayResult.primary === d ? 'bg-gold' : 'bg-mystic-600'}`}
+                      style={{ width: `${(ayResult.scores[d] / 30) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-mystic-500 w-6 text-right">{ayResult.scores[d]}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card padding="lg">
+            <h3 className="font-medium text-emerald-400 mb-2">
+              {tApp('ayurveda.thrivingLabel', { defaultValue: 'When you\'re in balance' })}
+            </h3>
+            <p className="text-mystic-300 text-sm leading-relaxed mb-4">{thriving}</p>
+            <h3 className="font-medium text-pink-400 mb-2">
+              {tApp('ayurveda.imbalancedLabel', { defaultValue: 'When you\'re out of balance' })}
+            </h3>
+            <p className="text-mystic-300 text-sm leading-relaxed">{outOfBalance}</p>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card padding="lg">
+              <h3 className="font-medium text-gold mb-3">
+                {tApp('ayurveda.dietLabel', { defaultValue: 'Diet that suits you' })}
+              </h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {dietTips.map((tip, i) => <li key={i}>• {tip}</li>)}
+              </ul>
+            </Card>
+            <Card padding="lg">
+              <h3 className="font-medium text-gold mb-3">
+                {tApp('ayurveda.lifestyleLabel', { defaultValue: 'Lifestyle that balances you' })}
+              </h3>
+              <ul className="space-y-2 text-mystic-300 text-sm">
+                {lifestyleTips.map((tip, i) => <li key={i}>• {tip}</li>)}
+              </ul>
+            </Card>
+          </div>
+
+          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {tApp('ayurveda.affirmationLabel', { defaultValue: 'Your affirmation' })}
+            </h3>
+            <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
+          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              fullWidth
+              className="min-h-[48px]"
+              onClick={async () => {
+                try {
+                  const blob = await renderShareCard({
+                    title: primaryName,
+                    subtitle: elements,
+                    tagline,
+                    affirmation,
+                    brand: 'Arcana · Ayurveda',
+                  });
+                  const out = await shareOrDownload(blob, `arcana-ayurveda-${key}.png`, `My Ayurvedic dosha: ${primaryName}`);
+                  if (out === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                } catch {
+                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                }
+              }}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={resetQuiz} className="min-h-[48px]">
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+            </Button>
+          </div>
         </div>
       );
     }

@@ -84,7 +84,10 @@
       "horoscope": "별자리",
       "compatibility": "궁합",
       "library": "라이브러리",
-      "iching": "주역"
+      "iching": "주역",
+      "humanDesign": "휴먼디자인",
+      "bazi": "바지",
+      "dream": "꿈"
     },
     "dailyRemaining": "오늘 무료 리딩 {{used}} / {{limit}}",
     "upgradeForUnlimited": "무제한 이용으로 업그레이드",
@@ -3359,5 +3362,113 @@
         "name": "미제·완성의 전"
       }
     }
+  },
+  "humanDesign": {
+    "title": "휴먼디자인",
+    "intro": "휴먼디자인은 당신이 세상과 어떻게 상호작용하도록 설계되었는지를 지도로 보여줍니다. 타입, 전략, 결정 권위, 프로파일은 가장 저항이 적은 길 — 당신이 결정을 내리고, 일하고, 정렬을 찾는 방식 — 을 보여 줍니다.",
+    "birthDate": "생년월일",
+    "birthTime": "출생 시간 (선택, 결과를 더 정확하게)",
+    "calculate": "나의 디자인 보기",
+    "calcFailed": "차트를 계산할 수 없었습니다",
+    "needBirthDate": "생년월일이 필요합니다",
+    "disclaimer": "이것은 간편 버전입니다. 완전한 휴먼디자인 차트는 정확한 출생 시점의 행성 위치가 필요합니다. 9센터 전체 바디그래프를 원하면 전용 Human Design 사이트에 출생 데이터를 입력하세요.",
+    "signatureLabel": "시그니처",
+    "notSelfLabel": "낫-셀프 테마",
+    "authorityLabel": "결정 권위",
+    "profileLabel": "프로파일",
+    "strengthsLabel": "강점",
+    "challengesLabel": "과제",
+    "affirmationLabel": "당신을 위한 아파메이션",
+    "tarotPairingLabel": "타로 페어링",
+    "backToInput": "다시 계산",
+    "recalculate": "다시 계산",
+    "types": {
+      "manifestor": {
+        "name": "매니페스터"
+      },
+      "generator": {
+        "name": "제너레이터"
+      },
+      "manifesting-generator": {
+        "name": "매니페스팅 제너레이터"
+      },
+      "projector": {
+        "name": "프로젝터"
+      },
+      "reflector": {
+        "name": "리플렉터"
+      }
+    }
+  },
+  "bazi": {
+    "title": "사주팔자(바지)",
+    "intro": "바지(八字) — \"여덟 글자\" — 는 당신의 출생 시점을 년·월·일·시 네 기둥으로 읽는 전통 중국의 방식입니다. 각 기둥은 오행(목·화·토·금·수) 중 하나와 음양을 지닙니다. 일간(日干)이 당신 본질의 축이며, 오행의 비율은 당신 삶의 어느 요소가 풍성하고 어느 요소가 부족한지를 보여줍니다.",
+    "birthDate": "생년월일",
+    "birthTime": "출생 시간 (선택)",
+    "calculate": "사주 뽑기",
+    "calcFailed": "사주를 계산할 수 없었습니다",
+    "needBirthDate": "생년월일이 필요합니다",
+    "pillarsLabel": "당신의 네 기둥",
+    "year": "년주",
+    "month": "월주",
+    "day": "일주",
+    "hour": "시주",
+    "elementBalanceLabel": "오행 균형",
+    "guidanceLabel": "오행 안내",
+    "dayMasterLabel": "일간",
+    "strengthsLabel": "강점",
+    "challengesLabel": "과제",
+    "thrivingLabel": "빛날 때",
+    "strugglingLabel": "힘들 때",
+    "affirmationLabel": "아파메이션",
+    "back": "다시 계산",
+    "recalculate": "다시 계산",
+    "elements": {
+      "wood": "목",
+      "fire": "화",
+      "earth": "토",
+      "metal": "금",
+      "water": "수"
+    }
+  },
+  "ayurveda": {
+    "withSecondary": "(부 도샤: {{sec}})",
+    "scoresLabel": "당신의 도샤 균형",
+    "thrivingLabel": "균형이 잡혀 있을 때",
+    "imbalancedLabel": "균형을 잃었을 때",
+    "dietLabel": "당신에게 맞는 식사",
+    "lifestyleLabel": "당신을 조율하는 생활 방식",
+    "affirmationLabel": "아파메이션",
+    "doshas": {
+      "vata": {
+        "name": "바타"
+      },
+      "pitta": {
+        "name": "피타"
+      },
+      "kapha": {
+        "name": "카파"
+      }
+    }
+  },
+  "dream": {
+    "title": "꿈 해석기",
+    "intro": "기억나는 만큼 꿈을 자세히 적어 주세요. 순서나 일관성은 걱정하지 않아도 됩니다 — 마음은 상징으로 작동합니다. 원형적 패턴을 맞춰 당신이 머무를 수 있는 질문을 돌려드립니다. 꿈에는 하나의 의미가 아니라, 초대가 있습니다.",
+    "label": "당신의 꿈을 말해 주세요",
+    "placeholder": "어두운 바다 옆에 서 있었는데 집으로 가는 길을 찾을 수 없었다. 새 한 마리가 무언가를 부리에 물고 위로 날아갔다……",
+    "privacy": "꿈 텍스트는 저장되지 않습니다. 당신의 기기 내부에서 분석됩니다.",
+    "interpret": "내 꿈 해석하기",
+    "needLonger": "꿈에 대해 조금만 더 이야기해 주세요 (몇 문장 정도).",
+    "yourDream": "상징이 말하는 것",
+    "noMatch": "이 꿈 텍스트에는 흔한 원형이 즉시 떠오르지 않았지만, 그렇다고 침묵은 아닙니다. 가장 개인적인 꿈은 당신의 삶에만 고유한 상징을 사용합니다. 꿈에서 가장 강한 이미지 옆에 앉아 보세요. 묻습니다: 이것은 무엇의 반대인가? 나의 삶의 어느 부분과 운율을 맞추고 있는가?",
+    "symbolsLabel": "상징들",
+    "reflectionLabel": "이 질문을 품고",
+    "practiceLabel": "꿈 연습",
+    "practiceBody": "머리맡에 노트를 두세요. 깨자마자, 사라지기 전에 꿈을 기록하세요. 시간이 쌓이면 반복되는 상징이 당신의 무의식이 당신과 나누는 언어를 드러냅니다.",
+    "archetypeLabel": "꿈 상징 읽기",
+    "back": "다른 꿈 해석하기",
+    "another": "다른 꿈",
+    "genericTitle": "꿈 읽기",
+    "genericReflection": "꿈은 메시지를 전합니다 — 남기고 가는 질문을 소중히 하세요."
   }
 }

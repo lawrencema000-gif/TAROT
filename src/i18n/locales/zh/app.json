@@ -3639,5 +3639,72 @@
         "name": "贵人·远行"
       }
     }
+  },
+  "community": {
+    "title": "社区",
+    "postButton": "发布",
+    "whisperButton": "悄悄话",
+    "newPost": "新帖",
+    "topicLabel": "话题",
+    "placeholder": "分享一次读牌、一个念头、一个问题……",
+    "postAnonymously": "以匿名发布",
+    "send": "发布",
+    "posting": "发布中…",
+    "posted": "已发布",
+    "postFailed": "发布失败",
+    "contentTooLong": "太长了（上限 2000 字）",
+    "contentDisallowed": "这一短语不被允许",
+    "contentEmpty": "请先写一点",
+    "anonymous": "无名的寻路人",
+    "loadFailed": "无法加载动态",
+    "empty": "这里还没有帖子，做第一个吧。",
+    "signInFirst": "需要登录才能反应",
+    "signInToPost": "登录后即可发布、反应、评论。",
+    "reactFailed": "无法完成反应",
+    "reported": "举报已提交，感谢。",
+    "reportFailed": "举报提交失败",
+    "report": "举报",
+    "reportPostTitle": "举报此帖",
+    "blockUser": "屏蔽用户",
+    "blocked": "已屏蔽",
+    "blockFailed": "无法屏蔽",
+    "back": "返回动态",
+    "backToFeed": "返回动态",
+    "commentsHeading": "评论",
+    "noComments": "还没有评论，第一个回应吧。",
+    "commentPlaceholder": "写下回应…",
+    "commentAnonymously": "匿名评论",
+    "commentFailed": "无法发表评论",
+    "topics": {
+      "all": "全部",
+      "general": "日常",
+      "tarot": "塔罗",
+      "astrology": "占星",
+      "moon": "月相",
+      "love": "爱情",
+      "shadow": "阴影",
+      "career": "事业",
+      "wellness": "身心"
+    },
+    "reportReasons": {
+      "spam": "垃圾信息",
+      "harassment": "骚扰",
+      "self-harm": "涉及自伤",
+      "explicit": "露骨／不当",
+      "misinformation": "虚假信息",
+      "other": "其他"
+    },
+    "whisperingWell": {
+      "title": "低语之井",
+      "intro": "一个安静的地方，把难以开口的话轻轻放下。所有发布皆为匿名。彼此尊重是唯一的规则。若需要帮助，请清楚说出来——有人在听。",
+      "newWhisper": "向井中低语",
+      "placeholder": "必须说出口，却没有听众的话是什么？",
+      "send": "送出低语",
+      "empty": "井是安静的，先留一段低语吧。"
+    }
+  },
+  "common": {
+    "loading": "加载中…",
+    "cancel": "取消"
   }
 }

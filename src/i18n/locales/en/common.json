@@ -25,7 +25,9 @@
     "news": "News",
     "admin": "Admin",
     "more": "More",
-    "shop": "Shop"
+    "shop": "Shop",
+    "community": "Community",
+    "whisperingWell": "Whispering Well"
   },
   "actions": {
     "continue": "Continue",

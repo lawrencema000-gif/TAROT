@@ -27,5 +27,6 @@ export * as premiumReadings from './premiumReadings';
 export * as contentInteractions from './contentInteractions';
 export * as rewardedAdUnlocks from './rewardedAdUnlocks';
 export * as featureFlags from './featureFlags';
+export * as community from './community';
 
 export type { Result } from './dailyRituals';

@@ -3445,5 +3445,72 @@
         "name": "Helpful People / Travel"
       }
     }
+  },
+  "community": {
+    "title": "Community",
+    "postButton": "Post",
+    "whisperButton": "Whisper",
+    "newPost": "New post",
+    "topicLabel": "Topic",
+    "placeholder": "Share a reading, a thought, a question...",
+    "postAnonymously": "Post anonymously",
+    "send": "Post",
+    "posting": "Posting...",
+    "posted": "Posted",
+    "postFailed": "Could not post",
+    "contentTooLong": "Post is too long (max 2000)",
+    "contentDisallowed": "That phrase is not allowed",
+    "contentEmpty": "Write something first",
+    "anonymous": "Anonymous seeker",
+    "loadFailed": "Could not load feed",
+    "empty": "No posts here yet. Be the first.",
+    "signInFirst": "Sign in to react",
+    "signInToPost": "Sign in to post, react, and comment.",
+    "reactFailed": "Could not react",
+    "reported": "Report submitted. Thank you.",
+    "reportFailed": "Could not submit report",
+    "report": "Report",
+    "reportPostTitle": "Report post",
+    "blockUser": "Block user",
+    "blocked": "User blocked",
+    "blockFailed": "Could not block",
+    "back": "Back to feed",
+    "backToFeed": "Back to feed",
+    "commentsHeading": "Comments",
+    "noComments": "No comments yet. Be the first to respond.",
+    "commentPlaceholder": "Write a response...",
+    "commentAnonymously": "Comment anonymously",
+    "commentFailed": "Could not post comment",
+    "topics": {
+      "all": "All",
+      "general": "General",
+      "tarot": "Tarot",
+      "astrology": "Astrology",
+      "moon": "Moon",
+      "love": "Love",
+      "shadow": "Shadow",
+      "career": "Career",
+      "wellness": "Wellness"
+    },
+    "reportReasons": {
+      "spam": "Spam",
+      "harassment": "Harassment",
+      "self-harm": "Self-harm content",
+      "explicit": "Explicit / inappropriate",
+      "misinformation": "Misinformation",
+      "other": "Other"
+    },
+    "whisperingWell": {
+      "title": "Whispering Well",
+      "intro": "A quiet place to whisper the unsayable. All posts are anonymous. Respect for each other is the rule. If something needs help, say so clearly — someone is listening.",
+      "newWhisper": "Whisper into the well",
+      "placeholder": "What needs to be said but has no audience?",
+      "send": "Send whisper",
+      "empty": "The well is quiet. Be the first to whisper."
+    }
+  },
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel"
   }
 }

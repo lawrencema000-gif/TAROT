@@ -25,7 +25,9 @@
     "news": "ニュース",
     "admin": "管理",
     "more": "その他",
-    "shop": "ショップ"
+    "shop": "ショップ",
+    "community": "コミュニティ",
+    "whisperingWell": "ささやきの井戸"
   },
   "actions": {
     "continue": "続ける",

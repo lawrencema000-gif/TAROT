@@ -3639,5 +3639,72 @@
         "name": "助け手・旅"
       }
     }
+  },
+  "community": {
+    "title": "コミュニティ",
+    "postButton": "投稿",
+    "whisperButton": "ささやく",
+    "newPost": "新しい投稿",
+    "topicLabel": "トピック",
+    "placeholder": "リーディング、思い、問い、なんでも。",
+    "postAnonymously": "匿名で投稿",
+    "send": "投稿する",
+    "posting": "投稿中……",
+    "posted": "投稿しました",
+    "postFailed": "投稿できませんでした",
+    "contentTooLong": "長すぎます（最大2000文字）",
+    "contentDisallowed": "この表現は使えません",
+    "contentEmpty": "まず何か書いてください",
+    "anonymous": "名のないもとめ手",
+    "loadFailed": "フィードを読み込めませんでした",
+    "empty": "まだ投稿がありません。最初のひとりになってください。",
+    "signInFirst": "リアクションにはサインインが必要です",
+    "signInToPost": "投稿・リアクション・コメントにはサインインが必要です。",
+    "reactFailed": "リアクションできませんでした",
+    "reported": "通報を受け付けました。ありがとうございます。",
+    "reportFailed": "通報できませんでした",
+    "report": "通報",
+    "reportPostTitle": "投稿を通報",
+    "blockUser": "ユーザーをブロック",
+    "blocked": "ブロックしました",
+    "blockFailed": "ブロックできませんでした",
+    "back": "フィードに戻る",
+    "backToFeed": "フィードに戻る",
+    "commentsHeading": "コメント",
+    "noComments": "まだコメントがありません。最初の返答をどうぞ。",
+    "commentPlaceholder": "返答を書く……",
+    "commentAnonymously": "匿名でコメント",
+    "commentFailed": "コメントできませんでした",
+    "topics": {
+      "all": "すべて",
+      "general": "ぜんぱん",
+      "tarot": "タロット",
+      "astrology": "占星術",
+      "moon": "月",
+      "love": "愛",
+      "shadow": "シャドウ",
+      "career": "キャリア",
+      "wellness": "ウェルネス"
+    },
+    "reportReasons": {
+      "spam": "スパム",
+      "harassment": "ハラスメント",
+      "self-harm": "自傷に関する内容",
+      "explicit": "露骨／不適切",
+      "misinformation": "誤情報",
+      "other": "その他"
+    },
+    "whisperingWell": {
+      "title": "ささやきの井戸",
+      "intro": "言葉にならないことをそっと落とす静かな場所。すべての投稿は匿名です。互いへの敬意が唯一のルール。助けが必要なら、はっきり言ってください——誰かが聴いています。",
+      "newWhisper": "井戸にささやく",
+      "placeholder": "言うべきなのに、聴き手のいない言葉は？",
+      "send": "ささやきを送る",
+      "empty": "井戸は静かです。最初のささやきをどうぞ。"
+    }
+  },
+  "common": {
+    "loading": "読み込み中……",
+    "cancel": "キャンセル"
   }
 }

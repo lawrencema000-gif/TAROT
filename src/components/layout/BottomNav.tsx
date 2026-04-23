@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy, MoreHorizontal, X, ShoppingBag } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon } from 'lucide-react';
 import { isWeb } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
+import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
@@ -38,9 +39,17 @@ const adminTab: TabDef = { id: 'admin', labelKey: 'nav.admin', icon: Shield };
 export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNavProps) {
   const { t } = useT();
   const [moreOpen, setMoreOpen] = useState(false);
+  const communityEnabled = useFeatureFlag('community');
+  const whisperingWellEnabled = useFeatureFlag('whispering-well');
 
   // Build the list of items inside the More menu
   const moreItems: MoreItem[] = [...moreMenuTabs];
+  if (communityEnabled) {
+    moreItems.push({ id: 'community' as Tab, labelKey: 'nav.community', icon: MessageCircle });
+  }
+  if (whisperingWellEnabled) {
+    moreItems.push({ id: 'whispering-well' as Tab, labelKey: 'nav.whisperingWell', icon: Moon });
+  }
   if (isWeb()) moreItems.push(blogTab);
   moreItems.push(profileTab);
   if (isAdmin) moreItems.push(adminTab);

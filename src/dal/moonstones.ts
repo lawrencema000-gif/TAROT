@@ -84,14 +84,17 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
   };
 }
 
-/** Client-side credit for quiz completion. Small reward (~2 coins). */
-export async function awardQuizCompletion(userId: string, reference: string): Promise<Result<void>> {
-  const { error } = await supabase.from('moonstone_transactions').insert({
-    user_id: userId,
-    amount: 2,
-    kind: 'quiz-complete',
-    reference,
-    note: 'Quiz completed',
+/**
+ * Credit Moonstones for quiz completion via server-side RPC.
+ * The RPC dedupes on (user_id, quiz_id) so repeating the same quiz is
+ * a no-op credit — not a repeat 2-Moonstone payout.
+ * userId is ignored here since the RPC reads auth.uid() server-side;
+ * kept in the signature for backward compatibility with call sites.
+ */
+export async function awardQuizCompletion(_userId: string, reference: string): Promise<Result<void>> {
+  const { error } = await supabase.rpc('moonstone_award_quiz_completion', {
+    p_quiz_id: reference,
+    p_amount: 2,
   });
   if (error) {
     captureException('dal.moonstones.awardQuizCompletion', error, { reference });

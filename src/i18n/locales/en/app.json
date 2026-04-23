@@ -90,7 +90,9 @@
       "dream": "Dreams",
       "mood": "Mood",
       "partner": "Partner",
-      "fengshui": "Feng Shui"
+      "fengshui": "Feng Shui",
+      "runes": "Runes",
+      "dice": "Dice"
     },
     "dailyRemaining": "{{used}} / {{limit}} free readings today",
     "upgradeForUnlimited": "Upgrade for unlimited",
@@ -1616,6 +1618,9 @@
       "sun": "Sun",
       "animal": "Animal",
       "lifePath": "Life Path",
+      "expression": "Expression",
+      "soulUrge": "Soul Urge",
+      "personality": "Personality",
       "shareButton": "Share Cosmic Profile",
       "shareSubtitle": "Sun · Animal · Life Path",
       "myProfile": "My Cosmic Profile"
@@ -3579,5 +3584,79 @@
       "creativity": "creativity",
       "breakup-recovery": "breakup recovery"
     }
+  },
+  "moon": {
+    "title": "Tonight's Moon",
+    "illumination": "{{pct}}% illuminated · day {{day}} of ~29.5",
+    "ritual": "Tonight's ritual",
+    "nextPhase": "Next: {{name}} in {{days}} days",
+    "phase": {
+      "new": {
+        "name": "New Moon",
+        "guidance": "A quiet threshold. Name what you are beginning — not what is finished. Do not force clarity; just set direction.",
+        "ritual": "Write three intentions for the coming cycle. Fold the paper, keep it somewhere private until the full moon."
+      },
+      "waxing-crescent": {
+        "name": "Waxing Crescent",
+        "guidance": "Take the first small action toward what you named at the new moon. Consistency beats intensity here.",
+        "ritual": "Light a candle and list three tiny steps you can take this week. Take the first one today."
+      },
+      "first-quarter": {
+        "name": "First Quarter",
+        "guidance": "Expect resistance now — this is when momentum meets doubt. Recommit or adjust; do not abandon.",
+        "ritual": "Name one obstacle standing between you and your intention. Write the exact next action that moves past it."
+      },
+      "waxing-gibbous": {
+        "name": "Waxing Gibbous",
+        "guidance": "The result is close but needs polish. Do the boring, careful work now — editing, checking, repairing.",
+        "ritual": "Review what you have built this cycle. What one detail, if improved, would change the whole?"
+      },
+      "full": {
+        "name": "Full Moon",
+        "guidance": "Harvest what is ripe. Celebrate progress; acknowledge what is now clearly not working. Emotions run high — move slowly.",
+        "ritual": "Under moonlight (or facing a window), name three things completed this cycle. Speak one truth you have been avoiding."
+      },
+      "waning-gibbous": {
+        "name": "Waning Gibbous",
+        "guidance": "Share what you learned. Teach, thank, record. This is integration — not striving.",
+        "ritual": "Send one message of thanks to someone who supported you this cycle. Write one lesson in your journal."
+      },
+      "last-quarter": {
+        "name": "Last Quarter",
+        "guidance": "Clear space. Finish what is finishable; release what is not. Do not start new projects yet.",
+        "ritual": "Name one habit, item, or commitment to release. Write it down, then cross it out."
+      },
+      "waning-crescent": {
+        "name": "Waning Crescent",
+        "guidance": "Do less. Sleep more. Dream. This is not procrastination — it is the nervous system restoring before the next cycle.",
+        "ritual": "Unplug for an hour. No screens, no productivity. Sit, walk, lie down. Notice what surfaces when you stop."
+      }
+    }
+  },
+  "runes": {
+    "title": "Rune Casting",
+    "intro": "Three staves from the Elder Futhark — past, present, future. Hold a question, then cast.",
+    "castButton": "Cast the runes",
+    "casting": "Casting...",
+    "castAgain": "Cast again",
+    "positions": {
+      "past": "Past",
+      "present": "Present",
+      "future": "Future"
+    },
+    "reversedLabel": "Reversed",
+    "meaningLabel": "Meaning",
+    "journalPrompt": "Journal prompt",
+    "shareButton": "Share this cast",
+    "elementLabel": "Element"
+  },
+  "dice": {
+    "title": "Dice Oracle",
+    "intro": "The simplest divination — three dice fall, their sum speaks. Hold a question, then roll. Sixteen possible readings from 3 to 18.",
+    "sumLabel": "Sum",
+    "promptLabel": "Hold this question",
+    "rollButton": "Roll the dice",
+    "rollAgain": "Roll again",
+    "rolling": "Rolling..."
   }
 }

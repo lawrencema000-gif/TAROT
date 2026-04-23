@@ -260,26 +260,38 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     setIsExporting(true);
 
     try {
-      const [profileRes, journalRes, readingsRes, quizRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        journalEntries.listAllForUser(user.id),
-        tarotReadings.listAllForUser(user.id),
-        quizResults.listAllForUser(user.id),
-      ]);
+      // Prefer the server-side export edge function — covers all tables
+      // (community, moonstones, advisor_interest, etc.). Falls back to
+      // a client-side partial export if the edge function is unavailable.
+      const { data: serverExport, error: fnErr } = await supabase.functions.invoke('account-export', {
+        body: {},
+      });
 
-      // Check for query errors
-      const hadError = !!profileRes.error || !journalRes.ok || !readingsRes.ok || !quizRes.ok;
-      if (hadError) {
-        toast(tAppSettings('settings.toasts.exportPartial'), 'error');
+      let exportData: unknown;
+      if (!fnErr && serverExport) {
+        exportData = serverExport;
+      } else {
+        // Fallback: legacy client-side partial export
+        const [profileRes, journalRes, readingsRes, quizRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+          journalEntries.listAllForUser(user.id),
+          tarotReadings.listAllForUser(user.id),
+          quizResults.listAllForUser(user.id),
+        ]);
+
+        const hadError = !!profileRes.error || !journalRes.ok || !readingsRes.ok || !quizRes.ok;
+        if (hadError) {
+          toast(tAppSettings('settings.toasts.exportPartial'), 'error');
+        }
+
+        exportData = {
+          exportedAt: new Date().toISOString(),
+          profile: profileRes.data || null,
+          journalEntries: journalRes.ok ? journalRes.data : [],
+          tarotReadings: readingsRes.ok ? readingsRes.data : [],
+          quizResults: quizRes.ok ? quizRes.data : [],
+        };
       }
-
-      const exportData = {
-        exportedAt: new Date().toISOString(),
-        profile: profileRes.data || null,
-        journalEntries: journalRes.ok ? journalRes.data : [],
-        tarotReadings: readingsRes.ok ? readingsRes.data : [],
-        quizResults: quizRes.ok ? quizRes.data : [],
-      };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);

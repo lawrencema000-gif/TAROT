@@ -733,6 +733,9 @@ export const SPIRITUAL_INFO: Record<SpiritualType, DimensionalResultInfo> = {
 // Lookup tables (by quiz id) for the generic result renderer
 // ---------------------------------------------------------------
 
+import { EXTRA_QUIZZES_PART2 } from './extraQuizzesPart2';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars — used via spread below
 export const EXTRA_QUIZZES: QuizDefinition[] = [
   darkTriadQuiz,
   discQuiz,
@@ -744,6 +747,7 @@ export const EXTRA_QUIZZES: QuizDefinition[] = [
   sleepQuiz,
   creativeQuiz,
   spiritualQuiz,
+  ...Object.values(EXTRA_QUIZZES_PART2).map((e) => e.quiz),
 ];
 
 export const EXTRA_QUIZ_METADATA: Record<string, { timeEstimate: string; whatYouGet: string[]; icon: string; color: string }> = {
@@ -757,6 +761,13 @@ export const EXTRA_QUIZ_METADATA: Record<string, { timeEstimate: string; whatYou
   'chronotype-v1':         { timeEstimate: '4 min', whatYouGet: ['Your Breus chronotype — Lion/Bear/Wolf/Dolphin', 'Your natural peak hours', 'Sleep + schedule tips that actually suit you'], icon: 'moon', color: 'cosmic-blue' },
   'creative-type-v1':      { timeEstimate: '4 min', whatYouGet: ['Your role in the creative process', 'Who you partner best with', 'Where you might get stuck'], icon: 'palette', color: 'emerald-400' },
   'spiritual-type-v1':     { timeEstimate: '4 min', whatYouGet: ['Your path of practice — Mystic / Ritualist / Seeker / Servant / Warrior', 'Strengths and shadows of your path', 'Affirmation for the next step'], icon: 'sparkles', color: 'gold' },
+  'jungian-functions-v1':  { timeEstimate: '3 min', whatYouGet: ['Your dominant Jungian cognitive function', 'How it shapes your MBTI', 'Shadow + integration'], icon: 'brain', color: 'cosmic-blue' },
+  'love-styles-v1':        { timeEstimate: '3 min', whatYouGet: ['Which of 4 Greek love styles you lead with', 'Strengths + shadow', 'Affirmation to carry'], icon: 'heart', color: 'pink-400' },
+  'parenting-style-v1':    { timeEstimate: '3 min', whatYouGet: ['Your default style (authoritative / authoritarian / permissive / neglectful)', 'What research says', 'Affirmation'], icon: 'home', color: 'emerald-400' },
+  'learning-style-v1':     { timeEstimate: '3 min', whatYouGet: ['Your VARK style', 'How you best take in information', 'Study + work tips'], icon: 'book-open', color: 'gold' },
+  'empath-hsp-v1':         { timeEstimate: '3 min', whatYouGet: ['Empath, HSP, both, or neither', 'What each means neurologically', 'Practical self-care'], icon: 'heart', color: 'cosmic-violet' },
+  'self-compassion-v1':    { timeEstimate: '3 min', whatYouGet: ['Your dominant self-compassion stance', 'Where you self-judge vs self-kind', 'Next-step affirmation'], icon: 'heart', color: 'pink-400' },
+  'mood-screener-v1':      { timeEstimate: '3 min', whatYouGet: ['A 2-week mood signal read', 'NON-diagnostic self-reflection', 'Crisis resources if needed'], icon: 'activity', color: 'cosmic-blue' },
 };
 
 // Dispatch table from quiz id → (calc, info dictionary)
@@ -777,6 +788,12 @@ export const EXTRA_QUIZ_SCORING: Record<string, QuizScoringEntry> = {
   'chronotype-v1':        { dimensions: ['lion', 'bear', 'wolf', 'dolphin'], info: CHRONOTYPE_INFO, emoji: '🌙' },
   'creative-type-v1':     { dimensions: ['maker', 'dreamer', 'performer', 'organiser', 'analyser'], info: CREATIVE_INFO, emoji: '🎨' },
   'spiritual-type-v1':    { dimensions: ['mystic', 'ritualist', 'seeker', 'servant', 'warrior'], info: SPIRITUAL_INFO, emoji: '✨' },
+  ...Object.fromEntries(
+    Object.entries(EXTRA_QUIZZES_PART2).map(([id, cfg]) => [
+      id,
+      { dimensions: cfg.dimensions as unknown as readonly string[], info: cfg.info, emoji: cfg.emoji },
+    ]),
+  ),
 };
 
 export function calculateExtraQuiz(quizId: string, answers: Record<string, number>): DimensionalResult | null {

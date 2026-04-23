@@ -30,6 +30,7 @@ import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { DailyWisdomCard } from '../components/home/DailyWisdomCard';
 import { MoonstoneWidget } from '../components/home/MoonstoneWidget';
+import { MoonPhaseCard } from '../components/home/MoonPhaseCard';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -46,6 +47,7 @@ export function HomePage() {
   const { triggerLevelUp } = useGamification();
   const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
   const moonstonesEnabled = useFeatureFlag('moonstones');
+  const moonPhasesEnabled = useFeatureFlag('moon-phases');
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
@@ -361,6 +363,8 @@ export function HomePage() {
       </div>
 
       {moonstonesEnabled && <MoonstoneWidget />}
+
+      {moonPhasesEnabled && <MoonPhaseCard />}
 
       {dailyWisdomEnabled && <DailyWisdomCard />}
 

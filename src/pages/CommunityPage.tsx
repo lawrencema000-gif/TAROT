@@ -56,7 +56,7 @@ function formatRelativeTime(iso: string): string {
 
 export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const { t } = useT('app');
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [view, setView] = useState<View>('feed');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);

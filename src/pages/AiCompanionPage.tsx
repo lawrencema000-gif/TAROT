@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, Sparkles, Send, MessageCircle, Feather, Moon, Flower } from 'lucide-react';
+import { Sparkles, Send, MessageCircle, Feather, Moon, Flower } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';

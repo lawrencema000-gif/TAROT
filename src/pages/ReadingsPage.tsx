@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Flower, Cloud } from 'lucide-react';
+import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile } from 'lucide-react';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   TarotSection,
@@ -17,8 +17,11 @@ const IChingSection = lazy(() => import('./IChingPage').then(m => ({ default: m.
 const HumanDesignSection = lazy(() => import('./HumanDesignPage').then(m => ({ default: m.HumanDesignPage })));
 const BaziSection = lazy(() => import('./BaziPage').then(m => ({ default: m.BaziPage })));
 const DreamInterpreterSection = lazy(() => import('./DreamInterpreterPage').then(m => ({ default: m.DreamInterpreterPage })));
+const MoodDiarySection = lazy(() => import('./MoodDiaryPage').then(m => ({ default: m.MoodDiaryPage })));
+const PartnerCompatSection = lazy(() => import('./PartnerCompatPage').then(m => ({ default: m.PartnerCompatPage })));
+const FengShuiSection = lazy(() => import('./FengShuiPage').then(m => ({ default: m.FengShuiPage })));
 
-type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'library';
+type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'library';
 
 export function ReadingsPage() {
   const { t } = useT('app');
@@ -32,6 +35,9 @@ export function ReadingsPage() {
   const humanDesignEnabled = useFeatureFlag('human-design');
   const baziEnabled = useFeatureFlag('bazi');
   const dreamEnabled = useFeatureFlag('dream-interpreter');
+  const moodDiaryEnabled = useFeatureFlag('mood-diary');
+  const partnerCompatEnabled = useFeatureFlag('partner-compat');
+  const fengShuiEnabled = useFeatureFlag('feng-shui');
 
   const handleShowPaywall = (feature: string) => {
     setPaywallFeature(feature);
@@ -46,6 +52,9 @@ export function ReadingsPage() {
     ...(humanDesignEnabled ? [{ id: 'human-design' as const, labelKey: 'readings.tabs.humanDesign', icon: Layers }] : []),
     ...(baziEnabled ? [{ id: 'bazi' as const, labelKey: 'readings.tabs.bazi', icon: Mountain }] : []),
     ...(dreamEnabled ? [{ id: 'dream' as const, labelKey: 'readings.tabs.dream', icon: Cloud }] : []),
+    ...(moodDiaryEnabled ? [{ id: 'mood' as const, labelKey: 'readings.tabs.mood', icon: Smile }] : []),
+    ...(partnerCompatEnabled ? [{ id: 'partner' as const, labelKey: 'readings.tabs.partner', icon: Users }] : []),
+    ...(fengShuiEnabled ? [{ id: 'fengshui' as const, labelKey: 'readings.tabs.fengshui', icon: Home }] : []),
     { id: 'library' as const, labelKey: 'readings.tabs.library', icon: BookOpen },
   ];
 
@@ -120,6 +129,24 @@ export function ReadingsPage() {
       {activeTab === 'dream' && dreamEnabled && (
         <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
           <DreamInterpreterSection />
+        </Suspense>
+      )}
+
+      {activeTab === 'mood' && moodDiaryEnabled && (
+        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+          <MoodDiarySection />
+        </Suspense>
+      )}
+
+      {activeTab === 'partner' && partnerCompatEnabled && (
+        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+          <PartnerCompatSection />
+        </Suspense>
+      )}
+
+      {activeTab === 'fengshui' && fengShuiEnabled && (
+        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+          <FengShuiSection />
         </Suspense>
       )}
 

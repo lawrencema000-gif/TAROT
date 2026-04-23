@@ -87,7 +87,10 @@
       "iching": "易経",
       "humanDesign": "HD",
       "bazi": "八字",
-      "dream": "夢"
+      "dream": "夢",
+      "mood": "ムード",
+      "partner": "相性",
+      "fengshui": "風水"
     },
     "dailyRemaining": "今日の無料リーディング {{used}} / {{limit}}",
     "upgradeForUnlimited": "無制限にアップグレード",
@@ -3514,6 +3517,127 @@
     },
     "common": {
       "scoreDistribution": "スコア分布"
+    }
+  },
+  "mood": {
+    "title": "今日のムード",
+    "intro": "今日の自分にどんな形で届いた？　かたちを選んで、強さを見て、よかったら一文添えて。時間がたつと、あなたの気分の曲線が地図になっていきます。",
+    "intensityLabel": "強さ",
+    "noteLabel": "ひと言メモ（任意）",
+    "notePlaceholder": "今日を染めたものは？",
+    "promptLabel": "ジャーナルの問い",
+    "saveButton": "今日を保存",
+    "updateButton": "今日を更新",
+    "viewHistory": "30日間の曲線を見る",
+    "pickOne": "まず気分を一つ選んでください",
+    "saved": "今日の気分を記録しました",
+    "historyTitle": "30日間の曲線",
+    "entriesCount": "30日のうち {{n}} 日記録済み",
+    "noEntriesYet": "今日の気分を記録して、あなたの曲線を始めましょう。",
+    "dominantLabel": "いちばん多い気分",
+    "avgIntensity": "平均強さ：{{n}} / 5",
+    "backToLog": "記録に戻る",
+    "privacyNote": "ムードの記録はこの端末にのみ保存されます。アップロードや同期は行いません。",
+    "days": {
+      "30ago": "30日前",
+      "today": "今日"
+    },
+    "categories": {
+      "calm": {
+        "name": "穏やか"
+      },
+      "charged": {
+        "name": "充電中"
+      },
+      "drained": {
+        "name": "枯れ気味"
+      },
+      "steady": {
+        "name": "地に足"
+      },
+      "anxious": {
+        "name": "不安"
+      },
+      "joyful": {
+        "name": "喜び"
+      },
+      "heavy": {
+        "name": "重い"
+      },
+      "curious": {
+        "name": "好奇心"
+      }
+    }
+  },
+  "compat": {
+    "title": "パートナー相性",
+    "intro": "MBTIの認知機能の相性と、占星術のエレメント相性を組み合わせて、どこで合って、どこでぶつかり、どこが成長の縁にあるかを示します。双方について、少なくともひとつずつ（MBTIか誕生日）入力してください。",
+    "yourSide": "あなた",
+    "yourMbti": "あなたのMBTI",
+    "yourBirth": "あなたの誕生日",
+    "partnerSide": "相手",
+    "partnerMbti": "相手のMBTI",
+    "partnerBirth": "相手の誕生日",
+    "selectOrSkip": "選択または省略",
+    "runButton": "相性を明かす",
+    "needBothSides": "双方から少なくとも1つずつ必要です（MBTIまたは誕生日）。",
+    "failed": "相性を計算できませんでした",
+    "back": "別のペアを確認",
+    "another": "別のペア",
+    "compatibilityLabel": "相性",
+    "mbtiLabel": "MBTIフィット",
+    "astroLabel": "占星術フィット",
+    "strengthsLabel": "強み",
+    "growthLabel": "成長の縁",
+    "adviceLabel": "アドバイス"
+  },
+  "wisdom": {
+    "title": "今日の智慧"
+  },
+  "fengshui": {
+    "title": "風水の八卦",
+    "intro": "八卦の図は人生を9つの領域に分けます。あなたの人生の各領域が今どう感じるかを1〜5で評価してください。もっとも手当てを求めている領域と、それを養う風水の調整を示します。",
+    "scale": "1 = 深く枯れている · 3 = まあまあ · 5 = よく咲いている",
+    "reveal": "私の八卦を見る",
+    "backToRate": "もう一度評価する",
+    "reRate": "もう一度評価する",
+    "mapLabel": "あなたの八卦マップ",
+    "overallScore": "全体：{{n}} / 5",
+    "focusLabel": "手当てを求める領域",
+    "strongestLabel": "いちばん強い領域",
+    "adjustmentsLabel": "この調整を試して",
+    "elementLabel": "エレメント",
+    "colorLabel": "色",
+    "placement": "部屋の{{dir}}（入口から見て）にこれらの調整を置いてください。",
+    "shareSubtitle": "手当てが必要",
+    "areas": {
+      "wealth": {
+        "name": "富・豊かさ"
+      },
+      "fame": {
+        "name": "名声・評判"
+      },
+      "relationships": {
+        "name": "関係・愛"
+      },
+      "family": {
+        "name": "家族・先祖"
+      },
+      "health": {
+        "name": "健康・中央"
+      },
+      "creativity": {
+        "name": "創造・子ども"
+      },
+      "knowledge": {
+        "name": "知恵・学び"
+      },
+      "career": {
+        "name": "キャリア・道"
+      },
+      "helpers": {
+        "name": "助け手・旅"
+      }
     }
   }
 }

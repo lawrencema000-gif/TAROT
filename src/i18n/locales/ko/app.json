@@ -87,7 +87,10 @@
       "iching": "주역",
       "humanDesign": "휴먼디자인",
       "bazi": "바지",
-      "dream": "꿈"
+      "dream": "꿈",
+      "mood": "무드",
+      "partner": "궁합",
+      "fengshui": "풍수"
     },
     "dailyRemaining": "오늘 무료 리딩 {{used}} / {{limit}}",
     "upgradeForUnlimited": "무제한 이용으로 업그레이드",
@@ -3514,6 +3517,127 @@
     },
     "common": {
       "scoreDistribution": "점수 분포"
+    }
+  },
+  "mood": {
+    "title": "오늘의 무드",
+    "intro": "오늘 당신에게 어떤 모양으로 닿았나요? 모양을 고르고, 강도를 보고, 원하면 한 줄 적어 두세요. 시간이 쌓이면 당신의 기분 곡선이 하나의 지도가 됩니다.",
+    "intensityLabel": "강도",
+    "noteLabel": "한 줄 메모 (선택)",
+    "notePlaceholder": "오늘을 물들인 건 무엇인가요?",
+    "promptLabel": "저널 질문",
+    "saveButton": "오늘 저장",
+    "updateButton": "오늘 업데이트",
+    "viewHistory": "30일 곡선 보기",
+    "pickOne": "먼저 무드를 하나 골라 주세요",
+    "saved": "오늘의 무드가 기록됐어요",
+    "historyTitle": "30일 곡선",
+    "entriesCount": "30일 중 {{n}}일 기록됨",
+    "noEntriesYet": "오늘의 무드를 기록해 당신의 곡선을 시작해 보세요.",
+    "dominantLabel": "가장 자주 나타난 무드",
+    "avgIntensity": "평균 강도: {{n}} / 5",
+    "backToLog": "기록으로 돌아가기",
+    "privacyNote": "무드 기록은 이 기기에만 남습니다. 업로드되거나 동기화되지 않습니다.",
+    "days": {
+      "30ago": "30일 전",
+      "today": "오늘"
+    },
+    "categories": {
+      "calm": {
+        "name": "고요"
+      },
+      "charged": {
+        "name": "충만"
+      },
+      "drained": {
+        "name": "소진"
+      },
+      "steady": {
+        "name": "안정"
+      },
+      "anxious": {
+        "name": "불안"
+      },
+      "joyful": {
+        "name": "기쁨"
+      },
+      "heavy": {
+        "name": "무거움"
+      },
+      "curious": {
+        "name": "호기심"
+      }
+    }
+  },
+  "compat": {
+    "title": "파트너 궁합",
+    "intro": "MBTI 인지 기능 궁합과 점성술 원소 궁합을 결합해, 어디서 맞고, 어디서 부딪히며, 어디에 성장의 모서리가 있는지 보여줍니다. 양쪽 모두에 대해 MBTI든 생년월일이든, 최소 하나씩은 입력해 주세요.",
+    "yourSide": "당신",
+    "yourMbti": "당신의 MBTI",
+    "yourBirth": "당신의 생년월일",
+    "partnerSide": "상대",
+    "partnerMbti": "상대의 MBTI",
+    "partnerBirth": "상대의 생년월일",
+    "selectOrSkip": "선택 또는 건너뛰기",
+    "runButton": "궁합 확인하기",
+    "needBothSides": "양쪽에서 최소한 하나의 정보가 필요합니다 (MBTI 또는 생년월일).",
+    "failed": "궁합을 계산할 수 없었습니다",
+    "back": "다른 짝 보기",
+    "another": "다른 짝",
+    "compatibilityLabel": "궁합",
+    "mbtiLabel": "MBTI 핏",
+    "astroLabel": "점성술 핏",
+    "strengthsLabel": "강점",
+    "growthLabel": "성장의 모서리",
+    "adviceLabel": "조언"
+  },
+  "wisdom": {
+    "title": "오늘의 지혜"
+  },
+  "fengshui": {
+    "title": "풍수 팔괘",
+    "intro": "팔괘 맵은 삶을 아홉 영역으로 나눕니다. 당신의 삶의 각 영역이 지금 어떻게 느껴지는지 1-5로 평가해 주세요. 가장 손길이 필요한 영역과 그것을 살리는 풍수 조정을 알려 드립니다.",
+    "scale": "1 = 심하게 고갈 · 3 = 괜찮음 · 5 = 번성",
+    "reveal": "나의 팔괘 보기",
+    "backToRate": "다시 평가하기",
+    "reRate": "다시 평가",
+    "mapLabel": "당신의 팔괘 지도",
+    "overallScore": "전체: {{n}} / 5",
+    "focusLabel": "손길이 필요한 영역",
+    "strongestLabel": "가장 강한 영역",
+    "adjustmentsLabel": "이런 조정을 시도해 보세요",
+    "elementLabel": "원소",
+    "colorLabel": "색",
+    "placement": "방의 {{dir}}(입구 기준)에 이 조정들을 놓아 보세요.",
+    "shareSubtitle": "손길이 필요",
+    "areas": {
+      "wealth": {
+        "name": "재물·풍요"
+      },
+      "fame": {
+        "name": "명성·평판"
+      },
+      "relationships": {
+        "name": "관계·사랑"
+      },
+      "family": {
+        "name": "가족·조상"
+      },
+      "health": {
+        "name": "건강·중심"
+      },
+      "creativity": {
+        "name": "창조·자녀"
+      },
+      "knowledge": {
+        "name": "지혜·배움"
+      },
+      "career": {
+        "name": "커리어·길"
+      },
+      "helpers": {
+        "name": "도움·여행"
+      }
     }
   }
 }

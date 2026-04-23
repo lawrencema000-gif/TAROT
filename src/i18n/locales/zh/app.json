@@ -87,7 +87,10 @@
       "iching": "易经",
       "humanDesign": "人类图",
       "bazi": "八字",
-      "dream": "梦境"
+      "dream": "梦境",
+      "mood": "心境",
+      "partner": "契合",
+      "fengshui": "风水"
     },
     "dailyRemaining": "今日免费牌阵 {{used}} / {{limit}}",
     "upgradeForUnlimited": "升级解锁无限",
@@ -3514,6 +3517,127 @@
     },
     "common": {
       "scoreDistribution": "得分分布"
+    }
+  },
+  "mood": {
+    "title": "每日心境",
+    "intro": "今天以怎样的形状来到你身边？选一个形状，留意它的强度，愿意的话写上一句。时间久了，你的心境曲线就成了一幅地图。",
+    "intensityLabel": "强度",
+    "noteLabel": "一句话（可选）",
+    "notePlaceholder": "今天被什么染色？",
+    "promptLabel": "书写提示",
+    "saveButton": "保存今天",
+    "updateButton": "更新今天",
+    "viewHistory": "看 30 天曲线",
+    "pickOne": "请先选一个心境",
+    "saved": "今天的心境已记录",
+    "historyTitle": "30 天曲线",
+    "entriesCount": "30 天中已记录 {{n}} 天",
+    "noEntriesYet": "记录今天的心境，开始你的曲线。",
+    "dominantLabel": "最常出现的心境",
+    "avgIntensity": "平均强度：{{n}} / 5",
+    "backToLog": "回到记录",
+    "privacyNote": "心境记录只保存在本机内，不上传、不同步。",
+    "days": {
+      "30ago": "30 天前",
+      "today": "今天"
+    },
+    "categories": {
+      "calm": {
+        "name": "平静"
+      },
+      "charged": {
+        "name": "充电"
+      },
+      "drained": {
+        "name": "耗尽"
+      },
+      "steady": {
+        "name": "稳定"
+      },
+      "anxious": {
+        "name": "焦虑"
+      },
+      "joyful": {
+        "name": "喜悦"
+      },
+      "heavy": {
+        "name": "沉重"
+      },
+      "curious": {
+        "name": "好奇"
+      }
+    }
+  },
+  "compat": {
+    "title": "伴侣契合",
+    "intro": "把 MBTI 认知功能契合与占星元素契合结合起来，看看你们在哪里合拍、在哪里摩擦、以及成长的边缘在哪里。请为双方各填至少一项（MBTI 或出生日期）。",
+    "yourSide": "你",
+    "yourMbti": "你的 MBTI",
+    "yourBirth": "你的出生日期",
+    "partnerSide": "伴侣",
+    "partnerMbti": "伴侣的 MBTI",
+    "partnerBirth": "伴侣的出生日期",
+    "selectOrSkip": "选择或跳过",
+    "runButton": "揭晓我们的契合度",
+    "needBothSides": "双方至少各需要一个数据点（MBTI 或出生日期）。",
+    "failed": "无法计算契合度",
+    "back": "查看另一对",
+    "another": "另一对",
+    "compatibilityLabel": "契合度",
+    "mbtiLabel": "MBTI 契合",
+    "astroLabel": "占星契合",
+    "strengthsLabel": "优势",
+    "growthLabel": "成长边缘",
+    "adviceLabel": "建议"
+  },
+  "wisdom": {
+    "title": "今日智慧"
+  },
+  "fengshui": {
+    "title": "风水八卦",
+    "intro": "八卦图把人生分为九个领域。请按 1-5 为你生活中每个领域\"此刻的感觉\"打分。我们会指出最需要照料的领域，以及滋养它的风水调整。",
+    "scale": "1 = 严重枯竭 · 3 = 一般 · 5 = 繁茂",
+    "reveal": "揭示我的八卦",
+    "backToRate": "重新评分",
+    "reRate": "重新评分",
+    "mapLabel": "你的八卦地图",
+    "overallScore": "整体：{{n}} / 5",
+    "focusLabel": "需要关照的领域",
+    "strongestLabel": "最强的领域",
+    "adjustmentsLabel": "试试这些调整",
+    "elementLabel": "元素",
+    "colorLabel": "颜色",
+    "placement": "把这些调整放在房间的{{dir}}（从入口朝向看）。",
+    "shareSubtitle": "需要照料",
+    "areas": {
+      "wealth": {
+        "name": "财富·丰盛"
+      },
+      "fame": {
+        "name": "名声·声誉"
+      },
+      "relationships": {
+        "name": "关系·爱情"
+      },
+      "family": {
+        "name": "家庭·祖脉"
+      },
+      "health": {
+        "name": "健康·中央"
+      },
+      "creativity": {
+        "name": "创造·子女"
+      },
+      "knowledge": {
+        "name": "智慧·学习"
+      },
+      "career": {
+        "name": "事业·道路"
+      },
+      "helpers": {
+        "name": "贵人·远行"
+      }
     }
   }
 }

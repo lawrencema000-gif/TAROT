@@ -87,7 +87,10 @@
       "iching": "I-Ching",
       "humanDesign": "Human Design",
       "bazi": "Bazi",
-      "dream": "Dreams"
+      "dream": "Dreams",
+      "mood": "Mood",
+      "partner": "Partner",
+      "fengshui": "Feng Shui"
     },
     "dailyRemaining": "{{used}} / {{limit}} free readings today",
     "upgradeForUnlimited": "Upgrade for unlimited",
@@ -3320,6 +3323,127 @@
     },
     "common": {
       "scoreDistribution": "Score distribution"
+    }
+  },
+  "mood": {
+    "title": "Daily Mood",
+    "intro": "How is today landing in you? Pick the shape of it, notice the intensity, optionally write a sentence. Over time your mood curve becomes a map.",
+    "intensityLabel": "Intensity",
+    "noteLabel": "One-line note (optional)",
+    "notePlaceholder": "What coloured today?",
+    "promptLabel": "Journal prompt",
+    "saveButton": "Save today",
+    "updateButton": "Update today",
+    "viewHistory": "View 30-day curve",
+    "pickOne": "Pick a mood first",
+    "saved": "Mood logged for today",
+    "historyTitle": "30-day curve",
+    "entriesCount": "{{n}} of 30 days logged",
+    "noEntriesYet": "Log today's mood to start your curve.",
+    "dominantLabel": "Most common mood",
+    "avgIntensity": "Average intensity: {{n}} / 5",
+    "backToLog": "Back to log",
+    "privacyNote": "Your mood log lives on this device only. It is not uploaded or synced.",
+    "days": {
+      "30ago": "30d ago",
+      "today": "Today"
+    },
+    "categories": {
+      "calm": {
+        "name": "Calm"
+      },
+      "charged": {
+        "name": "Charged"
+      },
+      "drained": {
+        "name": "Drained"
+      },
+      "steady": {
+        "name": "Steady"
+      },
+      "anxious": {
+        "name": "Anxious"
+      },
+      "joyful": {
+        "name": "Joyful"
+      },
+      "heavy": {
+        "name": "Heavy"
+      },
+      "curious": {
+        "name": "Curious"
+      }
+    }
+  },
+  "compat": {
+    "title": "Partner Compatibility",
+    "intro": "Combines MBTI cognitive-function fit with astrology elemental compatibility to show you where you click, where you rub, and where the growth edges live. Enter what you know about each side — at least one from each.",
+    "yourSide": "You",
+    "yourMbti": "Your MBTI type",
+    "yourBirth": "Your birth date",
+    "partnerSide": "Partner",
+    "partnerMbti": "Partner's MBTI",
+    "partnerBirth": "Partner's birth date",
+    "selectOrSkip": "Select or skip",
+    "runButton": "Reveal our compatibility",
+    "needBothSides": "Need at least one data point from each side (MBTI or birth date).",
+    "failed": "Could not compute compatibility",
+    "back": "Check another pair",
+    "another": "Check another",
+    "compatibilityLabel": "Compatibility",
+    "mbtiLabel": "MBTI Fit",
+    "astroLabel": "Astrology Fit",
+    "strengthsLabel": "Strengths",
+    "growthLabel": "Growth edges",
+    "adviceLabel": "Advice"
+  },
+  "wisdom": {
+    "title": "Daily Wisdom"
+  },
+  "fengshui": {
+    "title": "Feng Shui Bagua",
+    "intro": "The Bagua map divides life into nine areas. Rate how each area of YOUR life feels right now on a 1-5 scale. We'll surface the area most wanting attention and the Feng Shui adjustments that nourish it.",
+    "scale": "1 = severely depleted · 3 = okay · 5 = thriving",
+    "reveal": "Reveal my Bagua",
+    "backToRate": "Re-rate",
+    "reRate": "Re-rate",
+    "mapLabel": "Your Bagua map",
+    "overallScore": "Overall: {{n}} / 5",
+    "focusLabel": "Area needing attention",
+    "strongestLabel": "Your strongest area",
+    "adjustmentsLabel": "Try these adjustments",
+    "elementLabel": "Element",
+    "colorLabel": "Colour",
+    "placement": "Place these adjustments in the {{dir}} of your room (oriented from the entry door).",
+    "shareSubtitle": "Needs attention",
+    "areas": {
+      "wealth": {
+        "name": "Wealth / Abundance"
+      },
+      "fame": {
+        "name": "Fame / Reputation"
+      },
+      "relationships": {
+        "name": "Relationships / Love"
+      },
+      "family": {
+        "name": "Family / Ancestry"
+      },
+      "health": {
+        "name": "Health / Centre"
+      },
+      "creativity": {
+        "name": "Creativity / Children"
+      },
+      "knowledge": {
+        "name": "Knowledge / Wisdom"
+      },
+      "career": {
+        "name": "Career / Path"
+      },
+      "helpers": {
+        "name": "Helpful People / Travel"
+      }
     }
   }
 }

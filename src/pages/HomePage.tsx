@@ -27,6 +27,8 @@ import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMileston
 import { checkAchievementProgress } from '../services/achievements';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
+import { DailyWisdomCard } from '../components/home/DailyWisdomCard';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -41,6 +43,7 @@ export function HomePage() {
   const { setActiveTab, openOverlay } = useUI();
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
   const { triggerLevelUp } = useGamification();
+  const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
@@ -354,6 +357,8 @@ export function HomePage() {
           <span className="text-mystic-400 text-sm">{t('home.dayStreakLabel')}</span>
         </button>
       </div>
+
+      {dailyWisdomEnabled && <DailyWisdomCard />}
 
       {profile && xpProgress.required > 0 && (
         <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl p-4">

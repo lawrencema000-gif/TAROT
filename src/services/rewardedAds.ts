@@ -4,9 +4,12 @@ import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';
 import { rewardedAdUnlocks } from '../dal';
 
-const DAILY_LIMIT = 5;
+// Rewarded ads are unlimited per-day. Local count is still tracked for
+// telemetry (and so `incrementLocalDailyCount` remains meaningful if we
+// ever re-introduce a cap), but it no longer gates anything.
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
 const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
+const UNLIMITED_SENTINEL = 999999;
 const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS !== 'false';
 const TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
 
@@ -26,13 +29,27 @@ async function loadAdMobPlugin(): Promise<boolean> {
   }
 }
 
+/**
+ * Discriminated result of showRewardedAd.
+ *
+ * - 'unlocked': ad played to completion AND the unlock row landed on the
+ *   server. Card should flip to unlocked state.
+ * - 'not-ready': no ad was available (first open + preload hadn't finished,
+ *   or AdMob returned no-fill). Show "Ad not available — try again."
+ * - 'dismissed': user closed the ad early — no reward. Silent.
+ * - 'persist-failed': ad completed BUT we couldn't write the unlock row
+ *   after retries. Tell the user to check connection and try again.
+ * - 'disabled': feature disabled / daily limit reached / plugin missing.
+ */
+export type WatchAdOutcome = 'unlocked' | 'not-ready' | 'dismissed' | 'persist-failed' | 'disabled';
+
 class RewardedAdsService {
   private pluginAvailable = false;
   private isAdReady = false;
   private currentUserId: string | null = null;
   private pendingFeature: PremiumFeature | null = null;
   private pendingSpreadType: string | null = null;
-  private resolveAdWatch: ((success: boolean) => void) | null = null;
+  private resolveAdWatch: ((outcome: WatchAdOutcome) => void) | null = null;
 
   async initialize(userId: string | null = null): Promise<void> {
     this.currentUserId = userId;
@@ -64,15 +81,15 @@ class RewardedAdsService {
     });
 
     AdMob.addListener(RewardAdPluginEvents.Rewarded, async () => {
-      // Only resolve true when the unlock row actually landed in the DB.
-      // Before this fix, a failed INSERT (RLS, network) still resolved true,
-      // the UI said "unlocked!", then a fresh hasTemporaryAccess check
-      // returned false — the card stayed locked.
+      // The ad played to completion. Resolve based on whether the DB
+      // insert succeeded. Distinct outcomes let the UI show an accurate
+      // toast instead of the generic "ad not available" message when
+      // what actually failed was the server write.
       let persisted = false;
       if (this.pendingFeature) {
         persisted = await this.grantTemporaryAccess(this.pendingFeature, this.pendingSpreadType);
       }
-      this.resolveAdWatch?.(persisted);
+      this.resolveAdWatch?.(persisted ? 'unlocked' : 'persist-failed');
       this.resolveAdWatch = null;
       this.pendingFeature = null;
       this.pendingSpreadType = null;
@@ -81,8 +98,11 @@ class RewardedAdsService {
     AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
       this.isAdReady = false;
       this.preloadRewardedAd();
+      // If a Rewarded event already resolved, resolveAdWatch is null and
+      // this is just a cleanup. Otherwise: user skipped the ad — treat
+      // as 'dismissed' so the UI stays silent (no scary error toast).
       if (this.resolveAdWatch) {
-        this.resolveAdWatch(false);
+        this.resolveAdWatch('dismissed');
         this.resolveAdWatch = null;
       }
       this.pendingFeature = null;
@@ -92,7 +112,7 @@ class RewardedAdsService {
     AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => {
       this.isAdReady = false;
       this.preloadRewardedAd();
-      this.resolveAdWatch?.(false);
+      this.resolveAdWatch?.('not-ready');
       this.resolveAdWatch = null;
       this.pendingFeature = null;
       this.pendingSpreadType = null;
@@ -111,25 +131,19 @@ class RewardedAdsService {
   }
 
   /**
-   * Get remaining rewarded ad watches for today.
-   * Uses server stats first (authoritative), falls back to local storage.
+   * Remaining rewarded ad watches for today. Unlimited since 2026-05-22 —
+   * returns a high sentinel so any legacy `> 0` callers continue to work.
+   * Server stats still flow through `adConfigService.getRewardedRemaining`
+   * (which also returns the sentinel after migration 20260522000000).
    */
   async getRemainingUnlocks(): Promise<number> {
-    // Try server-authoritative count first
     const serverRemaining = adConfigService.getRewardedRemaining();
     const stats = adConfigService.getDailyStats();
-
-    if (stats) {
-      return serverRemaining;
-    }
-
-    // Fallback to local storage if no server data yet
-    const { count } = await this.getLocalDailyCount();
-    return Math.max(0, DAILY_LIMIT - count);
+    return stats ? serverRemaining : UNLIMITED_SENTINEL;
   }
 
   async canWatchAd(): Promise<boolean> {
-    return (await this.getRemainingUnlocks()) > 0;
+    return true;
   }
 
   isReady(): boolean {
@@ -140,35 +154,32 @@ class RewardedAdsService {
     this.currentUserId = userId;
   }
 
-  async showRewardedAd(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
-    if (!(await this.canWatchAd())) return false;
+  async showRewardedAd(feature: PremiumFeature, spreadType?: string): Promise<WatchAdOutcome> {
+    if (!(await this.canWatchAd())) return 'disabled';
+    if (!this.pluginAvailable || !AdMob) return 'disabled';
 
-    if (!this.pluginAvailable || !AdMob) return false;
-
-    // Bug fix: before, this returned false immediately when the ad hadn't
-    // preloaded yet — producing spurious "ads not available" toasts on
-    // first open or right after a dismissed ad. Now we trigger a preload
-    // and wait up to ~4s (AdMob typically takes 500-2000ms). If still
-    // not ready, honestly report no ad.
+    // Trigger preload and poll isAdReady for up to 4s. AdMob typically
+    // loads in 500-2000ms. If still not ready, report 'not-ready' — the
+    // UI can then show the "try again in a moment" copy.
     if (!this.isAdReady) {
       this.preloadRewardedAd();
       const started = Date.now();
       while (!this.isAdReady && Date.now() - started < 4000) {
         await new Promise((r) => setTimeout(r, 200));
       }
-      if (!this.isAdReady) return false;
+      if (!this.isAdReady) return 'not-ready';
     }
 
     this.pendingFeature = feature;
     this.pendingSpreadType = spreadType || null;
 
-    return new Promise((resolve) => {
+    return new Promise<WatchAdOutcome>((resolve) => {
       this.resolveAdWatch = resolve;
       AdMob!.showRewardVideoAd().catch(() => {
         this.resolveAdWatch = null;
         this.pendingFeature = null;
         this.pendingSpreadType = null;
-        resolve(false);
+        resolve('not-ready');
       });
     });
   }

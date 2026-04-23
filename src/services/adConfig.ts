@@ -66,7 +66,9 @@ const ENV_FALLBACKS: Record<string, Record<string, string>> = {
 };
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const DAILY_LIMIT = 5;
+// Rewarded ads are unlimited per-day as of 2026-05-22; use a high sentinel
+// so any legacy `rewardedRemaining > 0` check continues to pass.
+const UNLIMITED_SENTINEL = 999999;
 
 class AdConfigService {
   private config: AdConfig | null = null;
@@ -149,7 +151,7 @@ class AdConfigService {
 
   /** Get server-authoritative remaining rewarded ad watches for today */
   getRewardedRemaining(): number {
-    if (!this.config?.dailyStats) return DAILY_LIMIT; // assume full if no data
+    if (!this.config?.dailyStats) return UNLIMITED_SENTINEL; // assume full if no data
     return Math.max(0, this.config.dailyStats.rewardedRemaining);
   }
 

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Play, X, Gift, Clock, Crown, Sparkles, BookOpen } from 'lucide-react';
+import { useState } from 'react';
+import { Play, X, Gift, Crown, Sparkles, BookOpen } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { rewardedAdsService } from '../../services/rewardedAds';
 import { PREMIUM_FEATURES, type PremiumFeature } from '../../services/premium';
@@ -36,13 +36,6 @@ export function WatchAdSheet({
 }: WatchAdSheetProps) {
   const { t } = useT('app');
   const [loading, setLoading] = useState(false);
-  const [remainingUnlocks, setRemainingUnlocks] = useState(0);
-
-  useEffect(() => {
-    if (open) {
-      rewardedAdsService.getRemainingUnlocks().then(setRemainingUnlocks);
-    }
-  }, [open]);
   const featureDef = localizedFeature(PREMIUM_FEATURES[feature]);
   const context = FEATURE_CONTEXT[feature];
 
@@ -59,14 +52,36 @@ export function WatchAdSheet({
   const handleWatchAd = async () => {
     setLoading(true);
     try {
-      const success = await rewardedAdsService.showRewardedAd(feature, spreadType);
+      const outcome = await rewardedAdsService.showRewardedAd(feature, spreadType);
 
-      if (success) {
-        toast(t('premium.watchAd.toasts.unlocked'), 'success');
-        onUnlocked();
-        onClose();
-      } else {
-        toast(t('premium.watchAd.toasts.notAvailable'), 'error');
+      switch (outcome) {
+        case 'unlocked':
+          toast(t('premium.watchAd.toasts.unlocked'), 'success');
+          onUnlocked();
+          onClose();
+          break;
+        case 'not-ready':
+          // No ad inventory right now. Don't close the sheet — user can tap again.
+          toast(t('premium.watchAd.toasts.notAvailable'), 'error');
+          break;
+        case 'persist-failed':
+          // Ad DID play to completion, but we couldn't write the unlock row.
+          // Apologize specifically and offer a retry. (User sees this after
+          // actually watching the ad, so the generic "not available" message
+          // is misleading.)
+          toast(
+            t('premium.watchAd.toasts.persistFailed', {
+              defaultValue: "Ad watched, but we couldn't save the unlock. Check your connection and try again.",
+            }),
+            'error',
+          );
+          break;
+        case 'dismissed':
+          // User skipped the ad — no reward, no error.
+          break;
+        case 'disabled':
+          toast(t('premium.watchAd.toasts.notAvailable'), 'error');
+          break;
       }
     } catch (error) {
       console.error('[WatchAdSheet] Error showing ad:', error);
@@ -109,40 +124,22 @@ export function WatchAdSheet({
             {title}
           </h2>
 
-          <p className="text-sm text-mystic-400 text-center mb-4">
+          <p className="text-sm text-mystic-400 text-center mb-6">
             {subtitle}
           </p>
 
-          <div className="flex items-center justify-center gap-2 px-3 py-2 bg-mystic-800/50 rounded-full mb-6">
-            <Clock className="w-4 h-4 text-mystic-500" />
-            <span className="text-sm text-mystic-300">
-              {t('premium.watchAd.unlocksRemaining', { remaining: remainingUnlocks, total: 5 })}
-            </span>
-          </div>
-
           <div className="space-y-3">
-            {remainingUnlocks > 0 ? (
-              <Button
-                variant="gold"
-                fullWidth
-                size="lg"
-                onClick={handleWatchAd}
-                loading={loading}
-                className="min-h-[52px]"
-              >
-                <Play className="w-5 h-5" />
-                {t('premium.watchAd.watchAdToUnlock')}
-              </Button>
-            ) : (
-              <div className="text-center py-3">
-                <p className="text-sm text-mystic-400 mb-2">
-                  {t('premium.watchAd.usedAllUnlocks')}
-                </p>
-                <p className="text-xs text-mystic-500">
-                  {t('premium.watchAd.comeBackTomorrow')}
-                </p>
-              </div>
-            )}
+            <Button
+              variant="gold"
+              fullWidth
+              size="lg"
+              onClick={handleWatchAd}
+              loading={loading}
+              className="min-h-[52px]"
+            >
+              <Play className="w-5 h-5" />
+              {t('premium.watchAd.watchAdToUnlock')}
+            </Button>
 
             <Button
               variant="outline"

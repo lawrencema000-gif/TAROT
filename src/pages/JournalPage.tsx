@@ -28,6 +28,9 @@ import {
 import { Card, Button, Sheet, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
+import { supabase } from '../lib/supabase';
+import i18n from '../i18n/config';
 import { journalEntries, tarotReadings } from '../dal';
 // horoscopes loaded lazily to keep journal chunk small
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
@@ -114,6 +117,9 @@ export function JournalPage() {
   const { t } = useT('app');
   const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp } = useGamification();
+  const journalCoachEnabled = useFeatureFlag('journal-coach');
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachResult, setCoachResult] = useState<{ observation: string; prompts: string[] } | null>(null);
   const [activeTab, setActiveTab] = useState<JournalTab>('entries');
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1030,6 +1036,70 @@ export function JournalPage() {
                 rows={6}
                 className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl px-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50 resize-none"
               />
+
+              {journalCoachEnabled && content.trim().length >= 20 && !coachResult && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    setCoachLoading(true);
+                    const { data, error } = await supabase.functions.invoke('ai-journal-coach', {
+                      body: {
+                        entry: content.trim(),
+                        userContext: {
+                          mbtiType: profile?.mbtiType,
+                          enneagramType: profile?.enneagramType,
+                          locale: i18n.language || 'en',
+                        },
+                      },
+                    });
+                    setCoachLoading(false);
+                    if (error) {
+                      toast(t('journalCoach.failed', { defaultValue: 'Could not reach coach' }), 'error');
+                      return;
+                    }
+                    const payload = (data?.data ?? data) as { observation: string; prompts: string[] } | null;
+                    if (payload) setCoachResult(payload);
+                  }}
+                  disabled={coachLoading}
+                  className="mt-2 gap-1"
+                >
+                  <Sparkles className="w-3 h-3 text-gold" />
+                  {coachLoading
+                    ? t('journalCoach.thinking', { defaultValue: 'Reading…' })
+                    : t('journalCoach.askCta', { defaultValue: 'Ask the journal coach' })}
+                </Button>
+              )}
+
+              {coachResult && (
+                <div className="mt-3 p-3 bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/30 rounded-xl">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Sparkles className="w-3 h-3 text-cosmic-violet" />
+                    <p className="text-[10px] uppercase tracking-widest text-cosmic-violet">
+                      {t('journalCoach.observationLabel', { defaultValue: 'An observation' })}
+                    </p>
+                  </div>
+                  <p className="text-sm text-mystic-200 italic leading-relaxed mb-3">
+                    {coachResult.observation}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1.5">
+                    {t('journalCoach.promptsLabel', { defaultValue: 'Sit with these' })}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {coachResult.prompts.map((p, i) => (
+                      <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violet">
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => setCoachResult(null)}
+                    className="text-[10px] text-mystic-500 hover:text-mystic-300 mt-2 underline underline-offset-2"
+                  >
+                    {t('journalCoach.dismiss', { defaultValue: 'Dismiss' })}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>

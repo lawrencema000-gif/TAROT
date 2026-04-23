@@ -52,6 +52,9 @@ const CompatInvitePage = lazy(() => import('./pages/CompatInvitePage').then(m =>
 const AdvisorBookingPage = lazy(() => import('./pages/AdvisorBookingPage').then(m => ({ default: m.AdvisorBookingPage })));
 const AdvisorSessionPage = lazy(() => import('./pages/AdvisorSessionPage').then(m => ({ default: m.AdvisorSessionPage })));
 const AdvisorDashboardPage = lazy(() => import('./pages/AdvisorDashboardPage').then(m => ({ default: m.AdvisorDashboardPage })));
+const QuickReadingPage = lazy(() => import('./pages/QuickReadingPage').then(m => ({ default: m.QuickReadingPage })));
+const TarotCompanionPage = lazy(() => import('./pages/TarotCompanionPage').then(m => ({ default: m.TarotCompanionPage })));
+const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage').then(m => ({ default: m.LiveRoomsPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -421,6 +424,9 @@ function AppContent() {
                   <Route path="/invite/:code" element={<CompatInvitePage />} />
                   <Route path="/advisors/:slug/book" element={<AdvisorBookingPage />} />
                   <Route path="/advisors/session/:id" element={<AdvisorSessionPage />} />
+                  <Route path="/ai/quick" element={<QuickReadingPage />} />
+                  <Route path="/ai/tarot" element={<TarotCompanionPage />} />
+                  <Route path="/live-rooms" element={<LiveRoomsPage />} />
                   <Route path="/advisors/dashboard" element={<AdvisorDashboardPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

@@ -11,6 +11,10 @@
     "xpProgress": "XP Progress",
     "todaysRitual": "Today's Ritual",
     "ritualComplete": "Ritual Complete!",
+    "quickReading": "3-second reading",
+    "quickReadingSub": "Ask anything",
+    "tarotCompanion": "Tarot companion",
+    "tarotCompanionSub": "Pull a card, talk it through",
     "streak": "You're on a {{n}}-day streak. Keep it going!",
     "savedToday": "Saved today",
     "savedHighlights": "Saved Highlights",
@@ -3741,7 +3745,9 @@
     "errorGeneric": "Could not load forecast. Try again in a moment.",
     "overall": "Overall arc",
     "emptyMonth": "A quiet month, astrologically. Use it to rest.",
-    "disclaimer": "Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours."
+    "disclaimer": "Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
   },
   "natalReport": {
     "title": "Full Natal Chart",
@@ -3768,7 +3774,10 @@
     "planetsHeading": "Planets in signs and houses",
     "elementsHeading": "Elemental & modal balance",
     "aspectsHeading": "Aspects — the wiring between planets",
-    "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours."
+    "wheelHeading": "Your chart wheel",
+    "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
   },
   "careerReport": {
     "title": "Career Archetype",
@@ -3796,7 +3805,9 @@
     "ninetyDays": "First 90 days",
     "monthLabel": "Month {{n}}",
     "reflection": "Sit with these questions",
-    "share": "Share my archetype"
+    "share": "Share my archetype",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
   },
   "compatInvite": {
     "createTitle": "Invite someone",
@@ -3903,5 +3914,60 @@
     "saving": "Saving…",
     "saved": "Availability saved",
     "invalidSlot": "End time must be after start time."
+  },
+  "quickReading": {
+    "title": "3-second reading",
+    "intro": "Ask anything. A single card is drawn, woven with your signals, and returned as a short reading to sit with.",
+    "questionLabel": "Your question",
+    "questionPlaceholder": "What is mine to focus on this week? Where is the friction in my work coming from? What am I avoiding?",
+    "draw": "Draw and read",
+    "drawing": "Drawing…",
+    "yourQuestion": "Your question",
+    "cardLabel": "Card drawn",
+    "memoryUsed": "Drawing on what we've talked about before.",
+    "share": "Share",
+    "askAnother": "Ask another",
+    "disclaimer": "Readings are for self-reflection, not prediction or professional advice.",
+    "errorRateLimit": "You're asking fast — slow down and try again in a moment.",
+    "errorUnavailable": "Readings are temporarily unavailable.",
+    "errorGeneric": "Could not generate a reading. Try again."
+  },
+  "tarotCompanion": {
+    "title": "Tarot companion",
+    "redraw": "New card",
+    "drawing": "Drawing…",
+    "drawCta": "Draw a card",
+    "empty": "Pull a card to begin a conversation.",
+    "upright": "Upright",
+    "reversed": "Reversed",
+    "composerPlaceholder": "Ask a follow-up…",
+    "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
+    "aiFailed": "Could not reach the oracle"
+  },
+  "journalCoach": {
+    "askCta": "Ask the journal coach",
+    "thinking": "Reading…",
+    "failed": "Could not reach coach",
+    "observationLabel": "An observation",
+    "promptsLabel": "Sit with these",
+    "dismiss": "Dismiss"
+  },
+  "chartWheel": {
+    "tapPrompt": "Tap a planet, house, or aspect line.",
+    "planetLabel": "Planet",
+    "houseLabel": "House {{n}}",
+    "aspectLabel": "Aspect"
+  },
+  "liveRooms": {
+    "title": "Live rooms",
+    "intro": "Scheduled live gatherings — full moon circles, Mercury retrograde debriefs, live tarot pulls. Audio-first, soon. RSVP to reserve your seat.",
+    "empty": "No live rooms on the calendar yet — check back soon.",
+    "capacity": "up to {{n}} listeners",
+    "rsvp": "RSVP",
+    "rsvpd": "You're in",
+    "rsvpConfirmed": "You're on the list — we'll notify you.",
+    "rsvpCancelled": "RSVP cancelled",
+    "signInToRsvp": "Sign in to RSVP",
+    "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
   }
 }

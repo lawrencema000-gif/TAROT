@@ -4,6 +4,7 @@ import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
+import { startReportCheckout } from '../services/reportCheckout';
 import { supabase } from '../lib/supabase';
 
 /**
@@ -238,12 +239,20 @@ export function YearAheadReportPage() {
               })}
             </p>
           )}
-          <p className="text-[10px] text-mystic-600 mt-1">
-            {t('yearAhead.priceNote', {
-              defaultValue: 'Also available via Stripe at ${{price}} (coming soon)',
+          <button
+            onClick={async () => {
+              const res = await startReportCheckout({ reportKey: 'year-ahead', reference: String(currentYear) });
+              if (!res.ok && res.error !== 'already-unlocked') {
+                toast(t('yearAhead.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+              }
+            }}
+            className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+          >
+            {t('yearAhead.payWithStripe', {
+              defaultValue: 'Or pay ${{price}} with card',
               price: YEAR_AHEAD_USD.toFixed(2),
             })}
-          </p>
+          </button>
         </Card>
       </div>
     );

@@ -4,6 +4,7 @@ import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
+import { startReportCheckout } from '../services/reportCheckout';
 import {
   getCareerArchetype,
   CAREER_REPORT_COST_MOONSTONES,
@@ -204,12 +205,21 @@ export function CareerReportPage() {
               })}
             </p>
           )}
-          <p className="text-[10px] text-mystic-600 mt-1">
-            {t('careerReport.priceNote', {
-              defaultValue: 'Also available via Stripe at ${{price}} (coming soon)',
+
+          <button
+            onClick={async () => {
+              const res = await startReportCheckout({ reportKey: 'career-archetype', reference: mbti });
+              if (!res.ok && res.error !== 'already-unlocked') {
+                toast(t('careerReport.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+              }
+            }}
+            className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+          >
+            {t('careerReport.payWithStripe', {
+              defaultValue: 'Or pay ${{price}} with card',
               price: CAREER_REPORT_COST_USD.toFixed(2),
             })}
-          </p>
+          </button>
         </Card>
       </div>
     );

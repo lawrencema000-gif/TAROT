@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Flame,
   Sparkles,
@@ -7,6 +8,8 @@ import {
   Star,
   PenLine,
   TrendingUp,
+  Zap,
+  MessageCircle,
 } from 'lucide-react';
 import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
@@ -48,6 +51,9 @@ export function HomePage() {
   const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
   const moonstonesEnabled = useFeatureFlag('moonstones');
   const moonPhasesEnabled = useFeatureFlag('moon-phases');
+  const quickReadingEnabled = useFeatureFlag('ai-quick-reading');
+  const tarotCompanionEnabled = useFeatureFlag('ai-tarot-companion');
+  const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
@@ -365,6 +371,39 @@ export function HomePage() {
       {moonstonesEnabled && <MoonstoneWidget />}
 
       {moonPhasesEnabled && <MoonPhaseCard />}
+
+      {(quickReadingEnabled || tarotCompanionEnabled) && (
+        <div className="grid grid-cols-2 gap-3">
+          {quickReadingEnabled && (
+            <button
+              onClick={() => navigate('/ai/quick')}
+              className="bg-gradient-to-br from-gold/10 to-mystic-900 border border-gold/25 rounded-xl p-4 text-left hover:border-gold/50 active:scale-[0.98] transition-all"
+            >
+              <Zap className="w-5 h-5 text-gold mb-2" />
+              <p className="text-sm font-medium text-mystic-100">
+                {t('home.quickReading', { defaultValue: '3-second reading' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
+                {t('home.quickReadingSub', { defaultValue: 'Ask anything' })}
+              </p>
+            </button>
+          )}
+          {tarotCompanionEnabled && (
+            <button
+              onClick={() => navigate('/ai/tarot')}
+              className="bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/25 rounded-xl p-4 text-left hover:border-cosmic-violet/50 active:scale-[0.98] transition-all"
+            >
+              <MessageCircle className="w-5 h-5 text-cosmic-violet mb-2" />
+              <p className="text-sm font-medium text-mystic-100">
+                {t('home.tarotCompanion', { defaultValue: 'Tarot companion' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
+                {t('home.tarotCompanionSub', { defaultValue: 'Pull a card, talk it through' })}
+              </p>
+            </button>
+          )}
+        </div>
+      )}
 
       {dailyWisdomEnabled && <DailyWisdomCard />}
 

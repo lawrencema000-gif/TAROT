@@ -5,6 +5,8 @@ import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { useNatalChart } from '../hooks/useAstrology';
+import { ChartWheel } from '../components/chart/ChartWheel';
+import { startReportCheckout } from '../services/reportCheckout';
 import {
   SIGN_SYMBOLS,
   PLANET_SYMBOLS,
@@ -215,12 +217,20 @@ export function NatalChartReportPage() {
               {t('natalReport.balance', { defaultValue: 'Balance: {{n}} Moonstones', n: balance })}
             </p>
           )}
-          <p className="text-[10px] text-mystic-600 mt-1">
-            {t('natalReport.priceNote', {
-              defaultValue: 'Also available via Stripe at ${{price}} (coming soon)',
+          <button
+            onClick={async () => {
+              const res = await startReportCheckout({ reportKey: 'natal-chart-pdf', reference });
+              if (!res.ok && res.error !== 'already-unlocked') {
+                toast(t('natalReport.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+              }
+            }}
+            className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+          >
+            {t('natalReport.payWithStripe', {
+              defaultValue: 'Or pay ${{price}} with card',
               price: NATAL_USD.toFixed(2),
             })}
-          </p>
+          </button>
         </Card>
       </div>
     );
@@ -262,6 +272,13 @@ export function NatalChartReportPage() {
           {t('natalReport.printCta', { defaultValue: 'Save as PDF' })}
         </Button>
       </div>
+
+      <Card padding="lg" className="card-print">
+        <p className="text-[10px] uppercase tracking-widest text-gold mb-3 text-center">
+          {t('natalReport.wheelHeading', { defaultValue: 'Your chart wheel' })}
+        </p>
+        <ChartWheel chart={natal} />
+      </Card>
 
       <Card padding="lg" variant="glow" className="card-print bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
         <p className="text-[10px] uppercase tracking-widest text-gold mb-2">

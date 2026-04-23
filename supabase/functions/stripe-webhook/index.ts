@@ -151,9 +151,66 @@ Deno.serve(
           const session = event.data.object as Stripe.Checkout.Session;
           const userId = session.client_reference_id || session.metadata?.user_id;
           const productId = session.metadata?.product_id;
+          const purchaseType = session.metadata?.purchase_type;
 
           if (!userId) {
             ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+            break;
+          }
+
+          // Pay-per-report branch: insert report_unlocks + optional affiliate accrual.
+          if (purchaseType === "report") {
+            const reportKey = session.metadata?.report_key;
+            const reference = session.metadata?.reference;
+            const amountCents = session.amount_total ?? 0;
+            if (!reportKey || !reference || amountCents <= 0) {
+              ctx.log.warn("stripe_webhook.report_missing_metadata", { sessionId: session.id });
+              break;
+            }
+            const { error: unlockErr } = await ctx.supabase
+              .from("report_unlocks")
+              .upsert(
+                {
+                  user_id: userId,
+                  report_key: reportKey,
+                  reference,
+                  cost_currency: "usd",
+                  cost_amount: amountCents,
+                },
+                { onConflict: "user_id,report_key,reference" },
+              );
+            if (unlockErr) {
+              ctx.log.error("stripe_webhook.report_unlock_failed", { err: unlockErr.message });
+            } else {
+              ctx.log.info("stripe_webhook.report_unlocked", { userId, reportKey });
+            }
+
+            const affiliateReferrerId = session.metadata?.affiliate_referrer_id;
+            if (affiliateReferrerId) {
+              const affiliateShare = Math.floor(amountCents * 0.1);
+              if (affiliateShare > 0) {
+                const { error: accrueErr } = await ctx.supabase
+                  .from("affiliate_earnings")
+                  .insert({
+                    referrer_id: affiliateReferrerId,
+                    invitee_id: userId,
+                    source: "pay-per-report",
+                    source_ref: session.id,
+                    invitee_revenue_cents: amountCents,
+                    affiliate_share_cents: affiliateShare,
+                    share_percent: 10.00,
+                    currency: "usd",
+                  });
+                if (accrueErr) {
+                  ctx.log.error("stripe_webhook.affiliate_accrual_failed", { err: accrueErr.message });
+                } else {
+                  ctx.log.info("stripe_webhook.affiliate_accrued", {
+                    affiliateReferrerId,
+                    affiliateShare,
+                  });
+                }
+              }
+            }
             break;
           }
 

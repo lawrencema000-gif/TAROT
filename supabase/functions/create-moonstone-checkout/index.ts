@@ -61,7 +61,9 @@ interface Resp {
   url: string | null;
 }
 
-export default handler<Req, Resp>({
+// Deno.serve required on Supabase Edge Runtime when importing npm:stripe —
+// `export default handler(...)` alone makes OPTIONS preflight hang 15s+.
+Deno.serve(handler<Req, Resp>({
   fn: "create-moonstone-checkout",
   auth: "required",
   methods: ["POST"],
@@ -125,4 +127,4 @@ export default handler<Req, Resp>({
 
     return { sessionId: session.id, url: session.url };
   },
-});
+}));

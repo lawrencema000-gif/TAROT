@@ -65,7 +65,12 @@ interface Resp {
   url: string | null;
 }
 
-export default handler<Req, Resp>({
+// Wrapping with Deno.serve is required on Supabase Edge Runtime when the
+// module imports `npm:stripe` — without it, the Stripe module evaluation
+// blocks the OPTIONS preflight response forever. `export default handler`
+// alone is not enough. Symptom before fix: browser CORS preflight hangs
+// for 15s+ and every client fetch fails with net::ERR_FAILED.
+Deno.serve(handler<Req, Resp>({
   fn: "create-report-checkout",
   auth: "required",
   methods: ["POST"],
@@ -169,4 +174,4 @@ export default handler<Req, Resp>({
 
     return { sessionId: session.id, url: session.url };
   },
-});
+}));

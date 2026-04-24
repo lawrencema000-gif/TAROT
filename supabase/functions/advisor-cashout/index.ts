@@ -36,7 +36,9 @@ interface Resp {
   transferId?: string;
 }
 
-export default handler<Req, Resp>({
+// Deno.serve required on Supabase Edge Runtime when importing npm:stripe —
+// `export default handler(...)` alone makes OPTIONS preflight hang 15s+.
+Deno.serve(handler<Req, Resp>({
   fn: "advisor-cashout",
   auth: "required",
   methods: ["POST"],
@@ -129,4 +131,4 @@ export default handler<Req, Resp>({
       throw new AppError("STRIPE_TRANSFER_FAILED", msg, 502);
     }
   },
-});
+}));

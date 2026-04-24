@@ -65,7 +65,7 @@ import { tarotCourtQuiz, calculateCourtMatch, getCourtCardInfo } from '../data/t
 import { shadowArchetypeQuiz, calculateShadowArchetype, SHADOW_ARCHETYPES } from '../data/shadowArchetypeQuiz';
 import { elementAffinityQuiz, calculateElementAffinity, ELEMENT_INFO } from '../data/elementAffinityQuiz';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
-import { getZodiacElement } from '../utils/zodiac';
+import { getZodiacElement, getZodiacSign } from '../utils/zodiac';
 
 import type { QuizDefinition } from '../types';
 
@@ -749,8 +749,9 @@ export function QuizzesPage() {
       const whenDominant = localized('whenDominant', info.whenDominant);
       const affirmation = localized('affirmation', info.affirmation);
 
-      // Compare behavioural element vs astro chart element (from profile.zodiacSign)
-      const natalElement = profile?.zodiacSign ? getZodiacElement(profile.zodiacSign) : null;
+      // Compare behavioural element vs astro chart element (derived from birth date)
+      const natalSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
+      const natalElement = natalSign ? getZodiacElement(natalSign) : null;
       const elementsMatch = natalElement && natalElement === elResult.primary;
 
       const glyphMap: Record<string, string> = { fire: '🔥', water: '🌊', air: '🌬️', earth: '🌱' };

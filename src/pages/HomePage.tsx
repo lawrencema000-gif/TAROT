@@ -15,6 +15,7 @@ import {
 import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
+import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
 import { useAuth } from '../context/AuthContext';
 import { useUI } from '../context/UIContext';
@@ -56,6 +57,7 @@ export function HomePage() {
   const tarotCompanionEnabled = useFeatureFlag('ai-tarot-companion');
   const pickACardEnabled = useFeatureFlag('pick-a-card');
   const soulmateScoreEnabled = useFeatureFlag('soulmate-score');
+  const dailyMissionEnabled = useFeatureFlag('daily-mission');
   const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
@@ -384,6 +386,8 @@ export function HomePage() {
       {moonstonesEnabled && <MoonstoneWidget />}
 
       {moonPhasesEnabled && <MoonPhaseCard />}
+
+      {dailyMissionEnabled && <DailyMissionCard />}
 
       {pickACardEnabled && (
         <button

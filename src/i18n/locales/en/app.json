@@ -4153,6 +4153,12 @@
     "comeBack": "New cards arrive at midnight.",
     "shareText": "Today I drew {{name}} ({{orientation}}) — {{keyword}}"
   },
+  "dailyMission": {
+    "label": "Today's mission",
+    "markDone": "Mark done",
+    "doneTitle": "Done. Well done.",
+    "doneSub": "New mission arrives at midnight."
+  },
   "soulmate": {
     "title": "Soulmate Score",
     "subtitle": "A classical synastry read, distilled to one number. Free, shareable, fast.",

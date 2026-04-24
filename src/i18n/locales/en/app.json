@@ -3261,7 +3261,34 @@
       "earth": "Earth",
       "metal": "Metal",
       "water": "Water"
-    }
+    },
+    "chartTypeLabel": "Chart type",
+    "strength": {
+      "strong": {
+        "name": "Dominant",
+        "desc": "Your day-master element runs rich. You assert naturally; the growth edge is in flow and release."
+      },
+      "balanced": {
+        "name": "Balanced",
+        "desc": "Your chart holds its own — the elements meet each other in reasonable balance."
+      },
+      "receptive": {
+        "name": "Receptive",
+        "desc": "Your day-master element runs lean. You receive and absorb easily; the growth edge is in assertion and self-sourcing."
+      }
+    },
+    "innerForcesLabel": "Inner Forces",
+    "innerForcesSub": "Each pillar maps to a classical Ten-Gods archetype relative to your Inner Element.",
+    "hiddenInfluencesLabel": "Hidden Influences",
+    "hiddenInfluencesSub": "Each earthly branch carries 1–3 additional stems that quietly shape the pillar.",
+    "nayinLabel": "Soul Sound of your year",
+    "supportingLabel": "Your Supporting Element",
+    "supportingSub": "The element your chart leans toward for balance — wear its color, face its direction, keep its numbers close.",
+    "luckyNumbersLabel": "Lucky numbers",
+    "luckyColorTodayLabel": "Today's Lucky Color",
+    "premiumTeaserTitle": "Go deeper with Premium",
+    "premiumTeaserBody": "Unlock your Inner Forces (classical Ten-Gods), Hidden Influences, Soul Sound, your Supporting Element with lucky color + direction + numbers, and Today's Lucky Color widget.",
+    "premiumTeaserCta": "See Premium"
   },
   "ayurveda": {
     "withSecondary": "with secondary {{sec}}",

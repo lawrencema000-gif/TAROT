@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Calendar, Clock } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Sparkles, Calendar, Clock, Lock, Crown, Compass, Palette } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import {
   computeBazi,
+  deepenBazi,
+  todaysLuckyColor,
   DAY_MASTER_INFO,
+  TEN_GOD_INFO,
   ELEMENT_PRODUCES,
   ELEMENT_CONTROLS,
   type BaziResult,
@@ -34,10 +39,16 @@ const ELEMENT_EMOJI: Record<FiveElement, string> = {
 export function BaziPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  const navigate = useNavigate();
+  const depthEnabled = useFeatureFlag('bazi-depth');
   const [stage, setStage] = useState<Stage>('input');
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [result, setResult] = useState<BaziResult | null>(null);
+  const isPremium = profile?.isPremium === true;
+  const showDepth = depthEnabled; // content rendered; premium gates the deep layers
+  const deepening = useMemo(() => (result ? deepenBazi(result) : null), [result]);
+  const luckyColor = useMemo(() => (result ? todaysLuckyColor(result) : null), [result]);
 
   useEffect(() => {
     if (profile?.birthDate) setBirthDate(profile.birthDate);
@@ -248,6 +259,180 @@ export function BaziPage() {
             </p>
           )}
         </Card>
+
+        {/* Phase-1 classical deepening — premium-gated when flag on */}
+        {showDepth && deepening && (
+          <>
+            {/* Strength diagnosis badge (free — always shown as a teaser) */}
+            <Card padding="lg" className="text-center">
+              <p className="text-[11px] uppercase tracking-widest text-mystic-500 mb-1">
+                {t('bazi.chartTypeLabel', { defaultValue: 'Chart type' })}
+              </p>
+              <p className={`font-display text-2xl ${deepening.strength === 'strong' ? 'text-gold' : deepening.strength === 'receptive' ? 'text-cosmic-blue' : 'text-emerald-400'}`}>
+                {t(`bazi.strength.${deepening.strength}.name`, {
+                  defaultValue: deepening.strength === 'strong' ? 'Dominant' : deepening.strength === 'receptive' ? 'Receptive' : 'Balanced',
+                })}
+              </p>
+              <p className="text-sm text-mystic-400 mt-1 leading-relaxed">
+                {t(`bazi.strength.${deepening.strength}.desc`, {
+                  defaultValue:
+                    deepening.strength === 'strong'
+                      ? 'Your day-master element runs rich. You assert naturally; the growth edge is in flow and release.'
+                      : deepening.strength === 'receptive'
+                      ? 'Your day-master element runs lean. You receive and absorb easily; the growth edge is in assertion and self-sourcing.'
+                      : 'Your chart holds its own — the elements meet each other in reasonable balance.',
+                })}
+              </p>
+            </Card>
+
+            {isPremium ? (
+              <>
+                {/* Inner Forces (Ten Gods) table */}
+                <Card padding="lg">
+                  <h3 className="font-medium text-gold mb-1 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    {t('bazi.innerForcesLabel', { defaultValue: 'Inner Forces' })}
+                  </h3>
+                  <p className="text-xs text-mystic-500 mb-3">
+                    {t('bazi.innerForcesSub', {
+                      defaultValue: 'Each pillar maps to a classical Ten-Gods archetype relative to your Inner Element.',
+                    })}
+                  </p>
+                  <div className="space-y-3">
+                    {([
+                      { label: t('bazi.year', { defaultValue: 'Year' }),  key: 'year'  as const },
+                      { label: t('bazi.month', { defaultValue: 'Month' }), key: 'month' as const },
+                      { label: t('bazi.hour', { defaultValue: 'Hour' }),   key: 'hour'  as const },
+                    ]).map(({ label, key }) => {
+                      const god = deepening.tenGods[key];
+                      const info = TEN_GOD_INFO[god];
+                      return (
+                        <div key={key} className="p-3 bg-mystic-800/30 rounded-lg">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-mystic-500 uppercase tracking-wider">{label}</span>
+                            <span className="text-[10px] text-mystic-600">{info.classical}</span>
+                          </div>
+                          <p className="text-sm font-medium text-mystic-100 mb-0.5">{info.name}</p>
+                          <p className="text-xs text-mystic-400 leading-relaxed">{info.headline}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+
+                {/* Hidden Influences + Nayin */}
+                <Card padding="lg">
+                  <h3 className="font-medium text-cosmic-violet mb-1">
+                    {t('bazi.hiddenInfluencesLabel', { defaultValue: 'Hidden Influences' })}
+                  </h3>
+                  <p className="text-xs text-mystic-500 mb-3">
+                    {t('bazi.hiddenInfluencesSub', {
+                      defaultValue: 'Each earthly branch carries 1–3 additional stems that quietly shape the pillar.',
+                    })}
+                  </p>
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    {([
+                      { label: t('bazi.year', { defaultValue: 'Year' }),   stems: deepening.hiddenStems.year  },
+                      { label: t('bazi.month', { defaultValue: 'Month' }), stems: deepening.hiddenStems.month },
+                      { label: t('bazi.day', { defaultValue: 'Day' }),     stems: deepening.hiddenStems.day   },
+                      { label: t('bazi.hour', { defaultValue: 'Hour' }),   stems: deepening.hiddenStems.hour  },
+                    ]).map((col, i) => (
+                      <div key={i} className="p-2 bg-mystic-800/30 rounded-lg">
+                        <p className="text-[10px] text-mystic-500 uppercase tracking-wider">{col.label}</p>
+                        <div className="mt-1 space-y-0.5">
+                          {col.stems.map((s) => (
+                            <p key={s} className="text-[11px] text-mystic-300">{s}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {deepening.nayin && (
+                    <div className="mt-4 pt-4 border-t border-mystic-700/30">
+                      <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+                        {t('bazi.nayinLabel', { defaultValue: 'Soul Sound of your year' })}
+                      </p>
+                      <p className="text-lg font-display text-mystic-100">{deepening.nayin.western}</p>
+                      <p className="text-xs text-mystic-500 italic">{deepening.nayin.classical}</p>
+                    </div>
+                  )}
+                </Card>
+
+                {/* Supporting Element + lucky chips */}
+                <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+                  <h3 className="font-medium text-gold mb-1 flex items-center gap-2">
+                    <Compass className="w-4 h-4" />
+                    {t('bazi.supportingLabel', { defaultValue: 'Your Supporting Element' })}
+                  </h3>
+                  <p className="text-xs text-mystic-500 mb-3">
+                    {t('bazi.supportingSub', {
+                      defaultValue: 'The element your chart leans toward for balance — wear its color, face its direction, keep its numbers close.',
+                    })}
+                  </p>
+                  <p className="text-2xl font-display text-mystic-100 capitalize mb-3">
+                    {t(`bazi.elements.${deepening.favorable.element}`, { defaultValue: deepening.favorable.element })}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="flex items-center gap-2 p-2 bg-mystic-800/30 rounded-lg">
+                      <span className="w-5 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: deepening.favorable.color }} />
+                      <span className="text-xs text-mystic-200 capitalize">{deepening.favorable.colorName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-mystic-800/30 rounded-lg">
+                      <Compass className="w-4 h-4 text-mystic-400 flex-shrink-0" />
+                      <span className="text-xs text-mystic-200 capitalize">{deepening.favorable.direction}</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-mystic-800/30 rounded-lg col-span-2">
+                      <span className="text-xs text-mystic-500 flex-shrink-0">
+                        {t('bazi.luckyNumbersLabel', { defaultValue: 'Lucky numbers' })}
+                      </span>
+                      <span className="text-xs text-gold ml-auto font-medium">
+                        {deepening.favorable.luckyNumbers.join(' · ')}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-mystic-400 leading-relaxed">{deepening.favorable.careerHint}</p>
+                </Card>
+
+                {/* Today's Lucky Color widget */}
+                {luckyColor && (
+                  <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border-cosmic-violet/20">
+                    <h3 className="font-medium text-cosmic-violet mb-1 flex items-center gap-2">
+                      <Palette className="w-4 h-4" />
+                      {t('bazi.luckyColorTodayLabel', { defaultValue: "Today's Lucky Color" })}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="w-12 h-12 rounded-xl flex-shrink-0 shadow-lg" style={{ backgroundColor: luckyColor.color, boxShadow: `0 0 24px ${luckyColor.color}55` }} />
+                      <div>
+                        <p className="text-sm font-medium text-mystic-100 capitalize">{luckyColor.colorName}</p>
+                        <p className="text-xs text-mystic-400 leading-relaxed mt-0.5">{luckyColor.oneLiner}</p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </>
+            ) : (
+              /* Non-premium teaser */
+              <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20 text-center">
+                <div className="w-12 h-12 mx-auto rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center mb-3">
+                  <Lock className="w-5 h-5 text-gold" />
+                </div>
+                <h3 className="font-display text-lg text-mystic-100 mb-2">
+                  {t('bazi.premiumTeaserTitle', { defaultValue: 'Go deeper with Premium' })}
+                </h3>
+                <p className="text-sm text-mystic-400 leading-relaxed mb-4 max-w-md mx-auto">
+                  {t('bazi.premiumTeaserBody', {
+                    defaultValue:
+                      "Unlock your Inner Forces (classical Ten-Gods), Hidden Influences, Soul Sound, your Supporting Element with lucky color + direction + numbers, and Today's Lucky Color widget.",
+                  })}
+                </p>
+                <Button variant="gold" onClick={() => navigate('/profile')} className="min-h-[44px]">
+                  <Crown className="w-4 h-4 mr-2" />
+                  {t('bazi.premiumTeaserCta', { defaultValue: 'See Premium' })}
+                </Button>
+              </Card>
+            )}
+          </>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card padding="lg">

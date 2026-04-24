@@ -278,3 +278,289 @@ export const ELEMENT_CONTROLS: Record<FiveElement, FiveElement> = {
   fire: 'metal',
   metal: 'wood',
 };
+
+// ────────────────────────────────────────────────────────────────────
+// Phase-1 classical layers (added 2026-04-24)
+// ────────────────────────────────────────────────────────────────────
+// Ten Gods (十神) — internal technical vocabulary kept Chinese-canonical
+// for engineer clarity. Display name is the Western-friendly rewrite
+// the user locked in (see MASTER-ROADMAP).
+// ────────────────────────────────────────────────────────────────────
+
+export type TenGod =
+  | 'Companion'    // 比肩  same element, same polarity
+  | 'Rival'        // 劫财  same element, opposite polarity
+  | 'Output'       // 食神  day-master produces, same polarity
+  | 'Performer'    // 伤官  day-master produces, opposite polarity
+  | 'Wealth'       // 正财  day-master controls, opposite polarity
+  | 'WealthEdge'   // 偏财  day-master controls, same polarity
+  | 'Authority'    // 正官  controls day-master, opposite polarity
+  | 'Pressure'     // 七杀  controls day-master, same polarity
+  | 'Resource'     // 正印  produces day-master, opposite polarity
+  | 'Influence';   // 偏印  produces day-master, same polarity
+
+export interface TenGodInfo {
+  name: string;
+  classical: string;
+  headline: string;
+}
+
+export const TEN_GOD_INFO: Record<TenGod, TenGodInfo> = {
+  Companion:  { name: 'Kinship',      classical: '比肩 Bijian',    headline: 'Equals and siblings — belonging, peer bonds, competitive drive.' },
+  Rival:      { name: 'Rivalry',      classical: '劫财 Jiecai',    headline: 'Brothers and rivals — a drive that shares your element but pulls at your resources.' },
+  Output:     { name: 'Expression',   classical: '食神 Shishen',   headline: 'Your generative voice — pleasure, creativity, the gentle art of making.' },
+  Performer:  { name: 'Performance',  classical: '伤官 Shangguan', headline: 'The brilliant disruptor — rule-breaking talent, stage presence, sharp wit.' },
+  Wealth:     { name: 'Earned wealth',classical: '正财 Zhengcai',  headline: 'Steady income, partnerships, the things you build through effort.' },
+  WealthEdge: { name: 'Windfall',     classical: '偏财 Piancai',   headline: 'Opportunistic wealth — speculation, networks, the flexible fortune.' },
+  Authority:  { name: 'Structure',    classical: '正官 Zhengguan', headline: 'Rightful order — role, reputation, the structures that shape you.' },
+  Pressure:   { name: 'Pressure',     classical: '七杀 Qisha',     headline: 'Intensity that forges you — enemies, deadlines, the heat that tempers.' },
+  Resource:   { name: 'Support',      classical: '正印 Zhengyin',  headline: 'Nourishment — mothers, teachers, learning, the giving that fills your cup.' },
+  Influence:  { name: 'Reflection',   classical: '偏印 Pianyin',   headline: 'Unorthodox wisdom — intuition, solitary study, the sideways gift.' },
+};
+
+function stemTenGod(dayStem: HeavenlyStem, otherStem: HeavenlyStem): TenGod {
+  const dm = STEM_ELEMENT[dayStem];
+  const other = STEM_ELEMENT[otherStem];
+  const samePolarity = dm.polarity === other.polarity;
+
+  if (other.element === dm.element) return samePolarity ? 'Companion' : 'Rival';
+  if (ELEMENT_PRODUCES[dm.element] === other.element) return samePolarity ? 'Output' : 'Performer';
+  if (ELEMENT_CONTROLS[dm.element] === other.element) return samePolarity ? 'WealthEdge' : 'Wealth';
+  if (ELEMENT_CONTROLS[other.element] === dm.element) return samePolarity ? 'Pressure' : 'Authority';
+  if (ELEMENT_PRODUCES[other.element] === dm.element) return samePolarity ? 'Influence' : 'Resource';
+  return 'Companion';
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Hidden Stems (藏干) — 1–3 per branch. Primary stem listed first.
+// ────────────────────────────────────────────────────────────────────
+
+export const HIDDEN_STEMS: Record<EarthlyBranch, HeavenlyStem[]> = {
+  Zi:   ['Gui'],
+  Chou: ['Ji', 'Gui', 'Xin'],
+  Yin:  ['Jia', 'Bing', 'Wu'],
+  Mao:  ['Yi'],
+  Chen: ['Wu', 'Yi', 'Gui'],
+  Si:   ['Bing', 'Geng', 'Wu'],
+  Wu:   ['Ding', 'Ji'],
+  Wei:  ['Ji', 'Ding', 'Yi'],
+  Shen: ['Geng', 'Ren', 'Wu'],
+  You:  ['Xin'],
+  Xu:   ['Wu', 'Xin', 'Ding'],
+  Hai:  ['Ren', 'Jia'],
+};
+
+// ────────────────────────────────────────────────────────────────────
+// Nayin (纳音) — 60 stem-branch pair → sound/element designation.
+// ────────────────────────────────────────────────────────────────────
+
+export interface NayinInfo {
+  classical: string;
+  western: string;
+}
+
+type StemBranch = `${HeavenlyStem}${EarthlyBranch}`;
+
+const NAYIN_PAIRS: Array<[StemBranch, StemBranch, NayinInfo]> = [
+  ['JiaZi',   'YiChou',   { classical: '海中金 Hǎizhōng Jīn',  western: 'Gold in the Sea' }],
+  ['BingYin', 'DingMao',  { classical: '炉中火 Lúzhōng Huǒ',   western: 'Fire in the Furnace' }],
+  ['WuChen',  'JiSi',     { classical: '大林木 Dàlín Mù',      western: 'Wood of Great Forests' }],
+  ['GengWu',  'XinWei',   { classical: '路旁土 Lùpáng Tǔ',     western: 'Earth by the Roadside' }],
+  ['RenShen', 'GuiYou',   { classical: '剑锋金 Jiànfēng Jīn',  western: 'Gold at the Sword’s Edge' }],
+  ['JiaXu',   'YiHai',    { classical: '山头火 Shāntóu Huǒ',   western: 'Fire on the Mountain Peak' }],
+  ['BingZi',  'DingChou', { classical: '涧下水 Jiànxià Shuǐ',  western: 'Water in the Valley Stream' }],
+  ['WuYin',   'JiMao',    { classical: '城头土 Chéngtóu Tǔ',   western: 'Earth on the City Wall' }],
+  ['GengChen','XinSi',    { classical: '白腊金 Báilà Jīn',     western: 'White Wax Gold' }],
+  ['RenWu',   'GuiWei',   { classical: '杨柳木 Yángliǔ Mù',    western: 'Willow Wood' }],
+  ['JiaShen', 'YiYou',    { classical: '井泉水 Jǐngquán Shuǐ', western: 'Water of the Deep Well' }],
+  ['BingXu',  'DingHai',  { classical: '屋上土 Wūshàng Tǔ',    western: 'Earth on the Rooftop' }],
+  ['WuZi',    'JiChou',   { classical: '霹雳火 Pīlì Huǒ',      western: 'Lightning Fire' }],
+  ['GengYin', 'XinMao',   { classical: '松柏木 Sōngbǎi Mù',    western: 'Pine and Cypress Wood' }],
+  ['RenChen', 'GuiSi',    { classical: '长流水 Chángliú Shuǐ', western: 'Water of the Long Stream' }],
+  ['JiaWu',   'YiWei',    { classical: '沙中金 Shāzhōng Jīn',  western: 'Gold Hidden in the Sand' }],
+  ['BingShen','DingYou',  { classical: '山下火 Shānxià Huǒ',   western: 'Fire at the Foot of the Mountain' }],
+  ['WuXu',    'JiHai',    { classical: '平地木 Píngdì Mù',     western: 'Wood on the Plain' }],
+  ['GengZi',  'XinChou',  { classical: '壁上土 Bìshàng Tǔ',    western: 'Earth on the Wall' }],
+  ['RenYin',  'GuiMao',   { classical: '金箔金 Jīnbó Jīn',     western: 'Gold Leaf' }],
+  ['JiaChen', 'YiSi',     { classical: '覆灯火 Fùdēng Huǒ',    western: 'Lamp Flame' }],
+  ['BingWu',  'DingWei',  { classical: '天河水 Tiānhé Shuǐ',   western: 'Water of the Milky Way' }],
+  ['WuShen',  'JiYou',    { classical: '大驿土 Dàyì Tǔ',       western: 'Earth of the Great Post Road' }],
+  ['GengXu',  'XinHai',   { classical: '钗钏金 Chāichuàn Jīn', western: 'Gold of the Hairpin' }],
+  ['RenZi',   'GuiChou',  { classical: '桑柘木 Sāngzhè Mù',    western: 'Mulberry Wood' }],
+  ['JiaYin',  'YiMao',    { classical: '大溪水 Dàxī Shuǐ',     western: 'Water of the Great Creek' }],
+  ['BingChen','DingSi',   { classical: '沙中土 Shāzhōng Tǔ',   western: 'Earth in the Sand' }],
+  ['WuWu',    'JiWei',    { classical: '天上火 Tiānshàng Huǒ', western: 'Fire in the Sky' }],
+  ['GengShen','XinYou',   { classical: '石榴木 Shíliu Mù',     western: 'Pomegranate Wood' }],
+  ['RenXu',   'GuiHai',   { classical: '大海水 Dàhǎi Shuǐ',    western: 'Water of the Great Sea' }],
+];
+
+const NAYIN_MAP: Map<StemBranch, NayinInfo> = new Map(
+  NAYIN_PAIRS.flatMap(([a, b, info]) => [[a, info], [b, info]] as const),
+);
+
+export function nayinFor(stem: HeavenlyStem, branch: EarthlyBranch): NayinInfo | null {
+  return NAYIN_MAP.get(`${stem}${branch}`) ?? null;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Strength diagnosis + favorable element
+// ────────────────────────────────────────────────────────────────────
+
+export type ChartStrength = 'strong' | 'balanced' | 'receptive';
+
+export function computeChartStrength(r: BaziResult): ChartStrength {
+  const dm = r.dayMasterElement;
+  let score = 0;
+  const counts = [
+    r.year.element, r.month.element, r.hour.element,
+    BRANCH_ELEMENT[r.year.branch], BRANCH_ELEMENT[r.month.branch],
+    BRANCH_ELEMENT[r.day.branch], BRANCH_ELEMENT[r.hour.branch],
+  ];
+  for (const el of counts) {
+    if (el === dm) score += 2;
+    else if (ELEMENT_PRODUCES[el] === dm) score += 1.5;
+    else if (ELEMENT_CONTROLS[el] === dm) score -= 1;
+    else if (ELEMENT_CONTROLS[dm] === el) score -= 0.5;
+    else if (ELEMENT_PRODUCES[dm] === el) score -= 0.5;
+  }
+  if (score >= 7) return 'strong';
+  if (score <= 5) return 'receptive';
+  return 'balanced';
+}
+
+export interface FavorableElementGuidance {
+  element: FiveElement;
+  supporting: FiveElement;
+  color: string;
+  colorName: string;
+  direction: 'east' | 'south' | 'center' | 'west' | 'north';
+  luckyNumbers: [number, number];
+  careerHint: string;
+}
+
+const ELEMENT_COLOR: Record<FiveElement, { hex: string; name: string }> = {
+  wood:  { hex: '#4ade80', name: 'green' },
+  fire:  { hex: '#f87171', name: 'red' },
+  earth: { hex: '#eab308', name: 'earthen gold' },
+  metal: { hex: '#e5e7eb', name: 'silver / white' },
+  water: { hex: '#60a5fa', name: 'blue / black' },
+};
+
+const ELEMENT_DIRECTION: Record<FiveElement, FavorableElementGuidance['direction']> = {
+  wood: 'east', fire: 'south', earth: 'center', metal: 'west', water: 'north',
+};
+
+const ELEMENT_LUCKY_NUMBERS: Record<FiveElement, [number, number]> = {
+  wood: [1, 2], fire: [3, 4], earth: [5, 6], metal: [7, 8], water: [9, 0],
+};
+
+const ELEMENT_CAREER_HINT: Record<FiveElement, string> = {
+  wood:  'Growth-oriented work — teaching, writing, startups, anything that needs vision and patience.',
+  fire:  'Performance and visibility — stage, sales, leadership, brand, the roles that need charisma.',
+  earth: 'Steady building — operations, real estate, healing, anything that benefits from trust and longevity.',
+  metal: 'Precision and standards — law, engineering, craft, surgery, finance, the roles that reward rigor.',
+  water: 'Flow and depth — research, strategy, therapy, the arts, roles that need to see beneath the surface.',
+};
+
+export function computeFavorableElement(r: BaziResult): FavorableElementGuidance {
+  const strength = computeChartStrength(r);
+  const dm = r.dayMasterElement;
+
+  let fav: FiveElement;
+  if (strength === 'strong') fav = ELEMENT_PRODUCES[dm];
+  else if (strength === 'receptive') fav = dm;
+  else fav = ELEMENT_PRODUCES[dm];
+
+  const supporting = Object.entries(ELEMENT_PRODUCES).find(([, v]) => v === fav)?.[0] as FiveElement ?? dm;
+
+  return {
+    element: fav,
+    supporting,
+    color: ELEMENT_COLOR[fav].hex,
+    colorName: ELEMENT_COLOR[fav].name,
+    direction: ELEMENT_DIRECTION[fav],
+    luckyNumbers: ELEMENT_LUCKY_NUMBERS[fav],
+    careerHint: ELEMENT_CAREER_HINT[fav],
+  };
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Today's Lucky Color — the 五行穿衣 daily widget.
+// ────────────────────────────────────────────────────────────────────
+
+function todayDayStem(date = new Date()): HeavenlyStem {
+  const anchor = Date.UTC(1984, 1, 2); // 1984-02-02 was a Jia-Zi day
+  const today = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const diffDays = Math.floor((today - anchor) / 86_400_000);
+  const idx = ((diffDays % 10) + 10) % 10;
+  return STEMS[idx];
+}
+
+export interface LuckyColorToday {
+  color: string;
+  colorName: string;
+  element: FiveElement;
+  alignment: 'doubled' | 'favorable' | 'neutral';
+  oneLiner: string;
+}
+
+export function todaysLuckyColor(r: BaziResult): LuckyColorToday {
+  const fav = computeFavorableElement(r);
+  const dayEl = STEM_ELEMENT[todayDayStem()].element;
+
+  let alignment: LuckyColorToday['alignment'] = 'neutral';
+  let el: FiveElement = fav.element;
+
+  if (dayEl === fav.element) alignment = 'doubled';
+  else if (ELEMENT_PRODUCES[dayEl] === fav.element) alignment = 'favorable';
+  else {
+    el = fav.supporting;
+    alignment = 'neutral';
+  }
+
+  const c = ELEMENT_COLOR[el];
+  const oneLiners: Record<LuckyColorToday['alignment'], string> = {
+    doubled:    `Wear ${c.name} today — your core element and the day's energy are in sync. Lean in.`,
+    favorable:  `${c.name} carries you today — subtle lift, good for visibility and wins.`,
+    neutral:    `A touch of ${c.name} — grounds you when the day's current doesn't quite match your chart.`,
+  };
+
+  return {
+    color: c.hex,
+    colorName: c.name,
+    element: el,
+    alignment,
+    oneLiner: oneLiners[alignment],
+  };
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Public aggregator — single call for BaziPage.
+// ────────────────────────────────────────────────────────────────────
+
+export interface BaziPhase1Deepening {
+  tenGods: { year: TenGod; month: TenGod; hour: TenGod };
+  hiddenStems: { year: HeavenlyStem[]; month: HeavenlyStem[]; day: HeavenlyStem[]; hour: HeavenlyStem[] };
+  nayin: NayinInfo | null;
+  strength: ChartStrength;
+  favorable: FavorableElementGuidance;
+}
+
+export function deepenBazi(r: BaziResult): BaziPhase1Deepening {
+  return {
+    tenGods: {
+      year:  stemTenGod(r.dayMaster, r.year.stem),
+      month: stemTenGod(r.dayMaster, r.month.stem),
+      hour:  stemTenGod(r.dayMaster, r.hour.stem),
+    },
+    hiddenStems: {
+      year:  HIDDEN_STEMS[r.year.branch],
+      month: HIDDEN_STEMS[r.month.branch],
+      day:   HIDDEN_STEMS[r.day.branch],
+      hour:  HIDDEN_STEMS[r.hour.branch],
+    },
+    nayin: nayinFor(r.year.stem, r.year.branch),
+    strength: computeChartStrength(r),
+    favorable: computeFavorableElement(r),
+  };
+}

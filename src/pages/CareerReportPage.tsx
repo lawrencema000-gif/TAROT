@@ -33,6 +33,7 @@ export function CareerReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const checkUnlock = useCallback(async () => {
     if (!user || !mbti) {
@@ -182,46 +183,74 @@ export function CareerReportPage() {
             </li>
           </ul>
 
-          <Button
-            variant="gold"
-            fullWidth
-            onClick={handleUnlockMoonstones}
-            disabled={unlocking || (balance !== null && balance < CAREER_REPORT_COST_MOONSTONES)}
-            className="min-h-[52px]"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {unlocking
-              ? t('careerReport.unlocking', { defaultValue: 'Unlocking…' })
-              : t('careerReport.unlockCta', {
-                  defaultValue: 'Unlock for {{n}} Moonstones',
-                  n: CAREER_REPORT_COST_MOONSTONES,
-                })}
-          </Button>
-
-          {balance !== null && (
-            <p className="text-[11px] text-mystic-500 mt-2">
-              {t('careerReport.balance', {
-                defaultValue: 'Balance: {{n}} Moonstones',
-                n: balance,
-              })}
-            </p>
-          )}
-
+          {/* Same paywall hierarchy as Natal Chart + Year Ahead (fixed
+              2026-04-24): Stripe primary, Moonstones secondary, helper
+              card when zero. */}
           {canPayWithCard() && (
-            <button
+            <Button
+              variant="gold"
+              fullWidth
               onClick={async () => {
-                const res = await startReportCheckout({ reportKey: 'career-archetype', reference: mbti });
-                if (!res.ok && res.error !== 'already-unlocked') {
-                  toast(t('careerReport.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+                setCheckoutLoading(true);
+                try {
+                  const res = await startReportCheckout({ reportKey: 'career-archetype', reference: mbti });
+                  if (!res.ok && res.error !== 'already-unlocked') {
+                    toast(
+                      t('careerReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
+                      'error',
+                    );
+                  }
+                } catch (e) {
+                  console.error('[Career] Stripe checkout failed:', e);
+                  toast(
+                    t('careerReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
+                    'error',
+                  );
+                } finally {
+                  setCheckoutLoading(false);
                 }
               }}
-              className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+              disabled={checkoutLoading}
+              loading={checkoutLoading}
+              className="min-h-[52px]"
             >
+              <Sparkles className="w-4 h-4 mr-2" />
               {t('careerReport.payWithStripe', {
-                defaultValue: 'Or pay ${{price}} with card',
+                defaultValue: 'Unlock for ${{price}}',
                 price: CAREER_REPORT_COST_USD.toFixed(2),
               })}
-            </button>
+            </Button>
+          )}
+
+          {balance !== null && balance >= CAREER_REPORT_COST_MOONSTONES ? (
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={handleUnlockMoonstones}
+              disabled={unlocking}
+              loading={unlocking}
+              className="min-h-[48px] mt-3"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {t('careerReport.unlockCta', {
+                defaultValue: 'Unlock with {{n}} Moonstones',
+                n: CAREER_REPORT_COST_MOONSTONES,
+              })}
+            </Button>
+          ) : (
+            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30">
+              <p className="text-xs text-mystic-300 mb-1">
+                {t('careerReport.orEarnMoonstones', {
+                  defaultValue: 'Or unlock with {{n}} Moonstones',
+                  n: CAREER_REPORT_COST_MOONSTONES,
+                })}
+              </p>
+              <p className="text-[11px] text-mystic-500">
+                {t('careerReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
+                {' · '}
+                {t('careerReport.earnHint', { defaultValue: 'Earn via daily check-in + inviting friends.' })}
+              </p>
+            </div>
           )}
         </Card>
       </div>

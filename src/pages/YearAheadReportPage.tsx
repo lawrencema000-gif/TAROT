@@ -59,6 +59,7 @@ export function YearAheadReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [data, setData] = useState<YearAheadData | null>(null);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -216,45 +217,74 @@ export function YearAheadReportPage() {
             </li>
           </ul>
 
-          <Button
-            variant="gold"
-            fullWidth
-            onClick={handleUnlock}
-            disabled={unlocking || (balance !== null && balance < YEAR_AHEAD_COST)}
-            className="min-h-[52px]"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {unlocking
-              ? t('yearAhead.unlocking', { defaultValue: 'Unlocking…' })
-              : t('yearAhead.unlockCta', {
-                  defaultValue: 'Unlock for {{n}} Moonstones',
-                  n: YEAR_AHEAD_COST,
-                })}
-          </Button>
-
-          {balance !== null && (
-            <p className="text-[11px] text-mystic-500 mt-2">
-              {t('yearAhead.balance', {
-                defaultValue: 'Balance: {{n}} Moonstones',
-                n: balance,
-              })}
-            </p>
-          )}
+          {/* Same paywall hierarchy as the Natal Chart report (fixed
+              2026-04-24): Stripe gold-primary button, Moonstones
+              outline-secondary when sufficient, helper card when zero. */}
           {canPayWithCard() && (
-            <button
+            <Button
+              variant="gold"
+              fullWidth
               onClick={async () => {
-                const res = await startReportCheckout({ reportKey: 'year-ahead', reference: String(currentYear) });
-                if (!res.ok && res.error !== 'already-unlocked') {
-                  toast(t('yearAhead.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+                setCheckoutLoading(true);
+                try {
+                  const res = await startReportCheckout({ reportKey: 'year-ahead', reference: String(currentYear) });
+                  if (!res.ok && res.error !== 'already-unlocked') {
+                    toast(
+                      t('yearAhead.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
+                      'error',
+                    );
+                  }
+                } catch (e) {
+                  console.error('[YearAhead] Stripe checkout failed:', e);
+                  toast(
+                    t('yearAhead.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
+                    'error',
+                  );
+                } finally {
+                  setCheckoutLoading(false);
                 }
               }}
-              className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+              disabled={checkoutLoading}
+              loading={checkoutLoading}
+              className="min-h-[52px]"
             >
+              <Sparkles className="w-4 h-4 mr-2" />
               {t('yearAhead.payWithStripe', {
-                defaultValue: 'Or pay ${{price}} with card',
+                defaultValue: 'Unlock for ${{price}}',
                 price: YEAR_AHEAD_USD.toFixed(2),
               })}
-            </button>
+            </Button>
+          )}
+
+          {balance !== null && balance >= YEAR_AHEAD_COST ? (
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={handleUnlock}
+              disabled={unlocking}
+              loading={unlocking}
+              className="min-h-[48px] mt-3"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {t('yearAhead.unlockCta', {
+                defaultValue: 'Unlock with {{n}} Moonstones',
+                n: YEAR_AHEAD_COST,
+              })}
+            </Button>
+          ) : (
+            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30">
+              <p className="text-xs text-mystic-300 mb-1">
+                {t('yearAhead.orEarnMoonstones', {
+                  defaultValue: 'Or unlock with {{n}} Moonstones',
+                  n: YEAR_AHEAD_COST,
+                })}
+              </p>
+              <p className="text-[11px] text-mystic-500">
+                {t('yearAhead.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
+                {' · '}
+                {t('yearAhead.earnHint', { defaultValue: 'Earn via daily check-in + inviting friends.' })}
+              </p>
+            </div>
           )}
         </Card>
       </div>

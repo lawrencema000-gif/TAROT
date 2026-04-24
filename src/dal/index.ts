@@ -27,5 +27,12 @@ export * as premiumReadings from './premiumReadings';
 export * as contentInteractions from './contentInteractions';
 export * as rewardedAdUnlocks from './rewardedAdUnlocks';
 export * as featureFlags from './featureFlags';
+export * as community from './community';
+export * as moonstones from './moonstones';
+export * as advisors from './advisors';
+export * as referrals from './referrals';
+export * as reportUnlocks from './reportUnlocks';
+export * as compatInvites from './compatInvites';
+export * as advisorSessions from './advisorSessions';
 
 export type { Result } from './dailyRituals';

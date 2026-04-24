@@ -25,7 +25,11 @@
     "news": "뉴스",
     "admin": "관리자",
     "more": "더보기",
-    "shop": "스토어"
+    "shop": "스토어",
+    "community": "커뮤니티",
+    "whisperingWell": "속삭이는 우물",
+    "companion": "컴패니언",
+    "advisors": "어드바이저"
   },
   "actions": {
     "continue": "계속",

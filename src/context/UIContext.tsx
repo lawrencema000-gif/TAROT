@@ -14,6 +14,10 @@ const TAB_ROUTES: Record<Tab, string> = {
   blog: '/blog',
   profile: '/profile',
   admin: '/admin',
+  community: '/community',
+  'whispering-well': '/whispering-well',
+  companion: '/companion',
+  advisors: '/advisors',
 };
 
 const ROUTE_TO_TAB: Record<string, Tab> = Object.fromEntries(

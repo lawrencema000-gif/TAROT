@@ -39,6 +39,25 @@ const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.B
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })));
 const TarotMeaningsPage = lazy(() => import('./pages/TarotMeaningsPage').then(m => ({ default: m.TarotMeaningsPage })));
 const TarotCardMeaningPage = lazy(() => import('./pages/TarotCardMeaningPage').then(m => ({ default: m.TarotCardMeaningPage })));
+const IChingPage = lazy(() => import('./pages/IChingPage').then(m => ({ default: m.IChingPage })));
+const CommunityPage = lazy(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
+const AiCompanionPage = lazy(() => import('./pages/AiCompanionPage').then(m => ({ default: m.AiCompanionPage })));
+const AdvisorsPage = lazy(() => import('./pages/AdvisorsPage').then(m => ({ default: m.AdvisorsPage })));
+const RunesPage = lazy(() => import('./pages/RunesPage').then(m => ({ default: m.RunesPage })));
+const DicePage = lazy(() => import('./pages/DicePage').then(m => ({ default: m.DicePage })));
+const CareerReportPage = lazy(() => import('./pages/CareerReportPage').then(m => ({ default: m.CareerReportPage })));
+const YearAheadReportPage = lazy(() => import('./pages/YearAheadReportPage').then(m => ({ default: m.YearAheadReportPage })));
+const NatalChartReportPage = lazy(() => import('./pages/NatalChartReportPage').then(m => ({ default: m.NatalChartReportPage })));
+const CompatInvitePage = lazy(() => import('./pages/CompatInvitePage').then(m => ({ default: m.CompatInvitePage })));
+const AdvisorBookingPage = lazy(() => import('./pages/AdvisorBookingPage').then(m => ({ default: m.AdvisorBookingPage })));
+const AdvisorSessionPage = lazy(() => import('./pages/AdvisorSessionPage').then(m => ({ default: m.AdvisorSessionPage })));
+const AdvisorDashboardPage = lazy(() => import('./pages/AdvisorDashboardPage').then(m => ({ default: m.AdvisorDashboardPage })));
+const AdvisorVerifyPage = lazy(() => import('./pages/AdvisorVerifyPage').then(m => ({ default: m.AdvisorVerifyPage })));
+const SandboxPage = lazy(() => import('./pages/SandboxPage').then(m => ({ default: m.SandboxPage })));
+const QuickReadingPage = lazy(() => import('./pages/QuickReadingPage').then(m => ({ default: m.QuickReadingPage })));
+const TarotCompanionPage = lazy(() => import('./pages/TarotCompanionPage').then(m => ({ default: m.TarotCompanionPage })));
+const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage').then(m => ({ default: m.LiveRoomsPage })));
+const LiveRoomPage = lazy(() => import('./pages/LiveRoomPage').then(m => ({ default: m.LiveRoomPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -375,6 +394,13 @@ function AppContent() {
             onSavedClick={() => openOverlay('saved')}
             onSettingsClick={() => openOverlay('settings')}
           />
+          {/* Inner ErrorBoundary — a crash in a single route shows a
+              contained error card instead of tearing down the entire app
+              shell. Reset on location change so navigating away recovers. */}
+          <ErrorBoundary
+            key={location.pathname}
+            onOpenDiagnostics={openDiagnostics}
+          >
           <Suspense fallback={<ListSkeleton count={3} />}>
             <AnimatePresence mode="wait">
               <motion.div
@@ -395,11 +421,32 @@ function AppContent() {
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogPostPage />} />
                   <Route path="/admin" element={<AdminPage />} />
+                  <Route path="/iching" element={<IChingPage />} />
+                  <Route path="/community" element={<CommunityPage mode="normal" />} />
+                  <Route path="/whispering-well" element={<CommunityPage mode="whispering-well" />} />
+                  <Route path="/companion" element={<AiCompanionPage />} />
+                  <Route path="/advisors" element={<AdvisorsPage />} />
+                  <Route path="/runes" element={<RunesPage />} />
+                  <Route path="/dice" element={<DicePage />} />
+                  <Route path="/reports/career" element={<CareerReportPage />} />
+                  <Route path="/reports/year-ahead" element={<YearAheadReportPage />} />
+                  <Route path="/reports/natal-chart" element={<NatalChartReportPage />} />
+                  <Route path="/invite/:code" element={<CompatInvitePage />} />
+                  <Route path="/advisors/:slug/book" element={<AdvisorBookingPage />} />
+                  <Route path="/advisors/session/:id" element={<AdvisorSessionPage />} />
+                  <Route path="/ai/quick" element={<QuickReadingPage />} />
+                  <Route path="/ai/tarot" element={<TarotCompanionPage />} />
+                  <Route path="/live-rooms" element={<LiveRoomsPage />} />
+                  <Route path="/live-rooms/:id" element={<LiveRoomPage />} />
+                  <Route path="/advisors/verify" element={<AdvisorVerifyPage />} />
+                  <Route path="/sandbox" element={<SandboxPage />} />
+                  <Route path="/advisors/dashboard" element={<AdvisorDashboardPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>
             </AnimatePresence>
           </Suspense>
+          </ErrorBoundary>
         </main>
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
 

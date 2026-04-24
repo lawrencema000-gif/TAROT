@@ -131,7 +131,7 @@ export interface QuizQuestion {
 
 export interface QuizDefinition {
   id: string;
-  type: 'mbti' | 'love-language' | 'big-five' | 'enneagram' | 'attachment' | 'court-match' | 'shadow-archetype' | 'element-affinity';
+  type: 'mbti' | 'love-language' | 'big-five' | 'enneagram' | 'attachment' | 'court-match' | 'shadow-archetype' | 'element-affinity' | 'ayurveda-dosha' | 'extra-dimensional';
   title: string;
   description: string;
   questions: QuizQuestion[];
@@ -159,7 +159,7 @@ export interface JournalEntry {
   updatedAt: string;
 }
 
-export type Tab = 'home' | 'readings' | 'quizzes' | 'horoscope' | 'achievements' | 'journal' | 'blog' | 'profile' | 'admin';
+export type Tab = 'home' | 'readings' | 'quizzes' | 'horoscope' | 'achievements' | 'journal' | 'blog' | 'profile' | 'admin' | 'community' | 'whispering-well' | 'companion' | 'advisors';
 
 export interface RitualCard {
   type: 'horoscope' | 'tarot' | 'prompt';

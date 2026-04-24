@@ -79,6 +79,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const [activeSheet, setActiveSheet] = useState<SubSheet>('main');
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Typed confirmation gate for account deletion — user must type DELETE
+  // before the destructive button activates. Added 2026-04-24 after QA
+  // flagged that the existing 2-step flow still allowed one-tap delete.
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [cardBacks, setCardBacks] = useState<CardBackOption[]>([]);
   const [loadingCardBacks, setLoadingCardBacks] = useState(false);
   const [savingCardBack, setSavingCardBack] = useState(false);
@@ -260,26 +264,38 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     setIsExporting(true);
 
     try {
-      const [profileRes, journalRes, readingsRes, quizRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        journalEntries.listAllForUser(user.id),
-        tarotReadings.listAllForUser(user.id),
-        quizResults.listAllForUser(user.id),
-      ]);
+      // Prefer the server-side export edge function — covers all tables
+      // (community, moonstones, advisor_interest, etc.). Falls back to
+      // a client-side partial export if the edge function is unavailable.
+      const { data: serverExport, error: fnErr } = await supabase.functions.invoke('account-export', {
+        body: {},
+      });
 
-      // Check for query errors
-      const hadError = !!profileRes.error || !journalRes.ok || !readingsRes.ok || !quizRes.ok;
-      if (hadError) {
-        toast(tAppSettings('settings.toasts.exportPartial'), 'error');
+      let exportData: unknown;
+      if (!fnErr && serverExport) {
+        exportData = serverExport;
+      } else {
+        // Fallback: legacy client-side partial export
+        const [profileRes, journalRes, readingsRes, quizRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+          journalEntries.listAllForUser(user.id),
+          tarotReadings.listAllForUser(user.id),
+          quizResults.listAllForUser(user.id),
+        ]);
+
+        const hadError = !!profileRes.error || !journalRes.ok || !readingsRes.ok || !quizRes.ok;
+        if (hadError) {
+          toast(tAppSettings('settings.toasts.exportPartial'), 'error');
+        }
+
+        exportData = {
+          exportedAt: new Date().toISOString(),
+          profile: profileRes.data || null,
+          journalEntries: journalRes.ok ? journalRes.data : [],
+          tarotReadings: readingsRes.ok ? readingsRes.data : [],
+          quizResults: quizRes.ok ? quizRes.data : [],
+        };
       }
-
-      const exportData = {
-        exportedAt: new Date().toISOString(),
-        profile: profileRes.data || null,
-        journalEntries: journalRes.ok ? journalRes.data : [],
-        tarotReadings: readingsRes.ok ? readingsRes.data : [],
-        quizResults: quizRes.ok ? quizRes.data : [],
-      };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -895,11 +911,23 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               {isExporting ? tAppSettings('settings.deleteAccount.exporting') : tAppSettings('settings.deleteAccount.exportFirst')}
             </Button>
 
+            <div className="space-y-2">
+              <label className="text-xs text-mystic-400 uppercase tracking-wider">
+                {tAppSettings('settings.deleteAccount.typeToConfirm', { defaultValue: 'Type DELETE to confirm' })}
+              </label>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                autoComplete="off"
+              />
+            </div>
+
             <Button
               fullWidth
               onClick={handleDeleteAccount}
-              disabled={isDeleting}
-              className="bg-coral hover:bg-coral/90 text-white"
+              disabled={isDeleting || deleteConfirmText.trim() !== 'DELETE'}
+              className="bg-coral hover:bg-coral/90 text-white disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-4 h-4" />
               {isDeleting ? tAppSettings('settings.deleteAccount.deleting') : tAppSettings('settings.deleteAccount.deleteMyAccount')}
@@ -908,7 +936,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             <Button
               variant="ghost"
               fullWidth
-              onClick={() => setActiveSheet('main')}
+              onClick={() => { setDeleteConfirmText(''); setActiveSheet('main'); }}
             >
               {tI18n('actions.cancel')}
             </Button>

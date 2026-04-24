@@ -3,7 +3,7 @@ import { Card, Button, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { getZodiacSign, zodiacData } from '../../utils/zodiac';
 import { getChineseZodiacInfo } from '../../utils/chineseZodiac';
-import { getLifePath, LIFE_PATH_INFO } from '../../utils/numerology';
+import { getLifePath, LIFE_PATH_INFO, getExpressionNumber, getSoulUrgeNumber, getPersonalityNumber, getNumberMeaning } from '../../utils/numerology';
 import { renderShareCard, shareOrDownload } from '../../utils/shareableResultCard';
 
 interface CosmicProfileSectionProps {
@@ -111,6 +111,50 @@ export function CosmicProfileSection({
           </p>
         </div>
       )}
+
+      {displayName && (() => {
+        const expression = getExpressionNumber(displayName);
+        const soulUrge = getSoulUrgeNumber(displayName);
+        const personality = getPersonalityNumber(displayName);
+        if (!expression && !soulUrge && !personality) return null;
+        return (
+          <div className="grid grid-cols-3 gap-2 mb-4 pt-3 border-t border-mystic-800/50">
+            {expression && (
+              <div className="text-center">
+                <div className="text-lg font-display text-gold">{expression}</div>
+                <div className="text-[9px] uppercase tracking-wider text-mystic-500 mt-0.5">
+                  {t('profile.cosmic.expression', { defaultValue: 'Expression' })}
+                </div>
+                <div className="text-[10px] text-mystic-400 mt-0.5">
+                  {getNumberMeaning(expression)?.title}
+                </div>
+              </div>
+            )}
+            {soulUrge && (
+              <div className="text-center">
+                <div className="text-lg font-display text-cosmic-violet">{soulUrge}</div>
+                <div className="text-[9px] uppercase tracking-wider text-mystic-500 mt-0.5">
+                  {t('profile.cosmic.soulUrge', { defaultValue: 'Soul Urge' })}
+                </div>
+                <div className="text-[10px] text-mystic-400 mt-0.5">
+                  {getNumberMeaning(soulUrge)?.title}
+                </div>
+              </div>
+            )}
+            {personality && (
+              <div className="text-center">
+                <div className="text-lg font-display text-cosmic-blue">{personality}</div>
+                <div className="text-[9px] uppercase tracking-wider text-mystic-500 mt-0.5">
+                  {t('profile.cosmic.personality', { defaultValue: 'Personality' })}
+                </div>
+                <div className="text-[10px] text-mystic-400 mt-0.5">
+                  {getNumberMeaning(personality)?.title}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {(moonSign || risingSign) && (
         <div className="flex gap-2 text-xs text-mystic-500 mb-3">

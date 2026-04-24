@@ -58,6 +58,11 @@ export default defineConfig((): UserConfig => {
               if (id.includes('lucide-react')) return 'vendor-icons';
               if (id.includes('@capacitor-community/admob') || id.includes('@revenuecat')) return 'vendor-monetization';
               if (id.includes('@sentry')) return 'vendor-sentry';
+              // LiveKit voice SDK — large (~360 KB), only used inside the
+              // lazy-imported voice hook. Keep it in its own chunk so the
+              // main bundle doesn't pay for users who never join voice.
+              if (id.includes('livekit-client')) return 'vendor-livekit';
+              if (id.includes('three')) return 'vendor-three';
               return 'vendor';
             }
             // Split large data files into their own chunks

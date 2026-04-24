@@ -46,7 +46,11 @@
       "meaning": "意味"
     },
     "xpEarned": "+{{xp}} XPを獲得しました!",
-    "removedFromSaved": "保存済みから削除しました"
+    "removedFromSaved": "保存済みから削除しました",
+    "quickReading": "3-second reading",
+    "quickReadingSub": "Ask anything",
+    "tarotCompanion": "Tarot companion",
+    "tarotCompanionSub": "Pull a card, talk it through"
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -83,7 +87,16 @@
       "tarot": "タロット",
       "horoscope": "星占い",
       "compatibility": "相性",
-      "library": "ライブラリ"
+      "library": "ライブラリ",
+      "iching": "易経",
+      "humanDesign": "HD",
+      "bazi": "八字",
+      "dream": "夢",
+      "mood": "ムード",
+      "partner": "相性",
+      "fengshui": "風水",
+      "runes": "Runes",
+      "dice": "Dice"
     },
     "dailyRemaining": "今日の無料リーディング {{used}} / {{limit}}",
     "upgradeForUnlimited": "無制限にアップグレード",
@@ -1611,8 +1624,21 @@
       "lifePath": "ライフパス",
       "shareButton": "コスミックプロファイルをシェア",
       "shareSubtitle": "太陽・十二支・ライフパス",
-      "myProfile": "私のコスミックプロファイル"
-    }
+      "myProfile": "私のコスミックプロファイル",
+      "expression": "Expression",
+      "soulUrge": "Soul Urge",
+      "personality": "Personality"
+    },
+    "referralTitle": "Invite friends",
+    "referralSub": "Earn 100 Moonstones per friend",
+    "careerReportTitle": "Career Archetype Report",
+    "careerReportSub": "Deep coaching read for {{mbti}}",
+    "yearAheadTitle": "Year Ahead Forecast",
+    "yearAheadSub": "12 months of transits to your chart",
+    "natalReportTitle": "Full Natal Chart",
+    "natalReportSub": "Printable deep chart reading",
+    "compatInviteTitle": "Compatibility invite",
+    "compatInviteSub": "Share a link to get a joint reading"
   },
   "achievements": {
     "title": "トロフィー",
@@ -3145,5 +3171,1103 @@
     "pig": {
       "name": "亥（い）"
     }
+  },
+  "iching": {
+    "title": "易経オラクル",
+    "intro": "易経——変化の書——は、世界で最も古い占術の体系です。心に問いを抱えて、6回コインを投げてください。現れた卦が、あなたの問いを取り巻く動きを映します。",
+    "questionLabel": "あなたの問い（任意）",
+    "questionPlaceholder": "いま理解しておくと一番助けになることは何？",
+    "castButton": "コインを投げる",
+    "casting": "占っています……",
+    "hexagramLabel": "第",
+    "judgement": "彖辞",
+    "interpretation": "読み解き",
+    "strengths": "強み",
+    "cautions": "注意",
+    "transformsInto": "変じて次の卦へ",
+    "transformNote": "動爻はこの状況が次の卦の方向へ動いていることを示します——「これからどう展開するか」として読んでください。",
+    "journalPrompt": "ジャーナルの問い",
+    "backToStart": "もう一度投げる",
+    "castAgain": "もう一度投げる",
+    "yourQuestion": "あなたの問い",
+    "hexagrams": {
+      "1": {
+        "name": "乾・創造"
+      },
+      "2": {
+        "name": "坤・受容"
+      },
+      "3": {
+        "name": "屯・始まりの困難"
+      },
+      "4": {
+        "name": "蒙・若き愚か者"
+      },
+      "5": {
+        "name": "需・待つこと"
+      },
+      "6": {
+        "name": "訟・争い"
+      },
+      "7": {
+        "name": "師・軍隊"
+      },
+      "8": {
+        "name": "比・団結"
+      },
+      "9": {
+        "name": "小畜・小さく養う"
+      },
+      "10": {
+        "name": "履・踏みゆく"
+      },
+      "11": {
+        "name": "泰・平和"
+      },
+      "12": {
+        "name": "否・閉塞"
+      },
+      "13": {
+        "name": "同人・和合"
+      },
+      "14": {
+        "name": "大有・大いなる所有"
+      },
+      "15": {
+        "name": "謙・謙虚"
+      },
+      "16": {
+        "name": "豫・熱意"
+      },
+      "17": {
+        "name": "隨・従う"
+      },
+      "18": {
+        "name": "蠱・荒廃を正す"
+      },
+      "19": {
+        "name": "臨・接近"
+      },
+      "20": {
+        "name": "觀・観照"
+      },
+      "21": {
+        "name": "噬嗑・噛み合わせる"
+      },
+      "22": {
+        "name": "賁・優雅"
+      },
+      "23": {
+        "name": "剝・剝落"
+      },
+      "24": {
+        "name": "復・復帰"
+      },
+      "25": {
+        "name": "无妄・無心"
+      },
+      "26": {
+        "name": "大畜・大いに養う"
+      },
+      "27": {
+        "name": "頤・養い"
+      },
+      "28": {
+        "name": "大過・大いなる過剰"
+      },
+      "29": {
+        "name": "坎・深淵"
+      },
+      "30": {
+        "name": "離・依り付く"
+      },
+      "31": {
+        "name": "咸・感応"
+      },
+      "32": {
+        "name": "恆・恒常"
+      },
+      "33": {
+        "name": "遯・退却"
+      },
+      "34": {
+        "name": "大壯・大いなる力"
+      },
+      "35": {
+        "name": "晉・進展"
+      },
+      "36": {
+        "name": "明夷・光の沈み"
+      },
+      "37": {
+        "name": "家人・家族"
+      },
+      "38": {
+        "name": "睽・対立"
+      },
+      "39": {
+        "name": "蹇・障害"
+      },
+      "40": {
+        "name": "解・解放"
+      },
+      "41": {
+        "name": "損・減少"
+      },
+      "42": {
+        "name": "益・増大"
+      },
+      "43": {
+        "name": "夬・決断"
+      },
+      "44": {
+        "name": "姤・出会い"
+      },
+      "45": {
+        "name": "萃・集う"
+      },
+      "46": {
+        "name": "升・上昇"
+      },
+      "47": {
+        "name": "困・困窮"
+      },
+      "48": {
+        "name": "井・井戸"
+      },
+      "49": {
+        "name": "革・革新"
+      },
+      "50": {
+        "name": "鼎・鼎"
+      },
+      "51": {
+        "name": "震・震動"
+      },
+      "52": {
+        "name": "艮・止"
+      },
+      "53": {
+        "name": "漸・漸進"
+      },
+      "54": {
+        "name": "歸妹・嫁ぐ娘"
+      },
+      "55": {
+        "name": "豐・豊かさ"
+      },
+      "56": {
+        "name": "旅・旅人"
+      },
+      "57": {
+        "name": "巽・風"
+      },
+      "58": {
+        "name": "兌・歓び"
+      },
+      "59": {
+        "name": "渙・散る"
+      },
+      "60": {
+        "name": "節・節度"
+      },
+      "61": {
+        "name": "中孚・内なる誠"
+      },
+      "62": {
+        "name": "小過・小さな過ぎ"
+      },
+      "63": {
+        "name": "既濟・完成の後"
+      },
+      "64": {
+        "name": "未濟・完成の前"
+      }
+    }
+  },
+  "humanDesign": {
+    "title": "ヒューマンデザイン",
+    "intro": "ヒューマンデザインは、あなたが世界と関わるための独自の設計を地図にします。タイプ・戦略・オーソリティ・プロファイルが、無理なく進むための道筋——決断・仕事・整合のとり方——を示します。",
+    "birthDate": "生年月日",
+    "birthTime": "出生時刻（任意、結果がより精密になります）",
+    "calculate": "私のデザインを見る",
+    "calcFailed": "チャートを計算できませんでした",
+    "needBirthDate": "生年月日が必要です",
+    "disclaimer": "これは簡易版です。本格的なヒューマンデザインのチャートには、出生時点の正確な惑星位置が必要です。9センターのボディグラフ全体を見たい場合は、専用のHuman Designサイトへ出生データを持って行ってください。",
+    "signatureLabel": "シグネチャー",
+    "notSelfLabel": "不本来（ノット・セルフ）テーマ",
+    "authorityLabel": "オーソリティ",
+    "profileLabel": "プロファイル",
+    "strengthsLabel": "強み",
+    "challengesLabel": "課題",
+    "affirmationLabel": "あなたへのアファメーション",
+    "tarotPairingLabel": "タロットとの対応",
+    "backToInput": "再計算",
+    "recalculate": "再計算",
+    "types": {
+      "manifestor": {
+        "name": "マニフェスター"
+      },
+      "generator": {
+        "name": "ジェネレーター"
+      },
+      "manifesting-generator": {
+        "name": "マニジェネ（マニフェスティング・ジェネレーター）"
+      },
+      "projector": {
+        "name": "プロジェクター"
+      },
+      "reflector": {
+        "name": "リフレクター"
+      }
+    }
+  },
+  "bazi": {
+    "title": "八字（四柱推命）",
+    "intro": "八字——「8つの字」——は、出生時を年柱・月柱・日柱・時柱の4本の柱として読む伝統中国の読み方です。各柱は五行（木・火・土・金・水）と陰陽を持ちます。日干（日柱の天干）があなたの本質軸となり、五行の多寡はあなたの人生のどこが豊かでどこが薄いかを示します。",
+    "birthDate": "生年月日",
+    "birthTime": "出生時刻（任意）",
+    "calculate": "四柱を立てる",
+    "calcFailed": "八字を計算できませんでした",
+    "needBirthDate": "生年月日が必要です",
+    "pillarsLabel": "あなたの四柱",
+    "year": "年柱",
+    "month": "月柱",
+    "day": "日柱",
+    "hour": "時柱",
+    "elementBalanceLabel": "五行のバランス",
+    "guidanceLabel": "五行ガイダンス",
+    "dayMasterLabel": "日主（日干）",
+    "strengthsLabel": "強み",
+    "challengesLabel": "課題",
+    "thrivingLabel": "輝くとき",
+    "strugglingLabel": "苦しむとき",
+    "affirmationLabel": "アファメーション",
+    "back": "再計算",
+    "recalculate": "再計算",
+    "elements": {
+      "wood": "木",
+      "fire": "火",
+      "earth": "土",
+      "metal": "金",
+      "water": "水"
+    }
+  },
+  "ayurveda": {
+    "withSecondary": "（副ドーシャ：{{sec}}）",
+    "scoresLabel": "あなたのドーシャ バランス",
+    "thrivingLabel": "バランスが取れているとき",
+    "imbalancedLabel": "バランスを失っているとき",
+    "dietLabel": "あなたに合う食事",
+    "lifestyleLabel": "あなたを整える暮らし方",
+    "affirmationLabel": "アファメーション",
+    "doshas": {
+      "vata": {
+        "name": "ヴァータ"
+      },
+      "pitta": {
+        "name": "ピッタ"
+      },
+      "kapha": {
+        "name": "カパ"
+      }
+    }
+  },
+  "dream": {
+    "title": "夢解きインタープリター",
+    "intro": "覚えている限り、夢の内容を詳しく書いてください。順番や整合性は気にしなくて大丈夫です——心は象徴で働きます。原型的なパターンを見つけ、そこに座って考えるための問いをお返しします。夢に「唯一の意味」はありません。夢は招待状です。",
+    "label": "あなたの夢を教えてください",
+    "placeholder": "暗い海辺に立っていて、家への道が見つからなかった。鳥が何かをくちばしにくわえて飛んでいった……",
+    "privacy": "夢の文章は保存されません。あなたの端末内でのみ解析されます。",
+    "interpret": "夢を読み解く",
+    "needLonger": "もう少しだけ詳しく教えてください（数文程度）。",
+    "yourDream": "象徴たちの声",
+    "noMatch": "よくある原型は今回の文章には表れませんでした——でも沈黙しているわけではありません。もっとも個人的な夢は、あなたの人生に固有の象徴を使います。夢の中で最も強い像のそばに座ってください。問うてみましょう：それは何の反対にある？　自分の人生のどこと韻を踏んでいる？",
+    "symbolsLabel": "象徴",
+    "reflectionLabel": "この問いを抱えて",
+    "practiceLabel": "夢の練習",
+    "practiceBody": "枕元にノートを置いて。目覚めた瞬間、消える前に夢を書き留めましょう。時間が経つと、繰り返し現れる象徴が、無意識があなたに話しかける言語を明かしてくれます。",
+    "archetypeLabel": "夢の象徴の読み",
+    "back": "もう一度夢を読む",
+    "another": "別の夢",
+    "genericTitle": "夢の読み",
+    "genericReflection": "夢はメッセージを運ぶ——残される問いを大切に。"
+  },
+  "extraQuizzes": {
+    "dark-triad": {
+      "title": "ダーク・トライアド（影の三徴）",
+      "description": "心理学で「ダーク・トライアド」と呼ばれる3つの影の特性——ナルシシズム、マキャベリズム、サイコパシー——はどの人にも程度の差で存在します。あなたの影がもっとも強く動くところを見ます。"
+    },
+    "disc": {
+      "title": "DISC 行動プロファイル",
+      "description": "職場行動の4象限モデル——主導（D）、影響（I）、安定（S）、誠実（C）。どのスタイルが前に出るか、チームでどう自然に役割を果たすかを見ます。"
+    },
+    "money-personality": {
+      "title": "マネー・パーソナリティ",
+      "description": "お金との関わり方の5つのパターン——セイバー（貯める）、スペンダー（使う）、アボイダー（避ける）、モンク（修道士型）、ステータス追求型。あなたの「お金の自分」がどの台本を動かしているかを見ます。"
+    },
+    "boundaries": {
+      "title": "境界線チェックイン",
+      "description": "あなたの境界線はどこが強く、どこが弱く、どこで相手によって変わる？　4つのパターン——硬い壁、透過的な開放、健康な柔軟性、状況依存——で見ます。"
+    },
+    "burnout": {
+      "title": "燃え尽きチェック",
+      "description": "燃え尽きには測定可能な3つの次元があります——消耗（エネルギー切れ）、シニシズム（仕事からの距離）、効力感の喪失（自分はもう効果的ではない）。今日どこにいるかを見ます。"
+    },
+    "communication": {
+      "title": "コミュニケーション・スタイル",
+      "description": "困難な状況で現れる4つのスタイル——受動的（隠す）、攻撃的（攻める）、受動攻撃的（横からの抵抗）、アサーティブ（明確かつ敬意を持って）。デフォルトと、整っているときに使えるものを見ます。"
+    },
+    "conflict": {
+      "title": "コンフリクト・スタイル",
+      "description": "トーマス・キルマン・モデルでは、対立への対処に5つのモードを示します——競合・協働・妥協・回避・順応。あなたの好むモードと、練習が必要なモードを見ます。"
+    },
+    "chronotype": {
+      "title": "スリープ・クロノタイプ",
+      "description": "マイケル・ブロイス博士による4つの睡眠-覚醒パーソナリティ——ライオン（朝型）、ベア（昼型）、ウルフ（夜型）、ドルフィン（不眠型）。あなたのリズムと本当のピーク時間を見つけます。"
+    },
+    "creative-type": {
+      "title": "クリエイティブ・タイプ",
+      "description": "創造の5つのあり方——メイカー（作る人）、ドリーマー（夢見る人）、パフォーマー（演じる人）、オーガナイザー（まとめる人）、アナライザー（読み解く人）。自然にどれを担うか、誰とパートナーを組むと良いかを見ます。"
+    },
+    "spiritual-type": {
+      "title": "スピリチュアル・タイプ",
+      "description": "あらゆる伝統を横断する、聖なるものとの関わり方の5つ——ミスティック（直接体験）、リチュアリスト（儀式と形式）、シーカー（学びと問い）、サーバント（行為による献身）、ウォリアー（修行としての道）。あなたの家を見つけます。"
+    },
+    "common": {
+      "scoreDistribution": "スコア分布"
+    }
+  },
+  "mood": {
+    "title": "今日のムード",
+    "intro": "今日の自分にどんな形で届いた？　かたちを選んで、強さを見て、よかったら一文添えて。時間がたつと、あなたの気分の曲線が地図になっていきます。",
+    "intensityLabel": "強さ",
+    "noteLabel": "ひと言メモ（任意）",
+    "notePlaceholder": "今日を染めたものは？",
+    "promptLabel": "ジャーナルの問い",
+    "saveButton": "今日を保存",
+    "updateButton": "今日を更新",
+    "viewHistory": "30日間の曲線を見る",
+    "pickOne": "まず気分を一つ選んでください",
+    "saved": "今日の気分を記録しました",
+    "historyTitle": "30日間の曲線",
+    "entriesCount": "30日のうち {{n}} 日記録済み",
+    "noEntriesYet": "今日の気分を記録して、あなたの曲線を始めましょう。",
+    "dominantLabel": "いちばん多い気分",
+    "avgIntensity": "平均強さ：{{n}} / 5",
+    "backToLog": "記録に戻る",
+    "privacyNote": "ムードの記録はこの端末にのみ保存されます。アップロードや同期は行いません。",
+    "days": {
+      "30ago": "30日前",
+      "today": "今日"
+    },
+    "categories": {
+      "calm": {
+        "name": "穏やか"
+      },
+      "charged": {
+        "name": "充電中"
+      },
+      "drained": {
+        "name": "枯れ気味"
+      },
+      "steady": {
+        "name": "地に足"
+      },
+      "anxious": {
+        "name": "不安"
+      },
+      "joyful": {
+        "name": "喜び"
+      },
+      "heavy": {
+        "name": "重い"
+      },
+      "curious": {
+        "name": "好奇心"
+      }
+    }
+  },
+  "compat": {
+    "title": "パートナー相性",
+    "intro": "MBTIの認知機能の相性と、占星術のエレメント相性を組み合わせて、どこで合って、どこでぶつかり、どこが成長の縁にあるかを示します。双方について、少なくともひとつずつ（MBTIか誕生日）入力してください。",
+    "yourSide": "あなた",
+    "yourMbti": "あなたのMBTI",
+    "yourBirth": "あなたの誕生日",
+    "partnerSide": "相手",
+    "partnerMbti": "相手のMBTI",
+    "partnerBirth": "相手の誕生日",
+    "selectOrSkip": "選択または省略",
+    "runButton": "相性を明かす",
+    "needBothSides": "双方から少なくとも1つずつ必要です（MBTIまたは誕生日）。",
+    "failed": "相性を計算できませんでした",
+    "back": "別のペアを確認",
+    "another": "別のペア",
+    "compatibilityLabel": "相性",
+    "mbtiLabel": "MBTIフィット",
+    "astroLabel": "占星術フィット",
+    "strengthsLabel": "強み",
+    "growthLabel": "成長の縁",
+    "adviceLabel": "アドバイス"
+  },
+  "wisdom": {
+    "title": "今日の智慧"
+  },
+  "fengshui": {
+    "title": "風水の八卦",
+    "intro": "八卦の図は人生を9つの領域に分けます。あなたの人生の各領域が今どう感じるかを1〜5で評価してください。もっとも手当てを求めている領域と、それを養う風水の調整を示します。",
+    "scale": "1 = 深く枯れている · 3 = まあまあ · 5 = よく咲いている",
+    "reveal": "私の八卦を見る",
+    "backToRate": "もう一度評価する",
+    "reRate": "もう一度評価する",
+    "mapLabel": "あなたの八卦マップ",
+    "overallScore": "全体：{{n}} / 5",
+    "focusLabel": "手当てを求める領域",
+    "strongestLabel": "いちばん強い領域",
+    "adjustmentsLabel": "この調整を試して",
+    "elementLabel": "エレメント",
+    "colorLabel": "色",
+    "placement": "部屋の{{dir}}（入口から見て）にこれらの調整を置いてください。",
+    "shareSubtitle": "手当てが必要",
+    "areas": {
+      "wealth": {
+        "name": "富・豊かさ"
+      },
+      "fame": {
+        "name": "名声・評判"
+      },
+      "relationships": {
+        "name": "関係・愛"
+      },
+      "family": {
+        "name": "家族・先祖"
+      },
+      "health": {
+        "name": "健康・中央"
+      },
+      "creativity": {
+        "name": "創造・子ども"
+      },
+      "knowledge": {
+        "name": "知恵・学び"
+      },
+      "career": {
+        "name": "キャリア・道"
+      },
+      "helpers": {
+        "name": "助け手・旅"
+      }
+    }
+  },
+  "community": {
+    "title": "コミュニティ",
+    "postButton": "投稿",
+    "whisperButton": "ささやく",
+    "newPost": "新しい投稿",
+    "topicLabel": "トピック",
+    "placeholder": "リーディング、思い、問い、なんでも。",
+    "postAnonymously": "匿名で投稿",
+    "send": "投稿する",
+    "posting": "投稿中……",
+    "posted": "投稿しました",
+    "postFailed": "投稿できませんでした",
+    "contentTooLong": "長すぎます（最大2000文字）",
+    "contentDisallowed": "この表現は使えません",
+    "contentEmpty": "まず何か書いてください",
+    "anonymous": "名のないもとめ手",
+    "loadFailed": "フィードを読み込めませんでした",
+    "empty": "まだ投稿がありません。最初のひとりになってください。",
+    "signInFirst": "リアクションにはサインインが必要です",
+    "signInToPost": "投稿・リアクション・コメントにはサインインが必要です。",
+    "reactFailed": "リアクションできませんでした",
+    "reported": "通報を受け付けました。ありがとうございます。",
+    "reportFailed": "通報できませんでした",
+    "report": "通報",
+    "reportPostTitle": "投稿を通報",
+    "blockUser": "ユーザーをブロック",
+    "blocked": "ブロックしました",
+    "blockFailed": "ブロックできませんでした",
+    "back": "フィードに戻る",
+    "backToFeed": "フィードに戻る",
+    "commentsHeading": "コメント",
+    "noComments": "まだコメントがありません。最初の返答をどうぞ。",
+    "commentPlaceholder": "返答を書く……",
+    "commentAnonymously": "匿名でコメント",
+    "commentFailed": "コメントできませんでした",
+    "topics": {
+      "all": "すべて",
+      "general": "ぜんぱん",
+      "tarot": "タロット",
+      "astrology": "占星術",
+      "moon": "月",
+      "love": "愛",
+      "shadow": "シャドウ",
+      "career": "キャリア",
+      "wellness": "ウェルネス"
+    },
+    "reportReasons": {
+      "spam": "スパム",
+      "harassment": "ハラスメント",
+      "self-harm": "自傷に関する内容",
+      "explicit": "露骨／不適切",
+      "misinformation": "誤情報",
+      "other": "その他"
+    },
+    "whisperingWell": {
+      "title": "ささやきの井戸",
+      "intro": "言葉にならないことをそっと落とす静かな場所。すべての投稿は匿名です。互いへの敬意が唯一のルール。助けが必要なら、はっきり言ってください——誰かが聴いています。",
+      "newWhisper": "井戸にささやく",
+      "placeholder": "言うべきなのに、聴き手のいない言葉は？",
+      "send": "ささやきを送る",
+      "empty": "井戸は静かです。最初のささやきをどうぞ。"
+    },
+    "postedUnderReview": "Posted — our team will review shortly.",
+    "commentUnderReview": "Comment posted — our team will review shortly.",
+    "contentBlocked": "This content conflicts with our community guidelines."
+  },
+  "common": {
+    "loading": "読み込み中……",
+    "cancel": "キャンセル"
+  },
+  "moonstones": {
+    "balanceLabel": "ムーンストーン",
+    "claimButton": "今日の分を受け取る",
+    "claiming": "受け取り中……",
+    "alreadyClaimed": "また明日",
+    "claimed": "+{{n}} ムーンストーン · {{d}}日目の連続ログイン",
+    "claimFailed": "今日の報酬を受け取れませんでした"
+  },
+  "companion": {
+    "title": "コンパニオン",
+    "newConversation": "新規",
+    "emptyState": "何でも尋ねて始めてください——胸に抱えている問い、読んでほしい夢、理解したい名前。",
+    "placeholder": "コンパニオンに問う……",
+    "thinking": "考えています……",
+    "sendFailed": "コンパニオンに届きませんでした：{{err}}",
+    "dailyLimitReached": "今日の上限に達しました——また明日",
+    "dailyRemaining": "本日残り {{remaining}} 通",
+    "personas": {
+      "sage": {
+        "name": "賢者",
+        "intro": "落ち着いた、賢く、測ろうとする声。東西の観照の伝統に触れる。問いを返す——演出ではなく。"
+      },
+      "oracle": {
+        "name": "神託",
+        "intro": "イメージと元型で語る。メタファーが豊か。瞬間の象徴的な天気を描く。"
+      },
+      "mystic": {
+        "name": "神秘家",
+        "intro": "直接的で簡潔。矛盾を恐れない。禅の形。鋭い問いで返すこともある。"
+      },
+      "priestess": {
+        "name": "巫女",
+        "intro": "温かく、身体的、直感的。問いの背後にいる人を見る。知恵と同じくらい、実践を差し出す。"
+      }
+    }
+  },
+  "advisors": {
+    "title": "アドバイザー",
+    "intro": "Arcanaに参加する読み手たち。有料セッションは段階的に公開中です。興味を伝えると、そのアドバイザーが予約を開くときに通知します。",
+    "back": "アドバイザー一覧",
+    "empty": "まだアドバイザーがいません。またお越しください。",
+    "yearsLabel": "経験",
+    "years": "年",
+    "languagesLabel": "言語",
+    "specialtiesLabel": "得意",
+    "rateLabel": "参考レート",
+    "expressInterest": "興味を伝える",
+    "bookingsComingSoon": "有料セッションは段階的に公開中です。何について助けが欲しいかを教えてください。このアドバイザーが予約を開いたときにお知らせします。",
+    "topicPlaceholder": "何について相談したいですか？（任意）",
+    "notifyMe": "予約開始時に通知を受ける",
+    "submitting": "送信中……",
+    "interestSubmitted": "興味を記録しました——{{n}}が予約を開いたときにお知らせします。",
+    "interestFailed": "興味を送信できませんでした",
+    "signInToExpress": "興味を伝えるにはサインインしてください",
+    "specialties": {
+      "tarot": "タロット",
+      "astrology": "占星術",
+      "natal-chart": "出生図",
+      "i-ching": "易経",
+      "bazi": "八字",
+      "career": "キャリア",
+      "dreams": "夢",
+      "shadow-work": "シャドウワーク",
+      "creativity": "創造性",
+      "breakup-recovery": "別れからの回復"
+    }
+  },
+  "moon": {
+    "title": "Tonight's Moon",
+    "illumination": "{{pct}}% illuminated · day {{day}} of ~29.5",
+    "ritual": "Tonight's ritual",
+    "nextPhase": "Next: {{name}} in {{days}} days",
+    "phase": {
+      "new": {
+        "name": "New Moon",
+        "guidance": "A quiet threshold. Name what you are beginning — not what is finished. Do not force clarity; just set direction.",
+        "ritual": "Write three intentions for the coming cycle. Fold the paper, keep it somewhere private until the full moon."
+      },
+      "waxing-crescent": {
+        "name": "Waxing Crescent",
+        "guidance": "Take the first small action toward what you named at the new moon. Consistency beats intensity here.",
+        "ritual": "Light a candle and list three tiny steps you can take this week. Take the first one today."
+      },
+      "first-quarter": {
+        "name": "First Quarter",
+        "guidance": "Expect resistance now — this is when momentum meets doubt. Recommit or adjust; do not abandon.",
+        "ritual": "Name one obstacle standing between you and your intention. Write the exact next action that moves past it."
+      },
+      "waxing-gibbous": {
+        "name": "Waxing Gibbous",
+        "guidance": "The result is close but needs polish. Do the boring, careful work now — editing, checking, repairing.",
+        "ritual": "Review what you have built this cycle. What one detail, if improved, would change the whole?"
+      },
+      "full": {
+        "name": "Full Moon",
+        "guidance": "Harvest what is ripe. Celebrate progress; acknowledge what is now clearly not working. Emotions run high — move slowly.",
+        "ritual": "Under moonlight (or facing a window), name three things completed this cycle. Speak one truth you have been avoiding."
+      },
+      "waning-gibbous": {
+        "name": "Waning Gibbous",
+        "guidance": "Share what you learned. Teach, thank, record. This is integration — not striving.",
+        "ritual": "Send one message of thanks to someone who supported you this cycle. Write one lesson in your journal."
+      },
+      "last-quarter": {
+        "name": "Last Quarter",
+        "guidance": "Clear space. Finish what is finishable; release what is not. Do not start new projects yet.",
+        "ritual": "Name one habit, item, or commitment to release. Write it down, then cross it out."
+      },
+      "waning-crescent": {
+        "name": "Waning Crescent",
+        "guidance": "Do less. Sleep more. Dream. This is not procrastination — it is the nervous system restoring before the next cycle.",
+        "ritual": "Unplug for an hour. No screens, no productivity. Sit, walk, lie down. Notice what surfaces when you stop."
+      }
+    }
+  },
+  "runes": {
+    "title": "Rune Casting",
+    "intro": "Three staves from the Elder Futhark — past, present, future. Hold a question, then cast.",
+    "castButton": "Cast the runes",
+    "casting": "Casting...",
+    "castAgain": "Cast again",
+    "positions": {
+      "past": "Past",
+      "present": "Present",
+      "future": "Future"
+    },
+    "reversedLabel": "Reversed",
+    "meaningLabel": "Meaning",
+    "journalPrompt": "Journal prompt",
+    "shareButton": "Share this cast",
+    "elementLabel": "Element"
+  },
+  "dice": {
+    "title": "Dice Oracle",
+    "intro": "The simplest divination — three dice fall, their sum speaks. Hold a question, then roll. Sixteen possible readings from 3 to 18.",
+    "sumLabel": "Sum",
+    "promptLabel": "Hold this question",
+    "rollButton": "Roll the dice",
+    "rollAgain": "Roll again",
+    "rolling": "Rolling..."
+  },
+  "crisis": {
+    "title": "You are not alone",
+    "subtitle": "We noticed some of what you wrote. If you are hurting right now, please reach for one of these — they are free and confidential.",
+    "phone": {
+      "title": "988 Suicide & Crisis Lifeline",
+      "body": "Call or text 988 · 24/7 · US",
+      "cta": "Call"
+    },
+    "text": {
+      "title": "Crisis Text Line",
+      "body": "Text HOME to 741741 · US/UK/CA/IE",
+      "cta": "Text"
+    },
+    "international": {
+      "title": "International helplines"
+    },
+    "footer": "Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.",
+    "closeButton": "I'm okay for now"
+  },
+  "referral": {
+    "title": "Invite & earn",
+    "heading": "Share Arcana, earn Moonstones",
+    "subtitle": "Each friend who joins with your code earns you 100 Moonstones. They get 100 too.",
+    "yourCodeLabel": "Your code",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy",
+    "share": "Share",
+    "shareText": "I've been using Arcana for tarot + astrology — use my code for 100 free Moonstones: {{url}}",
+    "invitesCount": "{{n}} friends joined with your code",
+    "redeemLabel": "Got a code?",
+    "redeemHelper": "Enter a friend's code in your first 30 days to claim 100 Moonstones.",
+    "codePlaceholder": "ABCD1234",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming…",
+    "redeemSuccess": "+{{n}} Moonstones — welcome!",
+    "alreadyRedeemed": "You've already redeemed a referral code.",
+    "errors": {
+      "alreadyRedeemed": "You've already redeemed a code.",
+      "notFound": "Code not found.",
+      "selfRedeem": "You can't use your own code.",
+      "accountTooOld": "Referral codes only work in the first 30 days.",
+      "generic": "Could not redeem code."
+    }
+  },
+  "yearAhead": {
+    "title": "Year Ahead",
+    "cardTitle": "{{year}} — 12 monthly briefings",
+    "cardSub": "A month-by-month map of the biggest transits to your natal chart.",
+    "needsBirthData": "Add your full birth data first",
+    "needsBirthDataBody": "Year-ahead forecasts need date, time, and place of birth to compute transits to your natal chart. Add them in Profile → Edit profile.",
+    "locked": {
+      "feat1": "12 monthly theme briefings",
+      "feat2": "Outer-planet transits to your personal planets",
+      "feat3": "Start/end dates for each transit window",
+      "feat4": "Overall year-long narrative"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Forecast unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "computing": "Mapping your year…",
+    "errorNatalMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
+    "errorGeneric": "Could not load forecast. Try again in a moment.",
+    "overall": "Overall arc",
+    "emptyMonth": "A quiet month, astrologically. Use it to rest.",
+    "disclaimer": "Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
+  },
+  "natalReport": {
+    "title": "Full Natal Chart",
+    "cardTitle": "Your complete birth chart — printable",
+    "cardSub": "Every planet in its sign and house, every aspect, with interpretations.",
+    "needsBirthData": "Add your birth data first",
+    "needsBirthDataBody": "The full natal chart needs date, time, and place of birth. Add them in Profile → Edit profile.",
+    "locked": {
+      "feat1": "Big Three with deeper readings",
+      "feat2": "All 10 planets in signs + houses",
+      "feat3": "Aspect grid with exact orbs",
+      "feat4": "Save as PDF or print from your browser"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Chart unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "errorChartMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
+    "printCta": "Save as PDF",
+    "bigThreeHeading": "The Big Three",
+    "planetsHeading": "Planets in signs and houses",
+    "elementsHeading": "Elemental & modal balance",
+    "aspectsHeading": "Aspects — the wiring between planets",
+    "wheelHeading": "Your chart wheel",
+    "variantNatal": "Natal",
+    "variantTransits": "Transits today",
+    "loadingTransits": "Computing current positions…",
+    "variant": {
+      "natal": "Natal",
+      "transits": "Transits today",
+      "progressions": "Progressions",
+      "solar-return": "Solar return",
+      "synastry": "Synastry"
+    },
+    "computing": "Computing…",
+    "progressedAge": "Age {{n}}",
+    "synastryPrompt": "Partner birth data",
+    "partnerNamePlaceholder": "Partner name (optional)",
+    "synastryCta": "Overlay partner chart",
+    "synastryFailed": "Could not compute synastry.",
+    "overlayFailed": "重ね合わせを読み込めませんでした。接続を確認して再度お試しください。",
+    "crossAspects": "Top cross-aspects",
+    "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
+  },
+  "careerReport": {
+    "title": "Career Archetype",
+    "needsMbti": "Take the personality quiz first",
+    "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.",
+    "shareLabel": "Career Archetype",
+    "locked": {
+      "body": "A ~900-word coaching-grade report tailored to your type — best-fit roles, drains, collaboration patterns, blind spots, and a first-90-days plan.",
+      "feat1": "10 best-fit roles across industries",
+      "feat2": "Which environments drain you",
+      "feat3": "Your collaboration counterweight",
+      "feat4": "First-90-days plan in a new role"
+    },
+    "unlockCta": "Unlock for {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "unlocked": "Report unlocked",
+    "unlockFailed": "Could not unlock",
+    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
+    "balance": "Balance: {{n}} Moonstones",
+    "priceNote": "Also available via Stripe at ${{price}} (coming soon)",
+    "bestFit": "Best-fit roles",
+    "drains": "Environments that drain you",
+    "collaboration": "Collaboration pattern",
+    "blindSpots": "Blind spots",
+    "ninetyDays": "First 90 days",
+    "monthLabel": "Month {{n}}",
+    "reflection": "Sit with these questions",
+    "share": "Share my archetype",
+    "stripeFailed": "Could not start checkout",
+    "payWithStripe": "Or pay ${{price}} with card"
+  },
+  "compatInvite": {
+    "createTitle": "Invite someone",
+    "createSubtitle": "Send a link. They take their side; you both see the joint reading.",
+    "createFailed": "Could not create invite",
+    "pickKind": "Compatibility kind",
+    "nothingToShare": "Take the personality quiz or add your birth date first.",
+    "generateLink": "Generate invite link",
+    "generating": "Generating…",
+    "yourLink": "Your invite link",
+    "expiresNote": "Link expires in 90 days.",
+    "fromNamed": "{{name}} wants to see how you vibe",
+    "fromAnon": "Someone wants to see how you vibe",
+    "readyBody": "Your existing profile already has what this reading needs. Tap below to reveal the joint result.",
+    "reveal": "Reveal our compatibility",
+    "revealing": "Revealing…",
+    "needMbti": "You need to take the personality quiz first.",
+    "needBirthDate": "Add your birth date in Profile first.",
+    "goToQuiz": "Take the quiz",
+    "goToProfile": "Open Profile",
+    "notFound": "This invite could not be found or has expired.",
+    "ownInvite": "This is your own invite. Share the link with a friend or partner — they need to respond.",
+    "signInTitle": "Sign in to see your match",
+    "signInBody": "Create a free account or sign in to take your side of the compatibility reading.",
+    "signInCta": "Continue",
+    "resultLabel": "Compatibility",
+    "mbtiSection": "Personality compatibility",
+    "astroSection": "Astrological compatibility",
+    "strengths": "Strengths",
+    "growth": "Growth edges",
+    "advice": "For you two",
+    "noScore": "Your responses are recorded. A richer joint reading is coming for this kind of quiz soon.",
+    "yourSides": "What you shared",
+    "inviterDefault": "Inviter",
+    "responderDefault": "You",
+    "shareText": "Take this compatibility reading with me on Arcana: {{url}}",
+    "errors": {
+      "selfInvite": "You can't respond to your own invite.",
+      "expired": "This invite has expired.",
+      "notFound": "Invite not found.",
+      "generic": "Could not respond."
+    },
+    "kinds": {
+      "mbti": "Personality (MBTI)",
+      "love-language": "Love Language",
+      "attachment": "Attachment Style",
+      "big-five": "Big Five",
+      "enneagram": "Enneagram",
+      "zodiac": "Zodiac",
+      "element": "Element"
+    }
+  },
+  "advisorBooking": {
+    "back": "Back",
+    "notFound": "Advisor not found.",
+    "rate": "Indicative rate: ${{dollars}}/hr",
+    "durationLabel": "Session length",
+    "costPreview": "{{n}} Moonstones",
+    "pickSlot": "Pick a time (next 7 days)",
+    "noAvailability": "This advisor has not published availability yet. Check back soon.",
+    "topicLabel": "What do you want help with? (optional)",
+    "topicPlaceholder": "Anything specific — a decision, a relationship, a transit…",
+    "bookCta": "Book for {{n}} Moonstones",
+    "booking": "Booking…",
+    "bookedToast": "Session booked — we debited {{n}} Moonstones.",
+    "insufficientBalance": "Not enough Moonstones. Top up and try again.",
+    "slotTaken": "That slot just got taken. Pick another.",
+    "bookFailed": "Could not book that slot.",
+    "disclaimer": "Cancel for a full refund any time before the session starts."
+  },
+  "advisorSession": {
+    "back": "Back to advisors",
+    "title": "Session",
+    "notFound": "Session not found.",
+    "startsIn": "Starts in {{n}} minutes. Start any time within 5 minutes of the scheduled time.",
+    "readyToStart": "Ready when you are.",
+    "cancel": "Cancel",
+    "start": "Start session",
+    "started": "Session started",
+    "ended": "Session ended",
+    "end": "End session",
+    "cancelled": "This session was cancelled.",
+    "cancelledToast": "Cancelled. {{n}} Moonstones refunded.",
+    "noMessages": "Say hi to get started.",
+    "composerPlaceholder": "Write a message…",
+    "sendFailed": "Could not send",
+    "rateTitle": "How was it?",
+    "reviewPlaceholder": "Anything to share? (optional)",
+    "submitRating": "Submit rating",
+    "ratingThanks": "Thanks for the feedback"
+  },
+  "advisorDashboard": {
+    "title": "Advisor dashboard",
+    "notAdvisorTitle": "Become an advisor",
+    "notAdvisorBody": "You are not set up as an advisor yet. Advisors are hand-vetted — reach out to apply.",
+    "apply": "Email advisors@tarotlife.app",
+    "upcomingTitle": "Upcoming sessions",
+    "noUpcoming": "No sessions booked yet.",
+    "availabilityTitle": "Weekly availability",
+    "availabilityHint": "Clients can book 30-min buckets within these windows. Times are in your device timezone.",
+    "noSlots": "No availability yet — add one above.",
+    "addSlot": "Add slot",
+    "saveCta": "Save availability",
+    "saving": "Saving…",
+    "saved": "Availability saved",
+    "invalidSlot": "End time must be after start time.",
+    "payoutsTitle": "Payouts",
+    "payoutsSetupBody": "Complete Stripe Connect onboarding to cash out your Moonstones as real money.",
+    "setupPayouts": "Set up payouts",
+    "continueOnboarding": "Continue onboarding",
+    "opening": "Opening…",
+    "cashableLabel": "Cashable Moonstones",
+    "rateNote": "10 Moonstones = $1.00 · 30% platform fee · 70% to you",
+    "cashoutCta": "Cash out",
+    "cashingOut": "Sending…",
+    "cashoutMinimum": "Minimum cashout is 100 Moonstones.",
+    "cashoutExceeds": "Amount exceeds your cashable balance.",
+    "cashoutSent": "Sent ${{usd}} to your Stripe account.",
+    "cashoutMinNote": "Minimum 100 Moonstones ($10 gross / $7 to you).",
+    "stripeFailed": "Could not start Stripe onboarding",
+    "onboardingRequired": "Complete Stripe onboarding first."
+  },
+  "voice": {
+    "join": "Join voice",
+    "joining": "Joining…",
+    "leave": "Leave",
+    "notConnected": "Voice off",
+    "state": {
+      "idle": "",
+      "connecting": "Connecting…",
+      "connected": "Voice on",
+      "disconnected": "Voice ended",
+      "error": "Voice error",
+      "unavailable": "Voice coming soon"
+    }
+  },
+  "liveRoom": {
+    "back": "All rooms",
+    "notFound": "Room not found.",
+    "listeners": "{{n}} RSVPd / cap {{cap}}",
+    "rsvp": "RSVP",
+    "rsvpd": "You're in",
+    "notLiveYet": "Voice opens when the host starts the room.",
+    "rsvpToJoin": "RSVP first to join voice.",
+    "tipHost": "Tip the host",
+    "tipSent": "Sent {{n}} Moonstones to the host.",
+    "replayHeading": "Replay",
+    "replayLocked": "Listen anytime for {{n}} Moonstones.",
+    "unlockReplay": "Unlock replay — {{n}} Moonstones",
+    "unlocking": "Unlocking…",
+    "replayUnlocked": "Replay unlocked",
+    "replayInsufficient": "Not enough Moonstones to unlock.",
+    "signInToUnlock": "Sign in to unlock the replay",
+    "listenFree": "Listen — free"
+  },
+  "advisorVerify": {
+    "title": "Advisor verification",
+    "startTitle": "Verify to go live",
+    "startBody": "Before clients can book you, we confirm identity. Upload a government ID plus a short selfie video saying your full name and today's date. Reviewed within 72 hours.",
+    "pendingTitle": "Under review",
+    "pendingBody": "Submitted {{date}}. We review within 72 hours.",
+    "approvedTitle": "Verified",
+    "approvedBody": "Your advisor profile is live in the directory.",
+    "rejectedTitle": "Not approved",
+    "reasonLabel": "Reason:",
+    "rejectedHelp": "Contact advisors@tarotlife.app if you believe this is wrong.",
+    "goDashboard": "Open dashboard",
+    "legalNameLabel": "Legal name",
+    "countryLabel": "Country (2-letter code, e.g. US)",
+    "idLabel": "Government ID (image)",
+    "uploadId": "Upload ID",
+    "selfieLabel": "Selfie video (say your name + today's date)",
+    "uploadSelfie": "Upload video",
+    "submitCta": "Submit for review",
+    "submitting": "Submitting…",
+    "submitted": "Submitted. We'll review within 72 hours.",
+    "incomplete": "Fill in every field and upload both files.",
+    "privacyNote": "Documents are encrypted and only visible to admin reviewers."
+  },
+  "sandbox": {
+    "title": "Archetypal sandbox",
+    "intro": "Pick symbolic objects, place them on the plinth, and the oracle reads the arrangement. Preview release — positions are spiralled automatically, drag-drop is coming.",
+    "pickObject": "Choose an object",
+    "place": "Place on plinth",
+    "reset": "Reset",
+    "placedLabel": "On the plinth",
+    "placeMore": "Place at least two objects.",
+    "interpretCta": "Read the arrangement",
+    "reading": "Reading the arrangement…",
+    "readingLabel": "The oracle reads",
+    "rearrange": "Rearrange",
+    "interpretFailed": "Could not interpret.",
+    "preview": "Preview — drag-to-place and save/share are coming."
+  },
+  "quickReading": {
+    "title": "3-second reading",
+    "intro": "Ask anything. A single card is drawn, woven with your signals, and returned as a short reading to sit with.",
+    "questionLabel": "Your question",
+    "questionPlaceholder": "What is mine to focus on this week? Where is the friction in my work coming from? What am I avoiding?",
+    "draw": "Draw and read",
+    "drawing": "Drawing…",
+    "yourQuestion": "Your question",
+    "cardLabel": "Card drawn",
+    "memoryUsed": "Drawing on what we've talked about before.",
+    "share": "Share",
+    "askAnother": "Ask another",
+    "disclaimer": "Readings are for self-reflection, not prediction or professional advice.",
+    "errorRateLimit": "You're asking fast — slow down and try again in a moment.",
+    "errorUnavailable": "Readings are temporarily unavailable.",
+    "errorGeneric": "Could not generate a reading. Try again."
+  },
+  "tarotCompanion": {
+    "title": "Tarot companion",
+    "redraw": "New card",
+    "drawing": "Drawing…",
+    "drawCta": "Draw a card",
+    "empty": "Pull a card to begin a conversation.",
+    "upright": "Upright",
+    "reversed": "Reversed",
+    "composerPlaceholder": "Ask a follow-up…",
+    "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
+    "aiFailed": "Could not reach the oracle"
+  },
+  "journalCoach": {
+    "askCta": "Ask the journal coach",
+    "thinking": "Reading…",
+    "failed": "Could not reach coach",
+    "observationLabel": "An observation",
+    "promptsLabel": "Sit with these",
+    "dismiss": "Dismiss"
+  },
+  "chartWheel": {
+    "tapPrompt": "Tap a planet, house, or aspect line.",
+    "planetLabel": "Planet",
+    "transitLabel": "Transit",
+    "houseLabel": "House {{n}}",
+    "aspectLabel": "Aspect"
+  },
+  "liveRooms": {
+    "title": "Live rooms",
+    "intro": "Scheduled live gatherings — full moon circles, Mercury retrograde debriefs, live tarot pulls. Audio-first, soon. RSVP to reserve your seat.",
+    "empty": "No live rooms on the calendar yet — check back soon.",
+    "capacity": "up to {{n}} listeners",
+    "rsvp": "RSVP",
+    "rsvpd": "You're in",
+    "rsvpConfirmed": "You're on the list — we'll notify you.",
+    "rsvpCancelled": "RSVP cancelled",
+    "signInToRsvp": "Sign in to RSVP",
+    "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
   }
 }

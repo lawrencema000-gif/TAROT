@@ -878,4 +878,10 @@ export const quizMetadata = {
     icon: 'flame',
     color: 'emerald-400',
   },
+  'ayurveda-dosha': {
+    timeEstimate: '5-7 min',
+    whatYouGet: ['Your primary dosha (Vata, Pitta, or Kapha)', 'Your secondary dosha if you\'re dual-type', 'Diet and lifestyle tips that actually suit you', 'Warning signs you\'re out of balance'],
+    icon: 'flower',
+    color: 'cosmic-violet',
+  },
 };

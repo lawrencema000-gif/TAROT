@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Flame,
   Sparkles,
@@ -7,6 +8,8 @@ import {
   Star,
   PenLine,
   TrendingUp,
+  Zap,
+  MessageCircle,
 } from 'lucide-react';
 import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
@@ -27,6 +30,10 @@ import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMileston
 import { checkAchievementProgress } from '../services/achievements';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
+import { DailyWisdomCard } from '../components/home/DailyWisdomCard';
+import { MoonstoneWidget } from '../components/home/MoonstoneWidget';
+import { MoonPhaseCard } from '../components/home/MoonPhaseCard';
 
 interface RitualState {
   horoscopeViewed: boolean;
@@ -41,6 +48,12 @@ export function HomePage() {
   const { setActiveTab, openOverlay } = useUI();
   const { streak, setStreak, tarotRefreshTrigger } = useRitual();
   const { triggerLevelUp } = useGamification();
+  const dailyWisdomEnabled = useFeatureFlag('daily-wisdom');
+  const moonstonesEnabled = useFeatureFlag('moonstones');
+  const moonPhasesEnabled = useFeatureFlag('moon-phases');
+  const quickReadingEnabled = useFeatureFlag('ai-quick-reading');
+  const tarotCompanionEnabled = useFeatureFlag('ai-tarot-companion');
+  const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
   const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
@@ -290,11 +303,21 @@ export function HomePage() {
     }
 
     const name = profile.displayName.trim();
+    const local = name.includes('@') ? name.split('@')[0] : name;
 
-    if (name.includes('@')) {
-      const emailName = name.split('@')[0];
-      const formatted = emailName
+    // Fallback to "Seeker" for obviously auto-generated handles —
+    // long, digit-heavy, or dash-heavy strings (e.g. `arcana-qa-auth-1776994003021`
+    // from signup fallback) look hostile in a welcome header.
+    const tooManyDashes = (local.match(/-/g)?.length ?? 0) >= 3;
+    const mostlyDigits = (local.match(/\d/g)?.length ?? 0) / local.length > 0.4;
+    if (local.length > 20 || tooManyDashes || mostlyDigits) {
+      return t('home.seeker');
+    }
+
+    if (name.includes('@') || /[._-]/.test(name)) {
+      const formatted = local
         .split(/[._-]/)
+        .filter(Boolean)
         .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(' ');
       return formatted || t('home.seeker');
@@ -354,6 +377,45 @@ export function HomePage() {
           <span className="text-mystic-400 text-sm">{t('home.dayStreakLabel')}</span>
         </button>
       </div>
+
+      {moonstonesEnabled && <MoonstoneWidget />}
+
+      {moonPhasesEnabled && <MoonPhaseCard />}
+
+      {(quickReadingEnabled || tarotCompanionEnabled) && (
+        <div className="grid grid-cols-2 gap-3">
+          {quickReadingEnabled && (
+            <button
+              onClick={() => navigate('/ai/quick')}
+              className="bg-gradient-to-br from-gold/10 to-mystic-900 border border-gold/25 rounded-xl p-4 text-left hover:border-gold/50 active:scale-[0.98] transition-all"
+            >
+              <Zap className="w-5 h-5 text-gold mb-2" />
+              <p className="text-sm font-medium text-mystic-100">
+                {t('home.quickReading', { defaultValue: '3-second reading' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
+                {t('home.quickReadingSub', { defaultValue: 'Ask anything' })}
+              </p>
+            </button>
+          )}
+          {tarotCompanionEnabled && (
+            <button
+              onClick={() => navigate('/ai/tarot')}
+              className="bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/25 rounded-xl p-4 text-left hover:border-cosmic-violet/50 active:scale-[0.98] transition-all"
+            >
+              <MessageCircle className="w-5 h-5 text-cosmic-violet mb-2" />
+              <p className="text-sm font-medium text-mystic-100">
+                {t('home.tarotCompanion', { defaultValue: 'Tarot companion' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
+                {t('home.tarotCompanionSub', { defaultValue: 'Pull a card, talk it through' })}
+              </p>
+            </button>
+          )}
+        </div>
+      )}
+
+      {dailyWisdomEnabled && <DailyWisdomCard />}
 
       {profile && xpProgress.required > 0 && (
         <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl p-4">

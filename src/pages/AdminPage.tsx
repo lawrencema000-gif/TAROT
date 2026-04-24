@@ -6,6 +6,8 @@ import { useRitual } from '../context/RitualContext';
 import { supabase } from '../lib/supabase';
 import { AdAnalyticsPanel } from '../components/admin/AdAnalyticsPanel';
 import { BlogManager } from '../components/admin/BlogManager';
+import { ModerationPanel } from '../components/admin/ModerationPanel';
+import { AdvisorVerificationPanel } from '../components/admin/AdvisorVerificationPanel';
 import type { BlogPost } from '../types/blog';
 
 interface TarotCardData {
@@ -534,6 +536,10 @@ export function AdminPage() {
       />
 
       <AdAnalyticsPanel analytics={adAnalytics} />
+
+      <ModerationPanel />
+
+      <AdvisorVerificationPanel />
 
       <BlogManager posts={blogPosts} onRefresh={loadBlogPosts} />
 

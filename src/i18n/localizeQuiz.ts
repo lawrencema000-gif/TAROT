@@ -22,24 +22,29 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
   };
 
   const definitionKey = quizDefinitionKey(quiz.id, quiz.type);
+  const extraKey = quiz.type === 'extra-dimensional' ? extraQuizDefinitionKey(quiz.id) : null;
   const isLikertQuiz = quiz.questions.every((q) => q.options.length === 5);
 
-  const title = definitionKey
-    ? t(`quizzes.definitions.${definitionKey}.title`, quiz.title)
-    : quiz.title;
-  const description = definitionKey
-    ? t(`quizzes.definitions.${definitionKey}.description`, quiz.description)
-    : quiz.description;
+  // Namespace: curated quizzes use `quizzes.definitions.<key>.*`,
+  // extra-dimensional batch quizzes use `extraQuizzes.<key>.*`.
+  const basePath = extraKey
+    ? `extraQuizzes.${extraKey}`
+    : definitionKey
+      ? `quizzes.definitions.${definitionKey}`
+      : null;
+
+  const title = basePath ? t(`${basePath}.title`, quiz.title) : quiz.title;
+  const description = basePath ? t(`${basePath}.description`, quiz.description) : quiz.description;
 
   const localizedQuestions = quiz.questions.map((q) => {
-    const questionText = definitionKey
-      ? t(`quizzes.definitions.${definitionKey}.questions.${q.id}.text`, q.text)
+    const questionText = basePath
+      ? t(`${basePath}.questions.${q.id}.text`, q.text)
       : q.text;
 
     const options = q.options.map((opt) => {
       // Per-quiz per-question option translation (forced-choice quizzes)
-      if (definitionKey) {
-        const perOptionKey = `quizzes.definitions.${definitionKey}.questions.${q.id}.options.${opt.value}`;
+      if (basePath) {
+        const perOptionKey = `${basePath}.questions.${q.id}.options.${opt.value}`;
         const translated = i18n.t(perOptionKey, { ns: 'app' });
         if (translated !== perOptionKey) {
           return { ...opt, label: translated };
@@ -64,7 +69,8 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
 }
 
 function quizDefinitionKey(id: string, type: string): string | null {
-  // Keys match what exists in app.json quizzes.definitions.*
+  // Keys match what exists in app.json quizzes.definitions.* or
+  // (for extra-dimensional quizzes) extraQuizzes.<id>.*
   if (id.startsWith('mbti-quick')) return 'mbtiQuick';
   if (id.startsWith('court-match') || type === 'court-match') return 'courtMatch';
   if (id.startsWith('mbti')) return 'mbti';
@@ -75,6 +81,23 @@ function quizDefinitionKey(id: string, type: string): string | null {
   if (id.startsWith('mood')) return 'mood';
   return null;
 }
+
+/**
+ * Sprint-3 extra quizzes use a different i18n namespace (`extraQuizzes.<id>.*`)
+ * — they are numerous and batched. Keep them separate from the curated
+ * `quizzes.definitions.*` block.
+ */
+function extraQuizDefinitionKey(id: string): string | null {
+  if (id.endsWith('-v1') || id.endsWith('-v2')) {
+    return id.replace(/-v\d+$/, '');
+  }
+  return null;
+}
+
+// Local re-export of localizeQuiz that routes extra-dimensional quizzes
+// through the extraQuizzes.* namespace while leaving the curated quizzes
+// using the existing quizzes.definitions.* path untouched.
+// (kept internal — the public localizeQuiz handles both transparently)
 
 /**
  * Return the locale-appropriate `timeEstimate` and `whatYouGet` for a quiz

@@ -38,12 +38,20 @@ export interface EvalContext {
   anonymousId?: string | null;
   /** URL query-string overrides, e.g. `?ff_new-paywall=on`. */
   queryOverrides?: Record<string, string>;
+  /** Smoke/preview mode: treat every flag as ON unless explicitly turned
+   *  off via query override. Wired to `VITE_AUDIT_SMOKE` in the Netlify
+   *  preview env so QA agents testing `audit-smoke--arcana-ritual-app`
+   *  see all features without requiring a DB rollout change that would
+   *  leak to production users. */
+  smokeMode?: boolean;
 }
 
 export function evaluate(flag: FeatureFlag, ctx: EvalContext): boolean {
   const override = ctx.queryOverrides?.[`ff_${flag.key}`];
   if (override === 'on') return true;
   if (override === 'off') return false;
+
+  if (ctx.smokeMode) return true;
 
   if (ctx.userId && flag.allowedUserIds.includes(ctx.userId)) return true;
 

@@ -163,3 +163,95 @@ export const LIFE_PATH_INFO: Record<LifePath, LifePathInfo> = {
 export function getLifePathInfo(lifePath: LifePath): LifePathInfo {
   return LIFE_PATH_INFO[lifePath];
 }
+
+// --- Name-based numerology --------------------------------------
+
+// Pythagorean system — each letter maps to 1-9
+const LETTER_VALUES: Record<string, number> = {
+  a: 1, j: 1, s: 1,
+  b: 2, k: 2, t: 2,
+  c: 3, l: 3, u: 3,
+  d: 4, m: 4, v: 4,
+  e: 5, n: 5, w: 5,
+  f: 6, o: 6, x: 6,
+  g: 7, p: 7, y: 7,
+  h: 8, q: 8, z: 8,
+  i: 9, r: 9,
+};
+
+const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
+
+function reducePreservingMasters(n: number): number {
+  while (n > 9 && ![11, 22, 33].includes(n)) {
+    n = sumDigits(n);
+  }
+  return n;
+}
+
+function sumLetters(name: string, filter: (c: string) => boolean): number {
+  let total = 0;
+  for (const raw of name.toLowerCase()) {
+    if (!/[a-z]/.test(raw)) continue;
+    if (!filter(raw)) continue;
+    total += LETTER_VALUES[raw] ?? 0;
+  }
+  return total;
+}
+
+/**
+ * Expression Number — sum of all letters in your full birth name,
+ * reduced. Reveals your overall life purpose and talents.
+ */
+export function getExpressionNumber(fullName: string): number | null {
+  if (!fullName || !fullName.trim()) return null;
+  const total = sumLetters(fullName, () => true);
+  if (total === 0) return null;
+  return reducePreservingMasters(total);
+}
+
+/**
+ * Soul Urge Number — sum of vowels only. What your inner self craves;
+ * your deepest motivations.
+ */
+export function getSoulUrgeNumber(fullName: string): number | null {
+  if (!fullName || !fullName.trim()) return null;
+  const total = sumLetters(fullName, (c) => VOWELS.has(c));
+  if (total === 0) return null;
+  return reducePreservingMasters(total);
+}
+
+/**
+ * Personality Number — sum of consonants. How others perceive you;
+ * your outer persona.
+ */
+export function getPersonalityNumber(fullName: string): number | null {
+  if (!fullName || !fullName.trim()) return null;
+  const total = sumLetters(fullName, (c) => /[a-z]/.test(c) && !VOWELS.has(c));
+  if (total === 0) return null;
+  return reducePreservingMasters(total);
+}
+
+export interface NumberMeaning {
+  title: string;
+  keywords: string[];
+  summary: string;
+}
+
+export const NUMBER_MEANINGS: Record<number, NumberMeaning> = {
+  1: { title: 'The Leader',    keywords: ['initiative', 'independence', 'originality'],     summary: 'Leadership, new beginnings, willpower. A drive to be first, to originate, to stand alone at the front.' },
+  2: { title: 'The Harmoniser', keywords: ['cooperation', 'sensitivity', 'partnership'],    summary: 'Diplomacy, receptivity, attention to others. The glue between people and ideas.' },
+  3: { title: 'The Expresser', keywords: ['creativity', 'joy', 'communication'],            summary: 'Expression, optimism, art. Bringing light into the room through voice, word, or art.' },
+  4: { title: 'The Builder',   keywords: ['structure', 'discipline', 'endurance'],          summary: 'Foundations, method, reliability. What lasts is built by 4s.' },
+  5: { title: 'The Explorer',  keywords: ['freedom', 'curiosity', 'change'],                summary: 'Movement, variety, experience. 5s live to try, travel, and transform.' },
+  6: { title: 'The Nurturer',  keywords: ['care', 'responsibility', 'beauty'],              summary: 'Love, service, home. 6s tend what is living and weave beauty into the ordinary.' },
+  7: { title: 'The Seeker',    keywords: ['wisdom', 'depth', 'spirituality'],               summary: 'Study, reflection, truth-seeking. 7s go inward to find what only the still mind can see.' },
+  8: { title: 'The Architect', keywords: ['power', 'abundance', 'material mastery'],        summary: 'Execution, scale, stewardship. 8s build empires — and must keep integrity intact at scale.' },
+  9: { title: 'The Humanitarian', keywords: ['compassion', 'completion', 'wide love'],      summary: 'Love at scale, endings, wisdom of the old soul. 9s love broadly and finish what needs ending.' },
+  11: { title: 'The Visionary (Master)', keywords: ['insight', 'inspiration', 'spiritual sight'], summary: 'A master number. The intuitive channel — see what others cannot, translate it into language.' },
+  22: { title: 'The Master Builder (Master)', keywords: ['vision-to-form', 'large-scale build', 'legacy'], summary: 'A master number. Build something that lasts — institution, body of work, movement.' },
+  33: { title: 'The Master Teacher (Master)', keywords: ['unconditional love', 'healing presence', 'service'], summary: 'The rarest master number. Love, heal, teach at a scale that shapes communities.' },
+};
+
+export function getNumberMeaning(n: number): NumberMeaning | null {
+  return NUMBER_MEANINGS[n] ?? null;
+}

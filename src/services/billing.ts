@@ -51,6 +51,20 @@ const PRODUCT_IDS = {
   PREMIUM_MONTHLY: 'arcana_premium_monthly',
   PREMIUM_YEARLY: 'arcana_premium_yearly',
   PREMIUM_LIFETIME: 'arcana_premium_lifetime',
+  // Moonstone packs — consumable IAP on Play Store. Matching products must
+  // exist in Play Console + RevenueCat dashboard. The tier values are
+  // echoed on the webhook side for ledger credit.
+  MOONSTONES_SMALL:  'arcana_moonstones_100',
+  MOONSTONES_MEDIUM: 'arcana_moonstones_300',
+  MOONSTONES_LARGE:  'arcana_moonstones_750',
+  MOONSTONES_XL:     'arcana_moonstones_2000',
+};
+
+export const MOONSTONE_PACKS: Record<string, { moonstones: number; priceLabel: string }> = {
+  [PRODUCT_IDS.MOONSTONES_SMALL]:  { moonstones: 100,  priceLabel: '$2.99' },
+  [PRODUCT_IDS.MOONSTONES_MEDIUM]: { moonstones: 300,  priceLabel: '$7.99' },
+  [PRODUCT_IDS.MOONSTONES_LARGE]:  { moonstones: 750,  priceLabel: '$16.99' },
+  [PRODUCT_IDS.MOONSTONES_XL]:     { moonstones: 2000, priceLabel: '$39.99' },
 };
 
 const STRIPE_PRICE_IDS = {

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Send, MessageCircle, Feather, Moon, Flower } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
@@ -50,7 +51,7 @@ function saveHistory(persona: Persona, history: Message[]) {
 }
 
 export function AiCompanionPage() {
-  const { t, i18n } = useT('app');
+  const { t } = useT('app');
   const { profile } = useAuth();
   const [persona, setPersona] = useState<Persona>('sage');
   const [history, setHistory] = useState<Message[]>([]);
@@ -109,7 +110,7 @@ export function AiCompanionPage() {
         zodiacSign: zodiacSign ? zodiacData[zodiacSign].name : undefined,
         mbtiType: profile?.mbtiType,
         displayName: profile?.displayName,
-        locale: i18n.language || 'en',
+        locale: getLocale(),
       };
 
       const { data, error } = await supabase.functions.invoke('ai-companion-chat', {

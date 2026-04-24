@@ -4,7 +4,7 @@ import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import i18n from '../i18n/config';
+import { getLocale } from '../i18n/config';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
@@ -59,7 +59,7 @@ export function TarotCompanionPage() {
     const userContext = {
       zodiacSign: sunSign ? zodiacData[sunSign].name : undefined,
       mbtiType: profile?.mbtiType,
-      locale: i18n.language || 'en',
+      locale: getLocale(),
       displayName: profile?.displayName,
     };
     const { data, error } = await supabase.functions.invoke('ai-companion-chat', {

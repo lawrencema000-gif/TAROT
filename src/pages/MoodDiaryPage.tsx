@@ -51,6 +51,20 @@ export function MoodDiaryPage() {
     toast(t('mood.saved', { defaultValue: 'Mood logged for today' }), 'success');
   };
 
+  // Hook must run on every render (Rules of Hooks). Computed once here so
+  // both the `log` early-return branch and the `history` branch satisfy
+  // React's hook ordering.
+  const last30: Array<MoodEntry | null> = useMemo(() => {
+    const out: Array<MoodEntry | null> = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      out.push(allEntries.find((e) => e.date === dateStr) ?? null);
+    }
+    return out;
+  }, [allEntries]);
+
   if (stage === 'log') {
     const selectedInfo = selected ? MOOD_CATEGORIES[selected] : null;
     return (
@@ -158,18 +172,7 @@ export function MoodDiaryPage() {
     );
   }
 
-  // History view — render curve from allEntries
-  const entries = allEntries;
-  const last30: Array<MoodEntry | null> = useMemo(() => {
-    const out: Array<MoodEntry | null> = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
-      out.push(entries.find((e) => e.date === dateStr) ?? null);
-    }
-    return out;
-  }, [entries]);
+  // History view — render curve from the hoisted `last30` above.
 
   const entryCount = last30.filter((e) => e !== null).length;
   const avgIntensity = last30.filter((e): e is MoodEntry => e !== null).reduce((sum, e) => sum + e.intensity, 0) / Math.max(1, entryCount);

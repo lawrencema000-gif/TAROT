@@ -5,7 +5,7 @@ import { Button, Card, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import i18n from '../../i18n/config';
+import { getLocale } from '../../i18n/config';
 import { getZodiacSign, zodiacData } from '../../utils/zodiac';
 
 interface AskOracleButtonProps {
@@ -56,7 +56,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
         userContext: {
           zodiacSign: sunSign ? zodiacData[sunSign].name : undefined,
           mbtiType: profile?.mbtiType,
-          locale: i18n.language || 'en',
+          locale: getLocale(),
           displayName: profile?.displayName,
         },
       },

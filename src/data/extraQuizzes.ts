@@ -736,7 +736,8 @@ export const SPIRITUAL_INFO: Record<SpiritualType, DimensionalResultInfo> = {
 import { EXTRA_QUIZZES_PART2 } from './extraQuizzesPart2';
 import { EXTRA_QUIZZES_PART3 } from './extraQuizzesPart3';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars — used via spread below
+// Used via spread below — safe to flag as "unused" by exhaustive-deps.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const EXTRA_QUIZZES: QuizDefinition[] = [
   darkTriadQuiz,
   discQuiz,

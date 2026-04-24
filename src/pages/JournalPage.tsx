@@ -30,7 +30,7 @@ import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { supabase } from '../lib/supabase';
-import i18n from '../i18n/config';
+import { getLocale } from '../i18n/config';
 import { journalEntries, tarotReadings } from '../dal';
 // horoscopes loaded lazily to keep journal chunk small
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
@@ -1049,7 +1049,7 @@ export function JournalPage() {
                         userContext: {
                           mbtiType: profile?.mbtiType,
                           enneagramType: profile?.enneagramType,
-                          locale: i18n.language || 'en',
+                          locale: getLocale(),
                         },
                       },
                     });

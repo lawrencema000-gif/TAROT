@@ -1905,6 +1905,38 @@
         "birthChart": {
           "label": "Birth Chart",
           "desc": "Your cosmic blueprint"
+        },
+        "partnerSynastry": {
+          "label": "Partner Synastry",
+          "desc": "Real cross-aspect astrology"
+        },
+        "horoscopeFull": {
+          "label": "Full Horoscope",
+          "desc": "Chart, Forecast, Explore — all unlocked"
+        },
+        "humanDesign": {
+          "label": "Human Design",
+          "desc": "Real bodygraph + profile + authority"
+        },
+        "bazi": {
+          "label": "Bazi Pillars",
+          "desc": "Classical Chinese 8-character reading"
+        },
+        "dreamAi": {
+          "label": "AI Dream Interpreter",
+          "desc": "Jungian reading of any dream"
+        },
+        "moodLetter": {
+          "label": "Weekly Mood Letter",
+          "desc": "Personal letter from your log"
+        },
+        "oracleChat": {
+          "label": "Oracle Companion",
+          "desc": "Four personas, unlimited chat"
+        },
+        "shadowWork": {
+          "label": "Shadow Work Spread",
+          "desc": "The deepest tarot layout"
         }
       },
       "plans": {
@@ -1969,7 +2001,15 @@
         "compatibility": "Full Compatibility",
         "deepInterpretations": "Deep Interpretations",
         "guidedPrompts": "Guided Prompts",
-        "birthChart": "Birth Chart"
+        "birthChart": "Birth Chart",
+        "partnerSynastry": "Partner Synastry",
+        "horoscopeFull": "Full Horoscope",
+        "humanDesign": "Human Design",
+        "bazi": "Bazi Pillars",
+        "dreamAi": "AI Dream Interpreter",
+        "moodLetter": "Weekly Mood Letter",
+        "oracleChat": "Oracle Companion",
+        "shadowWork": "Shadow Work Spread"
       },
       "toasts": {
         "verified": "Subscription verified!",

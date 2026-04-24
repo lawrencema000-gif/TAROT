@@ -14,6 +14,12 @@ import {
   Ban,
   AlertCircle,
   RefreshCw,
+  Users,
+  Cloud,
+  Smile,
+  Mountain,
+  Mail,
+  Sun,
 } from 'lucide-react';
 import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
@@ -31,9 +37,17 @@ const unlocks = [
   { icon: Layers, key: 'allSpreads' },
   { icon: InfinityIcon, key: 'unlimitedSaves' },
   { icon: Heart, key: 'compatibility' },
+  { icon: Users, key: 'partnerSynastry' },
   { icon: Brain, key: 'deepInterpretations' },
   { icon: Star, key: 'guidedPrompts' },
   { icon: Moon, key: 'birthChart' },
+  { icon: Sun, key: 'horoscopeFull' },
+  { icon: Sparkles, key: 'humanDesign' },
+  { icon: Mountain, key: 'bazi' },
+  { icon: Cloud, key: 'dreamAi' },
+  { icon: Smile, key: 'moodLetter' },
+  { icon: Mail, key: 'oracleChat' },
+  { icon: Crown, key: 'shadowWork' },
 ] as const;
 
 type PlanId = 'monthly' | 'yearly' | 'lifetime';

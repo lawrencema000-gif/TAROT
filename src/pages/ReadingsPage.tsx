@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6 } from 'lucide-react';
+import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Lock } from 'lucide-react';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   TarotSection,
@@ -7,6 +7,7 @@ import {
   CompatibilitySection,
   LibrarySection,
 } from '../components/readings';
+import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 
@@ -27,6 +28,8 @@ type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-de
 
 export function ReadingsPage() {
   const { t } = useT('app');
+  const { profile } = useAuth();
+  const isPremium = !!profile?.isPremium;
   const [activeTab, setActiveTab] = useState<ReadingTab>('tarot');
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState('');
@@ -48,21 +51,39 @@ export function ReadingsPage() {
     setShowPaywall(true);
   };
 
-  const tabs = [
-    { id: 'tarot' as const, labelKey: 'readings.tabs.tarot', icon: Sparkles },
-    { id: 'horoscope' as const, labelKey: 'readings.tabs.horoscope', icon: Sun },
-    { id: 'compatibility' as const, labelKey: 'readings.tabs.compatibility', icon: Heart },
+  // Premium-gated tabs stay visible to non-premium users so they can see
+  // what's available to unlock. Tapping a locked tab surfaces the paywall
+  // instead of silently ignoring. `premium: true` marks premium-only
+  // features (real AI, real ephemeris, real synastry); free features
+  // stay accessible for everyone the flag is enabled for.
+  const tabs: {
+    id: ReadingTab;
+    labelKey: string;
+    icon: typeof Sparkles;
+    premium?: boolean;
+  }[] = [
+    { id: 'tarot', labelKey: 'readings.tabs.tarot', icon: Sparkles },
+    { id: 'horoscope', labelKey: 'readings.tabs.horoscope', icon: Sun },
+    { id: 'compatibility', labelKey: 'readings.tabs.compatibility', icon: Heart },
     ...(ichingEnabled ? [{ id: 'iching' as const, labelKey: 'readings.tabs.iching', icon: Coins }] : []),
-    ...(humanDesignEnabled ? [{ id: 'human-design' as const, labelKey: 'readings.tabs.humanDesign', icon: Layers }] : []),
-    ...(baziEnabled ? [{ id: 'bazi' as const, labelKey: 'readings.tabs.bazi', icon: Mountain }] : []),
-    ...(dreamEnabled ? [{ id: 'dream' as const, labelKey: 'readings.tabs.dream', icon: Cloud }] : []),
+    ...(humanDesignEnabled ? [{ id: 'human-design' as const, labelKey: 'readings.tabs.humanDesign', icon: Layers, premium: true }] : []),
+    ...(baziEnabled ? [{ id: 'bazi' as const, labelKey: 'readings.tabs.bazi', icon: Mountain, premium: true }] : []),
+    ...(dreamEnabled ? [{ id: 'dream' as const, labelKey: 'readings.tabs.dream', icon: Cloud, premium: true }] : []),
     ...(moodDiaryEnabled ? [{ id: 'mood' as const, labelKey: 'readings.tabs.mood', icon: Smile }] : []),
-    ...(partnerCompatEnabled ? [{ id: 'partner' as const, labelKey: 'readings.tabs.partner', icon: Users }] : []),
+    ...(partnerCompatEnabled ? [{ id: 'partner' as const, labelKey: 'readings.tabs.partner', icon: Users, premium: true }] : []),
     ...(fengShuiEnabled ? [{ id: 'fengshui' as const, labelKey: 'readings.tabs.fengshui', icon: Home }] : []),
     ...(runesEnabled ? [{ id: 'runes' as const, labelKey: 'readings.tabs.runes', icon: Hash }] : []),
     ...(diceEnabled ? [{ id: 'dice' as const, labelKey: 'readings.tabs.dice', icon: Dice6 }] : []),
-    { id: 'library' as const, labelKey: 'readings.tabs.library', icon: BookOpen },
+    { id: 'library', labelKey: 'readings.tabs.library', icon: BookOpen },
   ];
+
+  const handleTabClick = (tab: (typeof tabs)[number]) => {
+    if (tab.premium && !isPremium) {
+      handleShowPaywall(t(tab.labelKey) as string);
+      return;
+    }
+    setActiveTab(tab.id);
+  };
 
   return (
     <div className="space-y-6 pb-32">
@@ -79,17 +100,21 @@ export function ReadingsPage() {
         >
           {tabs.map(tab => {
             const Icon = tab.icon;
+            const isLocked = tab.premium && !isPremium;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl whitespace-nowrap transition-all active:scale-95 flex-shrink-0 snap-start ${
-                  activeTab === tab.id
+                onClick={() => handleTabClick(tab)}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl whitespace-nowrap transition-all active:scale-95 flex-shrink-0 snap-start relative ${
+                  isActive
                     ? 'bg-gold/20 text-gold border border-gold/30 shadow-lg shadow-gold/20'
-                    : 'bg-mystic-800/50 text-mystic-300 border border-transparent hover:bg-mystic-800'
+                    : isLocked
+                      ? 'bg-mystic-800/30 text-mystic-400 border border-gold/15 hover:border-gold/30'
+                      : 'bg-mystic-800/50 text-mystic-300 border border-transparent hover:bg-mystic-800'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                {isLocked ? <Lock className="w-4 h-4 text-gold/70" /> : <Icon className="w-4 h-4" />}
                 {t(tab.labelKey)}
               </button>
             );

@@ -3,6 +3,7 @@ import { Lock, Sun, Circle, TrendingUp, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
+import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { preloadInterpModules } from '../data/preloadInterpModules';
 import { useT } from '../i18n/useT';
 import type { HoroscopeSubTab } from '../types/astrology';
@@ -29,6 +30,8 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   const { chart, loading: chartLoading, computeChart, fetchChart } = useNatalChart();
   const [activeTab, setActiveTab] = useState<HoroscopeSubTab>('today');
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallFeature, setPaywallFeature] = useState('');
   const { profile } = useAuth();
 
   // Start loading interpretation data modules immediately
@@ -52,8 +55,16 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   }
 
   const handleTabChange = (tab: HoroscopeSubTab) => {
-    const tabDef = TABS.find((t) => t.id === tab);
-    if (tabDef?.premiumOnly && !profile?.isPremium) return;
+    const tabDef = TABS.find((x) => x.id === tab);
+    if (tabDef?.premiumOnly && !profile?.isPremium) {
+      // Instead of silently ignoring the tap (old behaviour), surface the
+      // paywall so non-premium users see what they'd unlock. The label
+      // describes which feature the tab maps to — e.g. "Birth Chart",
+      // "12-month Forecast", "Chart Explorer".
+      setPaywallFeature(t(tabDef.labelKey) as string);
+      setShowPaywall(true);
+      return;
+    }
     setActiveTab(tab);
   };
 
@@ -90,6 +101,12 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
       {activeTab === 'chart' && <BirthChart />}
       {activeTab === 'forecast' && <Forecast />}
       {activeTab === 'explore' && <Explore />}
+
+      <PaywallSheet
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        feature={paywallFeature}
+      />
     </div>
   );
 }

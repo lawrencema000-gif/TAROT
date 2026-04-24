@@ -79,6 +79,11 @@ export function NatalChartReportPage() {
   const [showWatchAd, setShowWatchAd] = useState(false);
   const transitOverlayEnabled = useFeatureFlag('chart-transits');
   const chartVariantsEnabled = useFeatureFlag('chart-variants');
+  // Moonstones temporarily disabled — payment setup + spending surfaces
+  // not yet final. Flag controls the entire secondary unlock path
+  // (Moonstones balance check, "Unlock with N Moonstones" button,
+  // "Earn 50 via ad" helper, WatchAdSheet). Flip back on when ready.
+  const moonstonesEnabled = useFeatureFlag('moonstones');
   type Variant = 'natal' | 'transits' | 'progressions' | 'solar-return' | 'synastry';
   const [variant, setVariant] = useState<Variant>('natal');
   const [transitPlanets, setTransitPlanets] = useState<OverlayPlanet[] | null>(null);
@@ -346,7 +351,9 @@ export function NatalChartReportPage() {
             })}
           </Button>
 
-          {balance !== null && balance >= NATAL_COST ? (
+          {/* Moonstones secondary path — rendered only when the flag
+              is on. With Moonstones hidden, Premium is the sole path. */}
+          {moonstonesEnabled && (balance !== null && balance >= NATAL_COST ? (
             <Button
               variant="outline"
               fullWidth
@@ -389,16 +396,18 @@ export function NatalChartReportPage() {
                 })}
               </Button>
             </div>
-          )}
+          ))}
         </Card>
 
         <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
-        <WatchAdSheet
-          open={showWatchAd}
-          onClose={() => setShowWatchAd(false)}
-          onCredited={(newBalance) => setBalance(newBalance)}
-          onShowPaywall={() => setShowSubscription(true)}
-        />
+        {moonstonesEnabled && (
+          <WatchAdSheet
+            open={showWatchAd}
+            onClose={() => setShowWatchAd(false)}
+            onCredited={(newBalance) => setBalance(newBalance)}
+            onShowPaywall={() => setShowSubscription(true)}
+          />
+        )}
       </div>
     );
   }

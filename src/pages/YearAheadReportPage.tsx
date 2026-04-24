@@ -3,6 +3,7 @@ import { Calendar, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Clock,
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
@@ -59,6 +60,7 @@ export function YearAheadReportPage() {
   const [unlocking, setUnlocking] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [showWatchAd, setShowWatchAd] = useState(false);
+  const moonstonesEnabled = useFeatureFlag('moonstones');
   const [data, setData] = useState<YearAheadData | null>(null);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -238,7 +240,7 @@ export function YearAheadReportPage() {
             })}
           </Button>
 
-          {balance !== null && balance >= YEAR_AHEAD_COST ? (
+          {moonstonesEnabled && (balance !== null && balance >= YEAR_AHEAD_COST ? (
             <Button
               variant="outline"
               fullWidth
@@ -281,16 +283,18 @@ export function YearAheadReportPage() {
                 })}
               </Button>
             </div>
-          )}
+          ))}
         </Card>
 
         <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
-        <WatchAdSheet
-          open={showWatchAd}
-          onClose={() => setShowWatchAd(false)}
-          onCredited={(newBalance) => setBalance(newBalance)}
-          onShowPaywall={() => setShowSubscription(true)}
-        />
+        {moonstonesEnabled && (
+          <WatchAdSheet
+            open={showWatchAd}
+            onClose={() => setShowWatchAd(false)}
+            onCredited={(newBalance) => setBalance(newBalance)}
+            onShowPaywall={() => setShowSubscription(true)}
+          />
+        )}
       </div>
     );
   }

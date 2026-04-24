@@ -3,6 +3,7 @@ import { Briefcase, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Users
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
+import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
 import { OrnateDivider } from '../components/ui';
@@ -34,6 +35,7 @@ export function CareerReportPage() {
   const [unlocking, setUnlocking] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [showWatchAd, setShowWatchAd] = useState(false);
+  const moonstonesEnabled = useFeatureFlag('moonstones');
 
   const checkUnlock = useCallback(async () => {
     if (!user || !mbti) {
@@ -205,7 +207,7 @@ export function CareerReportPage() {
             })}
           </Button>
 
-          {balance !== null && balance >= CAREER_REPORT_COST_MOONSTONES ? (
+          {moonstonesEnabled && (balance !== null && balance >= CAREER_REPORT_COST_MOONSTONES ? (
             <Button
               variant="outline"
               fullWidth
@@ -248,16 +250,18 @@ export function CareerReportPage() {
                 })}
               </Button>
             </div>
-          )}
+          ))}
         </Card>
 
         <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
-        <WatchAdSheet
-          open={showWatchAd}
-          onClose={() => setShowWatchAd(false)}
-          onCredited={(newBalance) => setBalance(newBalance)}
-          onShowPaywall={() => setShowSubscription(true)}
-        />
+        {moonstonesEnabled && (
+          <WatchAdSheet
+            open={showWatchAd}
+            onClose={() => setShowWatchAd(false)}
+            onCredited={(newBalance) => setBalance(newBalance)}
+            onShowPaywall={() => setShowSubscription(true)}
+          />
+        )}
       </div>
     );
   }

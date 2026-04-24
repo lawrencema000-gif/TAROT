@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { setPageMeta, setWebsiteSchema, setFaqSchema } from '../utils/seo';
+import { setPageMeta, setWebsiteSchema, setFaqSchema, setHowToSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
@@ -368,6 +368,10 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   useEffect(() => {
     setPageMeta(t('meta.title'), t('meta.description'));
     setWebsiteSchema();
+    // HowTo schema lets Google generate a "how to" rich card + lets AI
+    // answer engines cite the ritual steps when users ask about
+    // getting started with tarot apps.
+    setHowToSchema();
     setFaqSchema(FAQ_KEYS.map(k => ({
       q: t(`faq.items.${k}.q`),
       a: t(`faq.items.${k}.a`),

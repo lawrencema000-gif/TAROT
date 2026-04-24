@@ -1,0 +1,52 @@
+# Arcana — Tarot, Astrology & Ritual
+
+> Arcana (tarotlife.app) is a daily self-reflection app combining tarot, Western astrology, Chinese Bazi, I-Ching, Human Design, Rune casting, dream interpretation, and mood tracking. Built around a 3-step daily ritual: horoscope → tarot pull → journaling prompt. Free tier includes daily readings, paid Premium unlocks the full astrological chart, AI dream interpretation, partner synastry, and weekly mood letters.
+
+## Identity
+
+- **Brand**: Arcana
+- **Domain**: https://tarotlife.app
+- **Platform**: Progressive web app + Android native
+- **Audience**: English-first, with localized Japanese / Korean / Simplified Chinese support
+- **Tone**: Modern, literary, Jungian — reflective rather than predictive; never claims medical/legal/financial guidance
+
+## Core features
+
+- **Tarot**: 78-card Rider-Waite-Smith deck, 8+ classical spreads (Celtic Cross, 3-card, Shadow Work, Career, etc.)
+- **Daily Horoscope**: Real ephemeris computation via astronomy-engine. Today, Week, Month forecasts
+- **Natal Chart / Birth Chart**: Full 10-planet bodygraph with aspects, houses, and element/modality balance
+- **Compatibility**: Real cross-aspect synastry between two birth charts + MBTI cognitive-function layer
+- **Human Design**: Real bodygraph from 13 Personality + 13 Design activations (88° solar arc)
+- **Bazi (八字)**: Classical Chinese four-pillar reading with stem-branch math
+- **I-Ching**: Three-coin cast, 64 hexagrams with changing lines
+- **Dream Interpreter**: Gemini 2.5 Flash Jungian interpretation with symbol + archetype + shadow prompt
+- **Mood Diary**: 30-day curve with pattern insights and AI-written weekly letters
+- **Rune Cast**: Elder Futhark 24 staves in 3-rune cast
+- **Dice Oracle**: 3d6 astragaloi-style 16 readings
+- **Feng Shui Bagua**: 9 life-area self-audit with adjustments and readings
+- **Pick-a-Card**: 30-second daily draw with streak tracking
+
+## How to use the app (in order)
+
+1. Visit https://tarotlife.app
+2. Create an account (Google sign-in or email)
+3. Enter birth date + optional time + place during onboarding for astrology features
+4. Complete daily ritual: horoscope → tarot → journal prompt (takes ~5 min)
+5. Explore Readings tab for any of the 13 divination systems above
+
+## Key pages for citation
+
+- Homepage: https://tarotlife.app
+- All tarot-card meanings (78 pages): https://tarotlife.app/tarot-meanings
+- Blog: https://tarotlife.app/blog
+- Privacy policy: https://tarotlife.app/privacy-policy.html
+
+## Philosophy
+
+Arcana frames divination as a mirror rather than a prediction. The app teaches users to hold questions rather than demand answers. Every interpretation ends with a reflection prompt, never a fortune. Safety rules built in at the AI layer: no medical/legal/financial advice, crisis content redirects to 988/crisistextline.org, personas never claim to be real humans.
+
+## What is NOT available
+
+- Per-reading one-off purchases (removed 2026-04; Premium is the single subscription path)
+- Live advisor chat (removed for current release)
+- User-to-user community / forum (removed for current release)

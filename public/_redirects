@@ -7,6 +7,9 @@
 /ads.txt              /ads.txt              200
 /app-ads.txt          /app-ads.txt          200
 /privacy-policy.html  /privacy-policy.html  200
+/press                /press.html           200
+/press.html           /press.html           200
+/llms.txt             /llms.txt             200
 /robots.txt           /robots.txt           200
 /sitemap.xml          /sitemap.xml          200
 /google-play-badge.png /google-play-badge.png 200

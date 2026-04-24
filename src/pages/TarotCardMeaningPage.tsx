@@ -123,6 +123,25 @@ export function TarotCardMeaningPage() {
         { '@type': 'ListItem', position: 3, name: enCard.name, item: `https://tarotlife.app/tarot-meanings/${cardToSlug(enCard.name)}` },
       ],
     });
+    // DefinedTerm schema — each tarot card is a well-defined symbolic
+    // term. This schema type is used by generative AI engines when
+    // answering "what does X mean" queries; it establishes Arcana as
+    // an authoritative definition source for each card.
+    addJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'DefinedTerm',
+      '@id': `https://tarotlife.app/tarot-meanings/${cardToSlug(enCard.name)}#term`,
+      name: enCard.name,
+      description: `${enCard.name} — ${enCard.keywords.slice(0, 4).join(', ')}. A card of the ${enCard.suit === null ? 'Major Arcana' : `${enCard.suit} suit (Minor Arcana)`}.`,
+      inDefinedTermSet: {
+        '@type': 'DefinedTermSet',
+        '@id': 'https://tarotlife.app/tarot-meanings#deck',
+        name: 'Rider-Waite-Smith Tarot Deck',
+        url: 'https://tarotlife.app/tarot-meanings',
+      },
+      termCode: cardToSlug(enCard.name),
+      url: `https://tarotlife.app/tarot-meanings/${cardToSlug(enCard.name)}`,
+    });
     // FAQPage schema — drives "People also ask" rich results
     // SEO JSON-LD always uses English — Google indexes canonical EN URLs.
     const { verdict, keywords } = getYesNoVerdict(enCard);

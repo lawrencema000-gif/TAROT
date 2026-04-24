@@ -38,12 +38,34 @@ function addJsonLd(data: Record<string, unknown>) {
 }
 
 // ─── Organization (shared across schemas) ──────────────────────
+// Expanded 2026-04-25 — `sameAs` is the single most important field
+// for brand-entity linking in both traditional SERPs AND generative AI
+// crawlers (ChatGPT, Perplexity, Gemini, Claude). When set, Google
+// treats cross-linked social profiles as authoritative signals about
+// the brand; LLMs use them to resolve "who is Arcana?" queries.
+//
+// `alternateName` covers common variants users might type.
+// `foundingDate` + `areaServed` are secondary signals Google surfaces
+// in knowledge panels.
 const ORG_SCHEMA = {
   '@type': 'Organization',
+  '@id': `${SITE_URL}#organization`,
   name: SITE_NAME,
+  alternateName: ['Arcana Tarot', 'TarotLife', 'Arcana by TarotLife'],
   url: SITE_URL,
   logo: { '@type': 'ImageObject', url: DEFAULT_IMAGE, width: 512, height: 512 },
   description: DEFAULT_DESC,
+  foundingDate: '2026-01',
+  areaServed: 'Worldwide',
+  // Cross-link to external profiles. Update when accounts are claimed.
+  // Google + LLMs use these as brand-identity anchors.
+  sameAs: [
+    'https://play.google.com/store/apps/details?id=com.arcana.app',
+    'https://www.instagram.com/tarotlife.app/',
+    'https://www.tiktok.com/@tarotlife.app',
+    'https://twitter.com/tarotlife_app',
+    'https://www.pinterest.com/tarotlife/',
+  ],
 };
 
 /**
@@ -204,7 +226,50 @@ export function setWebsiteSchema() {
     },
   });
 
-  // MobileApplication
+  // SoftwareApplication — richer than MobileApplication, used by both
+  // Google SERPs (app-install cards) and LLMs when the user asks "what
+  // is X app?". Lists the 13 features that differentiate Arcana from
+  // generic tarot apps.
+  addJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: SITE_NAME,
+    alternateName: 'Arcana Tarot',
+    url: SITE_URL,
+    description: DEFAULT_DESC,
+    applicationCategory: 'LifestyleApplication',
+    applicationSubCategory: 'Spirituality',
+    operatingSystem: 'Android, iOS, Web',
+    softwareVersion: '1.1',
+    inLanguage: ['en', 'ja', 'ko', 'zh'],
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      description: 'Free tier with Premium subscription available',
+    },
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.arcana.app',
+    screenshot: `${SITE_URL}/image.png`,
+    featureList: [
+      '78-card Rider-Waite-Smith tarot deck',
+      'Real-ephemeris daily horoscope and natal chart',
+      'AI dream interpreter (Gemini 2.5)',
+      'Real cross-aspect partner synastry',
+      'Human Design bodygraph with 88-degree solar arc',
+      'Bazi Chinese four-pillar astrology',
+      'I-Ching three-coin cast with 64 hexagrams',
+      'Elder Futhark rune casting',
+      'Dice oracle (astragaloi tradition)',
+      'Feng Shui bagua self-audit',
+      'Mood diary with weekly AI letter',
+      'Daily Pick-a-card with streak tracking',
+      'Multi-language (English, Japanese, Korean, Chinese)',
+    ],
+    publisher: { '@id': `${SITE_URL}#organization` },
+  });
+
+  // MobileApplication kept for Android-specific rich results that
+  // prefer that type. Google treats the two as complementary.
   addJsonLd({
     '@context': 'https://schema.org',
     '@type': 'MobileApplication',
@@ -216,4 +281,87 @@ export function setWebsiteSchema() {
     description: DEFAULT_DESC,
     downloadUrl: 'https://play.google.com/store/apps/details?id=com.arcana.app',
   });
+}
+
+/**
+ * HowTo schema — for the landing page's "how it works" / onboarding
+ * walkthrough. Eligible for Google's rich "How to" results and
+ * picked up by generative AI engines when answering "how do I use X".
+ *
+ * Call alongside setWebsiteSchema() on the landing page.
+ */
+export function setHowToSchema() {
+  addJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to start a daily tarot ritual on Arcana',
+    description: 'A 5-minute daily ritual combining horoscope, tarot pull, and journaling prompt.',
+    image: DEFAULT_IMAGE,
+    totalTime: 'PT5M',
+    step: [
+      {
+        '@type': 'HowToStep',
+        name: 'Create your account',
+        text: 'Sign in with Google or email on tarotlife.app. No card required for the free tier.',
+        url: `${SITE_URL}/auth`,
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Enter your birth data',
+        text: 'Add your birth date, time (optional), and place. This powers your natal chart, horoscope, and compatibility readings.',
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Read your daily horoscope',
+        text: 'Today tab shows your personalised transit forecast based on your real natal chart, not generic sun-sign content.',
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Draw your daily tarot card',
+        text: 'Tap the deck to shuffle, then pick a card. Arcana uses the 78-card Rider-Waite-Smith deck with full meaning pages for each card.',
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Write a journal reflection',
+        text: 'End the ritual with a one-line reflection on a guided prompt. Builds streaks and surfaces themes over time.',
+      },
+    ],
+  });
+}
+
+/**
+ * WebPage + Breadcrumb schema — call on sub-route pages that should
+ * advertise a specific topic to search + generative engines. Pair
+ * with setPageMeta() for complete coverage.
+ */
+export function setTopicPageSchema(params: {
+  url: string;
+  name: string;
+  description: string;
+  breadcrumbs: Array<{ name: string; item: string }>;
+}) {
+  addJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': params.url,
+    name: params.name,
+    description: params.description,
+    url: params.url,
+    isPartOf: { '@id': `${SITE_URL}#website`, '@type': 'WebSite', url: SITE_URL, name: SITE_NAME },
+    inLanguage: 'en',
+    publisher: { '@id': `${SITE_URL}#organization` },
+  });
+
+  if (params.breadcrumbs.length) {
+    addJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: params.breadcrumbs.map((b, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: b.name,
+        item: b.item,
+      })),
+    });
+  }
 }

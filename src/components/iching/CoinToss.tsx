@@ -68,9 +68,10 @@ export function CoinToss({ active, results = ['heads', 'heads', 'heads'], durati
                 : undefined,
               // Falling heads/tails — the rotateY terminal angle is set
               // via a CSS custom property so the same keyframe serves
-              // either landing face.
-              ['--coin-flip' as const]: `${flipDeg}deg`,
-            }}
+              // either landing face. React's CSSProperties type doesn't
+              // allow custom --vars natively, hence the cast.
+              '--coin-flip': `${flipDeg}deg`,
+            } as React.CSSProperties}
           >
             <CoinFaceSvg face="heads" className="coin-face-yang" />
             <CoinFaceSvg face="tails" className="coin-face-yin"  />

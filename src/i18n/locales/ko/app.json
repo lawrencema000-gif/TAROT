@@ -3985,6 +3985,7 @@
     "partnerNamePlaceholder": "Partner name (optional)",
     "synastryCta": "Overlay partner chart",
     "synastryFailed": "Could not compute synastry.",
+    "overlayFailed": "오버레이를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
     "crossAspects": "Top cross-aspects",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
     "stripeFailed": "Could not start checkout",

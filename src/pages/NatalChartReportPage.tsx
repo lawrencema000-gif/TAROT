@@ -118,17 +118,33 @@ export function NatalChartReportPage() {
     setLoadingVariant(true);
     const { data, error } = await supabase.functions.invoke('astrology-current-positions', { body: {} });
     setLoadingVariant(false);
-    if (error) return;
+    if (error) {
+      toast(
+        t('natalReport.overlayFailed', {
+          defaultValue: "Couldn't load today's transits. Check your connection and try again.",
+        }),
+        'error',
+      );
+      return;
+    }
     const payload = (data?.data ?? data) as { positions?: OverlayPlanet[] } | null;
     if (payload?.positions) setTransitPlanets(payload.positions);
-  }, [transitPlanets]);
+  }, [transitPlanets, t]);
 
   const loadProgressions = useCallback(async () => {
     if (progressedPlanets) return;
     setLoadingVariant(true);
     const { data, error } = await supabase.functions.invoke('astrology-progressions', { body: {} });
     setLoadingVariant(false);
-    if (error) return;
+    if (error) {
+      toast(
+        t('natalReport.overlayFailed', {
+          defaultValue: "Couldn't load progressions. Check your connection and try again.",
+        }),
+        'error',
+      );
+      return;
+    }
     const payload = (data?.data ?? data) as { positions?: OverlayPlanet[]; progressedAge?: number } | null;
     if (payload?.positions) {
       setProgressedPlanets(payload.positions);
@@ -146,13 +162,21 @@ export function NatalChartReportPage() {
     const year = new Date().getFullYear();
     const { data, error } = await supabase.functions.invoke('astrology-solar-return', { body: { year } });
     setLoadingVariant(false);
-    if (error) return;
+    if (error) {
+      toast(
+        t('natalReport.overlayFailed', {
+          defaultValue: "Couldn't load this year's solar return. Check your connection and try again.",
+        }),
+        'error',
+      );
+      return;
+    }
     const payload = (data?.data ?? data) as { positions?: OverlayPlanet[]; returnMoment?: string; year?: number } | null;
     if (payload?.positions) {
       setSolarReturnPlanets(payload.positions);
       setSolarReturnLabel(`${payload.year}`);
     }
-  }, [solarReturnPlanets]);
+  }, [solarReturnPlanets, t]);
 
   const loadSynastry = useCallback(async () => {
     if (!partnerBirthDate) return;
@@ -459,16 +483,25 @@ export function NatalChartReportPage() {
           </div>
         )}
 
-        <ChartWheel
-          chart={natal}
-          overlay={currentOverlay ?? undefined}
-          overlayLabel={currentOverlayLabel ?? undefined}
-        />
-        {loadingVariant && (
-          <p className="text-[10px] text-center text-mystic-500 mt-2">
-            {t('natalReport.computing', { defaultValue: 'Computing…' })}
-          </p>
-        )}
+        <div className="relative">
+          <ChartWheel
+            chart={natal}
+            overlay={currentOverlay ?? undefined}
+            overlayLabel={currentOverlayLabel ?? undefined}
+          />
+          {loadingVariant && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center bg-mystic-950/60 backdrop-blur-sm rounded-xl animate-in fade-in duration-200"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="w-10 h-10 rounded-full border-2 border-gold/30 border-t-gold animate-spin mb-3" />
+              <p className="text-xs text-mystic-300 tracking-wide">
+                {t('natalReport.computing', { defaultValue: 'Computing your chart…' })}
+              </p>
+            </div>
+          )}
+        </div>
 
         {variant === 'synastry' && partnerAspects.length > 0 && (
           <div className="mt-4 space-y-1.5">

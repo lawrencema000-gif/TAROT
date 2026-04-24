@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   SIGN_SYMBOLS,
   PLANET_SYMBOLS,
@@ -151,7 +152,13 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
 
   return (
     <div className="space-y-3">
-      <div className="relative mx-auto" style={{ maxWidth: 360 }}>
+      <motion.div
+        className="relative mx-auto"
+        style={{ maxWidth: 360 }}
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
         <svg viewBox="0 0 320 320" className="w-full h-auto" role="img" aria-label="Natal chart wheel">
           {/* Outer ring background */}
           <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="rgba(212,175,55,0.35)" strokeWidth={1} />
@@ -321,63 +328,100 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
             </g>
           )}
         </svg>
-      </div>
+      </motion.div>
 
-      {/* Detail panel */}
+      {/* Detail panel — smooth cross-fade between selections */}
       <div className="min-h-[84px]">
-        {!selection && (
-          <p className="text-xs text-mystic-500 italic text-center">
-            {t('chartWheel.tapPrompt', { defaultValue: 'Tap a planet, house, or aspect line.' })}
-          </p>
-        )}
-        {selection?.kind === 'planet' && (
-          <div className="bg-mystic-900/60 border border-gold/20 rounded-xl p-3">
-            <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
-              {t('chartWheel.planetLabel', { defaultValue: 'Planet' })}
-            </p>
-            <p className="text-sm font-medium text-mystic-100">
-              {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
-            </p>
-            <p className="text-xs text-mystic-400 mt-0.5">
-              {selection.degree.toFixed(1)}°{selection.house ? ` · House ${selection.house}` : ''}
-            </p>
-          </div>
-        )}
-        {selection?.kind === 'transit' && (
-          <div className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3">
-            <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
-              {t('chartWheel.transitLabel', { defaultValue: 'Transit' })}
-              {overlayLabel ? ` · ${overlayLabel}` : ''}
-            </p>
-            <p className="text-sm font-medium text-mystic-100">
-              {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
-            </p>
-            <p className="text-xs text-mystic-400 mt-0.5">{selection.degree.toFixed(1)}°</p>
-          </div>
-        )}
-        {selection?.kind === 'house' && (
-          <div className="bg-mystic-900/60 border border-cosmic-violet/30 rounded-xl p-3">
-            <p className="text-[10px] uppercase tracking-widest text-cosmic-violet mb-1">
-              {t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: selection.index })}
-            </p>
-            <p className="text-sm text-mystic-100">
-              {HOUSE_THEMES[selection.index - 1]}
-            </p>
-          </div>
-        )}
-        {selection?.kind === 'aspect' && (
-          <div className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3">
-            <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
-              {t('chartWheel.aspectLabel', { defaultValue: 'Aspect' })}
-            </p>
-            <p className="text-sm font-medium text-mystic-100">
-              {selection.planet1} {selection.type} {selection.planet2}
-            </p>
-            <p className="text-xs text-mystic-400 mt-0.5">
-              orb {selection.orb.toFixed(1)}°
-            </p>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {!selection && (
+            <motion.p
+              key="prompt"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="text-xs text-mystic-500 italic text-center"
+            >
+              {t('chartWheel.tapPrompt', { defaultValue: 'Tap a planet, house, or aspect line.' })}
+            </motion.p>
+          )}
+          {selection?.kind === 'planet' && (
+            <motion.div
+              key={`planet-${selection.planet}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="bg-mystic-900/60 border border-gold/20 rounded-xl p-3"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+                {t('chartWheel.planetLabel', { defaultValue: 'Planet' })}
+              </p>
+              <p className="text-sm font-medium text-mystic-100">
+                {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
+              </p>
+              <p className="text-xs text-mystic-400 mt-0.5">
+                {selection.degree.toFixed(1)}°{selection.house ? ` · House ${selection.house}` : ''}
+              </p>
+            </motion.div>
+          )}
+          {selection?.kind === 'transit' && (
+            <motion.div
+              key={`transit-${selection.planet}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
+                {t('chartWheel.transitLabel', { defaultValue: 'Transit' })}
+                {overlayLabel ? ` · ${overlayLabel}` : ''}
+              </p>
+              <p className="text-sm font-medium text-mystic-100">
+                {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
+              </p>
+              <p className="text-xs text-mystic-400 mt-0.5">{selection.degree.toFixed(1)}°</p>
+            </motion.div>
+          )}
+          {selection?.kind === 'house' && (
+            <motion.div
+              key={`house-${selection.index}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="bg-mystic-900/60 border border-cosmic-violet/30 rounded-xl p-3"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-cosmic-violet mb-1">
+                {t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: selection.index })}
+              </p>
+              <p className="text-sm text-mystic-100">
+                {HOUSE_THEMES[selection.index - 1]}
+              </p>
+            </motion.div>
+          )}
+          {selection?.kind === 'aspect' && (
+            <motion.div
+              key={`aspect-${selection.planet1}-${selection.planet2}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
+                {t('chartWheel.aspectLabel', { defaultValue: 'Aspect' })}
+              </p>
+              <p className="text-sm font-medium text-mystic-100">
+                {selection.planet1} {selection.type} {selection.planet2}
+              </p>
+              <p className="text-xs text-mystic-400 mt-0.5">
+                orb {selection.orb.toFixed(1)}°
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Legend */}

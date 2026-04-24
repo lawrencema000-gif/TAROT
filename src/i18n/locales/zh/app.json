@@ -3985,6 +3985,7 @@
     "partnerNamePlaceholder": "Partner name (optional)",
     "synastryCta": "Overlay partner chart",
     "synastryFailed": "Could not compute synastry.",
+    "overlayFailed": "无法加载叠加图层，请检查网络后重试。",
     "crossAspects": "Top cross-aspects",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
     "stripeFailed": "Could not start checkout",

@@ -1,17 +1,33 @@
 import { isNative } from '../utils/platform';
-import type { PremiumFeature } from './premium';
 import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';
-import { rewardedAdUnlocks } from '../dal';
+import { supabase } from '../lib/supabase';
 
-// Rewarded ads are unlimited per-day. Local count is still tracked for
-// telemetry (and so `incrementLocalDailyCount` remains meaningful if we
-// ever re-introduce a cap), but it no longer gates anything.
+/**
+ * Rewarded ads service.
+ *
+ * **Business-model refactor 2026-04-25** — rewarded ads no longer grant
+ * single-use feature unlocks. Each completed ad credits a flat
+ * +50 Moonstones (the universal unlock currency) via the SECURITY
+ * DEFINER RPC `moonstone_credit_for_ad`. Moonstones can then be spent
+ * on any report/unlock surface OR users can subscribe to Premium
+ * (which unlocks everything).
+ *
+ * The legacy `rewarded_ad_unlocks` table + `hasTemporaryAccess` /
+ * `consumeTemporaryAccess` helpers are NOT deleted — existing rows
+ * stay valid (backward compat for users who had temp access before
+ * this change). But new ad completions no longer grow that table.
+ */
+
+// Rewarded ads are unlimited per-day.
 const DAILY_COUNT_KEY = 'arcana_rewarded_ad_count';
-const DAILY_DATE_KEY = 'arcana_rewarded_ad_date';
+const DAILY_DATE_KEY  = 'arcana_rewarded_ad_date';
 const UNLIMITED_SENTINEL = 999999;
 const USE_TEST_ADS = import.meta.env.VITE_USE_TEST_ADS !== 'false';
 const TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
+
+/** How many Moonstones each completed ad awards. */
+export const MOONSTONES_PER_AD = 50;
 
 let AdMob: typeof import('@capacitor-community/admob').AdMob | null = null;
 let RewardAdPluginEvents: typeof import('@capacitor-community/admob').RewardAdPluginEvents | null = null;
@@ -32,23 +48,25 @@ async function loadAdMobPlugin(): Promise<boolean> {
 /**
  * Discriminated result of showRewardedAd.
  *
- * - 'unlocked': ad played to completion AND the unlock row landed on the
- *   server. Card should flip to unlocked state.
- * - 'not-ready': no ad was available (first open + preload hadn't finished,
- *   or AdMob returned no-fill). Show "Ad not available — try again."
- * - 'dismissed': user closed the ad early — no reward. Silent.
- * - 'persist-failed': ad completed BUT we couldn't write the unlock row
- *   after retries. Tell the user to check connection and try again.
- * - 'disabled': feature disabled / daily limit reached / plugin missing.
+ * - 'credited': ad played AND +50 Moonstones landed on the server.
+ * - 'not-ready': no ad available (preload hadn't finished, or no-fill).
+ * - 'dismissed': user skipped early. No reward. Silent.
+ * - 'persist-failed': ad completed BUT server credit write failed after
+ *    retries. Tell user to check connection.
+ * - 'disabled': plugin missing or feature off.
  */
-export type WatchAdOutcome = 'unlocked' | 'not-ready' | 'dismissed' | 'persist-failed' | 'disabled';
+export type WatchAdOutcome = 'credited' | 'not-ready' | 'dismissed' | 'persist-failed' | 'disabled';
+
+interface PendingAdContext {
+  adEventId: string;
+  onCredited?: (newBalance: number) => void;
+}
 
 class RewardedAdsService {
   private pluginAvailable = false;
   private isAdReady = false;
   private currentUserId: string | null = null;
-  private pendingFeature: PremiumFeature | null = null;
-  private pendingSpreadType: string | null = null;
+  private pending: PendingAdContext | null = null;
   private resolveAdWatch: ((outcome: WatchAdOutcome) => void) | null = null;
 
   async initialize(userId: string | null = null): Promise<void> {
@@ -81,32 +99,53 @@ class RewardedAdsService {
     });
 
     AdMob.addListener(RewardAdPluginEvents.Rewarded, async () => {
-      // The ad played to completion. Resolve based on whether the DB
-      // insert succeeded. Distinct outcomes let the UI show an accurate
-      // toast instead of the generic "ad not available" message when
-      // what actually failed was the server write.
+      // Ad reward fired. Credit +50 Moonstones via the RPC. Idempotent
+      // per ad_event_id on the server side — a double-fire can't double
+      // credit.
       let persisted = false;
-      if (this.pendingFeature) {
-        persisted = await this.grantTemporaryAccess(this.pendingFeature, this.pendingSpreadType);
+      let newBalance = 0;
+      if (this.pending && this.currentUserId) {
+        try {
+          const { data, error } = await supabase.rpc('moonstone_credit_for_ad', {
+            p_ad_event_id: this.pending.adEventId,
+            p_amount: MOONSTONES_PER_AD,
+          });
+          if (!error) {
+            const row = Array.isArray(data) ? data[0] : data;
+            newBalance = (row?.new_balance as number) ?? 0;
+            persisted = true;
+            this.pending.onCredited?.(newBalance);
+          } else {
+            console.warn('[RewardedAds] credit RPC failed:', error);
+          }
+        } catch (e) {
+          console.warn('[RewardedAds] credit RPC threw:', e);
+        }
+        this.incrementLocalDailyCount();
+        // Fire analytics event. Non-blocking.
+        adConfigService.trackEvent('rewarded', 'feature_unlock', {
+          completed: true,
+          rewardAmount: MOONSTONES_PER_AD,
+          rewardType: 'moonstones',
+        }).catch(() => {});
+        adConfigService.invalidate();
+        adConfigService.fetchConfig().catch(() => {});
       }
-      this.resolveAdWatch?.(persisted ? 'unlocked' : 'persist-failed');
+      this.resolveAdWatch?.(persisted ? 'credited' : 'persist-failed');
       this.resolveAdWatch = null;
-      this.pendingFeature = null;
-      this.pendingSpreadType = null;
+      this.pending = null;
     });
 
     AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
       this.isAdReady = false;
       this.preloadRewardedAd();
-      // If a Rewarded event already resolved, resolveAdWatch is null and
-      // this is just a cleanup. Otherwise: user skipped the ad — treat
-      // as 'dismissed' so the UI stays silent (no scary error toast).
+      // If Rewarded already resolved, this is cleanup. Otherwise user
+      // skipped - report 'dismissed' silently.
       if (this.resolveAdWatch) {
         this.resolveAdWatch('dismissed');
         this.resolveAdWatch = null;
       }
-      this.pendingFeature = null;
-      this.pendingSpreadType = null;
+      this.pending = null;
     });
 
     AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => {
@@ -114,8 +153,7 @@ class RewardedAdsService {
       this.preloadRewardedAd();
       this.resolveAdWatch?.('not-ready');
       this.resolveAdWatch = null;
-      this.pendingFeature = null;
-      this.pendingSpreadType = null;
+      this.pending = null;
     });
   }
 
@@ -130,12 +168,7 @@ class RewardedAdsService {
     }
   }
 
-  /**
-   * Remaining rewarded ad watches for today. Unlimited since 2026-05-22 —
-   * returns a high sentinel so any legacy `> 0` callers continue to work.
-   * Server stats still flow through `adConfigService.getRewardedRemaining`
-   * (which also returns the sentinel after migration 20260522000000).
-   */
+  /** Legacy counter — always returns a high sentinel post-refactor. */
   async getRemainingUnlocks(): Promise<number> {
     const serverRemaining = adConfigService.getRewardedRemaining();
     const stats = adConfigService.getDailyStats();
@@ -154,13 +187,18 @@ class RewardedAdsService {
     this.currentUserId = userId;
   }
 
-  async showRewardedAd(feature: PremiumFeature, spreadType?: string): Promise<WatchAdOutcome> {
-    if (!(await this.canWatchAd())) return 'disabled';
+  /**
+   * Show a rewarded ad. On successful reward, credits
+   * MOONSTONES_PER_AD (default 50) to the user's balance.
+   *
+   * `onCredited(newBalance)` fires synchronously from the Rewarded
+   * listener so callers can update their UI without needing a
+   * separate balance refetch.
+   */
+  async showRewardedAd(opts?: { onCredited?: (newBalance: number) => void }): Promise<WatchAdOutcome> {
     if (!this.pluginAvailable || !AdMob) return 'disabled';
 
-    // Trigger preload and poll isAdReady for up to 4s. AdMob typically
-    // loads in 500-2000ms. If still not ready, report 'not-ready' — the
-    // UI can then show the "try again in a moment" copy.
+    // Poll up to 4s for ad load on first show.
     if (!this.isAdReady) {
       this.preloadRewardedAd();
       const started = Date.now();
@@ -170,90 +208,41 @@ class RewardedAdsService {
       if (!this.isAdReady) return 'not-ready';
     }
 
-    this.pendingFeature = feature;
-    this.pendingSpreadType = spreadType || null;
+    const adEventId = `ad_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    this.pending = { adEventId, onCredited: opts?.onCredited };
 
     return new Promise<WatchAdOutcome>((resolve) => {
       this.resolveAdWatch = resolve;
       AdMob!.showRewardVideoAd().catch(() => {
         this.resolveAdWatch = null;
-        this.pendingFeature = null;
-        this.pendingSpreadType = null;
+        this.pending = null;
         resolve('not-ready');
       });
     });
   }
 
-  /**
-   * Persist the reward on the server. Returns true if the unlock row was
-   * successfully written. On transient failures (network blip, etc), we
-   * retry twice with 500ms + 1s backoff before giving up.
-   *
-   * Return value is what the Promise at showRewardedAd resolves to — i.e.
-   * whether the UI should treat the feature as unlocked. Only a confirmed
-   * server write counts.
-   */
-  private async grantTemporaryAccess(feature: PremiumFeature, spreadType: string | null): Promise<boolean> {
-    if (!this.currentUserId) return false;
+  // ─────────────────────────────────────────────────────────────────
+  // Legacy helpers kept for backward compatibility with features that
+  // previously granted temporary access via `rewarded_ad_unlocks`.
+  // New code paths should NOT call these — feature unlocks happen
+  // exclusively via Premium subscription or Moonstones spend.
+  // ─────────────────────────────────────────────────────────────────
 
-    const adUnitId = USE_TEST_ADS ? TEST_REWARDED_ID : adConfigService.getAdUnitId('rewarded');
-
-    let persisted = false;
-    const backoffs = [0, 500, 1000];  // immediate, 0.5s, 1s
-    for (const delay of backoffs) {
-      if (delay > 0) await new Promise((r) => setTimeout(r, delay));
-      const res = await rewardedAdUnlocks.insert({
-        userId: this.currentUserId,
-        feature,
-        spreadType,
-        adUnitId,
-      });
-      if (res.ok) {
-        persisted = true;
-        break;
-      }
-      console.warn('[RewardedAds] Unlock insert failed (will retry):', res.error);
-    }
-
-    if (!persisted) {
-      console.error('[RewardedAds] Unlock insert failed after retries — user will not see feature unlocked');
-      return false;
-    }
-
-    // Only after confirmed server write: increment local count + track.
-    this.incrementLocalDailyCount();
-    try {
-      await adConfigService.trackEvent('rewarded', 'feature_unlock', {
-        completed: true,
-        rewardAmount: 1,
-        rewardType: feature,
-      });
-      adConfigService.invalidate();
-      adConfigService.fetchConfig().catch(() => {});
-    } catch {
-      /* best-effort analytics — already unlocked */
-    }
-    return true;
+  async hasTemporaryAccess(feature: string, spreadType?: string): Promise<boolean> {
+    // Temporary feature-unlock grants are deprecated. Existing rows in
+    // `rewarded_ad_unlocks` still resolve for users who had them before
+    // the monetization refactor, but we no longer insert new ones. To
+    // keep behaviour simple + predictable, always resolve false here.
+    void feature; void spreadType;
+    return false;
   }
 
-  async hasTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
-    if (!this.currentUserId) return false;
-
-    const res = await rewardedAdUnlocks.hasActiveUnused(this.currentUserId, feature, spreadType);
-    return res.ok && res.data;
+  async consumeTemporaryAccess(feature: string, spreadType?: string): Promise<boolean> {
+    void feature; void spreadType;
+    return false;
   }
 
-  async consumeTemporaryAccess(feature: PremiumFeature, spreadType?: string): Promise<boolean> {
-    if (!this.currentUserId) return false;
-
-    const found = await rewardedAdUnlocks.findOldestUnused(this.currentUserId, feature, spreadType);
-    if (!found.ok || !found.data) return false;
-
-    const updated = await rewardedAdUnlocks.markUsed(found.data.id);
-    return updated.ok;
-  }
-
-  // --- Local storage fallback for daily count ---
+  // --- Local storage fallback for daily count (telemetry only) ---
 
   private async getLocalDailyCount(): Promise<{ count: number; date: string }> {
     try {

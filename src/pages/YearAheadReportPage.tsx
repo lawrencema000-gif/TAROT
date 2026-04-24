@@ -1,24 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Clock, Star } from 'lucide-react';
+import { Calendar, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
-import { startReportCheckout } from '../services/reportCheckout';
 import { supabase } from '../lib/supabase';
-import { canPayWithCard } from '../utils/platform';
+import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
 
 /**
- * Year-Ahead Forecast — pay-per-report #2. $12.99 / 300 Moonstones.
+ * Year-Ahead Forecast — 300 Moonstones or Premium subscription.
  *
- * Flow: server-side edge function walks 12 months of outer-planet transits
- * against the user's natal chart, returns 12 monthly briefings. Client just
- * gates + renders. Requires a computed natal chart — falls through to a CTA
- * if the user hasn't done the birth-chart step yet.
+ * Monetization refactor 2026-04-25: one-off Stripe per-report purchases
+ * removed. Premium unlocks every feature; Moonstones are the per-report
+ * unlock currency; every rewarded ad credits +50 Moonstones.
  */
 
 const YEAR_AHEAD_COST = 300;
-const YEAR_AHEAD_USD = 12.99;
 
 interface YearAheadEvent {
   startDate: string;
@@ -59,7 +56,8 @@ export function YearAheadReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
+  const [showWatchAd, setShowWatchAd] = useState(false);
   const [data, setData] = useState<YearAheadData | null>(null);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -217,44 +215,24 @@ export function YearAheadReportPage() {
             </li>
           </ul>
 
-          {/* Same paywall hierarchy as the Natal Chart report (fixed
-              2026-04-24): Stripe gold-primary button, Moonstones
-              outline-secondary when sufficient, helper card when zero. */}
-          {canPayWithCard() && (
-            <Button
-              variant="gold"
-              fullWidth
-              onClick={async () => {
-                setCheckoutLoading(true);
-                try {
-                  const res = await startReportCheckout({ reportKey: 'year-ahead', reference: String(currentYear) });
-                  if (!res.ok && res.error !== 'already-unlocked') {
-                    toast(
-                      t('yearAhead.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
-                      'error',
-                    );
-                  }
-                } catch (e) {
-                  console.error('[YearAhead] Stripe checkout failed:', e);
-                  toast(
-                    t('yearAhead.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
-                    'error',
-                  );
-                } finally {
-                  setCheckoutLoading(false);
-                }
-              }}
-              disabled={checkoutLoading}
-              loading={checkoutLoading}
-              className="min-h-[52px]"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t('yearAhead.payWithStripe', {
-                defaultValue: 'Unlock for ${{price}}',
-                price: YEAR_AHEAD_USD.toFixed(2),
-              })}
-            </Button>
-          )}
+          {/*
+            Monetization refactor 2026-04-25 — two-option paywall:
+              1. PRIMARY: Upgrade to Premium → unlocks EVERY feature
+              2. SECONDARY: Unlock with Moonstones (or earn them via ads)
+            One-off Stripe per-report purchases have been removed to
+            keep the transactional surface small + unambiguous.
+          */}
+          <Button
+            variant="gold"
+            fullWidth
+            onClick={() => setShowSubscription(true)}
+            className="min-h-[52px]"
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            {t('yearAhead.upgradeToPremium', {
+              defaultValue: 'Upgrade to Premium — unlocks everything',
+            })}
+          </Button>
 
           {balance !== null && balance >= YEAR_AHEAD_COST ? (
             <Button
@@ -272,21 +250,43 @@ export function YearAheadReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30">
-              <p className="text-xs text-mystic-300 mb-1">
+            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
+              <p className="text-xs text-mystic-300 mb-2">
                 {t('yearAhead.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
                   n: YEAR_AHEAD_COST,
                 })}
               </p>
-              <p className="text-[11px] text-mystic-500">
+              <p className="text-[11px] text-mystic-500 mb-3">
                 {t('yearAhead.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
                 {' · '}
-                {t('yearAhead.earnHint', { defaultValue: 'Earn via daily check-in + inviting friends.' })}
+                {t('yearAhead.earnHint', {
+                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
+                })}
               </p>
+              <Button
+                variant="outline"
+                fullWidth
+                size="sm"
+                onClick={() => setShowWatchAd(true)}
+                className="min-h-[40px]"
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                {t('yearAhead.earnNow', {
+                  defaultValue: 'Earn 50 Moonstones — watch ad',
+                })}
+              </Button>
             </div>
           )}
         </Card>
+
+        <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
+        <WatchAdSheet
+          open={showWatchAd}
+          onClose={() => setShowWatchAd(false)}
+          onCredited={(newBalance) => setBalance(newBalance)}
+          onShowPaywall={() => setShowSubscription(true)}
+        />
       </div>
     );
   }

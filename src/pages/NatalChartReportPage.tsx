@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ScrollText, Lock, Printer, Sparkles, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus } from 'lucide-react';
+import { ScrollText, Lock, Printer, Sparkles, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -8,8 +8,7 @@ import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
-import { startReportCheckout } from '../services/reportCheckout';
-import { canPayWithCard } from '../utils/platform';
+import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
 import {
   SIGN_SYMBOLS,
   PLANET_SYMBOLS,
@@ -34,7 +33,6 @@ import {
  */
 
 const NATAL_COST = 200;
-const NATAL_USD = 9.99;
 
 const ASPECT_META: Record<AspectType, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
   conjunction: { label: 'Conjunction',  color: 'text-gold',         icon: Circle },
@@ -77,7 +75,8 @@ export function NatalChartReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
+  const [showWatchAd, setShowWatchAd] = useState(false);
   const transitOverlayEnabled = useFeatureFlag('chart-transits');
   const chartVariantsEnabled = useFeatureFlag('chart-variants');
   type Variant = 'natal' | 'transits' | 'progressions' | 'solar-return' | 'synastry';
@@ -326,52 +325,24 @@ export function NatalChartReportPage() {
           </ul>
 
           {/*
-            Paywall card — two equal-weight options.
-            Old UX inverted the hierarchy: pay-$9.99 was a tiny text link
-            while "Unlock for 200 Moonstones" was the big gold button,
-            even though Moonstones is the free-earn path and card is the
-            real revenue path. Balance of zero also silently disabled the
-            Moonstones button with no guidance. Reworked below.
+            Monetization refactor 2026-04-25 — two-option paywall:
+              1. PRIMARY: Upgrade to Premium → unlocks EVERY feature
+              2. SECONDARY: Unlock with Moonstones (or earn them via ads)
+            One-off Stripe per-report purchases have been removed to
+            keep the transactional surface small + unambiguous.
           */}
-          {canPayWithCard() && (
-            <Button
-              variant="gold"
-              fullWidth
-              onClick={async () => {
-                setCheckoutLoading(true);
-                try {
-                  const res = await startReportCheckout({ reportKey: 'natal-chart-pdf', reference });
-                  if (!res.ok && res.error !== 'already-unlocked') {
-                    toast(
-                      t('natalReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
-                      'error',
-                    );
-                  }
-                } catch (e) {
-                  console.error('[NatalChart] Stripe checkout failed:', e);
-                  toast(
-                    t('natalReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
-                    'error',
-                  );
-                } finally {
-                  setCheckoutLoading(false);
-                }
-              }}
-              disabled={checkoutLoading}
-              loading={checkoutLoading}
-              className="min-h-[52px]"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t('natalReport.payWithStripe', {
-                defaultValue: 'Unlock for ${{price}}',
-                price: NATAL_USD.toFixed(2),
-              })}
-            </Button>
-          )}
+          <Button
+            variant="gold"
+            fullWidth
+            onClick={() => setShowSubscription(true)}
+            className="min-h-[52px]"
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            {t('natalReport.upgradeToPremium', {
+              defaultValue: 'Upgrade to Premium — unlocks everything',
+            })}
+          </Button>
 
-          {/* Moonstone path — secondary. Always tappable; shows helpful
-              sub-copy when the balance is insufficient instead of dead-
-              disabling. */}
           {balance !== null && balance >= NATAL_COST ? (
             <Button
               variant="outline"
@@ -388,21 +359,43 @@ export function NatalChartReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30">
-              <p className="text-xs text-mystic-300 mb-1">
+            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
+              <p className="text-xs text-mystic-300 mb-2">
                 {t('natalReport.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
                   n: NATAL_COST,
                 })}
               </p>
-              <p className="text-[11px] text-mystic-500">
+              <p className="text-[11px] text-mystic-500 mb-3">
                 {t('natalReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
                 {' · '}
-                {t('natalReport.earnHint', { defaultValue: 'Earn via daily check-in + inviting friends.' })}
+                {t('natalReport.earnHint', {
+                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
+                })}
               </p>
+              <Button
+                variant="outline"
+                fullWidth
+                size="sm"
+                onClick={() => setShowWatchAd(true)}
+                className="min-h-[40px]"
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                {t('natalReport.earnNow', {
+                  defaultValue: 'Earn 50 Moonstones — watch ad',
+                })}
+              </Button>
             </div>
           )}
         </Card>
+
+        <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
+        <WatchAdSheet
+          open={showWatchAd}
+          onClose={() => setShowWatchAd(false)}
+          onCredited={(newBalance) => setBalance(newBalance)}
+          onShowPaywall={() => setShowSubscription(true)}
+        />
       </div>
     );
   }

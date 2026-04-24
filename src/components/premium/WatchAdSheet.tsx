@@ -1,91 +1,104 @@
 import { useState } from 'react';
-import { Play, X, Gift, Crown, Sparkles, BookOpen } from 'lucide-react';
+import { Play, X, Coins, Crown } from 'lucide-react';
 import { Button, toast } from '../ui';
-import { rewardedAdsService } from '../../services/rewardedAds';
-import { PREMIUM_FEATURES, type PremiumFeature } from '../../services/premium';
-import { localizedFeature } from '../../i18n/localizePremium';
+import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAds';
 import { useT } from '../../i18n/useT';
+
+/**
+ * Earn-Moonstones-by-watching-ad sheet.
+ *
+ * Refactored 2026-04-25. Previously this sheet granted a single-use
+ * feature unlock per ad. Now every ad credits +50 Moonstones (the
+ * universal currency). Users spend Moonstones on reports OR subscribe
+ * to Premium for unlimited access.
+ *
+ * Legacy prop API kept intact for backward compatibility with existing
+ * callers — `feature`, `spreadType`, `onUnlocked` are accepted but only
+ * used for telemetry + to fire the callback after the credit lands.
+ * New callers should use the simpler `onCredited(newBalance)` callback.
+ */
 
 interface WatchAdSheetProps {
   open: boolean;
   onClose: () => void;
-  feature: PremiumFeature;
+  /** Legacy — unused by the new credit flow; callers may leave absent. */
+  feature?: string;
+  /** Legacy — unused. */
   spreadType?: string;
-  onUnlocked: () => void;
+  /**
+   * Legacy — fired after a successful ad reward. Callers that used to
+   * re-check feature access on this callback should instead check the
+   * Moonstone balance or use `onCredited` below.
+   */
+  onUnlocked?: () => void;
+  /** New — fires with the updated Moonstone balance after credit. */
+  onCredited?: (newBalance: number) => void;
+  /** Called when the user taps "Upgrade to Premium" instead. */
   onShowPaywall: () => void;
 }
-
-const FEATURE_CONTEXT: Partial<Record<PremiumFeature, { contextKey: string; icon: typeof Gift }>> = {
-  extra_reading: {
-    contextKey: 'extraReading',
-    icon: Sparkles,
-  },
-  deep_interpretations: {
-    contextKey: 'deepInterpretations',
-    icon: BookOpen,
-  },
-};
 
 export function WatchAdSheet({
   open,
   onClose,
-  feature,
-  spreadType,
   onUnlocked,
+  onCredited,
   onShowPaywall,
 }: WatchAdSheetProps) {
   const { t } = useT('app');
   const [loading, setLoading] = useState(false);
-  const featureDef = localizedFeature(PREMIUM_FEATURES[feature]);
-  const context = FEATURE_CONTEXT[feature];
 
   if (!open) return null;
-
-  const title = context
-    ? t(`premium.watchAd.contexts.${context.contextKey}.title`)
-    : t('premium.watchAd.defaultTitle', { feature: featureDef.name });
-  const subtitle = context
-    ? t(`premium.watchAd.contexts.${context.contextKey}.subtitle`)
-    : t('premium.watchAd.defaultSubtitle');
-  const Icon = context?.icon || Gift;
 
   const handleWatchAd = async () => {
     setLoading(true);
     try {
-      const outcome = await rewardedAdsService.showRewardedAd(feature, spreadType);
+      const outcome = await rewardedAdsService.showRewardedAd({
+        onCredited: (balance) => onCredited?.(balance),
+      });
 
       switch (outcome) {
-        case 'unlocked':
-          toast(t('premium.watchAd.toasts.unlocked'), 'success');
-          onUnlocked();
+        case 'credited':
+          toast(
+            t('premium.watchAd.toasts.credited', {
+              defaultValue: '+{{n}} Moonstones added to your balance',
+              n: MOONSTONES_PER_AD,
+            }),
+            'success',
+          );
+          onUnlocked?.();
           onClose();
           break;
         case 'not-ready':
-          // No ad inventory right now. Don't close the sheet — user can tap again.
-          toast(t('premium.watchAd.toasts.notAvailable'), 'error');
+          toast(
+            t('premium.watchAd.toasts.notAvailable', {
+              defaultValue: 'Ad not available right now. Try again in a moment.',
+            }),
+            'error',
+          );
           break;
         case 'persist-failed':
-          // Ad DID play to completion, but we couldn't write the unlock row.
-          // Apologize specifically and offer a retry. (User sees this after
-          // actually watching the ad, so the generic "not available" message
-          // is misleading.)
           toast(
             t('premium.watchAd.toasts.persistFailed', {
-              defaultValue: "Ad watched, but we couldn't save the unlock. Check your connection and try again.",
+              defaultValue: "Ad watched, but we couldn't credit your balance. Check your connection and try again.",
             }),
             'error',
           );
           break;
         case 'dismissed':
-          // User skipped the ad — no reward, no error.
+          // Silent — user intentionally skipped.
           break;
         case 'disabled':
-          toast(t('premium.watchAd.toasts.notAvailable'), 'error');
+          toast(
+            t('premium.watchAd.toasts.notAvailable', {
+              defaultValue: 'Ad not available right now. Try again in a moment.',
+            }),
+            'error',
+          );
           break;
       }
     } catch (error) {
       console.error('[WatchAdSheet] Error showing ad:', error);
-      toast(t('premium.watchAd.toasts.error'), 'error');
+      toast(t('premium.watchAd.toasts.error', { defaultValue: 'Something went wrong. Please try again.' }), 'error');
     } finally {
       setLoading(false);
     }
@@ -109,6 +122,7 @@ export function WatchAdSheet({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 p-2 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
+          aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
         >
           <X className="w-4 h-4 text-mystic-400" />
         </button>
@@ -116,16 +130,23 @@ export function WatchAdSheet({
         <div className="relative px-6 pt-8 pb-6">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-              <Icon className="w-8 h-8 text-gold" />
+              <Coins className="w-8 h-8 text-gold" />
             </div>
           </div>
 
           <h2 className="font-display text-xl text-center text-mystic-100 mb-2">
-            {title}
+            {t('premium.watchAd.earnTitle', {
+              defaultValue: 'Earn {{n}} Moonstones',
+              n: MOONSTONES_PER_AD,
+            })}
           </h2>
 
-          <p className="text-sm text-mystic-400 text-center mb-6">
-            {subtitle}
+          <p className="text-sm text-mystic-400 text-center mb-6 leading-relaxed">
+            {t('premium.watchAd.earnSubtitle', {
+              defaultValue:
+                'Watch a short ad and get {{n}} Moonstones added to your balance. Spend them on reports or any feature.',
+              n: MOONSTONES_PER_AD,
+            })}
           </p>
 
           <div className="space-y-3">
@@ -138,7 +159,10 @@ export function WatchAdSheet({
               className="min-h-[52px]"
             >
               <Play className="w-5 h-5" />
-              {t('premium.watchAd.watchAdToUnlock')}
+              {t('premium.watchAd.watchAdCta', {
+                defaultValue: 'Watch ad → +{{n}} Moonstones',
+                n: MOONSTONES_PER_AD,
+              })}
             </Button>
 
             <Button
@@ -148,21 +172,26 @@ export function WatchAdSheet({
               className="min-h-[44px]"
             >
               <Crown className="w-4 h-4" />
-              {t('premium.watchAd.getUnlimited')}
+              {t('premium.watchAd.getUnlimited', {
+                defaultValue: 'Or upgrade — unlock everything',
+              })}
             </Button>
 
             <button
               onClick={onClose}
               className="w-full py-2 text-sm text-mystic-500 hover:text-mystic-400 transition-colors"
             >
-              {t('premium.watchAd.notNow')}
+              {t('premium.watchAd.notNow', { defaultValue: 'Not now' })}
             </button>
           </div>
         </div>
 
         <div className="px-6 pb-6 pt-2 border-t border-mystic-800/50">
-          <p className="text-xs text-mystic-600 text-center">
-            {t('premium.watchAd.footerDisclaimer')}
+          <p className="text-xs text-mystic-600 text-center leading-relaxed">
+            {t('premium.watchAd.footerDisclaimer', {
+              defaultValue:
+                'Premium unlocks every feature with no ads — usually better value than paying per report.',
+            })}
           </p>
         </div>
       </div>

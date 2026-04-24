@@ -1,27 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Users, Eye, Calendar, Quote } from 'lucide-react';
+import { Briefcase, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Users, Eye, Calendar, Quote, Crown } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
-import { startReportCheckout } from '../services/reportCheckout';
-import { canPayWithCard } from '../utils/platform';
+import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
 import {
   getCareerArchetype,
   CAREER_REPORT_COST_MOONSTONES,
-  CAREER_REPORT_COST_USD,
 } from '../data/careerArchetypes';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
 /**
- * Career Archetype Deep Report — first pay-per-report.
+ * Career Archetype Deep Report — 150 Moonstones or Premium subscription.
  *
- * Locked by default. Unlock either:
- *   - pay 150 Moonstones (atomic RPC, debits ledger + inserts unlock row)
- *   - (future) pay $6.99 via Stripe — webhook inserts directly
+ * Monetization refactor 2026-04-25: one-off Stripe per-report purchases
+ * removed. Premium unlocks every feature; Moonstones are the per-report
+ * unlock currency; every rewarded ad credits +50 Moonstones.
  *
  * Report content is rendered client-side from CAREER_ARCHETYPES[mbti].
- * No LLM call, no per-generation cost — 100% platform margin.
+ * No LLM call, no per-generation cost.
  */
 export function CareerReportPage() {
   const { t } = useT('app');
@@ -33,7 +31,8 @@ export function CareerReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
+  const [showWatchAd, setShowWatchAd] = useState(false);
 
   const checkUnlock = useCallback(async () => {
     if (!user || !mbti) {
@@ -183,44 +182,24 @@ export function CareerReportPage() {
             </li>
           </ul>
 
-          {/* Same paywall hierarchy as Natal Chart + Year Ahead (fixed
-              2026-04-24): Stripe primary, Moonstones secondary, helper
-              card when zero. */}
-          {canPayWithCard() && (
-            <Button
-              variant="gold"
-              fullWidth
-              onClick={async () => {
-                setCheckoutLoading(true);
-                try {
-                  const res = await startReportCheckout({ reportKey: 'career-archetype', reference: mbti });
-                  if (!res.ok && res.error !== 'already-unlocked') {
-                    toast(
-                      t('careerReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
-                      'error',
-                    );
-                  }
-                } catch (e) {
-                  console.error('[Career] Stripe checkout failed:', e);
-                  toast(
-                    t('careerReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
-                    'error',
-                  );
-                } finally {
-                  setCheckoutLoading(false);
-                }
-              }}
-              disabled={checkoutLoading}
-              loading={checkoutLoading}
-              className="min-h-[52px]"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t('careerReport.payWithStripe', {
-                defaultValue: 'Unlock for ${{price}}',
-                price: CAREER_REPORT_COST_USD.toFixed(2),
-              })}
-            </Button>
-          )}
+          {/*
+            Monetization refactor 2026-04-25 — two-option paywall:
+              1. PRIMARY: Upgrade to Premium → unlocks EVERY feature
+              2. SECONDARY: Unlock with Moonstones (or earn them via ads)
+            One-off Stripe per-report purchases have been removed to
+            keep the transactional surface small + unambiguous.
+          */}
+          <Button
+            variant="gold"
+            fullWidth
+            onClick={() => setShowSubscription(true)}
+            className="min-h-[52px]"
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            {t('careerReport.upgradeToPremium', {
+              defaultValue: 'Upgrade to Premium — unlocks everything',
+            })}
+          </Button>
 
           {balance !== null && balance >= CAREER_REPORT_COST_MOONSTONES ? (
             <Button
@@ -238,21 +217,43 @@ export function CareerReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30">
-              <p className="text-xs text-mystic-300 mb-1">
+            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
+              <p className="text-xs text-mystic-300 mb-2">
                 {t('careerReport.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
                   n: CAREER_REPORT_COST_MOONSTONES,
                 })}
               </p>
-              <p className="text-[11px] text-mystic-500">
+              <p className="text-[11px] text-mystic-500 mb-3">
                 {t('careerReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
                 {' · '}
-                {t('careerReport.earnHint', { defaultValue: 'Earn via daily check-in + inviting friends.' })}
+                {t('careerReport.earnHint', {
+                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
+                })}
               </p>
+              <Button
+                variant="outline"
+                fullWidth
+                size="sm"
+                onClick={() => setShowWatchAd(true)}
+                className="min-h-[40px]"
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                {t('careerReport.earnNow', {
+                  defaultValue: 'Earn 50 Moonstones — watch ad',
+                })}
+              </Button>
             </div>
           )}
         </Card>
+
+        <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
+        <WatchAdSheet
+          open={showWatchAd}
+          onClose={() => setShowWatchAd(false)}
+          onCredited={(newBalance) => setBalance(newBalance)}
+          onShowPaywall={() => setShowSubscription(true)}
+        />
       </div>
     );
   }

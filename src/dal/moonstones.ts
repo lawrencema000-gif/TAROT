@@ -7,6 +7,7 @@ import type { Result } from './dailyRituals';
 export type TransactionKind =
   | 'purchase' | 'daily-checkin' | 'referral' | 'streak' | 'quiz-complete'
   | 'gift' | 'gift-receive' | 'advisor-session' | 'pay-per-report'
+  | 'rewarded-ad'
   | 'refund' | 'admin-grant' | 'admin-claw';
 
 export interface MoonstoneTransaction {

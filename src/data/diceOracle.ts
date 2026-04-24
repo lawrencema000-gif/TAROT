@@ -1,8 +1,13 @@
 // Dice Oracle — Greek/Roman astragaloi tradition, simplified.
 //
-// Roll three six-sided dice, sum 3-18. Each sum gets a short reading.
-// Historical practice used astragaloi (knucklebones) with four-sided
-// rolls; three standard dice approximate the tradition for modern use.
+// Roll three six-sided dice, sum 3-18. Each sum gets an expanded
+// reading covering (a) the core message, (b) how the energy tends
+// to show up, and (c) a journal prompt. Historical practice used
+// astragaloi (knucklebones) with four-sided rolls; three standard
+// dice approximate the tradition for modern use.
+//
+// Content expanded 2026-04-25 from one-line readings to full
+// ~120-word paragraphs per sum so every roll lands with substance.
 
 export interface DiceReading {
   sum: number;
@@ -13,22 +18,102 @@ export interface DiceReading {
 }
 
 const SUM_MEANINGS: Record<number, { title: string; reading: string; prompt: string }> = {
-  3:  { title: 'A Quiet Beginning',    reading: 'The smallest possible roll. Something subtle is starting — don\'t miss it by looking for drama.', prompt: 'What small new thing in my life deserves attention?' },
-  4:  { title: 'Hold Your Ground',     reading: 'A call to stay where you are. The situation is fragile; movement would destabilise it.', prompt: 'Where am I tempted to move that would actually be premature?' },
-  5:  { title: 'A Letter Arrives',     reading: 'News comes — or already has. Watch messages, conversations, synchronicities over the next few days.', prompt: 'What message have I dismissed recently that might have been important?' },
-  6:  { title: 'The Path Forks',       reading: 'A choice is near. The dice say: consult your own voice before anyone else\'s.', prompt: 'What choice am I facing — and whose voice keeps drowning out my own?' },
-  7:  { title: 'Unexpected Help',      reading: 'Something you need is already on its way from a source you aren\'t looking toward.', prompt: 'Where am I looking only to the usual places for help?' },
-  8:  { title: 'Patience',             reading: 'The answer you want will not arrive on your schedule. Keep acting well while you wait.', prompt: 'What am I trying to rush that would be better if I waited?' },
-  9:  { title: 'Honest Labour',        reading: 'Simple, persistent effort is the reading. No tricks. Show up every day.', prompt: 'What practice am I about to abandon that actually just needs more time?' },
-  10: { title: 'Balance Point',        reading: 'You are at a pivot. Neither here nor there. Notice what the balance is asking you to weigh.', prompt: 'If I set everything down for one minute, what would matter most?' },
-  11: { title: 'Spark',                reading: 'Quick action is possible now. A window is open — but brief. Move in the next few days.', prompt: 'What opportunity is currently open that I\'ve been hesitating on?' },
-  12: { title: 'Full House',           reading: 'Abundance, but also responsibility. The full cup must not spill.', prompt: 'What am I receiving right now that I haven\'t quite acknowledged?' },
-  13: { title: 'The Threshold',        reading: 'Thirteen is traditionally liminal — not unlucky, just in-between. You are neither there nor here.', prompt: 'What is ending and what is beginning in me right now?' },
-  14: { title: 'Tested Strength',      reading: 'Your resolve is being measured. Not cruelly — this is the teaching.', prompt: 'What quality in me is being forged right now?' },
-  15: { title: 'Council',              reading: 'Seek a third perspective. You cannot see this one alone — and that is not a weakness.', prompt: 'Who has perspective on my situation that I haven\'t asked?' },
-  16: { title: 'Triumph Earned',       reading: 'Success is visible. The feeling is real. Don\'t minimise it.', prompt: 'What have I accomplished that I haven\'t let myself fully acknowledge?' },
-  17: { title: 'Proceed Boldly',       reading: 'The dice favour courage here. Not recklessness — but a clean, decisive step forward.', prompt: 'What bold move have I been putting off, and what am I actually afraid of?' },
-  18: { title: 'Peak Power',           reading: 'The highest roll. All dice on six. Full alignment between what you want and what the moment offers. Do not squander it.', prompt: 'How do I use the rare alignment of this moment without burning it?' },
+  3: {
+    title: 'A Quiet Beginning',
+    reading:
+      'The smallest possible roll — three ones. Something is beginning, and it is asking to begin quietly. The temptation with fresh starts is to demand they announce themselves with fanfare; this roll warns against that. Look for the whisper, not the shout. A tentative conversation, a half-formed idea, a feeling you almost dismissed yesterday — these are your signals. Protect whatever is new with a kind of privacy for now. Tell as few people as possible. Growth that stays hidden for its first stretch tends to survive; growth that is immediately displayed often dies from too much light too fast.',
+    prompt: 'What small new thing in my life deserves my quiet attention — and who am I tempted to tell that I should not yet?',
+  },
+  4: {
+    title: 'Hold Your Ground',
+    reading:
+      'A call to stillness. The situation around you is more fragile than it appears, and the cost of moving now would outweigh the patience of staying. This is not paralysis — it is strategic ground-holding. Notice where you are feeling pressure to react, explain yourself, fix, or pre-empt. Resist each of those urges one at a time. The ancient cast of this roll carried the meaning "the stone does not roll toward the river." Let the world come to you for a few days. The clarity you need will arrive without your chasing it, provided you have not sprinted off in the wrong direction first.',
+    prompt: 'Where am I tempted to move that would actually be premature — and what is underneath that urge?',
+  },
+  5: {
+    title: 'A Letter Arrives',
+    reading:
+      'News is on its way, or has already arrived and you have not yet recognised it. The oracle marks messages as the theme: a conversation, an email, an overheard remark, a synchronicity you almost wrote off. Pay attention to communications over the next three to five days. The message is likely from somewhere unexpected — a person you have not spoken to in months, a source you had dismissed, an intuition rising at the edges. Your job is not to hunt for it; your job is to be receptive when it arrives. Watch what you nearly dismiss this week.',
+    prompt: 'What message have I dismissed recently that I now suspect might have been important?',
+  },
+  6: {
+    title: 'The Path Forks',
+    reading:
+      'A decision point is approaching — perhaps already here. The dice are clear that the choice is yours, not anyone else\'s, and that this is the moment to stop outsourcing it. You have probably already asked many people for their opinion. You have probably received conflicting answers. Now the oracle asks you to consult yourself. Sit with the question in silence for five minutes. Notice which option makes your body soften and which one makes it tighten. That information is as real as any advice you have been given. The correct fork is the one your body already knows.',
+    prompt: 'What choice am I facing — and whose voice keeps drowning out my own?',
+  },
+  7: {
+    title: 'Unexpected Help',
+    reading:
+      'Something you need is already moving toward you, and it will come from a source you are not looking at. Check your peripheral vision — not the obvious mentors or usual supports, but the people at the edge of your life, the ones you half-know or recently met. Help is often disguised as a casual offer you might deflect. This week, say yes more easily than usual. The dice say: when someone offers something small, receive it without bargaining it down. The pattern of receiving help with grace is what attracts bigger help later. Stay open. You are less alone in this than you think.',
+    prompt: 'Where am I looking only to the usual places for help — and who at the edges of my life have I overlooked?',
+  },
+  8: {
+    title: 'Patience',
+    reading:
+      'What you want will not arrive on your schedule. This is not punishment; it is timing. The oracle draws this roll when a person is pushing against a door that is not yet ready to open, and the pushing is wearing them out without moving the door. The instruction is precise: keep doing the work, keep showing up, but release the grip on when it should pay off. Two weeks from now the situation will look different than it does tonight. The key move this week is to stop checking. Stop measuring. Do the thing and let the timing belong to the timing.',
+    prompt: 'What am I trying to rush that would actually be better if I waited?',
+  },
+  9: {
+    title: 'Honest Labour',
+    reading:
+      'No tricks this roll. The message is simple and grounded: the thing you are working on just needs more time and more steady effort. You have been hoping for a shortcut or a breakthrough, and the dice are saying no shortcut is on offer here. The good news is that steady work is cumulative, and you may be closer than you feel to the point where results compound. Show up tomorrow, and the next day, and the next. Track small increments. Trust the slow arithmetic of practice. Most meaningful things are built this way, and it is easier than the shortcut you were hoping for.',
+    prompt: 'What practice am I about to abandon that actually just needs another month of patient return?',
+  },
+  10: {
+    title: 'Balance Point',
+    reading:
+      'You are at a pivot — neither fully in the old nor fully in the new. This is not a resting state; it is an active weighing. What the dice want you to notice is what you are putting on each side of the scale. One side of the pivot usually has convention, safety, what-others-expect. The other side has freedom, risk, what-you-want. The roll does not tell you which side wins. It tells you to look honestly at what you are weighing, without pretending you do not have a preference. You already know which side feels alive. The question is whether you will say it out loud.',
+    prompt: 'If I set everything down for one full minute, which side of the scale would feel heavier — and is that what I have been admitting?',
+  },
+  11: {
+    title: 'Spark',
+    reading:
+      'Quick action is possible now. A window is open that will not stay open — days, maybe a week at the outside. The opportunity is probably something you have been half-contemplating for a while, and the reason you have not moved is that the timing never felt perfect. The dice say: timing is now. Not forever, now. Something about the alignment of circumstances, willingness in other people, or your own readiness has converged. If you hesitate much longer the spark goes out, and the next chance will take a much longer setup. Move this week. Imperfectly. Move anyway.',
+    prompt: 'What opportunity is open right now that I have been hesitating on — and what am I actually waiting for?',
+  },
+  12: {
+    title: 'Full House',
+    reading:
+      'Abundance lands, but with it lands responsibility. The dice show a full cup — recognition, resources, love, all arriving or already here. The oracle warns against two common mistakes. First, minimising what you have received: you are allowed to name it, hold it, celebrate it. Second, treating it carelessly, as if more will always come: it might, but only if you steward what you just received with care. Who helped you get here? Have you thanked them specifically? What about this fullness is worth protecting? Gratitude expressed is what keeps abundance in circulation.',
+    prompt: 'What am I currently receiving that I have not yet fully acknowledged — and who deserves my specific thanks?',
+  },
+  13: {
+    title: 'The Threshold',
+    reading:
+      'Thirteen is the liminal number — not unlucky, as superstition suggests, but genuinely in-between. You are standing on a threshold: not fully in the old room, not fully in the new. Liminality is uncomfortable precisely because it does not offer ground to stand on. The instruction is to stop trying to resolve the discomfort by rushing back or sprinting forward. Sit on the threshold. Notice what you are carrying from the old room and ask which of those things belong in the new. Transitions completed too fast leave the old stuff unsorted. Transitions sat with teach you what to take and what to leave.',
+    prompt: 'What is ending in me right now, and what is beginning — and what part of me is still packed in the wrong bag?',
+  },
+  14: {
+    title: 'Tested Strength',
+    reading:
+      'Your resolve is being measured. Not by fate, not by punishment — by the natural friction of reality against your aims. The oracle shows this roll when someone is in the middle of a stretch that is harder than they expected, and they are beginning to doubt themselves. The doubt is the test, not the external thing. The quality being forged in you right now is exactly the quality you will need next. You are not broken; you are being strengthened. Keep going. Rest when you need to, not as retreat, but as fuel. Sleep more this week. Drink more water. Call one trusted person.',
+    prompt: 'What quality in me is being forged right now — patience, courage, honesty, steadiness — and am I meeting the test or avoiding it?',
+  },
+  15: {
+    title: 'Council',
+    reading:
+      'Seek a third perspective. You are too close to this one to see it clearly, and the two perspectives you have already consulted — your own and one other — are not enough. The dice suggest someone specific: a person who has walked the kind of road you are on, or someone whose discernment you respect in matters like this, or an elder voice you have not leaned on in a while. Ask them a precise question, not a vague one. Tell them what you are actually considering, not the sanitised version. Listen more than you speak. You will come away with clarity you could not have reached alone.',
+    prompt: 'Who has perspective on my situation that I have not actually asked — and what specific question would I put to them?',
+  },
+  16: {
+    title: 'Triumph Earned',
+    reading:
+      'Success is visible. Something you have worked toward is showing its result, and the achievement is real. The danger of this roll is the automatic impulse to minimise it — to say "it\'s no big deal," to rush straight to the next goal, to credit luck rather than craft. The oracle instructs you to pause. Name what you actually did. Let it land in your body. Tell someone who remembers where you started. You are not being vain by acknowledging your own work; you are teaching your nervous system to believe that effort produces results, which is the only belief that keeps you working through the next hard stretch.',
+    prompt: 'What have I accomplished recently that I have not let myself fully acknowledge — and what would honest celebration look like this week?',
+  },
+  17: {
+    title: 'Proceed Boldly',
+    reading:
+      'The dice are favouring courage here. Not recklessness — courage is not absence of fear, it is acting well in spite of it. There is a move you have been circling, and the timing now supports it. The risks you are weighing are real but not as large as your mind has been telling you. The cost of not acting, the oracle warns, is larger than you have been admitting — it is the slow erosion that comes from repeatedly choosing safety over aliveness. This week, take the clean, decisive step you have been postponing. Speak the thing. Send the thing. Begin the thing. The next roll will reward it.',
+    prompt: 'What bold move have I been postponing — and what am I actually afraid of underneath the reasonable-sounding reasons?',
+  },
+  18: {
+    title: 'Peak Power',
+    reading:
+      'The highest possible roll. Three sixes. Full alignment between what you want and what the moment is offering. The oracle rarely gives this reading, and when it does the instruction is not to celebrate but to act. Rare alignments last a short time. What you can accomplish this week with moderate effort would take months of effort to accomplish six weeks from now. The thing to NOT do with this roll: spread yourself across seven priorities. Pick the single most important thing in your life right now and pour the full weight of the moment into it. Peak power squandered on distraction is the saddest kind of wasted grace.',
+    prompt: 'If I were to put the full force of this moment behind one thing only, what would it be — and what am I about to do instead that would waste it?',
+  },
 };
 
 export function rollDice(): DiceReading {

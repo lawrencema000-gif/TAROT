@@ -1,27 +1,40 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Heart } from 'lucide-react';
+import { ArrowLeft, Sparkles, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import {
   MOOD_CATEGORIES,
   loadMoodEntries,
   saveMoodEntry,
   getTodayEntry,
   entryToYValue,
+  derivePattern,
   type MoodCategory,
   type MoodEntry,
+  type MoodPattern,
 } from '../data/moodDiary';
 
 type Stage = 'log' | 'history';
 
+interface MoodLetter {
+  letter: string;
+  dominantTheme: string;
+  careSuggestion: string;
+}
+
 export function MoodDiaryPage() {
   const { t } = useT('app');
+  const { profile } = useAuth();
   const [stage, setStage] = useState<Stage>('log');
   const [selected, setSelected] = useState<MoodCategory | null>(null);
   const [intensity, setIntensity] = useState<1 | 2 | 3 | 4 | 5>(3);
   const [note, setNote] = useState('');
   const [todayEntry, setTodayEntry] = useState<MoodEntry | null>(null);
   const [allEntries, setAllEntries] = useState<MoodEntry[]>([]);
+  const [letter, setLetter] = useState<MoodLetter | null>(null);
+  const [generatingLetter, setGeneratingLetter] = useState(false);
 
   useEffect(() => {
     const today = getTodayEntry();
@@ -65,6 +78,53 @@ export function MoodDiaryPage() {
     return out;
   }, [allEntries]);
 
+  // Pattern derivation — runs over the real logged entries. Rendered
+  // as the "insight" card above the curve whenever ≥3 entries exist.
+  const pattern: MoodPattern | null = useMemo(() => {
+    if (allEntries.length < 3) return null;
+    return derivePattern(allEntries);
+  }, [allEntries]);
+
+  const handleGenerateLetter = async () => {
+    if (allEntries.length < 3) {
+      toast(t('mood.needMoreForLetter', { defaultValue: 'Log at least 3 days for a weekly letter.' }), 'error');
+      return;
+    }
+    setGeneratingLetter(true);
+    try {
+      const recent = [...allEntries]
+        .sort((a, b) => (a.date < b.date ? 1 : -1))
+        .slice(0, 14)
+        .map((e) => ({
+          date: e.date,
+          category: e.category,
+          intensity: e.intensity,
+          note: e.note,
+        }));
+
+      const { data, error } = await supabase.functions.invoke<MoodLetter>('ai-mood-letter', {
+        body: {
+          entries: recent,
+          userContext: {
+            displayName: profile?.displayName || undefined,
+            locale: navigator.language?.slice(0, 2) || undefined,
+          },
+        },
+      });
+      if (error) throw error;
+      if (!data?.letter) throw new Error('empty letter');
+      setLetter(data);
+    } catch (e) {
+      console.warn('[Mood] letter generation failed:', e);
+      toast(
+        t('mood.letterFailed', { defaultValue: "Couldn't write your letter right now. Try again in a moment." }),
+        'error',
+      );
+    } finally {
+      setGeneratingLetter(false);
+    }
+  };
+
   if (stage === 'log') {
     const selectedInfo = selected ? MOOD_CATEGORIES[selected] : null;
     return (
@@ -75,6 +135,13 @@ export function MoodDiaryPage() {
             {t('mood.title', { defaultValue: 'Daily Mood' })}
           </h1>
         </div>
+
+        {/* Insight card — surfaces a real pattern derived from the
+            last 14 entries. Appears only when we have ≥3 logged days
+            so the user actually sees something grounded, not filler. */}
+        {pattern && pattern.sampleSize >= 3 && (
+          <InsightCard pattern={pattern} t={t} />
+        )}
 
         <Card variant="glow" padding="lg">
           <p className="text-mystic-300 text-sm leading-relaxed mb-4">
@@ -297,6 +364,74 @@ export function MoodDiaryPage() {
         </Card>
       )}
 
+      {/* Pattern detail + AI letter */}
+      {pattern && pattern.sampleSize >= 3 && <InsightCard pattern={pattern} t={t} expanded />}
+
+      {allEntries.length >= 3 && !letter && (
+        <Card variant="glow" padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
+          <h3 className="font-medium text-cosmic-violet mb-2 flex items-center gap-2">
+            <Mail className="w-4 h-4" />
+            {t('mood.letterHeading', { defaultValue: 'A letter for this week' })}
+          </h3>
+          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+            {t('mood.letterIntro', {
+              defaultValue:
+                'Generate a warm, specific letter reading your last 14 days of entries — written like a wise friend who has been paying attention.',
+            })}
+          </p>
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={handleGenerateLetter}
+            disabled={generatingLetter}
+            loading={generatingLetter}
+            className="min-h-[48px]"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {generatingLetter
+              ? t('mood.writingLetter', { defaultValue: 'Writing…' })
+              : t('mood.generateLetter', { defaultValue: 'Write my letter' })}
+          </Button>
+        </Card>
+      )}
+
+      {letter && (
+        <Card variant="glow" padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+          <div className="flex items-center gap-2 mb-3">
+            <Mail className="w-5 h-5 text-gold" />
+            <h3 className="font-display text-lg text-mystic-100">
+              {t('mood.letterTitle', { defaultValue: 'Your weekly letter' })}
+            </h3>
+          </div>
+          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30">
+            <span className="text-[10px] uppercase tracking-widest text-cosmic-violet">
+              {t('mood.themeLabel', { defaultValue: 'Theme' })}
+            </span>
+            <span className="text-xs text-mystic-200">{letter.dominantTheme}</span>
+          </div>
+          {letter.letter.split(/\n\n+/).map((para, i) => (
+            <p key={i} className="text-mystic-200 text-sm leading-relaxed mb-3 last:mb-0">
+              {para}
+            </p>
+          ))}
+          <div className="mt-4 pt-4 border-t border-gold/10">
+            <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+              {t('mood.carePracticeLabel', { defaultValue: 'One practice' })}
+            </p>
+            <p className="text-mystic-200 text-sm italic leading-relaxed">{letter.careSuggestion}</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => { setLetter(null); handleGenerateLetter(); }}
+            disabled={generatingLetter}
+            className="mt-4 min-h-[40px]"
+            size="sm"
+          >
+            {t('mood.rewriteLetter', { defaultValue: 'Rewrite' })}
+          </Button>
+        </Card>
+      )}
+
       <Card padding="md" className="bg-mystic-800/30 border-mystic-700/30">
         <p className="text-xs text-mystic-400 leading-relaxed">
           {t('mood.privacyNote', {
@@ -305,6 +440,79 @@ export function MoodDiaryPage() {
         </p>
       </Card>
     </div>
+  );
+}
+
+// ─── Insight card ─────────────────────────────────────────────────
+// Surfaces the derived weekly pattern in compact form. When `expanded`
+// is true it also shows the heaviest/lightest-day detail and the
+// week-over-week drift delta. Kept tight visually so it reads as a
+// sidebar-style insight, not another journal prompt.
+function InsightCard({
+  pattern,
+  t,
+  expanded = false,
+}: {
+  pattern: MoodPattern;
+  t: (k: string, o?: Record<string, unknown>) => unknown;
+  expanded?: boolean;
+}) {
+  const driftIcon =
+    pattern.drift === 'rising' ? TrendingUp
+    : pattern.drift === 'falling' ? TrendingDown
+    : Minus;
+  const DriftIcon = driftIcon;
+  const driftTint =
+    pattern.drift === 'rising' ? 'text-emerald-400'
+    : pattern.drift === 'falling' ? 'text-pink-400'
+    : 'text-mystic-400';
+
+  return (
+    <Card padding="md" className="bg-gradient-to-br from-cosmic-blue/5 to-mystic-900 border-cosmic-blue/20">
+      <div className="flex items-start gap-3">
+        <div className={`w-9 h-9 rounded-lg bg-mystic-800/60 flex items-center justify-center flex-shrink-0 ${driftTint}`}>
+          <DriftIcon className="w-4 h-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-0.5">
+            {t('mood.patternLabel', { defaultValue: 'This week' }) as string}
+          </p>
+          <p className="text-sm text-mystic-200 leading-relaxed">{pattern.headline}</p>
+
+          {expanded && (
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              {pattern.heaviestDay && (
+                <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2">
+                  <p className="text-[10px] text-mystic-500">
+                    {t('mood.heaviestDayLabel', { defaultValue: 'Heaviest day' }) as string}
+                  </p>
+                  <p className="text-pink-400 font-medium">{pattern.heaviestDay}</p>
+                </div>
+              )}
+              {pattern.lightestDay && (
+                <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2">
+                  <p className="text-[10px] text-mystic-500">
+                    {t('mood.lightestDayLabel', { defaultValue: 'Lightest day' }) as string}
+                  </p>
+                  <p className="text-emerald-400 font-medium">{pattern.lightestDay}</p>
+                </div>
+              )}
+              <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2 col-span-2">
+                <p className="text-[10px] text-mystic-500">
+                  {t('mood.weekOverWeekLabel', { defaultValue: 'Week-over-week' }) as string}
+                </p>
+                <p className={`font-medium ${driftTint}`}>
+                  {pattern.driftDelta > 0 ? '+' : ''}{pattern.driftDelta.toFixed(2)}
+                  <span className="text-mystic-500 ml-1 font-normal text-[11px]">
+                    {t('mood.driftUnits', { defaultValue: 'mood y-value delta' }) as string}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }
 

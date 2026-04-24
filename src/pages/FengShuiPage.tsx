@@ -175,7 +175,10 @@ export function FengShuiPage() {
           </div>
           <h2 className="font-display text-2xl text-mystic-100 mb-2">{focusName}</h2>
           <p className="text-mystic-300 text-sm leading-relaxed mb-3">{focusMeaning}</p>
-          <p className="text-xs text-mystic-500 italic">
+          <p className="text-mystic-200 text-sm leading-relaxed mt-3 pt-3 border-t border-pink-400/15">
+            {t(`fengshui.areas.${reading.focusArea}.lowReading`, { defaultValue: focusInfo.lowReading })}
+          </p>
+          <p className="text-xs text-mystic-500 italic mt-3">
             {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {focusInfo.element} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {focusInfo.color}
           </p>
         </Card>
@@ -197,11 +200,17 @@ export function FengShuiPage() {
           </p>
         </Card>
 
-        <Card padding="md" className="border-emerald-400/20">
-          <p className="text-xs text-mystic-500 mb-1">
-            {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
+        <Card padding="lg" className="border-emerald-400/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <h3 className="font-medium text-emerald-400">
+              {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
+            </h3>
+          </div>
+          <h2 className="font-display text-2xl text-mystic-100 mb-2">{strongName}</h2>
+          <p className="text-mystic-300 text-sm leading-relaxed">
+            {t(`fengshui.areas.${reading.strongestArea}.highReading`, { defaultValue: strongInfo.highReading })}
           </p>
-          <p className="text-emerald-400 text-sm font-medium">{strongName}</p>
         </Card>
 
         <div className="grid grid-cols-2 gap-3">

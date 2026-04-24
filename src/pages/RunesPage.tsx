@@ -160,6 +160,12 @@ export function RunesPage() {
                 : r.rune.upright}
             </p>
             <p className="text-mystic-300 text-sm leading-relaxed mb-3">{r.rune.interpretation}</p>
+            <div className="p-3 mb-3 rounded-xl bg-mystic-800/40 border border-mystic-700/30">
+              <p className="text-[10px] text-cosmic-blue uppercase tracking-wider mb-1">
+                {t('runes.whenItLandsLabel', { defaultValue: 'When this lands for you' })}
+              </p>
+              <p className="text-mystic-200 text-sm leading-relaxed">{r.rune.whenItLands}</p>
+            </div>
             <div className="pt-3 border-t border-mystic-800/50">
               <p className="text-[10px] text-mystic-500 uppercase tracking-wider mb-1">
                 {t('runes.promptLabel', { defaultValue: 'Journal prompt' })}

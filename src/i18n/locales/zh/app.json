@@ -3745,7 +3745,7 @@
     "thinking": "思考中……",
     "sendFailed": "没能连上灵伴：{{err}}",
     "dailyLimitReached": "今日消息已达上限——明天再来",
-    "dailyRemaining": "{{n}} / {{limit}} 今日",
+    "dailyRemaining": "今日剩余 {{remaining}} 条",
     "personas": {
       "sage": {
         "name": "智者",

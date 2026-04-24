@@ -334,6 +334,8 @@ export function TarotCardMeaningPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="tm-email-input"
                 required
+                name="newsletter_email"
+                autoComplete="off"
               />
               <button type="submit" className="tm-email-btn">{t('tarot.getFreeGuide')}</button>
             </form>

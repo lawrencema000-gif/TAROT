@@ -270,7 +270,8 @@ export function AiCompanionPage() {
         </div>
         <p className="text-[10px] text-mystic-600 text-right">
           {t('companion.dailyRemaining', {
-            defaultValue: '{{n}} / {{limit}} today',
+            defaultValue: '{{remaining}} messages left today',
+            remaining: Math.max(0, DAILY_LIMIT - dailyUsed),
             n: dailyUsed,
             limit: DAILY_LIMIT,
           })}

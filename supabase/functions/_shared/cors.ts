@@ -13,18 +13,31 @@ const ALLOWED_ORIGINS = [
   "https://localhost",
 ];
 
+// Netlify preview deploys land at `https://<branch-or-slug>--arcana-ritual-app.netlify.app`.
+// Keep these allowed automatically so QA agents testing audit-smoke builds
+// don't get `Access-Control-Allow-Origin: http://localhost:5173` back.
+const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
+  /^https:\/\/[a-z0-9-]+--arcana-ritual-app\.netlify\.app$/i,
+];
+
+function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin));
+}
+
 /**
  * Build CORS headers from the request Origin, allowing only known origins.
- * Falls back to the first allowed origin if the request origin is unknown.
+ * For unknown origins we reflect `null` (browsers treat that as "not allowed")
+ * rather than falling back to localhost, which silently blocked every
+ * preview-deploy call.
  */
 export function getCorsHeaders(
   req: Request,
   methods = "GET, POST, PUT, DELETE, OPTIONS"
 ): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin)
-    ? origin
-    : ALLOWED_ORIGINS[0];
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : "null";
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,

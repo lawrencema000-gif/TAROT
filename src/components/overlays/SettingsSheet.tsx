@@ -79,6 +79,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const [activeSheet, setActiveSheet] = useState<SubSheet>('main');
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Typed confirmation gate for account deletion — user must type DELETE
+  // before the destructive button activates. Added 2026-04-24 after QA
+  // flagged that the existing 2-step flow still allowed one-tap delete.
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [cardBacks, setCardBacks] = useState<CardBackOption[]>([]);
   const [loadingCardBacks, setLoadingCardBacks] = useState(false);
   const [savingCardBack, setSavingCardBack] = useState(false);
@@ -907,11 +911,23 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               {isExporting ? tAppSettings('settings.deleteAccount.exporting') : tAppSettings('settings.deleteAccount.exportFirst')}
             </Button>
 
+            <div className="space-y-2">
+              <label className="text-xs text-mystic-400 uppercase tracking-wider">
+                {tAppSettings('settings.deleteAccount.typeToConfirm', { defaultValue: 'Type DELETE to confirm' })}
+              </label>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                autoComplete="off"
+              />
+            </div>
+
             <Button
               fullWidth
               onClick={handleDeleteAccount}
-              disabled={isDeleting}
-              className="bg-coral hover:bg-coral/90 text-white"
+              disabled={isDeleting || deleteConfirmText.trim() !== 'DELETE'}
+              className="bg-coral hover:bg-coral/90 text-white disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-4 h-4" />
               {isDeleting ? tAppSettings('settings.deleteAccount.deleting') : tAppSettings('settings.deleteAccount.deleteMyAccount')}
@@ -920,7 +936,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             <Button
               variant="ghost"
               fullWidth
-              onClick={() => setActiveSheet('main')}
+              onClick={() => { setDeleteConfirmText(''); setActiveSheet('main'); }}
             >
               {tI18n('actions.cancel')}
             </Button>

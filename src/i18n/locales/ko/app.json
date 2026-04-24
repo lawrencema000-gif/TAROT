@@ -3745,7 +3745,7 @@
     "thinking": "생각 중…",
     "sendFailed": "컴패니언에게 닿지 못했어요: {{err}}",
     "dailyLimitReached": "오늘의 메시지 한도에 도달했어요 — 내일 다시 오세요",
-    "dailyRemaining": "{{n}} / {{limit}} 오늘",
+    "dailyRemaining": "오늘 {{remaining}}개 남음",
     "personas": {
       "sage": {
         "name": "현자",

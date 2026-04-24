@@ -3581,7 +3581,7 @@
     "thinking": "thinking…",
     "sendFailed": "Could not reach the companion: {{err}}",
     "dailyLimitReached": "Daily message limit reached — come back tomorrow.",
-    "dailyRemaining": "{{n}} / {{limit}} today",
+    "dailyRemaining": "{{remaining}} messages left today",
     "personas": {
       "sage": {
         "name": "Sage",

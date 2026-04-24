@@ -303,11 +303,21 @@ export function HomePage() {
     }
 
     const name = profile.displayName.trim();
+    const local = name.includes('@') ? name.split('@')[0] : name;
 
-    if (name.includes('@')) {
-      const emailName = name.split('@')[0];
-      const formatted = emailName
+    // Fallback to "Seeker" for obviously auto-generated handles —
+    // long, digit-heavy, or dash-heavy strings (e.g. `arcana-qa-auth-1776994003021`
+    // from signup fallback) look hostile in a welcome header.
+    const tooManyDashes = (local.match(/-/g)?.length ?? 0) >= 3;
+    const mostlyDigits = (local.match(/\d/g)?.length ?? 0) / local.length > 0.4;
+    if (local.length > 20 || tooManyDashes || mostlyDigits) {
+      return t('home.seeker');
+    }
+
+    if (name.includes('@') || /[._-]/.test(name)) {
+      const formatted = local
         .split(/[._-]/)
+        .filter(Boolean)
         .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(' ');
       return formatted || t('home.seeker');

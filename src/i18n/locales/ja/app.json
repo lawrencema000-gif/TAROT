@@ -3745,7 +3745,7 @@
     "thinking": "考えています……",
     "sendFailed": "コンパニオンに届きませんでした：{{err}}",
     "dailyLimitReached": "今日の上限に達しました——また明日",
-    "dailyRemaining": "{{n}} / {{limit}} 今日",
+    "dailyRemaining": "本日残り {{remaining}} 通",
     "personas": {
       "sage": {
         "name": "賢者",

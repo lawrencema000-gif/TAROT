@@ -146,8 +146,13 @@ function CardMarquee({ cards, reverse = false }: { cards: string[]; reverse?: bo
 }
 
 // ─── Animated Counter ──────────────────────────────────────────
+// Previously gated on IntersectionObserver at threshold 0.5, which meant
+// visitors who never scrolled to the trust section saw "0" forever. We
+// now start from `to` (correct value always visible) and only *replay*
+// the count-up once when the section enters view, so a scroll-in user
+// still gets the animation without anyone ever seeing 0 at rest.
 function AnimNum({ to }: { to: number }) {
-  const [n, setN] = useState(0);
+  const [n, setN] = useState(to);
   const ref = useRef<HTMLSpanElement>(null);
   const ran = useRef(false);
   useEffect(() => {
@@ -156,6 +161,7 @@ function AnimNum({ to }: { to: number }) {
       if (e.isIntersecting && !ran.current) {
         ran.current = true;
         let c = 0; const step = to / 30;
+        setN(0);
         const iv = setInterval(() => { c += step; if (c >= to) { setN(to); clearInterval(iv); } else setN(Math.floor(c)); }, 40);
       }
     }, { threshold: 0.5 });

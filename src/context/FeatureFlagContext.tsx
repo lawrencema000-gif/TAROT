@@ -75,6 +75,7 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
     queryOverrides: typeof window !== 'undefined'
       ? parseQueryOverrides(window.location.search)
       : undefined,
+    smokeMode: import.meta.env.VITE_AUDIT_SMOKE === 'true',
   }), [user?.id]);
 
   const isEnabled = useCallback(

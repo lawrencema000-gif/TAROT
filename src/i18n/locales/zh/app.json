@@ -52,7 +52,9 @@
     "tarotCompanion": "Tarot companion",
     "tarotCompanionSub": "Pull a card, talk it through",
     "pickACardTitle": "抽一张牌",
-    "pickACardSub": "30秒的日常仪式，一张召唤你的牌。"
+    "pickACardSub": "30秒的日常仪式，一张召唤你的牌。",
+    "soulmateTitle": "灵魂伴侣分数",
+    "soulmateSub": "与任何人对比星盘 — 得出 100 分制的契合度。"
   },
   "auth": {
     "welcomeBack": "欢迎回来",
@@ -4287,5 +4289,43 @@
     "learnMore": "详细解读",
     "comeBack": "新的牌将在午夜刷新。",
     "shareText": "今日抽到：{{name}}（{{orientation}}）— {{keyword}}"
+  },
+  "soulmate": {
+    "title": "灵魂伴侣分数",
+    "subtitle": "将经典合盘浓缩为一个数字。免费、可分享、快速。",
+    "needsBirthData": "请先补充出生信息",
+    "needsBirthDataBody": "我们需要你的出生日期（有时刻更精准）来对比星盘。请在 设置 → 编辑资料 中添加。",
+    "goToProfile": "前往资料",
+    "partnerNameLabel": "对方姓名",
+    "partnerNamePlaceholder": "可选",
+    "birthDateLabel": "出生日期",
+    "birthTimeLabel": "出生时刻（可选 — 让分数更精准）",
+    "calculateCta": "揭晓分数",
+    "computeFailed": "计算失败，请检查网络后重试。",
+    "noAspects": "没有找到显著的相位，试试补上出生时刻。",
+    "scoreWithPartner": "{{you}} 与 {{partner}}",
+    "scoreNoName": "你们的契合度",
+    "outOf": "满分 100",
+    "noTimeHint": "加上出生时刻可以让分数更精准。",
+    "harmoniesHeading": "你们契合之处",
+    "frictionsHeading": "彼此磨合之处",
+    "tryAnother": "换一位试试",
+    "share": "分享分数",
+    "shareText": "我们的 Arcana 灵魂伴侣分数是 {{score}}/100（{{vibe}}）。来 arcana.app 试试你的吧",
+    "disclaimer": "分数不是结论，而是对话的镜子。星盘描绘的是模式，不是命运。",
+    "vibes": {
+      "transcendent": "超越",
+      "strong": "强",
+      "steady": "稳定",
+      "complex": "复杂",
+      "testing": "考验"
+    },
+    "vibeDescriptions": {
+      "transcendent": "两张星盘奏出罕见的和谐 — 深层共鸣、自然的化学反应、目标一致。",
+      "strong": "基本形貌相契。有真实的吸引与自在，也有足够的差异让关系保持生动。",
+      "steady": "踏实可行的组合。某些地方相遇，某些地方错过。用心经营可以走远。",
+      "complex": "磁性强但摩擦多。吸引是真的，棱角也是。能扛住火候，则成长丰盈。",
+      "testing": "模式不易自然流动。可行，但需要更多意图而非重力。"
+    }
   }
 }

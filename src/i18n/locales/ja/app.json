@@ -52,7 +52,9 @@
     "tarotCompanion": "Tarot companion",
     "tarotCompanionSub": "Pull a card, talk it through",
     "pickACardTitle": "カードを選ぶ",
-    "pickACardSub": "30秒の日課。あなたを呼ぶ1枚を。"
+    "pickACardSub": "30秒の日課。あなたを呼ぶ1枚を。",
+    "soulmateTitle": "ソウルメイトスコア",
+    "soulmateSub": "誰とでも星盤を比較 — 100点満点のスコアに。"
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -4287,5 +4289,43 @@
     "learnMore": "詳しく見る",
     "comeBack": "新しいカードは深夜0時に更新されます。",
     "shareText": "今日は{{name}}（{{orientation}}）を引きました — {{keyword}}"
+  },
+  "soulmate": {
+    "title": "ソウルメイトスコア",
+    "subtitle": "古典的な相性診断を、1つの数字に。無料でシェアできる即時診断。",
+    "needsBirthData": "まず生年月日を登録してください",
+    "needsBirthDataBody": "チャートを比較するため、生年月日（時刻があればなお正確）が必要です。設定 → プロフィール編集から追加できます。",
+    "goToProfile": "プロフィールへ",
+    "partnerNameLabel": "相手の名前",
+    "partnerNamePlaceholder": "任意",
+    "birthDateLabel": "生年月日",
+    "birthTimeLabel": "生まれた時刻（任意 — スコアがより正確に）",
+    "calculateCta": "スコアを見る",
+    "computeFailed": "計算できませんでした。接続を確認して再度お試しください。",
+    "noAspects": "有意なアスペクトが見つかりません。生まれた時刻を追加してみてください。",
+    "scoreWithPartner": "{{you}} と {{partner}}",
+    "scoreNoName": "あなたの相性",
+    "outOf": "100点満点中",
+    "noTimeHint": "生まれた時刻を加えると、スコアがより精密になります。",
+    "harmoniesHeading": "調和する点",
+    "frictionsHeading": "刺激し合う点",
+    "tryAnother": "別の相手で試す",
+    "share": "スコアをシェア",
+    "shareText": "Arcanaのソウルメイトスコアは {{score}}/100（{{vibe}}）。あなたもarcana.appで試してみて。",
+    "disclaimer": "スコアは答えではなく、対話のための鏡です。チャートは運命ではなくパターンを示します。",
+    "vibes": {
+      "transcendent": "超越",
+      "strong": "強い",
+      "steady": "安定",
+      "complex": "複雑",
+      "testing": "試練"
+    },
+    "vibeDescriptions": {
+      "transcendent": "二人のチャートは稀な調和を奏でています — 深い認識、自然な化学反応、一致した目的。",
+      "strong": "基本的な形が合っています。本物の惹かれと本物の安らぎ、そして関係を生き生きとさせる適度な違い。",
+      "steady": "地に足のついた、実用的な組み合わせ。ある部分では出会い、ある部分ではすれ違う。努力次第で機能します。",
+      "complex": "磁力があるが摩擦も多い。引き合いは本物、角もまた本物。熱を保てれば成長の宝庫。",
+      "testing": "パターンは自然には流れません。可能ではあるが、引力より意図が必要。"
+    }
   }
 }

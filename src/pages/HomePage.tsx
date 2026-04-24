@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Zap,
   MessageCircle,
+  Heart,
 } from 'lucide-react';
 import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
@@ -54,6 +55,7 @@ export function HomePage() {
   const quickReadingEnabled = useFeatureFlag('ai-quick-reading');
   const tarotCompanionEnabled = useFeatureFlag('ai-tarot-companion');
   const pickACardEnabled = useFeatureFlag('pick-a-card');
+  const soulmateScoreEnabled = useFeatureFlag('soulmate-score');
   const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
@@ -405,6 +407,28 @@ export function HomePage() {
               </p>
             </div>
             <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-gold transition-colors flex-shrink-0" />
+          </div>
+        </button>
+      )}
+
+      {soulmateScoreEnabled && (
+        <button
+          onClick={() => navigate('/soulmate-score')}
+          className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-pink-500/10 via-mystic-900 to-cosmic-violet/10 border border-pink-400/25 hover:border-pink-400/50"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-cosmic-violet/20 border border-pink-400/30 flex items-center justify-center flex-shrink-0">
+              <Heart className="w-5 h-5 text-pink-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-mystic-100 mb-0.5">
+                {t('home.soulmateTitle', { defaultValue: 'Soulmate score' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 leading-relaxed">
+                {t('home.soulmateSub', { defaultValue: 'Compare charts with anyone — get a score out of 100.' })}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-pink-400 transition-colors flex-shrink-0" />
           </div>
         </button>
       )}

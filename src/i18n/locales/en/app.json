@@ -17,6 +17,8 @@
     "tarotCompanionSub": "Pull a card, talk it through",
     "pickACardTitle": "Pick a card",
     "pickACardSub": "30-second daily draw. One card calls to you.",
+    "soulmateTitle": "Soulmate score",
+    "soulmateSub": "Compare charts with anyone — get a score out of 100.",
     "streak": "You're on a {{n}}-day streak. Keep it going!",
     "savedToday": "Saved today",
     "savedHighlights": "Saved Highlights",
@@ -4123,5 +4125,43 @@
     "learnMore": "Learn more",
     "comeBack": "New cards arrive at midnight.",
     "shareText": "Today I drew {{name}} ({{orientation}}) — {{keyword}}"
+  },
+  "soulmate": {
+    "title": "Soulmate Score",
+    "subtitle": "A classical synastry read, distilled to one number. Free, shareable, fast.",
+    "needsBirthData": "Add your birth data first",
+    "needsBirthDataBody": "We need your birth date (time is a bonus) to compare charts. Add it in Settings → Edit Profile.",
+    "goToProfile": "Go to Profile",
+    "partnerNameLabel": "Partner's name",
+    "partnerNamePlaceholder": "Optional",
+    "birthDateLabel": "Birth date",
+    "birthTimeLabel": "Birth time (optional — sharpens the score)",
+    "calculateCta": "Reveal the score",
+    "computeFailed": "Couldn't compute. Check your connection and try again.",
+    "noAspects": "No significant aspects found. Try adding a birth time.",
+    "scoreWithPartner": "{{you}} & {{partner}}",
+    "scoreNoName": "Your compatibility",
+    "outOf": "out of 100",
+    "noTimeHint": "Add a birth time for a more precise score.",
+    "harmoniesHeading": "Where you flow together",
+    "frictionsHeading": "Where you stretch each other",
+    "tryAnother": "Try another",
+    "share": "Share score",
+    "shareText": "Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at arcana.app",
+    "disclaimer": "A score isn't a verdict — it's a mirror for conversation. Charts describe patterns, not fate.",
+    "vibes": {
+      "transcendent": "Transcendent",
+      "strong": "Strong",
+      "steady": "Steady",
+      "complex": "Complex",
+      "testing": "Testing"
+    },
+    "vibeDescriptions": {
+      "transcendent": "Your charts sing in a rare harmony — deep recognition, easy chemistry, aligned purpose.",
+      "strong": "The basic shapes fit. There's real attraction and real ease — and enough difference to keep things alive.",
+      "steady": "A grounded, workable pairing. You meet in some places and lean past each other in others. Works with effort.",
+      "complex": "Magnetic but friction-heavy. The pull is real; so are the edges. Growth-rich if you can hold the heat.",
+      "testing": "The patterns don't flow easily. Possible — but it takes intentionality more than gravity."
+    }
   }
 }

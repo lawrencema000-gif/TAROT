@@ -52,7 +52,9 @@
     "tarotCompanion": "Tarot companion",
     "tarotCompanionSub": "Pull a card, talk it through",
     "pickACardTitle": "카드 뽑기",
-    "pickACardSub": "30초 일일 뽑기. 당신을 부르는 한 장."
+    "pickACardSub": "30초 일일 뽑기. 당신을 부르는 한 장.",
+    "soulmateTitle": "소울메이트 스코어",
+    "soulmateSub": "누구와도 차트를 비교 — 100점 만점 스코어."
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
@@ -4287,5 +4289,43 @@
     "learnMore": "더 보기",
     "comeBack": "자정에 새 카드가 도착해요.",
     "shareText": "오늘 뽑은 카드: {{name}} ({{orientation}}) — {{keyword}}"
+  },
+  "soulmate": {
+    "title": "소울메이트 스코어",
+    "subtitle": "전통적인 시나스트리 궁합을 하나의 숫자로. 무료, 공유 가능, 빠름.",
+    "needsBirthData": "먼저 생년월일을 추가해 주세요",
+    "needsBirthDataBody": "차트 비교를 위해 생년월일(시간도 있으면 좋아요)이 필요해요. 설정 → 프로필 편집에서 추가하세요.",
+    "goToProfile": "프로필로",
+    "partnerNameLabel": "상대방 이름",
+    "partnerNamePlaceholder": "선택 사항",
+    "birthDateLabel": "생년월일",
+    "birthTimeLabel": "출생 시간 (선택 — 스코어가 더 정확해져요)",
+    "calculateCta": "스코어 확인",
+    "computeFailed": "계산하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+    "noAspects": "유의미한 각도를 찾지 못했어요. 출생 시간을 추가해 보세요.",
+    "scoreWithPartner": "{{you}} & {{partner}}",
+    "scoreNoName": "당신의 궁합",
+    "outOf": "100점 만점",
+    "noTimeHint": "출생 시간을 추가하면 더 정확해요.",
+    "harmoniesHeading": "서로 흐르는 지점",
+    "frictionsHeading": "서로를 확장시키는 지점",
+    "tryAnother": "다른 상대",
+    "share": "스코어 공유",
+    "shareText": "우리의 Arcana 소울메이트 스코어는 {{score}}/100 ({{vibe}}). arcana.app에서 직접 해보세요",
+    "disclaimer": "스코어는 판결이 아니라 대화를 위한 거울이에요. 차트는 운명이 아니라 패턴을 보여줘요.",
+    "vibes": {
+      "transcendent": "초월적",
+      "strong": "강한",
+      "steady": "안정된",
+      "complex": "복잡한",
+      "testing": "시험대"
+    },
+    "vibeDescriptions": {
+      "transcendent": "두 차트가 드문 조화를 이루고 있어요 — 깊은 인식, 자연스러운 화학 반응, 일치하는 목적.",
+      "strong": "기본 형태가 맞아요. 진짜 끌림과 진짜 편안함, 그리고 관계를 생생하게 유지할 정도의 차이.",
+      "steady": "땅에 발을 디딘, 실용적인 조합. 어떤 부분에선 만나고 다른 부분에선 엇갈려요. 노력하면 잘 돌아가요.",
+      "complex": "자력이 있지만 마찰도 많아요. 끌림은 진짜, 모서리도 진짜. 열기를 유지할 수 있다면 성장의 보고예요.",
+      "testing": "패턴이 쉽게 흐르지 않아요. 가능하지만 중력보다 의도가 더 필요해요."
+    }
   }
 }

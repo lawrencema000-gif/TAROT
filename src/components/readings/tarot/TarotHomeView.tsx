@@ -7,7 +7,7 @@
  * watch-ad Sheet stay inline in the parent because they're modal
  * overlays that can be triggered from other views too.
  */
-import { Sparkles, Layers, ChevronRight, Grid3X3, Lock, Play } from 'lucide-react';
+import { Layers, ChevronRight, Grid3X3, Lock, Play } from 'lucide-react';
 import { Card } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { isNative } from '../../../utils/platform';
@@ -55,12 +55,13 @@ export function TarotHomeView({
         onClick={onStartDraw}
         className="text-center active:scale-[0.98] transition-transform hover:shadow-gold"
       >
-        <div className="w-20 h-28 mx-auto mb-4 bg-gradient-to-br from-gold/20 to-mystic-800 rounded-xl border-2 border-gold/30 flex items-center justify-center shadow-glow hover:scale-105 transition-transform overflow-hidden">
-          {cardBackUrl ? (
-            <img src={cardBackUrl} alt="Card Back" className="w-full h-full object-cover" />
-          ) : (
-            <Sparkles className="w-10 h-10 text-gold animate-pulse" />
-          )}
+        <div className="w-20 h-28 mx-auto mb-4 rounded-xl border-2 border-gold/30 flex items-center justify-center shadow-glow hover:scale-105 transition-transform overflow-hidden animate-float-gentle">
+          <img
+            src={cardBackUrl || '/card-backs/default.svg'}
+            alt=""
+            className="w-full h-full object-cover pointer-events-none select-none"
+            draggable={false}
+          />
         </div>
         <h2 className="font-display text-xl text-mystic-100 mb-1">{t('readings.dailyDraw.title')}</h2>
         <p className="text-mystic-400 text-sm">{t('readings.dailyDraw.subtitle')}</p>
@@ -118,11 +119,14 @@ export function TarotHomeView({
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="w-8 h-11 bg-gradient-to-br from-mystic-700 to-mystic-900 rounded border border-mystic-600 hover:border-gold/40 transition-colors overflow-hidden"
+                  className="w-8 h-11 rounded border border-mystic-600 hover:border-gold/40 transition-colors overflow-hidden"
                 >
-                  {cardBackUrl && (
-                    <img src={cardBackUrl} alt="Card Back" className="w-full h-full object-cover" />
-                  )}
+                  <img
+                    src={cardBackUrl || '/card-backs/default.svg'}
+                    alt=""
+                    className="w-full h-full object-cover pointer-events-none select-none"
+                    draggable={false}
+                  />
                 </div>
               ))}
             </div>

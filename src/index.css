@@ -617,6 +617,183 @@
   }
 }
 
+/* ── I-Ching 3-coin toss — arc + spin ─────────────────────────────
+   Three gold coins launch upward, spin on the Y axis (3D flip),
+   arc back down and settle. The terminal rotateY is parameterised
+   via the `--coin-flip` custom property so the same keyframe
+   lands on heads (3 full rotations) or tails (3.5 rotations,
+   showing the opposite face at rest). */
+@keyframes coin-arc {
+  0% {
+    transform: translateY(0) rotateY(0deg) rotateX(0deg);
+  }
+  35% {
+    transform: translateY(-70px) rotateY(calc(var(--coin-flip) * 0.45)) rotateX(12deg);
+  }
+  60% {
+    transform: translateY(-90px) rotateY(calc(var(--coin-flip) * 0.72)) rotateX(6deg);
+  }
+  88% {
+    transform: translateY(-4px) rotateY(calc(var(--coin-flip) * 0.96)) rotateX(0deg);
+  }
+  100% {
+    transform: translateY(0) rotateY(var(--coin-flip)) rotateX(0deg);
+  }
+}
+/* Front/back coin face positioning — used by CoinToss */
+.coin-face-yang {
+  transform: rotateY(0deg);
+}
+.coin-face-yin {
+  transform: rotateY(180deg);
+}
+
+/* ── Ambient animation utilities ──────────────────────────────────
+   A small catalog of reusable motion treatments that add life
+   without being gimmicky. All respect `prefers-reduced-motion` via
+   the global block near the top of this file.                    */
+
+/* Slow aurora sweep — a very gradual translating gradient glow.
+   Drop onto a container with `position: relative; overflow: hidden`
+   to give hero cards a breathing background shimmer. */
+@keyframes aurora-drift {
+  0%   { transform: translate3d(-18%, -8%, 0) rotate(0deg); }
+  50%  { transform: translate3d( 18%,  8%, 0) rotate(180deg); }
+  100% { transform: translate3d(-18%, -8%, 0) rotate(360deg); }
+}
+.aurora-veil::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 30% 40%,
+    rgba(212, 175, 55, 0.12) 0%,
+    transparent 40%
+  ),
+  radial-gradient(
+    circle at 70% 60%,
+    rgba(142, 110, 181, 0.12) 0%,
+    transparent 40%
+  );
+  filter: blur(14px);
+  animation: aurora-drift 18s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* Twinkle — very subtle opacity flicker for decorative dots/stars. */
+@keyframes twinkle-kf {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+.twinkle     { animation: twinkle-kf 2.4s ease-in-out infinite; }
+.twinkle-2s  { animation: twinkle-kf 2s  ease-in-out infinite; }
+.twinkle-3s  { animation: twinkle-kf 3s  ease-in-out infinite; }
+.twinkle-slow{ animation: twinkle-kf 4.5s ease-in-out infinite; }
+
+/* Gold shimmer sweep — a thin highlight band that slides across.
+   Use on pills, badges, or buttons for a premium-gold foil sheen. */
+@keyframes gold-sweep {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  40%  { opacity: 0.8; }
+  60%  { opacity: 0.8; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+.gold-sweep {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.gold-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(244, 214, 104, 0.28) 48%,
+    rgba(244, 214, 104, 0.45) 50%,
+    rgba(244, 214, 104, 0.28) 52%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  animation: gold-sweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Gentle breathing glow — a soft pulsing halo. Good on primary CTA
+   buttons to draw attention without the harsh default pulse. */
+@keyframes breathe-glow {
+  0%, 100% { box-shadow: 0 0 14px rgba(212, 175, 55, 0.22), 0 0 30px rgba(212, 175, 55, 0.10); }
+  50%      { box-shadow: 0 0 22px rgba(212, 175, 55, 0.38), 0 0 48px rgba(212, 175, 55, 0.18); }
+}
+.breathe-glow { animation: breathe-glow 3.4s ease-in-out infinite; }
+
+/* Tarot-card flip — adds depth + easing over the old flat flip. */
+@keyframes card-flip-3d {
+  0%   { transform: rotateY(0) scale(1); }
+  40%  { transform: rotateY(90deg) scale(1.03); }
+  60%  { transform: rotateY(90deg) scale(1.03); }
+  100% { transform: rotateY(180deg) scale(1); }
+}
+.animate-card-flip-3d {
+  animation: card-flip-3d 0.9s cubic-bezier(0.22, 0.8, 0.25, 1) forwards;
+  transform-style: preserve-3d;
+}
+
+/* Interactive hover lift — drop into .group containers with a child
+   `.hover-lift` to get a subtle rise + glow on hover. Useful on card
+   links. */
+.hover-lift {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 0.8, 0.25, 1),
+    box-shadow 0.35s ease-out,
+    border-color 0.3s ease-out;
+}
+.group:hover .hover-lift {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -12px rgba(212, 175, 55, 0.35);
+}
+
+/* Floating particles — place inside any relative container to drift
+   a few sparkle dots upward. Dots are pseudo-elements so no extra
+   DOM required. */
+@keyframes float-particle-a {
+  0%   { transform: translate(10%, 110%); opacity: 0; }
+  10%  { opacity: 0.9; }
+  100% { transform: translate(22%, -20%); opacity: 0; }
+}
+@keyframes float-particle-b {
+  0%   { transform: translate(70%, 110%); opacity: 0; }
+  10%  { opacity: 0.7; }
+  100% { transform: translate(60%, -20%); opacity: 0; }
+}
+.floating-particles {
+  position: relative;
+  overflow: hidden;
+}
+.floating-particles::before,
+.floating-particles::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 214, 104, 0.95), rgba(244, 214, 104, 0));
+  pointer-events: none;
+}
+.floating-particles::before { animation: float-particle-a 7s linear infinite; }
+.floating-particles::after  { animation: float-particle-b 9s linear infinite 2s; }
+
+/* Slow spin (used by MysticalStar spinning prop). Longer cycle so
+   the motion reads as orbital, not a loading spinner. */
+@keyframes spin-very-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-very-slow { animation: spin-very-slow 40s linear infinite; }
+
 @keyframes flip-in {
   0% {
     transform: rotateY(90deg);

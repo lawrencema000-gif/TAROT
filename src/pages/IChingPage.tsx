@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { ArrowLeft, Sparkles, Coins, RotateCcw } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, OrnateDivider } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
+import { CoinToss, type CoinFace } from '../components/iching/CoinToss';
 import {
   castReading,
   HEXAGRAMS,
   type CastResult,
-  type LineValue,
 } from '../data/ichingHexagrams';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
@@ -19,22 +19,32 @@ export function IChingPage() {
   const [question, setQuestion] = useState('');
   const [cast, setCast] = useState<CastResult | null>(null);
   const [animatingLine, setAnimatingLine] = useState(-1);
+  const [tossActive, setTossActive] = useState(false);
+  const [tossFaces, setTossFaces] = useState<[CoinFace, CoinFace, CoinFace]>(['heads', 'heads', 'heads']);
 
   const startCast = async () => {
     setStage('casting');
     setCast(null);
 
-    // Animate six coin tosses sequentially for ritual feel
-    const results: LineValue[] = [];
+    // Six tosses — one per hexagram line. For each, randomize three coin
+    // faces purely for the animation (the authoritative cast is computed
+    // once at the end).
     for (let i = 0; i < 6; i++) {
+      const faces: [CoinFace, CoinFace, CoinFace] = [
+        Math.random() > 0.5 ? 'heads' : 'tails',
+        Math.random() > 0.5 ? 'heads' : 'tails',
+        Math.random() > 0.5 ? 'heads' : 'tails',
+      ];
+      setTossFaces(faces);
+      setTossActive(false);
+      // let React commit the reset before restarting the animation
+      await new Promise((r) => setTimeout(r, 30));
+      setTossActive(true);
       setAnimatingLine(i);
-      await new Promise((r) => setTimeout(r, 450));
-      results.push((castReading().lines[0])); // single-line cast, reused
+      await new Promise((r) => setTimeout(r, 820));
     }
+    setTossActive(false);
 
-    // Redo as a single coherent 6-line cast to ensure determinism matches
-    // the deterministic cast function (the animation above was for feel
-    // only).
     const finalCast = castReading();
     setCast(finalCast);
     setAnimatingLine(-1);
@@ -88,17 +98,36 @@ export function IChingPage() {
 
   if (stage === 'casting') {
     return (
-      <div className="space-y-6 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
-        <Sparkles className="w-10 h-10 text-gold animate-pulse" />
-        <p className="text-mystic-200 text-lg font-display text-center">
-          {t('iching.casting', { defaultValue: 'Casting...' })}
+      <div className="space-y-8 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
+        <h2 className="font-display-hero text-2xl text-gold-foil text-center">
+          {t('iching.casting', { defaultValue: 'Casting the coins…' })}
+        </h2>
+        <div className="text-gold/60">
+          <OrnateDivider width={120} />
+        </div>
+
+        {/* Actual three-coin toss animation, centered. Each of the six
+            tosses retriggers the arc via a keyed remount + reset of the
+            `active` prop. */}
+        <CoinToss active={tossActive} results={tossFaces} duration={800} />
+
+        <p className="text-mystic-400 text-xs tracking-widest uppercase">
+          {t('iching.castingLine', {
+            defaultValue: 'Line {{n}} of 6',
+            n: Math.max(1, animatingLine + 1),
+          })}
         </p>
-        <div className="flex flex-col gap-2 mt-4">
-          {[5, 4, 3, 2, 1, 0].map((index) => (
+
+        {/* Hexagram lines progress — lines fill from bottom up, as
+            traditional for I-Ching hexagrams. */}
+        <div className="flex flex-col-reverse gap-2 mt-2">
+          {[0, 1, 2, 3, 4, 5].map((index) => (
             <div
               key={index}
-              className={`w-24 h-2 rounded-full transition-all duration-300 ${
-                animatingLine >= index ? 'bg-gold/60' : 'bg-mystic-800'
+              className={`w-28 h-2 rounded-full transition-all duration-500 ${
+                animatingLine >= index
+                  ? 'bg-gradient-to-r from-gold-dark via-gold to-gold-light shadow-[0_0_8px_rgba(212,175,55,0.6)]'
+                  : 'bg-mystic-800'
               }`}
             />
           ))}

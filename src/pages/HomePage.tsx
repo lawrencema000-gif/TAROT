@@ -391,9 +391,9 @@ export function HomePage() {
           so the first thing a returning user sees is the call to start
           their daily practice. */}
       {!ritualStarted ? (
-        <Card variant="ornate" padding="lg" className="text-center nebula-veil">
-          <div className="py-2">
-            <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block">
+        <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil floating-particles">
+          <div className="relative z-[1] py-2">
+            <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block animate-float-gentle">
               <MysticalStar size={72} />
             </div>
             <h2 className="font-display-hero text-2xl text-gold-foil mb-2">{t('home.todaysRitual')}</h2>
@@ -401,7 +401,7 @@ export function HomePage() {
               <OrnateDivider width={120} />
             </div>
             <p className="text-mystic-300 text-sm mb-6">{t('home.subtitle')}</p>
-            <Button variant="gold" onClick={handleStartRitual} className="min-h-[48px]">
+            <Button variant="gold" onClick={handleStartRitual} className="min-h-[48px] gold-sweep breathe-glow">
               {t('home.startTodaysRitual')}
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -450,12 +450,23 @@ export function HomePage() {
           className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-gold/10 via-mystic-900 to-cosmic-violet/10 border border-gold/25 hover:border-gold/50"
         >
           <div className="flex items-center gap-4">
+            {/* Three fanned card-backs — uses the actual deck imagery so
+                the preview matches what you'll see when you pick. */}
             <div className="relative w-14 h-20 flex-shrink-0">
-              {/* Three fanned-out card silhouettes — subtle preview. */}
-              <div className="absolute inset-0 rounded-md bg-mystic-800 border border-gold/30 -rotate-12 origin-bottom" />
-              <div className="absolute inset-0 rounded-md bg-mystic-800 border border-gold/40" />
-              <div className="absolute inset-0 rounded-md bg-mystic-800 border border-gold/30 rotate-12 origin-bottom" />
-              <Sparkles className="absolute inset-0 m-auto w-5 h-5 text-gold/80 group-hover:text-gold transition-colors" />
+              {[-12, 0, 12].map((rot, i) => (
+                <div
+                  key={rot}
+                  className="absolute inset-0 rounded-md border border-gold/40 overflow-hidden shadow-glow origin-bottom transition-transform duration-300 group-hover:scale-105"
+                  style={{ transform: `rotate(${rot}deg)`, zIndex: i }}
+                >
+                  <img
+                    src={profile?.card_back_url || '/card-backs/default.svg'}
+                    alt=""
+                    className="w-full h-full object-cover pointer-events-none select-none"
+                    draggable={false}
+                  />
+                </div>
+              ))}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-mystic-100 mb-0.5">

@@ -12,7 +12,7 @@ import {
   MessageCircle,
   Heart,
 } from 'lucide-react';
-import { Card, Button, toast, HomePageSkeleton } from '../components/ui';
+import { Card, Button, toast, HomePageSkeleton, MysticalStar, OrnateDivider } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
@@ -341,14 +341,17 @@ export function HomePage() {
   if (!ritualStarted && isFirstTime) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center mb-6">
-          <Sparkles className="w-10 h-10 text-gold" />
+        <div className="mb-6 text-gold drop-shadow-[0_0_20px_rgba(212,175,55,0.35)]">
+          <MysticalStar size={96} spinning />
         </div>
 
-        <h1 className="font-display text-2xl text-mystic-100 mb-3">
+        <h1 className="font-display-hero text-3xl text-gold-foil mb-2">
           {t('home.ritualReady.title')}
         </h1>
-        <p className="text-mystic-400 mb-8 max-w-xs">
+        <div className="mb-4 text-gold/60">
+          <OrnateDivider width={140} />
+        </div>
+        <p className="text-mystic-300 mb-8 max-w-xs">
           {t('home.ritualReady.sub')}
         </p>
 
@@ -383,6 +386,57 @@ export function HomePage() {
           <span className="text-mystic-400 text-sm">{t('home.dayStreakLabel')}</span>
         </button>
       </div>
+
+      {/* Today's Ritual — hero placement. Before anything else on the page
+          so the first thing a returning user sees is the call to start
+          their daily practice. */}
+      {!ritualStarted ? (
+        <Card variant="ornate" padding="lg" className="text-center nebula-veil">
+          <div className="py-2">
+            <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block">
+              <MysticalStar size={72} />
+            </div>
+            <h2 className="font-display-hero text-2xl text-gold-foil mb-2">{t('home.todaysRitual')}</h2>
+            <div className="flex justify-center mb-3 text-gold/60">
+              <OrnateDivider width={120} />
+            </div>
+            <p className="text-mystic-300 text-sm mb-6">{t('home.subtitle')}</p>
+            <Button variant="gold" onClick={handleStartRitual} className="min-h-[48px]">
+              {t('home.startTodaysRitual')}
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display-hero text-xl text-gold-foil">{t('home.todaysRitual')}</h2>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${ritualState.horoscopeViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
+              <div className={`w-2 h-2 rounded-full ${ritualState.tarotViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
+              <div className={`w-2 h-2 rounded-full ${ritualState.promptViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
+            </div>
+          </div>
+
+          <HoroscopeCard sign={zodiacSign} onRead={handleReadHoroscope} />
+
+          <Card padding="lg">
+            {drawnTarot && (
+              <TarotFlipCard
+                card={drawnTarot.card}
+                reversed={drawnTarot.reversed}
+                saved={tarotSaved}
+                onSave={handleTarotSave}
+                onShare={handleTarotShare}
+                onMeaning={handleTarotMeaning}
+                cardBackUrl={profile?.card_back_url}
+              />
+            )}
+          </Card>
+
+          <PromptCard prompt={dailyPrompt} onWrite={handleWritePrompt} />
+        </div>
+      )}
 
       {moonstonesEnabled && <MoonstoneWidget />}
 
@@ -512,49 +566,6 @@ export function HomePage() {
               style={{ width: `${xpProgress.percentage}%` }}
             />
           </div>
-        </div>
-      )}
-
-      {!ritualStarted ? (
-        <Card variant="glow" padding="lg" className="text-center">
-          <div className="py-4">
-            <Sparkles className="w-12 h-12 text-gold mx-auto mb-4" />
-            <h2 className="font-display text-xl text-mystic-100 mb-2">{t('home.todaysRitual')}</h2>
-            <p className="text-mystic-400 text-sm mb-6">{t('home.subtitle')}</p>
-            <Button variant="gold" onClick={handleStartRitual} className="min-h-[48px]">
-              {t('home.startTodaysRitual')}
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg text-mystic-200">{t('home.todaysRitual')}</h2>
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${ritualState.horoscopeViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
-              <div className={`w-2 h-2 rounded-full ${ritualState.tarotViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
-              <div className={`w-2 h-2 rounded-full ${ritualState.promptViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
-            </div>
-          </div>
-
-          <HoroscopeCard sign={zodiacSign} onRead={handleReadHoroscope} />
-
-          <Card padding="lg">
-            {drawnTarot && (
-              <TarotFlipCard
-                card={drawnTarot.card}
-                reversed={drawnTarot.reversed}
-                saved={tarotSaved}
-                onSave={handleTarotSave}
-                onShare={handleTarotShare}
-                onMeaning={handleTarotMeaning}
-                cardBackUrl={profile?.card_back_url}
-              />
-            )}
-          </Card>
-
-          <PromptCard prompt={dailyPrompt} onWrite={handleWritePrompt} />
         </div>
       )}
 

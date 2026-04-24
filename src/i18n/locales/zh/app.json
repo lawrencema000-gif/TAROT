@@ -1903,6 +1903,38 @@
         "birthChart": {
           "label": "本命盘",
           "desc": "你的宇宙蓝图"
+        },
+        "partnerSynastry": {
+          "label": "伴侣合盘",
+          "desc": "真实的交互相位占星"
+        },
+        "horoscopeFull": {
+          "label": "完整星座运势",
+          "desc": "星图、预报、探索全部解锁"
+        },
+        "humanDesign": {
+          "label": "人类图",
+          "desc": "真实的人生角色图、类型与权威"
+        },
+        "bazi": {
+          "label": "八字四柱",
+          "desc": "中国传统八字命理"
+        },
+        "dreamAi": {
+          "label": "AI 解梦",
+          "desc": "用荣格心理学解读任何梦境"
+        },
+        "moodLetter": {
+          "label": "每周情绪信",
+          "desc": "根据你的记录撰写的私人信件"
+        },
+        "oracleChat": {
+          "label": "神谕伙伴",
+          "desc": "四种角色、无限对话"
+        },
+        "shadowWork": {
+          "label": "阴影整合牌阵",
+          "desc": "最深度的塔罗牌阵"
         }
       },
       "plans": {
@@ -1967,7 +1999,15 @@
         "compatibility": "完整合盘",
         "deepInterpretations": "深度解读",
         "guidedPrompts": "引导式提示",
-        "birthChart": "本命盘"
+        "birthChart": "本命盘",
+        "partnerSynastry": "伴侣合盘",
+        "horoscopeFull": "完整星座运势",
+        "humanDesign": "人类图",
+        "bazi": "八字四柱",
+        "dreamAi": "AI 解梦",
+        "moodLetter": "每周情绪信",
+        "oracleChat": "神谕伙伴",
+        "shadowWork": "阴影整合牌阵"
       },
       "toasts": {
         "verified": "订阅已验证!",

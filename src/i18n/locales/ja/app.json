@@ -1903,6 +1903,38 @@
         "birthChart": {
           "label": "バースチャート",
           "desc": "あなたの宇宙の設計図"
+        },
+        "partnerSynastry": {
+          "label": "パートナー相性（シナストリー）",
+          "desc": "本格的なアスペクト占星術"
+        },
+        "horoscopeFull": {
+          "label": "フル星占い",
+          "desc": "星図・予測・詳細 — すべて解放"
+        },
+        "humanDesign": {
+          "label": "ヒューマンデザイン",
+          "desc": "本物のボディグラフ・プロファイル・内的権威"
+        },
+        "bazi": {
+          "label": "八字（四柱推命）",
+          "desc": "中国古典の八字命理"
+        },
+        "dreamAi": {
+          "label": "AI夢診断",
+          "desc": "あらゆる夢をユング心理学で読み解く"
+        },
+        "moodLetter": {
+          "label": "週間ムードレター",
+          "desc": "あなたの記録から綴る手紙"
+        },
+        "oracleChat": {
+          "label": "オラクル・コンパニオン",
+          "desc": "4人格、無制限のチャット"
+        },
+        "shadowWork": {
+          "label": "シャドウワーク・スプレッド",
+          "desc": "最も深いタロットの配置"
         }
       },
       "plans": {
@@ -1967,7 +1999,15 @@
         "compatibility": "フル相性診断",
         "deepInterpretations": "深い解釈",
         "guidedPrompts": "ガイド付きプロンプト",
-        "birthChart": "バースチャート"
+        "birthChart": "バースチャート",
+        "partnerSynastry": "パートナー相性",
+        "horoscopeFull": "フル星占い",
+        "humanDesign": "ヒューマンデザイン",
+        "bazi": "八字四柱",
+        "dreamAi": "AI夢診断",
+        "moodLetter": "週間ムードレター",
+        "oracleChat": "オラクル・コンパニオン",
+        "shadowWork": "シャドウワーク"
       },
       "toasts": {
         "verified": "サブスクリプションを確認しました!",

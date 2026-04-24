@@ -1903,6 +1903,38 @@
         "birthChart": {
           "label": "출생 차트",
           "desc": "당신의 우주적 설계도"
+        },
+        "partnerSynastry": {
+          "label": "파트너 시너스트리",
+          "desc": "실제 교차 각도 점성술"
+        },
+        "horoscopeFull": {
+          "label": "전체 호로스코프",
+          "desc": "차트 · 예보 · 탐색 모두 해제"
+        },
+        "humanDesign": {
+          "label": "휴먼 디자인",
+          "desc": "실제 바디그래프와 프로필, 결정권"
+        },
+        "bazi": {
+          "label": "바지(사주팔자)",
+          "desc": "중국 전통 팔자 명리학"
+        },
+        "dreamAi": {
+          "label": "AI 꿈 해석",
+          "desc": "어떤 꿈이든 융 심리학으로 읽기"
+        },
+        "moodLetter": {
+          "label": "주간 감정 편지",
+          "desc": "당신의 기록으로 쓴 편지"
+        },
+        "oracleChat": {
+          "label": "오라클 컴패니언",
+          "desc": "네 가지 페르소나, 무제한 대화"
+        },
+        "shadowWork": {
+          "label": "섀도우 워크 스프레드",
+          "desc": "가장 깊은 타로 배치"
         }
       },
       "plans": {
@@ -1967,7 +1999,15 @@
         "compatibility": "전체 궁합 분석",
         "deepInterpretations": "심층 해석",
         "guidedPrompts": "가이드 프롬프트",
-        "birthChart": "출생 차트"
+        "birthChart": "출생 차트",
+        "partnerSynastry": "파트너 시너스트리",
+        "horoscopeFull": "전체 호로스코프",
+        "humanDesign": "휴먼 디자인",
+        "bazi": "바지 사주",
+        "dreamAi": "AI 꿈 해석",
+        "moodLetter": "주간 감정 편지",
+        "oracleChat": "오라클 컴패니언",
+        "shadowWork": "섀도우 워크"
       },
       "toasts": {
         "verified": "구독이 확인되었습니다!",

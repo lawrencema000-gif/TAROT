@@ -50,7 +50,9 @@
     "quickReading": "3-second reading",
     "quickReadingSub": "Ask anything",
     "tarotCompanion": "Tarot companion",
-    "tarotCompanionSub": "Pull a card, talk it through"
+    "tarotCompanionSub": "Pull a card, talk it through",
+    "pickACardTitle": "抽一张牌",
+    "pickACardSub": "30秒的日常仪式，一张召唤你的牌。"
   },
   "auth": {
     "welcomeBack": "欢迎回来",
@@ -4272,5 +4274,18 @@
     "rsvpCancelled": "RSVP cancelled",
     "signInToRsvp": "Sign in to RSVP",
     "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
+  },
+  "pickACard": {
+    "title": "抽一张牌",
+    "subtitleChoose": "深呼吸，感受召唤你的那张牌，轻触翻开。",
+    "subtitlePicked": "你今天的牌已经抽好了。",
+    "streak": "连续 {{n}} 天",
+    "optionAria": "牌 {{n}}",
+    "upright": "正位",
+    "reversed": "逆位",
+    "share": "分享",
+    "learnMore": "详细解读",
+    "comeBack": "新的牌将在午夜刷新。",
+    "shareText": "今日抽到：{{name}}（{{orientation}}）— {{keyword}}"
   }
 }

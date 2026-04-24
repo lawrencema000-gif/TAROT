@@ -53,6 +53,7 @@ export function HomePage() {
   const moonPhasesEnabled = useFeatureFlag('moon-phases');
   const quickReadingEnabled = useFeatureFlag('ai-quick-reading');
   const tarotCompanionEnabled = useFeatureFlag('ai-tarot-companion');
+  const pickACardEnabled = useFeatureFlag('pick-a-card');
   const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
@@ -381,6 +382,32 @@ export function HomePage() {
       {moonstonesEnabled && <MoonstoneWidget />}
 
       {moonPhasesEnabled && <MoonPhaseCard />}
+
+      {pickACardEnabled && (
+        <button
+          onClick={() => navigate('/pick-a-card')}
+          className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-gold/10 via-mystic-900 to-cosmic-violet/10 border border-gold/25 hover:border-gold/50"
+        >
+          <div className="flex items-center gap-4">
+            <div className="relative w-14 h-20 flex-shrink-0">
+              {/* Three fanned-out card silhouettes — subtle preview. */}
+              <div className="absolute inset-0 rounded-md bg-mystic-800 border border-gold/30 -rotate-12 origin-bottom" />
+              <div className="absolute inset-0 rounded-md bg-mystic-800 border border-gold/40" />
+              <div className="absolute inset-0 rounded-md bg-mystic-800 border border-gold/30 rotate-12 origin-bottom" />
+              <Sparkles className="absolute inset-0 m-auto w-5 h-5 text-gold/80 group-hover:text-gold transition-colors" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-mystic-100 mb-0.5">
+                {t('home.pickACardTitle', { defaultValue: 'Pick a card' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 leading-relaxed">
+                {t('home.pickACardSub', { defaultValue: '30-second daily draw. One card calls to you.' })}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-gold transition-colors flex-shrink-0" />
+          </div>
+        </button>
+      )}
 
       {(quickReadingEnabled || tarotCompanionEnabled) && (
         <div className="grid grid-cols-2 gap-3">

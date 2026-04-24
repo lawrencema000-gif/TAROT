@@ -50,7 +50,9 @@
     "quickReading": "3-second reading",
     "quickReadingSub": "Ask anything",
     "tarotCompanion": "Tarot companion",
-    "tarotCompanionSub": "Pull a card, talk it through"
+    "tarotCompanionSub": "Pull a card, talk it through",
+    "pickACardTitle": "カードを選ぶ",
+    "pickACardSub": "30秒の日課。あなたを呼ぶ1枚を。"
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -4272,5 +4274,18 @@
     "rsvpCancelled": "RSVP cancelled",
     "signInToRsvp": "Sign in to RSVP",
     "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
+  },
+  "pickACard": {
+    "title": "カードを選ぶ",
+    "subtitleChoose": "深呼吸して、惹かれる1枚をタップしてください。",
+    "subtitlePicked": "今日のカードを引きました。",
+    "streak": "{{n}}日連続",
+    "optionAria": "カード{{n}}",
+    "upright": "正位置",
+    "reversed": "逆位置",
+    "share": "シェア",
+    "learnMore": "詳しく見る",
+    "comeBack": "新しいカードは深夜0時に更新されます。",
+    "shareText": "今日は{{name}}（{{orientation}}）を引きました — {{keyword}}"
   }
 }

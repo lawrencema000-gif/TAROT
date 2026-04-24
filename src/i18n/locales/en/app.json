@@ -15,6 +15,8 @@
     "quickReadingSub": "Ask anything",
     "tarotCompanion": "Tarot companion",
     "tarotCompanionSub": "Pull a card, talk it through",
+    "pickACardTitle": "Pick a card",
+    "pickACardSub": "30-second daily draw. One card calls to you.",
     "streak": "You're on a {{n}}-day streak. Keep it going!",
     "savedToday": "Saved today",
     "savedHighlights": "Saved Highlights",
@@ -4108,5 +4110,18 @@
     "rsvpCancelled": "RSVP cancelled",
     "signInToRsvp": "Sign in to RSVP",
     "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
+  },
+  "pickACard": {
+    "title": "Pick a card",
+    "subtitleChoose": "Breathe. Notice which one calls to you. Tap to reveal.",
+    "subtitlePicked": "You've drawn your card for today.",
+    "streak": "{{n}}-day streak",
+    "optionAria": "Card {{n}}",
+    "upright": "Upright",
+    "reversed": "Reversed",
+    "share": "Share",
+    "learnMore": "Learn more",
+    "comeBack": "New cards arrive at midnight.",
+    "shareText": "Today I drew {{name}} ({{orientation}}) — {{keyword}}"
   }
 }

@@ -50,7 +50,9 @@
     "quickReading": "3-second reading",
     "quickReadingSub": "Ask anything",
     "tarotCompanion": "Tarot companion",
-    "tarotCompanionSub": "Pull a card, talk it through"
+    "tarotCompanionSub": "Pull a card, talk it through",
+    "pickACardTitle": "카드 뽑기",
+    "pickACardSub": "30초 일일 뽑기. 당신을 부르는 한 장."
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
@@ -4272,5 +4274,18 @@
     "rsvpCancelled": "RSVP cancelled",
     "signInToRsvp": "Sign in to RSVP",
     "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we'll notify you when your room opens."
+  },
+  "pickACard": {
+    "title": "카드 뽑기",
+    "subtitleChoose": "숨을 고르고, 끌리는 카드를 탭하세요.",
+    "subtitlePicked": "오늘의 카드를 뽑았어요.",
+    "streak": "{{n}}일 연속",
+    "optionAria": "카드 {{n}}",
+    "upright": "정방향",
+    "reversed": "역방향",
+    "share": "공유",
+    "learnMore": "더 보기",
+    "comeBack": "자정에 새 카드가 도착해요.",
+    "shareText": "오늘 뽑은 카드: {{name}} ({{orientation}}) — {{keyword}}"
   }
 }

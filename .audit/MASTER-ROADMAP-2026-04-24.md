@@ -175,8 +175,109 @@ Cece ships nothing for iOS deep-integration. Every one is a pure moat, not a gap
 
 ---
 
-## Open questions for the user
+## User decisions (locked 2026-04-24)
 
-1. **Which market are we prioritizing?** CN-parity build and OUT-FLANK build are different 3-month roadmaps (Cece skips 黄历/手相/面相/抽签/姓名/择日 — that's our whitespace).
-2. **Free vs paid for Bazi?** Cece paywalls Bazi depth. We could free-tier the chart and paywall 大运/流年/合婚.
-3. **How fast do you want to flip flags?** Phase 0 can be done in 3 days; more cautious rollout via `rollout_percent = 10 → 50 → 100` takes 1-2 weeks.
+1. **Market: Western only.** Eastern mysticism stays as a flavor, not a focus. Translate Bazi/I-Ching into accessible Western-audience language. Drop the hard CN-only folk surfaces: 黄历 almanac, 抽签 fortune sticks, 姓名 name analysis, 择日 date picker, 称骨 bone-weight, 手相 palm, 面相 face. Skip Ziwei Doushu entirely.
+2. **Bazi depth is premium.** Free tier = chart + Day Master + 5-element balance. Premium = Ten Gods, Favorable Element, 大运 (rename → "Major Life Cycles"), 流年 (rename → "Year Ahead"), 合婚 compat (rename → "Soul Pairing").
+3. **Rollout cadence: one feature at a time.** No mass flag flip. Each flag goes through smoke → small rollout → 100%, one per week.
+
+## Western-audience naming rewrite
+
+Use these in UI copy. Internal code keeps Chinese terms for engineer clarity.
+
+| Chinese classical | Western-audience name |
+|---|---|
+| 八字 (Bazi) | "Four Pillars" / "Elemental Chart" |
+| 日主 Day Master | "Inner Element" / "Core Element" |
+| 十神 Ten Gods | "Inner Forces" / "Character Archetypes" |
+| 纳音 Nayin | "Soul Sound" (optional; or just skip) |
+| 藏干 Hidden Stems | "Hidden Influences" |
+| 身强/身弱 | "Dominant / Receptive Chart" |
+| 用神 Favorable Element | "Your Supporting Element" |
+| 大运 Major Luck Cycles | "Major Life Cycles" |
+| 流年 Annual Luck | "Year Ahead" |
+| 合婚 Bazi Compat | "Soul Pairing" |
+| 五行穿衣 Today's Outfit | "Today's Lucky Color" (drop the Chinese framing) |
+
+**Reframe principle:** lean on the universal archetypes (Wood / Fire / Earth / Metal / Water as elements — these resonate with Western users who already know "elements" from astrology). Drop anything that requires explaining Chinese folk culture.
+
+## Revised sequencing (given user decisions)
+
+Old "Phase 0 mass flag flip" is gone — replaced by a one-at-a-time list.
+
+### The one-at-a-time flag rollout queue
+
+Feature flipped → smoke on prod 48h → if clean, next. If bugs, fix before moving on. ~1 feature per week.
+
+**Ordered by (Western-appeal × simplicity × low-risk)** — ship this order:
+
+1. **Natal chart full-wheel render** (`natal-chart-report`) — universally Western, already built, premium. *Already partially shipping via paywall.*
+2. **Transits-on-natal tab** — same wheel, Western, already built.
+3. **Synastry (2-person compat chart)** — romance angle, Western, already built.
+4. **Runes cast** (`runes`) — Norse/Elder Futhark, Western-friendly mysticism. Already built.
+5. **Dice oracle** (`dice`) — generic oracle, already built.
+6. **Whispering Well anonymous feed** (`whispering-well`) — community + mental health angle, Western-appropriate. Already built.
+7. **Community feed** (`community`) — foundation. Already built.
+8. **Pick-a-Card daily swipe** — NEW, 1-day build, top-25 fun feature.
+9. **Auto-shareable cosmic card (PNG export on reading complete)** — NEW, 1-day, high viral hook.
+10. **Daily Energy Mission** — NEW, 1-day, gamification.
+11. **I-Ching 64 hexagrams** (`iching`) — Eastern but Western-popularized (Jung, PKD, Sagan). Already built.
+12. **Human Design chart** (`human-design`) — Western-created Eastern fusion. Already built.
+13. **Bazi V1 + Phase-1 upgrades, premium only** — ship as a premium feature after upgrade. ~1 week build + 1 week soak.
+14. **AI 3-sec reading, AI tarot companion, AI journal coach** — already built, roll out individually.
+15. **Mood diary** (`mood-diary`) — extend to 30-day curve. Already built.
+16. **Partner compat quiz** (`partner-compat`) — already built.
+17. **Dream interpreter** (`dream-interpreter`) — already built.
+18. **Soulmate score 0-100 share card** — NEW, 1-day.
+19. **Love Tree attachment visualizer** — NEW, 1-2 days.
+20. **Proactive AI morning/evening check-in push** — NEW, 2-3 days (edge cron + OneSignal).
+21. **Moonstones + daily check-in + top-up** — we have it; needs Stripe products + RC config.
+22. **Referral + Compat invite** — polish the dual-MBTI compat share.
+23. **Lucky Map + astrocartography-lite** — NEW, 3-5 days.
+24. **Feng Shui Bagua** (`feng-shui`) — SOFT DEMOTE. Keep it built but low-priority; Western users mostly know "feng shui" as a joke. Possibly relabel as "Your Space's Energy Map".
+25. **Ayurveda Dosha quiz** — Eastern but popularized in Western wellness circles.
+
+### Features explicitly DROPPED (per user decision: Western-only)
+
+- Huangli 黄历 daily almanac (宜/忌)
+- Fortune sticks 抽签
+- Bone-weight 称骨算命
+- Name-stroke analysis 姓名测试
+- Auspicious-date picker 择日
+- Palm reading 手相
+- Face reading 面相
+- Ziwei Doushu 紫微斗数
+- Lunar Mansions 二十八宿
+- Chinese-language-only marketing surfaces
+- Cece's 20+ pro-astrology chart variants (Astrolog/Janus/Winstar style)
+
+---
+
+## Bazi plan — paywall decisions
+
+Layered free → premium:
+
+**FREE tier (Bazi page, no upsell friction):**
+- Four-pillar chart visual
+- Day Master (rebranded "Inner Element")
+- Five-element balance bars
+- One-line archetypal personality ("Yang Fire: the inspirer")
+
+**PREMIUM tier (Moonstones 150 OR $6.99 unlock, OR included in subscription):**
+- Ten Gods / Inner Forces table
+- Hidden Influences (hidden stems)
+- Strong / Receptive chart diagnosis
+- Supporting Element (用神) with lucky color / direction / number / career hints
+- Today's Lucky Color widget
+- Major Life Cycles (大运 timeline)
+- Year Ahead (流年 reading, 12-month breakdown premium, 1-line headline free)
+- Today's energy overlay on chart
+- Soul Pairing compat with another person
+
+**SKIP (per user decision):**
+- Baby / pen naming (姓名)
+- 黄道吉日 auspicious-date picker
+- 12 Life Stages (长生十二宫)
+- 60 甲子 collection gamification (this one was fun but too Chinese-niche)
+
+First Bazi PR = the Phase 1 classical layers from [BAZI-IMPLEMENTATION-PLAN-2026-04-24.md](BAZI-IMPLEMENTATION-PLAN-2026-04-24.md), all behind the premium gate. ~1 week.

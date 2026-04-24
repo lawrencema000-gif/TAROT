@@ -56,17 +56,12 @@ export function CelticCrossLayout({
               </div>
             )
           ) : (
-            <>
-              {cardBackUrl ? (
-                <img src={cardBackUrl} alt="Card Back" className="w-full h-full object-cover" />
-              ) : (
-                <div className="text-center">
-                  <div className="w-6 h-6 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                    <Sparkles className="w-3 h-3 text-gold/50 group-hover:text-gold transition-colors" />
-                  </div>
-                </div>
-              )}
-            </>
+            <img
+              src={cardBackUrl || '/card-backs/default.svg'}
+              alt=""
+              className="w-full h-full object-cover pointer-events-none select-none"
+              draggable={false}
+            />
           )}
 
           {!drawn.revealed && (

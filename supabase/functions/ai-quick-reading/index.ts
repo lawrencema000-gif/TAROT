@@ -15,7 +15,8 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
 
-const GEMINI_CHAT_MODEL = "gemini-2.0-flash";
+// Upgraded 2026-04-25 — gemini-2.0-flash deprecated, returning 502s.
+const GEMINI_CHAT_MODEL = "gemini-2.5-flash";
 const GEMINI_EMBED_MODEL = "text-embedding-004";
 
 const RequestSchema = z.object({

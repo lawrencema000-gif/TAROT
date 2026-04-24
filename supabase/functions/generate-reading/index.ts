@@ -194,12 +194,12 @@ Important rules:
 
 /** Model used by generate-reading. Keep aligned with the pricing table in
  *  `_shared/ai-usage.ts`. Phase 5: `gemini-flash-default` feature flag selects
- *  between the legacy 1.5 Flash and the cheaper 2.0 Flash (~10–20× cost
- *  reduction). Flip the flag ON in the DB to roll out; per-user bucket
- *  determinism means the same user always gets the same model within a
- *  single rollout window. */
+ *  between the legacy 1.5 Flash and Flash 2.5 (the 2.0 variant was deprecated
+ *  by Google 2026-Q2, producing 502s from upstream). Flip the flag ON in
+ *  the DB to roll out; per-user bucket determinism means the same user always
+ *  gets the same model within a single rollout window. */
 const GEMINI_MODEL_LEGACY = "gemini-1.5-flash";
-const GEMINI_MODEL_FLASH = "gemini-2.0-flash";
+const GEMINI_MODEL_FLASH = "gemini-2.5-flash";
 
 interface GeminiUsageMetadata {
   promptTokenCount?: number;

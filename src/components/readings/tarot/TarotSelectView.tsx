@@ -72,16 +72,19 @@ export function TarotSelectView({
                     active:scale-95 relative
                   `}
                 >
-                  {!isSelected && cardBackUrl && (
-                    <img src={cardBackUrl} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
+                  {!isSelected && (
+                    <img
+                      src={cardBackUrl || '/card-backs/default.svg'}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                      draggable={false}
+                    />
                   )}
                   <div className="relative z-10">
-                    {isSelected ? (
+                    {isSelected && (
                       <div className="w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm shadow-lg">
                         {selectionOrder}
                       </div>
-                    ) : (
-                      <Sparkles className="w-5 h-5 text-gold/30 group-hover:text-gold/60 transition-colors" />
                     )}
                   </div>
                 </div>

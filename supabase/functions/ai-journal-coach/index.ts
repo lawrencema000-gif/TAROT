@@ -14,7 +14,8 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { z } from "npm:zod@3.24.1";
 
-const MODEL = "gemini-2.0-flash";
+// Upgraded 2026-04-25 — gemini-2.0-flash deprecated, returning 502s.
+const MODEL = "gemini-2.5-flash";
 
 const RequestSchema = z.object({
   entry: z.string().min(10).max(6000),

@@ -170,7 +170,9 @@ export function PickACardPage() {
     // 'shared' = native share sheet handled it silently.
   };
 
-  const cardBackUrl = profile?.card_back_url ?? undefined;
+  // Always fall back to the bundled deck back so every card-selection
+  // surface shows a real card image, never a placeholder icon.
+  const cardBackUrl = profile?.card_back_url || '/card-backs/default.svg';
 
   if (!deck || !options) {
     return (
@@ -236,18 +238,15 @@ export function PickACardPage() {
                 whileHover={{ y: -12, rotate: 0, scale: 1.04, transition: { duration: 0.2 } }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.5, delay: 0.15 * i, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-24 sm:w-28 md:w-32 aspect-[2/3] rounded-xl overflow-hidden border border-gold/30 shadow-xl bg-gradient-to-br from-mystic-800 to-mystic-900 disabled:opacity-50"
+                className="relative w-24 sm:w-28 md:w-32 aspect-[2/3] rounded-xl overflow-hidden border border-gold/30 shadow-xl disabled:opacity-50"
                 aria-label={t('pickACard.optionAria', { defaultValue: 'Card {{n}}', n: i + 1 }) as string}
               >
-                {cardBackUrl ? (
-                  <img src={cardBackUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-gold/70" />
-                    </div>
-                  </div>
-                )}
+                <img
+                  src={cardBackUrl}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-mystic-950/40 to-transparent pointer-events-none" />
               </motion.button>
             ))}

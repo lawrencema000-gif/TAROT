@@ -52,7 +52,8 @@ interface ChatResponse {
   memoriesUsed: number;
 }
 
-const GEMINI_CHAT_MODEL = "gemini-2.0-flash";
+// Upgraded 2026-04-25 — gemini-2.0-flash deprecated by Google, returning 502s.
+const GEMINI_CHAT_MODEL = "gemini-2.5-flash";
 const GEMINI_EMBED_MODEL = "text-embedding-004";
 const MAX_HISTORY_MESSAGES = 20;
 const SUMMARIZE_AFTER_N_USER_TURNS = 10;

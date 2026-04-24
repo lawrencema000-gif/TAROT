@@ -57,9 +57,33 @@ interface CardBackOption {
 }
 
 interface BackgroundOption {
+  /** Full-resolution URL — what gets stored in profile.background_url
+   *  and rendered as the actual app background (fetched on demand). */
   url: string;
+  /** Preview thumbnail — bundled under /backgrounds/thumbs/ when we
+   *  have a local match, else falls back to the full-res URL. Lets
+   *  the picker feel instant while only paying for the full image
+   *  when the user actually picks one. */
+  thumbUrl: string;
   name: string;
 }
+
+/**
+ * Map Supabase background filenames to the bundled thumbnail we ship
+ * for the picker preview. Thumbnails live in public/backgrounds/thumbs/
+ * at 320×180 webp (~12-17 KB each). The set is fixed — new uploads
+ * admin-added to Supabase will fall back to fetching the full-res
+ * image until this table is updated + new thumbnails bundled.
+ */
+const BUNDLED_BG_THUMBS: Record<string, string> = {
+  'background_1768048475356.png': '/backgrounds/thumbs/background_1768048475356.webp',
+  'background_1768048480582.png': '/backgrounds/thumbs/background_1768048480582.webp',
+  'background_1768048488103.png': '/backgrounds/thumbs/background_1768048488103.webp',
+  'background_1768048493449.png': '/backgrounds/thumbs/background_1768048493449.webp',
+  'background_1768048497998.png': '/backgrounds/thumbs/background_1768048497998.webp',
+  'background_1768048502487.png': '/backgrounds/thumbs/background_1768048502487.webp',
+  'background_1768048506937.png': '/backgrounds/thumbs/background_1768048506937.webp',
+};
 
 interface SettingsSheetProps {
   open: boolean;
@@ -215,8 +239,13 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               const { data: urlData } = supabase.storage
                 .from('backgrounds')
                 .getPublicUrl(`${folder.name}/${file.name}`);
+              // Prefer bundled thumbnail for instant preview; fall
+              // back to full-res URL for backgrounds that post-date
+              // the bundled thumbnail set.
+              const thumb = BUNDLED_BG_THUMBS[file.name] ?? urlData.publicUrl;
               allFiles.push({
                 url: urlData.publicUrl,
+                thumbUrl: thumb,
                 name: file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' '),
               });
             }
@@ -1204,8 +1233,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     `}
                   >
                     <img
-                      src={bg.url}
+                      src={bg.thumbUrl}
                       alt={bg.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                     {profile?.background_url === bg.url && (

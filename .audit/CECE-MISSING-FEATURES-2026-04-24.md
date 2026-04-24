@@ -173,3 +173,85 @@ The single biggest gap vs. our prior inventory. Cece's AI is *persona-branded* a
 - [PingWest — 2024 annual report recap](https://www.pingwest.com/a/301427)
 - [tech.china.com — 2025 AI playbook](https://tech.china.com/articles/20250417/202504171661508.html)
 - [Rest of World — 2023 Tencent/Cece investigative](https://restofworld.org/2023/tencent-cece-spirituality-app/)
+
+---
+
+## CN-market Chinese fortune-telling surfaces (deep scrape)
+
+**Scrape date:** 2026-04-24 (evening delta, Chinese-query pass)
+**Why this exists:** Prior scrapes used English queries and under-indexed the Chinese-market divination surface. This pass ran Chinese-language queries (`测测 黄历`, `测测 紫微`, `测测 六爻`, `测测 姓名测试`, `测测 手相`, `测测 抽签`, `测测 每日运势`, `测测 择日`, `测测 本命牌`, `测测 缘分树`) across `cece.com`, `xxwolo.com` (Cece's parent domain), Chinese app mirrors (应用宝/腾讯, 豌豆荚, 2265, 32r, ddooo, 25pp, vkxiazai, apkpure), iOS App Store CN, Zhihu founder interview (zhuanlan.zhihu.com/p/1935801352598054186), 36kr, ai-bot.cn, CSDN, and Play Store international.
+
+**Headline finding — Cece's CN divination stack is NARROWER than the ambient Chinese-market norm.** Their own canonical feature list (repeated verbatim across `xxwolo.com/mobile/cecexingzuo`, Play Store, APKPure, ddooo, 32r, sj.qq.com) is:
+
+> 紫微斗数、二十八宿、生命灵数、八字、占星骰子、塔罗、本命盘 + 20种星盘、3D心理沙盘、50+心理测试、AI问答、心理连麦、冥想、心情小镇
+
+Features conspicuously **absent from every Cece marketing surface** — despite being table-stakes on competitor 算命 apps like 汉程生活 / 灵占算命八字星座 / 每日灵签 / 水墨先生 / 神算堂 / 华易网: **黄历 / 宜忌 / 老黄历, 姓名测试 / 起名, 手相, 面相, 抽签 / 观音灵签 / 月老灵签, 测字, 称骨算命, 风水罗盘, 择日 / 黄道吉日, 合婚, 五行缺什么 / 五行穿衣**. This is *either* a massive gap in Cece (they're leaving CN-classical-算命 users to competitors) *or* a strategic moat-of-focus (astrology-first, psychology-first, AI-first; skip folk divination entirely). Probably the latter — their founder 任永亮 explicitly positions Cece as "MBTI + 星座 + AI, not 算命". **Arcana implication:** if we only want CN-market parity with *Cece*, ignore almanac/palm/face/sticks. If we want CN-market parity with *the broader 算命 category*, these are pure whitespace — Cece cedes them.
+
+### Surfaces table
+
+| Feature (中文名) | We ship? | Effort | Priority | Source (confirmation evidence) | Notes |
+|---|---|---|---|---|---|
+| **Ziwei Doushu 紫微斗数 (12-palace emperor's astrology)** | ❌ | L | P1 | `xxwolo.com/mobile/cecexingzuo` ("还能看紫微斗数"); APKPure CN description ("八字紫微"); ddooo feature bullet; 32r feature bullet | **Confirmed in live Cece.** Prior delta had this as P2 — bumping to P1 because every CN-market product page Cece publishes leads with it. 12 palaces, 14 main stars + ~100 minor stars, 4 transformations (化禄/化权/化科/化忌). Heavier than Bazi. Required to claim CN-market parity with Cece specifically. |
+| **Bazi 八字 (4-pillar) — Cece's in-app version** | ⚠️ (flag-gated on our side) | — | — (validate) | Play Store title *"测测 - 星座，八字，AI问答"*; APKPure description; ddooo bullet "八字五行、紫微斗数、二十八宿" | **Confirmed in live Cece** and promoted to the app's actual store title. We ship it behind a flag; **action**: unflag Bazi; it's their #2 leading CN keyword after 星座. |
+| **28 Lunar Mansions 二十八宿** | ❌ | S | P3 | `xxwolo.com/mobile/cecexingzuo`; APKPure; ddooo; 32r | **Confirmed in live Cece.** Already P3 in prior delta — reconfirmed. Low differentiation; ship as content alongside Ziwei. |
+| **Life Number 生命灵数 / 生命数字 (Pythagorean-style but CN-branded)** | ✅ (we have Life Path numerology) | S | — | `xxwolo.com/mobile/cecexingzuo`; ddooo; apkpure | **Confirmed.** We likely already cover this as Life Path — action: add a CN-market skin that calls it `生命灵数` and surfaces 3 extra numbers (destiny, soul urge, personality) Cece bundles. |
+| **Astrology Dice 占星骰子** | ✅ (we ship `/dice`) | — | — | `xxwolo.com/mobile/cecexingzuo`; ddooo | **Confirmed.** Note: Cece's dice is *astro-themed* (planet/sign/house dice), not generic numeric. Verify our `/dice` has the astro variant — if not, add it as a mode (~0.5 day). |
+| **Huangli 黄历 / 万年历 / daily 宜忌 almanac** | ❌ | M | **P1 (whitespace)** | *Not found on any Cece surface* — checked 10+ pages | **Unverified that Cece ships this** — actually *confirmed absent* from all Cece pages. Massive on competitor apps (汉程生活, 天天黄历, 黄道吉日 APP, 每日灵签). Daily 宜 (what's auspicious) / 忌 (what to avoid) widget, 12-值神 (建/除/满/平/...), 冲煞, 彭祖百忌, 财神喜神 position. **Opportunity, not a Cece-gap.** If we want CN-category leadership, ship this; if we just want Cece-parity, skip. |
+| **Name Analysis 姓名测试 / 姓名学打分** | ❌ | M | P2 (whitespace) | *Not found on any Cece surface*; covered by 美名腾, 君子阁, xingming.com, 吉运堂 | **Unverified on Cece — confirmed absent.** Stroke-count + 五格 (天格/人格/地格/外格/总格) + 三才 五行 balance → 0-100 score. Category norm, Cece doesn't ship. Whitespace play. |
+| **Baby Naming / 起名 (Bazi-driven name generator)** | ❌ | L | P2 (whitespace) | *Not found on any Cece surface*; covered by 美名腾, 起名有福 | **Unverified on Cece — confirmed absent.** Input baby's birth time → 5-element 喜用神 → generate name candidates. Premium monetization surface (¥29-99 per generation on competitors). |
+| **Palmistry 手相 (AI photo upload)** | ❌ | L | P2 (whitespace) | *Not found on any Cece surface*; CSDN article confirms Cece is NOT in the AI 算命 palm-reading wave that hit 小红书 / 抖音 in 2024-2025; category leaders are 百度文小言, 手相指纹预测相机 | **Unverified on Cece — confirmed absent.** Prior inventory had this as P3; Cece didn't catch the 2024 AI-palm-reading 小红书 viral wave — neither did we. Privacy risk is real (biometric capture). Skip unless we stand up a dedicated adult-branded surface. |
+| **Face Reading 面相 (AI selfie analysis)** | ❌ | L | P3 (whitespace, risky) | *Not found on any Cece surface*; 澎湃新闻 article confirms the "面相研究院" boom (2024-2025) in CN but Cece absent | **Unverified on Cece — confirmed absent.** Same biometric-privacy concerns + App Store policy risk (face-analytics). Skip or ship as clearly-marked "for entertainment". |
+| **Fortune Sticks 抽签 / 观音灵签 / 月老灵签 / 吕祖灵签** | ❌ | S | P2 (whitespace, content-cost M) | *Not found on any Cece surface*; leaders are 每日灵签, 华易网, 51chouqian, 农历网 | **Unverified on Cece — confirmed absent.** Pick 1 of 32/60/100 numbered sticks → named poem + interpretation. 100 签 × 4 interpretive paragraphs = ~100k chars of content, all public-domain. Free to ship, very on-brand for a mystical app. |
+| **Character Divination 测字** | ❌ | S | P3 | *Not found on any Cece surface* | **Unverified on Cece — likely absent.** User types/writes 1 Chinese character → system decomposes radicals, maps to 五行, gives reading. Very niche; only serious 易学 users care. Low priority. |
+| **Zodiac Compatibility 生肖配对 (beyond simple animal matching)** | ⚠️ (we have basic 12-animal compat) | S | P2 | *Not explicitly confirmed on Cece*, but 八字合婚 / 紫微合盘 implied by "合盘" bullet; competitors 神算堂, 华易网 ship full version | **Likely in Cece via 紫微合盘** but not separately surfaced. Build a standalone `/zodiac-compat` that goes beyond "Ox + Rooster = 85%" — adds 冲 / 刑 / 害 / 破 triads, best-month-for-relationship, 合婚 advice. |
+| **Five-Element 五行缺什么 / 五行穿衣 (what to wear today)** | ❌ | S | P1 (whitespace) | *Not on Cece*; huge on 汉程网 每日五行穿衣, 天天黄历 | **Unverified on Cece — confirmed absent.** Compute user's 五行 balance from Bazi → identify deficient element → daily "wear red / avoid black" outfit advice. **Extremely viral on 小红书** ("今日五行穿衣" tag has 500M+ views per 小红书 search). Bazi is already in Arcana; this is a 2-day skin. |
+| **Auspicious Date Picker 择日 / 黄道吉日** | ❌ | M | P2 (whitespace) | *Not on Cece*; leaders are 黄道吉日 APP (Tencent sj.qq.com/appdetail/com.hdjr.hb), 汉程网 | **Unverified on Cece — confirmed absent.** Categories: 婚礼, 搬家, 开业, 签约, 出行, 祭祀 (59 sub-categories per 择日 systems). Input date range + purpose → ranked list of auspicious days with reasons. High monetization (wedding / real-estate audience). |
+| **Lifetime Tarot Card 塔罗本命牌 / 生日塔罗 / 灵魂牌** | ❌ | S | P1 | *Not on xxwolo.com/tarots* (they only ship spreads, no birthday-card system); Cece doesn't appear to have this — this is **Mary K. Greer / Angeles Arrien Birth Card system**, popular in EN + CN tarot circles | **Unverified on Cece — confirmed absent from `xxwolo.com/tarots`.** Compute Personality Card + Soul Card + Hidden Teacher + Year Card from birth date (Mary Greer algorithm). Low effort for us — 78-card deck already shipped, just need the arithmetic lookup. **High Instagram-share value.** This is a genuine whitespace vs Cece in tarot. |
+| **Bone-Weight Divination 称骨算命 (袁天罡 system)** | ❌ | S | P3 | *Not on Cece*; leaders 神算堂, 华易网 | **Unverified on Cece — confirmed absent.** Input birth bazi → lookup table assigns year/month/day/hour weights (两/钱) → total → 52-entry poem with life prediction. Tang Dynasty, 100% public domain. 2 hours of dev + 1 day of content import. |
+| **Feng Shui Compass 风水罗盘 (digital with bagua overlay on home photo)** | ⚠️ (we ship `/feng-shui` bagua, flag-gated) | L | P2 | *Not on Cece*; competitors: 风水罗盘 apps in CN app stores | **Unverified on Cece.** Our flag-gated bagua is already differentiated. Extending to "point phone at your door → AR bagua overlay" is L effort. Keep as P2. |
+| **Destiny / Fate Tests 缘分测试 / 缘分指数 (two-people)** | ⚠️ (synastry shipped, Destiny Index flagged in prior delta) | S | P0 | `xxwolo.com/mobile/cecexingzuo` ("缘分测评"); GeekPark 2025 guide (`缘分指数合盘`) | **Confirmed in live Cece** (reconfirming prior delta — still P0). Ship the "one viral score + share card" wrap. |
+| **Daily Fortune 每日运势 (multi-dimensional: 整体/爱情/事业/财富/健康/桃花/贵人/幸运色/幸运数字/宜忌)** | ⚠️ (we ship daily horoscope) | M | **P0** | ddooo: "每日运势、本周运势、一生运势"; apkpure "Your life fortune"; xxwolo | **Confirmed in live Cece, much deeper than our version.** Our current daily horoscope is 1 paragraph; Cece's is a **7-8 dimension card**: 整体运 + 爱情 + 事业 + 财运 + 健康 + 桃花 + 贵人方位 + 幸运色 + 幸运数字 + 宜 / 忌 verbs. **This is the biggest confirmed gap from this pass.** Reshape our daily horoscope to this multi-dimension card. 3-4 days. Massive retention impact. |
+| **Weekly 本周运势 + Yearly 一生运势 extended fortune** | ⚠️ (weekly partial) | S | P1 | ddooo "每日运势、本周运势、一生运势"; APKPure "life fortune" | **Confirmed in Cece.** Weekly already partial; "一生运势" (lifetime fortune summary) is a single-scroll timeline of life phases based on natal chart + Bazi luck pillars. High paywall value. |
+| **Festival / Lunar Holiday Forecasts 七夕运势 / 春节运势 / 中秋运势** | ❌ | S | P2 (whitespace) | *Not on Cece* explicitly; GeekPark mentions yearly "lucky color" ritual (Jan 1) — extend to 七夕, 春节, 清明, 中秋 | **Unverified on Cece beyond Jan 1.** Low-effort: 8 major lunar festivals × personalized horoscope ritual. Scheduled pg_cron. |
+| **Moon Match / Marriage Deity 月老姻缘 / 红线** | ❌ | M | P3 | *Not on Cece*; leaders 月老灵签 apps | **Unverified on Cece — confirmed absent.** Themed re-skin of `/compatibility`: instead of "synastry score", it's "月老 (Moon God) ties a red string between you and your match". Character-driven, narrative-themed. Nice content play; low strategic value. |
+| **Natal chart 本命盘 + Bazi overlay (unified CN chart view)** | ⚠️ (we have natal + Bazi, but separate surfaces) | M | P1 | Cece's canonical "本命盘 + 八字紫微 + 二十八宿" bundle implies a unified view; founder interview emphasises integrated reading | **Confirmed in Cece's unified surface.** Our `/natal` and `/bazi` are separate routes. Build a `/chart-all` that stacks: Western natal wheel + Bazi 4 pillars + Ziwei 12 palaces + 28 Mansions + 五行 balance + 生命灵数 on one long-scroll report. **This is the single-page CN-market parity view.** |
+| **Mood Town 心情小镇 + 连麦 (voice-live)** | ⚠️ (we have AI companion, no voice-live) | L | P1 | Cece homepage lists `连麦` as top-nav; GeekPark deep-dive; prior delta covered Mood Town | **Confirmed** — reconfirming from prior delta. Voice-live (real-time voice chat with stranger peers + certified advisors) is its own gap separate from Mood Town. |
+
+### Whitespace vs. Cece-parity summary
+
+| Category | Cece ships? | We should ship to reach... | Effort to reach Cece-parity |
+|---|---|---|---|
+| Ziwei Doushu | ✅ | Cece-parity | L (1 dev × 2 weeks) |
+| Bazi unflag | ⚠️ (our side flagged) | Cece-parity | S (toggle) |
+| 28 Mansions | ✅ | Cece-parity | S |
+| Life Number CN-skin | ⚠️ (we have Life Path) | Cece-parity | S |
+| Multi-dimension daily fortune | ✅ | Cece-parity | M |
+| Weekly + Lifetime fortune | ✅ | Cece-parity | S |
+| Unified 本命盘 long-scroll view | ✅ | Cece-parity | M |
+| Destiny Index synastry | ✅ | Cece-parity | S (prior delta) |
+| Huangli almanac 黄历 | ❌ | **CN-category** leadership | M |
+| Name analysis 姓名测试 | ❌ | CN-category | M |
+| Baby naming 起名 | ❌ | CN-category | L |
+| Palm reading 手相 | ❌ | CN-category | L (+ policy risk) |
+| Face reading 面相 | ❌ | CN-category | L (+ policy risk) |
+| Fortune sticks 抽签 | ❌ | CN-category | S |
+| 测字 character divination | ❌ | CN-category | S |
+| 称骨算命 bone weight | ❌ | CN-category | S |
+| 五行穿衣 today's outfit | ❌ | CN-category + viral 小红书 | S |
+| 择日 auspicious date | ❌ | CN-category | M |
+| Lifetime Tarot birth card | ❌ | EN-tarot whitespace | S |
+| Festival forecasts | ❌ | Content moat | S |
+
+### Additional sources (Chinese-query pass, 2026-04-24)
+
+- [xxwolo.com/mobile/cecexingzuo](https://www.xxwolo.com/mobile/cecexingzuo) — Cece's parent-domain canonical feature list (primary source)
+- [xxwolo.com/tarots](https://www.xxwolo.com/tarots) — Cece's tarot spread inventory (confirms absence of Birth-Card / Soul-Card systems)
+- [apkpure.com/测测/com.xxwolo.cc5](https://apkpure.com/%E6%B5%8B%E6%B5%8B-%E6%98%9F%E5%BA%A7%E5%BF%83%E7%90%86%E6%83%85%E6%84%9F%E9%97%AE%E7%AD%94%E7%A4%BE%E5%8C%BA/com.xxwolo.cc5) — "life figures, eight-character Ziwei, twenty-eight places" string
+- [Play Store — 测测 星座, 八字, AI问答](https://play.google.com/store/apps/details?id=com.lingocc.cc5) — app title confirms Bazi is top-2 surface
+- [ddooo softdown/81397](https://www.ddooo.com/softdown/81397.htm) — Chinese-language feature breakdown
+- [32r.com/app/33225.html](https://www.32r.com/app/33225.html) — Chinese-language feature breakdown (bullet: 八字五行、紫微斗数、二十八宿、生命灵数)
+- [sj.qq.com/appdetail/com.xxwolo.cc5](https://sj.qq.com/appdetail/com.xxwolo.cc5) — Tencent app store listing
+- [zhuanlan.zhihu.com/p/1935801352598054186](https://zhuanlan.zhihu.com/p/1935801352598054186) — 2025 founder interview with 任永亮
+- [ai-bot.cn/cecelive](https://ai-bot.cn/cecelive/) — AI product card (confirms no 算命 / folk-divination surface)
+- [CSDN — 年轻人疯狂迷上AI算命](https://blog.csdn.net/yellowzf3/article/details/146490700) — CN 2024-2025 AI divination market context (Cece notably absent)
+- Competitor reference apps consulted for category norms: 汉程生活, 灵占算命八字星座, 每日灵签, 水墨先生, 神算堂, 华易网, 美名腾, 君子阁, 黄道吉日 APP

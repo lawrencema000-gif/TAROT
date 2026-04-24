@@ -1,0 +1,19 @@
+# Netlify _headers fallback. netlify.toml already declares these under the
+# [[headers]] block, but some Netlify deploys fail to apply TOML rules (same
+# pattern the existing _redirects file comments on). This file is the
+# belt-and-suspenders source of truth served straight from `dist/_headers`.
+#
+# Keep the two in sync. If you change a header, update BOTH netlify.toml
+# and this file.
+
+/version.json
+  Cache-Control: no-store
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-XSS-Protection: 1; mode=block
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google-analytics.com https://accounts.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://tpc.googlesyndication.com https://www.googleadservices.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://*.googleapis.com https://*.googleusercontent.com https://*.google.com https://*.gstatic.com https://*.tile.openstreetmap.org https://www.googletagmanager.com https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://www.googleadservices.com https://www.google.co.jp https://www.google.co.uk https://www.google.co.kr https://www.google.de https://www.google.fr https://www.google.ca; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.analytics.google.com https://www.google.com https://*.googleapis.com https://*.googleusercontent.com https://www.googletagmanager.com https://accounts.google.com https://pagead2.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://generativelanguage.googleapis.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.sentry.io https://nominatim.openstreetmap.org https://googleads.g.doubleclick.net https://www.googleadservices.com https://stats.g.doubleclick.net; frame-src https://accounts.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://td.doubleclick.net

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
+import { OrnateDivider } from '../components/ui';
 
 /**
  * Year-Ahead Forecast — 300 Moonstones or Premium subscription.
@@ -184,14 +185,17 @@ export function YearAheadReportPage() {
           </h1>
         </div>
 
-        <Card padding="lg" variant="glow" className="text-center">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
+        <Card padding="lg" variant="ornate" className="text-center nebula-veil">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
             <Lock className="w-6 h-6 text-gold" />
           </div>
-          <h2 className="font-display text-xl text-mystic-100 mb-1">
+          <h2 className="font-display-hero text-2xl text-gold-foil mb-2">
             {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
           </h2>
-          <p className="text-sm text-mystic-400 italic mb-4">
+          <div className="flex justify-center mb-3 text-gold/60">
+            <OrnateDivider width={120} />
+          </div>
+          <p className="text-sm text-mystic-300 italic mb-4">
             {t('yearAhead.cardSub', {
               defaultValue: 'A month-by-month map of the biggest transits to your natal chart.',
             })}

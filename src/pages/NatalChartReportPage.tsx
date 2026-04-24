@@ -9,9 +9,9 @@ import { supabase } from '../lib/supabase';
 import { useNatalChart } from '../hooks/useAstrology';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
+import { ZodiacGlyph, PlanetGlyph } from '../components/icons';
+import { OrnateDivider } from '../components/ui';
 import {
-  SIGN_SYMBOLS,
-  PLANET_SYMBOLS,
   HOUSE_THEMES,
   type AspectType,
   type NatalChart,
@@ -292,14 +292,17 @@ export function NatalChartReportPage() {
           </h1>
         </div>
 
-        <Card padding="lg" variant="glow" className="text-center">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
+        <Card padding="lg" variant="ornate" className="text-center nebula-veil">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
             <Lock className="w-6 h-6 text-gold" />
           </div>
-          <h2 className="font-display text-xl text-mystic-100 mb-1">
+          <h2 className="font-display-hero text-2xl text-gold-foil mb-2">
             {t('natalReport.cardTitle', { defaultValue: 'Your complete birth chart — printable' })}
           </h2>
-          <p className="text-sm text-mystic-400 italic mb-4">
+          <div className="flex justify-center mb-3 text-gold/60">
+            <OrnateDivider width={120} />
+          </div>
+          <p className="text-sm text-mystic-300 italic mb-4">
             {t('natalReport.cardSub', {
               defaultValue: 'Every planet in its sign and house, every aspect, with interpretations.',
             })}
@@ -556,31 +559,34 @@ export function NatalChartReportPage() {
         )}
       </Card>
 
-      <Card padding="lg" variant="glow" className="card-print bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
-        <p className="text-[10px] uppercase tracking-widest text-gold mb-2">
+      <Card padding="lg" variant="ornate" className="card-print nebula-veil">
+        <p className="font-display-eyebrow text-center mb-2">
           {t('natalReport.bigThreeHeading', { defaultValue: 'The Big Three' })}
         </p>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center">
-            <div className="text-3xl mb-1">{SIGN_SYMBOLS[natal.bigThree.sun.sign]}</div>
+        <div className="flex justify-center mb-4 text-gold/60">
+          <OrnateDivider width={140} />
+        </div>
+        <div className="grid grid-cols-3 gap-3 relative">
+          <div className="text-center flex flex-col items-center">
+            <ZodiacGlyph sign={natal.bigThree.sun.sign} size={36} className="text-gold mb-1.5" framed />
             <p className="text-[10px] uppercase text-mystic-500">Sun</p>
             <p className="text-sm text-mystic-100 font-medium">{natal.bigThree.sun.sign}</p>
             {natal.bigThree.sun.house && (
               <p className="text-[10px] text-mystic-500 mt-0.5">House {natal.bigThree.sun.house}</p>
             )}
           </div>
-          <div className="text-center">
-            <div className="text-3xl mb-1">{SIGN_SYMBOLS[natal.bigThree.moon.sign]}</div>
+          <div className="text-center flex flex-col items-center">
+            <ZodiacGlyph sign={natal.bigThree.moon.sign} size={36} className="text-cosmic-blue mb-1.5" framed />
             <p className="text-[10px] uppercase text-mystic-500">Moon</p>
             <p className="text-sm text-mystic-100 font-medium">{natal.bigThree.moon.sign}</p>
             {natal.bigThree.moon.house && (
               <p className="text-[10px] text-mystic-500 mt-0.5">House {natal.bigThree.moon.house}</p>
             )}
           </div>
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center">
             {natal.bigThree.rising ? (
               <>
-                <div className="text-3xl mb-1">{SIGN_SYMBOLS[natal.bigThree.rising.sign]}</div>
+                <ZodiacGlyph sign={natal.bigThree.rising.sign} size={36} className="text-cosmic-rose mb-1.5" framed />
                 <p className="text-[10px] uppercase text-mystic-500">Rising</p>
                 <p className="text-sm text-mystic-100 font-medium">{natal.bigThree.rising.sign}</p>
               </>
@@ -605,10 +611,11 @@ export function NatalChartReportPage() {
             return (
               <div key={p.planet} className="border-b border-mystic-800/60 pb-3 last:border-b-0 last:pb-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-lg">{PLANET_SYMBOLS[p.planet]}</span>
+                  <PlanetGlyph planet={p.planet} size={20} className="text-gold" />
                   <span className="text-sm font-medium text-mystic-100">
                     {p.planet} in {p.sign}
                   </span>
+                  <ZodiacGlyph sign={p.sign} size={18} className="text-mystic-300" />
                   <span className="text-xs text-mystic-500">
                     {p.degree.toFixed(1)}°
                     {p.house ? ` · House ${p.house}` : ''}
@@ -703,9 +710,9 @@ export function NatalChartReportPage() {
                   className="flex items-center justify-between py-1.5 border-b border-mystic-800/50 last:border-b-0"
                 >
                   <div className="flex items-center gap-2 text-xs text-mystic-200">
-                    <span>{PLANET_SYMBOLS[a.planet1]}</span>
+                    <PlanetGlyph planet={a.planet1} size={18} className="text-gold" />
                     <Icon className={`w-3 h-3 ${meta.color}`} />
-                    <span>{PLANET_SYMBOLS[a.planet2]}</span>
+                    <PlanetGlyph planet={a.planet2} size={18} className="text-gold" />
                     <span className="text-mystic-400 ml-2">
                       {a.planet1} {meta.label.toLowerCase()} {a.planet2}
                     </span>

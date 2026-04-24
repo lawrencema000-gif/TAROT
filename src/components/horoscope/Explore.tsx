@@ -3,9 +3,10 @@ import { Orbit, Home, Triangle, ChevronDown, ChevronUp, Filter } from 'lucide-re
 import { useT } from '../../i18n/useT';
 import { Card, Chip, Skeleton } from '../ui';
 import { useTransitCalendar, useNatalChart } from '../../hooks/useAstrology';
-import { SIGN_SYMBOLS, PLANET_SYMBOLS, PLANETS, HOUSE_THEMES } from '../../types/astrology';
+import { PLANETS, HOUSE_THEMES } from '../../types/astrology';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 import type { Planet, AspectType, PlanetPlacement, Aspect } from '../../types/astrology';
+import { ZodiacGlyph, PlanetGlyph } from '../icons';
 
 // Lazy-loaded data modules
 type TransitsModule = typeof import('../../data/transits');
@@ -165,15 +166,11 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
                   <div className="text-[10px] text-mystic-500">{ev.date}</div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                  <span style={{ fontFamily: 'serif' }} className="text-sm">
-                    {PLANET_SYMBOLS[ev.transitPlanet]}
-                  </span>
+                  <PlanetGlyph planet={ev.transitPlanet} size={18} className="text-gold" />
                   <span className={`text-xs ${ASPECT_COLORS[ev.aspectType]}`}>
                     {localizeAspectName(ev.aspectType)}
                   </span>
-                  <span style={{ fontFamily: 'serif' }} className="text-sm">
-                    {PLANET_SYMBOLS[ev.natalPlanet]}
-                  </span>
+                  <PlanetGlyph planet={ev.natalPlanet} size={18} className="text-gold" />
                   <span className="text-xs text-mystic-400 truncate">
                     {t('horoscope.exploreView.transitArrow', { from: localizePlanetName(ev.transitPlanet), to: localizePlanetName(ev.natalPlanet) })}
                   </span>
@@ -255,15 +252,14 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
                     {residents.map((p) => {
                       const interp = houseInterps[`${p.planet}-${house}`];
                       return (
-                        <div key={p.planet} className="text-xs">
-                          <span style={{ fontFamily: 'serif' }} className="mr-1">
-                            {PLANET_SYMBOLS[p.planet as Planet]}
-                          </span>
+                        <div key={p.planet} className="text-xs flex flex-wrap items-center gap-1">
+                          <PlanetGlyph planet={p.planet as Planet} size={16} className="text-gold" />
                           <span className="text-mystic-300">
-                            {t('horoscope.exploreView.planetInSign', { planet: localizePlanetName(p.planet as Planet), sign: localizeSignName(p.sign) })} {SIGN_SYMBOLS[p.sign]}
+                            {t('horoscope.exploreView.planetInSign', { planet: localizePlanetName(p.planet as Planet), sign: localizeSignName(p.sign) })}
                           </span>
+                          <ZodiacGlyph sign={p.sign} size={14} className="text-mystic-300" />
                           {interp && (
-                            <p className="text-mystic-400 mt-0.5 pl-4">{interp.expression}</p>
+                            <p className="w-full text-mystic-400 mt-0.5 pl-4">{interp.expression}</p>
                           )}
                         </div>
                       );
@@ -335,15 +331,11 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
           return (
             <Card key={i} padding="sm" interactive onClick={() => setExpanded(isOpen ? null : i)}>
               <div className="flex items-center gap-3">
-                <span style={{ fontFamily: 'serif' }} className="text-sm">
-                  {PLANET_SYMBOLS[a.planet1 as Planet]}
-                </span>
+                <PlanetGlyph planet={a.planet1 as Planet} size={18} className="text-gold" />
                 <span className={`text-xs font-medium ${ASPECT_COLORS[a.type]}`}>
                   {localizeAspectName(a.type)}
                 </span>
-                <span style={{ fontFamily: 'serif' }} className="text-sm">
-                  {PLANET_SYMBOLS[a.planet2 as Planet]}
-                </span>
+                <PlanetGlyph planet={a.planet2 as Planet} size={18} className="text-gold" />
                 <span className="flex-1 text-xs text-mystic-400">
                   {t('horoscope.exploreView.aspectPair', { a: localizePlanetName(a.planet1 as Planet), b: localizePlanetName(a.planet2 as Planet) })}
                 </span>

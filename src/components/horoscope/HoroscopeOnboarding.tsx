@@ -4,7 +4,7 @@ import { useT } from '../../i18n/useT';
 import { Button, Card, Input } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
-import { SIGN_SYMBOLS } from '../../types/astrology';
+import { ZodiacGlyph } from '../icons';
 import type { ZodiacSign, ChartMode } from '../../types/astrology';
 
 interface Props {
@@ -387,8 +387,8 @@ export function BigThreeDisplay({ bigThree }: { bigThree: { sun: { sign: ZodiacS
   return (
     <div className="flex gap-3 justify-center">
       {items.map((item) => (
-        <div key={item.label} className="text-center px-4 py-3 bg-mystic-800/40 rounded-xl border border-mystic-700/30">
-          <div className="text-2xl mb-1" style={{ fontFamily: 'serif' }}>{SIGN_SYMBOLS[item.sign]}</div>
+        <div key={item.label} className="flex flex-col items-center px-4 py-3 bg-mystic-800/40 rounded-xl border border-mystic-700/30">
+          <ZodiacGlyph sign={item.sign} size={30} className="text-gold mb-1.5" framed />
           <div className="text-xs text-mystic-400">{item.label}</div>
           <div className="text-sm font-medium text-mystic-200">{item.sign}</div>
         </div>

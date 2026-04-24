@@ -1,15 +1,32 @@
 import { HTMLAttributes, forwardRef } from 'react';
+import { FourCornerFlourishes } from './Ornament';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glow' | 'elevated';
+  variant?: 'default' | 'glow' | 'elevated' | 'ornate';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   interactive?: boolean;
+  /**
+   * Decorate the card with four SVG corner flourishes. Default is
+   * true for `variant="ornate"`, false otherwise. Set explicitly to
+   * override.
+   */
+  flourished?: boolean;
 }
 
 const variantStyles = {
   default: 'bg-mystic-900/80 border-mystic-700/50',
   glow: 'bg-mystic-900/80 border-gold/20 shadow-glow',
   elevated: 'bg-mystic-850/90 border-mystic-600/30 shadow-xl',
+  // Ornate: two layered borders (outer gold gradient, inner hairline),
+  // a subtle parchment-like tint, and an inner stroke ring produced by
+  // an inset box-shadow. Paired with corner flourishes for the full
+  // manuscript-page feel.
+  ornate:
+    'relative bg-gradient-to-br from-mystic-900/95 via-mystic-900/90 to-mystic-950/95 ' +
+    'border-gold/40 shadow-glow-md ' +
+    '[background-image:radial-gradient(ellipse_at_top,rgba(212,175,55,0.06),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(142,110,181,0.05),transparent_60%)] ' +
+    'before:content-[""] before:absolute before:inset-[3px] before:rounded-[calc(1rem-3px)] ' +
+    'before:border before:border-gold/20 before:pointer-events-none',
 };
 
 const paddingStyles = {
@@ -20,11 +37,24 @@ const paddingStyles = {
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = 'default', padding = 'md', interactive, className = '', children, ...props }, ref) => {
+  (
+    {
+      variant = 'default',
+      padding = 'md',
+      interactive,
+      flourished,
+      className = '',
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const showFlourishes = flourished ?? variant === 'ornate';
     return (
       <div
         ref={ref}
         className={`
+          ${variant === 'ornate' ? 'relative' : ''}
           backdrop-blur-sm rounded-2xl border
           ${variantStyles[variant]}
           ${paddingStyles[padding]}
@@ -33,10 +63,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         `}
         {...props}
       >
+        {showFlourishes && <FourCornerFlourishes className="text-gold/70" size={26} />}
         {children}
       </div>
     );
-  }
+  },
 );
 
 Card.displayName = 'Card';
@@ -46,7 +77,7 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
     <div ref={ref} className={`mb-4 ${className}`} {...props}>
       {children}
     </div>
-  )
+  ),
 );
 
 CardHeader.displayName = 'CardHeader';
@@ -56,7 +87,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
     <h3 ref={ref} className={`font-display text-xl font-semibold text-mystic-100 ${className}`} {...props}>
       {children}
     </h3>
-  )
+  ),
 );
 
 CardTitle.displayName = 'CardTitle';
@@ -66,7 +97,7 @@ export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElem
     <div ref={ref} className={className} {...props}>
       {children}
     </div>
-  )
+  ),
 );
 
 CardContent.displayName = 'CardContent';

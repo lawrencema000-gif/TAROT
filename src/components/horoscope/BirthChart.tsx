@@ -4,8 +4,9 @@ import { useT } from '../../i18n/useT';
 import { Card, Sheet, Skeleton } from '../ui';
 import { ChartWheel } from './ChartWheel';
 import { useNatalChart } from '../../hooks/useAstrology';
-import { SIGN_SYMBOLS, PLANET_SYMBOLS, HOUSE_THEMES } from '../../types/astrology';
+import { HOUSE_THEMES } from '../../types/astrology';
 import type { ZodiacSign, Planet, Element, Modality, PlanetPlacement, Aspect } from '../../types/astrology';
+import { ZodiacGlyph, PlanetGlyph } from '../icons';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 
 // Lazy-loaded interpretation data modules
@@ -97,9 +98,9 @@ export function BirthChart() {
 
   return (
     <div className="p-4 space-y-5">
-      <Card variant="glow" padding="md" interactive onClick={() => setExpandedBigThree(!expandedBigThree)}>
+      <Card variant="ornate" padding="md" interactive className="nebula-veil" onClick={() => setExpandedBigThree(!expandedBigThree)}>
         <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-mystic-100">{t('horoscope.birthChartView.yourBigThree')}</h3>
+          <h3 className="font-display-hero text-xl text-gold-foil">{t('horoscope.birthChartView.yourBigThree')}</h3>
           {expandedBigThree ? <ChevronUp className="w-4 h-4 text-mystic-400" /> : <ChevronDown className="w-4 h-4 text-mystic-400" />}
         </div>
         <div className="flex gap-3 mt-3">
@@ -108,10 +109,8 @@ export function BirthChart() {
             { label: 'Moon', labelI18n: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
             ...(bigThree.rising ? [{ label: 'Rising', labelI18n: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
           ].map((item) => (
-            <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-xl">
-              <div className="text-xl mb-0.5" style={{ fontFamily: 'serif' }}>
-                {SIGN_SYMBOLS[item.sign]}
-              </div>
+            <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-xl flex flex-col items-center">
+              <ZodiacGlyph sign={item.sign} size={26} className="text-gold mb-1" />
               <div className="text-[10px] text-mystic-500">{item.labelI18n}</div>
               <div className="text-xs font-medium text-mystic-200">{localizeSignName(item.sign)}</div>
             </div>
@@ -148,13 +147,9 @@ export function BirthChart() {
               onClick={() => setSelectedPlacement(p)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-mystic-800/40 transition-colors cursor-pointer text-left"
             >
-              <span className="text-lg w-6 text-center" style={{ fontFamily: 'serif' }}>
-                {PLANET_SYMBOLS[p.planet as Planet]}
-              </span>
+              <PlanetGlyph planet={p.planet as Planet} size={22} className="text-gold flex-shrink-0" />
               <span className="text-sm text-mystic-200 flex-1">{localizePlanetName(p.planet as Planet)}</span>
-              <span className="text-sm" style={{ fontFamily: 'serif' }}>
-                {SIGN_SYMBOLS[p.sign]}
-              </span>
+              <ZodiacGlyph sign={p.sign} size={18} className="text-mystic-300" />
               <span className="text-sm text-mystic-300">{localizeSignName(p.sign)} {p.degree.toFixed(0)}&deg;</span>
               {p.house && (
                 <span className="text-xs text-mystic-500">{t('horoscope.birthChartView.houseShort', { num: p.house })}</span>
@@ -216,13 +211,10 @@ export function BirthChart() {
                   onClick={() => setSelectedAspect(a)}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-mystic-800/40 transition-colors cursor-pointer text-left"
                 >
-                  <span className="text-sm text-mystic-200">
-                    {PLANET_SYMBOLS[a.planet1 as Planet]}
-                  </span>
+                  <PlanetGlyph planet={a.planet1 as Planet} size={20} className="text-gold" />
                   <span className={`text-sm ${info.color}`}>{info.symbol}</span>
-                  <span className="text-sm text-mystic-200">
-                    {PLANET_SYMBOLS[a.planet2 as Planet]}
-                  </span>
+                  <PlanetGlyph planet={a.planet2 as Planet} size={20} className="text-gold" />
+
                   <span className="flex-1 text-xs text-mystic-400">
                     {localizePlanetName(a.planet1 as Planet)} {localizeAspectName(a.type)} {localizePlanetName(a.planet2 as Planet)}
                   </span>
@@ -265,14 +257,10 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <span className="text-3xl" style={{ fontFamily: 'serif' }}>
-          {PLANET_SYMBOLS[placement.planet as Planet]}
-        </span>
+        <PlanetGlyph planet={placement.planet as Planet} size={36} className="text-gold" framed />
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-lg" style={{ fontFamily: 'serif' }}>
-              {SIGN_SYMBOLS[placement.sign]}
-            </span>
+            <ZodiacGlyph sign={placement.sign} size={20} className="text-gold" />
             <span className="font-medium text-mystic-100">{localizeSignName(placement.sign)} {placement.degree.toFixed(1)}&deg;</span>
           </div>
           {placement.house && (
@@ -364,14 +352,14 @@ function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-center gap-4">
-        <div className="text-center">
-          <div className="text-2xl" style={{ fontFamily: 'serif' }}>{PLANET_SYMBOLS[aspect.planet1 as Planet]}</div>
-          <div className="text-xs text-mystic-400">{aspect.planet1}</div>
+        <div className="text-center flex flex-col items-center">
+          <PlanetGlyph planet={aspect.planet1 as Planet} size={32} className="text-gold" framed />
+          <div className="text-xs text-mystic-400 mt-1">{aspect.planet1}</div>
         </div>
         <div className={`text-xl ${info.color}`}>{info.symbol}</div>
-        <div className="text-center">
-          <div className="text-2xl" style={{ fontFamily: 'serif' }}>{PLANET_SYMBOLS[aspect.planet2 as Planet]}</div>
-          <div className="text-xs text-mystic-400">{aspect.planet2}</div>
+        <div className="text-center flex flex-col items-center">
+          <PlanetGlyph planet={aspect.planet2 as Planet} size={32} className="text-gold" framed />
+          <div className="text-xs text-mystic-400 mt-1">{aspect.planet2}</div>
         </div>
       </div>
       <div className="text-center text-xs text-mystic-500">

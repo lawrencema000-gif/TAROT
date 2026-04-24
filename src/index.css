@@ -279,6 +279,145 @@
     border-top-color: rgb(var(--gold-primary));
     animation: spin 1s linear infinite;
   }
+
+  /* ── Magical textures ──────────────────────────────────────────
+     Thin, stackable layers used to break up flat dark panels. All
+     are pointer-events-none via ::before / ::after positioning, so
+     they don't interfere with clicks. Target containers must be
+     `position: relative`. */
+
+  /* Aged parchment veneer — warm sepia noise + vignette.
+     Pair with `variant="ornate"` cards or feature-reveal panels. */
+  .parchment-veil {
+    position: relative;
+  }
+  .parchment-veil::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(244, 214, 104, 0.06) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(184, 150, 15, 0.05) 0%, transparent 55%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.83  0 0 0 0 0.69  0 0 0 0 0.22  0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-blend-mode: soft-light;
+    mix-blend-mode: soft-light;
+    opacity: 0.75;
+  }
+
+  /* Deep space nebula wash — mauve + indigo radial veils.
+     Good under hero panels and reading-reveal screens. */
+  .nebula-veil {
+    position: relative;
+  }
+  .nebula-veil::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 30%, rgba(142, 110, 181, 0.18), transparent 60%),
+      radial-gradient(ellipse 70% 40% at 80% 75%, rgba(74, 126, 184, 0.15), transparent 55%),
+      radial-gradient(ellipse 60% 35% at 50% 95%, rgba(212, 175, 55, 0.08), transparent 55%);
+    opacity: 0.9;
+  }
+
+  /* Starfield — scattered pinpoints of varying brightness.
+     Layers beneath content; pairs well with nebula-veil. */
+  .starfield-veil {
+    position: relative;
+  }
+  .starfield-veil::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.5) 0.6px, transparent 1px),
+      radial-gradient(circle at 87% 24%, rgba(244, 214, 104, 0.35) 0.8px, transparent 1.2px),
+      radial-gradient(circle at 45% 62%, rgba(255, 255, 255, 0.35) 0.4px, transparent 0.8px),
+      radial-gradient(circle at 72% 82%, rgba(255, 255, 255, 0.45) 0.6px, transparent 1px),
+      radial-gradient(circle at 28% 88%, rgba(244, 214, 104, 0.3) 0.5px, transparent 1px),
+      radial-gradient(circle at 62% 12%, rgba(255, 255, 255, 0.4) 0.5px, transparent 1px),
+      radial-gradient(circle at 95% 58%, rgba(255, 255, 255, 0.35) 0.5px, transparent 1px),
+      radial-gradient(circle at 8% 52%, rgba(255, 255, 255, 0.3) 0.4px, transparent 0.8px);
+    background-size: 220px 220px, 180px 180px, 160px 160px, 240px 240px, 200px 200px, 180px 180px, 260px 260px, 140px 140px;
+    opacity: 0.6;
+  }
+
+  /* ── Display typography ────────────────────────────────────────
+     Richer treatments for premium-feeling headlines and reading
+     copy. Work with Cormorant Garamond + Inter from index.html. */
+
+  /* Oversized serif opener — used for reading titles and report
+     section headings. Wider tracking gives it a printed feel. */
+  .font-display-hero {
+    font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    line-height: 1.1;
+    font-feature-settings: 'dlig' 1, 'liga' 1;
+  }
+
+  /* All-caps micro-header — tiny serif used above major sections,
+     mimicking antique broadside mastheads. Pair with an OrnateDivider. */
+  .font-display-eyebrow {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.65rem;
+    color: rgba(var(--gold-primary), 0.85);
+  }
+
+  /* Drop cap — first letter of a paragraph rendered as an ornate
+     serif initial, in the style of illuminated manuscripts. Apply
+     `.drop-cap` to a wrapping <p>. */
+  .drop-cap::first-letter {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    font-size: 3.4em;
+    float: left;
+    line-height: 0.85;
+    margin: 0.12em 0.12em 0 0;
+    padding: 0.04em 0.08em 0 0;
+    color: rgb(var(--gold-primary));
+    text-shadow: 0 0 12px rgba(var(--gold-primary), 0.25);
+  }
+
+  /* Gold-foil gradient text — used sparingly for statement labels
+     (e.g. "The Fool", "Moonstone balance"). */
+  .text-gold-foil {
+    background: linear-gradient(
+      135deg,
+      #b8960f 0%,
+      #d4af37 25%,
+      #f4d668 50%,
+      #d4af37 75%,
+      #b8960f 100%
+    );
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gold-foil-shift 6s ease-in-out infinite;
+  }
+
+  @keyframes gold-foil-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+
+  /* Inline-glyph helper — keeps a small SVG icon optically
+     centered with surrounding text baseline. */
+  .glyph-inline {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: -0.18em;
+  }
 }
 
 /* ── Web Ad Sidebars (flanking content on wide desktops) ── */

@@ -66,8 +66,9 @@ export function ChartWheel({ planets, houses, ascendant }: Props) {
                 textAnchor="middle"
                 dominantBaseline="central"
                 fill={color}
-                fontSize="13"
-                style={{ fontFamily: 'serif' }}
+                fontSize="16"
+                fontWeight={500}
+                style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}
               >
                 {SIGN_SYMBOLS[sign]}
               </text>
@@ -125,8 +126,9 @@ export function ChartWheel({ planets, houses, ascendant }: Props) {
                 textAnchor="middle"
                 dominantBaseline="central"
                 fill="#d4af55"
-                fontSize="11"
-                style={{ fontFamily: 'serif' }}
+                fontSize="13"
+                fontWeight={500}
+                style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}
               >
                 {PLANET_SYMBOLS[p.planet as Planet]}
               </text>

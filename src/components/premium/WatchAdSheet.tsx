@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Play, X, Coins, Crown } from 'lucide-react';
-import { Button, toast } from '../ui';
+import { Button, toast, FourCornerFlourishes, OrnateDivider } from '../ui';
 import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAds';
 import { useT } from '../../i18n/useT';
 
@@ -116,12 +116,14 @@ export function WatchAdSheet({
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-sm bg-gradient-to-b from-mystic-900 to-mystic-950 rounded-3xl border border-mystic-700/50 shadow-2xl overflow-hidden animate-scale-in">
+      <div className="relative w-full max-w-sm bg-gradient-to-b from-mystic-900 to-mystic-950 rounded-3xl border border-gold/40 shadow-2xl shadow-glow-md overflow-hidden animate-scale-in nebula-veil">
+        <div className="absolute inset-[3px] rounded-[calc(1.5rem-3px)] border border-gold/15 pointer-events-none" />
+        <FourCornerFlourishes className="text-gold/60 z-10" size={28} />
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-gold/10 to-transparent" />
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
           aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
         >
           <X className="w-4 h-4 text-mystic-400" />
@@ -129,19 +131,22 @@ export function WatchAdSheet({
 
         <div className="relative px-6 pt-8 pb-6">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/25 to-mystic-800 flex items-center justify-center shadow-glow">
               <Coins className="w-8 h-8 text-gold" />
             </div>
           </div>
 
-          <h2 className="font-display text-xl text-center text-mystic-100 mb-2">
+          <h2 className="font-display-hero text-2xl text-gold-foil text-center mb-2">
             {t('premium.watchAd.earnTitle', {
               defaultValue: 'Earn {{n}} Moonstones',
               n: MOONSTONES_PER_AD,
             })}
           </h2>
+          <div className="flex justify-center mb-3 text-gold/60">
+            <OrnateDivider width={140} />
+          </div>
 
-          <p className="text-sm text-mystic-400 text-center mb-6 leading-relaxed">
+          <p className="text-sm text-mystic-300 text-center mb-6 leading-relaxed">
             {t('premium.watchAd.earnSubtitle', {
               defaultValue:
                 'Watch a short ad and get {{n}} Moonstones added to your balance. Spend them on reports or any feature.',

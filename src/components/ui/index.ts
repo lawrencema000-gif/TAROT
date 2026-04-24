@@ -1,5 +1,6 @@
 export { Button } from './Button';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
+export { CornerFlourish, OrnateDivider, StarBurst, FourCornerFlourishes } from './Ornament';
 export { Progress, ProgressRing, type ProgressProps } from './Progress';
 export { Sheet } from './Sheet';
 export { Input, TextArea } from './Input';

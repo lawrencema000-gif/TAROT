@@ -5,8 +5,8 @@ import { Card, Skeleton } from '../ui';
 import { useDailyHoroscope } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { adsService } from '../../services/ads';
-import { SIGN_SYMBOLS } from '../../types/astrology';
 import type { AspectType, ZodiacSign } from '../../types/astrology';
+import { ZodiacGlyph } from '../icons';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
 
 const ASPECT_COLORS: Record<AspectType, string> = {
@@ -96,9 +96,7 @@ export function TodayForYou() {
           <div>
             <div className="text-xs text-mystic-400">{t('horoscope.todayForYou.moonIn')}</div>
             <div className="flex items-center gap-1.5">
-              <span className="text-lg" style={{ fontFamily: 'serif' }}>
-                {SIGN_SYMBOLS[content.moonSign as ZodiacSign]}
-              </span>
+              <ZodiacGlyph sign={content.moonSign as ZodiacSign} size={20} className="text-gold" />
               <span className="font-medium text-mystic-200">{localizeSignName(content.moonSign as ZodiacSign)}</span>
               {content.moonHouse && (
                 <span className="text-xs text-mystic-500">{t('horoscope.todayForYou.houseParen', { num: content.moonHouse })}</span>

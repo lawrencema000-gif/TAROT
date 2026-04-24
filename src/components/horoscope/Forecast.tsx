@@ -3,8 +3,8 @@ import { Calendar, Star, Moon as MoonIcon, Sun, ArrowRight, Sparkles } from 'luc
 import { useT } from '../../i18n/useT';
 import { Card, Skeleton } from '../ui';
 import { useWeeklyForecast, useMonthlyForecast } from '../../hooks/useAstrology';
-import { SIGN_SYMBOLS, PLANET_SYMBOLS } from '../../types/astrology';
 import type { ZodiacSign, Planet } from '../../types/astrology';
+import { ZodiacGlyph, PlanetGlyph } from '../icons';
 import { localizeSignName, localizePlanetName } from '../../i18n/localizeNames';
 
 type ForecastTab = 'weekly' | 'monthly';
@@ -161,9 +161,7 @@ function MonthlyView() {
             </div>
             <div className="text-xs text-mystic-500">{content.newMoon.date}</div>
             <div className="flex items-center gap-1.5">
-              <span style={{ fontFamily: 'serif' }}>
-                {SIGN_SYMBOLS[content.newMoon.sign as ZodiacSign]}
-              </span>
+              <ZodiacGlyph sign={content.newMoon.sign as ZodiacSign} size={16} className="text-mystic-300" />
               <span className="text-xs text-mystic-200">{localizeSignName(content.newMoon.sign as ZodiacSign)}</span>
             </div>
             <p className="text-xs text-mystic-400">{content.newMoon.theme}</p>
@@ -177,9 +175,7 @@ function MonthlyView() {
             </div>
             <div className="text-xs text-mystic-500">{content.fullMoon.date}</div>
             <div className="flex items-center gap-1.5">
-              <span style={{ fontFamily: 'serif' }}>
-                {SIGN_SYMBOLS[content.fullMoon.sign as ZodiacSign]}
-              </span>
+              <ZodiacGlyph sign={content.fullMoon.sign as ZodiacSign} size={16} className="text-gold" />
               <span className="text-xs text-mystic-200">{localizeSignName(content.fullMoon.sign as ZodiacSign)}</span>
             </div>
             <p className="text-xs text-mystic-400">{content.fullMoon.theme}</p>
@@ -218,16 +214,16 @@ function MonthlyView() {
       {content.outerPlanetTransits && content.outerPlanetTransits.length > 0 && (
         <Card padding="md" className="space-y-3">
           <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.forecastView.outerPlanetThemes')}</h3>
-          {content.outerPlanetTransits.map((t, i) => (
+          {content.outerPlanetTransits.map((tr, i) => (
             <div key={i} className="flex items-start gap-3 py-2 border-b border-mystic-800/30 last:border-0">
-              <span className="text-lg" style={{ fontFamily: 'serif' }}>
-                {PLANET_SYMBOLS[t.planet as Planet]}
-              </span>
+              <PlanetGlyph planet={tr.planet as Planet} size={22} className="text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <div className="text-xs font-medium text-mystic-200">
-                  {localizePlanetName(t.planet as Planet)} {SIGN_SYMBOLS[t.sign as ZodiacSign]} {localizeSignName(t.sign as ZodiacSign)}
+                <div className="text-xs font-medium text-mystic-200 flex items-center gap-1 flex-wrap">
+                  {localizePlanetName(tr.planet as Planet)}
+                  <ZodiacGlyph sign={tr.sign as ZodiacSign} size={14} className="text-mystic-300" />
+                  {localizeSignName(tr.sign as ZodiacSign)}
                 </div>
-                <div className="text-xs text-mystic-400 mt-0.5">{t.theme}</div>
+                <div className="text-xs text-mystic-400 mt-0.5">{tr.theme}</div>
               </div>
             </div>
           ))}

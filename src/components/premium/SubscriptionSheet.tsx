@@ -16,7 +16,7 @@ import {
   Moon,
   Ban,
 } from 'lucide-react';
-import { Button, toast } from '../ui';
+import { Button, toast, OrnateDivider } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService } from '../../services/billing';
 import { isNative, isAndroid } from '../../utils/platform';
@@ -73,7 +73,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-mystic-950 via-mystic-900 to-mystic-950">
+      <div className="absolute inset-0 bg-gradient-to-b from-mystic-950 via-mystic-900 to-mystic-950 starfield-veil nebula-veil">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold/10 via-transparent to-transparent" />
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
       </div>
@@ -98,13 +98,16 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-gold" />
-            <h1 className="font-display text-3xl text-center text-mystic-100">
+            <h1 className="font-display-hero text-4xl text-gold-foil text-center">
               {t('premium.subscription.heading')}
             </h1>
             <Sparkles className="w-5 h-5 text-gold" />
           </div>
+          <div className="mb-3 text-gold/60">
+            <OrnateDivider width={160} />
+          </div>
 
-          <p className="text-mystic-400 text-center max-w-xs mb-8">
+          <p className="text-mystic-300 text-center max-w-xs mb-8">
             {t('premium.subscription.subheading')}
           </p>
 

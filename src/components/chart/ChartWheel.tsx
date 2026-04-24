@@ -9,6 +9,7 @@ import {
   type ZodiacSign,
   type AspectType,
 } from '../../types/astrology';
+import { PlanetGlyph, ZodiacGlyph } from '../icons';
 import { useT } from '../../i18n/useT';
 
 /**
@@ -186,10 +187,12 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
                 />
                 <text
                   x={pos.x}
-                  y={pos.y + 5}
+                  y={pos.y + 6}
                   textAnchor="middle"
-                  fontSize={14}
+                  fontSize={17}
                   fill="#d4af37"
+                  fontFamily="Cormorant Garamond, Georgia, serif"
+                  fontWeight={500}
                   style={{ userSelect: 'none' }}
                 >
                   {SIGN_SYMBOLS[sign]}
@@ -269,10 +272,12 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
                   strokeWidth={isSelected ? 1.5 : 1}
                 />
                 <text
-                  x={pos.x} y={pos.y + 4}
+                  x={pos.x} y={pos.y + 5}
                   textAnchor="middle"
-                  fontSize={12}
+                  fontSize={14}
                   fill={isSelected ? '#0a0a0f' : '#d4af37'}
+                  fontFamily="Cormorant Garamond, Georgia, serif"
+                  fontWeight={500}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}
                 >
                   {PLANET_SYMBOLS[p.planet]}
@@ -301,10 +306,12 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
                   strokeDasharray="2 2"
                 />
                 <text
-                  x={pos.x} y={pos.y + 3}
+                  x={pos.x} y={pos.y + 4}
                   textAnchor="middle"
-                  fontSize={9}
+                  fontSize={11}
                   fill={isSelected ? '#0a0a0f' : '#60a5fa'}
+                  fontFamily="Cormorant Garamond, Georgia, serif"
+                  fontWeight={500}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}
                 >
                   {PLANET_SYMBOLS[p.planet]}
@@ -357,8 +364,10 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
               <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
                 {t('chartWheel.planetLabel', { defaultValue: 'Planet' })}
               </p>
-              <p className="text-sm font-medium text-mystic-100">
-                {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
+              <p className="text-sm font-medium text-mystic-100 flex items-center gap-1.5">
+                <PlanetGlyph planet={selection.planet} size={18} className="text-gold" />
+                {selection.planet} in {selection.sign}
+                <ZodiacGlyph sign={selection.sign} size={16} className="text-mystic-300" />
               </p>
               <p className="text-xs text-mystic-400 mt-0.5">
                 {selection.degree.toFixed(1)}°{selection.house ? ` · House ${selection.house}` : ''}
@@ -378,8 +387,10 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
                 {t('chartWheel.transitLabel', { defaultValue: 'Transit' })}
                 {overlayLabel ? ` · ${overlayLabel}` : ''}
               </p>
-              <p className="text-sm font-medium text-mystic-100">
-                {PLANET_SYMBOLS[selection.planet]} {selection.planet} in {selection.sign}
+              <p className="text-sm font-medium text-mystic-100 flex items-center gap-1.5">
+                <PlanetGlyph planet={selection.planet} size={18} className="text-cosmic-blue" />
+                {selection.planet} in {selection.sign}
+                <ZodiacGlyph sign={selection.sign} size={16} className="text-mystic-300" />
               </p>
               <p className="text-xs text-mystic-400 mt-0.5">{selection.degree.toFixed(1)}°</p>
             </motion.div>

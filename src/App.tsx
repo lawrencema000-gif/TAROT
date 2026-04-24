@@ -60,6 +60,7 @@ const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage').then(m => ({ de
 const LiveRoomPage = lazy(() => import('./pages/LiveRoomPage').then(m => ({ default: m.LiveRoomPage })));
 const PickACardPage = lazy(() => import('./pages/PickACardPage').then(m => ({ default: m.PickACardPage })));
 const SoulmateScorePage = lazy(() => import('./pages/SoulmateScorePage').then(m => ({ default: m.SoulmateScorePage })));
+const LoveTreePage = lazy(() => import('./pages/LoveTreePage').then(m => ({ default: m.LoveTreePage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -445,6 +446,7 @@ function AppContent() {
                   <Route path="/advisors/dashboard" element={<AdvisorDashboardPage />} />
                   <Route path="/pick-a-card" element={<PickACardPage />} />
                   <Route path="/soulmate-score" element={<SoulmateScorePage />} />
+                  <Route path="/love-tree" element={<LoveTreePage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

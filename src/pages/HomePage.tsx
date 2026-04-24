@@ -58,6 +58,7 @@ export function HomePage() {
   const pickACardEnabled = useFeatureFlag('pick-a-card');
   const soulmateScoreEnabled = useFeatureFlag('soulmate-score');
   const dailyMissionEnabled = useFeatureFlag('daily-mission');
+  const loveTreeEnabled = useFeatureFlag('love-tree');
   const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
@@ -411,6 +412,28 @@ export function HomePage() {
               </p>
             </div>
             <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-gold transition-colors flex-shrink-0" />
+          </div>
+        </button>
+      )}
+
+      {loveTreeEnabled && (
+        <button
+          onClick={() => navigate('/love-tree')}
+          className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-emerald-500/10 via-mystic-900 to-pink-500/10 border border-emerald-400/25 hover:border-emerald-400/50"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-pink-500/20 border border-emerald-400/30 flex items-center justify-center flex-shrink-0">
+              <Heart className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-mystic-100 mb-0.5">
+                {t('home.loveTreeTitle', { defaultValue: 'Love Tree' })}
+              </p>
+              <p className="text-[11px] text-mystic-400 leading-relaxed">
+                {t('home.loveTreeSub', { defaultValue: '90 seconds, 12 questions → your attachment style as a living tree.' })}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
           </div>
         </button>
       )}

@@ -53,6 +53,8 @@
     "share": "공유",
     "copy": "복사",
     "copied": "복사됨",
+    "saved": "저장됨",
+    "shareFailed": "공유하지 못했어요. 다시 시도해 주세요.",
     "upgrade": "업그레이드",
     "restore": "구매 복원",
     "manage": "구독 관리"

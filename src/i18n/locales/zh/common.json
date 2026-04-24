@@ -53,6 +53,8 @@
     "share": "分享",
     "copy": "复制",
     "copied": "已复制",
+    "saved": "已保存",
+    "shareFailed": "分享失败，请重试。",
     "upgrade": "升级",
     "restore": "恢复购买",
     "manage": "管理订阅"

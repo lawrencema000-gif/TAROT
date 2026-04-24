@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { shareOrDownloadCard } from '../utils/shareCard';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -172,25 +173,36 @@ export function SoulmateScorePage() {
 
   const handleShare = async () => {
     if (!result) return;
+    const vibeLocalized = t(`soulmate.vibes.${result.vibe}`, { defaultValue: result.vibe }) as string;
+    const vibeDescription = t(`soulmate.vibeDescriptions.${result.vibe}`, { defaultValue: '' }) as string;
     const shareText = t('soulmate.shareText', {
       defaultValue: 'Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at arcana.app',
       score: result.score,
-      vibe: t(`soulmate.vibes.${result.vibe}`, { defaultValue: result.vibe }),
-    });
-    if (navigator.share) {
+      vibe: vibeLocalized,
+    }) as string;
+
+    const outcome = await shareOrDownloadCard(
+      {
+        variant: 'soulmate',
+        score: result.score,
+        vibe: vibeLocalized,
+        vibeDescription,
+        partnerName: partnerName || undefined,
+      },
+      `arcana-soulmate-${result.score}.png`,
+      shareText,
+    );
+
+    if (outcome === 'downloaded') {
+      toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
+    } else if (outcome === 'failed') {
       try {
-        await navigator.share({
-          title: 'Arcana Soulmate Score',
-          text: shareText as string,
-          url: `${window.location.origin}/soulmate-score`,
-        });
-        return;
+        await navigator.clipboard?.writeText(shareText);
+        toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
       } catch {
-        /* fall through */
+        toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
       }
     }
-    await navigator.clipboard?.writeText(shareText as string);
-    toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
   };
 
   const reset = () => setResult(null);

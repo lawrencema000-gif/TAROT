@@ -53,6 +53,8 @@
     "share": "Share",
     "copy": "Copy",
     "copied": "Copied!",
+    "saved": "Saved",
+    "shareFailed": "Couldn't share. Try again.",
     "upgrade": "Upgrade",
     "restore": "Restore purchases",
     "manage": "Manage subscription"

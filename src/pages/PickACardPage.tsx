@@ -9,6 +9,7 @@ import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import { getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
+import { shareOrDownloadCard } from '../utils/shareCard';
 import type { TarotCard } from '../types';
 
 /**
@@ -134,27 +135,39 @@ export function PickACardPage() {
   }, [picked, deck]);
 
   const handleShare = async () => {
-    if (!pickedCard) return;
-    const name = pickedCard.name;
-    const orientation = picked?.reversed ? t('pickACard.reversed', { defaultValue: 'reversed' }) : t('pickACard.upright', { defaultValue: 'upright' });
+    if (!pickedCard || !picked) return;
     const keyword = pickedCard.keywords?.[0] ?? '';
     const shareText = t('pickACard.shareText', {
       defaultValue: "Today I drew {{name}} ({{orientation}}) — {{keyword}}",
-      name,
-      orientation,
+      name: pickedCard.name,
+      orientation: picked.reversed ? t('pickACard.reversed', { defaultValue: 'reversed' }) : t('pickACard.upright', { defaultValue: 'upright' }),
       keyword,
-    });
-    if (navigator.share) {
+    }) as string;
+
+    const result = await shareOrDownloadCard(
+      {
+        variant: 'tarot',
+        cardName: pickedCard.name,
+        orientation: picked.reversed ? 'reversed' : 'upright',
+        keyword,
+        cardImageUrl: getBundledCardPath(pickedCard.id) || undefined,
+      },
+      `arcana-${pickedCard.name.toLowerCase().replace(/\s+/g, '-')}.png`,
+      shareText,
+    );
+
+    if (result === 'downloaded') {
+      toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
+    } else if (result === 'failed') {
+      // Final fallback to clipboard.
       try {
-        await navigator.share({ title: 'Arcana — Daily Pick', text: shareText as string, url: `${window.location.origin}/pick-a-card` });
-      } catch {
-        await navigator.clipboard?.writeText(shareText as string);
+        await navigator.clipboard?.writeText(shareText);
         toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
+      } catch {
+        toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
       }
-    } else {
-      await navigator.clipboard?.writeText(shareText as string);
-      toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
     }
+    // 'shared' = native share sheet handled it silently.
   };
 
   const cardBackUrl = profile?.card_back_url ?? undefined;

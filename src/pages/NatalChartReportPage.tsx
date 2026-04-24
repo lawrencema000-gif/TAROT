@@ -77,6 +77,7 @@ export function NatalChartReportPage() {
   const [checking, setChecking] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const transitOverlayEnabled = useFeatureFlag('chart-transits');
   const chartVariantsEnabled = useFeatureFlag('chart-variants');
   type Variant = 'natal' | 'transits' | 'progressions' | 'solar-return' | 'synastry';
@@ -324,42 +325,82 @@ export function NatalChartReportPage() {
             </li>
           </ul>
 
-          <Button
-            variant="gold"
-            fullWidth
-            onClick={handleUnlock}
-            disabled={unlocking || (balance !== null && balance < NATAL_COST)}
-            className="min-h-[52px]"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {unlocking
-              ? t('natalReport.unlocking', { defaultValue: 'Unlocking…' })
-              : t('natalReport.unlockCta', {
-                  defaultValue: 'Unlock for {{n}} Moonstones',
-                  n: NATAL_COST,
-                })}
-          </Button>
-
-          {balance !== null && (
-            <p className="text-[11px] text-mystic-500 mt-2">
-              {t('natalReport.balance', { defaultValue: 'Balance: {{n}} Moonstones', n: balance })}
-            </p>
-          )}
+          {/*
+            Paywall card — two equal-weight options.
+            Old UX inverted the hierarchy: pay-$9.99 was a tiny text link
+            while "Unlock for 200 Moonstones" was the big gold button,
+            even though Moonstones is the free-earn path and card is the
+            real revenue path. Balance of zero also silently disabled the
+            Moonstones button with no guidance. Reworked below.
+          */}
           {canPayWithCard() && (
-            <button
+            <Button
+              variant="gold"
+              fullWidth
               onClick={async () => {
-                const res = await startReportCheckout({ reportKey: 'natal-chart-pdf', reference });
-                if (!res.ok && res.error !== 'already-unlocked') {
-                  toast(t('natalReport.stripeFailed', { defaultValue: 'Could not start checkout' }), 'error');
+                setCheckoutLoading(true);
+                try {
+                  const res = await startReportCheckout({ reportKey: 'natal-chart-pdf', reference });
+                  if (!res.ok && res.error !== 'already-unlocked') {
+                    toast(
+                      t('natalReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
+                      'error',
+                    );
+                  }
+                } catch (e) {
+                  console.error('[NatalChart] Stripe checkout failed:', e);
+                  toast(
+                    t('natalReport.stripeFailed', { defaultValue: "Couldn't start checkout. Check your connection and try again." }),
+                    'error',
+                  );
+                } finally {
+                  setCheckoutLoading(false);
                 }
               }}
-              className="mt-3 text-xs text-mystic-400 hover:text-gold underline underline-offset-2"
+              disabled={checkoutLoading}
+              loading={checkoutLoading}
+              className="min-h-[52px]"
             >
+              <Sparkles className="w-4 h-4 mr-2" />
               {t('natalReport.payWithStripe', {
-                defaultValue: 'Or pay ${{price}} with card',
+                defaultValue: 'Unlock for ${{price}}',
                 price: NATAL_USD.toFixed(2),
               })}
-            </button>
+            </Button>
+          )}
+
+          {/* Moonstone path — secondary. Always tappable; shows helpful
+              sub-copy when the balance is insufficient instead of dead-
+              disabling. */}
+          {balance !== null && balance >= NATAL_COST ? (
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={handleUnlock}
+              disabled={unlocking}
+              loading={unlocking}
+              className="min-h-[48px] mt-3"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {t('natalReport.unlockCta', {
+                defaultValue: 'Unlock with {{n}} Moonstones',
+                n: NATAL_COST,
+              })}
+            </Button>
+          ) : (
+            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30">
+              <p className="text-xs text-mystic-300 mb-1">
+                {t('natalReport.orEarnMoonstones', {
+                  defaultValue: 'Or unlock with {{n}} Moonstones',
+                  n: NATAL_COST,
+                })}
+              </p>
+              <p className="text-[11px] text-mystic-500">
+                {t('natalReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
+                {' · '}
+                {t('natalReport.earnHint', { defaultValue: 'Earn via daily check-in + inviting friends.' })}
+              </p>
+            </div>
           )}
         </Card>
       </div>

@@ -27,6 +27,7 @@ import {
   Bug,
   ArrowLeftRight,
   Search,
+  Sparkles,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
@@ -44,6 +45,11 @@ import { useT } from '../../i18n/useT';
 import { getLocale, type SupportedLocale } from '../../i18n/config';
 
 type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
+
+/** Reserved URL that tells App.tsx to render the animated Celestial
+ *  starfield background instead of loading an image. Must stay in
+ *  sync with the identical constant in App.tsx. */
+const CELESTIAL_BG_URL = 'celestial://animated';
 
 interface CardBackOption {
   url: string;
@@ -1088,6 +1094,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Default — no background image */}
                 <button
                   onClick={() => handleSelectBackground(null)}
                   disabled={savingBackground}
@@ -1107,6 +1114,75 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     <span className="text-xs text-mystic-400">{tAppSettings('settings.defaultLabel')}</span>
                   </div>
                   {!profile?.background_url && (
+                    <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
+                      <Check className="w-3 h-3 text-mystic-900" />
+                    </div>
+                  )}
+                </button>
+
+                {/* Celestial — animated starfield + rising particles (same
+                    visual as the pre-login landing page). Lives in the
+                    grid alongside the image-based backgrounds. Preview
+                    shows a static gradient + a handful of dots so users
+                    recognize the option at a glance; the real animation
+                    kicks in once selected. */}
+                <button
+                  onClick={() => handleSelectBackground(CELESTIAL_BG_URL)}
+                  disabled={savingBackground}
+                  className={`
+                    relative aspect-video rounded-lg border-2 transition-all overflow-hidden min-h-[100px]
+                    ${profile?.background_url === CELESTIAL_BG_URL
+                      ? 'border-gold ring-2 ring-gold/30'
+                      : 'border-mystic-700 hover:border-mystic-500'
+                    }
+                    disabled:opacity-50
+                  `}
+                  aria-label="Celestial animated background"
+                >
+                  {/* Preview base — same gradient the real background uses */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        'radial-gradient(ellipse at 50% 0%, rgba(212, 168, 83, 0.18) 0%, transparent 50%),' +
+                        'radial-gradient(ellipse at 30% 80%, rgba(142, 110, 181, 0.18) 0%, transparent 55%),' +
+                        'linear-gradient(180deg, #040407 0%, #08081a 55%, #040407 100%)',
+                    }}
+                  />
+                  {/* A few preview stars so the card reads as "starfield"
+                      even before it's selected. Real animation runs app-wide
+                      once you pick it. */}
+                  {[
+                    { l: 18, t: 22, s: 1.6, b: false },
+                    { l: 74, t: 18, s: 1.2, b: true },
+                    { l: 42, t: 56, s: 1.0, b: false },
+                    { l: 62, t: 72, s: 1.8, b: true },
+                    { l: 88, t: 48, s: 1.2, b: false },
+                    { l: 28, t: 82, s: 1.0, b: true },
+                    { l: 12, t: 62, s: 0.8, b: false },
+                    { l: 82, t: 80, s: 0.8, b: false },
+                  ].map((s, i) => (
+                    <span
+                      key={i}
+                      className={`celestial-star ${s.b ? 'celestial-star-bright' : ''}`}
+                      style={{
+                        left: `${s.l}%`,
+                        top: `${s.t}%`,
+                        width: s.s,
+                        height: s.s,
+                        animationDuration: `${2 + (i % 5)}s`,
+                        animationDelay: `${(i * 0.3) % 4}s`,
+                      }}
+                    />
+                  ))}
+                  {/* Label */}
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 py-1.5 bg-gradient-to-t from-mystic-950/80 to-transparent">
+                    <Sparkles className="w-3.5 h-3.5 text-gold" />
+                    <span className="text-xs font-medium text-mystic-100">
+                      {tAppSettings('settings.celestialLabel', { defaultValue: 'Celestial' })}
+                    </span>
+                  </div>
+                  {profile?.background_url === CELESTIAL_BG_URL && (
                     <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
                       <Check className="w-3 h-3 text-mystic-900" />
                     </div>

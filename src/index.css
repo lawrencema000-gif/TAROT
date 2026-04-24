@@ -280,6 +280,82 @@
     animation: spin 1s linear infinite;
   }
 
+  /* ── Celestial animated background ────────────────────────────
+     Drop-in background component for users who select "Celestial"
+     in Settings → App Background. Rendered full-bleed behind the
+     app shell. Matches the starfield + rising-gold-particles
+     effect on the pre-login landing page. */
+  .celestial-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .celestial-base {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(212, 168, 83, 0.08) 0%, transparent 45%),
+      radial-gradient(ellipse at 30% 80%, rgba(142, 110, 181, 0.08) 0%, transparent 50%),
+      linear-gradient(180deg, #040407 0%, #08081a 55%, #040407 100%);
+  }
+  .celestial-stars {
+    position: absolute;
+    inset: 0;
+  }
+  .celestial-star {
+    position: absolute;
+    border-radius: 50%;
+    background: #ffffff;
+    opacity: 0.06;
+    animation: celestial-twinkle ease-in-out infinite alternate;
+    will-change: opacity, transform;
+  }
+  .celestial-star-bright {
+    background: rgb(var(--gold-primary));
+    opacity: 0.22;
+    box-shadow: 0 0 4px rgba(var(--gold-primary), 0.35);
+  }
+  @keyframes celestial-twinkle {
+    0%   { opacity: 0.04; transform: scale(0.5); }
+    100% { opacity: 0.6;  transform: scale(1.4); }
+  }
+  .celestial-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .celestial-particle {
+    position: absolute;
+    bottom: -20px;
+    border-radius: 50%;
+    width: var(--psize);
+    height: var(--psize);
+    background: rgb(var(--gold-primary));
+    opacity: 0;
+    box-shadow:
+      0 0 8px rgba(var(--gold-primary), 0.3),
+      0 0 20px rgba(var(--gold-primary), 0.08);
+    animation: celestial-rise linear infinite;
+  }
+  @keyframes celestial-rise {
+    0%   { opacity: 0; transform: translateY(0) translateX(0); }
+    8%   { opacity: var(--popacity); }
+    92%  { opacity: var(--popacity); }
+    100% { opacity: 0; transform: translateY(-105vh) translateX(var(--pdrift)); }
+  }
+  .celestial-veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(8, 8, 18, 0.2) 0%,
+      rgba(8, 8, 18, 0.45) 50%,
+      rgba(8, 8, 18, 0.65) 100%
+    );
+  }
+
   /* ── Magical textures ──────────────────────────────────────────
      Thin, stackable layers used to break up flat dark panels. All
      are pointer-events-none via ::before / ::after positioning, so

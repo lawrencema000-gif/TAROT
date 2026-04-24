@@ -19,6 +19,13 @@ import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
 import { DiagnosticsSheet } from './components/diagnostics';
+import { CelestialBackground } from './components/home/CelestialBackground';
+
+// Sentinel used to store "render the animated Celestial background"
+// in profile.background_url. Lives here + in SettingsSheet; kept in
+// sync by value equality. Any string that starts with `celestial://`
+// is treated as an animated background.
+const CELESTIAL_BG_URL = 'celestial://animated';
 
 // Eager imports — critical path (shown on first load)
 import { HomePage } from './pages/HomePage';
@@ -377,7 +384,11 @@ function AppContent() {
   return (
     <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
       <div className="min-h-screen pb-nav relative constellation-bg">
-        {profile?.background_url ? (
+        {profile?.background_url === CELESTIAL_BG_URL ? (
+          /* Animated starfield background — same visual as the
+             pre-login landing page, selectable via Settings. */
+          <CelestialBackground />
+        ) : profile?.background_url ? (
           <div className="fixed inset-0 z-0">
             <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-700"

@@ -26,7 +26,7 @@ interface Resp {
   userId: string;
 }
 
-export default handler<Req, Resp>({
+Deno.serve(handler<Req, Resp>({
   fn: "account-delete",
   auth: "required",
   methods: ["POST"],
@@ -80,4 +80,4 @@ export default handler<Req, Resp>({
     ctx.log.info("account_delete.ok", { userId });
     return { deleted: true, userId };
   },
-});
+}));

@@ -129,7 +129,7 @@ async function embed(text: string): Promise<number[] | null> {
   }
 }
 
-export default handler<Req, Resp>({
+Deno.serve(handler<Req, Resp>({
   fn: "ai-quick-reading",
   auth: "required",
   methods: ["POST"],
@@ -184,4 +184,4 @@ export default handler<Req, Resp>({
       memoryUsed: !!memory,
     };
   },
-});
+}));

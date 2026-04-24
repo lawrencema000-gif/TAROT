@@ -96,7 +96,7 @@ function findSunReturn(target: number, start: Date, end: Date): Date {
   return new Date(Math.round((lo + hi) / 2));
 }
 
-export default handler<Req, Resp>({
+Deno.serve(handler<Req, Resp>({
   fn: "astrology-solar-return",
   auth: "required",
   methods: ["POST"],
@@ -155,4 +155,4 @@ export default handler<Req, Resp>({
       positions,
     };
   },
-});
+}));

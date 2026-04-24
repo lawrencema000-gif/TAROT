@@ -155,7 +155,7 @@ const CRISIS_RESOURCES = {
   international: "https://findahelpline.com",
 };
 
-export default handler<Request, ModerationResponse>({
+Deno.serve(handler<Request, ModerationResponse>({
   fn: "community-moderate",
   auth: "required",
   methods: ["POST"],
@@ -223,7 +223,7 @@ export default handler<Request, ModerationResponse>({
       ...(crisis ? { crisisResources: CRISIS_RESOURCES } : {}),
     };
   },
-});
+}));
 
 async function hash(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input);

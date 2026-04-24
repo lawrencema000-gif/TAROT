@@ -259,7 +259,7 @@ async function maybeSummarize(
   log("memory.summarize.ok", { turns: unsummarized.length });
 }
 
-export default handler<ChatRequest, ChatResponse>({
+Deno.serve(handler<ChatRequest, ChatResponse>({
   fn: "ai-companion-chat",
   auth: "required",
   methods: ["POST"],
@@ -341,4 +341,4 @@ export default handler<ChatRequest, ChatResponse>({
 
     return { reply, persona, memoriesUsed: memories.length };
   },
-});
+}));

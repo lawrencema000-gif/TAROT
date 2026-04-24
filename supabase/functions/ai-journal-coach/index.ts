@@ -95,7 +95,7 @@ function safeParseJson(s: string): { observation: string; prompts: string[] } | 
   return null;
 }
 
-export default handler<Req, Resp>({
+Deno.serve(handler<Req, Resp>({
   fn: "ai-journal-coach",
   auth: "required",
   methods: ["POST"],
@@ -146,4 +146,4 @@ export default handler<Req, Resp>({
     }
     return parsed;
   },
-});
+}));

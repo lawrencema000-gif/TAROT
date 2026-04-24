@@ -40,7 +40,7 @@ const TABLES_OWNED_BY_USER = [
   "user_preferences",
 ];
 
-export default handler<Req, Record<string, unknown>>({
+Deno.serve(handler<Req, Record<string, unknown>>({
   fn: "account-export",
   auth: "required",
   methods: ["POST"],
@@ -86,4 +86,4 @@ export default handler<Req, Record<string, unknown>>({
     ctx.log.info("account_export.ok", { userId: uid, tables: TABLES_OWNED_BY_USER.length });
     return exportPayload;
   },
-});
+}));

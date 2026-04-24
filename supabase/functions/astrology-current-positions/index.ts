@@ -54,7 +54,7 @@ function longitudeOf(body: Astronomy.Body | "Sun", date: Date): number {
   return Astronomy.EclipticLongitude(body, date);
 }
 
-export default handler<Req, Resp>({
+Deno.serve(handler<Req, Resp>({
   fn: "astrology-current-positions",
   auth: "required",
   methods: ["POST"],
@@ -77,4 +77,4 @@ export default handler<Req, Resp>({
       positions,
     };
   },
-});
+}));

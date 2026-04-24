@@ -188,7 +188,7 @@ function themeForMonth(events: YearAheadEvent[]): string {
   return `${themes[dom.transitPlanet]}, especially around your ${dom.natalPlanet}.`;
 }
 
-export default handler<Request, YearAheadResponse>({
+Deno.serve(handler<Request, YearAheadResponse>({
   fn: "astrology-year-ahead",
   auth: "required",
   methods: ["POST"],
@@ -327,4 +327,4 @@ export default handler<Request, YearAheadResponse>({
       summary,
     };
   },
-});
+}));

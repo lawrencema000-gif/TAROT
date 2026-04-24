@@ -71,7 +71,7 @@ async function signLiveKitToken(params: {
   return create({ alg: "HS256", typ: "JWT" }, payload, key);
 }
 
-export default handler<Req, Resp>({
+Deno.serve(handler<Req, Resp>({
   fn: "livekit-token",
   auth: "required",
   methods: ["POST"],
@@ -181,4 +181,4 @@ export default handler<Req, Resp>({
       expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
     };
   },
-});
+}));

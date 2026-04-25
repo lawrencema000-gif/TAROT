@@ -16,6 +16,7 @@ import {
   type BaziResult,
   type FiveElement,
 } from '../data/bazi';
+import { computeBaziDeep, type Gender as BaziGender } from '../data/baziDeep';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
 type Stage = 'input' | 'result';
@@ -44,11 +45,20 @@ export function BaziPage() {
   const [stage, setStage] = useState<Stage>('input');
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
+  const [gender, setGender] = useState<BaziGender | ''>('');
   const [result, setResult] = useState<BaziResult | null>(null);
   const isPremium = profile?.isPremium === true;
   const showDepth = depthEnabled; // content rendered; premium gates the deep layers
   const deepening = useMemo(() => (result ? deepenBazi(result) : null), [result]);
   const luckyColor = useMemo(() => (result ? todaysLuckyColor(result) : null), [result]);
+  // Phase-2 deep mode (luck pillars / annual luck / spirit stars / branch
+  // relations / climate / life-area summaries / pillar narratives) only
+  // computes when gender is provided since luck-pillar direction depends
+  // on year polarity x gender.
+  const deepResult = useMemo(
+    () => (result && gender ? computeBaziDeep(result, birthDate, gender) : null),
+    [result, gender, birthDate],
+  );
 
   useEffect(() => {
     if (profile?.birthDate) setBirthDate(profile.birthDate);
@@ -106,6 +116,20 @@ export function BaziPage() {
                 {t('bazi.birthTime', { defaultValue: 'Birth time (optional)' })}
               </label>
               <Input type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs text-mystic-500 mb-1 flex items-center gap-2">
+                {t('bazi.gender', { defaultValue: 'Birth gender — required for luck pillars + annual reading' })}
+              </label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value as BaziGender)}
+                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
+              >
+                <option value="">{t('bazi.selectGender', { defaultValue: 'Select to unlock deep mode' })}</option>
+                <option value="male">{t('bazi.male', { defaultValue: 'Male' })}</option>
+                <option value="female">{t('bazi.female', { defaultValue: 'Female' })}</option>
+              </select>
             </div>
           </div>
         </Card>
@@ -472,6 +496,213 @@ export function BaziPage() {
           <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
         </Card>
 
+        {/* ─── DEEP MODE — luck pillars, annual luck, spirit stars, branch
+            relations, climate, life areas, pillar narratives. Requires
+            gender for luck-pillar direction. */}
+        {!deepResult && (
+          <Card padding="md" className="border-cosmic-violet/30 bg-cosmic-violet/5">
+            <p className="text-xs text-mystic-400 leading-relaxed">
+              {t('bazi.unlockDeepHint', {
+                defaultValue:
+                  'For the deeper layers — 10-year luck pillars, this year\'s reading, spirit stars, branch relations — go back and add your birth gender. Luck-pillar direction is determined by year polarity × gender, so the calculation needs both.',
+              })}
+            </p>
+          </Card>
+        )}
+
+        {deepResult && (
+          <>
+            {/* Pillar narratives — what each of the 4 represents */}
+            <Card padding="lg">
+              <h3 className="font-medium text-gold mb-3">
+                {t('bazi.pillarsHeading', { defaultValue: 'What each pillar represents' })}
+              </h3>
+              <div className="space-y-3 text-xs text-mystic-300 leading-relaxed">
+                <div>
+                  <p className="text-emerald-400 font-medium mb-0.5">{t('bazi.yearPillarLabel', { defaultValue: 'Year' })} · {result.year.stem} {result.year.branch}</p>
+                  <p>{deepResult.pillarNarratives.year}</p>
+                </div>
+                <div>
+                  <p className="text-cosmic-blue font-medium mb-0.5">{t('bazi.monthPillarLabel', { defaultValue: 'Month' })} · {result.month.stem} {result.month.branch}</p>
+                  <p>{deepResult.pillarNarratives.month}</p>
+                </div>
+                <div>
+                  <p className="text-gold font-medium mb-0.5">{t('bazi.dayPillarLabel', { defaultValue: 'Day' })} · {result.day.stem} {result.day.branch}</p>
+                  <p>{deepResult.pillarNarratives.day}</p>
+                </div>
+                <div>
+                  <p className="text-cosmic-violet font-medium mb-0.5">{t('bazi.hourPillarLabel', { defaultValue: 'Hour' })} · {result.hour.stem} {result.hour.branch}</p>
+                  <p>{deepResult.pillarNarratives.hour}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* This year's annual luck */}
+            <Card padding="lg" className="border-gold/30 bg-gradient-to-br from-gold/5 to-mystic-900">
+              <h3 className="font-medium text-gold mb-2">
+                {t('bazi.annualHeading', {
+                  defaultValue: '{{year}} — your year ahead',
+                  year: deepResult.annualLuck.year,
+                })}
+              </h3>
+              <p className="text-xs text-mystic-500 mb-3">
+                {deepResult.annualLuck.stem} {deepResult.annualLuck.branch} · {TEN_GOD_INFO[deepResult.annualLuck.tenGod].name} ({TEN_GOD_INFO[deepResult.annualLuck.tenGod].classical})
+              </p>
+              <p className="text-sm text-mystic-200 leading-relaxed">{deepResult.annualLuck.reading}</p>
+            </Card>
+
+            {/* Current luck pillar */}
+            {deepResult.currentLuckPillar && (
+              <Card padding="lg" className="border-cosmic-blue/30">
+                <h3 className="font-medium text-cosmic-blue mb-2">
+                  {t('bazi.currentLuckHeading', {
+                    defaultValue: 'Your current 10-year cycle ({{a}}-{{b}})',
+                    a: deepResult.currentLuckPillar.startAge,
+                    b: deepResult.currentLuckPillar.endAge,
+                  })}
+                </h3>
+                <p className="text-xs text-mystic-500 mb-3">
+                  {deepResult.currentLuckPillar.stem} {deepResult.currentLuckPillar.branch} · {ELEMENT_EMOJI[deepResult.currentLuckPillar.element]} {deepResult.currentLuckPillar.element} · {deepResult.currentLuckPillar.flavour}
+                </p>
+                <p className="text-sm text-mystic-200 leading-relaxed">{deepResult.currentLuckPillar.theme}</p>
+              </Card>
+            )}
+
+            {/* All 8 luck pillars timeline */}
+            <Card padding="lg">
+              <h3 className="font-medium text-mystic-200 mb-3">
+                {t('bazi.luckPillarsHeading', { defaultValue: 'Your 80-year luck pillar timeline' })}
+              </h3>
+              <div className="space-y-2">
+                {deepResult.luckPillars.map((p, i) => {
+                  const isCurrent = deepResult.currentLuckPillar &&
+                    p.startAge === deepResult.currentLuckPillar.startAge;
+                  const tint =
+                    p.flavour === 'supporting' ? 'border-emerald-400/25 bg-emerald-500/5'
+                    : p.flavour === 'challenging' ? 'border-pink-400/25 bg-pink-500/5'
+                    : 'border-mystic-700/30 bg-mystic-800/30';
+                  return (
+                    <div
+                      key={i}
+                      className={`p-3 rounded-xl border ${tint} ${isCurrent ? 'ring-1 ring-gold/50' : ''}`}
+                    >
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-mystic-100 font-medium">
+                          {p.stem} {p.branch} {ELEMENT_EMOJI[p.element]}
+                        </span>
+                        <span className="text-mystic-500">
+                          {t('bazi.ageRange', { defaultValue: 'Age {{a}}-{{b}}', a: p.startAge, b: p.endAge })}
+                          {' · '}
+                          {p.startYear}-{p.endYear}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-mystic-400 leading-relaxed">{p.theme}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Spirit stars */}
+            {deepResult.spiritStars.length > 0 && (
+              <Card padding="lg">
+                <h3 className="font-medium text-cosmic-violet mb-3">
+                  {t('bazi.spiritStarsHeading', { defaultValue: 'Spirit stars in your chart' })}
+                </h3>
+                <div className="space-y-2">
+                  {deepResult.spiritStars.map((s, i) => {
+                    const tint =
+                      s.kind === 'auspicious' ? 'border-emerald-400/25 bg-emerald-500/5'
+                      : s.kind === 'inauspicious' ? 'border-pink-400/25 bg-pink-500/5'
+                      : 'border-gold/25 bg-gold/5';
+                    return (
+                      <div key={i} className={`p-3 rounded-xl border ${tint}`}>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-sm font-medium text-mystic-100">{s.name}</span>
+                          <span className="text-[10px] text-mystic-500">{s.classical}</span>
+                          <span className="text-[10px] text-mystic-500 ml-auto capitalize">{s.pillar} pillar</span>
+                        </div>
+                        <p className="text-xs text-mystic-300 leading-relaxed">{s.meaning}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {/* Branch relations */}
+            {deepResult.branchRelations.length > 0 && (
+              <Card padding="lg">
+                <h3 className="font-medium text-cosmic-blue mb-3">
+                  {t('bazi.branchRelationsHeading', { defaultValue: 'Branch relations' })}
+                </h3>
+                <div className="space-y-2">
+                  {deepResult.branchRelations.map((r, i) => {
+                    const tint =
+                      r.type === 'clash' ? 'border-pink-400/25 bg-pink-500/5'
+                      : r.type === 'combine' ? 'border-emerald-400/25 bg-emerald-500/5'
+                      : 'border-gold/25 bg-gold/5';
+                    return (
+                      <div key={i} className={`p-3 rounded-xl border ${tint}`}>
+                        <p className="text-xs text-mystic-300 leading-relaxed">{r.meaning}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {/* Climate balance */}
+            <Card padding="lg" className="border-cosmic-blue/30">
+              <h3 className="font-medium text-cosmic-blue mb-2">
+                {t('bazi.climateHeading', { defaultValue: 'Your climate balance' })}
+              </h3>
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                <ClimateCell label="Cold" value={deepResult.climate.cold} active={deepResult.climate.dominant === 'cold'} />
+                <ClimateCell label="Hot" value={deepResult.climate.hot} active={deepResult.climate.dominant === 'hot'} />
+                <ClimateCell label="Wet" value={deepResult.climate.wet} active={deepResult.climate.dominant === 'wet'} />
+                <ClimateCell label="Dry" value={deepResult.climate.dry} active={deepResult.climate.dominant === 'dry'} />
+              </div>
+              <p className="text-xs text-mystic-300 leading-relaxed">{deepResult.climate.remedy}</p>
+            </Card>
+
+            {/* Career affinity */}
+            <Card padding="lg">
+              <h3 className="font-medium text-emerald-400 mb-3">
+                {t('bazi.careerHeading', { defaultValue: 'Career affinity for your day master' })}
+              </h3>
+              <ul className="space-y-1.5 text-xs text-mystic-300">
+                {deepResult.lifeAreas.careerAffinity.map((c, i) => (
+                  <li key={i} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
+            {/* Wealth, Spouse, Health */}
+            <Card padding="lg">
+              <h3 className="font-medium text-gold mb-3">
+                {t('bazi.lifeAreasHeading', { defaultValue: 'Wealth · Partnership · Health' })}
+              </h3>
+              <div className="space-y-3 text-xs text-mystic-300 leading-relaxed">
+                <div>
+                  <p className="text-gold font-medium mb-1">{t('bazi.wealthLabel', { defaultValue: 'Wealth' })}</p>
+                  <p>{deepResult.lifeAreas.wealthAnalysis}</p>
+                </div>
+                <div>
+                  <p className="text-pink-400 font-medium mb-1">{t('bazi.spouseLabel', { defaultValue: 'Partnership' })}</p>
+                  <p>{deepResult.lifeAreas.spouseAnalysis}</p>
+                </div>
+                <div>
+                  <p className="text-cosmic-blue font-medium mb-1">{t('bazi.healthLabel', { defaultValue: 'Health' })}</p>
+                  <p>{deepResult.lifeAreas.healthFocus}</p>
+                </div>
+              </div>
+            </Card>
+          </>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
             <Sparkles className="w-4 h-4 mr-2" />
@@ -486,6 +717,15 @@ export function BaziPage() {
   }
 
   return null;
+}
+
+function ClimateCell({ label, value, active }: { label: string; value: number; active: boolean }) {
+  return (
+    <div className={`text-center p-2 rounded-lg border ${active ? 'border-gold/50 bg-gold/10' : 'border-mystic-700/30 bg-mystic-800/30'}`}>
+      <p className="text-[10px] uppercase tracking-widest text-mystic-500">{label}</p>
+      <p className={`text-lg font-display ${active ? 'text-gold' : 'text-mystic-300'}`}>{value}</p>
+    </div>
+  );
 }
 
 export default BaziPage;

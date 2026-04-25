@@ -8,6 +8,7 @@ import { HD_TYPES } from '../data/humanDesign';
 import { TYPE_CASES, AUTHORITY_SCRIPTS, type Authority } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 
 /**
  * Human Design reading page.
@@ -168,6 +169,7 @@ export function HumanDesignPage() {
             ? t('humanDesign.computing', { defaultValue: 'Computing your bodygraph…' })
             : t('humanDesign.calculate', { defaultValue: 'Reveal my design' })}
         </Button>
+        <MoonstoneCostLine />
         {EarnSheet}
       </div>
     );

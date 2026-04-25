@@ -9,6 +9,7 @@ import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import type { TarotCard } from '../types';
 
 /**
@@ -128,6 +129,8 @@ export function TarotCompanionPage() {
           {t('tarotCompanion.redraw', { defaultValue: 'New card' })}
         </Button>
       </div>
+
+      {messages.length === 0 && !drawing && <MoonstoneCostLine />}
 
       {drawing && (
         <div className="py-12 text-center">

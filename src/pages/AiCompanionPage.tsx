@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 
 type Persona = 'sage' | 'oracle' | 'mystic' | 'priestess';
 
@@ -286,6 +287,7 @@ export function AiCompanionPage() {
             limit: DAILY_LIMIT,
           })}
         </p>
+        {history.length === 0 && <MoonstoneCostLine className="mt-1" />}
       </div>
       {EarnSheet}
     </div>

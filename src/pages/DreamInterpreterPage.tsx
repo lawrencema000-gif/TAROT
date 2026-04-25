@@ -9,6 +9,7 @@ import { detectAll, CULTURAL_DREAM_LORE, LUCID_TECHNIQUES, NIGHTMARE_CATEGORIES 
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacSign } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 
 /**
  * Dream interpretation page.
@@ -157,6 +158,7 @@ export function DreamInterpreterPage() {
           </p>
         </Card>
 
+        <MoonstoneCostLine />
         <Button
           variant="primary"
           fullWidth

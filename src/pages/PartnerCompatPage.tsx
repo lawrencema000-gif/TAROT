@@ -12,6 +12,7 @@ import {
 import { COMPOSITE_PAIRING_READINGS } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 
 /**
  * Partner Compatibility — real synastry under the hood.
@@ -264,6 +265,7 @@ export function PartnerCompatPage() {
             ? t('compat.computing', { defaultValue: 'Computing the aspects…' })
             : t('compat.runButton', { defaultValue: 'Reveal our compatibility' })}
         </Button>
+        <MoonstoneCostLine />
         {EarnSheet}
       </div>
     );

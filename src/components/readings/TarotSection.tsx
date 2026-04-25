@@ -42,6 +42,7 @@ import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
 import { appStorage } from '../../lib/appStorage';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
@@ -909,7 +910,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         {allRevealed && (
           <div className="space-y-6 animate-fade-in">
             <div className="border-t border-mystic-700 pt-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-2">
                 <h3 className="font-display text-lg text-gold">{t('readings.interpretation')}</h3>
                 {!showAIInterpretation && (
                   <button
@@ -925,12 +926,16 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
                     ) : (
                       <>
                         <Brain className="w-3.5 h-3.5" />
-                        {profile?.isPremium ? t('readings.revealView.getAIInsight') : t('readings.revealView.premiumAI')}
+                        {t('readings.revealView.getAIInsight', { defaultValue: 'AI insight' })}
                       </>
                     )}
                   </button>
                 )}
               </div>
+
+              {!showAIInterpretation && (
+                <MoonstoneCostLine className="mb-3" />
+              )}
 
               {showAIInterpretation && aiInterpretation ? (
                 <div className="space-y-4">
@@ -1268,9 +1273,14 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
             setPendingFeature(null);
             setPendingSpreadId(null);
           }}
+          actionKey={
+            pendingFeature === 'extra_reading'
+              ? 'tarot-extra-reading'
+              : `tarot-spread:${pendingSpreadId ?? 'unknown'}`
+          }
           feature={pendingFeature}
           spreadType={pendingSpreadId || undefined}
-          onUnlocked={handleAdUnlocked}
+          onSpent={handleAdUnlocked}
           onShowPaywall={() => {
             setShowWatchAdSheet(false);
             setPendingFeature(null);

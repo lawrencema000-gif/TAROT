@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -321,6 +322,7 @@ export function SoulmateScorePage() {
                   <Sparkles className="w-4 h-4 mr-2" />
                   {t('soulmate.calculateCta', { defaultValue: 'Reveal the score' })}
                 </Button>
+                <MoonstoneCostLine className="justify-center" />
                 {EarnSheet}
               </div>
             </Card>

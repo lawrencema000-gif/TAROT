@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 
 /**
  * AI 3-second reading — single-shot Q&A with a grounded oracle voice.
@@ -195,6 +196,7 @@ export function QuickReadingPage() {
         </Card>
       )}
 
+      <MoonstoneCostLine />
       <Button
         variant="gold"
         fullWidth

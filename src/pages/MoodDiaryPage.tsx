@@ -5,6 +5,7 @@ import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
+import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import {
   MOOD_CATEGORIES,
   loadMoodEntries,
@@ -387,6 +388,7 @@ export function MoodDiaryPage() {
                 'Generate a warm, specific letter reading your last 14 days of entries — written like a wise friend who has been paying attention.',
             })}
           </p>
+          <MoonstoneCostLine className="mb-2" />
           <Button
             variant="outline"
             fullWidth

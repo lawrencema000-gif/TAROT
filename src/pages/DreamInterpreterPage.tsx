@@ -8,6 +8,7 @@ import { interpretDream, type DreamReading } from '../data/dreamSymbols';
 import { detectAll, CULTURAL_DREAM_LORE, LUCID_TECHNIQUES, NIGHTMARE_CATEGORIES } from '../data/dreamSubsystems';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacSign } from '../utils/zodiac';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 
 /**
  * Dream interpretation page.
@@ -59,6 +60,7 @@ export function DreamInterpreterPage() {
   const [stage, setStage] = useState<Stage>('input');
   const [dreamText, setDreamText] = useState('');
   const [reading, setReading] = useState<Reading | null>(null);
+  const { tryConsume, EarnSheet } = useMoonstoneSpend('dream-interpret');
 
   const interpret = async () => {
     if (!dreamText.trim() || dreamText.trim().length < 20) {
@@ -70,6 +72,9 @@ export function DreamInterpreterPage() {
       );
       return;
     }
+
+    const ok = await tryConsume();
+    if (!ok) return;
 
     setStage('loading');
 
@@ -162,6 +167,7 @@ export function DreamInterpreterPage() {
             ? t('dream.interpreting', { defaultValue: 'Reading the dream…' })
             : t('dream.interpret', { defaultValue: 'Interpret my dream' })}
         </Button>
+        {EarnSheet}
       </div>
     );
   }

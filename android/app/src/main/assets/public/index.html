@@ -4,16 +4,27 @@
     <meta charset="UTF-8" />
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9489106590476826" crossorigin="anonymous"></script>
-    <!-- Google Analytics -->
+    <!-- Google Analytics + Google Ads (gtag loader covers both) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6V3H9HV31V"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6V3H9HV31V');
+      gtag('config', 'AW-18073938869');
     </script>
     <link rel="icon" type="image/png" href="/image.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- Performance: preconnect to the domains we hit on first paint.
+         Saves ~100-300ms per origin on TCP+TLS handshakes. dns-prefetch
+         is the polite fallback for browsers that don't honor preconnect. -->
+    <link rel="preconnect" href="https://ulzlthhkqjuohzjangcq.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://ulzlthhkqjuohzjangcq.supabase.co" />
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
     <meta name="theme-color" content="#0a0a0f" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0f" />
@@ -45,16 +56,16 @@
 
     <meta name="format-detection" content="telephone=no" />
     <meta name="HandheldFriendly" content="true" />
-    <script type="module" crossorigin src="/assets/index-DoN8FQnI.js"></script>
+    <script type="module" crossorigin src="/assets/index-C9dUUAtH.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-react-e-hhefBg.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-B_RZpOh1.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-BBDJWtnO.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-DaQYFz3j.js">
-    <link rel="modulepreload" crossorigin href="/assets/data-horoscopes-DJG00XEb.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-DARULSv0.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DuQAlqfT.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-Ctdjamlj.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-BbstDHkg.js">
+    <link rel="modulepreload" crossorigin href="/assets/data-horoscopes-BChVc4ua.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-monetization-Ba-7PSFX.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-2AWoISep.js">
     <link rel="modulepreload" crossorigin href="/assets/data-tarot-C81u3mLZ.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-BOZc7UcH.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-InPPxeJc.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-Da9HtxuK.css">
   </head>
   <body>
     <div id="root"></div>

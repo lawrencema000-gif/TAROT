@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { HD_TYPES } from '../data/humanDesign';
 import { TYPE_CASES, AUTHORITY_SCRIPTS, type Authority } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 
 /**
  * Human Design reading page.
@@ -66,6 +67,7 @@ export function HumanDesignPage() {
   const [birthTime, setBirthTime] = useState('');
   const [chart, setChart] = useState<HdChart | null>(null);
   const [showActivations, setShowActivations] = useState(false);
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('human-design');
 
   useEffect(() => {
     if (profile?.birthDate) setBirthDate(profile.birthDate);
@@ -77,6 +79,8 @@ export function HumanDesignPage() {
       toast(t('humanDesign.needBirthDate', { defaultValue: 'Birth date is required' }), 'error');
       return;
     }
+    const ok = await tryConsume();
+    if (!ok) return;
     setStage('loading');
     try {
       const { data, error } = await supabase.functions.invoke('human-design-chart', {
@@ -95,6 +99,7 @@ export function HumanDesignPage() {
       setChart(payload);
       setStage('result');
     } catch (e) {
+      await refund();
       console.error('[HumanDesign] chart calc failed:', e);
       toast(t('humanDesign.calcFailed', { defaultValue: 'Could not calculate chart. Check your connection and try again.' }), 'error');
       setStage('input');
@@ -163,6 +168,7 @@ export function HumanDesignPage() {
             ? t('humanDesign.computing', { defaultValue: 'Computing your bodygraph…' })
             : t('humanDesign.calculate', { defaultValue: 'Reveal my design' })}
         </Button>
+        {EarnSheet}
       </div>
     );
   }

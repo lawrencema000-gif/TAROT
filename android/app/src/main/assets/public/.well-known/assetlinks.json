@@ -4,7 +4,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.arcana.app",
-      "sha256_cert_fingerprints": []
+      "sha256_cert_fingerprints": [
+        "12:0A:41:61:A3:0E:25:F4:9A:46:B3:B5:FD:C9:E7:0E:92:56:77:E3:77:79:B5:3B:6C:4B:2F:D8:2D:03:5F:0D",
+        "B2:89:11:EB:4A:81:29:D2:B7:2E:12:BE:4F:87:38:02:15:B4:05:5B:0F:53:29:F6:97:CC:29:66:26:97:E4:F8"
+      ]
     }
   }
 ]

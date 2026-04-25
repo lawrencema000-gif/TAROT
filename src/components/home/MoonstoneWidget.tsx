@@ -3,23 +3,28 @@ import { Sparkles, Gift, Plus } from 'lucide-react';
 import { Card, Button, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
-import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { moonstones } from '../../dal';
-import { MoonstoneTopUpSheet } from '../moonstones/MoonstoneTopUpSheet';
+import { EarnMoonstonesSheet } from '../moonstones/EarnMoonstonesSheet';
 
 /**
  * Compact Home-screen widget: shows Moonstone balance + claim button
  * when the daily check-in is available. One tap to claim.
+ *
+ * Premium users see ∞ instead of a numeric balance — they have
+ * unlimited AI access (with a silent server-side soft cap).
+ *
+ * The "+" button opens the Earn-Moonstones sheet (watch ad / check-in /
+ * upsell to premium). Direct Moonstone purchasing was removed.
  */
 export function MoonstoneWidget() {
   const { t } = useT('app');
-  const { user } = useAuth();
-  const topUpEnabled = useFeatureFlag('moonstone-topup');
+  const { user, profile } = useAuth();
+  const isPremium = !!profile?.isPremium;
   const [balance, setBalance] = useState<number>(0);
   const [canClaim, setCanClaim] = useState(false);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
-  const [showTopUp, setShowTopUp] = useState(false);
+  const [showEarn, setShowEarn] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!user?.id) return;
@@ -66,29 +71,34 @@ export function MoonstoneWidget() {
             </div>
             <div>
               <p className="text-xs text-mystic-500">
-                {t('moonstones.balanceLabel', { defaultValue: 'Moonstones' })}
+                {isPremium
+                  ? t('moonstones.premiumLabel', { defaultValue: 'Premium · all readings unlocked' })
+                  : t('moonstones.balanceLabel', { defaultValue: 'Moonstones' })}
               </p>
-              <p className="font-display text-xl text-gold">{balance}</p>
+              <p className="font-display text-xl text-gold">
+                {isPremium ? '∞' : balance}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {canClaim ? (
+            {!isPremium && canClaim && (
               <Button variant="primary" onClick={claim} disabled={claiming} className="text-sm min-h-[40px]">
                 <Gift className="w-4 h-4 mr-1" />
                 {claiming
                   ? t('moonstones.claiming', { defaultValue: 'Claiming...' })
                   : t('moonstones.claimButton', { defaultValue: 'Claim daily' })}
               </Button>
-            ) : (
+            )}
+            {!isPremium && !canClaim && (
               <p className="text-xs text-mystic-500 italic">
                 {t('moonstones.alreadyClaimed', { defaultValue: 'Come back tomorrow' })}
               </p>
             )}
-            {topUpEnabled && (
+            {!isPremium && (
               <button
-                onClick={() => setShowTopUp(true)}
-                aria-label={t('moonstones.topUp', { defaultValue: 'Top up' }) as string}
+                onClick={() => setShowEarn(true)}
+                aria-label={t('moonstones.earn', { defaultValue: 'Earn moonstones' }) as string}
                 className="w-9 h-9 rounded-full bg-mystic-800 hover:bg-mystic-700 flex items-center justify-center text-gold transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -98,10 +108,13 @@ export function MoonstoneWidget() {
         </div>
       </Card>
 
-      <MoonstoneTopUpSheet
-        open={showTopUp}
-        onClose={() => setShowTopUp(false)}
-        onCredited={refresh}
+      <EarnMoonstonesSheet
+        open={showEarn}
+        onClose={() => { setShowEarn(false); refresh(); }}
+        reason="insufficient"
+        balance={balance}
+        resetAt={null}
+        onBalanceChange={(newBalance) => setBalance(newBalance)}
       />
     </>
   );

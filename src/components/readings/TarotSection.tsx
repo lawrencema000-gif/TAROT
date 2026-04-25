@@ -41,6 +41,7 @@ import { spreadTypeToFeature, FREE_TIER, type PremiumFeature } from '../../servi
 import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
 import { appStorage } from '../../lib/appStorage';
+import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
@@ -142,6 +143,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
   const [dailyReadingCount, setDailyReadingCount] = useState(0);
   const [canWatchAd, setCanWatchAd] = useState(false);
+  const { tryConsume: tryConsumeAi, refund: refundAi, EarnSheet: AiEarnSheet } = useMoonstoneSpend('tarot-ai-interpret');
 
   useEffect(() => {
     getDailyReadingCount().then(setDailyReadingCount);
@@ -434,17 +436,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   const handleGetAIInterpretation = async () => {
-    if (!profile?.isPremium) {
-      onShowPaywall(t('readings.paywall.aiInterpretation'));
-      return;
-    }
-
     if (!user || drawnCards.length === 0) return;
+
+    // 50 ms per AI interpretation. Premium = no debit (soft cap server-side).
+    // The hook opens the earn-Moonstones sheet on insufficient balance.
+    const ok = await tryConsumeAi();
+    if (!ok) return;
 
     setLoadingAI(true);
     try {
       const readingCards = drawnCards.map(d => tarotCardToReadingCard(d.card, d.reversed));
-      const zodiacSign = profile.birthDate ? getZodiacSign(profile.birthDate) : undefined;
+      const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
 
       const focusForAI: 'love' | 'career' | 'general' =
         selectedFocus === 'Love' ? 'love' : selectedFocus === 'Career' ? 'career' : 'general';
@@ -454,7 +456,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         spreadType: currentSpread,
         focusArea: focusForAI,
         zodiacSign: zodiacSign,
-        goals: profile.goals,
+        goals: profile?.goals,
       });
 
       setAiInterpretation(result.interpretation);
@@ -464,6 +466,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         'success',
       );
     } catch (error) {
+      await refundAi();
       console.error('Failed to generate AI interpretation:', error);
       const errorMessage = error instanceof Error ? error.message : t('readings.toasts.aiFailed');
       toast(errorMessage, 'error');
@@ -1279,6 +1282,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           }}
         />
       )}
+      {AiEarnSheet}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import {
   MOOD_CATEGORIES,
   loadMoodEntries,
@@ -85,11 +86,15 @@ export function MoodDiaryPage() {
     return derivePattern(allEntries);
   }, [allEntries]);
 
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('mood-letter');
+
   const handleGenerateLetter = async () => {
     if (allEntries.length < 3) {
       toast(t('mood.needMoreForLetter', { defaultValue: 'Log at least 3 days for a weekly letter.' }), 'error');
       return;
     }
+    const ok = await tryConsume();
+    if (!ok) return;
     setGeneratingLetter(true);
     try {
       const recent = [...allEntries]
@@ -117,6 +122,7 @@ export function MoodDiaryPage() {
       if (!payload?.letter) throw new Error('empty letter');
       setLetter(payload);
     } catch (e) {
+      await refund();
       console.warn('[Mood] letter generation failed:', e);
       toast(
         t('mood.letterFailed', { defaultValue: "Couldn't write your letter right now. Try again in a moment." }),
@@ -394,6 +400,7 @@ export function MoodDiaryPage() {
               ? t('mood.writingLetter', { defaultValue: 'Writing…' })
               : t('mood.generateLetter', { defaultValue: 'Write my letter' })}
           </Button>
+          {EarnSheet}
         </Card>
       )}
 

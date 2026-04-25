@@ -7,6 +7,7 @@ import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { shareOrDownloadCard } from '../utils/shareCard';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -128,8 +129,12 @@ export function SoulmateScorePage() {
     return !Number.isNaN(d.getTime()) && d.getFullYear() > 1900;
   }, [partnerBirthDate]);
 
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('soulmate-score');
+
   const handleCompute = async () => {
     if (!canSubmit) return;
+    const ok = await tryConsume();
+    if (!ok) return;
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('astrology-synastry', {
@@ -140,6 +145,7 @@ export function SoulmateScorePage() {
         },
       });
       if (error) {
+        await refund();
         toast(
           t('soulmate.computeFailed', { defaultValue: "Couldn't compute. Check your connection and try again." }),
           'error',
@@ -152,6 +158,7 @@ export function SoulmateScorePage() {
       } | null;
       const aspects = payload?.crossAspects ?? [];
       if (aspects.length === 0) {
+        await refund();
         toast(
           t('soulmate.noAspects', { defaultValue: 'No significant aspects found. Try adding a birth time.' }),
           'error',
@@ -161,6 +168,7 @@ export function SoulmateScorePage() {
       const { score, vibe, harmonies, frictions } = scoreAspects(aspects);
       setResult({ score, vibe, harmonies, frictions, hasTime: !!payload?.hasTime });
     } catch (e) {
+      await refund();
       console.error('[Soulmate] compute failed:', e);
       toast(
         t('soulmate.computeFailed', { defaultValue: "Couldn't compute. Check your connection and try again." }),
@@ -313,6 +321,7 @@ export function SoulmateScorePage() {
                   <Sparkles className="w-4 h-4 mr-2" />
                   {t('soulmate.calculateCta', { defaultValue: 'Reveal the score' })}
                 </Button>
+                {EarnSheet}
               </div>
             </Card>
           </motion.div>

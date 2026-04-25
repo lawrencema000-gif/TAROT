@@ -8,6 +8,7 @@ import { getLocale } from '../i18n/config';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import type { TarotCard } from '../types';
 
 /**
@@ -31,6 +32,7 @@ export function TarotCompanionPage() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('tarot-companion-session');
 
   const draw = useCallback(async () => {
     setDrawing(true);
@@ -71,6 +73,10 @@ export function TarotCompanionPage() {
   };
 
   const sendInitial = async (drawn: { card: TarotCard; reversed: boolean }) => {
+    // 50 ms charge for the session opener. Premium = no debit; soft cap
+    // counts one slot. Follow-ups in the same conversation are free.
+    const ok = await tryConsume();
+    if (!ok) return;
     const label = `${drawn.card.name}${drawn.reversed ? ' (reversed)' : ''}`;
     const seed: ChatMessage = {
       role: 'user',
@@ -84,6 +90,7 @@ export function TarotCompanionPage() {
     const reply = await callAi([seed]);
     setSending(false);
     if (!reply) {
+      await refund();
       toast(t('tarotCompanion.aiFailed', { defaultValue: 'Could not reach the oracle' }), 'error');
       return;
     }
@@ -212,6 +219,7 @@ export function TarotCompanionPage() {
           </Button>
         </Card>
       )}
+      {EarnSheet}
     </div>
   );
 }

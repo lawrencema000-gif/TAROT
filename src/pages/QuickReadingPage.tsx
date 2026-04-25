@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 
 /**
  * AI 3-second reading — single-shot Q&A with a grounded oracle voice.
@@ -26,9 +27,12 @@ export function QuickReadingPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QuickReadingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('quick-reading');
 
   const submit = useCallback(async () => {
     if (question.trim().length < 3) return;
+    const ok = await tryConsume();
+    if (!ok) return;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -44,6 +48,7 @@ export function QuickReadingPage() {
     });
     setLoading(false);
     if (err) {
+      await refund();
       const anyErr = err as { context?: { status?: number }; message?: string };
       if (anyErr?.context?.status === 429) setError('rate-limit');
       else if (anyErr?.context?.status === 503) setError('unavailable');
@@ -52,11 +57,12 @@ export function QuickReadingPage() {
     }
     const payload = (data?.data ?? data) as QuickReadingResponse | null;
     if (!payload?.reading) {
+      await refund();
       setError('generic');
       return;
     }
     setResult(payload);
-  }, [question, profile]);
+  }, [question, profile, tryConsume, refund]);
 
   const reset = () => {
     setResult(null);
@@ -208,6 +214,7 @@ export function QuickReadingPage() {
           </>
         )}
       </Button>
+      {EarnSheet}
     </div>
   );
 }

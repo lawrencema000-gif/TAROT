@@ -11,6 +11,7 @@ import {
 } from '../data/partnerCompat';
 import { COMPOSITE_PAIRING_READINGS } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 
 /**
  * Partner Compatibility — real synastry under the hood.
@@ -74,6 +75,7 @@ export function PartnerCompatPage() {
   const [partnerBirth, setPartnerBirth] = useState('');
   const [partnerBirthTime, setPartnerBirthTime] = useState('');
   const [result, setResult] = useState<CompleteResult | null>(null);
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('partner-compat');
 
   useEffect(() => {
     if (profile?.mbtiType && !myMbti) setMyMbti(profile.mbtiType as MbtiType);
@@ -89,9 +91,13 @@ export function PartnerCompatPage() {
       return;
     }
 
+    const ok = await tryConsume();
+    if (!ok) return;
+
     setStage('loading');
 
     let synastry: SynastryResult | null = null;
+    let synastryFailed = false;
     if (myBirth && partnerBirth) {
       try {
         const { data, error } = await supabase.functions.invoke('partner-synastry-adhoc', {
@@ -110,6 +116,7 @@ export function PartnerCompatPage() {
         if (!payload?.crossAspects) throw new Error('no synastry data');
         synastry = payload;
       } catch (e) {
+        synastryFailed = true;
         console.warn('[PartnerCompat] synastry failed, continuing without:', e);
       }
     }
@@ -126,6 +133,9 @@ export function PartnerCompatPage() {
     }
 
     if (!synastry && !mbti) {
+      // No usable result — refund the Moonstones we just debited so the
+      // user isn't charged for a failed compatibility run.
+      if (synastryFailed) await refund();
       toast(
         t('compat.failed', {
           defaultValue:
@@ -254,6 +264,7 @@ export function PartnerCompatPage() {
             ? t('compat.computing', { defaultValue: 'Computing the aspects…' })
             : t('compat.runButton', { defaultValue: 'Reveal our compatibility' })}
         </Button>
+        {EarnSheet}
       </div>
     );
   }

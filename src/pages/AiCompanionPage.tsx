@@ -6,6 +6,7 @@ import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
+import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 
 type Persona = 'sage' | 'oracle' | 'mystic' | 'priestess';
 
@@ -90,12 +91,20 @@ export function AiCompanionPage() {
     } catch { /* ignore */ }
   }, [dailyUsed]);
 
+  const { tryConsume, EarnSheet } = useMoonstoneSpend('companion-session');
+
   const send = async () => {
     const trimmed = input.trim();
     if (!trimmed || sending) return;
     if (dailyUsed >= DAILY_LIMIT) {
       toast(t('companion.dailyLimitReached', { defaultValue: 'Daily message limit reached — come back tomorrow.' }), 'error');
       return;
+    }
+    // Charge 50 moonstones once per fresh conversation (premium = no debit;
+    // soft cap counts one slot for the session start, not per message).
+    if (history.length === 0) {
+      const ok = await tryConsume();
+      if (!ok) return;
     }
 
     const userMsg: Message = { role: 'user', content: trimmed, timestamp: Date.now() };
@@ -278,6 +287,7 @@ export function AiCompanionPage() {
           })}
         </p>
       </div>
+      {EarnSheet}
     </div>
   );
 }

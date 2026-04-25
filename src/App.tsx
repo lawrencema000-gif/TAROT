@@ -9,6 +9,7 @@ import { AppProvider } from './context/AppContext';
 import { FeatureFlagProvider } from './context/FeatureFlagContext';
 import { useUI } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
+import { usePostCheckout } from './hooks/usePostCheckout';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
@@ -138,6 +139,7 @@ function AppContent() {
   const location = useLocation();
   const { levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useGamification();
   const { openDiagnostics } = useDiagnostics();
+  usePostCheckout();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [showOAuthCancel, setShowOAuthCancel] = useState(false);

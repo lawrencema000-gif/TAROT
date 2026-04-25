@@ -40,6 +40,9 @@ jobs:
           VITE_BUILD_SHA: ${{ github.sha }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PRICE_MONTHLY: ${{ secrets.VITE_STRIPE_PRICE_MONTHLY }}
+          VITE_STRIPE_PRICE_YEARLY: ${{ secrets.VITE_STRIPE_PRICE_YEARLY }}
+          VITE_STRIPE_PRICE_LIFETIME: ${{ secrets.VITE_STRIPE_PRICE_LIFETIME }}
         run: npm run build
 
       - name: Deploy to Netlify (prod)

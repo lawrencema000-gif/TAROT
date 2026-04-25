@@ -43,6 +43,7 @@ jobs:
           VITE_STRIPE_PRICE_MONTHLY: ${{ secrets.VITE_STRIPE_PRICE_MONTHLY }}
           VITE_STRIPE_PRICE_YEARLY: ${{ secrets.VITE_STRIPE_PRICE_YEARLY }}
           VITE_STRIPE_PRICE_LIFETIME: ${{ secrets.VITE_STRIPE_PRICE_LIFETIME }}
+          VITE_APP_VERSION: ${{ secrets.VITE_APP_VERSION }}
         run: npm run build
 
       - name: Deploy to Netlify (prod)

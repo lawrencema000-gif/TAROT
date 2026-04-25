@@ -24,6 +24,7 @@ import {
 import { Button, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService, PRODUCT_IDS, Product } from '../../services/billing';
+import { isNative } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
 
 interface PaywallSheetProps {
@@ -209,13 +210,21 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         hasRcPackage: !!p.product?.rcPackage,
       })));
 
-      const hasReal = plans.some(p => p.product?.rcPackage);
+      // "Real products" means the user can actually purchase. On native that
+      // requires a RevenueCat package; on web it just requires the product
+      // catalog to have loaded (Stripe price IDs are resolved server-side at
+      // checkout, not on the package object).
+      const hasReal = isNative()
+        ? plans.some(p => p.product?.rcPackage)
+        : plans.some(p => !!p.product);
       setHasRealProducts(hasReal);
 
       if (!hasReal && products.length > 0) {
-        console.warn('[Paywall] Products loaded but no rcPackage found - RevenueCat offerings may not be configured');
-        console.warn('[Paywall] Expected IDs:', [PRODUCT_IDS.PREMIUM_MONTHLY, PRODUCT_IDS.PREMIUM_YEARLY, PRODUCT_IDS.PREMIUM_LIFETIME]);
-        console.warn('[Paywall] Received IDs:', products.map(p => p.id));
+        if (isNative()) {
+          console.warn('[Paywall] Products loaded but no rcPackage found - RevenueCat offerings may not be configured');
+          console.warn('[Paywall] Expected IDs:', [PRODUCT_IDS.PREMIUM_MONTHLY, PRODUCT_IDS.PREMIUM_YEARLY, PRODUCT_IDS.PREMIUM_LIFETIME]);
+          console.warn('[Paywall] Received IDs:', products.map(p => p.id));
+        }
       }
     } catch (error) {
       console.error('[Paywall] Failed to load products:', error);
@@ -238,7 +247,11 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
     const plan = displayPlans.find(p => p.id === selectedPlan);
     if (!plan) return;
 
-    if (!plan.product?.rcPackage && !hasRealProducts) {
+    // RevenueCat offerings only matter on native — on web the purchase
+    // routes through Stripe via the WebBillingService, which has no
+    // rcPackage concept. Block only when we're on native and the RC
+    // offerings aren't configured.
+    if (isNative() && !plan.product?.rcPackage && !hasRealProducts) {
       toast(t('premium.paywall.toasts.productsUnavailable'), 'error');
       console.error('[Paywall] No rcPackage available for purchase. RevenueCat offerings may not be configured.');
       return;

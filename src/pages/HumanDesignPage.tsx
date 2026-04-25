@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, Compass, Target } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { HD_TYPES } from '../data/humanDesign';
+import { TYPE_CASES, AUTHORITY_SCRIPTS, type Authority } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
 /**
@@ -366,6 +367,86 @@ export function HumanDesignPage() {
                 <span className="text-gold/80">{typeContent.tarotPairing}</span>
               </p>
             )}
+          </Card>
+        )}
+
+        {/* Strategy in practice — concrete scenarios per Type. */}
+        {TYPE_CASES[typeKey(chart.type)] && TYPE_CASES[typeKey(chart.type)].length > 0 && (
+          <Card padding="lg" className="border-emerald-400/20">
+            <h3 className="font-medium text-emerald-400 mb-3 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              {t('humanDesign.casesHeading', { defaultValue: 'Strategy in practice' })}
+            </h3>
+            <p className="text-xs text-mystic-400 mb-4 italic">
+              {t('humanDesign.casesIntro', {
+                defaultValue:
+                  'Concrete scenarios showing what your strategy looks like in real Tuesday-afternoon situations.',
+              })}
+            </p>
+            <div className="space-y-4">
+              {TYPE_CASES[typeKey(chart.type)].map((c, i) => (
+                <div key={i} className="space-y-2">
+                  <p className="text-sm font-medium text-mystic-100">
+                    {t('humanDesign.scenarioLabel', { defaultValue: 'Scenario' })}
+                  </p>
+                  <p className="text-xs text-mystic-300 leading-relaxed">{c.scenario}</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="p-2.5 rounded-lg bg-pink-500/5 border border-pink-400/15">
+                      <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
+                        {t('humanDesign.wrongMoveLabel', { defaultValue: 'The reactive move' })}
+                      </p>
+                      <p className="text-xs text-mystic-300 leading-relaxed">{c.wrongMove}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-400/15">
+                      <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">
+                        {t('humanDesign.alignedMoveLabel', { defaultValue: 'The aligned move' })}
+                      </p>
+                      <p className="text-xs text-mystic-200 leading-relaxed">{c.alignedMove}</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-gold/80 italic">
+                    ✦ {t('humanDesign.signatureFelt', { defaultValue: 'Signature felt' })}: {c.signature}
+                  </p>
+                  {i < TYPE_CASES[typeKey(chart.type)].length - 1 && (
+                    <div className="h-px bg-mystic-800/50 mt-3" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Authority decision-making script. */}
+        {AUTHORITY_SCRIPTS[chart.authority as Authority] && (
+          <Card padding="lg" className="border-cosmic-blue/30">
+            <h3 className="font-medium text-cosmic-blue mb-3 flex items-center gap-2">
+              <Compass className="w-4 h-4" />
+              {t('humanDesign.decisionScriptHeading', {
+                defaultValue: 'How to make decisions: {{authority}}',
+                authority: AUTHORITY_SCRIPTS[chart.authority as Authority].authorityName,
+              })}
+            </h3>
+            <ol className="list-decimal list-inside space-y-2 text-xs text-mystic-300 leading-relaxed mb-4">
+              {AUTHORITY_SCRIPTS[chart.authority as Authority].decisionMakingScript.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+            <div className="p-3 rounded-xl bg-pink-500/5 border border-pink-400/15 mb-2">
+              <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
+                {t('humanDesign.commonMistakeLabel', { defaultValue: 'Common mistake' })}
+              </p>
+              <p className="text-xs text-mystic-300 leading-relaxed">
+                {AUTHORITY_SCRIPTS[chart.authority as Authority].commonMistake}
+              </p>
+            </div>
+            <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-400/15">
+              <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">
+                {t('humanDesign.realityCheckLabel', { defaultValue: 'Reality check' })}
+              </p>
+              <p className="text-xs text-mystic-300 leading-relaxed">
+                {AUTHORITY_SCRIPTS[chart.authority as Authority].realityCheck}
+              </p>
+            </div>
           </Card>
         )}
 

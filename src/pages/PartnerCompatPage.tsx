@@ -9,6 +9,7 @@ import {
   mbtiCompatScore,
   type MbtiType,
 } from '../data/partnerCompat';
+import { COMPOSITE_PAIRING_READINGS } from '../data/humanDesignCases';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
 /**
@@ -391,6 +392,35 @@ export function PartnerCompatPage() {
           </Card>
         )}
 
+        {/* Composite chart insights — derived from the cross-aspects.
+            Surfaces "you as a unit" readings on top of the per-aspect
+            synastry. */}
+        {result.synastry && result.synastry.crossAspects.length > 0 && (() => {
+          const insights = computeCompositeInsights(result.synastry);
+          if (insights.length === 0) return null;
+          return (
+            <Card padding="lg" className="border-pink-400/20">
+              <h3 className="font-medium text-pink-400 mb-3">
+                {t('compat.compositeLabel', { defaultValue: 'Your relationship as a third entity' })}
+              </h3>
+              <p className="text-xs text-mystic-400 mb-3 italic">
+                {t('compat.compositeIntro', {
+                  defaultValue:
+                    'A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.',
+                })}
+              </p>
+              <div className="space-y-3">
+                {insights.map((ins, i) => (
+                  <div key={i} className="text-xs">
+                    <p className="text-pink-400 font-medium mb-0.5">{ins.pairing}</p>
+                    <p className="text-mystic-300 leading-relaxed">{ins.reading}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          );
+        })()}
+
         {/* MBTI layer — only when both provided */}
         {result.mbti && (
           <Card padding="lg">
@@ -418,6 +448,49 @@ export function PartnerCompatPage() {
   }
 
   return null;
+}
+
+/**
+ * Derive composite-chart-style observations from the cross-aspect data.
+ * Looks for the named planet pairings in the lookup table and surfaces
+ * the matched ones. Returns up to 5 most-impactful insights.
+ */
+function computeCompositeInsights(synastry: SynastryResult): { pairing: string; reading: string }[] {
+  const insights: { pairing: string; reading: string }[] = [];
+  const seen = new Set<string>();
+
+  for (const a of synastry.crossAspects) {
+    const pair = [a.myPlanet, a.partnerPlanet].sort().join('-');
+    if (seen.has(pair)) continue;
+
+    // Direct pairings
+    if (COMPOSITE_PAIRING_READINGS[pair]) {
+      insights.push({ pairing: pair.replace('-', ' ↔ '), reading: COMPOSITE_PAIRING_READINGS[pair] });
+      seen.add(pair);
+      continue;
+    }
+
+    // Saturn aspects (any conjunction with Saturn) — heavy commitment energy.
+    if ((a.myPlanet === 'Saturn' || a.partnerPlanet === 'Saturn') && a.type === 'conjunction') {
+      if (!seen.has('Saturn-strong')) {
+        insights.push({ pairing: 'Saturn binding', reading: COMPOSITE_PAIRING_READINGS['Saturn-conjunct'] });
+        seen.add('Saturn-strong');
+      }
+    }
+
+    // Pluto contacts to personal planets — transformational.
+    if ((a.myPlanet === 'Pluto' || a.partnerPlanet === 'Pluto') &&
+        ['Sun', 'Moon', 'Venus'].includes(a.myPlanet === 'Pluto' ? a.partnerPlanet : a.myPlanet) &&
+        a.type === 'conjunction') {
+      if (!seen.has('Pluto-strong')) {
+        insights.push({ pairing: 'Pluto contact', reading: COMPOSITE_PAIRING_READINGS['Pluto-strong'] });
+        seen.add('Pluto-strong');
+      }
+    }
+
+    if (insights.length >= 5) break;
+  }
+  return insights;
 }
 
 function buildMbtiNote(me: MbtiType, partner: MbtiType): string {

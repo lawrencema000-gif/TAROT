@@ -102,7 +102,7 @@ export function MoodDiaryPage() {
           note: e.note,
         }));
 
-      const { data, error } = await supabase.functions.invoke<MoodLetter>('ai-mood-letter', {
+      const { data, error } = await supabase.functions.invoke('ai-mood-letter', {
         body: {
           entries: recent,
           userContext: {
@@ -112,8 +112,10 @@ export function MoodDiaryPage() {
         },
       });
       if (error) throw error;
-      if (!data?.letter) throw new Error('empty letter');
-      setLetter(data);
+      // Unwrap { data, correlationId } envelope.
+      const payload = (data as { data?: MoodLetter })?.data ?? (data as MoodLetter);
+      if (!payload?.letter) throw new Error('empty letter');
+      setLetter(payload);
     } catch (e) {
       console.warn('[Mood] letter generation failed:', e);
       toast(

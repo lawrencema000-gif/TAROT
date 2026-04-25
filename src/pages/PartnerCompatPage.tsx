@@ -93,7 +93,7 @@ export function PartnerCompatPage() {
     let synastry: SynastryResult | null = null;
     if (myBirth && partnerBirth) {
       try {
-        const { data, error } = await supabase.functions.invoke<SynastryResult>('partner-synastry-adhoc', {
+        const { data, error } = await supabase.functions.invoke('partner-synastry-adhoc', {
           body: {
             myBirthDate: myBirth,
             myBirthTime: myBirthTime || undefined,
@@ -104,8 +104,10 @@ export function PartnerCompatPage() {
           },
         });
         if (error) throw error;
-        if (!data) throw new Error('no synastry data');
-        synastry = data;
+        // Unwrap { data, correlationId } envelope from shared handler.
+        const payload = (data as { data?: SynastryResult })?.data ?? (data as SynastryResult);
+        if (!payload?.crossAspects) throw new Error('no synastry data');
+        synastry = payload;
       } catch (e) {
         console.warn('[PartnerCompat] synastry failed, continuing without:', e);
       }

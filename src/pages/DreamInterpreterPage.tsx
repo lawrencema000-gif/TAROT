@@ -71,7 +71,7 @@ export function DreamInterpreterPage() {
     // Try the AI path first — richer interpretation, personalised.
     try {
       const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined;
-      const { data, error } = await supabase.functions.invoke<AiReading>('ai-dream-interpret', {
+      const { data, error } = await supabase.functions.invoke('ai-dream-interpret', {
         body: {
           dreamText: dreamText.trim(),
           userContext: {
@@ -82,8 +82,10 @@ export function DreamInterpreterPage() {
         },
       });
       if (error) throw error;
-      if (!data || !data.coreTheme) throw new Error('malformed');
-      setReading({ ...data, source: 'ai' });
+      // Unwrap { data, correlationId } envelope.
+      const payload = (data as { data?: Omit<AiReading, 'source'> })?.data ?? (data as Omit<AiReading, 'source'>);
+      if (!payload || !payload.coreTheme) throw new Error('malformed');
+      setReading({ ...payload, source: 'ai' });
       setStage('result');
       return;
     } catch (e) {

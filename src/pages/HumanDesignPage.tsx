@@ -78,7 +78,7 @@ export function HumanDesignPage() {
     }
     setStage('loading');
     try {
-      const { data, error } = await supabase.functions.invoke<HdChart>('human-design-chart', {
+      const { data, error } = await supabase.functions.invoke('human-design-chart', {
         body: {
           birthDate,
           birthTime: birthTime || undefined,
@@ -86,8 +86,12 @@ export function HumanDesignPage() {
         },
       });
       if (error) throw error;
-      if (!data) throw new Error('No chart returned');
-      setChart(data);
+      // Shared edge handler wraps responses as { data: result, correlationId } —
+      // unwrap before consuming. Falls back to bare data for any function that
+      // doesn't go through the wrapper.
+      const payload = (data as { data?: HdChart })?.data ?? (data as HdChart);
+      if (!payload?.type) throw new Error('No chart returned');
+      setChart(payload);
       setStage('result');
     } catch (e) {
       console.error('[HumanDesign] chart calc failed:', e);

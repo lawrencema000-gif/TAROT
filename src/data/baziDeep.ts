@@ -102,7 +102,7 @@ export function computeLuckPillars(
       element: stemEl,
       branchElement: branchEl,
       theme: themeForElement(result.dayMasterElement, stemEl),
-      flavour: flavourForElement(result.dayMasterElement, stemEl, result),
+      flavour: flavourForElement(result.dayMasterElement, stemEl),
     });
   }
   return pillars;
@@ -127,7 +127,7 @@ function themeForElement(dm: FiveElement, stemEl: FiveElement): string {
   return 'A neutral decade with no single dominant theme. Mix of all the above; pay attention to which element from your annual luck activates.';
 }
 
-function flavourForElement(dm: FiveElement, stemEl: FiveElement, _result: BaziResult): LuckPillar['flavour'] {
+function flavourForElement(dm: FiveElement, stemEl: FiveElement): LuckPillar['flavour'] {
   if (stemEl === dm) return 'neutral';
   if (ELEMENT_PRODUCES[stemEl] === dm) return 'supporting';
   if (ELEMENT_CONTROLS[stemEl] === dm) return 'challenging';

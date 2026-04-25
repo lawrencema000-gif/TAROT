@@ -115,11 +115,13 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
           <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
             <Clock className="mt-0.5 h-5 w-5 flex-none text-gold" />
             <div className="text-sm leading-relaxed text-mystic-100">
-              You've performed many readings recently. Come back in{' '}
+              You've performed 50 readings in the last 24 hours — a generous limit
+              we use to keep AI quality high for everyone. Your next reading unlocks in{' '}
               <span className="font-semibold text-gold">
                 {resetAt ? formatTimeUntil(resetAt) : 'a few hours'}
-              </span>{' '}
-              for fresh insight. Your premium access remains active.
+              </span>
+              , and slots refresh one at a time as old readings age out. Your
+              premium access stays active throughout.
             </div>
           </div>
         ) : isBrowse ? (

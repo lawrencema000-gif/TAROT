@@ -60,7 +60,7 @@ export function DreamInterpreterPage() {
   const [stage, setStage] = useState<Stage>('input');
   const [dreamText, setDreamText] = useState('');
   const [reading, setReading] = useState<Reading | null>(null);
-  const { tryConsume, EarnSheet } = useMoonstoneSpend('dream-interpret');
+  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('dream-interpret');
 
   const interpret = async () => {
     if (!dreamText.trim() || dreamText.trim().length < 20) {
@@ -99,7 +99,10 @@ export function DreamInterpreterPage() {
       setStage('result');
       return;
     } catch (e) {
-      // Fall through to local dictionary — non-fatal.
+      // AI failed — refund the spend so the user isn't charged for the
+      // local-dictionary fallback (a free feature). They still get a
+      // reading, just one that doesn't justify the 50-Moonstone cost.
+      await refund();
       console.warn('[Dream] AI interpretation failed, falling back to local dictionary:', e);
     }
 

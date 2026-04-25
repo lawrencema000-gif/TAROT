@@ -4,6 +4,13 @@ import { supabase } from '../lib/supabase';
 import { captureException } from '../utils/telemetry';
 import type { Result } from './dailyRituals';
 
+const BALANCE_EVENT = 'moonstone:balance';
+
+function broadcast(newBalance: number): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(BALANCE_EVENT, { detail: newBalance }));
+}
+
 export type TransactionKind =
   | 'purchase' | 'daily-checkin' | 'referral' | 'streak' | 'quiz-complete'
   | 'gift' | 'gift-receive' | 'advisor-session' | 'pay-per-report'
@@ -74,15 +81,21 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
   }
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return { ok: false, error: 'No result from RPC' };
-  return {
-    ok: true,
-    data: {
-      amountAwarded: row.amount_awarded as number,
-      streakDay: row.streak_day as number,
-      isStreakContinuation: row.is_streak_continuation as boolean,
-      alreadyCheckedIn: (row.streak_day as number) > 1 && !(row.is_streak_continuation as boolean),
-    },
+  const outcome = {
+    amountAwarded: row.amount_awarded as number,
+    streakDay: row.streak_day as number,
+    isStreakContinuation: row.is_streak_continuation as boolean,
+    alreadyCheckedIn: (row.streak_day as number) > 1 && !(row.is_streak_continuation as boolean),
   };
+  // Refetch + broadcast balance so the home widget updates without a re-mount.
+  if (outcome.amountAwarded > 0) {
+    const { data: balData } = await supabase.auth.getUser();
+    if (balData.user?.id) {
+      const balRes = await getBalance(balData.user.id);
+      if (balRes.ok) broadcast(balRes.data);
+    }
+  }
+  return { ok: true, data: outcome };
 }
 
 /**

@@ -4,6 +4,7 @@ import { Card, Button, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { moonstones } from '../../dal';
+import { onBalanceChange } from '../../dal/moonstoneSpend';
 import { EarnMoonstonesSheet } from '../moonstones/EarnMoonstonesSheet';
 
 /**
@@ -38,6 +39,13 @@ export function MoonstoneWidget() {
   }, [user?.id]);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  // Live balance updates: spend / refund / ad credit / daily check-in all
+  // broadcast a `moonstone:balance` event with the new balance. Subscribe
+  // so the widget never goes stale until re-mount.
+  useEffect(() => {
+    return onBalanceChange((newBalance) => setBalance(newBalance));
+  }, []);
 
   const claim = async () => {
     setClaiming(true);

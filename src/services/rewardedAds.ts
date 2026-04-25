@@ -115,6 +115,10 @@ class RewardedAdsService {
             newBalance = (row?.new_balance as number) ?? 0;
             persisted = true;
             this.pending.onCredited?.(newBalance);
+            // Broadcast for the home widget + any open balance display.
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('moonstone:balance', { detail: newBalance }));
+            }
           } else {
             console.warn('[RewardedAds] credit RPC failed:', error);
           }

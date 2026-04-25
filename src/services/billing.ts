@@ -77,11 +77,10 @@ const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || '';
 const ENTITLEMENT_ID = 'premium';
 
 function detectProvider(): BillingProvider {
-  if (isNative()) {
-    if (isAndroid()) {
-      return 'google';
-    }
-  }
+  // Native platforms must route through their store IAP — Apple App Store
+  // / Google Play guidelines forbid Stripe (or any third-party card flow)
+  // for digital subscriptions. Web is the only place Stripe is allowed.
+  if (isNative()) return 'google'; // RevenueCat handles both Google Play + Apple App Store under one entitlement
   return 'web';
 }
 
@@ -97,6 +96,9 @@ class NativeBillingService implements BillingService {
     try {
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
 
+      // Android uses the Google Play RC key; iOS would use a separate
+      // VITE_REVENUECAT_API_KEY_IOS once we ship an iOS build (RC issues
+      // distinct keys per store). Until then, only Android initializes.
       if (isAndroid() && REVENUECAT_API_KEY) {
         this.userId = userId;
         await Purchases.configure({
@@ -108,7 +110,7 @@ class NativeBillingService implements BillingService {
         return true;
       }
 
-      console.warn('RevenueCat API key not configured');
+      console.warn('RevenueCat API key not configured for this platform');
       return false;
     } catch (error) {
       console.error('Failed to initialize RevenueCat:', error);

@@ -42,6 +42,7 @@ interface Resp {
   symbols: Symbol[];
   shadowPrompt: string;
   integrationSuggestion: string;
+  compensatoryMove?: string;
 }
 
 const MODEL = "gemini-2.5-flash";
@@ -55,10 +56,32 @@ const SYSTEM = `You are a Jungian dream interpreter. The user will describe a dr
 
 1. Identify the CORE THEME — what the dream is pointing at psychologically. One tight paragraph (2-3 sentences).
 2. Name the EMOTIONAL TONE in one evocative phrase (e.g. "longing wrapped in fear", "quiet grief settling", "manic upward energy").
-3. List the primary ARCHETYPES at work — 2 to 4 Jungian / universal archetypes (The Shadow, The Animus, The Wise Old Woman, The Threshold Guardian, The Puer Aeternus, The Great Mother, etc).
+3. List the primary ARCHETYPES at work — 2 to 4 Jungian / universal archetypes. Use SPECIFIC named archetypes from this canonical list when they fit, rather than generic descriptions:
+   - The Shadow (rejected / unintegrated parts of self)
+   - The Anima (inner feminine in a male psyche)
+   - The Animus (inner masculine in a female psyche)
+   - The Persona (the social mask)
+   - The Self (the integrated whole, often as wise figure / mandala / sacred animal)
+   - The Wise Old Man (Senex)
+   - The Wise Old Woman (Crone)
+   - The Great Mother (nurturing or devouring)
+   - The Father / Patriarch
+   - The Puer Aeternus (eternal youth, refusal to age)
+   - The Puella Aeterna (eternal girl)
+   - The Trickster
+   - The Hero (and the call to adventure)
+   - The Threshold Guardian
+   - The Mentor
+   - The Innocent / Divine Child
+   - The Lover
+   - The Seeker / Wanderer
+   - The Magician
+   - The Outlaw / Rebel
+
 4. Pull out 2 to 5 key SYMBOLS the dreamer described verbatim. For each: (a) what the dream was, (b) its archetypal meaning in 1-2 sentences, (c) a single reflection question the dreamer can sit with.
 5. Name a SHADOW PROMPT — one piercing question that invites the dreamer to look at what the dream is showing them that they might be avoiding in waking life.
 6. Offer an INTEGRATION SUGGESTION — one concrete practice (journal, walk, conversation, ritual) they can do this week to metabolise the dream.
+7. Identify the COMPENSATORY MOVE — Jung said dreams compensate for what consciousness lacks. Name in one sentence what the dreamer's waking attitude is missing that this dream is offering.
 
 Rules:
 - Do NOT predict events. Dreams don't predict; they process.
@@ -74,7 +97,8 @@ Schema:
   "archetypes": string[] (2-4),
   "symbols": [ { "text": string, "meaning": string, "reflection": string } ] (2-5),
   "shadowPrompt": string,
-  "integrationSuggestion": string
+  "integrationSuggestion": string,
+  "compensatoryMove": string
 }`;
 
 async function callGemini(dreamText: string, context: Req["userContext"]): Promise<Resp> {

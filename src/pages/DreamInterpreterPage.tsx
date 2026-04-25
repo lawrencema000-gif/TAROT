@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { ArrowLeft, Sparkles, Moon, AlertTriangle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ArrowLeft, Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { interpretDream, type DreamReading } from '../data/dreamSymbols';
+import { detectAll, CULTURAL_DREAM_LORE, LUCID_TECHNIQUES, NIGHTMARE_CATEGORIES } from '../data/dreamSubsystems';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacSign } from '../utils/zodiac';
 
@@ -39,6 +40,10 @@ interface AiReading {
   symbols: { text: string; meaning: string; reflection: string }[];
   shadowPrompt: string;
   integrationSuggestion: string;
+  /** New 2026-04-25 — what waking attitude the dream is compensating
+   *  for. Optional because older AI responses without the field still
+   *  validate. */
+  compensatoryMove?: string;
 }
 
 interface LocalReading {
@@ -301,6 +306,32 @@ function AiResultView({
         <p className="text-mystic-200 text-sm leading-relaxed">{reading.integrationSuggestion}</p>
       </Card>
 
+      {/* Compensatory move — Jung's principle: dreams compensate for what
+          the waking attitude is missing. */}
+      {reading.compensatoryMove && (
+        <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
+          <h3 className="font-medium text-cosmic-violet mb-2 flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            {t('dream.compensatoryLabel', { defaultValue: 'What your waking self is missing' })}
+          </h3>
+          <p className="text-xs text-mystic-500 mb-2 italic">
+            {t('dream.compensatoryHint', {
+              defaultValue: 'Jung: dreams compensate for the conscious attitude. This is what the dream offers that you don\'t already have.',
+            })}
+          </p>
+          <p className="text-mystic-200 text-sm leading-relaxed">{reading.compensatoryMove}</p>
+        </Card>
+      )}
+
+      {/* Subsystem matches: colors, numbers, directions detected in the
+          dream text. Renders only if any matched. */}
+      <DreamSubsystems dreamText={dreamText} t={t} />
+
+      {/* Resources: cultural lore, lucid techniques, nightmare guidance.
+          Always available so users have somewhere to go after the
+          reading. */}
+      <DreamResources t={t} />
+
       <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
           <Sparkles className="w-4 h-4 mr-2" />
@@ -310,6 +341,172 @@ function AiResultView({
           {t('dream.another', { defaultValue: 'Another dream' })}
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ─── Subsystem detection rendering ───────────────────────────────
+function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o?: Record<string, unknown>) => unknown }) {
+  const matches = useMemo(() => detectAll(dreamText), [dreamText]);
+  const hasAny = matches.colors.length || matches.numbers.length || matches.directions.length;
+  if (!hasAny) return null;
+
+  return (
+    <div className="space-y-3">
+      <h3 className="font-display text-lg text-mystic-200 mt-2">
+        {t('dream.symbolicLayersLabel', { defaultValue: 'Symbolic layers' }) as string}
+      </h3>
+
+      {matches.colors.length > 0 && (
+        <Card padding="md">
+          <div className="flex items-center gap-2 mb-2">
+            <Palette className="w-3.5 h-3.5 text-cosmic-violet" />
+            <h4 className="text-xs uppercase tracking-widest text-cosmic-violet">
+              {t('dream.colorsLabel', { defaultValue: 'Colours present' }) as string}
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {matches.colors.map((c, i) => (
+              <div key={i} className="text-xs">
+                <p className="font-medium text-mystic-100 mb-0.5">{c.color.color}</p>
+                <p className="text-mystic-300 leading-relaxed">{c.color.meaning}</p>
+                <p className="text-pink-400 italic mt-1">Shadow: {c.color.shadow}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {matches.numbers.length > 0 && (
+        <Card padding="md">
+          <div className="flex items-center gap-2 mb-2">
+            <Hash className="w-3.5 h-3.5 text-gold" />
+            <h4 className="text-xs uppercase tracking-widest text-gold">
+              {t('dream.numbersLabel', { defaultValue: 'Numbers present' }) as string}
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {matches.numbers.map((n, i) => (
+              <div key={i} className="text-xs">
+                <p className="font-medium text-mystic-100 mb-0.5">{n.number}</p>
+                <p className="text-mystic-300 leading-relaxed">{n.meaning}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {matches.directions.length > 0 && (
+        <Card padding="md">
+          <div className="flex items-center gap-2 mb-2">
+            <Compass className="w-3.5 h-3.5 text-cosmic-blue" />
+            <h4 className="text-xs uppercase tracking-widest text-cosmic-blue">
+              {t('dream.directionsLabel', { defaultValue: 'Directions of motion' }) as string}
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {matches.directions.map((d, i) => (
+              <div key={i} className="text-xs">
+                <p className="font-medium text-mystic-100 mb-0.5">{d.entry.direction}</p>
+                <p className="text-mystic-300 leading-relaxed">{d.entry.meaning}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ─── Resources: cultural lore + lucid + nightmares ──────────────
+function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => unknown }) {
+  const [openSection, setOpenSection] = useState<'cultures' | 'lucid' | 'nightmares' | null>(null);
+  return (
+    <div className="space-y-3">
+      <h3 className="font-display text-lg text-mystic-200 mt-2">
+        {t('dream.resourcesLabel', { defaultValue: 'Going deeper' }) as string}
+      </h3>
+
+      <Card padding="md">
+        <button
+          onClick={() => setOpenSection(openSection === 'cultures' ? null : 'cultures')}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <Globe className="w-3.5 h-3.5 text-mystic-300" />
+            <span className="text-sm font-medium text-mystic-100">
+              {t('dream.culturesLabel', { defaultValue: 'How different traditions read dreams' }) as string}
+            </span>
+          </div>
+          <span className="text-gold">{openSection === 'cultures' ? '−' : '+'}</span>
+        </button>
+        {openSection === 'cultures' && (
+          <div className="mt-3 space-y-3 animate-fade-in">
+            {CULTURAL_DREAM_LORE.map((c, i) => (
+              <div key={i} className="text-xs">
+                <p className="font-medium text-gold mb-0.5">{c.culture}</p>
+                <p className="text-mystic-300 leading-relaxed">{c.flavour}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card padding="md">
+        <button
+          onClick={() => setOpenSection(openSection === 'lucid' ? null : 'lucid')}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-3.5 h-3.5 text-mystic-300" />
+            <span className="text-sm font-medium text-mystic-100">
+              {t('dream.lucidLabel', { defaultValue: 'Lucid dreaming techniques' }) as string}
+            </span>
+          </div>
+          <span className="text-gold">{openSection === 'lucid' ? '−' : '+'}</span>
+        </button>
+        {openSection === 'lucid' && (
+          <div className="mt-3 space-y-3 animate-fade-in">
+            {LUCID_TECHNIQUES.map((tech, i) => (
+              <div key={i} className="text-xs">
+                <p className="font-medium text-cosmic-blue mb-0.5">{tech.name} ({tech.acronym})</p>
+                <p className="text-mystic-300 leading-relaxed mb-1.5">{tech.description}</p>
+                <ol className="list-decimal list-inside text-mystic-400 leading-relaxed space-y-0.5">
+                  {tech.steps.map((s, j) => (
+                    <li key={j}>{s}</li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card padding="md">
+        <button
+          onClick={() => setOpenSection(openSection === 'nightmares' ? null : 'nightmares')}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-pink-400" />
+            <span className="text-sm font-medium text-mystic-100">
+              {t('dream.nightmaresLabel', { defaultValue: 'Working with nightmares' }) as string}
+            </span>
+          </div>
+          <span className="text-gold">{openSection === 'nightmares' ? '−' : '+'}</span>
+        </button>
+        {openSection === 'nightmares' && (
+          <div className="mt-3 space-y-3 animate-fade-in">
+            {NIGHTMARE_CATEGORIES.map((n, i) => (
+              <div key={i} className="text-xs">
+                <p className="font-medium text-pink-400 mb-0.5">{n.category}</p>
+                <p className="text-mystic-300 leading-relaxed mb-1.5">{n.description}</p>
+                <p className="text-mystic-200 italic leading-relaxed">{n.approach}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

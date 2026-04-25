@@ -16,7 +16,7 @@ import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAd
 import { doDailyCheckin, hasCheckedInToday } from '../../dal/moonstones';
 import { ACTION_COST } from '../../dal/moonstoneSpend';
 
-export type EarnSheetReason = 'insufficient' | 'soft-cap' | null;
+export type EarnSheetReason = 'insufficient' | 'soft-cap' | 'browse' | null;
 
 interface Props {
   open: boolean;
@@ -104,6 +104,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
   }
 
   const isSoftCap = reason === 'soft-cap';
+  const isBrowse = reason === 'browse';
   const title = isSoftCap ? 'Daily limit reached' : 'Earn moonstones';
 
   return (
@@ -119,6 +120,17 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
                 {resetAt ? formatTimeUntil(resetAt) : 'a few hours'}
               </span>{' '}
               for fresh insight. Your premium access remains active.
+            </div>
+          </div>
+        ) : isBrowse ? (
+          <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
+            <Sparkles className="mt-0.5 h-5 w-5 flex-none text-gold" />
+            <div className="text-sm leading-relaxed text-mystic-100">
+              Each AI reading costs <span className="font-semibold text-gold">{ACTION_COST} moonstones</span>.
+              {balance !== null && (
+                <> You have <span className="font-semibold">{balance}</span>.</>
+              )}{' '}
+              Earn more below.
             </div>
           </div>
         ) : (

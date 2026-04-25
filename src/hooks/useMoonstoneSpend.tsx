@@ -28,35 +28,47 @@ export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOpti
   const [balance, setBalance] = useState<number | null>(null);
   const [resetAt, setResetAt] = useState<string | null>(null);
   const idemRef = useRef<string | null>(null);
+  const inFlightRef = useRef(false);
 
   const tryConsume = useCallback(async (): Promise<boolean> => {
-    // Fresh idempotency key per attempt. The page is expected to call
-    // refund() on AI failure BEFORE retrying — otherwise the prior debit
-    // is orphaned (idem key is overwritten on the next tryConsume).
-    idemRef.current = `${actionKey}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const res = await spendForAction(actionKey, cost, idemRef.current);
-    if (!res.ok) {
-      setReason('insufficient');
-      setBalance(null);
-      setResetAt(null);
+    // Concurrency guard — if a tryConsume is already in flight (rapid
+    // double-tap, network-laggy click), reject the second call so we never
+    // emit two simultaneous spend RPC calls. Each call generates a fresh
+    // idempotency key, so without this guard a double-tap would slip past
+    // the server idempotency check and double-debit the user.
+    if (inFlightRef.current) return false;
+    inFlightRef.current = true;
+    try {
+      // Fresh idempotency key per attempt. The page is expected to call
+      // refund() on AI failure BEFORE retrying — otherwise the prior debit
+      // is orphaned (idem key is overwritten on the next tryConsume).
+      idemRef.current = `${actionKey}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const res = await spendForAction(actionKey, cost, idemRef.current);
+      if (!res.ok) {
+        setReason('insufficient');
+        setBalance(null);
+        setResetAt(null);
+        setOpen(true);
+        return false;
+      }
+      if (res.data.allowed) {
+        if (res.data.newBalance !== null) setBalance(res.data.newBalance);
+        return true;
+      }
+      if (res.data.softCapReached) {
+        setReason('soft-cap');
+        setResetAt(res.data.resetAt);
+        setBalance(null);
+      } else {
+        setReason('insufficient');
+        setBalance(res.data.newBalance);
+        setResetAt(null);
+      }
       setOpen(true);
       return false;
+    } finally {
+      inFlightRef.current = false;
     }
-    if (res.data.allowed) {
-      if (res.data.newBalance !== null) setBalance(res.data.newBalance);
-      return true;
-    }
-    if (res.data.softCapReached) {
-      setReason('soft-cap');
-      setResetAt(res.data.resetAt);
-      setBalance(null);
-    } else {
-      setReason('insufficient');
-      setBalance(res.data.newBalance);
-      setResetAt(null);
-    }
-    setOpen(true);
-    return false;
   }, [actionKey, cost]);
 
   const refund = useCallback(async (): Promise<void> => {

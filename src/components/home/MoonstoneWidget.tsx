@@ -111,7 +111,7 @@ export function MoonstoneWidget() {
       <EarnMoonstonesSheet
         open={showEarn}
         onClose={() => { setShowEarn(false); refresh(); }}
-        reason="insufficient"
+        reason="browse"
         balance={balance}
         resetAt={null}
         onBalanceChange={(newBalance) => setBalance(newBalance)}

@@ -109,7 +109,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
 
   return (
     <Sheet open={open} onClose={onClose} title={title} variant="glow">
-      <div className="space-y-5 px-1 pb-2">
+      <div className="space-y-5 px-1 pb-24">
         {/* Header line */}
         {isSoftCap ? (
           <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">

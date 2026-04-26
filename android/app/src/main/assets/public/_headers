@@ -9,6 +9,21 @@
 /version.json
   Cache-Control: no-store
 
+# index.html — short cache so deploys reach users fast. The hashed JS/CSS
+# chunks referenced inside it ARE long-cached (immutable filenames), so
+# revalidating the entry point is enough to flip every user to the new
+# bundle on next page load. Without this, returning users see stale JS
+# until their browser cache or service worker expires.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Long-cache hashed assets — filenames change on every build so it's safe.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff

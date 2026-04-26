@@ -302,6 +302,7 @@ Deno.serve(handler<Req, Resp>({
   auth: "optional",
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
+  ai: true,
   requestSchema: RequestSchema,
   run: (_ctx, body) => {
     const myUtc = localToUTC(body.myBirthDate, body.myBirthTime, body.myTimezone);

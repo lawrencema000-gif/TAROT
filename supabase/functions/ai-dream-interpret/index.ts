@@ -1,4 +1,5 @@
 import { AppError, handler } from "../_shared/handler.ts";
+import { aiGate, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -176,8 +177,26 @@ Deno.serve(handler<Req, Resp>({
   auth: "optional",
   methods: ["POST"],
   rateLimit: { max: 10, windowMs: 60_000 },
+  ai: true,
   requestSchema: RequestSchema,
-  run: async (_ctx, body) => {
-    return callGemini(body.dreamText, body.userContext);
+  run: async (ctx, body) => {
+    // Build a deterministic cache key from the inputs that affect the
+    // response. Locale + dream text are the only shape-affecting bits;
+    // zodiacSign / mbti are tonal so we hash them in too. Same dream from
+    // the same archetype gets the same cached interpretation.
+    const ctxKey = [
+      body.userContext?.locale ?? "en",
+      body.userContext?.zodiacSign ?? "",
+      body.userContext?.mbtiType ?? "",
+    ].join("|");
+    const key = await aiCacheKey("ai-dream-interpret", MODEL, body.dreamText.trim(), ctxKey);
+
+    const gate = await aiGate<Resp>(ctx, { userId: ctx.userId, cacheKey: key });
+    if (gate.allowed === false) throw new AppError(gate.reason, gate.message, gate.status);
+    if (gate.cached) return gate.response;
+
+    const fresh = await callGemini(body.dreamText, body.userContext);
+    await aiCacheStore(ctx, { cacheKey: key, model: MODEL, fnName: "ai-dream-interpret", response: fresh });
+    return fresh;
   },
 }));

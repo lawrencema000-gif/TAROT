@@ -103,6 +103,9 @@ verify_jwt = false
 [functions.backfill-blog-covers]
 verify_jwt = false
 
+[functions.reconcile-premium-status]
+verify_jwt = false
+
 [functions.stripe-webhook]
 verify_jwt = false
 

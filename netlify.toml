@@ -17,6 +17,24 @@
   [headers.values]
     Cache-Control = "no-store"
 
+# index.html — must revalidate every load so new deploys reach returning
+# users immediately. The hashed JS/CSS bundles below stay long-cached.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Hashed bundles — safe to long-cache because filenames change on each build.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[headers]]
   for = "/*"
   [headers.values]

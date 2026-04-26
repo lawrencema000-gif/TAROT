@@ -135,6 +135,7 @@ Deno.serve(handler<Req, Resp>({
   auth: "required",
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
+  ai: true,
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     const { question, userContext } = body;

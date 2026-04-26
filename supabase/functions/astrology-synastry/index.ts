@@ -84,6 +84,7 @@ Deno.serve(handler<Req, Resp>({
   auth: "required",
   methods: ["POST"],
   rateLimit: { max: 15, windowMs: 60_000 },
+  ai: true,
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     const { data: natal } = await ctx.supabase

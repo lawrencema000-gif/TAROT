@@ -90,6 +90,14 @@ export interface HandlerOptions<TBody, TResp> {
   /** If provided, enforces per-isolate rate limit. Keyed by userId or IP. */
   rateLimit?: { max: number; windowMs: number };
   /**
+   * AI gate: when set (truthy), the handler applies the global AI killswitch
+   * (`feature_flags.ai-enabled`) and a hard daily ceiling per user before
+   * the `run` callback fires. Use `true` for default (200/day) or pass an
+   * object to override. Per-function response caching stays at the function
+   * level since cache keys differ across functions — see _shared/ai-gate.ts.
+   */
+  ai?: boolean | { ceiling?: number };
+  /**
    * Zod schema for the request body. When set, the body is parsed + validated
    * before `run` is called. Invalid bodies return 400 INVALID_REQUEST with
    * the field-level issues under error.details.
@@ -268,6 +276,49 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
         req,
       };
       log.info("request.start");
+
+      // ── AI gate (killswitch + per-user daily ceiling) ──
+      if (opts.ai) {
+        const aiOpts = typeof opts.ai === "object" ? opts.ai : {};
+        const ceiling = aiOpts.ceiling ?? 200;
+
+        // Killswitch — instant pause via dashboard, no redeploy.
+        const { data: flag } = await supabase
+          .from("feature_flags")
+          .select("enabled")
+          .eq("key", "ai-enabled")
+          .maybeSingle();
+        if (flag && flag.enabled === false) {
+          return errorEnvelope({
+            code: "AI_DISABLED",
+            message: "AI is temporarily paused. Try again in a few minutes.",
+            status: 503,
+          }, cors, correlationId);
+        }
+
+        // Hard daily ceiling — only enforced for authenticated users.
+        if (ctx.userId) {
+          const { data: usageRow, error: usageErr } = await supabase.rpc(
+            "ai_check_and_record_usage",
+            { p_user_id: ctx.userId, p_ceiling: ceiling },
+          );
+          if (!usageErr) {
+            const row = Array.isArray(usageRow) ? usageRow[0] : usageRow;
+            if (row && row.allowed === false) {
+              return errorEnvelope({
+                code: "AI_DAILY_LIMIT",
+                message: `You've reached today's AI limit (${row.ceiling}/day). It resets at midnight UTC.`,
+                status: 429,
+              }, cors, correlationId);
+            }
+          } else {
+            // Fail-open on usage check errors — don't block legitimate users
+            // because the ceiling table is briefly unreachable.
+            log.warn("ai_gate.usage_check_failed", { err: usageErr.message });
+          }
+        }
+      }
+
       const result = await opts.run(ctx, body);
       const durationMs = Math.round(performance.now() - started);
       log.info("request.end", { durationMs, status: 200 });

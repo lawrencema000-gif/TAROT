@@ -265,6 +265,7 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
   auth: "required",
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
+  ai: true,
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     const userId = ctx.userId!;

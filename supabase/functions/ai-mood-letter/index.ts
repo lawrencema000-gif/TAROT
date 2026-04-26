@@ -133,6 +133,7 @@ Deno.serve(handler<Req, Resp>({
   auth: "optional",
   methods: ["POST"],
   rateLimit: { max: 5, windowMs: 60_000 },
+  ai: true,
   requestSchema: RequestSchema,
   run: async (_ctx, body) => {
     return callGemini(body.entries, body.userContext);

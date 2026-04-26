@@ -7,4 +7,14 @@
     <string name="admob_app_id">ca-app-pub-9489106590476826~4064386281</string>
     <!-- Google Web Client ID for native sign-in (same as Supabase Google provider) -->
     <string name="server_client_id">804690093810-kb7q1v06or3dffgk0a0nv6vnr1lnc70o.apps.googleusercontent.com</string>
+
+    <!--
+      AdMob mediation placeholders. Fill in once you've created accounts:
+        Meta Audience Network: business.facebook.com -> Audience Network -> app id
+        AppLovin: applovin.com -> Account -> Keys -> SDK Key
+      Replace these AND enter the same values in the AdMob console
+      mediation group for the corresponding adapter to start bidding.
+    -->
+    <string name="meta_audience_network_app_id">PLACEHOLDER_META_APP_ID</string>
+    <string name="applovin_sdk_key">PLACEHOLDER_APPLOVIN_SDK_KEY</string>
 </resources>

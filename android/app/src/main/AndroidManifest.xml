@@ -59,5 +59,27 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="@string/admob_app_id"/>
+
+        <!--
+          AdMob mediation network credentials. Each adapter Gradle dep
+          (added 2026-04-26) is functional once these strings are filled
+          in via the AdMob console mediation group config — that's the
+          authoritative place for the keys. The meta-data tags below are
+          the SDK-side fallback for direct integration; we leave them as
+          placeholders so the build doesn't fail if the AdMob config
+          isn't ready, but the manifest is wired for them.
+
+          When you've created the Meta / AppLovin / Unity accounts:
+            1. Replace the placeholder strings below.
+            2. ALSO enter the same values in the AdMob console
+               mediation group for each network.
+            3. Rebuild the AAB.
+        -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/meta_audience_network_app_id"/>
+        <meta-data
+            android:name="applovin.sdk.key"
+            android:value="@string/applovin_sdk_key"/>
     </application>
 </manifest>

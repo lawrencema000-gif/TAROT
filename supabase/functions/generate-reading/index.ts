@@ -287,6 +287,7 @@ Deno.serve(
     // so hammering the endpoint can't spam the database. The daily limit below
     // is the durable per-user quota enforced against premium_readings.
     rateLimit: { max: 5, windowMs: 60_000 },
+    ai: true,
     run: async (ctx, body) => {
       // --- Input validation ---
       if (!body.cards || body.cards.length === 0) {

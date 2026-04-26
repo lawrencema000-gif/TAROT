@@ -13,6 +13,7 @@
  */
 
 import { AppError, handler } from "../_shared/handler.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { z } from "npm:zod@3.24.1";
 
 // Upgraded 2026-04-25 — gemini-2.0-flash deprecated, returning 502s.
@@ -178,12 +179,26 @@ Deno.serve(handler<Req, Resp>({
       `Their question: "${question}"`,
     ].filter(Boolean).join("\n");
 
-    const reading = await callGemini(prompt);
+    // Cache by full prompt — identical prompt = identical response.
+    // Same-question, same-day, same-user-context cases hit the cache and
+    // skip the Gemini call. 7-day TTL is fine because the daily card draw
+    // changes the prompt naturally on day boundaries.
+    const cacheKey = await aiCacheKey("ai-quick-reading", GEMINI_CHAT_MODEL, prompt);
+    const cached = await aiCacheGet<Resp>(ctx, cacheKey);
+    if (cached) return cached;
 
-    return {
+    const reading = await callGemini(prompt);
+    const response: Resp = {
       reading,
       card: { name: card.name, meaning: card.meaning },
       memoryUsed: !!memory,
     };
+    await aiCacheStore(ctx, {
+      cacheKey,
+      model: GEMINI_CHAT_MODEL,
+      fnName: "ai-quick-reading",
+      response,
+    });
+    return response;
   },
 }));

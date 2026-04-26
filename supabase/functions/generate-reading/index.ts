@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { estimateCost, recordAiUsage } from "../_shared/ai-usage.ts";
 import { isFlagEnabled } from "../_shared/feature-flags.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 
 interface TarotCard {
   id: number;
@@ -374,6 +375,19 @@ Deno.serve(
       let interpretation: string;
       let usedLlm = false;
 
+      // Cache by full prompt — same cards + spread + focus + zodiac =
+      // same reading. Tarot interpretations are deterministic given the
+      // same inputs, so we cache aggressively (7d TTL).
+      const cacheKey = await aiCacheKey("generate-reading", geminiModel, prompt);
+      const cachedReading = await aiCacheGet<string>(ctx, cacheKey);
+      if (cachedReading) {
+        return {
+          interpretation: cachedReading,
+          usedLlm: true,
+          cardCount: body.cards.length,
+        };
+      }
+
       try {
         const geminiResult = await callGemini(prompt, geminiModel);
         interpretation = geminiResult.text;
@@ -415,6 +429,16 @@ Deno.serve(
       } catch (llmError) {
         ctx.log.warn("generate_reading.llm_failed", { err: llmError });
         interpretation = generateFallbackReading(body);
+      }
+
+      // Cache fresh successful LLM reading for future identical-prompt hits.
+      if (usedLlm) {
+        await aiCacheStore(ctx, {
+          cacheKey,
+          model: geminiModel,
+          fnName: "generate-reading",
+          response: interpretation,
+        });
       }
 
       // --- Save to premium_readings ---

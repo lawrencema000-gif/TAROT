@@ -1,4 +1,5 @@
 import { AppError, handler } from "../_shared/handler.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -135,7 +136,23 @@ Deno.serve(handler<Req, Resp>({
   rateLimit: { max: 5, windowMs: 60_000 },
   ai: true,
   requestSchema: RequestSchema,
-  run: async (_ctx, body) => {
-    return callGemini(body.entries, body.userContext);
+  run: async (ctx, body) => {
+    // Cache by entries + context. Same recent entries = same letter.
+    // Short-ish TTL (24h) since users typically log fresh entries daily.
+    const entriesKey = JSON.stringify(body.entries);
+    const ctxKey = JSON.stringify(body.userContext ?? {});
+    const cacheKey = await aiCacheKey("ai-mood-letter", MODEL, entriesKey, ctxKey);
+    const cached = await aiCacheGet<Resp>(ctx, cacheKey);
+    if (cached) return cached;
+
+    const fresh = await callGemini(body.entries, body.userContext);
+    await aiCacheStore(ctx, {
+      cacheKey,
+      model: MODEL,
+      fnName: "ai-mood-letter",
+      response: fresh,
+      ttlDays: 1,
+    });
+    return fresh;
   },
 }));

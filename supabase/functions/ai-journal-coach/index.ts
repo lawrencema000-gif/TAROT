@@ -12,6 +12,7 @@
  */
 
 import { AppError, handler } from "../_shared/handler.ts";
+import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
 import { z } from "npm:zod@3.24.1";
 
 // Upgraded 2026-04-25 — gemini-2.0-flash deprecated, returning 502s.
@@ -103,7 +104,7 @@ Deno.serve(handler<Req, Resp>({
   rateLimit: { max: 30, windowMs: 60_000 },
   ai: true,
   requestSchema: RequestSchema,
-  run: async (_ctx, body) => {
+  run: async (ctx, body) => {
     const { entry, userContext } = body;
 
     // Crisis shortcut — don't even invoke the model.
@@ -134,6 +135,11 @@ Deno.serve(handler<Req, Resp>({
       `Entry:\n---\n${entry}\n---`,
     ].filter(Boolean).join("\n");
 
+    // Cache by full prompt — same entry + same context = same coach reply.
+    const cacheKey = await aiCacheKey("ai-journal-coach", MODEL, prompt);
+    const cachedResponse = await aiCacheGet<{ observation: string; prompts: string[] }>(ctx, cacheKey);
+    if (cachedResponse) return cachedResponse;
+
     const raw = await callGemini(prompt);
     const parsed = safeParseJson(raw);
     if (!parsed) {
@@ -146,6 +152,13 @@ Deno.serve(handler<Req, Resp>({
         ],
       };
     }
+    // Store fresh result in cache for future identical-prompt requests.
+    await aiCacheStore(ctx, {
+      cacheKey,
+      model: MODEL,
+      fnName: "ai-journal-coach",
+      response: parsed,
+    });
     return parsed;
   },
 }));

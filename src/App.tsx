@@ -10,6 +10,7 @@ import { FeatureFlagProvider } from './context/FeatureFlagContext';
 import { useUI } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
 import { usePostCheckout } from './hooks/usePostCheckout';
+import { UpdateAvailableBanner } from './components/overlays/UpdateAvailableBanner';
 import { DiagnosticsProvider, useDiagnostics } from './context/DiagnosticsContext';
 import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
@@ -468,6 +469,8 @@ function AppContent() {
           </ErrorBoundary>
         </main>
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
+
+        <UpdateAvailableBanner />
 
         <SearchSheet
           open={activeOverlay === 'search'}

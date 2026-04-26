@@ -179,6 +179,74 @@ export function setArticleMeta(post: {
       { '@type': 'ListItem', position: 3, name: post.title, item: url },
     ],
   });
+
+  // FAQPage schema — auto-extract from article body if present. AI engines
+  // (ChatGPT, Perplexity, Gemini) preferentially cite FAQ-tagged content
+  // when answering long-tail questions. Pulls H2/H3 + following paragraph
+  // pairs that look like Q/A from the rendered HTML.
+  if (typeof document !== 'undefined') {
+    const faqs = extractFaqsFromHtml();
+    if (faqs.length >= 2) {
+      addJsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.q,
+          acceptedAnswer: { '@type': 'Answer', text: faq.a },
+        })),
+      });
+    }
+  }
+}
+
+/**
+ * Pull FAQ Q/A pairs out of the rendered article body.
+ *
+ * Looks for headings (h2/h3) inside an `.blog-post` article container that
+ * sit under a "Frequently Asked Questions" / "FAQ" section. Each heading
+ * becomes a question; the following <p> sibling becomes its answer. Stops
+ * at the next non-FAQ heading or end of article.
+ *
+ * Tolerant of a few common shapes — generator may emit either:
+ *   - <h2>FAQ</h2><h3>Question?</h3><p>Answer.</p>...
+ *   - <h2>Frequently Asked Questions</h2><h3>Q?</h3><p>A.</p>...
+ */
+function extractFaqsFromHtml(): Array<{ q: string; a: string }> {
+  const faqs: Array<{ q: string; a: string }> = [];
+  const article = document.querySelector('article.blog-post, .blog-post, article');
+  if (!article) return faqs;
+
+  const headings = Array.from(article.querySelectorAll('h2, h3'));
+  // Find the FAQ section anchor — the H2 whose text contains "frequently asked", "faq", or "questions"
+  let inFaq = false;
+  for (const heading of headings) {
+    const text = (heading.textContent || '').trim();
+    const isFaqAnchor = /^(frequently asked|faq|common questions?|questions?)$/i.test(text);
+    const isH2 = heading.tagName === 'H2';
+
+    if (isH2 && isFaqAnchor) {
+      inFaq = true;
+      continue;
+    }
+    if (isH2 && inFaq) {
+      // Hit a sibling H2 that isn't an FAQ — stop.
+      break;
+    }
+    if (inFaq && (heading.tagName === 'H3' || (heading.tagName === 'H2' && /\?\s*$/.test(text)))) {
+      // The Q is the heading text (must look like a question).
+      const q = text.replace(/\s+/g, ' ').trim();
+      if (!/\?$/.test(q)) continue;
+      // Find the next <p> sibling for the answer.
+      let next: Element | null = heading.nextElementSibling;
+      while (next && !['P', 'UL', 'OL'].includes(next.tagName)) next = next.nextElementSibling;
+      const a = next ? (next.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      if (q && a && a.length >= 20 && a.length <= 600) {
+        faqs.push({ q, a });
+      }
+    }
+  }
+  return faqs.slice(0, 10);
 }
 
 /**

@@ -50,3 +50,15 @@ Arcana frames divination as a mirror rather than a prediction. The app teaches u
 - Per-reading one-off purchases (removed 2026-04; Premium is the single subscription path)
 - Live advisor chat (removed for current release)
 - User-to-user community / forum (removed for current release)
+
+## Latest blog posts
+
+Fresh SEO/GEO content published daily by the Arcana editorial system. 7 posts as of 2026-04-26.
+
+- [How to Read Tarot Cards — A Complete Beginner's Guide](https://tarotlife.app/blog/how-to-read-tarot-cards-beginners-guide) (2026-04-26)
+- [The Complete Guide to Tarot Card Meanings: All 78 Cards Explained](https://tarotlife.app/blog/tarot-card-meanings-complete-guide) (2026-04-16)
+- [Your Daily Horoscope Routine: How 3 Minutes Can Change Your Day](https://tarotlife.app/blog/daily-horoscope-routine) (2026-04-16)
+- [MBTI and Zodiac: What Your Personality Type + Sun Sign Says About You](https://tarotlife.app/blog/mbti-zodiac-personality-combination) (2026-04-16)
+- [5 Love Languages Explained: Which One Are You?](https://tarotlife.app/blog/five-love-languages-explained) (2026-04-16)
+- [What Is a Celtic Cross Tarot Spread? Complete Guide for Beginners](https://tarotlife.app/blog/celtic-cross-tarot-spread-guide) (2026-04-16)
+- [The Tower Card: When Life Shakes Your Foundation](https://tarotlife.app/blog/the-tower-card-when-life-shakes-your-foundation) (2026-03-16)

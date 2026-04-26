@@ -96,3 +96,15 @@ verify_jwt = false
 
 [functions.send-welcome-email]
 verify_jwt = false
+
+[functions.daily-seo-blog-generator]
+verify_jwt = false
+
+[functions.backfill-blog-covers]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.blog-webhook]
+verify_jwt = false

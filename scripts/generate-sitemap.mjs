@@ -70,7 +70,7 @@ async function fetchBlogPosts() {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('slug, updated_at, published_at')
+      .select('slug, title, updated_at, published_at')
       .eq('published', true)
       .order('published_at', { ascending: false });
     if (error) {
@@ -140,6 +140,30 @@ ${hreflangLinks(u.loc)}
     `Sitemap generated with ${urls.length} URLs ` +
     `(${ALL_CARDS.length} tarot cards, ${posts?.length || 0} blog posts)`
   );
+
+  // Refresh llms.txt with the latest blog post list. Keeps AI crawlers
+  // (ChatGPT, Perplexity, Gemini) up to date with our newest content.
+  try {
+    const llmsPath = resolve('public/llms.txt');
+    let llmsTxt = readFileSync(llmsPath, 'utf8');
+    const marker = '## Latest blog posts';
+    const blogList = (posts || [])
+      .slice(0, 50)
+      .map((p) => `- [${p.title}](${siteUrl}/blog/${p.slug})${p.published_at ? ` (${p.published_at.split('T')[0]})` : ''}`)
+      .join('\n');
+    const newSection = `${marker}\n\nFresh SEO/GEO content published daily by the Arcana editorial system. ${posts?.length || 0} posts as of ${today}.\n\n${blogList}\n`;
+    if (llmsTxt.includes(marker)) {
+      // Replace existing section up to next ## or EOF.
+      llmsTxt = llmsTxt.replace(/## Latest blog posts[\s\S]*?(?=\n##\s|$)/, newSection);
+    } else {
+      llmsTxt = llmsTxt.trimEnd() + '\n\n' + newSection;
+    }
+    writeFileSync(llmsPath, llmsTxt);
+    try { writeFileSync(resolve('dist/llms.txt'), llmsTxt); } catch { /* dist may not exist on first run */ }
+    console.log(`llms.txt refreshed with ${posts?.length || 0} blog post entries.`);
+  } catch (e) {
+    console.warn('llms.txt refresh skipped:', e.message);
+  }
 }
 
 generate();

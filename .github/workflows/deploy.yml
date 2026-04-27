@@ -44,6 +44,11 @@ jobs:
           VITE_STRIPE_PRICE_YEARLY: ${{ secrets.VITE_STRIPE_PRICE_YEARLY }}
           VITE_STRIPE_PRICE_LIFETIME: ${{ secrets.VITE_STRIPE_PRICE_LIFETIME }}
           VITE_APP_VERSION: ${{ secrets.VITE_APP_VERSION }}
+          # Sentry source-map upload — only fires when all three are set.
+          # vite.config.ts auto-disables the plugin if any are missing.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: npm run build
 
       - name: Deploy to Netlify (prod)

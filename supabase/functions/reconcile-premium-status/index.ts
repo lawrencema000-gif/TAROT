@@ -11,13 +11,23 @@ import { handler, AppError } from "../_shared/handler.ts";
  * subscription being active. Without this job they'd email support.
  *
  * What this does:
- *   1. Pages through every active subscription in Stripe (limit=100/page).
+ *   1. Pages through every active OR trialing subscription in Stripe (limit=100/page).
  *   2. For each one, reads metadata.user_id and checks profiles.is_premium.
- *   3. If mismatched, fixes profiles.is_premium and inserts a subscriptions
- *      row if missing.
- *   4. Reverse direction: queries profiles WHERE is_premium = true and
- *      checks if any are NOT in Stripe's active set — those get is_premium
- *      flipped off (someone whose card got declined and webhook missed it).
+ *   3. If mismatched (profile says false but Stripe says active/trialing),
+ *      fixes profiles.is_premium = true.
+ *   4. **No reverse-direction downgrade.** We deliberately do NOT auto-flip
+ *      is_premium=true → false based on "no Stripe sub". Reasons:
+ *        - Trial users in `trialing` state. (Even with #1 fix, race
+ *          conditions during sub state transitions can produce false
+ *          negatives.)
+ *        - Admin grants / comped accounts that have no subscription record.
+ *        - RevenueCat (mobile) users where the subscriptions row may have
+ *          stale status.
+ *        - Newly-purchased users in the window between webhook firing and
+ *          subscriptions row being written.
+ *      Cancellations are handled by the customer.subscription.deleted
+ *      webhook, which is reliable. If it ever misses, manual support ticket
+ *      is the right path — better than wrongly downgrading a paying user.
  *
  * Auth: webhook (CRON_SECRET shared with daily-seo-blog-generator).
  *
@@ -54,91 +64,59 @@ Deno.serve(handler({
       errors: [],
     };
 
-    // Stripe-active user IDs we'll cross-check against profiles.is_premium=true.
-    const stripeActiveUserIds = new Set<string>();
+    // 1. Walk all active + trialing Stripe subscriptions. Trialing users
+    //    (3-day free trial) DO have premium access — they were missed by
+    //    the original `status: "active"` filter, which incorrectly
+    //    downgraded them.
+    for (const status of ["active", "trialing"] as const) {
+      let starting_after: string | undefined;
+      while (true) {
+        const page = await stripe.subscriptions.list({
+          status,
+          limit: 100,
+          starting_after,
+          expand: ["data.items"],
+        });
+        for (const sub of page.data) {
+          summary.scanned++;
+          const userId = sub.metadata?.user_id;
+          if (!userId) continue;
 
-    // 1. Walk all active Stripe subscriptions.
-    let starting_after: string | undefined;
-    while (true) {
-      const page = await stripe.subscriptions.list({
-        status: "active",
-        limit: 100,
-        starting_after,
-        expand: ["data.items"],
-      });
-      for (const sub of page.data) {
-        summary.scanned++;
-        const userId = sub.metadata?.user_id;
-        if (!userId) continue;
-        stripeActiveUserIds.add(userId);
-
-        // Compare to current profile state.
-        const { data: profile, error: pErr } = await ctx.supabase
-          .from("profiles")
-          .select("is_premium")
-          .eq("id", userId)
-          .maybeSingle();
-        if (pErr) {
-          summary.errors.push(`profile read ${userId}: ${pErr.message}`);
-          continue;
-        }
-        if (!profile?.is_premium) {
-          // Drift — fix forward.
-          const { error: uErr } = await ctx.supabase
+          // Compare to current profile state.
+          const { data: profile, error: pErr } = await ctx.supabase
             .from("profiles")
-            .update({ is_premium: true })
-            .eq("id", userId);
-          if (uErr) {
-            summary.errors.push(`profile update ${userId}: ${uErr.message}`);
+            .select("is_premium")
+            .eq("id", userId)
+            .maybeSingle();
+          if (pErr) {
+            summary.errors.push(`profile read ${userId}: ${pErr.message}`);
             continue;
           }
-          summary.fixed_to_premium++;
-          ctx.log.info("reconcile.fixed_to_premium", { userId, subscriptionId: sub.id });
+          if (!profile?.is_premium) {
+            // Drift — fix forward.
+            const { error: uErr } = await ctx.supabase
+              .from("profiles")
+              .update({ is_premium: true })
+              .eq("id", userId);
+            if (uErr) {
+              summary.errors.push(`profile update ${userId}: ${uErr.message}`);
+              continue;
+            }
+            summary.fixed_to_premium++;
+            ctx.log.info("reconcile.fixed_to_premium", { userId, subscriptionId: sub.id, subStatus: status });
+          }
         }
-      }
-      if (!page.has_more) break;
-      starting_after = page.data[page.data.length - 1]?.id;
-    }
-
-    // 2. Reverse: find profiles.is_premium=true that are NOT in Stripe's
-    //    active set. These are users whose subscription ended but the
-    //    customer.subscription.deleted webhook didn't fire/land.
-    const { data: dbPremium, error: dbErr } = await ctx.supabase
-      .from("profiles")
-      .select("id")
-      .eq("is_premium", true);
-    if (dbErr) {
-      summary.errors.push(`profiles list: ${dbErr.message}`);
-    } else if (dbPremium) {
-      for (const row of dbPremium) {
-        if (stripeActiveUserIds.has(row.id)) continue;
-        // This user is is_premium=true in DB but has no active Stripe sub.
-        // Could legitimately be a lifetime payment OR a RevenueCat (mobile)
-        // user. Check the subscriptions table to distinguish.
-        const { data: subRow } = await ctx.supabase
-          .from("subscriptions")
-          .select("provider, period, status")
-          .eq("user_id", row.id)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        const isLifetime = subRow?.period === "lifetime" && subRow?.status === "active";
-        const isMobile = subRow?.provider === "google" || subRow?.provider === "apple";
-        if (isLifetime || isMobile) continue; // legitimate non-Stripe premium
-
-        // Drift — flip off.
-        const { error: uErr } = await ctx.supabase
-          .from("profiles")
-          .update({ is_premium: false })
-          .eq("id", row.id);
-        if (uErr) {
-          summary.errors.push(`profile downgrade ${row.id}: ${uErr.message}`);
-          continue;
-        }
-        summary.fixed_to_free++;
-        ctx.log.info("reconcile.fixed_to_free", { userId: row.id });
+        if (!page.has_more) break;
+        starting_after = page.data[page.data.length - 1]?.id;
       }
     }
+
+    // 2. NO reverse-direction downgrade. See header comment for why.
+    //    Cancellations are reliable via customer.subscription.deleted
+    //    webhook; if it misses, manual support ticket is the right path.
+    //    The previous reverse-direction logic incorrectly downgraded
+    //    admin grants, comped accounts, trial users, and race-window
+    //    new-purchase users.
 
     ctx.log.info("reconcile.complete", {
       scanned: summary.scanned,

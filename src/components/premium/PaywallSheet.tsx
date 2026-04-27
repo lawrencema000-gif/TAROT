@@ -450,6 +450,11 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                       <span className="text-mystic-500 text-sm ml-1">{t(`premium.paywall.periods.${plan.periodKey}`)}</span>
                     </div>
                   </div>
+                  {plan.product?.hasTrial && plan.product?.trialDays ? (
+                    <p className={`mt-2 ml-8 text-xs ${selectedPlan === plan.id ? 'text-emerald-300' : 'text-emerald-400/70'}`}>
+                      ✦ {plan.product.trialDays}-day free trial — cancel anytime before charge
+                    </p>
+                  ) : null}
                 </button>
               ))
             )}
@@ -465,11 +470,17 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               disabled={loadingProducts || !hasRealProducts}
               className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
             >
-              {!hasRealProducts && !loadingProducts
-                ? t('premium.paywall.cta.notAvailable')
-                : selectedPlan === 'lifetime'
-                ? t('premium.paywall.cta.getLifetime')
-                : t('premium.paywall.cta.subscribeNow')}
+              {(() => {
+                if (!hasRealProducts && !loadingProducts) {
+                  return t('premium.paywall.cta.notAvailable');
+                }
+                const selected = displayPlans.find((p) => p.id === selectedPlan);
+                if (selectedPlan === 'lifetime') return t('premium.paywall.cta.getLifetime');
+                if (selected?.product?.hasTrial) {
+                  return t('premium.paywall.cta.startTrial', { defaultValue: 'Start 3-day free trial' });
+                }
+                return t('premium.paywall.cta.subscribeNow');
+              })()}
             </Button>
 
             <button

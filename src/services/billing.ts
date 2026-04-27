@@ -230,11 +230,13 @@ class NativeBillingService implements BillingService {
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Yearly subscription - Best value, save 58%',
+        description: 'Yearly subscription - Best value, save 58%. Includes 3-day free trial.',
         price: '$24.99',
         priceAmount: 24.99,
         currency: 'USD',
         period: 'year',
+        hasTrial: true,
+        trialDays: 3,
       },
       {
         id: PRODUCT_IDS.PREMIUM_LIFETIME,
@@ -436,11 +438,13 @@ class WebBillingService implements BillingService {
       {
         id: PRODUCT_IDS.PREMIUM_YEARLY,
         title: 'Premium Yearly',
-        description: 'Yearly subscription - Best value, save 58%',
+        description: 'Yearly subscription - Best value, save 58%. Includes 3-day free trial.',
         price: '$24.99',
         priceAmount: 24.99,
         currency: 'USD',
         period: 'year',
+        hasTrial: true,
+        trialDays: 3,
       },
       {
         id: PRODUCT_IDS.PREMIUM_LIFETIME,

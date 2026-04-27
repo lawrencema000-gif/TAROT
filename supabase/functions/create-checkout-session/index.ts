@@ -57,25 +57,45 @@ Deno.serve(
         .eq("id", ctx.userId!)
         .maybeSingle();
 
+      // Yearly plan ships with a 3-day free trial. Stripe handles the
+      // trial natively: Subscription is created in `trialing` status,
+      // no charge for 3 days, then auto-converts to `active`. The
+      // webhook flips profiles.is_premium = true on checkout.completed
+      // regardless of trial state, so the user gets premium access
+      // immediately.
+      //
+      // Lifetime is one-time payment — no subscription, no trial.
+      // Monthly plan stays no-trial because trial-monthly is a known
+      // abuse vector (cancel before charge, no real commitment).
+      const isYearly = productId.includes("yearly");
+      const isLifetime = productId.includes("lifetime");
+      const trialDays = isYearly ? 3 : undefined;
+
       const session = await stripe.checkout.sessions.create({
         customer_email: profile?.email || ctx.user?.email,
         client_reference_id: ctx.userId!,
         line_items: [{ price: priceId, quantity: 1 }],
-        mode: productId.includes("lifetime") ? "payment" : "subscription",
+        mode: isLifetime ? "payment" : "subscription",
         success_url: successUrl,
         cancel_url: cancelUrl,
         metadata: {
           user_id: ctx.userId!,
           product_id: productId,
         },
-        subscription_data: productId.includes("lifetime")
+        subscription_data: isLifetime
           ? undefined
           : {
               metadata: {
                 user_id: ctx.userId!,
                 product_id: productId,
               },
+              ...(trialDays ? { trial_period_days: trialDays } : {}),
             },
+        // For yearly trial, require a valid payment method up front so
+        // we auto-charge after 3 days. The default would let the user
+        // start the trial without entering a card, which then fails
+        // silently when the trial ends.
+        payment_method_collection: isYearly ? "always" : undefined,
       });
 
       ctx.log.info("create_checkout_session.created", { sessionId: session.id });

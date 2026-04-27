@@ -4,6 +4,37 @@ import { actionCounter, type ActionType } from './actionCounter';
 import { rewardedAdsService } from './rewardedAds';
 import { adConfigService } from './adConfig';
 import { appStorage } from '../lib/appStorage';
+import { supabase } from '../lib/supabase';
+
+// Cached forced-ads flag. Refetched at most once every 5 minutes so
+// flipping the feature_flags row in the DB takes effect within minutes
+// without requiring an app redeploy. Rewarded ads (the moonstone-earn
+// flow) are NOT gated by this flag — they're user-initiated, opt-in.
+const FORCED_ADS_FLAG_KEY = 'forced-ads-enabled';
+const FORCED_ADS_TTL_MS = 5 * 60 * 1000;
+let cachedForcedAdsEnabled: boolean | null = null;
+let cachedForcedAdsAt = 0;
+
+async function isForcedAdsEnabled(): Promise<boolean> {
+  if (cachedForcedAdsEnabled !== null && Date.now() - cachedForcedAdsAt < FORCED_ADS_TTL_MS) {
+    return cachedForcedAdsEnabled;
+  }
+  try {
+    const { data } = await supabase
+      .from('feature_flags')
+      .select('enabled')
+      .eq('key', FORCED_ADS_FLAG_KEY)
+      .maybeSingle();
+    // Default to FALSE if the flag is missing — fail closed (no ads)
+    // is the safer default while we have the flag paused.
+    cachedForcedAdsEnabled = (data?.enabled as boolean | undefined) ?? false;
+    cachedForcedAdsAt = Date.now();
+  } catch {
+    cachedForcedAdsEnabled = false;
+    cachedForcedAdsAt = Date.now();
+  }
+  return cachedForcedAdsEnabled ?? false;
+}
 
 // Custom Capacitor plugin for App Open Ads (native Android only)
 interface AppOpenAdPlugin {
@@ -157,6 +188,13 @@ class AdsService {
   async showAppOpenAdOnColdStart(isPremium: boolean, isAdFree: boolean): Promise<void> {
     if (isWeb() || !isNative() || !isAndroid()) return;
     if (isPremium || isAdFree) return;
+    // Forced ads (interstitial + app-open) are paused — only rewarded
+    // ads (the moonstone-earn flow) are still active. Toggle this in
+    // the feature_flags table to re-enable.
+    if (!(await isForcedAdsEnabled())) {
+      console.log('[Ads] App-open ad skipped — forced-ads-enabled flag is OFF');
+      return;
+    }
 
     try {
       const adUnitId = this.getAdId('app_open');
@@ -189,6 +227,13 @@ class AdsService {
   async checkAndShowAd(isPremium: boolean, actionType: ActionType, isAdFree = false): Promise<void> {
     if (isWeb() || !isNative()) return;
     if (isPremium || isAdFree) return;
+    // Forced ads paused — see header comment in this file. Action
+    // counter still increments so we have visibility into how many
+    // ads WOULD have shown if re-enabled later.
+    if (!(await isForcedAdsEnabled())) {
+      actionCounter.increment(actionType);
+      return;
+    }
 
     if (this.isInCooldown()) {
       const remaining = Math.ceil((AD_COOLDOWN_MS - (Date.now() - this.lastAdTime)) / 60000);

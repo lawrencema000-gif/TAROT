@@ -73,3 +73,32 @@
 # AdMob Capacitor Plugin
 -keep class com.getcapacitor.community.admob.** { *; }
 -dontwarn com.getcapacitor.community.admob.**
+
+# AdMob mediation adapters — added 2026-04-26.
+# The adapters reference SDK classes that aren't on the classpath until
+# the user finishes creating accounts and adds the underlying SDKs as
+# direct deps. Until then, dontwarn them at R8 minification time so the
+# release build doesn't fail. Once the user wires real keys + adds the
+# Meta Audience Network / AppLovin / Unity SDK deps, the warnings go
+# away automatically.
+
+# Meta Audience Network adapter
+-dontwarn com.facebook.ads.**
+-dontwarn com.facebook.infer.annotation.**
+-dontwarn com.facebook.bidding.**
+-keep class com.google.ads.mediation.facebook.** { *; }
+
+# AppLovin adapter
+-dontwarn com.applovin.**
+-keep class com.google.ads.mediation.applovin.** { *; }
+
+# Unity Ads adapter
+-dontwarn com.unity3d.ads.**
+-dontwarn com.unity3d.services.**
+-keep class com.google.ads.mediation.unity.** { *; }
+
+# IronSource (sometimes pulled in transitively by AppLovin)
+-dontwarn com.ironsource.**
+
+# Vungle / Liftoff (sometimes pulled by Meta)
+-dontwarn com.vungle.**

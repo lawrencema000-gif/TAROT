@@ -39,9 +39,31 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         dsn: import.meta.env.VITE_SENTRY_DSN,
         environment: import.meta.env.MODE,
         release,
-        integrations: [Sentry.browserTracingIntegration()],
+        integrations: [
+          Sentry.browserTracingIntegration(),
+          // Replay records the last few seconds of user interaction (DOM
+          // mutations, clicks, network calls) when an error fires. Lets us
+          // literally watch what the user did before the crash.
+          // Sample rate 0 for happy-path sessions; 100% on error so every
+          // error has a replay attached.
+          Sentry.replayIntegration({
+            maskAllText: false,
+            maskAllInputs: true, // never record what users type into forms
+            blockAllMedia: false,
+          }),
+        ],
         tracesSampleRate: 0.2,
-        replaysOnErrorSampleRate: 0,
+        replaysSessionSampleRate: 0,
+        replaysOnErrorSampleRate: 1.0,
+        // Drop noisy errors that aren't actionable.
+        ignoreErrors: [
+          // Browser extensions / cross-origin junk.
+          'ResizeObserver loop',
+          'Network request failed',
+          'Non-Error promise rejection captured',
+          // AbortController on user navigation away.
+          'AbortError',
+        ],
       });
       // Flush pre-init errors.
       for (const { error, source } of preInitErrors) {

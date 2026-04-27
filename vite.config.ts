@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { readFileSync } from 'node:fs';
 
 // Emits dist/version.json at build time. Served with no-store via netlify.toml.
@@ -22,10 +23,31 @@ function versionJsonPlugin(): Plugin {
   };
 }
 
+// Sentry source-map upload plugin — only active when all three env vars are
+// present (auth token + org + project). Locally and in CI without secrets,
+// the plugin returns no-op so builds don't fail. The auth token is created
+// from Sentry → Settings → Account → Auth Tokens with `project:releases`
+// + `org:read` scopes.
+function sentrySourceMaps(): Plugin | null {
+  const token = process.env.SENTRY_AUTH_TOKEN;
+  const org = process.env.SENTRY_ORG;
+  const project = process.env.SENTRY_PROJECT;
+  if (!token || !org || !project) return null;
+  return sentryVitePlugin({
+    org,
+    project,
+    authToken: token,
+    release: { name: process.env.VITE_BUILD_SHA ?? undefined },
+    sourcemaps: { assets: 'dist/**', filesToDeleteAfterUpload: 'dist/**/*.map' },
+    silent: false,
+  }) as unknown as Plugin;
+}
+
 // https://vitejs.dev/config/
 export default defineConfig((): UserConfig => {
+  const sentryPlugin = sentrySourceMaps();
   const config: UserConfig = {
-    plugins: [react(), versionJsonPlugin()],
+    plugins: [react(), versionJsonPlugin(), ...(sentryPlugin ? [sentryPlugin] : [])],
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
@@ -41,7 +63,11 @@ export default defineConfig((): UserConfig => {
     build: {
       target: 'esnext',
       minify: 'esbuild',
-      sourcemap: false,
+      // Generate source maps for Sentry uploading. After upload, the .map
+      // files are deleted from dist/ by sentryVitePlugin so they're never
+      // shipped to clients. Browsers + Sentry use the SHAs to fetch them
+      // from Sentry's servers when symbolicating stack traces.
+      sourcemap: process.env.SENTRY_AUTH_TOKEN ? true : false,
       rollupOptions: {
         output: {
           manualChunks(id) {

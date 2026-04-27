@@ -745,6 +745,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setSession(session);
       setUser(session?.user ?? null);
+
+      // Tag every Sentry event with the active user. Lets us see in the
+      // dashboard which user(s) hit an error, attribute crash spikes to
+      // specific accounts, and find affected sessions for replay. We
+      // include only id + email — never names or PII beyond what's
+      // already in the profile.
+      import('@sentry/react').then((Sentry) => {
+        if (session?.user) {
+          Sentry.setUser({ id: session.user.id, email: session.user.email });
+        } else {
+          Sentry.setUser(null);
+        }
+      }).catch(() => undefined);
+
       if (session?.user) {
         (async () => {
           await fetchProfile(session.user.id);

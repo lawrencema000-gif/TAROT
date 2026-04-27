@@ -25,6 +25,7 @@ import { z } from "npm:zod@3.24.1";
 import { getCorsHeaders, handleCorsPreFlight } from "./cors.ts";
 import { callerKey, checkRateLimit, rateLimitHeaders } from "./rate-limit.ts";
 import { createLogger, getOrCreateCorrelationId, type Logger } from "./log.ts";
+import { captureEdgeException } from "./sentry.ts";
 
 type AuthMode = "required" | "optional" | "webhook";
 
@@ -375,6 +376,17 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
       const log = createLogger({ ...baseLogCtx, userId: null });
       if (err instanceof AppError) {
         log.warn("handler.app_error", { code: err.code, status: err.status, details: err.details });
+        // Only forward AppErrors with status >= 500 to Sentry — 4xx
+        // AppErrors are intentional client-input rejections, not bugs.
+        if (err.status >= 500) {
+          captureEdgeException(err, {
+            fn: opts.fn,
+            correlationId,
+            level: "error",
+            tags: { app_error_code: err.code },
+            extra: { status: err.status, details: err.details },
+          });
+        }
         return errorEnvelope({
           code: err.code,
           message: err.message,
@@ -383,6 +395,12 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
         }, cors, correlationId);
       }
       log.error("handler.unexpected", { err });
+      // Unexpected throws are always real bugs — capture every one.
+      captureEdgeException(err, {
+        fn: opts.fn,
+        correlationId,
+        level: "fatal",
+      });
       return errorEnvelope({
         code: "INTERNAL",
         message: "Internal server error",

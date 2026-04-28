@@ -77,6 +77,7 @@ const SpreadDetailPage = lazy(() => import('./pages/SpreadDetailPage').then(m =>
 const AstrologyLearnPage = lazy(() => import('./pages/AstrologyLearnPage').then(m => ({ default: m.AstrologyLearnPage })));
 const AstrologyEntryPage = lazy(() => import('./pages/AstrologyEntryPage').then(m => ({ default: m.AstrologyEntryPage })));
 const SpreadBuilderPage = lazy(() => import('./pages/SpreadBuilderPage').then(m => ({ default: m.SpreadBuilderPage })));
+const FoolsJourneyPage = lazy(() => import('./pages/FoolsJourneyPage').then(m => ({ default: m.FoolsJourneyPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -500,6 +501,7 @@ function AppContent() {
                   <Route path="/astrology" element={<AstrologyLearnPage />} />
                   <Route path="/astrology/:slug" element={<AstrologyEntryPage />} />
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
+                  <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

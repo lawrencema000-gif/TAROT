@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
+import { captureEdgeException } from "../_shared/sentry.ts";
 
 /**
  * Daily SEO booster.
@@ -88,6 +89,13 @@ Deno.serve(handler<unknown>({
       .limit(50);
     if (blogErr) {
       ctx.log.warn("daily_seo_boost.blog_fetch_failed", { err: blogErr.message });
+      captureEdgeException(blogErr, {
+        fn: "daily-seo-boost",
+        correlationId: ctx.correlationId,
+        level: "warning",
+        tags: { stage: "blog_fetch" },
+        extra: { message: blogErr.message },
+      });
     }
     const blogCount = posts?.length ?? 0;
     for (const post of posts ?? []) {
@@ -121,10 +129,31 @@ Deno.serve(handler<unknown>({
             status: res.status,
             body: body.slice(0, 500),
           });
+          captureEdgeException(
+            new Error(`IndexNow batch returned ${res.status}: ${body.slice(0, 200)}`),
+            {
+              fn: "daily-seo-boost",
+              correlationId: ctx.correlationId,
+              level: "warning",
+              tags: {
+                stage: "indexnow_ping",
+                status: String(res.status),
+                batch_size: String(batch.length),
+              },
+              extra: { responseBody: body.slice(0, 500), batchSample: batch.slice(0, 5) },
+            },
+          );
         }
       } catch (e) {
         ctx.log.warn("daily_seo_boost.indexnow_threw", { err: String(e) });
         pingResults.push({ status: 0, ok: false });
+        captureEdgeException(e, {
+          fn: "daily-seo-boost",
+          correlationId: ctx.correlationId,
+          level: "warning",
+          tags: { stage: "indexnow_fetch_threw", batch_size: String(batch.length) },
+          extra: { batchSample: batch.slice(0, 5) },
+        });
       }
     }
 

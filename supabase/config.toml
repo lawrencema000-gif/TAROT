@@ -100,6 +100,9 @@ verify_jwt = false
 [functions.daily-seo-blog-generator]
 verify_jwt = false
 
+[functions.daily-seo-boost]
+verify_jwt = false
+
 [functions.backfill-blog-covers]
 verify_jwt = false
 

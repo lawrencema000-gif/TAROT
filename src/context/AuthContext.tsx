@@ -41,7 +41,22 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: () => Promise<UserProfile | null>;
+  /**
+   * Flip the in-memory profile.isPremium to true immediately, before the
+   * server-side webhook has propagated. Use after RevenueCat/Stripe
+   * confirms a purchase locally — UI updates instantly while
+   * pollProfileUntilPremium() corrects the DB-side state in the
+   * background.
+   */
+  optimisticallyMarkPremium: () => void;
+  /**
+   * Poll the profiles table every `intervalMs` until is_premium === true
+   * OR `timeoutMs` elapses. Returns true if confirmed, false on timeout.
+   * Intended to be called AFTER optimisticallyMarkPremium so the user
+   * never sees a non-premium UI state during the wait.
+   */
+  pollProfileUntilPremium: (timeoutMs?: number, intervalMs?: number) => Promise<boolean>;
   cancelOAuth: () => void;
 }
 
@@ -1085,11 +1100,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   };
 
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
-    }
+  const refreshProfile = async (): Promise<UserProfile | null> => {
+    if (!user) return null;
+    await fetchProfile(user.id);
+    // After fetchProfile, the in-component state is updated. Read it
+    // back from the DB once more to return the freshest value to the
+    // caller (used by pollProfileUntilPremium).
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (error || !data) return null;
+    return mapDbToProfile(data as DbProfile);
   };
+
+  /**
+   * Optimistic UI flip: immediately mark the user as premium client-side
+   * so paywall + gates respect the new entitlement BEFORE the webhook
+   * has propagated to profiles.is_premium. Use right after a successful
+   * RevenueCat/Stripe purchase confirms locally — the server state will
+   * catch up via webhook within ~5 seconds.
+   *
+   * If the webhook never lands (network split, Stripe outage), the
+   * pollProfileUntilPremium loop ultimately decides whether to keep
+   * the optimistic flag or revert. Until then, the user gets immediate
+   * access — far better than seeing 'success' then a still-locked UI.
+   */
+  const optimisticallyMarkPremium = useCallback(() => {
+    setProfile((current) => {
+      if (!current) return current;
+      if (current.isPremium) return current;
+      return { ...current, isPremium: true };
+    });
+  }, []);
+
+  /**
+   * Poll the profiles table until is_premium === true OR timeout. Used
+   * after a purchase to confirm the server-side webhook has caught up.
+   * Returns true on confirm, false on timeout.
+   *
+   * Reads directly from supabase rather than via fetchProfile() to
+   * avoid re-firing the locale-sync side effects on every poll iteration.
+   */
+  const pollProfileUntilPremium = useCallback(
+    async (timeoutMs = 30_000, intervalMs = 2_000): Promise<boolean> => {
+      if (!user) return false;
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_premium')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (!error && data?.is_premium === true) {
+          // Server caught up. Refresh state once so the rest of the
+          // profile is in sync (in case other fields changed too).
+          await fetchProfile(user.id);
+          return true;
+        }
+        await new Promise((r) => setTimeout(r, intervalMs));
+      }
+      return false;
+    },
+    [user, fetchProfile],
+  );
 
   // Verify admin status from the database whenever user changes
   useEffect(() => {
@@ -1124,6 +1199,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }).catch(() => { /* Sentry not initialized / offline */ });
   }, [user]);
 
+  // Native session-resume reconcile: if RevenueCat says the user is
+  // premium (active entitlement on device) but profiles.is_premium is
+  // false in the DB, the webhook hasn't propagated yet — likely the user
+  // killed the app right after purchase. Flip the local flag immediately
+  // and poll the DB until it catches up. RC's customerInfo is signed +
+  // verified by Google Play, so trusting it is safe (web users go through
+  // the Stripe usePostCheckout polling path instead).
+  useEffect(() => {
+    if (!isNative()) return;
+    if (!user || !profile) return;
+    if (profile.isPremium) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getBillingService } = await import('../services/billing');
+        const rcIsPremium = await getBillingService().isPremium();
+        if (cancelled) return;
+        if (rcIsPremium) {
+          optimisticallyMarkPremium();
+          // Background poll — corrects DB if webhook is delayed.
+          pollProfileUntilPremium(60_000, 2_000).catch(() => undefined);
+        }
+      } catch {
+        // RC unavailable / not initialised — stay on DB-only state.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, profile?.isPremium, optimisticallyMarkPremium, pollProfileUntilPremium]);
+
   const isAdmin = isAdminVerified;
 
   return (
@@ -1140,6 +1245,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       updateProfile,
       refreshProfile,
+      optimisticallyMarkPremium,
+      pollProfileUntilPremium,
       cancelOAuth,
     }}>
       {children}

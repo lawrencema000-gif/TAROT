@@ -22,7 +22,7 @@ const TABS: { id: HoroscopeSubTab; labelKey: string; icon: typeof Sun; premiumOn
 
 export function HoroscopePage() {
   const { refreshProfile } = useAuth();
-  return <PremiumHoroscopeHub refreshProfile={refreshProfile} />;
+  return <PremiumHoroscopeHub refreshProfile={async () => { await refreshProfile(); }} />;
 }
 
 function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise<void> }) {

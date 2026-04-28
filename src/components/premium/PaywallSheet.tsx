@@ -170,7 +170,7 @@ function buildDisplayPlans(products: Product[]): DisplayPlan[] {
 
 export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
   const { t } = useT('app');
-  const { user, refreshProfile } = useAuth();
+  const { user, optimisticallyMarkPremium, pollProfileUntilPremium } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -263,15 +263,32 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       const result = await billing.purchase(plan.productId, plan.product);
 
       if (result.success) {
-        // Premium status is set server-side by RevenueCat webhook — just refresh
-        await refreshProfile();
+        // RevenueCat / Stripe has confirmed the purchase locally. Flip
+        // is_premium in the in-memory profile IMMEDIATELY so every
+        // PremiumGate, balance widget, and feature lock unlocks before
+        // the user has time to notice. The server-side webhook will
+        // update profiles.is_premium within ~5 seconds; we kick off a
+        // background poll to confirm and (silently) keep state in sync.
+        optimisticallyMarkPremium();
+        toast(t('premium.paywall.toasts.welcome'), 'success');
+        onClose();
+
         if (user) {
           import('../../services/achievements').then(({ checkAchievementProgress }) => {
             checkAchievementProgress(user.id, 'premium_upgrade');
           });
         }
-        toast(t('premium.paywall.toasts.welcome'), 'success');
-        onClose();
+
+        // Background poll — corrects DB-side state if the webhook is
+        // slow. No UI impact: the user already sees premium thanks to
+        // the optimistic flip above.
+        pollProfileUntilPremium(60_000, 2_000)
+          .then((confirmed) => {
+            if (!confirmed) {
+              console.warn('[Paywall] DB premium flag did not propagate within 60s — webhook may be delayed');
+            }
+          })
+          .catch(() => {/* swallow — UI is already correct */});
       } else if (result.error || result.errorKey) {
         const msg = result.errorKey ? t(result.errorKey, { defaultValue: result.error ?? '' }) : result.error ?? '';
         if (msg) toast(msg, 'error');
@@ -290,10 +307,13 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       const purchases = await billing.restorePurchases();
 
       if (purchases.some(p => p.success)) {
-        // Premium status is set server-side by RevenueCat webhook — just refresh
-        await refreshProfile();
+        // Same optimistic-flip pattern as handlePurchase — RC has
+        // confirmed the entitlement locally, so flip the UI immediately
+        // and background-sync the DB.
+        optimisticallyMarkPremium();
         toast(t('premium.paywall.toasts.purchasesRestored'), 'success');
         onClose();
+        pollProfileUntilPremium(60_000, 2_000).catch(() => undefined);
       } else {
         toast(t('premium.paywall.toasts.noPurchases'), 'info');
       }

@@ -94,6 +94,8 @@ async function generate() {
     { loc: `${siteUrl}/blog`, changefreq: 'daily', priority: '0.9', lastmod: today },
     { loc: `${siteUrl}/tarot-meanings`, changefreq: 'monthly', priority: '0.9', lastmod: today },
     { loc: `${siteUrl}/horoscope`, changefreq: 'daily', priority: '0.8', lastmod: today },
+    { loc: `${siteUrl}/signin`, changefreq: 'yearly', priority: '0.5', lastmod: today },
+    { loc: `${siteUrl}/signup`, changefreq: 'yearly', priority: '0.7', lastmod: today },
     { loc: `${siteUrl}/privacy-policy.html`, changefreq: 'monthly', priority: '0.3' },
   ];
 

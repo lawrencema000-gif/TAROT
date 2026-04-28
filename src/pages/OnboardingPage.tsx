@@ -18,6 +18,7 @@ import { getAttribution, clearAttribution } from '../utils/attribution';
 import { LanguagePicker } from '../components/i18n/LanguagePicker';
 import { getLocale } from '../i18n/config';
 import { useT } from '../i18n/useT';
+import { setPageMeta } from '../utils/seo';
 import {
   trackOnboardingStepViewed,
   trackOnboardingStepCompleted,
@@ -57,6 +58,13 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const stepNames = ['language', 'welcome', 'create_account'] as const;
   const onboardingStartTime = useRef(Date.now());
   const stepStartTime = useRef(Date.now());
+
+  useEffect(() => {
+    setPageMeta(
+      'Sign up — Free 3-day trial',
+      'Create your free Arcana account. Daily tarot readings, personalized horoscopes, journaling, and a 3-day free trial of Premium.',
+    );
+  }, []);
 
   useEffect(() => {
     trackOnboardingStepViewed({ step, stepName: stepNames[step] });

@@ -6,6 +6,7 @@ import { getAuthErrorMessage } from '../utils/authErrors';
 import { supabase } from '../lib/supabase';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
+import { setPageMeta } from '../utils/seo';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -38,6 +39,13 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const [verifyEmail, setVerifyEmail] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSent, setResendSent] = useState(false);
+
+  useEffect(() => {
+    setPageMeta(
+      'Sign in',
+      'Sign in to Arcana — your daily tarot, astrology, and reflective journaling practice. Continue your ritual.',
+    );
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import i18n from './i18n/config';
@@ -139,6 +139,7 @@ function AppContent() {
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   const location = useLocation();
+  const navigate = useNavigate();
   const { levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useGamification();
   const { openDiagnostics } = useDiagnostics();
   usePostCheckout();
@@ -161,6 +162,20 @@ function AppContent() {
     const handler = () => syncHreflangTags(location.pathname);
     i18n.on('languageChanged', handler);
     return () => i18n.off('languageChanged', handler);
+  }, [location.pathname]);
+
+  // Map dedicated /signin and /signup URLs to the existing auth state so
+  // they're separately indexable by Google. Labyrinthos delegates both to
+  // Shopify (single noindex page) — this is an uncontested branded-search
+  // lane: "arcana login", "arcana sign up", "tarotlife login", etc.
+  useEffect(() => {
+    if (location.pathname === '/signin') {
+      setShowAuthForm(true);
+      setShowOnboarding(false);
+    } else if (location.pathname === '/signup') {
+      setShowOnboarding(true);
+      setShowAuthForm(false);
+    }
   }, [location.pathname]);
 
   useEffect(() => {
@@ -266,6 +281,7 @@ function AppContent() {
     appStorage.set(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
     setShowAuthForm(true);
+    if (!isNative()) navigate('/signin', { replace: true });
   };
 
   if (loading || checkingOnboarding || isProcessingOAuth) {
@@ -302,7 +318,7 @@ function AppContent() {
             <div className="flex items-center gap-4">
               <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Card Meanings</a>
               <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Blog</a>
-              <button onClick={() => setShowAuthForm(true)} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
+              <button onClick={() => navigate('/signin')} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
                 Sign In
               </button>
             </div>
@@ -345,15 +361,18 @@ function AppContent() {
     if (isNative() || showAuthForm) {
       return (
         <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-          <AuthPage onSwitchToOnboarding={() => setShowOnboarding(true)} />
+          <AuthPage onSwitchToOnboarding={() => {
+            setShowOnboarding(true);
+            if (!isNative()) navigate('/signup');
+          }} />
         </ErrorBoundary>
       );
     }
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <LandingPage
-          onSignIn={() => setShowAuthForm(true)}
-          onGetStarted={() => setShowOnboarding(true)}
+          onSignIn={() => { setShowAuthForm(true); navigate('/signin'); }}
+          onGetStarted={() => { setShowOnboarding(true); navigate('/signup'); }}
         />
       </ErrorBoundary>
     );

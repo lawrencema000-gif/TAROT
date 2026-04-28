@@ -74,6 +74,8 @@ const MirrorPage = lazy(() => import('./pages/MirrorPage').then(m => ({ default:
 const SharedReadingPage = lazy(() => import('./pages/SharedReadingPage').then(m => ({ default: m.SharedReadingPage })));
 const SpreadsPage = lazy(() => import('./pages/SpreadsPage').then(m => ({ default: m.SpreadsPage })));
 const SpreadDetailPage = lazy(() => import('./pages/SpreadDetailPage').then(m => ({ default: m.SpreadDetailPage })));
+const AstrologyLearnPage = lazy(() => import('./pages/AstrologyLearnPage').then(m => ({ default: m.AstrologyLearnPage })));
+const AstrologyEntryPage = lazy(() => import('./pages/AstrologyEntryPage').then(m => ({ default: m.AstrologyEntryPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -336,6 +338,8 @@ function AppContent() {
                 <Route path="/tarot-meanings/:slug" element={<TarotCardMeaningPage />} />
                 <Route path="/spreads" element={<SpreadsPage />} />
                 <Route path="/spreads/:slug" element={<SpreadDetailPage />} />
+                <Route path="/astrology" element={<AstrologyLearnPage />} />
+                <Route path="/astrology/:slug" element={<AstrologyEntryPage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
               </Routes>
             </Suspense>
@@ -492,6 +496,8 @@ function AppContent() {
                   <Route path="/reading/:token" element={<SharedReadingPage />} />
                   <Route path="/spreads" element={<SpreadsPage />} />
                   <Route path="/spreads/:slug" element={<SpreadDetailPage />} />
+                  <Route path="/astrology" element={<AstrologyLearnPage />} />
+                  <Route path="/astrology/:slug" element={<AstrologyEntryPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

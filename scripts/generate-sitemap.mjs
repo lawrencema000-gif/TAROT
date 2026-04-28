@@ -101,6 +101,27 @@ async function generate() {
     { loc: `${siteUrl}/privacy-policy.html`, changefreq: 'monthly', priority: '0.3' },
   ];
 
+  // 40 astrology learn pages
+  const ASTRO_SLUGS = [
+    // signs
+    'aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius','capricorn','aquarius','pisces',
+    // planets
+    'sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto',
+    // houses
+    'first-house','second-house','third-house','fourth-house','fifth-house','sixth-house',
+    'seventh-house','eighth-house','ninth-house','tenth-house','eleventh-house','twelfth-house',
+    // aspects
+    'conjunction','sextile','square','trine','opposition','quincunx',
+  ];
+  for (const slug of ASTRO_SLUGS) {
+    urls.push({
+      loc: `${siteUrl}/astrology/${slug}`,
+      changefreq: 'monthly',
+      priority: '0.7',
+      lastmod: today,
+    });
+  }
+
   // 18 tarot spread pages
   const SPREAD_SLUGS = [
     'one-card-daily', 'three-card-past-present-future', 'celtic-cross', 'horseshoe',

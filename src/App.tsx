@@ -70,6 +70,8 @@ const LiveRoomPage = lazy(() => import('./pages/LiveRoomPage').then(m => ({ defa
 const PickACardPage = lazy(() => import('./pages/PickACardPage').then(m => ({ default: m.PickACardPage })));
 const SoulmateScorePage = lazy(() => import('./pages/SoulmateScorePage').then(m => ({ default: m.SoulmateScorePage })));
 const LoveTreePage = lazy(() => import('./pages/LoveTreePage').then(m => ({ default: m.LoveTreePage })));
+const MirrorPage = lazy(() => import('./pages/MirrorPage').then(m => ({ default: m.MirrorPage })));
+const SharedReadingPage = lazy(() => import('./pages/SharedReadingPage').then(m => ({ default: m.SharedReadingPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -309,7 +311,7 @@ function AppContent() {
   }
 
   // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings'))) {
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology'))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -330,6 +332,7 @@ function AppContent() {
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
                 <Route path="/tarot-meanings" element={<TarotMeaningsPage />} />
                 <Route path="/tarot-meanings/:slug" element={<TarotCardMeaningPage />} />
+                <Route path="/reading/:token" element={<SharedReadingPage />} />
               </Routes>
             </Suspense>
           </main>
@@ -481,6 +484,8 @@ function AppContent() {
                   <Route path="/pick-a-card" element={<PickACardPage />} />
                   <Route path="/soulmate-score" element={<SoulmateScorePage />} />
                   <Route path="/love-tree" element={<LoveTreePage />} />
+                  <Route path="/mirror" element={<MirrorPage />} />
+                  <Route path="/reading/:token" element={<SharedReadingPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

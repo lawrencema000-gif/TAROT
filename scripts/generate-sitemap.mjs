@@ -93,11 +93,32 @@ async function generate() {
     { loc: `${siteUrl}/`, changefreq: 'weekly', priority: '1.0', lastmod: today },
     { loc: `${siteUrl}/blog`, changefreq: 'daily', priority: '0.9', lastmod: today },
     { loc: `${siteUrl}/tarot-meanings`, changefreq: 'monthly', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/spreads`, changefreq: 'monthly', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/astrology`, changefreq: 'monthly', priority: '0.9', lastmod: today },
     { loc: `${siteUrl}/horoscope`, changefreq: 'daily', priority: '0.8', lastmod: today },
     { loc: `${siteUrl}/signin`, changefreq: 'yearly', priority: '0.5', lastmod: today },
     { loc: `${siteUrl}/signup`, changefreq: 'yearly', priority: '0.7', lastmod: today },
     { loc: `${siteUrl}/privacy-policy.html`, changefreq: 'monthly', priority: '0.3' },
   ];
+
+  // 18 tarot spread pages
+  const SPREAD_SLUGS = [
+    'one-card-daily', 'three-card-past-present-future', 'celtic-cross', 'horseshoe',
+    'relationship-cross', 'soulmate', 'love-yes-no',
+    'career-path', 'job-decision', 'money-flow',
+    'mind-body-spirit', 'weekly-forecast',
+    'shadow-work', 'higher-self',
+    'new-moon-intentions', 'full-moon-release',
+    'crossroads', 'yes-no-pulse',
+  ];
+  for (const slug of SPREAD_SLUGS) {
+    urls.push({
+      loc: `${siteUrl}/spreads/${slug}`,
+      changefreq: 'monthly',
+      priority: '0.7',
+      lastmod: today,
+    });
+  }
 
   // 78 tarot card meaning pages
   for (const name of ALL_CARDS) {

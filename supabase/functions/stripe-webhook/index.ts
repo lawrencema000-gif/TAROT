@@ -158,6 +158,36 @@ Deno.serve(
             break;
           }
 
+          // Credit-pack branch: AI-credit ledger via grant_credits RPC.
+          if (productId && productId.startsWith("credit_pack_")) {
+            const packCreditsMap: Record<string, number> = {
+              credit_pack_starter: 33,
+              credit_pack_standard: 333,
+              credit_pack_value: 777,
+            };
+            const credits = packCreditsMap[productId];
+            if (!credits) {
+              ctx.log.warn("stripe_webhook.unknown_credit_pack", { productId });
+              break;
+            }
+            const { error: rpcErr } = await ctx.supabase.rpc("grant_credits", {
+              p_user_id: userId,
+              p_amount: credits,
+              p_reason: "purchase",
+              p_meta: {
+                pack_id: productId,
+                stripe_session_id: session.id,
+                amount_total_cents: session.amount_total ?? null,
+              },
+            });
+            if (rpcErr) {
+              ctx.log.error("stripe_webhook.credit_grant_failed", { err: rpcErr.message, userId, productId });
+            } else {
+              ctx.log.info("stripe_webhook.credits_granted", { userId, productId, credits });
+            }
+            break;
+          }
+
           // Moonstone pack branch: credit ledger.
           if (purchaseType === "moonstones") {
             const packId = session.metadata?.product_id || "";

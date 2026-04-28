@@ -41,14 +41,41 @@ Deno.serve(
         httpClient: Stripe.createFetchHttpClient(),
       });
 
-      const { priceId, productId, successUrl, cancelUrl } = body;
+      const { priceId: bodyPriceId, productId, successUrl, cancelUrl } = body;
+      let priceId = bodyPriceId;
 
-      if (!priceId || !productId || !successUrl || !cancelUrl) {
-        throw new AppError("MISSING_REQUIRED_FIELDS", "priceId, productId, successUrl, and cancelUrl are required", 400);
+      if (!productId || !successUrl || !cancelUrl) {
+        throw new AppError("MISSING_REQUIRED_FIELDS", "productId, successUrl, and cancelUrl are required", 400);
       }
 
       if (!isAllowedRedirectUrl(successUrl) || !isAllowedRedirectUrl(cancelUrl)) {
         throw new AppError("INVALID_REDIRECT_URL", "Redirect URLs must be on an approved host", 400);
+      }
+
+      // Credit-pack flow: server resolves the Stripe priceId from env
+      // so the client never needs to know it. Maps:
+      //   credit_pack_starter   → STRIPE_PRICE_CREDITS_33   ($0.99 / 33)
+      //   credit_pack_standard  → STRIPE_PRICE_CREDITS_333  ($4.99 / 333)
+      //   credit_pack_value     → STRIPE_PRICE_CREDITS_777  ($6.99 / 777)
+      const isCreditPack = productId.startsWith("credit_pack_");
+      if (isCreditPack && !priceId) {
+        const packEnvMap: Record<string, string> = {
+          credit_pack_starter: "STRIPE_PRICE_CREDITS_33",
+          credit_pack_standard: "STRIPE_PRICE_CREDITS_333",
+          credit_pack_value: "STRIPE_PRICE_CREDITS_777",
+        };
+        const envName = packEnvMap[productId];
+        if (!envName) {
+          throw new AppError("UNKNOWN_CREDIT_PACK", `Unknown credit pack: ${productId}`, 400);
+        }
+        priceId = Deno.env.get(envName) || undefined;
+        if (!priceId) {
+          throw new AppError("CREDIT_PACK_NOT_CONFIGURED", `Credit pack price env var ${envName} not set`, 503);
+        }
+      }
+
+      if (!priceId) {
+        throw new AppError("MISSING_REQUIRED_FIELDS", "priceId is required for non-credit-pack purchases", 400);
       }
 
       const { data: profile } = await ctx.supabase
@@ -70,19 +97,22 @@ Deno.serve(
       const isYearly = productId.includes("yearly");
       const isLifetime = productId.includes("lifetime");
       const trialDays = isYearly ? 3 : undefined;
+      // Credit packs are one-time payments — same checkout mode as lifetime
+      // but without subscription_data and without trials.
+      const isOneTime = isLifetime || isCreditPack;
 
       const session = await stripe.checkout.sessions.create({
         customer_email: profile?.email || ctx.user?.email,
         client_reference_id: ctx.userId!,
         line_items: [{ price: priceId, quantity: 1 }],
-        mode: isLifetime ? "payment" : "subscription",
+        mode: isOneTime ? "payment" : "subscription",
         success_url: successUrl,
         cancel_url: cancelUrl,
         metadata: {
           user_id: ctx.userId!,
           product_id: productId,
         },
-        subscription_data: isLifetime
+        subscription_data: isOneTime
           ? undefined
           : {
               metadata: {
@@ -91,10 +121,6 @@ Deno.serve(
               },
               ...(trialDays ? { trial_period_days: trialDays } : {}),
             },
-        // For yearly trial, require a valid payment method up front so
-        // we auto-charge after 3 days. The default would let the user
-        // start the trial without entering a card, which then fails
-        // silently when the trial ends.
         payment_method_collection: isYearly ? "always" : undefined,
       });
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { fullDeck } from '../data/tarotDeck';
+import { getEnrichment } from '../data/tarotEnrichment';
 import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -331,6 +332,105 @@ export function TarotCardMeaningPage() {
           <blockquote className="tm-reflection-text">{card.reflectionPrompt}</blockquote>
         </div>
       )}
+
+      {/* Astrology & Numerology — esoteric correspondences from Golden Dawn tradition */}
+      {enCard && (() => {
+        const enrichment = getEnrichment(enCard.name);
+        if (!enrichment) return null;
+        return (
+          <>
+            <div className="tm-contexts-full">
+              <div className="tm-context-card">
+                <h3 className="tm-context-title"><span className="tm-context-icon">⌖</span> Astrological correspondence</h3>
+                <ul style={{ margin: 0, padding: '0 0 0 1.1em', color: '#cfc8dc', lineHeight: 1.7 }}>
+                  <li><strong style={{ color: '#e6dfff' }}>Element:</strong> {enrichment.element}</li>
+                  {enrichment.planet && <li><strong style={{ color: '#e6dfff' }}>Planet:</strong> {enrichment.planet}</li>}
+                  {enrichment.zodiac && <li><strong style={{ color: '#e6dfff' }}>Zodiac:</strong> {enrichment.zodiac}</li>}
+                  {enrichment.decan && <li><strong style={{ color: '#e6dfff' }}>Decan:</strong> {enrichment.decan}</li>}
+                  {enrichment.hebrewLetter && <li><strong style={{ color: '#e6dfff' }}>Hebrew letter:</strong> {enrichment.hebrewLetter}</li>}
+                </ul>
+              </div>
+              <div className="tm-context-card">
+                <h3 className="tm-context-title"><span className="tm-context-icon">∞</span> Numerology</h3>
+                <p className="tm-context-text">{enrichment.numerology}</p>
+              </div>
+            </div>
+
+            {/* Card Combinations — reinforcing + opposing pairs */}
+            <div className="tm-contexts-full">
+              <div className="tm-context-card">
+                <h3 className="tm-context-title"><span className="tm-context-icon">⊕</span> Reinforcing cards</h3>
+                <p className="tm-context-text" style={{ marginBottom: 8 }}>
+                  When {enCard.name} appears alongside these cards, the reading's energy intensifies — {enrichment.reinforcingReason.toLowerCase()}
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {enrichment.reinforcingCards.map((c) => {
+                    const slug = c.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                    return (
+                      <a key={c} href={`/tarot-meanings/${slug}`}
+                        style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#e8c97a', textDecoration: 'none', fontSize: '0.85rem' }}>
+                        {c}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="tm-context-card">
+                <h3 className="tm-context-title"><span className="tm-context-icon">⊖</span> Opposing cards</h3>
+                <p className="tm-context-text" style={{ marginBottom: 8 }}>
+                  These cards create tension with {enCard.name} — {enrichment.opposingReason.toLowerCase()}
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {enrichment.opposingCards.map((c) => {
+                    const slug = c.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                    return (
+                      <a key={c} href={`/tarot-meanings/${slug}`}
+                        style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(91, 157, 217, 0.1)', border: '1px solid rgba(91, 157, 217, 0.25)', color: '#a8c4e0', textDecoration: 'none', fontSize: '0.85rem' }}>
+                        {c}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Visible FAQ — mirrors FAQPage JSON-LD so users see the same Q&A Google does */}
+            <div className="tm-context-card" style={{ marginTop: 16 }}>
+              <h3 className="tm-context-title"><span className="tm-context-icon">?</span> Frequently asked questions</h3>
+              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What does the {enCard.name} tarot card mean?</summary>
+                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>{enCard.meaningUpright}</p>
+              </details>
+              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What does the {enCard.name} mean reversed?</summary>
+                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>{enCard.meaningReversed}</p>
+              </details>
+              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>Is the {enCard.name} a yes or no card?</summary>
+                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>
+                  <strong>{enrichment.yesNo}.</strong> {enrichment.yesNoReason}
+                </p>
+              </details>
+              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What is the astrological correspondence of the {enCard.name}?</summary>
+                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>
+                  {enCard.name} corresponds to the element of {enrichment.element}
+                  {enrichment.planet ? `, the planet ${enrichment.planet}` : ''}
+                  {enrichment.zodiac ? `, and the sign of ${enrichment.zodiac}` : ''}
+                  {enrichment.decan ? ` (decan: ${enrichment.decan})` : ''}
+                  {enrichment.hebrewLetter ? `. The Hebrew letter is ${enrichment.hebrewLetter}.` : '.'}
+                </p>
+              </details>
+              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What cards reinforce or oppose the {enCard.name}?</summary>
+                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>
+                  Reinforcing: {enrichment.reinforcingCards.join(', ')}. Opposing: {enrichment.opposingCards.join(', ')}.
+                </p>
+              </details>
+            </div>
+          </>
+        );
+      })()}
 
       {/* ── Email Capture (NEW) ── */}
       <div className="tm-email-capture">

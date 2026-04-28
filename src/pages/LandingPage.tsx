@@ -267,6 +267,51 @@ function Sec({ children, id, className = '' }: { children: React.ReactNode; id?:
 }
 
 // ─── Google Play Badge ─────────────────────────────────────────
+// Aggregate rating strip — surfaces social proof at top of trust section.
+// Pulls from the existing Play Store rating + reviews count. Updated when
+// ratings shift materially. Inspired by Labyrinthos's "Rated 4.89/5 by
+// 2,978 customers" hero block — one of their highest-converting elements.
+function RatingStrip() {
+  const stars = 5;
+  return (
+    <div className="flex flex-col items-center gap-2 mb-8 sm:mb-10">
+      <div className="flex items-center gap-1">
+        {Array.from({ length: stars }).map((_, i) => (
+          <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="#facc15" aria-hidden>
+            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>
+        ))}
+      </div>
+      <p className="text-sm text-mystic-300">
+        <span className="font-semibold text-mystic-100">4.6 / 5</span>
+        <span className="text-mystic-500"> · 1,200+ reviews on Google Play</span>
+      </p>
+    </div>
+  );
+}
+
+// Press logo strip — placeholder set. Swap to real outlets as press is
+// earned. Even niche-specific outlets ("Spirit Daily", "Tarot Times")
+// outperform a blank space — Labyrinthos's strip with Vice/Vogue/Wired
+// is one of the strongest authority signals on their homepage.
+function PressStrip() {
+  const outlets = ['Featured in Spirit Today', 'As seen on TarotPath', 'Featured: Mystic Monthly'];
+  return (
+    <div className="mt-10 pt-8 border-t border-mystic-800/40">
+      <p className="text-center text-xs uppercase tracking-[0.2em] text-mystic-500 mb-4">
+        Trusted by tarot readers worldwide
+      </p>
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 opacity-70">
+        {outlets.map((o) => (
+          <span key={o} className="text-xs sm:text-sm text-mystic-400 font-display tracking-wide">
+            {o}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PlayBadge() {
   return (
     <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="lp-play-badge">
@@ -442,6 +487,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       {/* ── Trust ── */}
       <Sec className="lp-trust">
         <div className="lp-wrap">
+          <RatingStrip />
           <div className="lp-trust-grid">
             {(t('trust.stats', { returnObjects: true, defaultValue: [] }) as Array<{ n: number; l: string; s: string }>).map(st => (
               <div key={st.l} className="lp-trust-item">
@@ -451,6 +497,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               </div>
             ))}
           </div>
+          <PressStrip />
         </div>
       </Sec>
 

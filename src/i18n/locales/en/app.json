@@ -1871,6 +1871,18 @@
     "termsNotice": "Recurring charge. Cancel anytime.",
     "activeUntil": "Active until {{date}}",
     "badge": "Premium",
+    "trialReminder": {
+      "badge": "3 days free",
+      "title": "Try Premium free for 3 days",
+      "subtitle": "Unlock everything for 3 days, then $19.99/year. Cancel anytime.",
+      "cta": "Start free trial",
+      "dismiss": "Maybe later",
+      "benefits": {
+        "allFeatures": "All premium features unlocked",
+        "adFree": "Completely ad-free",
+        "cancelAnytime": "Cancel anytime, no charge"
+      }
+    },
     "paywall": {
       "heading": "Unlock the Full Deck",
       "subheading": "Deeper spreads, unlimited saves, compatibility insights & more",

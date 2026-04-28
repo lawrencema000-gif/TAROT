@@ -78,6 +78,7 @@ import { adsService } from './services/ads';
 import { isSupabaseConfigured } from './lib/supabase';
 import { LevelUpCelebration } from './components/celebration/LevelUpCelebration';
 import { RateAppSheet } from './components/feedback';
+import { TrialReminderModal } from './components/premium';
 import { initializeUserAchievements } from './services/achievements';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -500,6 +501,7 @@ function AppContent() {
             userId={user.id}
           />
         )}
+        <TrialReminderModal />
       </div>
     </ErrorBoundary>
   );

@@ -111,3 +111,10 @@ verify_jwt = false
 
 [functions.blog-webhook]
 verify_jwt = false
+
+# RevenueCat webhook — was missing from this list, causing every event
+# from RC to be rejected at Supabase platform layer with 401 before the
+# function ran. This is why Android subscription events never created
+# a webhook_events row and is_premium never flipped on Android.
+[functions.revenuecat-webhook]
+verify_jwt = false

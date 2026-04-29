@@ -39,6 +39,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithApple: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<UserProfile | null>;
@@ -1010,6 +1011,107 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign in with Apple — required by App Store guidelines whenever any
+  // other social login (Google) is offered. On native iOS the Apple plugin
+  // returns a signed identity token that we forward to Supabase. On web,
+  // including iOS Safari, we route through Supabase's OAuth web flow.
+  const signInWithApple = async () => {
+    const correlationId = generateCorrelationId('oauth');
+    const initiateSpan = startSpan('auth.apple.initiate', {
+      correlationId,
+      platform: getPlatform(),
+    });
+    logInfo('auth.apple.start', 'Initiating Apple sign-in', {
+      platform: getPlatform(),
+      isNative: isNative(),
+    });
+    setOAuthProcessing(true);
+    lastProcessedUrlRef.current = null;
+
+    try {
+      if (isNative()) {
+        // Dynamic import — keeps the Apple plugin out of Android bundle.
+        const { SignInWithApple } = await import('@capacitor-community/apple-sign-in');
+        const nativeSpan = startSpan('auth.apple.nativeSignIn');
+        try {
+          const res = await SignInWithApple.authorize({
+            clientId: 'com.arcana.app',
+            redirectURI: 'https://ulzlthhkqjuohzjangcq.supabase.co/auth/v1/callback',
+            scopes: 'email name',
+            state: 'state',
+            nonce: correlationId.replace(/-/g, '').slice(0, 32),
+          });
+          const idToken = res.response.identityToken;
+          if (!idToken) {
+            throw new Error('Apple sign-in returned no identity token');
+          }
+          endSpan(nativeSpan, 'success');
+
+          const exchangeSpan = startSpan('auth.apple.exchangeIdToken');
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: 'apple',
+            token: idToken,
+            nonce: correlationId.replace(/-/g, '').slice(0, 32),
+          });
+          if (error) {
+            const normalized = normalizeSupabaseError(error);
+            logError('auth.apple.idTokenExchangeFailed', 'Supabase ID token exchange failed', {
+              errorCode: normalized.code,
+              errorMessage: normalized.message,
+            });
+            setOAuthProcessing(false);
+            setCorrelationId(null);
+            endSpan(exchangeSpan, 'failure');
+            endSpan(initiateSpan, 'failure');
+            return { error: new Error(normalized.message) };
+          }
+          endSpan(exchangeSpan, 'success');
+          endSpan(initiateSpan, 'success');
+          return { error: null };
+        } catch (nativeErr) {
+          const errMsg = nativeErr instanceof Error ? nativeErr.message : String(nativeErr);
+          if (errMsg.includes('canceled') || errMsg.includes('cancelled') || errMsg.includes('1001')) {
+            logInfo('auth.apple.nativeCancelled', 'User cancelled native Apple sign-in');
+            setOAuthProcessing(false);
+            setCorrelationId(null);
+            endSpan(nativeSpan, 'failure');
+            endSpan(initiateSpan, 'failure');
+            return { error: null };
+          }
+          logError('auth.apple.nativeFailed', 'Native Apple sign-in failed', { error: errMsg });
+          endSpan(nativeSpan, 'failure');
+          endSpan(initiateSpan, 'failure');
+          setOAuthProcessing(false);
+          setCorrelationId(null);
+          return { error: nativeErr instanceof Error ? nativeErr : new Error(errMsg) };
+        }
+      }
+
+      // Web (incl. iOS Safari): hand off to Supabase's OAuth web flow.
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: { redirectTo: window.location.origin },
+      });
+      if (error) {
+        setOAuthProcessing(false);
+        setCorrelationId(null);
+        endSpan(initiateSpan, 'failure');
+        return { error: new Error(error.message) };
+      }
+      endSpan(initiateSpan, 'success');
+      return { error: null };
+    } catch (err) {
+      logError('auth.apple.fatal', 'Failed to initiate Apple sign-in', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      captureException(err);
+      setOAuthProcessing(false);
+      setCorrelationId(null);
+      endSpan(initiateSpan, 'failure');
+      return { error: err instanceof Error ? err : new Error('Failed to initiate sign-in') };
+    }
+  };
+
   const signOut = async () => {
     const span = startSpan('auth.signOut');
     logInfo('auth.signOut.start', 'Signing out');
@@ -1276,6 +1378,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signIn,
       signInWithGoogle,
+      signInWithApple,
       signOut,
       updateProfile,
       refreshProfile,

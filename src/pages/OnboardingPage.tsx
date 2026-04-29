@@ -101,7 +101,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
         stepName: 'create_account',
         durationMs: Date.now() - stepStartTime.current,
       });
-      trackSignUp({ method: 'apple' });
+      trackSignUp('apple');
       trackOnboardingComplete({
         totalDurationMs: Date.now() - onboardingStartTime.current,
       });

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Layers, ChevronRight, Sparkles } from 'lucide-react';
-import { tarotSpreads, type SpreadCategory } from '../data/tarotSpreads';
+import { allSpreads as tarotSpreads, type SpreadCategory } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 

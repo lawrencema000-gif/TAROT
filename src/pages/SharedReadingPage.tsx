@@ -74,7 +74,7 @@ export function SharedReadingPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
         {cards.map(({ card, reversed }, idx) => {
-          const imgUrl = card.imageUrl ? getBundledFullPath(card.imageUrl) : null;
+          const imgUrl = getBundledFullPath(card.id);
           return (
             <div key={`${card.id}-${idx}`} className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-3">
               <div className="aspect-[2/3] rounded-xl bg-mystic-950 overflow-hidden mb-2">

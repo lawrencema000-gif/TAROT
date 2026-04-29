@@ -78,6 +78,12 @@ const AstrologyLearnPage = lazy(() => import('./pages/AstrologyLearnPage').then(
 const AstrologyEntryPage = lazy(() => import('./pages/AstrologyEntryPage').then(m => ({ default: m.AstrologyEntryPage })));
 const SpreadBuilderPage = lazy(() => import('./pages/SpreadBuilderPage').then(m => ({ default: m.SpreadBuilderPage })));
 const FoolsJourneyPage = lazy(() => import('./pages/FoolsJourneyPage').then(m => ({ default: m.FoolsJourneyPage })));
+const NumerologyLearnPage = lazy(() => import('./pages/NumerologyLearnPage').then(m => ({ default: m.NumerologyLearnPage })));
+const NumerologyEntryPage = lazy(() => import('./pages/NumerologyEntryPage').then(m => ({ default: m.NumerologyEntryPage })));
+const GlossaryPage = lazy(() => import('./pages/GlossaryPage').then(m => ({ default: m.GlossaryPage })));
+const GlossaryEntryPage = lazy(() => import('./pages/GlossaryEntryPage').then(m => ({ default: m.GlossaryEntryPage })));
+const CrystalsPage = lazy(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
+const CrystalEntryPage = lazy(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -317,7 +323,7 @@ function AppContent() {
   }
 
   // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology'))) {
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals'))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -342,6 +348,12 @@ function AppContent() {
                 <Route path="/spreads/:slug" element={<SpreadDetailPage />} />
                 <Route path="/astrology" element={<AstrologyLearnPage />} />
                 <Route path="/astrology/:slug" element={<AstrologyEntryPage />} />
+                <Route path="/numerology" element={<NumerologyLearnPage />} />
+                <Route path="/numerology/:slug" element={<NumerologyEntryPage />} />
+                <Route path="/glossary" element={<GlossaryPage />} />
+                <Route path="/glossary/:slug" element={<GlossaryEntryPage />} />
+                <Route path="/crystals" element={<CrystalsPage />} />
+                <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
               </Routes>
             </Suspense>

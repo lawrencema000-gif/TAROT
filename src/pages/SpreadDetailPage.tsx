@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layers, Clock, Sparkles, ChevronRight } from 'lucide-react';
-import { getSpreadBySlug, tarotSpreads } from '../data/tarotSpreads';
+import { getSpreadBySlug, allSpreads as tarotSpreads } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 

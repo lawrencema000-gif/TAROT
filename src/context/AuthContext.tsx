@@ -1104,7 +1104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logError('auth.apple.fatal', 'Failed to initiate Apple sign-in', {
         error: err instanceof Error ? err.message : String(err),
       });
-      captureException(err);
+      captureException('auth.apple.unexpectedError', err);
       setOAuthProcessing(false);
       setCorrelationId(null);
       endSpan(initiateSpan, 'failure');

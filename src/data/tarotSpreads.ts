@@ -1623,12 +1623,19 @@ export const tarotSpreads: TarotSpread[] = [
 // Lookup helpers
 // ---------------------------------------------------------------------------
 
+// Combined spread library: 18 base spreads + 22 Major Arcana spreads.
+// Deferred import to avoid circular ref since majorArcanaSpreads.ts
+// imports the TarotSpread type from this file.
+import { majorArcanaSpreads } from './majorArcanaSpreads';
+
+export const allSpreads: TarotSpread[] = [...tarotSpreads, ...majorArcanaSpreads];
+
 export function getSpreadBySlug(slug: string): TarotSpread | null {
-  return tarotSpreads.find((spread) => spread.slug === slug) ?? null;
+  return allSpreads.find((spread) => spread.slug === slug) ?? null;
 }
 
 export function getSpreadsByCategory(
   category: SpreadCategory,
 ): TarotSpread[] {
-  return tarotSpreads.filter((spread) => spread.category === category);
+  return allSpreads.filter((spread) => spread.category === category);
 }

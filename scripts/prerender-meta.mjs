@@ -50,6 +50,33 @@ const SPREAD_SLUGS = [
   'shadow-work', 'higher-self',
   'new-moon-intentions', 'full-moon-release',
   'crossroads', 'yes-no-pulse',
+  // 22 Major Arcana spreads
+  'the-fool-spread', 'the-magician-spread', 'the-high-priestess-spread', 'the-empress-spread',
+  'the-emperor-spread', 'the-hierophant-spread', 'the-lovers-spread', 'the-chariot-spread',
+  'strength-spread', 'the-hermit-spread', 'the-wheel-of-fortune-spread', 'justice-spread',
+  'the-hanged-man-spread', 'death-spread', 'temperance-spread', 'the-devil-spread',
+  'the-tower-spread', 'the-star-spread', 'the-moon-spread', 'the-sun-spread',
+  'judgement-spread', 'the-world-spread',
+];
+
+const NUMEROLOGY_SLUGS = ['1','2','3','4','5','6','7','8','9','11','22','33'];
+
+const CRYSTAL_SLUGS = [
+  'rose-quartz','rhodonite','rhodochrosite','malachite','emerald',
+  'black-tourmaline','obsidian','hematite','jet','smoky-quartz',
+  'citrine','pyrite','green-aventurine','jade','tigers-eye',
+  'clear-quartz','fluorite','sodalite','lapis-lazuli','sapphire',
+  'amethyst','selenite','bloodstone','carnelian','turquoise',
+  'moonstone','labradorite','opal','kyanite','angelite',
+];
+
+const GLOSSARY_SLUGS = [
+  'arcana','major-arcana','minor-arcana','suit','court-cards','page','knight','queen','king','spread','querent','reversed','upright','significator','deck',
+  'natal-chart','ascendant','descendant','midheaven','ic','transit','retrograde','conjunction','opposition','square','trine','sextile','aspect','ephemeris','decan',
+  'life-path','expression-number','soul-urge','master-number','karmic-number','numerology','pythagorean','chaldean',
+  'chakra','aura','third-eye','kundalini','akashic-records','karma','meditation','mindfulness','manifestation','smudging','grounding','intuition',
+  'divination','scrying','oracle','runes','i-ching','lenormand','palmistry','dowsing',
+  'new-moon','full-moon','eclipse','mercury-retrograde','mercury-station',
 ];
 
 const ASTRO_SLUGS = [
@@ -195,6 +222,97 @@ function astrologyEntryMeta(slug) {
       url: `${SITE_URL}/astrology/${slug}`,
       author: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
       publisher: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+    }],
+  };
+}
+
+function numerologyHubMeta() {
+  return {
+    title: 'Numerology — Life Path Numbers Explained | Arcana',
+    description: 'Complete numerology reference: 9 core numbers + 3 master numbers (11, 22, 33). Pythagorean tradition, life-path meanings, tarot correspondences.',
+    canonical: `${SITE_URL}/numerology`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Numerology Learning Hub',
+      url: `${SITE_URL}/numerology`,
+    }],
+  };
+}
+
+function numerologyEntryMeta(slug) {
+  return {
+    title: `Number ${slug} — Life Path Meaning | Arcana`,
+    description: `Number ${slug} life-path meaning: personality, strengths, challenges, in love, career, spirituality, and tarot correspondence.`,
+    canonical: `${SITE_URL}/numerology/${slug}`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: `Numerology Number ${slug}`,
+      url: `${SITE_URL}/numerology/${slug}`,
+      author: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+      publisher: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+    }],
+  };
+}
+
+function crystalsHubMeta() {
+  return {
+    title: 'Crystal Meanings — 30 Stones Explained | Arcana',
+    description: 'Comprehensive crystal reference: 30 stones with metaphysical properties, chakra associations, Mohs hardness, and tarot connections.',
+    canonical: `${SITE_URL}/crystals`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Crystals Learning Hub',
+      url: `${SITE_URL}/crystals`,
+    }],
+  };
+}
+
+function crystalEntryMeta(slug) {
+  const name = titleCase(slug);
+  return {
+    title: `${name} — Meaning, Properties & How to Use | Arcana`,
+    description: `${name} crystal: metaphysical properties, chakra associations, how to use, cleansing methods, and tarot connection.`,
+    canonical: `${SITE_URL}/crystals/${slug}`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: `${name} — Crystal Meaning`,
+      url: `${SITE_URL}/crystals/${slug}`,
+      author: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+      publisher: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+    }],
+  };
+}
+
+function glossaryHubMeta() {
+  return {
+    title: 'Glossary — Tarot, Astrology, Numerology Terms | Arcana',
+    description: '63 terms with definitions across tarot, astrology, numerology, spirituality, and divination.',
+    canonical: `${SITE_URL}/glossary`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Glossary',
+      url: `${SITE_URL}/glossary`,
+    }],
+  };
+}
+
+function glossaryEntryMeta(slug) {
+  const term = titleCase(slug);
+  return {
+    title: `${term} — Definition | Arcana Glossary`,
+    description: `Definition of ${term}, including origin and usage in context.`,
+    canonical: `${SITE_URL}/glossary/${slug}`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'DefinedTerm',
+      name: term,
+      url: `${SITE_URL}/glossary/${slug}`,
+      inDefinedTermSet: { '@type': 'DefinedTermSet', name: 'Arcana Glossary', url: `${SITE_URL}/glossary` },
     }],
   };
 }
@@ -368,6 +486,9 @@ async function main() {
   writeRoute('/tarot-meanings', tarotMeaningsHubMeta(), template); count++;
   writeRoute('/spreads', spreadsHubMeta(), template); count++;
   writeRoute('/astrology', astrologyHubMeta(), template); count++;
+  writeRoute('/numerology', numerologyHubMeta(), template); count++;
+  writeRoute('/crystals', crystalsHubMeta(), template); count++;
+  writeRoute('/glossary', glossaryHubMeta(), template); count++;
   writeRoute('/blog', blogHubMeta(), template); count++;
 
   // 78 tarot card pages
@@ -385,6 +506,24 @@ async function main() {
   // 40 astrology leaf pages
   for (const slug of ASTRO_SLUGS) {
     writeRoute(`/astrology/${slug}`, astrologyEntryMeta(slug), template);
+    count++;
+  }
+
+  // 12 numerology leaf pages
+  for (const slug of NUMEROLOGY_SLUGS) {
+    writeRoute(`/numerology/${slug}`, numerologyEntryMeta(slug), template);
+    count++;
+  }
+
+  // 30 crystal leaf pages
+  for (const slug of CRYSTAL_SLUGS) {
+    writeRoute(`/crystals/${slug}`, crystalEntryMeta(slug), template);
+    count++;
+  }
+
+  // 63 glossary leaf pages
+  for (const slug of GLOSSARY_SLUGS) {
+    writeRoute(`/glossary/${slug}`, glossaryEntryMeta(slug), template);
     count++;
   }
 

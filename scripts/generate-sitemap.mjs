@@ -95,6 +95,9 @@ async function generate() {
     { loc: `${siteUrl}/tarot-meanings`, changefreq: 'monthly', priority: '0.9', lastmod: today },
     { loc: `${siteUrl}/spreads`, changefreq: 'monthly', priority: '0.9', lastmod: today },
     { loc: `${siteUrl}/astrology`, changefreq: 'monthly', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/numerology`, changefreq: 'monthly', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/crystals`, changefreq: 'monthly', priority: '0.9', lastmod: today },
+    { loc: `${siteUrl}/glossary`, changefreq: 'monthly', priority: '0.8', lastmod: today },
     { loc: `${siteUrl}/horoscope`, changefreq: 'daily', priority: '0.8', lastmod: today },
     { loc: `${siteUrl}/signin`, changefreq: 'yearly', priority: '0.5', lastmod: today },
     { loc: `${siteUrl}/signup`, changefreq: 'yearly', priority: '0.7', lastmod: today },
@@ -122,8 +125,9 @@ async function generate() {
     });
   }
 
-  // 18 tarot spread pages
+  // 18 base tarot spread pages + 22 Major Arcana spreads = 40 total
   const SPREAD_SLUGS = [
+    // base library
     'one-card-daily', 'three-card-past-present-future', 'celtic-cross', 'horseshoe',
     'relationship-cross', 'soulmate', 'love-yes-no',
     'career-path', 'job-decision', 'money-flow',
@@ -131,12 +135,72 @@ async function generate() {
     'shadow-work', 'higher-self',
     'new-moon-intentions', 'full-moon-release',
     'crossroads', 'yes-no-pulse',
+    // 22 Major Arcana spreads (one per card)
+    'the-fool-spread', 'the-magician-spread', 'the-high-priestess-spread', 'the-empress-spread',
+    'the-emperor-spread', 'the-hierophant-spread', 'the-lovers-spread', 'the-chariot-spread',
+    'strength-spread', 'the-hermit-spread', 'the-wheel-of-fortune-spread', 'justice-spread',
+    'the-hanged-man-spread', 'death-spread', 'temperance-spread', 'the-devil-spread',
+    'the-tower-spread', 'the-star-spread', 'the-moon-spread', 'the-sun-spread',
+    'judgement-spread', 'the-world-spread',
   ];
   for (const slug of SPREAD_SLUGS) {
     urls.push({
       loc: `${siteUrl}/spreads/${slug}`,
       changefreq: 'monthly',
       priority: '0.7',
+      lastmod: today,
+    });
+  }
+
+  // 12 numerology pages
+  const NUMEROLOGY_SLUGS = ['1','2','3','4','5','6','7','8','9','11','22','33'];
+  for (const slug of NUMEROLOGY_SLUGS) {
+    urls.push({
+      loc: `${siteUrl}/numerology/${slug}`,
+      changefreq: 'monthly',
+      priority: '0.7',
+      lastmod: today,
+    });
+  }
+
+  // 30 crystal pages
+  const CRYSTAL_SLUGS = [
+    'rose-quartz','rhodonite','rhodochrosite','malachite','emerald',
+    'black-tourmaline','obsidian','hematite','jet','smoky-quartz',
+    'citrine','pyrite','green-aventurine','jade','tigers-eye',
+    'clear-quartz','fluorite','sodalite','lapis-lazuli','sapphire',
+    'amethyst','selenite','bloodstone','carnelian','turquoise',
+    'moonstone','labradorite','opal','kyanite','angelite',
+  ];
+  for (const slug of CRYSTAL_SLUGS) {
+    urls.push({
+      loc: `${siteUrl}/crystals/${slug}`,
+      changefreq: 'monthly',
+      priority: '0.7',
+      lastmod: today,
+    });
+  }
+
+  // 63 glossary entries
+  const GLOSSARY_SLUGS = [
+    // tarot
+    'arcana','major-arcana','minor-arcana','suit','court-cards','page','knight','queen','king','spread','querent','reversed','upright','significator','deck',
+    // astrology
+    'natal-chart','ascendant','descendant','midheaven','ic','transit','retrograde','conjunction','opposition','square','trine','sextile','aspect','ephemeris','decan',
+    // numerology
+    'life-path','expression-number','soul-urge','master-number','karmic-number','numerology','pythagorean','chaldean',
+    // spirituality
+    'chakra','aura','third-eye','kundalini','akashic-records','karma','meditation','mindfulness','manifestation','smudging','grounding','intuition',
+    // divination
+    'divination','scrying','oracle','runes','i-ching','lenormand','palmistry','dowsing',
+    // general
+    'new-moon','full-moon','eclipse','mercury-retrograde','mercury-station',
+  ];
+  for (const slug of GLOSSARY_SLUGS) {
+    urls.push({
+      loc: `${siteUrl}/glossary/${slug}`,
+      changefreq: 'monthly',
+      priority: '0.6',
       lastmod: today,
     });
   }

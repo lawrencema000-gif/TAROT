@@ -192,7 +192,7 @@ export function trackPageView(pageName: string, properties?: Record<string, unkn
   track('page_view', { pageName, ...properties });
 }
 
-export function trackSignUp(method: 'email' | 'google'): void {
+export function trackSignUp(method: 'email' | 'google' | 'apple'): void {
   track('sign_up', { method });
   // GA4 recommended event — Google Ads can import as conversion
   gtagEvent('sign_up', { method });

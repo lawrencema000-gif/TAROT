@@ -1,4 +1,4 @@
-import { isNative, isWeb, isAndroid } from '../utils/platform';
+import { isNative, isWeb } from '../utils/platform';
 import { registerPlugin } from '@capacitor/core';
 import { actionCounter, type ActionType } from './actionCounter';
 import { rewardedAdsService } from './rewardedAds';

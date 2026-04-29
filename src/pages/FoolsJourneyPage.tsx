@@ -59,7 +59,7 @@ export function FoolsJourneyPage() {
       <div className="space-y-2">
         {FOOLS_JOURNEY.map((level) => {
           const card = fullDeck.find((c) => c.id === level.cardId);
-          const imgUrl = card?.imageUrl ? getBundledFullPath(card.imageUrl) : null;
+          const imgUrl = card ? getBundledFullPath(card.id) : null;
           const isUnlocked = level.level <= currentLevel;
           const isCurrent = level.level === currentLevel;
           return (

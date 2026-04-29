@@ -135,11 +135,30 @@ Deno.serve(
         );
       }
 
-      if (
-        eventType === "INITIAL_PURCHASE" ||
-        eventType === "RENEWAL" ||
-        eventType === "UNCANCELLATION"
-      ) {
+      // Single source of truth: trust `entitlement_ids` for every relevant
+      // subscription event. RevenueCat sends the user's CURRENT entitlements
+      // with each event, so:
+      //   INITIAL_PURCHASE / RENEWAL / UNCANCELLATION → entitlements include "premium"
+      //   CANCELLATION (auto-renew off, paid period continues) → still "premium"
+      //   BILLING_ISSUE (grace period) → still "premium"
+      //   EXPIRATION (period actually ended) → "premium" no longer in array
+      //   PRODUCT_CHANGE / SUBSCRIPTION_PAUSED / SUBSCRIPTION_EXTENDED → varies
+      // Mirroring this to profiles.is_premium fixes the prior bug where
+      // CANCELLATION immediately downgraded a user who'd paid for the rest
+      // of their period.
+      const SUBSCRIPTION_EVENTS = [
+        "INITIAL_PURCHASE",
+        "RENEWAL",
+        "UNCANCELLATION",
+        "CANCELLATION",
+        "EXPIRATION",
+        "BILLING_ISSUE",
+        "PRODUCT_CHANGE",
+        "SUBSCRIPTION_PAUSED",
+        "SUBSCRIPTION_EXTENDED",
+      ];
+
+      if (SUBSCRIPTION_EVENTS.includes(eventType)) {
         const { error } = await ctx.supabase
           .from("profiles")
           .update({ is_premium: hasPremium })
@@ -150,94 +169,93 @@ Deno.serve(
           throw new AppError("PROFILE_UPDATE_FAILED", "Failed to update profile", 500);
         }
 
+        // Maintain the subscriptions ledger row alongside the profile flag.
+        // Status meaning:
+        //   - active: paid + auto-renew on
+        //   - trial: in 3-day trial window
+        //   - grace_period: payment failed, RC still granting entitlement
+        //   - cancelled: auto-renew off but still in paid period
+        //   - expired: paid period ended (entitlement removed)
         const period = productId.includes("lifetime")
           ? "lifetime"
           : productId.includes("yearly")
           ? "yearly"
           : "monthly";
 
-        const { error: subError } = await ctx.supabase.from("subscriptions").upsert(
-          {
-            user_id: userId,
-            provider: "google",
-            product_id: productId,
-            status: body.event.period_type === "TRIAL" ? "trial" : "active",
-            period,
-            transaction_id: body.event.original_transaction_id,
-            started_at: new Date(body.event.purchased_at_ms).toISOString(),
-            expires_at: body.event.expiration_at_ms
-              ? new Date(body.event.expiration_at_ms).toISOString()
-              : null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "transaction_id" },
-        );
-
-        if (subError) {
-          ctx.log.error("revenuecat_webhook.subscription_upsert_failed", { err: subError, userId });
+        let subStatus: string;
+        if (eventType === "BILLING_ISSUE") {
+          subStatus = "grace_period";
+        } else if (eventType === "CANCELLATION") {
+          subStatus = "cancelled";
+        } else if (eventType === "EXPIRATION") {
+          subStatus = "expired";
+        } else if (body.event.period_type === "TRIAL") {
+          subStatus = "trial";
+        } else {
+          subStatus = "active";
         }
 
-        ctx.log.info("revenuecat_webhook.user_premium", { userId, productId });
+        const isUpgradeEvent = ["INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION"].includes(eventType);
+
+        if (isUpgradeEvent) {
+          const { error: subError } = await ctx.supabase.from("subscriptions").upsert(
+            {
+              user_id: userId,
+              provider: "google",
+              product_id: productId,
+              status: subStatus,
+              period,
+              transaction_id: body.event.original_transaction_id,
+              started_at: new Date(body.event.purchased_at_ms).toISOString(),
+              expires_at: body.event.expiration_at_ms
+                ? new Date(body.event.expiration_at_ms).toISOString()
+                : null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "transaction_id" },
+          );
+          if (subError) {
+            ctx.log.error("revenuecat_webhook.subscription_upsert_failed", { err: subError, userId });
+          }
+        } else {
+          const { error: subError } = await ctx.supabase
+            .from("subscriptions")
+            .update({
+              status: subStatus,
+              ...(subStatus === "cancelled" || subStatus === "expired"
+                ? { cancelled_at: new Date().toISOString() }
+                : {}),
+              expires_at: body.event.expiration_at_ms
+                ? new Date(body.event.expiration_at_ms).toISOString()
+                : undefined,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId)
+            .eq("provider", "google")
+            .in("status", ["active", "trial", "grace_period", "cancelled"]);
+          if (subError) {
+            ctx.log.error("revenuecat_webhook.subscription_update_failed", { err: subError, userId });
+          }
+        }
+
+        ctx.log.info(
+          hasPremium ? "revenuecat_webhook.user_premium" : "revenuecat_webhook.user_downgraded",
+          { userId, productId, eventType, subStatus },
+        );
 
         const { error: logError } = await ctx.supabase.from("audit_events").insert({
           user_id: userId,
-          event_name: "premium_purchase",
+          event_name: hasPremium ? "premium_purchase" : "premium_cancelled",
           payload: {
             product_id: productId,
             transaction_id: body.event.transaction_id,
             environment: body.event.environment,
             store: body.event.store,
+            event_type: eventType,
+            sub_status: subStatus,
             provider: "revenuecat",
           },
         });
-
-        if (logError) {
-          ctx.log.error("revenuecat_webhook.audit_insert_failed", { err: logError, userId });
-        }
-      }
-
-      if (
-        eventType === "CANCELLATION" ||
-        eventType === "EXPIRATION" ||
-        eventType === "BILLING_ISSUE"
-      ) {
-        const { error } = await ctx.supabase
-          .from("profiles")
-          .update({ is_premium: false })
-          .eq("id", userId);
-
-        if (error) {
-          ctx.log.error("revenuecat_webhook.profile_update_failed", { err: error, userId });
-        }
-
-        const newStatus = eventType === "BILLING_ISSUE" ? "grace_period" : "cancelled";
-        const { error: subError } = await ctx.supabase
-          .from("subscriptions")
-          .update({
-            status: newStatus,
-            cancelled_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", userId)
-          .eq("provider", "google")
-          .in("status", ["active", "trial"]);
-
-        if (subError) {
-          ctx.log.error("revenuecat_webhook.subscription_update_failed", { err: subError, userId });
-        }
-
-        ctx.log.info("revenuecat_webhook.user_cancelled", { userId, eventType });
-
-        const { error: logError } = await ctx.supabase.from("audit_events").insert({
-          user_id: userId,
-          event_name: "premium_cancelled",
-          payload: {
-            product_id: productId,
-            reason: eventType,
-            provider: "revenuecat",
-          },
-        });
-
         if (logError) {
           ctx.log.error("revenuecat_webhook.audit_insert_failed", { err: logError, userId });
         }

@@ -1199,17 +1199,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }).catch(() => { /* Sentry not initialized / offline */ });
   }, [user]);
 
-  // Native session-resume reconcile: if RevenueCat says the user is
-  // premium (active entitlement on device) but profiles.is_premium is
-  // false in the DB, the webhook hasn't propagated yet — likely the user
-  // killed the app right after purchase. Flip the local flag immediately
-  // and poll the DB until it catches up. RC's customerInfo is signed +
-  // verified by Google Play, so trusting it is safe (web users go through
-  // the Stripe usePostCheckout polling path instead).
+  // Native session-resume reconcile (TWO-DIRECTIONAL).
+  //
+  // RevenueCat's local `customerInfo` is signed + verified by Google Play
+  // and represents the user's actual entitlement state on this device.
+  // We treat it as ground truth on native and reconcile profiles.isPremium
+  // to match — both directions:
+  //
+  //   DB false + RC true  → user JUST purchased; webhook hasn't propagated.
+  //                         Flip local UI to premium + poll DB.
+  //   DB true  + RC false → subscription expired (CANCELLATION → period
+  //                         end → EXPIRATION fired but client never refetched
+  //                         profile, OR user changed accounts on Play Store).
+  //                         Flip local UI to non-premium + show "your
+  //                         subscription has ended" toast + refetch profile
+  //                         to confirm DB matches.
+  //
+  // The prior version only handled the upgrade direction, leaving cancelled
+  // users stuck in a fake-premium UI between sessions.
   useEffect(() => {
     if (!isNative()) return;
     if (!user || !profile) return;
-    if (profile.isPremium) return;
 
     let cancelled = false;
     (async () => {
@@ -1217,10 +1227,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { getBillingService } = await import('../services/billing');
         const rcIsPremium = await getBillingService().isPremium();
         if (cancelled) return;
-        if (rcIsPremium) {
+
+        if (rcIsPremium && !profile.isPremium) {
+          // Upgrade race: RC has it, DB doesn't yet. Flip + wait for webhook.
           optimisticallyMarkPremium();
-          // Background poll — corrects DB if webhook is delayed.
           pollProfileUntilPremium(60_000, 2_000).catch(() => undefined);
+        } else if (!rcIsPremium && profile.isPremium) {
+          // Downgrade detected: device knows the entitlement is gone.
+          // Confirm against the DB — the EXPIRATION webhook should have
+          // already flipped is_premium=false. If so, sync local state +
+          // surface a toast so the user isn't surprised by paywalls.
+          const { data: dbRow } = await supabase
+            .from('profiles')
+            .select('is_premium')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (cancelled) return;
+          if (dbRow?.is_premium === false) {
+            setProfile((current) =>
+              current && current.isPremium ? { ...current, isPremium: false } : current,
+            );
+            const { toast } = await import('../components/ui');
+            toast(
+              'Your Premium subscription has ended. You can re-subscribe anytime.',
+              'info',
+            );
+          }
+          // If DB still says premium, leave it — webhook hasn't fired yet
+          // (e.g. EXPIRATION still queued at RC). Next session will catch it.
         }
       } catch {
         // RC unavailable / not initialised — stay on DB-only state.

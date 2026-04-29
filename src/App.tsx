@@ -84,6 +84,7 @@ const GlossaryPage = lazy(() => import('./pages/GlossaryPage').then(m => ({ defa
 const GlossaryEntryPage = lazy(() => import('./pages/GlossaryEntryPage').then(m => ({ default: m.GlossaryEntryPage })));
 const CrystalsPage = lazy(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
 const CrystalEntryPage = lazy(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
+const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -323,7 +324,7 @@ function AppContent() {
   }
 
   // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals'))) {
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe'))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -354,6 +355,7 @@ function AppContent() {
                 <Route path="/glossary/:slug" element={<GlossaryEntryPage />} />
                 <Route path="/crystals" element={<CrystalsPage />} />
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
+                <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
               </Routes>
             </Suspense>
@@ -514,6 +516,7 @@ function AppContent() {
                   <Route path="/astrology/:slug" element={<AstrologyEntryPage />} />
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
+                  <Route path="/unsubscribe" element={<UnsubscribePage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

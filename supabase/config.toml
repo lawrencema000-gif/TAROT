@@ -115,6 +115,9 @@ verify_jwt = false
 [functions.daily-seo-digest]
 verify_jwt = false
 
+[functions.send-newsletter-course]
+verify_jwt = false
+
 [functions.backfill-blog-covers]
 verify_jwt = false
 

@@ -5,11 +5,11 @@ import {
   LOG_LEVEL,
   PURCHASES_ERROR_CODE,
 } from '@revenuecat/purchases-capacitor';
-import { isNative, isAndroid } from '../utils/platform';
+import { isNative, isAndroid, isIOS } from '../utils/platform';
 import { supabase } from '../lib/supabase';
 import { preventDoubleBilling } from './billingGuard';
 
-export type BillingProvider = 'google' | 'samsung' | 'web';
+export type BillingProvider = 'google' | 'apple' | 'samsung' | 'web';
 
 export interface Product {
   id: string;
@@ -73,14 +73,21 @@ const STRIPE_PRICE_IDS = {
   PREMIUM_LIFETIME: import.meta.env.VITE_STRIPE_PRICE_LIFETIME || '',
 };
 
-const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || '';
+// RevenueCat issues distinct SDK keys per store: a `goog_*` key for Google
+// Play and an `appl_*` key for Apple App Store. Both keys live in the same
+// RC project and grant the same entitlements — purchases sync across stores
+// for the same RC App User ID, so a Premium sub bought on iOS is recognized
+// on Android (and vice versa).
+const REVENUECAT_API_KEY_ANDROID = import.meta.env.VITE_REVENUECAT_API_KEY || '';
+const REVENUECAT_API_KEY_IOS = import.meta.env.VITE_REVENUECAT_API_KEY_IOS || '';
 const ENTITLEMENT_ID = 'premium';
 
 function detectProvider(): BillingProvider {
   // Native platforms must route through their store IAP — Apple App Store
   // / Google Play guidelines forbid Stripe (or any third-party card flow)
   // for digital subscriptions. Web is the only place Stripe is allowed.
-  if (isNative()) return 'google'; // RevenueCat handles both Google Play + Apple App Store under one entitlement
+  if (isIOS()) return 'apple';
+  if (isAndroid()) return 'google';
   return 'web';
 }
 
@@ -96,21 +103,30 @@ class NativeBillingService implements BillingService {
     try {
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
 
-      // Android uses the Google Play RC key; iOS would use a separate
-      // VITE_REVENUECAT_API_KEY_IOS once we ship an iOS build (RC issues
-      // distinct keys per store). Until then, only Android initializes.
-      if (isAndroid() && REVENUECAT_API_KEY) {
+      // Pick the RC SDK key matching the platform store. Same entitlements
+      // and same App User ID across both, so Premium bought on one store
+      // unlocks the other.
+      const platformKey = isAndroid()
+        ? REVENUECAT_API_KEY_ANDROID
+        : isIOS()
+        ? REVENUECAT_API_KEY_IOS
+        : '';
+
+      if (platformKey) {
         this.userId = userId;
+        this.provider = isIOS() ? 'apple' : 'google';
         await Purchases.configure({
-          apiKey: REVENUECAT_API_KEY,
+          apiKey: platformKey,
           appUserID: userId,
         });
         this.initialized = true;
-        if (import.meta.env.DEV) console.log('[RevenueCat] Initialized with user ID:', userId);
+        if (import.meta.env.DEV) {
+          console.log(`[RevenueCat] Initialized for ${isIOS() ? 'iOS' : 'Android'} with user ID:`, userId);
+        }
         return true;
       }
 
-      console.warn('RevenueCat API key not configured for this platform');
+      console.warn(`RevenueCat API key not configured for ${isIOS() ? 'iOS' : isAndroid() ? 'Android' : 'this platform'}`);
       return false;
     } catch (error) {
       console.error('Failed to initialize RevenueCat:', error);

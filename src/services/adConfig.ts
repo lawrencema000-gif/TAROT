@@ -46,10 +46,13 @@ interface AdEvent {
   errorCode?: string;
 }
 
-// Env var fallbacks (used if backend config fetch fails)
+// Env var fallbacks (used if backend config fetch fails). One pair per
+// ad type — Google AdMob issues distinct ad-unit IDs per platform so we
+// never share IDs across iOS/Android.
 const ENV_FALLBACKS: Record<string, Record<string, string>> = {
   app_open: {
     android: import.meta.env.VITE_ADMOB_APPOPEN_ANDROID || '',
+    ios: import.meta.env.VITE_ADMOB_APPOPEN_IOS || '',
   },
   interstitial: {
     android: import.meta.env.VITE_ADMOB_INTERSTITIAL_ANDROID || '',

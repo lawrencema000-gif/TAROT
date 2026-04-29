@@ -186,7 +186,7 @@ class AdsService {
   }
 
   async showAppOpenAdOnColdStart(isPremium: boolean, isAdFree: boolean): Promise<void> {
-    if (isWeb() || !isNative() || !isAndroid()) return;
+    if (isWeb() || !isNative()) return;
     if (isPremium || isAdFree) return;
     // Forced ads (interstitial + app-open) are paused — only rewarded
     // ads (the moonstone-earn flow) are still active. Toggle this in

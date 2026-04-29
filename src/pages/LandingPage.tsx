@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema, setHowToSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
+import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
 
@@ -503,6 +504,13 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
 
       <div className="lp-divider" />
 
+      {/* ── Free 3-part email course ── */}
+      <Sec>
+        <FreeEmailCourseCard />
+      </Sec>
+
+      <div className="lp-divider" />
+
       {/* ── Features (Bento) ── */}
       <Sec id="features">
         <div className="lp-wrap">
@@ -597,22 +605,47 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       </Sec>
       </main>
 
-      {/* ── Footer ── */}
+      {/* ── Footer (multi-column, mirrors Labyrinthos pattern) ── */}
       <footer className="lp-footer">
         <div className="lp-wrap">
-          <div className="lp-footer-top">
-            <div className="lp-footer-brand"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
-            <div className="lp-footer-links">
-              <a href="/privacy-policy.html">{t('footer.privacyPolicy')}</a>
-              <a href="/blog">{t('footer.blog')}</a>
-              <a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer">{t('footer.shop')}</a>
-              <a href="mailto:support@arcana.app">{t('footer.contact')}</a>
-              <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer">{t('footer.googlePlay')}</a>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10 pt-10">
+            <div className="col-span-2 sm:col-span-1">
+              <div className="lp-footer-brand mb-2"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
+              <p className="text-xs text-mystic-500 leading-relaxed">A daily ritual practice for tarot, astrology, and reflection.</p>
+            </div>
+            <div>
+              <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">Learn</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/tarot-meanings" className="text-mystic-300 hover:text-mystic-100 no-underline">Tarot Card Meanings</a></li>
+                <li><a href="/spreads" className="text-mystic-300 hover:text-mystic-100 no-underline">Tarot Spreads</a></li>
+                <li><a href="/astrology" className="text-mystic-300 hover:text-mystic-100 no-underline">Astrology</a></li>
+                <li><a href="/numerology" className="text-mystic-300 hover:text-mystic-100 no-underline">Numerology</a></li>
+                <li><a href="/crystals" className="text-mystic-300 hover:text-mystic-100 no-underline">Crystals</a></li>
+                <li><a href="/glossary" className="text-mystic-300 hover:text-mystic-100 no-underline">Glossary</a></li>
+                <li><a href="/blog" className="text-mystic-300 hover:text-mystic-100 no-underline">Blog</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">App</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/signup" className="text-mystic-300 hover:text-mystic-100 no-underline">Sign up — 3-day free trial</a></li>
+                <li><a href="/signin" className="text-mystic-300 hover:text-mystic-100 no-underline">Sign in</a></li>
+                <li><a href="/spreads/builder" className="text-mystic-300 hover:text-mystic-100 no-underline">Custom Spread Builder</a></li>
+                <li><a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">Get on Google Play</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">Company</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/privacy-policy.html" className="text-mystic-300 hover:text-mystic-100 no-underline">Privacy Policy</a></li>
+                <li><a href="mailto:support@arcana.app" className="text-mystic-300 hover:text-mystic-100 no-underline">Contact / Support</a></li>
+                <li><a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">Shop (partner)</a></li>
+              </ul>
             </div>
           </div>
-          <div className="lp-footer-bottom">
-            <p>{t('footer.disclaimer')}</p>
-            <p>{t('footer.copyright')}</p>
+          <div className="lp-footer-bottom border-t border-mystic-800/40 pt-6">
+            <p className="text-xs text-mystic-500 mb-1">{t('footer.disclaimer')}</p>
+            <p className="text-xs text-mystic-600">{t('footer.copyright')}</p>
           </div>
         </div>
       </footer>

@@ -3,4 +3,3 @@ export { PremiumGate, PremiumBadge, PremiumLockOverlay, usePremiumGate } from '.
 export { SubscriptionSheet } from './SubscriptionSheet';
 export { TrialReminderModal } from './TrialReminderModal';
 export { WatchAdSheet } from './WatchAdSheet';
-export { CreditPacksSheet } from './CreditPacksSheet';

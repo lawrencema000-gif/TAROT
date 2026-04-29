@@ -1,0 +1,141 @@
+# iOS build + TestFlight upload workflow.
+#
+# Manual trigger only by default — iOS macOS runners are ~10x more
+# expensive than Linux, so we don't want this firing on every push.
+# Use `workflow_dispatch` from the Actions tab when ready to ship a
+# new TestFlight build.
+#
+# REQUIRED GitHub secrets (Settings → Secrets and variables → Actions):
+#
+#   APPLE_ID                  Apple ID email (e.g. lawrence@example.com)
+#   APPLE_TEAM_ID             10-char team ID from Apple Developer
+#   APPLE_APP_STORE_CONNECT_API_KEY_ID    ASC API Key ID (e.g. ABCDE12345)
+#   APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID   ASC API Issuer ID (UUID)
+#   APPLE_APP_STORE_CONNECT_API_KEY_P8    Contents of AuthKey_*.p8 (full file)
+#   IOS_DIST_CERT_P12         Base64-encoded distribution .p12 cert
+#   IOS_DIST_CERT_PASSWORD    Password for the .p12 file
+#   IOS_PROVISIONING_PROFILE  Base64-encoded App Store provisioning profile
+#   IOS_KEYCHAIN_PASSWORD     Random throwaway password for the temp keychain
+#
+# Plus all the existing build-time secrets from .github/workflows/ci.yml
+# (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_REVENUECAT_API_KEY_IOS,
+# VITE_ADMOB_*_IOS, etc.).
+#
+# Setup: see IOS_SETUP.md for the prerequisites (Apple Developer account,
+# Bundle ID, ASC listing, certificates, provisioning profiles).
+
+name: iOS build + TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: 'fastlane lane to run'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta       # archive + upload to TestFlight
+          - build_only # archive only, no upload (smoke test)
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-14   # Apple Silicon — faster + cheaper than macos-latest
+    timeout-minutes: 60
+
+    env:
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build web bundle (Vite)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_REVENUECAT_API_KEY: ${{ secrets.VITE_REVENUECAT_API_KEY }}
+          VITE_REVENUECAT_API_KEY_IOS: ${{ secrets.VITE_REVENUECAT_API_KEY_IOS }}
+          VITE_ADMOB_BANNER_IOS: ${{ secrets.VITE_ADMOB_BANNER_IOS }}
+          VITE_ADMOB_INTERSTITIAL_IOS: ${{ secrets.VITE_ADMOB_INTERSTITIAL_IOS }}
+          VITE_ADMOB_REWARDED_IOS: ${{ secrets.VITE_ADMOB_REWARDED_IOS }}
+          VITE_ADMOB_APPOPEN_IOS: ${{ secrets.VITE_ADMOB_APPOPEN_IOS }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_APP_VERSION: ${{ secrets.VITE_APP_VERSION }}
+          VITE_STRIPE_PRICE_MONTHLY: ${{ secrets.VITE_STRIPE_PRICE_MONTHLY }}
+          VITE_STRIPE_PRICE_YEARLY: ${{ secrets.VITE_STRIPE_PRICE_YEARLY }}
+          VITE_STRIPE_PRICE_LIFETIME: ${{ secrets.VITE_STRIPE_PRICE_LIFETIME }}
+        run: npm run build
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Setup Ruby + bundler (for fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          working-directory: ios/App
+          bundler-cache: true
+        continue-on-error: true   # ios/App may not yet exist on first run
+
+      # ── Code signing ────────────────────────────────────────────────
+      - name: Import distribution certificate
+        env:
+          P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12 }}
+          P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          echo -n "$P12_BASE64" | base64 --decode -o $RUNNER_TEMP/cert.p12
+          security import $RUNNER_TEMP/cert.p12 -P "$P12_PASSWORD" \
+            -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+      - name: Install provisioning profile
+        env:
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+        run: |
+          PROFILE_PATH=$HOME/Library/MobileDevice/Provisioning\ Profiles
+          mkdir -p "$PROFILE_PATH"
+          echo -n "$PROFILE_BASE64" | base64 --decode -o "$PROFILE_PATH/arcana_appstore.mobileprovision"
+
+      # ── Archive + upload ────────────────────────────────────────────
+      - name: Archive iOS app + upload to TestFlight (fastlane)
+        if: ${{ github.event.inputs.lane == 'beta' }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APPLE_APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APPLE_APP_STORE_CONNECT_API_KEY_P8 }}
+        working-directory: ios/App
+        run: bundle exec fastlane beta
+
+      - name: Archive iOS app (build-only, no upload)
+        if: ${{ github.event.inputs.lane == 'build_only' }}
+        working-directory: ios/App
+        run: bundle exec fastlane build_only
+
+      - name: Upload .ipa as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arcana-ios-ipa
+          path: ios/App/build/*.ipa
+          if-no-files-found: ignore
+          retention-days: 14

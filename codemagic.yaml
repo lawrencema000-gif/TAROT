@@ -41,7 +41,9 @@ workflows:
         # Apple rejects vague boilerplate — keep this concrete and user-facing.
         # Editing this requires re-archiving (it's baked into Info.plist).
         ATT_USAGE_DESCRIPTION: "Arcana uses tracking to deliver more relevant tarot insights and personalized ad experiences. You can change this anytime in iOS Settings."
-      node: 20
+      # Capacitor CLI 8.x requires Node 22+. Locally Lawrence is on
+      # v22.22.0 which matches; CI must use the same major.
+      node: 22
       xcode: latest
       cocoapods: default
 

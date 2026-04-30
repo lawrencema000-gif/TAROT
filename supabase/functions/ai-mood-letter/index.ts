@@ -1,5 +1,6 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { callAIJson } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -41,7 +42,8 @@ interface Resp {
   careSuggestion: string;      // 1 concrete self-care practice
 }
 
-const MODEL = "gemini-2.5-flash";
+// Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
+const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
 
 function localeName(code: string): string {
   const normalized = code.toLowerCase().split("-")[0];
@@ -65,10 +67,7 @@ Rules:
 - Don't be mystical or woo; this is emotional companionship, not divination.
 - Output MUST be valid JSON: { "letter": string, "dominantTheme": string (1 short phrase), "careSuggestion": string (1 sentence) }`;
 
-async function callGemini(entries: Req["entries"], context: Req["userContext"]): Promise<Resp> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "AI is not configured", 503);
-
+async function callAI(entries: Req["entries"], context: Req["userContext"]): Promise<Resp> {
   const localeLine = context?.locale && context.locale !== "en"
     ? `\n\nIMPORTANT: Respond in ${localeName(context.locale)}. Keep the warm/grounded voice.`
     : "";
@@ -86,41 +85,14 @@ async function callGemini(entries: Req["entries"], context: Req["userContext"]):
     })
     .join('\n');
 
-  const prompt = `${SYSTEM}${localeLine}${nameLine}\n\n---\n\nMood log (most recent last):\n${entryLines}\n\n---\n\nReply with ONLY the JSON object.`;
+  const userPrompt = `${nameLine}${localeLine}\n\nMood log (most recent last):\n${entryLines}\n\nReply with ONLY the JSON object.`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.75,
-        maxOutputTokens: 700,
-        responseMimeType: "application/json",
-      },
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-      ],
-    }),
+  const parsed = await callAIJson<Resp>({
+    system: SYSTEM,
+    userPrompt,
+    temperature: 0.75,
+    maxOutputTokens: 700,
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new AppError("AI_REQUEST_FAILED", `AI request failed: ${text.slice(0, 300)}`, 502);
-  }
-  const data = await res.json();
-  const completion = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!completion) throw new AppError("AI_EMPTY_RESPONSE", "AI returned empty response", 502);
-
-  let parsed: Resp;
-  try {
-    parsed = JSON.parse(completion);
-  } catch {
-    throw new AppError("AI_INVALID_JSON", "AI response was not valid JSON", 502);
-  }
 
   if (!parsed.letter || !parsed.dominantTheme || !parsed.careSuggestion) {
     throw new AppError("AI_MALFORMED_RESPONSE", "AI response missing required fields", 502);
@@ -141,14 +113,14 @@ Deno.serve(handler<Req, Resp>({
     // Short-ish TTL (24h) since users typically log fresh entries daily.
     const entriesKey = JSON.stringify(body.entries);
     const ctxKey = JSON.stringify(body.userContext ?? {});
-    const cacheKey = await aiCacheKey("ai-mood-letter", MODEL, entriesKey, ctxKey);
+    const cacheKey = await aiCacheKey("ai-mood-letter", CACHE_MODEL_TAG, entriesKey, ctxKey);
     const cached = await aiCacheGet<Resp>(ctx, cacheKey);
     if (cached) return cached;
 
-    const fresh = await callGemini(body.entries, body.userContext);
+    const fresh = await callAI(body.entries, body.userContext);
     await aiCacheStore(ctx, {
       cacheKey,
-      model: MODEL,
+      model: CACHE_MODEL_TAG,
       fnName: "ai-mood-letter",
       response: fresh,
       ttlDays: 1,

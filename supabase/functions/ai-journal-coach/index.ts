@@ -11,12 +11,13 @@
  * returned and discarded after the user reads it.
  */
 
-import { AppError, handler } from "../_shared/handler.ts";
+import { handler } from "../_shared/handler.ts";
 import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { callAIText } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
-// Upgraded 2026-04-25 — gemini-2.0-flash deprecated, returning 502s.
-const MODEL = "gemini-2.5-flash";
+// Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
+const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
 
 const RequestSchema = z.object({
   entry: z.string().min(10).max(6000),
@@ -45,39 +46,6 @@ const SYSTEM = `You are a warm, experienced journaling coach. The user has just 
 
 If the entry contains self-harm or suicidal ideation, return:
 {"observation": "What you've written is serious, and you do not have to carry it alone.", "prompts": ["Would you be willing to reach out to 988 (US Suicide & Crisis Lifeline) or text HOME to 741741?", "Who is one person who loves you that you could call right now?"]}`;
-
-async function callGemini(prompt: string): Promise<string> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "AI is not configured", 503);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.6,
-        maxOutputTokens: 500,
-        topP: 0.9,
-        responseMimeType: "application/json",
-      },
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-      ],
-    }),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new AppError("AI_REQUEST_FAILED", `AI failed: ${text.slice(0, 300)}`, 502);
-  }
-  const data = await res.json();
-  const out = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!out || typeof out !== "string") throw new AppError("AI_EMPTY_RESPONSE", "Empty response", 502);
-  return out.trim();
-}
 
 function safeParseJson(s: string): { observation: string; prompts: string[] } | null {
   try {
@@ -127,20 +95,26 @@ Deno.serve(handler<Req, Resp>({
       ? `Respond in ${({ ja: "Japanese", ko: "Korean", zh: "Chinese" } as Record<string, string>)[userContext.locale.slice(0, 2)] || "English"}. JSON keys must stay in English.`
       : "";
 
-    const prompt = [
-      SYSTEM,
-      ctxLines.length ? `\nUser signals: ${ctxLines.join(", ")}` : "",
+    const userPromptParts = [
+      ctxLines.length ? `User signals: ${ctxLines.join(", ")}` : "",
       localeLine,
-      "",
       `Entry:\n---\n${entry}\n---`,
-    ].filter(Boolean).join("\n");
+    ].filter(Boolean).join("\n\n");
 
     // Cache by full prompt — same entry + same context = same coach reply.
-    const cacheKey = await aiCacheKey("ai-journal-coach", MODEL, prompt);
+    const cacheKey = await aiCacheKey("ai-journal-coach", CACHE_MODEL_TAG, userPromptParts);
     const cachedResponse = await aiCacheGet<{ observation: string; prompts: string[] }>(ctx, cacheKey);
     if (cachedResponse) return cachedResponse;
 
-    const raw = await callGemini(prompt);
+    // We use callAIText (not callAIJson) so that if the model returns a
+    // freeform answer instead of strict JSON we can still soft-fall-back
+    // below to {observation, prompts} via safeParseJson.
+    const raw = await callAIText({
+      system: SYSTEM,
+      history: [{ role: "user", content: userPromptParts }],
+      temperature: 0.6,
+      maxOutputTokens: 500,
+    });
     const parsed = safeParseJson(raw);
     if (!parsed) {
       // fall back: treat the whole thing as an observation
@@ -155,7 +129,7 @@ Deno.serve(handler<Req, Resp>({
     // Store fresh result in cache for future identical-prompt requests.
     await aiCacheStore(ctx, {
       cacheKey,
-      model: MODEL,
+      model: CACHE_MODEL_TAG,
       fnName: "ai-journal-coach",
       response: parsed,
     });

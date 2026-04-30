@@ -1,4 +1,5 @@
 import { AppError, handler } from "../_shared/handler.ts";
+import { callAIText, embedText } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -52,9 +53,7 @@ interface ChatResponse {
   memoriesUsed: number;
 }
 
-// Upgraded 2026-04-25 — gemini-2.0-flash deprecated by Google, returning 502s.
-const GEMINI_CHAT_MODEL = "gemini-2.5-flash";
-const GEMINI_EMBED_MODEL = "text-embedding-004";
+// Provider chain (OpenAI primary, Gemini fallback) lives in _shared/ai-providers.ts.
 const MAX_HISTORY_MESSAGES = 20;
 const SUMMARIZE_AFTER_N_USER_TURNS = 10;
 const TOP_K_MEMORIES = 3;
@@ -106,94 +105,29 @@ function buildSystemPrompt(
   return personaPrompt + contextBlock + memoryBlock + localeLine + safetyBlock;
 }
 
-async function callGeminiChat(systemPrompt: string, history: Message[]): Promise<string> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "AI is not configured", 503);
-
+async function callChat(systemPrompt: string, history: Message[]): Promise<string> {
+  // Trim to recent N to keep token cost bounded; OpenAI/Gemini providers
+  // and retry/fallback logic are encapsulated in _shared/ai-providers.ts.
   const trimmed = history.slice(-MAX_HISTORY_MESSAGES);
-  const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
-  for (let i = 0; i < trimmed.length; i++) {
-    const msg = trimmed[i];
-    const isFirstUser = i === 0 && msg.role === "user";
-    const text = isFirstUser ? `${systemPrompt}\n\n---\n\nUser says: ${msg.content}` : msg.content;
-    contents.push({ role: msg.role === "assistant" ? "model" : "user", parts: [{ text }] });
-  }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_CHAT_MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents,
-      generationConfig: { temperature: 0.85, maxOutputTokens: 600, topP: 0.95 },
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-      ],
-    }),
+  return callAIText({
+    system: systemPrompt,
+    history: trimmed,
+    temperature: 0.85,
+    maxOutputTokens: 600,
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new AppError("AI_REQUEST_FAILED", `AI request failed: ${text.slice(0, 300)}`, 502);
-  }
-  const data = await res.json();
-  const completion = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!completion || typeof completion !== "string") {
-    throw new AppError("AI_EMPTY_RESPONSE", "AI returned empty response", 502);
-  }
-  return completion.trim();
-}
-
-/**
- * Embed a text string into a 768-dim vector via Gemini text-embedding-004.
- * Soft-fails on error: returns null so the caller can fall back to
- * no-memory mode rather than failing the whole chat turn.
- */
-async function embedText(text: string): Promise<number[] | null> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) return null;
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_EMBED_MODEL}:embedContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: `models/${GEMINI_EMBED_MODEL}`,
-        content: { parts: [{ text: text.slice(0, 8000) }] },
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const values = data?.embedding?.values;
-    if (!Array.isArray(values) || values.length !== 768) return null;
-    return values as number[];
-  } catch {
-    return null;
-  }
 }
 
 async function summarizeTurns(turns: Array<{ role: string; content: string }>): Promise<string | null> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) return null;
   const text = turns.map((t) => `${t.role === "user" ? "User" : "You"}: ${t.content}`).join("\n\n");
-  const prompt = `Summarize the following conversation into 1-3 sentences capturing the user's core concerns, themes, recurring questions, and any specific life details they mentioned (names, work, relationships, dates, health, goals). Write it in third person so it reads like notes you would keep about them. Keep it under 300 characters.\n\nConversation:\n${text}\n\nNotes:`;
+  const system = `Summarize conversations into 1-3 sentences capturing the user's core concerns, themes, recurring questions, and any specific life details they mentioned (names, work, relationships, dates, health, goals). Write in third person so it reads like notes. Keep it under 300 characters.`;
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_CHAT_MODEL}:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 200 },
-      }),
+    const out = await callAIText({
+      system,
+      history: [{ role: "user", content: `Conversation:\n${text}\n\nNotes:` }],
+      temperature: 0.3,
+      maxOutputTokens: 200,
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const completion = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!completion || typeof completion !== "string") return null;
-    return completion.trim().slice(0, 2000);
+    return out.trim().slice(0, 2000);
   } catch {
     return null;
   }
@@ -308,9 +242,9 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
 
     await persistUserTurn;
 
-    // 3. Build prompt with memories, call chat model.
+    // 3. Build prompt with memories, call chat model (OpenAI primary, Gemini fallback).
     const systemPrompt = buildSystemPrompt(persona, userContext, memories);
-    const reply = await callGeminiChat(systemPrompt, history);
+    const reply = await callChat(systemPrompt, history);
 
     // 4. Persist assistant reply.
     await ctx.supabase.from("ai_conversation_turns").insert({

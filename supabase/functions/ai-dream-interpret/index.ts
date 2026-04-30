@@ -1,5 +1,6 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { aiGate, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { callAIJson } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -46,7 +47,8 @@ interface Resp {
   compensatoryMove?: string;
 }
 
-const MODEL = "gemini-2.5-flash";
+// Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
+const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
 
 function localeName(code: string): string {
   const normalized = code.toLowerCase().split("-")[0];
@@ -102,10 +104,7 @@ Schema:
   "compensatoryMove": string
 }`;
 
-async function callGemini(dreamText: string, context: Req["userContext"]): Promise<Resp> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "AI is not configured", 503);
-
+async function callAI(dreamText: string, context: Req["userContext"]): Promise<Resp> {
   const localeLine = context?.locale && context.locale !== "en"
     ? `\n\nIMPORTANT: Respond in ${localeName(context.locale)}. Keep the Jungian voice; just translate naturally.`
     : "";
@@ -117,42 +116,14 @@ async function callGemini(dreamText: string, context: Req["userContext"]): Promi
     ? `\n\nContextual notes on the dreamer (use sparingly, do NOT lead with it):\n${ctxLines.join("\n")}`
     : "";
 
-  const prompt = `${SYSTEM}${localeLine}${ctxBlock}\n\n---\n\nDream:\n${dreamText}\n\n---\n\nReply with ONLY the JSON object, nothing else.`;
+  const userPrompt = `${ctxBlock}\n\nDream:\n${dreamText}\n\nReply with ONLY the JSON object matching the schema, nothing else.${localeLine}`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 900,
-        responseMimeType: "application/json",
-      },
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-      ],
-    }),
+  const parsed = await callAIJson<Resp>({
+    system: SYSTEM,
+    userPrompt,
+    temperature: 0.7,
+    maxOutputTokens: 900,
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new AppError("AI_REQUEST_FAILED", `AI request failed: ${text.slice(0, 300)}`, 502);
-  }
-  const data = await res.json();
-  const completion = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!completion) throw new AppError("AI_EMPTY_RESPONSE", "AI returned empty response", 502);
-
-  // Gemini returns JSON as a string because of responseMimeType=json.
-  let parsed: Resp;
-  try {
-    parsed = JSON.parse(completion);
-  } catch {
-    throw new AppError("AI_INVALID_JSON", "AI response was not valid JSON", 502);
-  }
 
   // Minimal shape validation — if required fields are missing, reject so
   // the client falls back to its local dictionary rather than displaying
@@ -189,14 +160,14 @@ Deno.serve(handler<Req, Resp>({
       body.userContext?.zodiacSign ?? "",
       body.userContext?.mbtiType ?? "",
     ].join("|");
-    const key = await aiCacheKey("ai-dream-interpret", MODEL, body.dreamText.trim(), ctxKey);
+    const key = await aiCacheKey("ai-dream-interpret", CACHE_MODEL_TAG, body.dreamText.trim(), ctxKey);
 
     const gate = await aiGate<Resp>(ctx, { userId: ctx.userId, cacheKey: key });
     if (gate.allowed === false) throw new AppError(gate.reason, gate.message, gate.status);
     if (gate.cached) return gate.response;
 
-    const fresh = await callGemini(body.dreamText, body.userContext);
-    await aiCacheStore(ctx, { cacheKey: key, model: MODEL, fnName: "ai-dream-interpret", response: fresh });
+    const fresh = await callAI(body.dreamText, body.userContext);
+    await aiCacheStore(ctx, { cacheKey: key, model: CACHE_MODEL_TAG, fnName: "ai-dream-interpret", response: fresh });
     return fresh;
   },
 }));

@@ -12,13 +12,13 @@
  * tier (5 free / 50 Arcana+ / unlimited SVIP).
  */
 
-import { AppError, handler } from "../_shared/handler.ts";
+import { handler } from "../_shared/handler.ts";
 import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
+import { callAIText, embedText } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
-// Upgraded 2026-04-25 — gemini-2.0-flash deprecated, returning 502s.
-const GEMINI_CHAT_MODEL = "gemini-2.5-flash";
-const GEMINI_EMBED_MODEL = "text-embedding-004";
+// Cache key version — bump when prompt/model semantics change.
+const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
 
 const RequestSchema = z.object({
   question: z.string().min(3).max(500),
@@ -80,55 +80,18 @@ const SYSTEM = `You are a calm, grounded oracle voice. You are NOT performing my
 - End with a single question that helps them sit with the situation
 - If the question is about self-harm, crisis, medical, legal, or financial decisions: acknowledge warmly, redirect to a professional, share 988 / crisistextline.org if crisis`;
 
-async function callGemini(prompt: string): Promise<string> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "AI is not configured", 503);
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_CHAT_MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.8, maxOutputTokens: 400, topP: 0.95 },
-      safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" },
-      ],
-    }),
+async function callAI(systemAndPrompt: string): Promise<string> {
+  // The original prompt bundles SYSTEM + card + context + question into one
+  // string. We split system out so OpenAI can use a proper `system` role.
+  // The quick-reading prompt format is preserved by treating the whole
+  // string as system context and asking for the freeform answer in the
+  // user turn.
+  return callAIText({
+    system: SYSTEM,
+    history: [{ role: "user", content: systemAndPrompt }],
+    temperature: 0.8,
+    maxOutputTokens: 400,
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new AppError("AI_REQUEST_FAILED", `AI request failed: ${text.slice(0, 300)}`, 502);
-  }
-  const data = await res.json();
-  const out = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!out || typeof out !== "string") throw new AppError("AI_EMPTY_RESPONSE", "AI returned empty response", 502);
-  return out.trim();
-}
-
-async function embed(text: string): Promise<number[] | null> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) return null;
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_EMBED_MODEL}:embedContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: `models/${GEMINI_EMBED_MODEL}`,
-        content: { parts: [{ text: text.slice(0, 4000) }] },
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const v = data?.embedding?.values;
-    return Array.isArray(v) && v.length === 768 ? v : null;
-  } catch {
-    return null;
-  }
 }
 
 Deno.serve(handler<Req, Resp>({
@@ -146,7 +109,7 @@ Deno.serve(handler<Req, Resp>({
 
     // Try to pull one relevant memory (across any persona) for continuity.
     let memory: string | null = null;
-    const v = await embed(question);
+    const v = await embedText(question);
     if (v) {
       const { data: rows } = await ctx.supabase.rpc("ai_search_memories", {
         p_user_id: userId,
@@ -167,8 +130,6 @@ Deno.serve(handler<Req, Resp>({
     if (userContext?.mbtiType)    contextLines.push(`MBTI ${userContext.mbtiType}`);
 
     const prompt = [
-      SYSTEM,
-      "",
       `Card drawn: ${card.name} — ${card.meaning}`,
       contextLines.length ? `About the person: ${contextLines.join(", ")}` : "",
       memory ? `Something you remember about them: ${memory}` : "",
@@ -181,13 +142,13 @@ Deno.serve(handler<Req, Resp>({
 
     // Cache by full prompt — identical prompt = identical response.
     // Same-question, same-day, same-user-context cases hit the cache and
-    // skip the Gemini call. 7-day TTL is fine because the daily card draw
+    // skip the AI call. 7-day TTL is fine because the daily card draw
     // changes the prompt naturally on day boundaries.
-    const cacheKey = await aiCacheKey("ai-quick-reading", GEMINI_CHAT_MODEL, prompt);
+    const cacheKey = await aiCacheKey("ai-quick-reading", CACHE_MODEL_TAG, prompt);
     const cached = await aiCacheGet<Resp>(ctx, cacheKey);
     if (cached) return cached;
 
-    const reading = await callGemini(prompt);
+    const reading = await callAI(prompt);
     const response: Resp = {
       reading,
       card: { name: card.name, meaning: card.meaning },
@@ -195,7 +156,7 @@ Deno.serve(handler<Req, Resp>({
     };
     await aiCacheStore(ctx, {
       cacheKey,
-      model: GEMINI_CHAT_MODEL,
+      model: CACHE_MODEL_TAG,
       fnName: "ai-quick-reading",
       response,
     });

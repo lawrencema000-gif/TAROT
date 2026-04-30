@@ -1120,26 +1120,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     //    fetchProfile() call for this user bails before touching state.
     activeUserIdRef.current = null;
 
-    try {
-      // 1. Clear persisted Supabase session FIRST so even if native
-      //    plugins crash the app, re-opening lands on the sign-in screen.
-      await supabase.auth.signOut();
-    } catch (e) {
-      logError('auth.signOut.supabase', 'Supabase sign out error', { error: e });
-    }
+    // ── ORDER MATTERS ──
+    // We do native plugin calls FIRST while the Activity / WebView /
+    // React tree are still in a stable state. Setting user=null too
+    // early triggers a re-render that unmounts AppRoot mid-call, which
+    // historically caused the GoogleAuth plugin to crash natively when
+    // its Android activity context was being torn down. Native crashes
+    // can't be caught by JS try/catch — the process dies and the user
+    // sees the app vanish.
 
-    // 2. Clear UI state immediately
-    setSession(null);
-    setUser(null);
-    setProfile(null);
-
-    // 3. Sign out of native Google SDK (isolated — if this crashes,
-    //    the session is already cleared above)
+    // 1. Native Google sign-out — initialize FIRST (idempotent) to
+    //    guarantee stable plugin state. Without this, if a user signed
+    //    in via email/password (no GoogleAuth init) and tries to sign
+    //    out, GoogleAuth.signOut() throws a native exception.
     if (isNative()) {
-      try { await GoogleAuth.signOut(); } catch { /* ignore */ }
+      try {
+        await GoogleAuth.initialize();
+        await GoogleAuth.signOut();
+      } catch (e) {
+        // JS-side errors only — native crashes can't reach here, but
+        // logging non-fatal init/signout failures helps diagnose state.
+        logWarn('auth.signOut.googleNative', 'GoogleAuth signOut failed (non-fatal)', { error: String(e) });
+      }
     }
 
-    // 4. Sign out of RevenueCat
+    // 2. Sign out of RevenueCat. Plugin's logOut() is safe to call
+    //    even if anonymous; we wrap defensively.
     try {
       const { getBillingService } = await import('../services/billing');
       const billingService = getBillingService();
@@ -1148,11 +1154,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logError('auth.signOut.billing', 'Billing sign out error', { error: e });
     }
 
-    // 5. Reset ads service state (prevent stale user ID crashes)
+    // 3. Reset ads service state (prevent stale user ID crashes)
     try {
       const { adsService } = await import('../services/ads');
       adsService.setUserId(null);
     } catch { /* ignore */ }
+
+    // 4. Now clear Supabase session. This is the durable source of
+    //    truth — once cleared, even an app crash leaves the user
+    //    landed on the sign-in screen on next launch.
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      logError('auth.signOut.supabase', 'Supabase sign out error', { error: e });
+    }
+
+    // 5. Now clear UI state. By this point all native plugin calls
+    //    have returned, so the unmount cascade can't race them.
+    setSession(null);
+    setUser(null);
+    setProfile(null);
 
     // 6. Purge per-user caches and counters so next sign-in starts clean.
     //    Device-level preferences (onboarding, locale, anon_id, attribution)

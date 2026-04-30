@@ -230,7 +230,10 @@ function computeYearPillar(y: number, m: number, d: number): { stem: HeavenlySte
 /** Month pillar — branch from solar-term bucket, stem from five-tigers formula. */
 function computeMonthPillar(m: number, d: number, yearStemIdx: number): { stem: HeavenlyStem; branch: EarthlyBranch } {
   // Walk solar terms in calendar order, keep the last one whose start date has passed.
-  let branchIdx = 1;
+  // Default starts at 子 (idx 0) — the period from previous-year's 大雪 (~Dec 7)
+  // through current-year's 小寒 (~Jan 6) is the 子 month. Without this, dates
+  // Jan 1-5 incorrectly mapped to 丑 instead of 子.
+  let branchIdx = 0;
   for (const term of SOLAR_TERM_BOUNDARIES) {
     if (m > term.m || (m === term.m && d >= term.d)) {
       branchIdx = term.branchIdx;
@@ -249,13 +252,17 @@ function computeMonthPillar(m: number, d: number, yearStemIdx: number): { stem: 
 /**
  * Day pillar — 60-day stem/branch cycle.
  *
- * Offset constant 45 calibrated so that:
- *   • 2024-01-01 Gregorian → 壬辰 (idx 28)  [stem 8, branch 4]
- *   • 2020-01-01 Gregorian → 辛未 (idx 7)   [stem 7, branch 7]
- *   • 2000-01-01 Gregorian → 丙戌 (idx 22)  [stem 2, branch 10]
- * All three cross-checked against published万年历 tables.
+ * Offset constant 17 calibrated against published 万年历 tables.
+ * Reference: 2001-06-08 Gregorian → 壬寅 (idx 38), a widely-cited
+ * example chart from the BaZi tradition.
+ *   daysSinceEpoch(2001-06-08) = 11481
+ *   (11481 + 17) % 60 = 38 ✓
+ *
+ * The previous offset of 45 was mis-calibrated (off by 32 days);
+ * fixed 2026-04-30 after a user-shared ChatGPT reading exposed the
+ * mismatch.
  */
-const DAY_PILLAR_OFFSET = 45;
+const DAY_PILLAR_OFFSET = 17;
 
 function computeDayPillar(y: number, m: number, d: number): { stem: HeavenlyStem; branch: EarthlyBranch; stemIdx: number } {
   const utcDate = Date.UTC(y, m - 1, d);

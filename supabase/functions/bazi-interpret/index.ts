@@ -188,15 +188,27 @@ function buildUserPrompt(input: BaziInput): string {
 }
 
 function inputSignature(input: BaziInput): string {
-  // Hash that distinguishes "same chart, same year" from "user changed
-  // their birth time / gender / it's a new year". If signature matches,
-  // we serve the cached row.
-  return [
+  // Hash that invalidates the cache when ANY of these change:
+  //   - user details (birthDate, birthTime, gender)
+  //   - calendar year (annual section is year-specific)
+  //   - chart computation result (pillars, ten gods, branch relations,
+  //     luck pillars). This means future chart-algorithm fixes
+  //     auto-invalidate stale cached readings without manual cleanup.
+  const parts = [
     input.birthDate,
     input.birthTime || "",
     input.gender,
-    new Date().getFullYear(),
-  ].join("|");
+    new Date().getFullYear().toString(),
+    `${input.pillars.year.stem}${input.pillars.year.branch}`,
+    `${input.pillars.month.stem}${input.pillars.month.branch}`,
+    `${input.pillars.day.stem}${input.pillars.day.branch}`,
+    `${input.pillars.hour.stem}${input.pillars.hour.branch}`,
+    input.dayMaster,
+    input.currentLuckPillar
+      ? `${input.currentLuckPillar.stem}${input.currentLuckPillar.branch}`
+      : "",
+  ];
+  return parts.join("|");
 }
 
 interface ReadingShape {

@@ -880,16 +880,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Native: use Google's native SDK for account picker (no browser redirect)
         const nativeSpan = startSpan('auth.google.nativeSignIn');
 
+        let googleUser: Awaited<ReturnType<typeof GoogleAuth.signIn>>;
         try {
-          // Initialize and sign out to clear any cached account (forces fresh picker)
+          // Initialize is idempotent — safe to call every time.
+          // We deliberately do NOT call GoogleAuth.signOut() here:
+          // historically that pattern (signOut → signIn to "force picker")
+          // left the v3.x plugin in an unstable state on Android, causing
+          // the subsequent signIn() to throw and fall back to browser OAuth.
+          // Instead: rely on Google's native picker behavior — first-time
+          // users get the picker, returning users get silent re-auth (which
+          // is the desired UX). For "switch account", the user explicitly
+          // signs out (which clears the cached Google session) and signs
+          // in again — handled by the dedicated signOut path.
+          await GoogleAuth.initialize();
           try {
+            googleUser = await GoogleAuth.signIn();
+          } catch (firstAttemptErr) {
+            // Single retry after re-init in case the plugin was in a stale
+            // state from a previous session. Rare but inexpensive.
+            const errMsg = firstAttemptErr instanceof Error ? firstAttemptErr.message : String(firstAttemptErr);
+            const isCancellation = errMsg.includes('canceled') || errMsg.includes('cancelled') || errMsg.includes('12501');
+            if (isCancellation) throw firstAttemptErr;
+            logWarn('auth.google.signInRetry', 'First signIn failed, retrying after re-init', { error: errMsg });
             await GoogleAuth.initialize();
-            await GoogleAuth.signOut();
-          } catch {
-            // Re-initialize after signOut failure to ensure clean state
-            await GoogleAuth.initialize();
+            googleUser = await GoogleAuth.signIn();
           }
-          const googleUser = await GoogleAuth.signIn();
 
           logInfo('auth.google.nativeSuccess', 'Native Google sign-in succeeded', {
             hasIdToken: !!googleUser.authentication.idToken,

@@ -34,9 +34,7 @@ workflows:
       groups:
         - arcana_ios_secrets
       vars:
-        # Capacitor 8 uses SPM, so only App.xcodeproj is generated
-        # (no App.xcworkspace — that's CocoaPods-only).
-        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.arcanatarotapp"
         # ATT prompt text shown when iOS displays the system tracking dialog.
@@ -47,9 +45,13 @@ workflows:
       # v22.22.0 which matches; CI must use the same major.
       node: 22
       xcode: latest
-      # Capacitor 8 uses Swift Package Manager (SPM) by default, not
-      # CocoaPods. No `pod install` needed — Xcode resolves Package.swift
-      # dependencies automatically during build-ipa.
+      # Capacitor 8 defaults to SPM, but several plugins (notably
+      # @codetrix-studio/capacitor-google-auth) lack Package.swift, so
+      # SPM can't fully resolve the project. We force CocoaPods via the
+      # `--packagemanager Cocoapods` flag passed to `npx cap add ios`,
+      # which then generates ios/App/Podfile + App.xcworkspace as
+      # expected by xcode-project build-ipa.
+      cocoapods: default
 
     triggering:
       # Manual-only — uncomment one of the auto-trigger options below
@@ -75,9 +77,12 @@ workflows:
 
       - name: Add iOS platform if missing
         script: |
+          # Force CocoaPods (SPM mode breaks because not all plugins ship
+          # Package.swift). --packagemanager flag is Capacitor 8's escape
+          # hatch back to the proven CocoaPods path.
           if [ ! -d "ios/App" ]; then
-            echo "::: First-time setup: generating ios/App via npx cap add ios"
-            npx cap add ios
+            echo "::: First-time setup: generating ios/App via npx cap add ios --packagemanager Cocoapods"
+            npx cap add ios --packagemanager Cocoapods
           else
             echo "::: Existing ios/App directory found, skipping cap add"
           fi
@@ -85,6 +90,11 @@ workflows:
       - name: Sync Capacitor → iOS native project
         script: |
           npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App
+          pod install --repo-update
 
       - name: Inject Info.plist values (AdMob + ATT + Bundle ID)
         script: |
@@ -128,7 +138,7 @@ workflows:
       - name: Archive + export ipa
         script: |
           xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
+            --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
 
     artifacts:

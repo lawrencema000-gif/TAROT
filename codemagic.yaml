@@ -11,10 +11,10 @@
 #      already used by other apps in Lawrence's account)
 #   3. The TAROT repo is added as an application
 #
-# First build will be slower (~30-45 min) because:
-#   - `npx cap add ios` runs (creates ios/App/...)
-#   - `pod install` downloads CocoaPods deps from scratch
-# Subsequent builds reuse cached pods (~10-15 min).
+# First build will be slower (~20-30 min) because:
+#   - `npx cap add ios` runs (creates ios/App/... via SPM)
+#   - Xcode resolves Swift Package dependencies on first build
+# Subsequent builds reuse cached SPM packages (~10-15 min).
 
 workflows:
   ios-testflight:
@@ -45,7 +45,9 @@ workflows:
       # v22.22.0 which matches; CI must use the same major.
       node: 22
       xcode: latest
-      cocoapods: default
+      # Capacitor 8 uses Swift Package Manager (SPM) by default, not
+      # CocoaPods. No `pod install` needed — Xcode resolves Package.swift
+      # dependencies automatically during build-ipa.
 
     triggering:
       # Manual-only — uncomment one of the auto-trigger options below
@@ -101,11 +103,6 @@ workflows:
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" "$PLIST"
           echo "::: Info.plist values set:"
           plutil -p "$PLIST" | grep -E "(GADApplicationIdentifier|NSUserTrackingUsageDescription|CFBundleIdentifier)"
-
-      - name: Install CocoaPods dependencies
-        script: |
-          cd ios/App
-          pod install --repo-update
 
       - name: Set up automatic code signing
         script: |

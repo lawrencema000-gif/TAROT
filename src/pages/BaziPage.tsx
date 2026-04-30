@@ -18,6 +18,7 @@ import {
 } from '../data/bazi';
 import { computeBaziDeep, type Gender as BaziGender } from '../data/baziDeep';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { BaziAIReadingPanel } from '../components/bazi/BaziAIReading';
 
 type Stage = 'input' | 'result';
 
@@ -701,6 +702,21 @@ export function BaziPage() {
               </div>
             </Card>
           </>
+        )}
+
+        {/* AI-generated personalised reading. Premium-only; auto-fetches
+            on mount for premium users. Cached server-side per user/year. */}
+        {result && deepening && gender && (
+          <BaziAIReadingPanel
+            result={result}
+            phase1={deepening}
+            deep={deepResult}
+            birthDate={birthDate}
+            birthTime={birthTime || null}
+            gender={gender}
+            isPremium={isPremium}
+            onUpgradeClick={() => navigate('/profile')}
+          />
         )}
 
         <div className="grid grid-cols-2 gap-3">

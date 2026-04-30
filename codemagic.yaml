@@ -24,9 +24,11 @@ workflows:
 
     integrations:
       # Name must match the integration in Codemagic Settings → Integrations
-      # → Developer Portal → App Store Connect.
-      # Lawrence already has `Codemagic-admin` (Key ID 75RBD8AXTP) connected.
-      app_store_connect: Codemagic-admin
+      # → Developer Portal. Lawrence's existing integration is named
+      # `Codemagic` (Key ID 75RBD8AXTP — same key that's named `Codemagic-admin`
+      # in App Store Connect; the Codemagic-side label happens to drop the
+      # `-admin` suffix).
+      app_store_connect: Codemagic
 
     environment:
       groups:
@@ -141,9 +143,8 @@ workflows:
         submit_to_testflight: true
         # beta_groups:
         #   - "Internal Testers"
-        # Reject any build still in TestFlight processing with the same
-        # version number so we never accidentally distribute a stale ipa.
-        cancel_previous_submissions: true
+        # NOTE: cancel_previous_submissions only applies when
+        # submit_to_app_store is true. For TestFlight-only flow, omit it.
 
       email:
         # Send build status to Lawrence on success/failure.

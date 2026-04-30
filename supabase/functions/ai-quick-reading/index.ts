@@ -18,7 +18,7 @@ import { callAIText, embedText } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
 // Cache key version — bump when prompt/model semantics change.
-const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
+const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
 
 const RequestSchema = z.object({
   question: z.string().min(3).max(500),

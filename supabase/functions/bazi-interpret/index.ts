@@ -20,19 +20,18 @@ import { handler, AppError } from "../_shared/handler.ts";
  * `force=true` body flag (admin / debug only).
  *
  * AI provider chain (OpenAI primary, Gemini fallback):
- *   1. OPENAI_API_KEY → gpt-4o-mini (3 attempts, then gpt-4o)
+ *   1. OPENAI_API_KEY → gpt-5 (3 attempts, then gpt-5-mini)
  *   2. GEMINI_API_KEY → gemini-2.5-flash → 2.0-flash-exp → 1.5-flash
  *   At least one of the two API keys must be set; both is best.
  *
  * Auth: required (subscription gate enforced inline).
  */
 
-// Provider chain. OpenAI gpt-4o-mini is the primary — strongest narrative
-// quality at the same per-call cost as Gemini Flash (~$0.002/reading).
-// Gemini chain is the fallback when OpenAI is unavailable. Both providers
-// support JSON mode + system+user message split, so the call shape is
-// near-identical.
-const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4o"];
+// Provider chain — quality-first. gpt-5 produces noticeably stronger
+// 14-section Bazi narratives (better Ten-Gods reasoning, richer luck-
+// pillar analysis) than 4o-mini, with much more reliable JSON-mode
+// adherence. gpt-5-mini covers retries; Gemini covers OpenAI outages.
+const OPENAI_MODELS = ["gpt-5", "gpt-5-mini"];
 const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
 
 async function sleep(ms: number) {
@@ -187,6 +186,10 @@ function buildUserPrompt(input: BaziInput): string {
   return lines.join("\n");
 }
 
+// Bumped on every model upgrade so the next request regenerates with
+// the new model rather than returning a stale 4o-mini cached reading.
+const MODEL_GENERATION = "v2-gpt5";
+
 function inputSignature(input: BaziInput): string {
   // Hash that invalidates the cache when ANY of these change:
   //   - user details (birthDate, birthTime, gender)
@@ -194,7 +197,11 @@ function inputSignature(input: BaziInput): string {
   //   - chart computation result (pillars, ten gods, branch relations,
   //     luck pillars). This means future chart-algorithm fixes
   //     auto-invalidate stale cached readings without manual cleanup.
+  //   - MODEL_GENERATION — bumping the constant invalidates every cached
+  //     reading the next time the user opens the page, so model upgrades
+  //     are visible immediately without manual cache clears.
   const parts = [
+    MODEL_GENERATION,
     input.birthDate,
     input.birthTime || "",
     input.gender,
@@ -228,23 +235,39 @@ interface ReadingShape {
   closing_summary: string;
 }
 
+// gpt-5 and other reasoning models have different API constraints than
+// gpt-4o: no custom temperature, reasoning tokens consume the completion
+// budget. We pad max_completion_tokens and switch to reasoning_effort.
+function isReasoningModel(model: string): boolean {
+  return model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
+}
+
 async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
+  const reasoning = isReasoningModel(model);
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: prompt },
+    ],
+    // Bazi readings are ~3000-4000 tokens of structured JSON. Reasoning
+    // models need extra headroom so internal reasoning doesn't eat the
+    // budget before the JSON is emitted.
+    max_completion_tokens: reasoning ? 16000 : 8000,
+    response_format: { type: "json_object" },
+  };
+  if (reasoning) {
+    body.reasoning_effort = "minimal";
+  } else {
+    body.temperature = 0.7;
+  }
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.7,
-      max_completion_tokens: 8000,
-      response_format: { type: "json_object" },
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const body = await res.text();

@@ -20,7 +20,11 @@
 
 import { AppError } from "./handler.ts";
 
-const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4o"];
+// Quality-first: gpt-5 primary on every call, gpt-5-mini only as fallback
+// when gpt-5 is rate-limited / overloaded. The narrative depth and JSON-
+// schema reliability of gpt-5 noticeably improves Bazi readings, dream
+// interpretations, and the long-form Companion replies.
+const OPENAI_MODELS = ["gpt-5", "gpt-5-mini"];
 const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
 
 export interface ChatMessage {
@@ -64,6 +68,20 @@ interface CallFailure {
 }
 
 // ─── OpenAI ──────────────────────────────────────────────────────────────
+// Reasoning models (gpt-5, o1, o3, o4) have different API constraints than
+// chat-completion models (gpt-4o):
+//   - They don't support `temperature` other than the default (1).
+//   - Their reasoning tokens count against `max_completion_tokens` BEFORE
+//     any visible output is produced. With a tight budget the model
+//     "thinks" the budget away and returns truncated or empty content.
+//   - They accept `reasoning_effort` ("minimal" | "low" | "medium" | "high")
+//     to control the reasoning budget. For our creative + JSON tasks,
+//     "minimal" is right — we don't need chain-of-thought reasoning, we
+//     need the prose / structured output, and minimal keeps latency low.
+function isReasoningModel(model: string): boolean {
+  return model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
+}
+
 async function openAIChat(
   model: string,
   apiKey: string,
@@ -73,6 +91,30 @@ async function openAIChat(
   maxTokens: number,
   jsonMode: boolean,
 ): Promise<CallResult | CallFailure> {
+  const reasoning = isReasoningModel(model);
+  // Reasoning models eat output budget for thinking tokens. Even with
+  // reasoning_effort=minimal we want to roughly double the headroom so
+  // the visible JSON / prose output isn't truncated. 4o-class models
+  // don't need this padding.
+  const completionBudget = reasoning ? Math.max(maxTokens * 2, 1500) : maxTokens;
+
+  // For reasoning models: omit `temperature`, add `reasoning_effort`.
+  // For 4o-class models: pass `temperature` as before.
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system },
+      ...history.map((m) => ({ role: m.role, content: m.content })),
+    ],
+    max_completion_tokens: completionBudget,
+    ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
+  };
+  if (reasoning) {
+    body.reasoning_effort = "minimal";
+  } else {
+    body.temperature = temperature;
+  }
+
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -80,16 +122,7 @@ async function openAIChat(
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: system },
-          ...history.map((m) => ({ role: m.role, content: m.content })),
-        ],
-        temperature,
-        max_completion_tokens: maxTokens,
-        ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       return { ok: false, status: res.status, body: (await res.text()).slice(0, 300) };

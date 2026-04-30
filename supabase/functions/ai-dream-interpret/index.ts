@@ -48,7 +48,7 @@ interface Resp {
 }
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
+const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
 
 function localeName(code: string): string {
   const normalized = code.toLowerCase().split("-")[0];

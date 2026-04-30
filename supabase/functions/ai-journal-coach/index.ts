@@ -17,7 +17,7 @@ import { callAIText } from "../_shared/ai-providers.ts";
 import { z } from "npm:zod@3.24.1";
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = "openai-gpt-4o-mini-or-gemini-2.5-flash";
+const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
 
 const RequestSchema = z.object({
   entry: z.string().min(10).max(6000),

@@ -116,21 +116,37 @@ workflows:
           echo "::: Info.plist values set:"
           plutil -p "$PLIST" | grep -E "(GADApplicationIdentifier|NSUserTrackingUsageDescription|CFBundleIdentifier)"
 
-      - name: Set up automatic code signing
+      - name: 1 - Initialize signing keychain
         script: |
-          # Codemagic's automatic code signing flow:
-          # 1. Initialize a temp keychain on the macOS runner.
-          # 2. Use the App Store Connect API integration to fetch (or create
-          #    if missing) the iOS Distribution certificate + App Store
-          #    provisioning profile for our Bundle ID.
-          # 3. Import certificates into the keychain.
-          # 4. Tell Xcode to use the fetched profile.
-          # No manual .p12 / .mobileprovision uploads required.
           keychain initialize
+
+      - name: 2 - Create iOS Distribution certificate (if missing)
+        script: |
+          # Force-create a fresh iOS Distribution certificate WITH a local
+          # private key. fetch-signing-files alone can fail if Apple Dev
+          # Portal already has a Distribution cert whose private key isn't
+          # accessible in this CI runner ("Cannot save Signing Certificates
+          # without certificate private key" error).
+          app-store-connect certificates create \
+            --type IOS_DISTRIBUTION \
+            --save \
+            || echo "::: Certificate creation skipped (may already exist locally)"
+          ls -la /Users/builder/Library/Developer/Xcode/UserData/Certificates/ 2>&1 || true
+          ls -la /Users/builder/Library/MobileDevice/Certificates/ 2>&1 || true
+
+      - name: 3 - Fetch (or create) provisioning profile
+        script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
+          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ 2>&1 || true
+
+      - name: 4 - Add certificates to keychain
+        script: |
           keychain add-certificates
+
+      - name: 5 - Configure Xcode to use profiles
+        script: |
           xcode-project use-profiles
 
       - name: Set iOS build version + number

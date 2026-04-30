@@ -190,6 +190,10 @@ export function NatalChartReportPage() {
       body: {
         partnerBirthDate,
         partnerBirthTime: partnerBirthTime || undefined,
+        // Proxy partner timezone with the user's own — without this the
+        // edge function would treat partner birth time as UTC, drifting
+        // Moon ~5° (sometimes a sign over).
+        partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
         partnerName: partnerName || undefined,
       },
     });

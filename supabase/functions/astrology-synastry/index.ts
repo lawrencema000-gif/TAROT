@@ -47,6 +47,7 @@ const ASPECTS: { type: string; angle: number; maxOrb: number }[] = [
 const RequestSchema = z.object({
   partnerBirthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   partnerBirthTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  partnerTimezone: z.string().optional(),
   partnerName: z.string().min(1).max(80).optional(),
 });
 type Req = z.infer<typeof RequestSchema>;
@@ -79,6 +80,34 @@ function longitudeOf(body: Astronomy.Body | "Sun", date: Date): number {
   return Astronomy.EclipticLongitude(body, date);
 }
 
+// Convert a local birth date/time in the given IANA timezone to a UTC
+// Date. Mirrors the helper in partner-synastry-adhoc so partner planet
+// positions land at the right UTC moment regardless of where the
+// partner was born. Without this the Moon can drift up to ~5° (≈ a
+// fifth of a sign) and Mercury / Venus / Mars also shift noticeably.
+function localToUTC(date: string, time: string | undefined, timezone: string | undefined): Date {
+  const tz = timezone || "UTC";
+  const timeStr = time || "12:00:00";
+  const full = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+  const dt = new Date(`${date}T${full}Z`);
+  if (tz === "UTC") return dt;
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+    }).formatToParts(dt);
+    const p: Record<string, string> = {};
+    for (const part of parts) p[part.type] = part.value;
+    const hour = p.hour === "24" ? "00" : p.hour;
+    const localStr = `${p.year}-${p.month}-${p.day}T${hour}:${p.minute}:${p.second}Z`;
+    const localAsUtc = new Date(localStr);
+    const offsetMs = localAsUtc.getTime() - dt.getTime();
+    return new Date(dt.getTime() - offsetMs);
+  } catch {
+    return dt;
+  }
+}
+
 Deno.serve(handler<Req, Resp>({
   fn: "astrology-synastry",
   auth: "required",
@@ -97,8 +126,11 @@ Deno.serve(handler<Req, Resp>({
     }
 
     const hasTime = !!body.partnerBirthTime;
-    const time = body.partnerBirthTime ?? "12:00";
-    const partnerMoment = new Date(`${body.partnerBirthDate}T${time}:00Z`);
+    const partnerMoment = localToUTC(
+      body.partnerBirthDate,
+      body.partnerBirthTime,
+      body.partnerTimezone,
+    );
     if (Number.isNaN(partnerMoment.getTime())) {
       throw new AppError("PARTNER_MOMENT_INVALID", "Invalid partner birth date/time", 400);
     }

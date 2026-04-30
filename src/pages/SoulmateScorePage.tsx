@@ -142,6 +142,11 @@ export function SoulmateScorePage() {
         body: {
           partnerBirthDate,
           partnerBirthTime: partnerBirthTime || undefined,
+          // Use the user's own timezone as a proxy for the partner's
+          // timezone — same convention as PartnerCompatPage. Without
+          // this the edge function treats the partner's birth time as
+          // UTC, which drifts Moon ~5° (sometimes a sign over).
+          partnerTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
           partnerName: partnerName || undefined,
         },
       });

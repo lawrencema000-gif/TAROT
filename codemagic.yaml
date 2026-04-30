@@ -34,7 +34,9 @@ workflows:
       groups:
         - arcana_ios_secrets
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        # Capacitor 8 uses SPM, so only App.xcodeproj is generated
+        # (no App.xcworkspace — that's CocoaPods-only).
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.arcanatarotapp"
         # ATT prompt text shown when iOS displays the system tracking dialog.
@@ -126,7 +128,7 @@ workflows:
       - name: Archive + export ipa
         script: |
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
 
     artifacts:

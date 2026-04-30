@@ -118,10 +118,19 @@ workflows:
 
       - name: Set up automatic code signing
         script: |
-          # `xcode-project use-profiles` reads the App Store Connect API
-          # integration above and pulls down (or creates) the matching
-          # provisioning profile + distribution certificate. No manual
-          # .p12 / .mobileprovision uploads required.
+          # Codemagic's automatic code signing flow:
+          # 1. Initialize a temp keychain on the macOS runner.
+          # 2. Use the App Store Connect API integration to fetch (or create
+          #    if missing) the iOS Distribution certificate + App Store
+          #    provisioning profile for our Bundle ID.
+          # 3. Import certificates into the keychain.
+          # 4. Tell Xcode to use the fetched profile.
+          # No manual .p12 / .mobileprovision uploads required.
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
           xcode-project use-profiles
 
       - name: Set iOS build version + number

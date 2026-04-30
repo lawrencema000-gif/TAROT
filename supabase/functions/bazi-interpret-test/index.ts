@@ -5,7 +5,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
 
-const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4o"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -97,47 +98,88 @@ Deno.serve(handler<unknown>({
   webhookSecretEnv: "CRON_SECRET",
   rateLimit: { max: 3, windowMs: 60_000 },
   run: async (ctx) => {
-    const apiKey = Deno.env.get("GEMINI_API_KEY") || "";
-    if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "GEMINI_API_KEY not set", 503);
+    const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
+    const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
+    if (!openaiKey && !geminiKey) {
+      throw new AppError("AI_NOT_CONFIGURED", "No AI provider configured", 503);
+    }
 
     const start = Date.now();
     let text = "";
     let modelUsed = "";
     let lastErr = "";
 
-    outer: for (const model of TEXT_MODELS) {
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: [{ role: "user", parts: [{ text: TEST_INPUT_PROMPT }] }],
-            generationConfig: {
+    // OpenAI primary
+    if (openaiKey) {
+      outer1: for (const model of OPENAI_MODELS) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model,
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: TEST_INPUT_PROMPT },
+              ],
               temperature: 0.7,
-              maxOutputTokens: 8000,
-              responseMimeType: "application/json",
-            },
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          if (text) {
-            modelUsed = model;
-            break outer;
+              max_completion_tokens: 8000,
+              response_format: { type: "json_object" },
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            text = data?.choices?.[0]?.message?.content || "";
+            if (text) {
+              modelUsed = `openai/${model}`;
+              break outer1;
+            }
+          } else {
+            const body = await res.text();
+            lastErr = `openai/${model} ${res.status}: ${body.slice(0, 200)}`;
+            if (res.status !== 429 && res.status !== 500 && res.status !== 502 && res.status !== 503) break;
+            await sleep(1500 * (attempt + 1));
           }
-        } else {
-          const body = await res.text();
-          lastErr = `${model} ${res.status}: ${body.slice(0, 200)}`;
-          if (res.status !== 503 && res.status !== 429) break;
-          await sleep(1500 * (attempt + 1));
         }
       }
     }
 
-    if (!text) throw new AppError("GEMINI_FAILED", `All models failed. Last: ${lastErr}`, 502);
+    // Gemini fallback
+    if (!text && geminiKey) {
+      outer2: for (const model of GEMINI_MODELS) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              contents: [{ role: "user", parts: [{ text: TEST_INPUT_PROMPT }] }],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 8000,
+                responseMimeType: "application/json",
+              },
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (text) {
+              modelUsed = `gemini/${model}`;
+              break outer2;
+            }
+          } else {
+            const body = await res.text();
+            lastErr = `gemini/${model} ${res.status}: ${body.slice(0, 200)}`;
+            if (res.status !== 503 && res.status !== 429) break;
+            await sleep(1500 * (attempt + 1));
+          }
+        }
+      }
+    }
+
+    if (!text) throw new AppError("AI_FAILED", `All models failed. Last: ${lastErr}`, 502);
 
     let reading: Record<string, string>;
     try {

@@ -19,15 +19,21 @@ import { handler, AppError } from "../_shared/handler.ts";
  * returned immediately when it exists; re-generation requires a
  * `force=true` body flag (admin / debug only).
  *
- * Requires: GEMINI_API_KEY (already configured).
+ * AI provider chain (OpenAI primary, Gemini fallback):
+ *   1. OPENAI_API_KEY → gpt-4o-mini (3 attempts, then gpt-4o)
+ *   2. GEMINI_API_KEY → gemini-2.5-flash → 2.0-flash-exp → 1.5-flash
+ *   At least one of the two API keys must be set; both is best.
+ *
  * Auth: required (subscription gate enforced inline).
  */
 
-// Primary model + fallback. If primary returns 503 (overloaded) we
-// retry the same model with backoff, then fall back to the secondary
-// model if it persists. gemini-2.5-flash and gemini-2.0-flash share
-// the same JSON-mode contract.
-const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+// Provider chain. OpenAI gpt-4o-mini is the primary — strongest narrative
+// quality at the same per-call cost as Gemini Flash (~$0.002/reading).
+// Gemini chain is the fallback when OpenAI is unavailable. Both providers
+// support JSON mode + system+user message split, so the call shape is
+// near-identical.
+const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4o"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -210,6 +216,34 @@ interface ReadingShape {
   closing_summary: string;
 }
 
+async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+      max_completion_tokens: 8000,
+      response_format: { type: "json_object" },
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    return { ok: false, status: res.status, body };
+  }
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) return { ok: false, status: 0, body: "no text in OpenAI response" };
+  return { ok: true, text };
+}
+
 async function callGeminiOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
@@ -235,41 +269,70 @@ async function callGeminiOnce(model: string, prompt: string, apiKey: string): Pr
   return { ok: true, text };
 }
 
-async function callGemini(prompt: string, apiKey: string): Promise<ReadingShape> {
-  // Try each model in TEXT_MODELS, retrying transient errors (503/429)
-  // with exponential backoff. Fall through to the next model if one
-  // is persistently overloaded.
-  let lastErr = "";
-  for (const model of TEXT_MODELS) {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const result = await callGeminiOnce(model, prompt, apiKey);
-      if (result.ok) {
-        let parsed: ReadingShape;
-        try {
-          parsed = JSON.parse(result.text) as ReadingShape;
-        } catch (e) {
-          throw new AppError("GEMINI_INVALID_JSON", `Could not parse Gemini output: ${String(e).slice(0, 200)}`, 502);
-        }
-        // Guarantee all 14 keys exist
-        const required: (keyof ReadingShape)[] = [
-          "core_summary", "personality", "elements", "career", "wealth",
-          "relationships", "family", "hidden_stems", "branch_relations",
-          "health", "luck_pillar", "annual", "strategy", "closing_summary",
-        ];
-        for (const k of required) {
-          if (typeof parsed[k] !== "string" || !parsed[k].trim()) {
-            parsed[k] = "(This section was not generated. Try regenerating the reading.)";
-          }
-        }
-        return parsed;
-      }
-      lastErr = `${model} ${result.status}: ${result.body.slice(0, 200)}`;
-      // Retry on transient overload / rate-limit; bail on auth/billing
-      if (result.status !== 503 && result.status !== 429 && result.status !== 0) break;
-      await sleep(1500 * (attempt + 1));
+function fillMissingSections(parsed: ReadingShape): ReadingShape {
+  const required: (keyof ReadingShape)[] = [
+    "core_summary", "personality", "elements", "career", "wealth",
+    "relationships", "family", "hidden_stems", "branch_relations",
+    "health", "luck_pillar", "annual", "strategy", "closing_summary",
+  ];
+  for (const k of required) {
+    if (typeof parsed[k] !== "string" || !parsed[k].trim()) {
+      parsed[k] = "(This section was not generated. Try regenerating the reading.)";
     }
   }
-  throw new AppError("GEMINI_FAILED", `All Gemini models failed. Last: ${lastErr}`, 502);
+  return parsed;
+}
+
+async function callAI(prompt: string): Promise<ReadingShape> {
+  // Provider chain: OpenAI primary (better narrative quality at the same
+  // ~$0.002/reading cost), Gemini fallback. Each provider has its own
+  // model fallback chain. Per-attempt retry on transient errors only.
+  const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
+  const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
+  let lastErr = "no providers configured";
+
+  // ── OpenAI primary ──
+  if (openaiKey) {
+    for (const model of OPENAI_MODELS) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const r = await callOpenAIOnce(model, prompt, openaiKey);
+        if (r.ok) {
+          try {
+            return fillMissingSections(JSON.parse(r.text) as ReadingShape);
+          } catch (e) {
+            lastErr = `${model} returned invalid JSON: ${String(e).slice(0, 200)}`;
+            break;
+          }
+        }
+        lastErr = `openai ${model} ${r.status}: ${r.body.slice(0, 200)}`;
+        // Retry only on transient: 429 rate limit, 500/502/503 server errors
+        if (r.status !== 429 && r.status !== 500 && r.status !== 502 && r.status !== 503 && r.status !== 0) break;
+        await sleep(1500 * (attempt + 1));
+      }
+    }
+  }
+
+  // ── Gemini fallback ──
+  if (geminiKey) {
+    for (const model of GEMINI_MODELS) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const r = await callGeminiOnce(model, prompt, geminiKey);
+        if (r.ok) {
+          try {
+            return fillMissingSections(JSON.parse(r.text) as ReadingShape);
+          } catch (e) {
+            lastErr = `${model} returned invalid JSON: ${String(e).slice(0, 200)}`;
+            break;
+          }
+        }
+        lastErr = `gemini ${model} ${r.status}: ${r.body.slice(0, 200)}`;
+        if (r.status !== 503 && r.status !== 429 && r.status !== 0) break;
+        await sleep(1500 * (attempt + 1));
+      }
+    }
+  }
+
+  throw new AppError("AI_FAILED", `All AI providers failed. Last: ${lastErr}`, 502);
 }
 
 Deno.serve(handler<BaziInput>({
@@ -309,13 +372,14 @@ Deno.serve(handler<BaziInput>({
       }
     }
 
-    // Cache miss → call Gemini
-    const apiKey = Deno.env.get("GEMINI_API_KEY") || "";
-    if (!apiKey) throw new AppError("AI_NOT_CONFIGURED", "GEMINI_API_KEY not set", 503);
+    // Cache miss → call AI provider chain (OpenAI primary, Gemini fallback)
+    if (!Deno.env.get("OPENAI_API_KEY") && !Deno.env.get("GEMINI_API_KEY")) {
+      throw new AppError("AI_NOT_CONFIGURED", "No AI provider configured (OPENAI_API_KEY + GEMINI_API_KEY)", 503);
+    }
 
     ctx.log.info("bazi_interpret.generating", { userId: ctx.userId, year });
     const userPrompt = buildUserPrompt(body);
-    const reading = await callGemini(userPrompt, apiKey);
+    const reading = await callAI(userPrompt);
 
     // Upsert (one row per user per year)
     const { error: upsertErr } = await ctx.supabase

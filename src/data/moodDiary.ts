@@ -156,12 +156,17 @@ const MOOD_Y_VALUE: Record<MoodCategory, number> = {
 };
 
 export function entryToYValue(entry: MoodEntry): number {
-  // Blend mood category with intensity (1-5)
+  // Blend mood category with intensity (1-5).
+  //
+  // High-intensity positive moods push y HIGHER (more activated/up).
+  // High-intensity negative moods push y LOWER (more depleted/down).
+  // Symmetrical formula: signed adjustment proportional to (intensity - 3),
+  // sign matched to the mood's direction. Bug pre-2026-04-30: the negative
+  // branch flipped the sign so extreme-drained plotted ABOVE mild-drained.
   const base = MOOD_Y_VALUE[entry.category];
-  // Slight adjustment: high-intensity positive moods push higher,
-  // high-intensity negative moods push lower
-  if (base >= 3) return Math.min(5, base + (entry.intensity - 3) * 0.3);
-  return Math.max(1, base - (3 - entry.intensity) * 0.3);
+  const adjust = (entry.intensity - 3) * 0.3;
+  if (base >= 3) return Math.min(5, base + adjust);
+  return Math.max(1, base - adjust);
 }
 
 // ─── Pattern derivation ──────────────────────────────────────────

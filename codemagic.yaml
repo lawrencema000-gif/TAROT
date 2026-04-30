@@ -1,0 +1,154 @@
+# Codemagic CI/CD configuration for Arcana Tarot Life iOS builds.
+#
+# Triggering: MANUAL ONLY (no auto-trigger on push). Run via Codemagic
+# dashboard → "Start new build" → ios-testflight. This avoids the
+# Codemagic charge of running on every commit, and lets Lawrence test
+# Web/Android changes in main first before promoting to iOS.
+#
+# Required in Codemagic dashboard before first build:
+#   1. Environment variable group `arcana_ios_secrets` (already created)
+#   2. Apple Developer integration named `Codemagic-admin` (existing,
+#      already used by other apps in Lawrence's account)
+#   3. The TAROT repo is added as an application
+#
+# First build will be slower (~30-45 min) because:
+#   - `npx cap add ios` runs (creates ios/App/...)
+#   - `pod install` downloads CocoaPods deps from scratch
+# Subsequent builds reuse cached pods (~10-15 min).
+
+workflows:
+  ios-testflight:
+    name: iOS TestFlight - Arcana Tarot Life
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    integrations:
+      # Name must match the integration in Codemagic Settings → Integrations
+      # → Developer Portal → App Store Connect.
+      # Lawrence already has `Codemagic-admin` (Key ID 75RBD8AXTP) connected.
+      app_store_connect: Codemagic-admin
+
+    environment:
+      groups:
+        - arcana_ios_secrets
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.arcanatarotapp"
+        # ATT prompt text shown when iOS displays the system tracking dialog.
+        # Apple rejects vague boilerplate — keep this concrete and user-facing.
+        # Editing this requires re-archiving (it's baked into Info.plist).
+        ATT_USAGE_DESCRIPTION: "Arcana uses tracking to deliver more relevant tarot insights and personalized ad experiences. You can change this anytime in iOS Settings."
+      node: 20
+      xcode: latest
+      cocoapods: default
+
+    triggering:
+      # Manual-only — uncomment one of the auto-trigger options below
+      # if you want push-driven builds. Leaving auto-trigger disabled
+      # is safer for now since Codemagic minutes are billable.
+      cancel_previous_builds: true
+      # events:
+      #   - push
+      # branch_patterns:
+      #   - pattern: main
+      #     include: true
+      #     source: true
+
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
+
+      - name: Build web bundle (Vite)
+        script: |
+          # Vite picks up VITE_* env vars from the env group at build time.
+          npm run build
+
+      - name: Add iOS platform if missing
+        script: |
+          if [ ! -d "ios/App" ]; then
+            echo "::: First-time setup: generating ios/App via npx cap add ios"
+            npx cap add ios
+          else
+            echo "::: Existing ios/App directory found, skipping cap add"
+          fi
+
+      - name: Sync Capacitor → iOS native project
+        script: |
+          npx cap sync ios
+
+      - name: Inject Info.plist values (AdMob + ATT + Bundle ID)
+        script: |
+          PLIST="ios/App/App/Info.plist"
+          if [ ! -f "$PLIST" ]; then
+            echo "::: ERROR: $PLIST not found — cap add ios may have failed"
+            exit 1
+          fi
+          # AdMob app ID — Google Mobile Ads SDK 7.42+ crashes on launch
+          # if this key is missing or empty.
+          plutil -replace GADApplicationIdentifier -string "$VITE_ADMOB_APP_ID_IOS" "$PLIST"
+          # App Tracking Transparency — required if using IDFA (AdMob personalized,
+          # RevenueCat audiences, Sentry replay device fingerprinting). Without
+          # this key Apple auto-rejects the app for using IDFA without disclosure.
+          plutil -replace NSUserTrackingUsageDescription -string "$ATT_USAGE_DESCRIPTION" "$PLIST"
+          # Bundle ID — overwrites whatever cap add ios generated, in case
+          # the appId in capacitor.config.ts ever drifts from production.
+          plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" "$PLIST"
+          echo "::: Info.plist values set:"
+          plutil -p "$PLIST" | grep -E "(GADApplicationIdentifier|NSUserTrackingUsageDescription|CFBundleIdentifier)"
+
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App
+          pod install --repo-update
+
+      - name: Set up automatic code signing
+        script: |
+          # `xcode-project use-profiles` reads the App Store Connect API
+          # integration above and pulls down (or creates) the matching
+          # provisioning profile + distribution certificate. No manual
+          # .p12 / .mobileprovision uploads required.
+          xcode-project use-profiles
+
+      - name: Set iOS build version + number
+        script: |
+          cd ios/App
+          # Use Codemagic-provided BUILD_NUMBER (auto-incrementing per
+          # Codemagic build) so consecutive uploads always get a fresh
+          # build number even if the marketing version is unchanged.
+          # We add 1000 to start cleanly above any test builds.
+          NEW_BUILD=$(($BUILD_NUMBER + 1000))
+          agvtool new-version -all "$NEW_BUILD"
+          agvtool new-marketing-version "$VITE_APP_VERSION"
+
+      - name: Archive + export ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Upload to TestFlight, mark as available for internal testing.
+        # Beta groups need to be created in App Store Connect → TestFlight
+        # → Internal Testing first; uncomment + name them here once they exist.
+        submit_to_testflight: true
+        # beta_groups:
+        #   - "Internal Testers"
+        # Reject any build still in TestFlight processing with the same
+        # version number so we never accidentally distribute a stale ipa.
+        cancel_previous_submissions: true
+
+      email:
+        # Send build status to Lawrence on success/failure.
+        recipients:
+          - lawrence.ma000@gmail.com
+        notify:
+          success: true
+          failure: true

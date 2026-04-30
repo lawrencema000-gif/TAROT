@@ -1,7 +1,14 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.arcana.app',
+  // iOS Bundle ID is com.arcanatarotapp (set at `npx cap add ios` time).
+  // Android applicationId stays com.arcana.app (hardcoded in
+  // android/app/build.gradle, not affected by this value at runtime).
+  // Kept different across platforms intentionally — iOS App Store has a
+  // separate namespace from Google Play; Apple did not have com.arcana.app
+  // available so Lawrence registered com.arcanatarotapp on his Apple Team.
+  // RevenueCat handles the cross-platform mapping via product attachments.
+  appId: 'com.arcanatarotapp',
   appName: 'Arcana',
   webDir: 'dist',
   server: {
@@ -75,7 +82,13 @@ const config: CapacitorConfig = {
       // plugin handles the native auth UI; we forward the credential to
       // Supabase via supabase.auth.signInWithIdToken({ provider: 'apple' }).
       // Web fallback on iOS Safari uses the OAuth web flow instead.
-      clientId: 'com.arcana.app',
+      //
+      // clientId here is the Apple **Services ID** (used for the OAuth web
+      // flow that Supabase invokes). The native iOS sign-in path uses the
+      // app's Bundle ID (com.arcanatarotapp), which the plugin auto-detects
+      // from the iOS project. Both com.arcanatarotapp and the Services ID
+      // below are registered in Supabase Auth → Providers → Apple → Client IDs.
+      clientId: 'com.arcanatarotapp.signinwithapple',
       redirectURI: 'https://ulzlthhkqjuohzjangcq.supabase.co/auth/v1/callback',
       scopes: 'email name',
       state: 'state',

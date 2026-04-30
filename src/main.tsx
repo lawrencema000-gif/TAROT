@@ -112,3 +112,26 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>
 );
+
+// Request App Tracking Transparency permission on iOS 14.5+.
+//
+// Apple requires this prompt before any IDFA-using framework can
+// access the device tracking identifier (AdMob personalized ads,
+// RevenueCat audiences, Sentry session replay fingerprinting).
+//
+// Guideline: show the prompt AFTER first paint (so the user sees
+// the app's UI behind the dialog and understands it's our request),
+// but BEFORE AdMob.initialize() actually runs.
+//
+// On Android / Web this resolves to 'unsupported' immediately —
+// see src/utils/att.ts for the dynamic-import + no-op fallback.
+const initATT = () => {
+  void import('./utils/att').then((m) => m.requestATTPermission());
+};
+if ('requestIdleCallback' in window) {
+  (window as unknown as {
+    requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void;
+  }).requestIdleCallback(initATT, { timeout: 1500 });
+} else {
+  setTimeout(initATT, 1500);
+}

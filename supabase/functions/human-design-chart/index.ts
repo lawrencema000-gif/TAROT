@@ -91,11 +91,10 @@ const CHANNELS: Array<[number, number]> = [
   [16, 48],                         // Wavelength
   [35, 36],  [12, 22],              // Throat ↔ Solar Plexus
   [45, 21],                         // Throat ↔ Heart (Money)
-  [8, 1],    [33, 13],  [31, 7],    // Throat ↔ G
+  [8, 1],    [33, 13],  [31, 7],    // Throat ↔ G  (33-13 = Channel of the Prodigal)
   [10, 57],  [10, 34],              // G ↔ others (Integration)
   [25, 51],                         // G ↔ Heart
   [2, 14],   [15, 5],   [29, 46],   // G ↔ Sacral
-  [13, 33],                         // G ↔ Throat
   [59, 6],                          // Sacral ↔ Solar Plexus (Mating)
   [27, 50],                         // Sacral ↔ Spleen
   [42, 53],  [3, 60],   [9, 52],    // Sacral ↔ Root

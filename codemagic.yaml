@@ -120,26 +120,30 @@ workflows:
         script: |
           keychain initialize
 
-      - name: 2 - Create iOS Distribution certificate (if missing)
+      - name: 2 - Generate fresh RSA private key for cert
         script: |
-          # Force-create a fresh iOS Distribution certificate WITH a local
-          # private key. fetch-signing-files alone can fail if Apple Dev
-          # Portal already has a Distribution cert whose private key isn't
-          # accessible in this CI runner ("Cannot save Signing Certificates
-          # without certificate private key" error).
-          app-store-connect certificates create \
-            --type IOS_DISTRIBUTION \
-            --save \
-            || echo "::: Certificate creation skipped (may already exist locally)"
-          ls -la /Users/builder/Library/Developer/Xcode/UserData/Certificates/ 2>&1 || true
-          ls -la /Users/builder/Library/MobileDevice/Certificates/ 2>&1 || true
+          # Codemagic CLI requires an explicit --certificate-key argument
+          # when creating a new iOS Distribution cert. Generate one fresh
+          # in this build's ephemeral /tmp dir so we never reuse a key
+          # that's stuck in Apple Dev Portal without local access.
+          mkdir -p /tmp/signing
+          openssl genrsa -out /tmp/signing/cert_key.pem 2048
+          chmod 600 /tmp/signing/cert_key.pem
+          echo "::: Private key created:"
+          ls -la /tmp/signing/
 
-      - name: 3 - Fetch (or create) provisioning profile
+      - name: 3 - Fetch (or create) certificate + provisioning profile
         script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+          app-store-connect fetch-signing-files \
+            "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@file:/tmp/signing/cert_key.pem \
             --create
-          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ 2>&1 || true
+          echo "::: Certificates dirs:"
+          ls -la /Users/builder/Library/Developer/Xcode/UserData/Certificates/ 2>&1 || echo "  (empty)"
+          ls -la /Users/builder/Library/MobileDevice/Certificates/ 2>&1 || echo "  (empty)"
+          echo "::: Profiles dir:"
+          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ 2>&1 || echo "  (empty)"
 
       - name: 4 - Add certificates to keychain
         script: |

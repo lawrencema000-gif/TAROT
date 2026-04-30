@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Sparkles, Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { useAuth } from '../context/AuthContext';
 import {
   BAGUA_AREAS,
   BAGUA_AREA_ORDER,
@@ -33,6 +34,7 @@ type Stage = 'rate' | 'result';
 
 export function FengShuiPage() {
   const { t } = useT('app');
+  const { profile } = useAuth();
   const [stage, setStage] = useState<Stage>('rate');
   const [scores, setScores] = useState<Record<BaguaArea, number>>({
     wealth: 3, fame: 3, relationships: 3, family: 3, health: 3,
@@ -50,13 +52,25 @@ export function FengShuiPage() {
     setScores((prev) => ({ ...prev, [area]: v }));
   };
 
+  // Pre-fill birth year from profile so users with full birth dates get
+  // the correct 立春 (Feb 4) year boundary applied automatically. Gender
+  // isn't stored on the profile; user picks it inline.
+  useEffect(() => {
+    if (profile?.birthDate && !birthYear) {
+      setBirthYear(profile.birthDate.slice(0, 4));
+    }
+  }, [profile, birthYear]);
+
   const kua: KuaProfile | null = useMemo(() => {
     const yr = parseInt(birthYear, 10);
     if (!gender || !Number.isFinite(yr)) return null;
-    return computeKua(yr, gender);
-  }, [birthYear, gender]);
+    // If we have the user's full birthDate (from profile), pass it so the
+    // Feb-4 solar-year boundary is applied; otherwise fall back to year only.
+    const birthDate = profile?.birthDate?.startsWith(birthYear) ? profile.birthDate : undefined;
+    return computeKua(yr, gender, birthDate);
+  }, [birthYear, gender, profile?.birthDate]);
 
-  const annual = useMemo(() => getAnnualReading(2026), []);
+  const annual = useMemo(() => getAnnualReading(new Date().getFullYear()), []);
 
   const compute = () => {
     setReading(computeBaguaReading(scores));

@@ -1,4 +1,4 @@
-// Annual Flying Stars — 2026 (玄空飛星 / Year of the Fire Horse).
+// Annual Flying Stars — 玄空飛星.
 //
 // In Xuan Kong feng shui, nine stars (numbered 1-9) rotate through nine
 // palaces (the eight cardinal directions + center) on a 9-year cycle.
@@ -6,11 +6,22 @@
 // direction tells whether that area of your home is auspicious or
 // needs remedies for the coming 12 months.
 //
-// 2026 is governed by Star 4 in the centre. Below is the canonical 2026
-// layout and what it means for each direction in your home (oriented
-// from the front door looking in).
+// The annual centre star DECREMENTS by 1 each year (mod 9, where 0 → 9):
+//   2023 → 4, 2024 → 3, 2025 → 2, 2026 → 1, 2027 → 9, 2028 → 8…
 //
-// Re-compute this annually — the chart shifts every Lunar New Year.
+// Once the centre star is known, the other 8 palaces are filled by
+// flying that centre value through the Lo Shu magic square pattern:
+//
+//   Lo Shu base (centre 5):
+//     NW=4   N=9   NE=2
+//     W=3    C=5   E=7
+//     SW=8   S=1   SE=6
+//
+// To get a year's layout, shift every Lo Shu cell by (centreStar - 5)
+// mod 9. So 2026 (centre 1) shifts every cell by -4: NW=9, N=5, NE=7,
+// W=8, C=1, E=3, SW=4, S=6, SE=2. Star 5 (the worst — Wu Wang) lands
+// in the North in 2026, NOT the SE as the original hard-coded table
+// claimed.
 
 export type FlyingStar = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export type Direction = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW' | 'Center';
@@ -27,19 +38,44 @@ export interface AnnualStarReading {
 }
 
 /**
- * Canonical 2026 flying-star layout. Computed from the 9-year cycle:
- * 2024 = star 3, 2025 = star 4, 2026 = star 4 entering centre…
- *
- * Layout when the centre is Star 4 (2026):
- *   NW: 3   N: 8   NE: 1
- *   W:  2   C: 4   E:  6
- *   SW: 7   S: 9   SE: 5
+ * Lo Shu magic square — the base layout when the centre star is 5.
+ * All other annual layouts are derived by shifting these values.
  */
-const STARS_2026: Record<Direction, FlyingStar> = {
-  NW: 3, N:  8, NE: 1,
-  W:  2, Center: 4, E: 6,
-  SW: 7, S:  9, SE: 5,
+const LO_SHU: Record<Direction, FlyingStar> = {
+  NW: 4, N: 9, NE: 2,
+  W:  3, Center: 5, E: 7,
+  SW: 8, S: 1, SE: 6,
 };
+
+/**
+ * Compute the annual centre star for a given Gregorian year. The annual
+ * star decrements by 1 each year (mod 9, where 0 maps to 9). Anchor:
+ * 2024 = 3.
+ */
+function centerStarFor(year: number): FlyingStar {
+  const anchor = 2024;
+  const anchorStar = 3;
+  const offset = year - anchor;
+  // Stars decrement going forward, increment going backward.
+  let star = ((anchorStar - offset) % 9 + 9) % 9;
+  if (star === 0) star = 9;
+  return star as FlyingStar;
+}
+
+/**
+ * Build the full 9-palace flying-star layout for a given centre star.
+ * Each palace value = (Lo Shu cell + (centre - 5)) mod 9, with 0 → 9.
+ */
+function flyLayout(centerStar: FlyingStar): Record<Direction, FlyingStar> {
+  const shift = centerStar - 5;
+  const out = {} as Record<Direction, FlyingStar>;
+  for (const dir of Object.keys(LO_SHU) as Direction[]) {
+    let v = ((LO_SHU[dir] + shift) % 9 + 9) % 9;
+    if (v === 0) v = 9;
+    out[dir] = v as FlyingStar;
+  }
+  return out;
+}
 
 const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meaning: string; remedy: string }> = {
   1: {
@@ -64,8 +100,8 @@ const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meani
   },
   5: {
     nature: 'inauspicious',
-    meaning: 'Star 5 (Yellow Earth, misfortune star) is the most volatile annual star — brings accidents, sudden financial loss, unexpected illness, and disruption. In 2026 it occupies the SE; that corner of your home needs careful management.',
-    remedy: 'CRITICAL: do not renovate, dig, or do major construction in the SE in 2026. Hang a 6-rod metal wind chime (the strongest classical remedy). Place a salt water cure if you can. Avoid red, orange, candles in this corner. Keep this area still.',
+    meaning: 'Star 5 (Yellow Earth, Wu Wang / misfortune star) is the most volatile annual star — brings accidents, sudden financial loss, unexpected illness, and disruption. Wherever it sits this year, that corner of your home needs careful management.',
+    remedy: 'CRITICAL: do not renovate, dig, or do major construction in this direction this year. Hang a 6-rod metal wind chime (the strongest classical remedy). Place a salt water cure if you can. Avoid red, orange, candles here. Keep this area still.',
   },
   6: {
     nature: 'auspicious',
@@ -79,7 +115,7 @@ const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meani
   },
   8: {
     nature: 'auspicious',
-    meaning: 'Star 8 (White Earth, wealth star) brings money, real-estate gains, and stable prosperity. In 2026 it sits in the North — a strong position. The star you most want to activate.',
+    meaning: 'Star 8 (White Earth, wealth star) brings money, real-estate gains, and stable prosperity. The star you most want to activate — wherever it lands this year is the corner to invest in.',
     remedy: 'Activate with crystals, salt lamps, ceramic / earthenware. Place a small still bowl of water with a few smooth river stones. Excellent direction for the wealth corner activation. Keep clean, well-lit. Avoid clutter.',
   },
   9: {
@@ -90,16 +126,14 @@ const STAR_BASE: Record<FlyingStar, { nature: AnnualStarReading['nature']; meani
 };
 
 export function getAnnualReading(year: number): { year: number; centerStar: FlyingStar; readings: Record<Direction, AnnualStarReading> } {
-  // For 2026 we hard-code the canonical layout. Computing other years
-  // from the 9-year cycle is outside scope of this initial pass — we'll
-  // refresh the layout each new year.
-  const layout = year === 2026 ? STARS_2026 : STARS_2026; // fallback — see TODO below
+  const center = centerStarFor(year);
+  const layout = flyLayout(center);
   const readings: Record<Direction, AnnualStarReading> = {} as Record<Direction, AnnualStarReading>;
   for (const dir of Object.keys(layout) as Direction[]) {
     const star = layout[dir];
     readings[dir] = { star, ...STAR_BASE[star] };
   }
-  return { year, centerStar: layout.Center, readings };
+  return { year, centerStar: center, readings };
 }
 
 /**

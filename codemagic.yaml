@@ -11,10 +11,10 @@
 #      already used by other apps in Lawrence's account)
 #   3. The TAROT repo is added as an application
 #
-# First build will be slower (~30-45 min) because:
-#   - `npx cap add ios` runs (creates ios/App/...)
-#   - `pod install` downloads CocoaPods deps from scratch
-# Subsequent builds reuse cached pods (~10-15 min).
+# First build will be slower (~20-30 min) because:
+#   - `npx cap add ios` runs (creates ios/App/... via SPM)
+#   - Xcode resolves Swift Package dependencies on first build
+# Subsequent builds reuse cached SPM packages (~10-15 min).
 
 workflows:
   ios-testflight:
@@ -41,8 +41,16 @@ workflows:
         # Apple rejects vague boilerplate — keep this concrete and user-facing.
         # Editing this requires re-archiving (it's baked into Info.plist).
         ATT_USAGE_DESCRIPTION: "Arcana uses tracking to deliver more relevant tarot insights and personalized ad experiences. You can change this anytime in iOS Settings."
-      node: 20
+      # Capacitor CLI 8.x requires Node 22+. Locally Lawrence is on
+      # v22.22.0 which matches; CI must use the same major.
+      node: 22
       xcode: latest
+      # Capacitor 8 defaults to SPM, but several plugins (notably
+      # @codetrix-studio/capacitor-google-auth) lack Package.swift, so
+      # SPM can't fully resolve the project. We force CocoaPods via the
+      # `--packagemanager Cocoapods` flag passed to `npx cap add ios`,
+      # which then generates ios/App/Podfile + App.xcworkspace as
+      # expected by xcode-project build-ipa.
       cocoapods: default
 
     triggering:
@@ -69,9 +77,12 @@ workflows:
 
       - name: Add iOS platform if missing
         script: |
+          # Force CocoaPods (SPM mode breaks because not all plugins ship
+          # Package.swift). --packagemanager flag is Capacitor 8's escape
+          # hatch back to the proven CocoaPods path.
           if [ ! -d "ios/App" ]; then
-            echo "::: First-time setup: generating ios/App via npx cap add ios"
-            npx cap add ios
+            echo "::: First-time setup: generating ios/App via npx cap add ios --packagemanager Cocoapods"
+            npx cap add ios --packagemanager Cocoapods
           else
             echo "::: Existing ios/App directory found, skipping cap add"
           fi
@@ -79,6 +90,11 @@ workflows:
       - name: Sync Capacitor → iOS native project
         script: |
           npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App
+          pod install --repo-update
 
       - name: Inject Info.plist values (AdMob + ATT + Bundle ID)
         script: |
@@ -100,17 +116,41 @@ workflows:
           echo "::: Info.plist values set:"
           plutil -p "$PLIST" | grep -E "(GADApplicationIdentifier|NSUserTrackingUsageDescription|CFBundleIdentifier)"
 
-      - name: Install CocoaPods dependencies
+      - name: 1 - Initialize signing keychain
         script: |
-          cd ios/App
-          pod install --repo-update
+          keychain initialize
 
-      - name: Set up automatic code signing
+      - name: 2 - Generate fresh RSA private key for cert
         script: |
-          # `xcode-project use-profiles` reads the App Store Connect API
-          # integration above and pulls down (or creates) the matching
-          # provisioning profile + distribution certificate. No manual
-          # .p12 / .mobileprovision uploads required.
+          # Codemagic CLI requires an explicit --certificate-key argument
+          # when creating a new iOS Distribution cert. Generate one fresh
+          # in this build's ephemeral /tmp dir so we never reuse a key
+          # that's stuck in Apple Dev Portal without local access.
+          mkdir -p /tmp/signing
+          openssl genrsa -out /tmp/signing/cert_key.pem 2048
+          chmod 600 /tmp/signing/cert_key.pem
+          echo "::: Private key created:"
+          ls -la /tmp/signing/
+
+      - name: 3 - Fetch (or create) certificate + provisioning profile
+        script: |
+          app-store-connect fetch-signing-files \
+            "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@file:/tmp/signing/cert_key.pem \
+            --create
+          echo "::: Certificates dirs:"
+          ls -la /Users/builder/Library/Developer/Xcode/UserData/Certificates/ 2>&1 || echo "  (empty)"
+          ls -la /Users/builder/Library/MobileDevice/Certificates/ 2>&1 || echo "  (empty)"
+          echo "::: Profiles dir:"
+          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ 2>&1 || echo "  (empty)"
+
+      - name: 4 - Add certificates to keychain
+        script: |
+          keychain add-certificates
+
+      - name: 5 - Configure Xcode to use profiles
+        script: |
           xcode-project use-profiles
 
       - name: Set iOS build version + number

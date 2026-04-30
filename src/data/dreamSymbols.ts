@@ -222,17 +222,28 @@ export interface DreamReading {
   hasMatch: boolean;
 }
 
+// Strip apostrophes (straight, curly, or backtick variants) so that
+// keywords stored without apostrophes — e.g. "cant scream", "havent
+// studied" — still match the way real users type them ("can't scream",
+// "haven't studied"). Without this, ~11 of the 80 keywords are dead
+// letters because users almost never type contractions without the
+// apostrophe.
+function normalizeForKeywordMatch(s: string): string {
+  return s.toLowerCase().replace(/[’‘'`´]/g, '');
+}
+
 // Match user-input dream text against symbol dictionary.
 // Case-insensitive, whole-word-boundary matching where possible.
 export function interpretDream(dreamText: string): DreamReading {
-  const text = dreamText.toLowerCase();
+  const text = normalizeForKeywordMatch(dreamText);
   const matched: { symbol: DreamSymbol; keyword: string }[] = [];
   const seenSymbols = new Set<DreamSymbol>();
 
   for (const symbol of DREAM_SYMBOLS) {
     if (seenSymbols.has(symbol)) continue;
     for (const keyword of symbol.keywords) {
-      const re = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      const normalized = normalizeForKeywordMatch(keyword);
+      const re = new RegExp(`\\b${normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
       if (re.test(text)) {
         matched.push({ symbol, keyword });
         seenSymbols.add(symbol);

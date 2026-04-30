@@ -97,14 +97,21 @@ export interface ColorMatch {
   matchedKeyword: string;
 }
 
+// Same apostrophe normalisation as dreamSymbols.ts — user input often
+// contains contractions; subsystem keywords don't, so we normalise both.
+function normalizeForKeywordMatch(s: string): string {
+  return s.toLowerCase().replace(/[’‘'`´]/g, '');
+}
+
 export function detectDreamColors(dreamText: string): ColorMatch[] {
-  const text = dreamText.toLowerCase();
+  const text = normalizeForKeywordMatch(dreamText);
   const matches: ColorMatch[] = [];
   const seen = new Set<string>();
   for (const c of DREAM_COLORS) {
     if (seen.has(c.color)) continue;
     for (const kw of c.keywords) {
-      const re = new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      const normalized = normalizeForKeywordMatch(kw);
+      const re = new RegExp(`\\b${normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
       if (re.test(text)) {
         matches.push({ color: c, matchedKeyword: kw });
         seen.add(c.color);
@@ -194,13 +201,14 @@ export interface DirectionMatch {
 }
 
 export function detectDreamDirections(dreamText: string): DirectionMatch[] {
-  const text = dreamText.toLowerCase();
+  const text = normalizeForKeywordMatch(dreamText);
   const matches: DirectionMatch[] = [];
   const seen = new Set<string>();
   for (const d of DREAM_DIRECTIONS) {
     if (seen.has(d.direction)) continue;
     for (const kw of d.keywords) {
-      const re = new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      const normalized = normalizeForKeywordMatch(kw);
+      const re = new RegExp(`\\b${normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
       if (re.test(text)) {
         matches.push({ entry: d, matchedKeyword: kw });
         seen.add(d.direction);

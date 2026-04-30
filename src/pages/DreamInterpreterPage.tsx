@@ -14,8 +14,8 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 /**
  * Dream interpretation page.
  *
- * Rewritten 2026-04-25 — primary path is the `ai-dream-interpret`
- * edge function (Gemini 2.5 Flash, strict-JSON Jungian prompt).
+ * Primary path: `ai-dream-interpret` edge function (OpenAI gpt-4o-mini
+ * primary, Gemini 2.5 Flash fallback, strict-JSON Jungian prompt).
  * Falls back to the local 80-symbol keyword dictionary when the
  * edge fn fails or is unreachable so the feature degrades gracefully
  * offline.

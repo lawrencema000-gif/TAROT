@@ -23,7 +23,15 @@ import { handler, AppError } from "../_shared/handler.ts";
  * Auth: required (subscription gate enforced inline).
  */
 
-const TEXT_MODEL = "gemini-2.5-flash";
+// Primary model + fallback. If primary returns 503 (overloaded) we
+// retry the same model with backoff, then fall back to the secondary
+// model if it persists. gemini-2.5-flash and gemini-2.0-flash share
+// the same JSON-mode contract.
+const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 interface BaziInput {
   // Pillars
@@ -202,8 +210,8 @@ interface ReadingShape {
   closing_summary: string;
 }
 
-async function callGemini(prompt: string, apiKey: string): Promise<ReadingShape> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`;
+async function callGeminiOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -219,31 +227,49 @@ async function callGemini(prompt: string, apiKey: string): Promise<ReadingShape>
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new AppError("GEMINI_FAILED", `Gemini call failed: ${res.status} ${body.slice(0, 300)}`, 502);
+    return { ok: false, status: res.status, body };
   }
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new AppError("GEMINI_NO_OUTPUT", "Gemini returned no text", 502);
-  }
-  let parsed: ReadingShape;
-  try {
-    parsed = JSON.parse(text) as ReadingShape;
-  } catch (e) {
-    throw new AppError("GEMINI_INVALID_JSON", `Could not parse Gemini output: ${String(e).slice(0, 200)}`, 502);
-  }
-  // Guarantee all 14 keys exist (Gemini sometimes drops one)
-  const required: (keyof ReadingShape)[] = [
-    "core_summary", "personality", "elements", "career", "wealth",
-    "relationships", "family", "hidden_stems", "branch_relations",
-    "health", "luck_pillar", "annual", "strategy", "closing_summary",
-  ];
-  for (const k of required) {
-    if (typeof parsed[k] !== "string" || !parsed[k].trim()) {
-      parsed[k] = "(This section was not generated. Try regenerating the reading.)";
+  if (!text) return { ok: false, status: 0, body: "no text in response" };
+  return { ok: true, text };
+}
+
+async function callGemini(prompt: string, apiKey: string): Promise<ReadingShape> {
+  // Try each model in TEXT_MODELS, retrying transient errors (503/429)
+  // with exponential backoff. Fall through to the next model if one
+  // is persistently overloaded.
+  let lastErr = "";
+  for (const model of TEXT_MODELS) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await callGeminiOnce(model, prompt, apiKey);
+      if (result.ok) {
+        let parsed: ReadingShape;
+        try {
+          parsed = JSON.parse(result.text) as ReadingShape;
+        } catch (e) {
+          throw new AppError("GEMINI_INVALID_JSON", `Could not parse Gemini output: ${String(e).slice(0, 200)}`, 502);
+        }
+        // Guarantee all 14 keys exist
+        const required: (keyof ReadingShape)[] = [
+          "core_summary", "personality", "elements", "career", "wealth",
+          "relationships", "family", "hidden_stems", "branch_relations",
+          "health", "luck_pillar", "annual", "strategy", "closing_summary",
+        ];
+        for (const k of required) {
+          if (typeof parsed[k] !== "string" || !parsed[k].trim()) {
+            parsed[k] = "(This section was not generated. Try regenerating the reading.)";
+          }
+        }
+        return parsed;
+      }
+      lastErr = `${model} ${result.status}: ${result.body.slice(0, 200)}`;
+      // Retry on transient overload / rate-limit; bail on auth/billing
+      if (result.status !== 503 && result.status !== 429 && result.status !== 0) break;
+      await sleep(1500 * (attempt + 1));
     }
   }
-  return parsed;
+  throw new AppError("GEMINI_FAILED", `All Gemini models failed. Last: ${lastErr}`, 502);
 }
 
 Deno.serve(handler<BaziInput>({

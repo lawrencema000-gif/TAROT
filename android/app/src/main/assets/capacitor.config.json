@@ -4,16 +4,25 @@
 	"webDir": "dist",
 	"server": {
 		"androidScheme": "https",
+		"iosScheme": "https",
 		"allowNavigation": [
 			"*.supabase.co",
 			"accounts.google.com",
 			"*.google.com",
-			"*.googleapis.com"
+			"*.googleapis.com",
+			"appleid.apple.com"
 		]
 	},
 	"android": {
 		"allowMixedContent": false,
 		"backgroundColor": "#0a0a0f"
+	},
+	"ios": {
+		"backgroundColor": "#0a0a0f",
+		"contentInset": "always",
+		"handleApplicationNotifications": false,
+		"overrideUserInterfaceStyle": "dark",
+		"scheme": "Arcana"
 	},
 	"plugins": {
 		"SplashScreen": {
@@ -40,6 +49,12 @@
 			"clientId": "804690093810-kb7q1v06or3dffgk0a0nv6vnr1lnc70o.apps.googleusercontent.com",
 			"iosClientId": "804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d.apps.googleusercontent.com",
 			"forceCodeForRefreshToken": true
+		},
+		"SignInWithApple": {
+			"clientId": "com.arcana.app",
+			"redirectURI": "https://ulzlthhkqjuohzjangcq.supabase.co/auth/v1/callback",
+			"scopes": "email name",
+			"state": "state"
 		}
 	}
 }

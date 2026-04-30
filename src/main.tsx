@@ -32,39 +32,55 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   };
 
   // Load Sentry after 2.5s of idle time (or immediately if an error fires).
+  //
+  // We use @sentry/capacitor on top of @sentry/react. On web, this is
+  // identical to using @sentry/react directly. On Android + iOS, it
+  // ALSO bridges native crashes (JVM RuntimeExceptions, Swift fatalErrors,
+  // out-of-memory kills, ANRs) up to the Sentry dashboard via the
+  // bundled Sentry Android / Cocoa SDK. JS-only Sentry can't see those —
+  // when the JS bridge dies, errors are lost.
+  //
+  // Required: SENTRY_DSN env var (already configured). Native upload
+  // requires Capacitor sync to bring in the native modules — happens
+  // automatically on `npx cap sync android` / `cap sync ios`.
   const loadSentry = async () => {
     try {
+      const SentryCap = await import('@sentry/capacitor');
       const Sentry = await import('@sentry/react');
-      Sentry.init({
-        dsn: import.meta.env.VITE_SENTRY_DSN,
-        environment: import.meta.env.MODE,
-        release,
-        integrations: [
-          Sentry.browserTracingIntegration(),
-          // Replay records the last few seconds of user interaction (DOM
-          // mutations, clicks, network calls) when an error fires. Lets us
-          // literally watch what the user did before the crash.
-          // Sample rate 0 for happy-path sessions; 100% on error so every
-          // error has a replay attached.
-          Sentry.replayIntegration({
-            maskAllText: false,
-            maskAllInputs: true, // never record what users type into forms
-            blockAllMedia: false,
-          }),
-        ],
-        tracesSampleRate: 0.2,
-        replaysSessionSampleRate: 0,
-        replaysOnErrorSampleRate: 1.0,
-        // Drop noisy errors that aren't actionable.
-        ignoreErrors: [
-          // Browser extensions / cross-origin junk.
-          'ResizeObserver loop',
-          'Network request failed',
-          'Non-Error promise rejection captured',
-          // AbortController on user navigation away.
-          'AbortError',
-        ],
-      });
+      SentryCap.init(
+        {
+          dsn: import.meta.env.VITE_SENTRY_DSN,
+          environment: import.meta.env.MODE,
+          release,
+          integrations: [
+            // Replay records the last few seconds of user interaction (DOM
+            // mutations, clicks, network calls) when an error fires. Lets us
+            // literally watch what the user did before the crash.
+            // Sample rate 0 for happy-path sessions; 100% on error so every
+            // error has a replay attached.
+            Sentry.replayIntegration({
+              maskAllText: false,
+              maskAllInputs: true, // never record what users type into forms
+              blockAllMedia: false,
+            }),
+          ],
+          tracesSampleRate: 0.2,
+          replaysSessionSampleRate: 0,
+          replaysOnErrorSampleRate: 1.0,
+          // Drop noisy errors that aren't actionable.
+          ignoreErrors: [
+            // Browser extensions / cross-origin junk.
+            'ResizeObserver loop',
+            'Network request failed',
+            'Non-Error promise rejection captured',
+            // AbortController on user navigation away.
+            'AbortError',
+          ],
+        },
+        // The 2nd arg is the inner @sentry/react init function — Capacitor
+        // wrapper passes through after setting up the native bridge.
+        Sentry.init,
+      );
       // Flush pre-init errors.
       for (const { error, source } of preInitErrors) {
         Sentry.captureException(error, { tags: { source } });

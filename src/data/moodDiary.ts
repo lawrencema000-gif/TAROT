@@ -95,6 +95,17 @@ export const MOOD_CATEGORIES: Record<MoodCategory, MoodCategoryInfo> = {
 
 const STORAGE_KEY = 'arcana_mood_diary_v1';
 
+// Format a Date as YYYY-MM-DD using LOCAL components, not UTC. Crucial
+// for mood logging because users logging late at night near UTC midnight
+// would otherwise see their entry attributed to the next UTC day — which
+// shifts the day-of-week label and the dominant-day insight by ±1.
+export function localDateStr(d: Date = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export function loadMoodEntries(): MoodEntry[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -132,12 +143,12 @@ export function getLast30Days(): MoodEntry[] {
   const all = loadMoodEntries();
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 30);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const cutoffStr = localDateStr(cutoff);
   return all.filter((e) => e.date >= cutoffStr);
 }
 
 export function getTodayEntry(): MoodEntry | null {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const all = loadMoodEntries();
   return all.find((e) => e.date === today) ?? null;
 }
@@ -226,7 +237,12 @@ export function derivePattern(entries: MoodEntry[]): MoodPattern {
     Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [],
   };
   for (const e of recent) {
-    const dayIndex = new Date(e.date + 'T00:00:00Z').getUTCDay();
+    // Parse YYYY-MM-DD as a LOCAL calendar date (not UTC) so the day-of-
+    // week label matches the user's lived day. `new Date('2026-04-30')`
+    // would parse as UTC midnight; `new Date(2026, 3, 30)` parses as
+    // local midnight. Same date string, correct local day-of-week.
+    const [y, m, d] = e.date.split('-').map(Number);
+    const dayIndex = new Date(y, m - 1, d).getDay();
     byDay[DAY_NAMES[dayIndex]].push(entryToYValue(e));
   }
   const dayAverages = (Object.entries(byDay) as [DayOfWeek, number[]][])

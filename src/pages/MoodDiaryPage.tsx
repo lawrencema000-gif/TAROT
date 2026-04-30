@@ -13,6 +13,7 @@ import {
   getTodayEntry,
   entryToYValue,
   derivePattern,
+  localDateStr,
   type MoodCategory,
   type MoodEntry,
   type MoodPattern,
@@ -54,7 +55,7 @@ export function MoodDiaryPage() {
       toast(t('mood.pickOne', { defaultValue: 'Pick a mood first' }), 'error');
       return;
     }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateStr();
     const saved = saveMoodEntry({
       date: today,
       category: selected,
@@ -74,7 +75,7 @@ export function MoodDiaryPage() {
     for (let i = 29; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
+      const dateStr = localDateStr(d);
       out.push(allEntries.find((e) => e.date === dateStr) ?? null);
     }
     return out;

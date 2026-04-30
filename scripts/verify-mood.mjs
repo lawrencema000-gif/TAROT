@@ -79,5 +79,34 @@ for (const cat of allCategories) {
 }
 check('all 8×5=40 combinations in [1, 5]', false, oob);
 
+// ─── 4. localDateStr — local components, not UTC ──────────────────
+console.log('\n[4/5] localDateStr — uses local calendar, not UTC');
+function localDateStr(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+// Sanity: a Date created from local components should round-trip.
+const localApr30 = new Date(2026, 3, 30, 12, 0, 0);
+check('localDateStr round-trip 2026-04-30 noon local', '2026-04-30', localDateStr(localApr30));
+// Padding zero
+const localJan5 = new Date(2026, 0, 5, 23, 59, 0);
+check('localDateStr pads month and day', '2026-01-05', localDateStr(localJan5));
+
+// ─── 5. Local-day-of-week parsing ────────────────────────────────
+console.log('\n[5/5] Local day-of-week parsing avoids UTC drift');
+// Parse YYYY-MM-DD as local components.
+function localDayOfWeek(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).getDay();
+}
+// 2026-04-30 = Thursday (any timezone, since we parse as local).
+check('2026-04-30 → Thursday', 4, localDayOfWeek('2026-04-30'));
+// 2026-01-01 = Thursday
+check('2026-01-01 → Thursday', 4, localDayOfWeek('2026-01-01'));
+// 2026-04-26 = Sunday
+check('2026-04-26 → Sunday', 0, localDayOfWeek('2026-04-26'));
+
 console.log('\n' + (allPassed ? '✅ ALL PASS' : '❌ MISMATCHES'));
 process.exit(allPassed ? 0 : 1);

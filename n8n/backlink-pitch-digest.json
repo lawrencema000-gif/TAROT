@@ -1,0 +1,96 @@
+{
+  "name": "Backlink Pitch Digest — tarotlife.app",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 14 * * *" }
+          ]
+        }
+      },
+      "id": "trigger-daily-2pm-utc",
+      "name": "Daily 2pm UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300],
+      "notes": "HARO shut down in 2024. Modern free + freemium journalist-pitch services have moved to Qwoted, SourceBottle, Help a B2B Writer, Featured.com. They all email queries. This workflow fans out across the user's Gmail inbox to find pitchable queries in the tarot/astrology/spirituality niche."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filters": {
+          "q": "(from:queries@helpareporter.com OR from:notifications@qwoted.com OR from:noreply@sourcebottle.com OR from:hello@featured.com OR from:noreply@helpab2bwriter.com OR subject:\"journalist query\" OR subject:HARO OR subject:Qwoted) newer_than:1d"
+        },
+        "limit": 50,
+        "format": "metadata"
+      },
+      "id": "gmail-fetch-yesterday",
+      "name": "Pull last 24h pitch emails",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [440, 300],
+      "credentials": { "gmailOAuth2": { "name": "Gmail (lawrence.ma000)" } }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "format": "full"
+      },
+      "id": "gmail-fetch-bodies",
+      "name": "Fetch full email bodies",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [680, 300],
+      "credentials": { "gmailOAuth2": { "name": "Gmail (lawrence.ma000)" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter incoming pitch-query emails for niche relevance.\n// HARO-style emails contain dozens of unrelated queries; we only care about\n// the ones that match our niche so we don't waste user time.\n\nconst NICHE_KEYWORDS = [\n  // Tarot\n  'tarot', 'oracle card', 'card reading', 'major arcana', 'minor arcana',\n  // Astrology\n  'astrology', 'horoscope', 'zodiac', 'natal chart', 'birth chart',\n  'mercury retrograde', 'full moon', 'new moon', 'lunar', 'solar return',\n  // Other systems\n  'bazi', 'four pillars', 'human design', 'i ching', 'i-ching', 'iching',\n  'feng shui', 'numerology', 'angel number', 'life path',\n  // Spirituality + wellness adjacent\n  'spirituality', 'spiritual', 'manifestation', 'manifest', 'meditation',\n  'mindfulness', 'crystal', 'crystals', 'chakra', 'aura', 'energy work',\n  'witch', 'witchcraft', 'wicca', 'pagan', 'metaphysical',\n  // Pop-culture intent\n  'mercury in', 'venus in', 'saturn return', 'rising sign', 'sun sign',\n  'moon sign', 'star sign', 'astrologer', 'tarot reader', 'psychic',\n  'dream interpretation', 'dream meaning', 'lucid dream'\n];\n\nconst items = $input.all();\nconst matches = [];\n\nfor (const item of items) {\n  const subject = (item.json.subject || '').toLowerCase();\n  const body = (item.json.text || item.json.snippet || '').toLowerCase();\n  const haystack = `${subject}\\n${body}`;\n\n  // Find which niche keyword(s) matched and capture the surrounding context.\n  const hits = [];\n  for (const kw of NICHE_KEYWORDS) {\n    const idx = haystack.indexOf(kw);\n    if (idx >= 0) {\n      const start = Math.max(0, idx - 80);\n      const end = Math.min(haystack.length, idx + kw.length + 240);\n      hits.push({ keyword: kw, snippet: haystack.slice(start, end).replace(/\\s+/g, ' ').trim() });\n    }\n  }\n\n  if (hits.length === 0) continue;\n\n  // Try to extract a deadline if HARO/Qwoted-style format\n  const deadlineMatch = body.match(/deadline[:\\s]+([^\\n]{1,80})/i);\n  const queryMatch = body.match(/(query|topic|looking for|need)[:\\s]+([^\\n]{1,180})/i);\n\n  matches.push({\n    json: {\n      subject: item.json.subject,\n      from: item.json.from,\n      date: item.json.date,\n      gmailLink: `https://mail.google.com/mail/u/0/#inbox/${item.json.id}`,\n      matchedKeywords: hits.slice(0, 3).map(h => h.keyword),\n      previewSnippet: hits[0].snippet,\n      detectedDeadline: deadlineMatch ? deadlineMatch[1].trim() : null,\n      detectedQuery: queryMatch ? queryMatch[2].trim() : null\n    }\n  });\n}\n\nreturn matches;"
+      },
+      "id": "filter-niche",
+      "name": "Filter to tarot/astrology/spirituality",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a single digest email body. If no matches, send a quiet 'nothing today' note (not spam).\n\nconst matches = $input.all();\nconst todayIso = new Date().toISOString().slice(0, 10);\n\nif (matches.length === 0) {\n  return [{\n    json: {\n      to: 'lawrence.ma000@gmail.com',\n      subject: `Backlink pitch digest — ${todayIso} — no relevant queries`,\n      bodyText: 'No tarot/astrology/spirituality journalist queries landed in your inbox in the last 24 hours.\\n\\nThis is normal — HARO shut down in 2024 and the replacements (Qwoted, SourceBottle, Help-a-B2B-Writer, Featured.com) have lower volume in this niche. Average yield is 2-3 relevant queries per week.\\n\\nIf you haven\\'t signed up to a service yet, today is a good day:\\n  - Qwoted: https://qwoted.com (free tier, weekly digest)\\n  - SourceBottle: https://www.sourcebottle.com (free)\\n  - Help a B2B Writer: https://helpab2bwriter.com (free)\\n  - Featured.com: https://featured.com (limited free)',\n      htmlBody: ''\n    }\n  }];\n}\n\nconst sortedByDeadline = matches.sort((a, b) => {\n  if (a.json.detectedDeadline && !b.json.detectedDeadline) return -1;\n  if (!a.json.detectedDeadline && b.json.detectedDeadline) return 1;\n  return 0;\n});\n\nconst itemsHtml = sortedByDeadline.map((m, i) => {\n  const j = m.json;\n  return `\n  <li style=\"margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #2a2a3e;\">\n    <p style=\"margin: 0 0 4px; color: #d4af37; font-size: 13px;\">\n      <strong>#${i + 1}</strong>\n      ${j.detectedDeadline ? `&nbsp;⏰ deadline: <span style=\"color: #ff6b9d;\">${j.detectedDeadline}</span>` : ''}\n      &nbsp;•&nbsp; matched: ${j.matchedKeywords.join(', ')}\n    </p>\n    <p style=\"margin: 0 0 6px; font-size: 14px; color: #e9e8ec;\"><strong>${j.subject || '(no subject)'}</strong></p>\n    ${j.detectedQuery ? `<p style=\"margin: 0 0 6px; color: #b8b6c4; font-size: 13px;\"><em>${j.detectedQuery}</em></p>` : ''}\n    <p style=\"margin: 0 0 6px; color: #98969f; font-size: 12px; line-height: 1.5;\">${j.previewSnippet}</p>\n    <p style=\"margin: 0; font-size: 12px;\"><a href=\"${j.gmailLink}\" style=\"color: #4a90e2;\">Open in Gmail →</a></p>\n  </li>`;\n}).join('');\n\nconst bodyText = sortedByDeadline.map((m, i) => {\n  const j = m.json;\n  return `${i + 1}. ${j.subject}\\n   matched: ${j.matchedKeywords.join(', ')}\\n   ${j.detectedDeadline ? 'deadline: ' + j.detectedDeadline + '\\n   ' : ''}${j.previewSnippet}\\n   ${j.gmailLink}`;\n}).join('\\n\\n');\n\nreturn [{\n  json: {\n    to: 'lawrence.ma000@gmail.com',\n    subject: `Backlink pitch digest — ${todayIso} — ${matches.length} pitchable queries`,\n    bodyText: `${matches.length} journalist queries match your niche.\\n\\nReply ASAP — most expire within 24-48h. Backlinks from media coverage are some of the highest DR you can earn for tarotlife.app.\\n\\n${bodyText}\\n\\n---\\n\\nGenerated by n8n at ${new Date().toISOString()}.`,\n    htmlBody: `<div style=\"font-family: ui-sans-serif, system-ui, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; background: #0a0a14; color: #e9e8ec;\">\n      <h2 style=\"margin: 0 0 8px; color: #d4af37; font-family: serif;\">Backlink pitch digest</h2>\n      <p style=\"margin: 0 0 18px; color: #98969f; font-size: 13px;\">${todayIso} • ${matches.length} pitchable ${matches.length === 1 ? 'query' : 'queries'}</p>\n      <ol style=\"padding: 0; list-style: none;\">${itemsHtml}</ol>\n      <p style=\"margin-top: 24px; color: #98969f; font-size: 12px; border-top: 1px solid #2a2a3e; padding-top: 16px;\">Reply ASAP — pitches typically expire within 24-48h.<br/>tarotlife.app SEO automation</p>\n    </div>`\n  }\n}];"
+      },
+      "id": "build-digest",
+      "name": "Build digest email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.htmlBody || $json.bodyText }}",
+        "options": {}
+      },
+      "id": "send-digest",
+      "name": "Send digest email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1400, 300],
+      "credentials": { "gmailOAuth2": { "name": "Gmail (lawrence.ma000)" } }
+    }
+  ],
+  "connections": {
+    "Daily 2pm UTC": { "main": [[{ "node": "Pull last 24h pitch emails", "type": "main", "index": 0 }]] },
+    "Pull last 24h pitch emails": { "main": [[{ "node": "Fetch full email bodies", "type": "main", "index": 0 }]] },
+    "Fetch full email bodies": { "main": [[{ "node": "Filter to tarot/astrology/spirituality", "type": "main", "index": 0 }]] },
+    "Filter to tarot/astrology/spirituality": { "main": [[{ "node": "Build digest email", "type": "main", "index": 0 }]] },
+    "Build digest email": { "main": [[{ "node": "Send digest email", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "tarotlife" }, { "name": "seo" }, { "name": "backlinks" }],
+  "active": false,
+  "meta": {
+    "description": "Daily 2pm UTC: scans the user's Gmail for journalist pitch emails (HARO replacements: Qwoted, SourceBottle, HelpaB2BWriter, Featured), filters down to the tarot/astrology/spirituality niche, sends a digest to lawrence.ma000@gmail.com with deadlines surfaced and Gmail deep-links for each match. Activate manually after signing up to at least one of the source services."
+  }
+}

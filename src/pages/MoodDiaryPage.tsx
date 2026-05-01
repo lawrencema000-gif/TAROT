@@ -13,11 +13,15 @@ import {
   getTodayEntry,
   entryToYValue,
   derivePattern,
-  localDateStr,
   type MoodCategory,
   type MoodEntry,
   type MoodPattern,
 } from '../data/moodDiary';
+// Import localDateStr DIRECTLY from utils — going through the moodDiary
+// re-export caused Vite's tree-shaker to drop the symbol from the
+// MoodDiaryPage chunk in production builds, producing a runtime
+// `localDateStr is not defined` ReferenceError on the Mood tab.
+import { localDateStr } from '../utils/localDate';
 
 type Stage = 'log' | 'history';
 

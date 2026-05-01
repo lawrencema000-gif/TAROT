@@ -25,11 +25,18 @@ import { marked } from "npm:marked@14.1.3";
  * has 75+ topics so missing one is fine.
  */
 
-// Gemini 2.5 Flash — generous free-tier quota, more than capable for SEO blog
-// posts. Switch to gemini-2.5-pro later if/when the project moves to a paid
-// tier and we want higher reasoning depth (mostly noticeable on long-tail
-// nuance, not on the kind of structured SEO articles this generates).
-const TEXT_MODEL = "gemini-2.5-flash";
+// AI provider chain — quality-first to match the rest of the stack.
+// OpenAI gpt-5 primary; gpt-5-mini covers retries; Gemini 2.5/1.5 Flash
+// is the cross-provider fallback when OpenAI is unavailable. This runs
+// once per day on a cron, so a single 503 from one provider used to mean
+// no blog post that day. With the fallback chain, that's no longer
+// possible unless ALL three providers are down at the same moment.
+const OPENAI_MODELS = ["gpt-5", "gpt-5-mini"];
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash"];
+
+function isReasoningModel(model: string): boolean {
+  return model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
+}
 
 // Imagen requires a paid tier. We use Pollinations.ai instead — free, no
 // key, high quality, reasonably fast. Keeps the generator working on the
@@ -141,7 +148,58 @@ Q: Real question three?
 A: Same answer.
 ---END---`;
 
-async function generateArticle(topic: Topic, apiKey: string): Promise<GeneratedArticle> {
+async function callOpenAI(prompt: string, model: string, apiKey: string): Promise<string> {
+  const reasoning = isReasoningModel(model);
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: ARTICLE_SYSTEM },
+      { role: "user", content: prompt },
+    ],
+    // 1500-word article + delimiter overhead ~ 4K tokens of visible
+    // output. Reasoning models also use part of the budget for internal
+    // reasoning before producing visible text, so pad to 24K for gpt-5.
+    max_completion_tokens: reasoning ? 24576 : 16384,
+  };
+  if (reasoning) {
+    body.reasoning_effort = "minimal";
+  } else {
+    body.temperature = 0.7;
+  }
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`openai ${model} ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text || typeof text !== "string") throw new Error(`openai ${model}: empty response`);
+  return text;
+}
+
+async function callGemini(prompt: string, model: string, apiKey: string): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: `${ARTICLE_SYSTEM}\n\n---\n\n${prompt}` }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 16384 },
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`gemini ${model} ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error(`gemini ${model}: empty response`);
+  return text;
+}
+
+async function generateArticle(topic: Topic): Promise<GeneratedArticle> {
   const userPrompt = `Topic: ${topic.topic}
 Category: ${topic.category}
 Primary keyword: ${topic.keyword}
@@ -152,31 +210,37 @@ ${topic.brief}
 
 Write the article now. Reply with the JSON object only — no markdown, no preamble.`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: `${ARTICLE_SYSTEM}\n\n---\n\n${userPrompt}` }] }],
-      generationConfig: {
-        temperature: 0.7,
-        // 1500-word article in plain text = ~3K tokens; we give plenty of
-        // headroom in case Flash adds preamble or FAQ duplication.
-        maxOutputTokens: 16384,
-        // Plain text — no responseMimeType=application/json since we now
-        // use a delimited format that's easier to parse than nested JSON.
-      },
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new AppError("ARTICLE_GEN_FAILED", `Gemini Pro article gen failed: ${text.slice(0, 300)}`, 502);
+  const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
+  const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
+  if (!openaiKey && !geminiKey) {
+    throw new AppError("AI_NOT_CONFIGURED", "Neither OPENAI_API_KEY nor GEMINI_API_KEY set", 503);
   }
 
-  const data = await res.json();
-  const completion = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!completion) throw new AppError("ARTICLE_GEN_EMPTY", "Article generation returned empty", 502);
+  let completion = "";
+  let lastErr = "no provider attempted";
+  if (openaiKey) {
+    for (const m of OPENAI_MODELS) {
+      try {
+        completion = await callOpenAI(userPrompt, m, openaiKey);
+        break;
+      } catch (e) {
+        lastErr = String(e).slice(0, 300);
+      }
+    }
+  }
+  if (!completion && geminiKey) {
+    for (const m of GEMINI_MODELS) {
+      try {
+        completion = await callGemini(userPrompt, m, geminiKey);
+        break;
+      } catch (e) {
+        lastErr = String(e).slice(0, 300);
+      }
+    }
+  }
+  if (!completion) {
+    throw new AppError("ARTICLE_GEN_FAILED", `All providers failed. Last: ${lastErr}`, 502);
+  }
 
   const parsed = parseDelimitedArticle(completion);
   if (!parsed.title || !parsed.slug || !parsed.content_markdown || !parsed.excerpt) {
@@ -309,8 +373,8 @@ Deno.serve(handler<RunBody>({
   webhookSecretEnv: "CRON_SECRET",
   rateLimit: { max: 10, windowMs: 60_000 },
   run: async (ctx, body) => {
-    const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
-    if (!geminiKey) throw new AppError("AI_NOT_CONFIGURED", "GEMINI_API_KEY not set", 503);
+    // Provider key check happens inside generateArticle so the chain can
+    // try OpenAI primary even if GEMINI_API_KEY is unset.
 
     // 1. Pick a topic — body override or queue-head.
     let topic: Topic | null = null;
@@ -338,8 +402,8 @@ Deno.serve(handler<RunBody>({
 
     ctx.log.info("daily_seo.topic_picked", { topicId: topic.id, keyword: topic.keyword });
 
-    // 2. Generate article via Gemini Pro.
-    const article = await generateArticle(topic, geminiKey);
+    // 2. Generate article via OpenAI primary (gpt-5) → Gemini fallback.
+    const article = await generateArticle(topic);
     ctx.log.info("daily_seo.article_generated", {
       slug: article.slug,
       titleLen: article.title.length,

@@ -84,9 +84,16 @@ function hash(seed: string): number {
   return h >>> 0;
 }
 
-/** Pick today's mission for a given user (or anonymous fallback). */
+/** Pick today's mission for a given user (or anonymous fallback). Uses
+ *  the user's LOCAL calendar date so the mission rolls over at local
+ *  midnight, not UTC midnight. */
 export function pickDailyMission(userId: string | null, date = new Date()): DailyMission {
-  const yyyyMmDd = date.toISOString().slice(0, 10);
+  // Mirror src/utils/localDate.ts (don't import to keep this module
+  // dependency-free for offline-first paths).
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const yyyyMmDd = `${y}-${m}-${d}`;
   const seed = `${userId ?? 'anon'}_${yyyyMmDd}`;
   const idx = hash(seed) % DAILY_MISSIONS.length;
   return DAILY_MISSIONS[idx];

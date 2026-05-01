@@ -95,16 +95,9 @@ export const MOOD_CATEGORIES: Record<MoodCategory, MoodCategoryInfo> = {
 
 const STORAGE_KEY = 'arcana_mood_diary_v1';
 
-// Format a Date as YYYY-MM-DD using LOCAL components, not UTC. Crucial
-// for mood logging because users logging late at night near UTC midnight
-// would otherwise see their entry attributed to the next UTC day — which
-// shifts the day-of-week label and the dominant-day insight by ±1.
-export function localDateStr(d: Date = new Date()): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
+// Re-export the shared local-calendar helper. Lives in src/utils/localDate.ts
+// so other features (daily missions, AI message counters) can share it.
+export { localDateStr } from '../utils/localDate';
 
 export function loadMoodEntries(): MoodEntry[] {
   if (typeof window === 'undefined') return [];

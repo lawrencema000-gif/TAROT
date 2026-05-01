@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { localDateStr } from '../utils/localDate';
 
 type Persona = 'sage' | 'oracle' | 'mystic' | 'priestess';
 
@@ -64,9 +65,10 @@ export function AiCompanionPage() {
 
   const DAILY_LIMIT = 20; // free tier; premium bumps to 100 in a future sprint
 
-  // Track daily usage via localStorage
+  // Track daily usage via localStorage. Use the LOCAL calendar date so
+  // the message limit resets at the user's midnight, not UTC midnight.
   useEffect(() => {
-    const key = `arcana_companion_daily_${new Date().toISOString().slice(0, 10)}`;
+    const key = `arcana_companion_daily_${localDateStr()}`;
     try {
       const n = parseInt(localStorage.getItem(key) || '0', 10);
       setDailyUsed(Number.isFinite(n) ? n : 0);
@@ -84,7 +86,7 @@ export function AiCompanionPage() {
   }, [history, sending]);
 
   const incDailyUsed = useCallback(() => {
-    const key = `arcana_companion_daily_${new Date().toISOString().slice(0, 10)}`;
+    const key = `arcana_companion_daily_${localDateStr()}`;
     try {
       const next = dailyUsed + 1;
       localStorage.setItem(key, String(next));

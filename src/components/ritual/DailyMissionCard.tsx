@@ -22,14 +22,18 @@ const DONE_PREFIX = 'arcana_mission_';
 const STREAK_KEY = 'arcana_mission_streak';
 const LAST_DATE_KEY = 'arcana_mission_last_date';
 
+// Local-calendar dates — daily mission tracking is purely client-side
+// (localStorage), so the user's local "today" is what counts. Using
+// toISOString() previously caused the streak counter to roll over at
+// UTC midnight, which is the wrong hour for users east of UTC.
+import { localDateStr, localYesterdayStr } from '../../utils/localDate';
+
 function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localDateStr();
 }
 
 function yesterdayKey(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
+  return localYesterdayStr();
 }
 
 interface DailyMissionCardProps {

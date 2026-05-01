@@ -135,5 +135,21 @@ export async function generateBaziReading(args: {
     } catch { /* */ }
     return { ok: false, error: message };
   }
-  return (await res.json()) as InterpretResponse;
+
+  // Unwrap the standard handler envelope. The bazi-interpret edge fn
+  // returns `{ data: { ok, reading, cached }, correlationId }` per the
+  // _shared/handler.ts contract — without unwrapping, `parsed.ok` is
+  // `undefined`, the component sees a falsy ok, and shows the generic
+  // "Failed to generate reading" error even though the request succeeded.
+  // Reading was being silently discarded after a ~30-50s wait. Falls
+  // back to the raw shape for any caller that returns the legacy flat
+  // payload (none currently, but keeps this resilient to handler
+  // refactors).
+  const parsed = (await res.json()) as
+    | { data?: InterpretResponse; correlationId?: string }
+    | InterpretResponse;
+  if (parsed && typeof parsed === 'object' && 'data' in parsed && parsed.data) {
+    return parsed.data;
+  }
+  return parsed as InterpretResponse;
 }

@@ -95,12 +95,13 @@ export const MOOD_CATEGORIES: Record<MoodCategory, MoodCategoryInfo> = {
 
 const STORAGE_KEY = 'arcana_mood_diary_v1';
 
-// Re-export the shared local-calendar helper. Lives in src/utils/localDate.ts
-// so other features (daily missions, AI message counters) can share it.
-// We import it back into this module's scope below for the helpers
-// that use it locally (getLast30Days, getTodayEntry).
+// Local-calendar helper used internally by getLast30Days + getTodayEntry.
+// External callers (MoodDiaryPage, DailyMissionCard, AiCompanionPage)
+// should import directly from '../utils/localDate' — going through this
+// module's re-export was unreliable under Vite chunk splitting (a re-
+// export in a lazy-loaded module sometimes got tree-shaken out of the
+// downstream chunk, producing `localDateStr is not defined` at runtime).
 import { localDateStr } from '../utils/localDate';
-export { localDateStr };
 
 export function loadMoodEntries(): MoodEntry[] {
   if (typeof window === 'undefined') return [];

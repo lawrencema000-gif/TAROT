@@ -97,7 +97,10 @@ const STORAGE_KEY = 'arcana_mood_diary_v1';
 
 // Re-export the shared local-calendar helper. Lives in src/utils/localDate.ts
 // so other features (daily missions, AI message counters) can share it.
-export { localDateStr } from '../utils/localDate';
+// We import it back into this module's scope below for the helpers
+// that use it locally (getLast30Days, getTodayEntry).
+import { localDateStr } from '../utils/localDate';
+export { localDateStr };
 
 export function loadMoodEntries(): MoodEntry[] {
   if (typeof window === 'undefined') return [];

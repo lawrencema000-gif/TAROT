@@ -102,7 +102,11 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     setResetLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/?lang=${getLocale()}`,
+        // Land directly on the reset-password page so the flow works even
+        // if Supabase JS doesn't auto-fire the PASSWORD_RECOVERY event
+        // (e.g. native webview cold start). App.tsx force-renders
+        // ResetPasswordPage on this path regardless of auth state.
+        redirectTo: `${window.location.origin}/reset-password?lang=${getLocale()}`,
       });
       if (error) {
         toast(getAuthErrorMessage(error), 'error');

@@ -59,6 +59,20 @@ interface AuthContextType {
    */
   pollProfileUntilPremium: (timeoutMs?: number, intervalMs?: number) => Promise<boolean>;
   cancelOAuth: () => void;
+  /**
+   * True after Supabase fires onAuthStateChange('PASSWORD_RECOVERY', ...).
+   * Set when the user clicks a password-reset email link. Gates the app
+   * behind ResetPasswordPage until the user either:
+   *   - successfully calls supabase.auth.updateUser({ password }), then
+   *     we sign them out and redirect to /signin, OR
+   *   - explicitly cancels via clearPasswordRecoveryMode().
+   *
+   * This closes a UX + security gap where a recovery link previously
+   * granted a regular signed-in session with no way to actually update
+   * the password.
+   */
+  passwordRecoveryMode: boolean;
+  clearPasswordRecoveryMode: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -180,6 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   const [isAdminVerified, setIsAdminVerified] = useState(false);
+  const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false);
+  const clearPasswordRecoveryMode = useCallback(() => setPasswordRecoveryMode(false), []);
 
   const oauthTimeoutRef = React.useRef<number | null>(null);
   const isProcessingCallbackRef = React.useRef(false);
@@ -751,6 +767,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clean up OAuth params from URL bar after successful sign-in
         if (!isNative() && (window.location.search.includes('code=') || window.location.hash.includes('access_token'))) {
           window.history.replaceState({}, '', window.location.pathname);
+        }
+      }
+
+      // PASSWORD_RECOVERY fires when the user clicks a reset-password
+      // email link. Supabase JS auto-creates a temporary session from
+      // the URL hash so the subsequent updateUser({password}) call has
+      // an authenticated context. We flip a flag here so App.tsx can
+      // force-render ResetPasswordPage regardless of which route the
+      // recovery link landed on. The flag is cleared after the user
+      // successfully updates their password (and we sign them out so
+      // the recovery session can't be used as a regular login).
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecoveryMode(true);
+        // Strip the recovery hash from the URL bar so a refresh doesn't
+        // re-fire the event (and so the access token isn't visible).
+        if (!isNative() && window.location.hash.includes('type=recovery')) {
+          window.history.replaceState({}, '', window.location.pathname + window.location.search);
         }
       }
 
@@ -1421,6 +1454,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       optimisticallyMarkPremium,
       pollProfileUntilPremium,
       cancelOAuth,
+      passwordRecoveryMode,
+      clearPasswordRecoveryMode,
     }}>
       {children}
     </AuthContext.Provider>

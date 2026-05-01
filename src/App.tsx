@@ -34,6 +34,7 @@ import { HomePage } from './pages/HomePage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
 import { AuthPage } from './pages/AuthPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { LandingPage } from './pages/LandingPage';
 
 // Lazy imports — loaded on demand when user navigates
@@ -151,7 +152,7 @@ function DiagnosticsSync() {
 
 function AppContent() {
   const { t } = useT('app');
-  const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth } = useAuth();
+  const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth, passwordRecoveryMode } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   const location = useLocation();
   const navigate = useNavigate();
@@ -320,6 +321,22 @@ function AppContent() {
           )}
         </div>
       </div>
+    );
+  }
+
+  // Password-recovery gate — overrides every other route. Fires when
+  // Supabase emits onAuthStateChange('PASSWORD_RECOVERY', ...) after a
+  // user clicks an email reset link, OR when the user navigates
+  // directly to /reset-password. Closes a UX + security gap where the
+  // recovery email previously dropped users into a normal signed-in
+  // session with no way to actually update their password.
+  if (passwordRecoveryMode || location.pathname === '/reset-password') {
+    return (
+      <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+        <div className="min-h-screen constellation-bg">
+          <ResetPasswordPage />
+        </div>
+      </ErrorBoundary>
     );
   }
 

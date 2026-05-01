@@ -43,6 +43,16 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
+            // Bundle native debug symbols into the AAB so Play Console can
+            // symbolicate native crashes (NDK / Capacitor plugins / AdMob
+            // mediation SDKs etc.). 'FULL' includes function names + line
+            // numbers — best for debugging, ~30 MB extra in the AAB but
+            // doesn't ship to the user (Play strips it before APK delivery).
+            // Use 'SYMBOL_TABLE' instead if AAB size becomes a concern;
+            // that gives function names without line numbers.
+            ndk {
+                debugSymbolLevel = 'FULL'
+            }
         }
     }
 

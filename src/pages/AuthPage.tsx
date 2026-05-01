@@ -32,10 +32,24 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // Password recovery uses a 6-digit OTP code instead of a magic link.
+  // Magic links are silently consumed by Gmail / iCloud / Microsoft email
+  // scanners (they GET every URL in arriving emails for malware checks),
+  // which marks the recovery token as "used" before the user ever clicks
+  // it — manifesting as `otp_expired` for the user even on freshly-sent
+  // emails. OTP codes can't be consumed by URL fetches, so they survive
+  // the gauntlet. Steps:
+  //   email → resetPasswordForEmail() → step='code'
+  //   code  → verifyOtp({ token, type: 'recovery' }) → step='newPassword'
+  //   newPassword → updateUser({ password }) → step='success'
+  //   (success auto-returns to the sign-in form after 2s)
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetStep, setResetStep] = useState<'email' | 'code' | 'newPassword' | 'success'>('email');
   const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
   const [showVerifyEmail, setShowVerifyEmail] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
@@ -93,6 +107,11 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     setResendLoading(false);
   };
 
+  // Step 1/3: send the recovery email. Supabase still uses the same
+  // resetPasswordForEmail() RPC; the email template in the Supabase
+  // dashboard is what determines whether the user sees a 6-digit code
+  // ({{ .Token }}) or a clickable link ({{ .ConfirmationURL }}). Our
+  // template includes BOTH — iOS uses the code, web users can use either.
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail.trim()) {
@@ -101,19 +120,98 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     }
     setResetLoading(true);
     try {
-      // The link has to land on a page that actually shows the
-      // "set new password" form — the LP doesn't, which is why the
-      // previous /?lang=… target appeared to silently do nothing.
-      // /reset-password renders UpdatePasswordPage which calls
-      // supabase.auth.updateUser() against the recovery session that
-      // the JS SDK auto-restores from the URL fragment.
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        // redirectTo is still useful for the web "click the link" path —
+        // mobile users will use the OTP code and never hit this URL.
+        redirectTo: `${window.location.origin}/reset-password?lang=${getLocale()}`,
+      });
+      if (error) {
+        toast(getAuthErrorMessage(error), 'error');
+      } else {
+        setResetStep('code');
+      }
+    } catch {
+      toast(t('auth.resetFailed'), 'error');
+    }
+    setResetLoading(false);
+  };
+
+  // Step 2/3: verify the 6-digit code from the email. On success Supabase
+  // returns a recovery-typed session, which lets the next step's
+  // updateUser() call authenticate without a password.
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = resetCode.trim();
+    if (code.length < 6) {
+      toast(t('auth.codeInvalid'), 'error');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: resetEmail,
+        token: code,
+        type: 'recovery',
+      });
+      if (error) {
+        toast(getAuthErrorMessage(error), 'error');
+      } else {
+        setResetStep('newPassword');
+      }
+    } catch {
+      toast(t('auth.codeInvalid'), 'error');
+    }
+    setResetLoading(false);
+  };
+
+  // Step 3/3: set the new password against the recovery session that
+  // verifyOtp() established. Supabase requires the password to be at
+  // least 8 chars (matches our client-side check below).
+  const handleUpdateNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast(t('auth.passwordTooShort'), 'error');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast(t('auth.passwordsDontMatch'), 'error');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast(getAuthErrorMessage(error), 'error');
+      } else {
+        setResetStep('success');
+        // Auto-return to the sign-in form after a short success state.
+        setTimeout(() => {
+          setShowResetPassword(false);
+          setResetStep('email');
+          setResetEmail('');
+          setResetCode('');
+          setNewPassword('');
+          setConfirmNewPassword('');
+        }, 2000);
+      }
+    } catch {
+      toast(t('auth.resetFailed'), 'error');
+    }
+    setResetLoading(false);
+  };
+
+  // Re-send the recovery email (e.g. user mistyped or didn't see it).
+  const handleResendCode = async () => {
+    if (!resetEmail.trim()) return;
+    setResetLoading(true);
+    try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `${window.location.origin}/reset-password?lang=${getLocale()}`,
       });
       if (error) {
         toast(getAuthErrorMessage(error), 'error');
       } else {
-        setResetSent(true);
+        toast(t('auth.codeResent'), 'success');
       }
     } catch {
       toast(t('auth.resetFailed'), 'error');
@@ -190,65 +288,125 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
   }
 
   if (showResetPassword) {
+    // Header strings + icon vary per step. Centralize so the JSX below
+    // stays focused on the form itself.
+    const headerByStep: Record<typeof resetStep, { title: string; subtitle: string; Icon: typeof Mail }> = {
+      email: { title: t('auth.resetPassword'), subtitle: t('auth.enterEmailForReset'), Icon: Mail },
+      code: { title: t('auth.enterCode'), subtitle: t('auth.codeFromEmail', { email: resetEmail }), Icon: Mail },
+      newPassword: { title: t('auth.setNewPassword'), subtitle: t('auth.setNewPasswordDesc'), Icon: Lock },
+      success: { title: t('auth.passwordUpdated'), subtitle: t('auth.passwordUpdatedDesc'), Icon: CheckCircle },
+    };
+    const header = headerByStep[resetStep];
+
+    const resetAndExit = () => {
+      setShowResetPassword(false);
+      setResetStep('email');
+      setResetCode('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    };
+
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
         <div className="w-full max-w-sm">
-          <button
-            onClick={() => { setShowResetPassword(false); setResetSent(false); }}
-            className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('auth.backToSignIn')}
-          </button>
+          {/* Hide the back-button while on the success step — the auto-
+              return timer handles navigation, and showing a button there
+              invites the user to mash it and break the timer. */}
+          {resetStep !== 'success' && (
+            <button
+              type="button"
+              onClick={resetAndExit}
+              className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t('auth.backToSignIn')}
+            </button>
+          )}
 
           <div className="text-center mb-10">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
-              {resetSent ? (
-                <CheckCircle className="w-10 h-10 text-gold" />
-              ) : (
-                <Mail className="w-10 h-10 text-gold" />
-              )}
+              <header.Icon className="w-10 h-10 text-gold" />
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
-            <h1 className="font-display text-3xl text-mystic-100 mb-2">
-              {resetSent ? t('auth.checkEmail') : t('auth.resetPassword')}
-            </h1>
-            <p className="text-mystic-400">
-              {resetSent
-                ? t('auth.resetSentTo', { email: resetEmail })
-                : t('auth.enterEmailForReset')}
-            </p>
+            <h1 className="font-display text-3xl text-mystic-100 mb-2">{header.title}</h1>
+            <p className="text-mystic-400">{header.subtitle}</p>
           </div>
 
-          {!resetSent ? (
+          {resetStep === 'email' && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <Input
                 type="email"
                 value={resetEmail}
-                onChange={e => setResetEmail(e.target.value)}
+                onChange={(e) => setResetEmail(e.target.value)}
                 placeholder={t('onboarding:createAccount.emailPlaceholder')}
                 icon={<Mail className="w-5 h-5" />}
+                autoComplete="email"
                 required
               />
               <Button type="submit" variant="gold" fullWidth loading={resetLoading} className="min-h-[52px]">
-                {t('auth.sendResetLink')}
+                {t('auth.sendCode')}
               </Button>
             </form>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-mystic-400 text-center">
-                {t('auth.resetDidntReceive')}
-              </p>
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => setResetSent(false)}
-                className="min-h-[52px]"
-              >
-                {t('auth.tryAgain')}
-              </Button>
-            </div>
           )}
+
+          {resetStep === 'code' && (
+            <form onSubmit={handleVerifyCode} className="space-y-4">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ''))}
+                placeholder={t('auth.codePlaceholder')}
+                autoComplete="one-time-code"
+                required
+                className="text-center tracking-[0.5em] text-lg"
+              />
+              <Button type="submit" variant="gold" fullWidth loading={resetLoading} className="min-h-[52px]">
+                {t('auth.verifyCode')}
+              </Button>
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={resetLoading}
+                className="w-full text-sm text-mystic-400 hover:text-gold transition-colors py-2 disabled:opacity-50"
+              >
+                {t('auth.resendCode')}
+              </button>
+            </form>
+          )}
+
+          {resetStep === 'newPassword' && (
+            <form onSubmit={handleUpdateNewPassword} className="space-y-4">
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder={t('auth.newPasswordPlaceholder')}
+                icon={<Lock className="w-5 h-5" />}
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+              <Input
+                type="password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                placeholder={t('auth.confirmNewPasswordPlaceholder')}
+                icon={<Lock className="w-5 h-5" />}
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+              <Button type="submit" variant="gold" fullWidth loading={resetLoading} className="min-h-[52px]">
+                {t('auth.updatePassword')}
+              </Button>
+            </form>
+          )}
+
+          {/* `success` step has no form — header text + icon do the talking
+              while the timer in handleUpdateNewPassword closes the modal. */}
         </div>
       </div>
     );

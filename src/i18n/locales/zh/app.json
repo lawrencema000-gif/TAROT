@@ -91,7 +91,15 @@
     "passwordUpdated": "密码已更新",
     "passwordUpdatedDesc": "你可以使用新密码登录了。",
     "passwordTooShort": "密码至少需要 8 个字符。",
-    "passwordsDontMatch": "两次输入的密码不一致。"
+    "passwordsDontMatch": "两次输入的密码不一致。",
+    "sendCode": "发送验证码",
+    "enterCode": "请输入验证码",
+    "codeFromEmail": "我们已向 {{email}} 发送 6 位验证码",
+    "codePlaceholder": "6 位验证码",
+    "verifyCode": "验证",
+    "codeInvalid": "验证码无效或已过期，请重试。",
+    "resendCode": "重新发送验证码",
+    "codeResent": "已重新发送验证码，请查收邮件。"
   },
   "readings": {
     "title": "牌阵",

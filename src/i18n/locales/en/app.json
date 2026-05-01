@@ -93,7 +93,15 @@
     "passwordUpdated": "Password updated",
     "passwordUpdatedDesc": "You can now sign in with your new password.",
     "passwordTooShort": "Password must be at least 8 characters.",
-    "passwordsDontMatch": "Passwords don't match."
+    "passwordsDontMatch": "Passwords don't match.",
+    "sendCode": "Send verification code",
+    "enterCode": "Enter your code",
+    "codeFromEmail": "We sent a 6-digit code to {{email}}",
+    "codePlaceholder": "6-digit code",
+    "verifyCode": "Verify code",
+    "codeInvalid": "Invalid or expired code. Please try again.",
+    "resendCode": "Resend code",
+    "codeResent": "Code resent. Check your email."
   },
   "readings": {
     "title": "Readings",

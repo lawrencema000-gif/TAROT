@@ -91,7 +91,15 @@
     "passwordUpdated": "パスワードを更新しました",
     "passwordUpdatedDesc": "新しいパスワードでログインできます。",
     "passwordTooShort": "パスワードは 8 文字以上にしてください。",
-    "passwordsDontMatch": "パスワードが一致しません。"
+    "passwordsDontMatch": "パスワードが一致しません。",
+    "sendCode": "認証コードを送信",
+    "enterCode": "コードを入力",
+    "codeFromEmail": "{{email}} に 6 桁の認証コードを送りました",
+    "codePlaceholder": "6 桁のコード",
+    "verifyCode": "コードを確認",
+    "codeInvalid": "コードが無効または期限切れです。もう一度お試しください。",
+    "resendCode": "コードを再送信",
+    "codeResent": "コードを再送しました。メールをご確認ください。"
   },
   "readings": {
     "title": "リーディング",

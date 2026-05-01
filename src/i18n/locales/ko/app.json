@@ -91,7 +91,15 @@
     "passwordUpdated": "비밀번호가 변경됐어요",
     "passwordUpdatedDesc": "새 비밀번호로 로그인할 수 있어요.",
     "passwordTooShort": "비밀번호는 8자 이상이어야 해요.",
-    "passwordsDontMatch": "비밀번호가 일치하지 않아요."
+    "passwordsDontMatch": "비밀번호가 일치하지 않아요.",
+    "sendCode": "인증 코드 보내기",
+    "enterCode": "코드를 입력하세요",
+    "codeFromEmail": "{{email}}로 6자리 인증 코드를 보냈어요",
+    "codePlaceholder": "6자리 코드",
+    "verifyCode": "코드 확인",
+    "codeInvalid": "코드가 잘못되었거나 만료됐어요. 다시 시도해 주세요.",
+    "resendCode": "코드 다시 보내기",
+    "codeResent": "코드를 다시 보냈어요. 메일함을 확인해 주세요."
   },
   "readings": {
     "title": "리딩",

@@ -132,7 +132,10 @@ workflows:
           # for nested array+dict additions is quirky and easy to break;
           # plistlib treats Info.plist as a normal dict-of-arrays and
           # round-trips cleanly.
-          GOOGLE_REVERSED_CLIENT_ID="com.googleusercontent.apps.804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d"
+          # Reversed iOS Client ID — keep in sync with capacitor.config.ts's
+          # `iosClientId`. This is the iOS-registered OAuth client (Bundle
+          # ID com.arcanatarotapp), NOT the Web or Android client.
+          GOOGLE_REVERSED_CLIENT_ID="com.googleusercontent.apps.804690093810-j8vf4jphqt036lus8niqr6qhmrk5rk5q"
           python3 - <<PYEOF
           import plistlib, sys
           plist_path = "$PLIST"

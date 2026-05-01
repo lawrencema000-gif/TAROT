@@ -73,7 +73,13 @@ const config: CapacitorConfig = {
       // MUST be the Web Application OAuth Client ID — Android uses this for requestIdToken()
       // The Android SDK matches the app by package name + SHA-1 automatically.
       clientId: '804690093810-kb7q1v06or3dffgk0a0nv6vnr1lnc70o.apps.googleusercontent.com',
-      iosClientId: '804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d.apps.googleusercontent.com',
+      // iOS Client ID — registered with Bundle ID com.arcanatarotapp in
+      // Google Cloud Console → Credentials → OAuth 2.0 Client IDs (iOS).
+      // The previous value ending in -1p3mklfai... was actually an
+      // Android upload-key cert, mis-pasted into the iOS slot — Google
+      // returned 400 invalid_request when GIDSignIn tried to use it
+      // because the registration didn't match a real iOS client.
+      iosClientId: '804690093810-j8vf4jphqt036lus8niqr6qhmrk5rk5q.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
     SignInWithApple: {

@@ -25,10 +25,15 @@
 
   body {
     @apply bg-mystic-950 text-mystic-100;
+    /* iOS WebView renders `background-blend-mode: overlay` very
+       differently from Chrome / Android — instead of mixing the noise
+       SVG with the dark background, it shows the raw noise at full
+       opacity, washing out text. Fix: bake the low alpha into the SVG
+       itself via `feComponentTransfer slope=0.04` so we no longer need
+       a blend mode at all. Looks identical across all platforms. */
     background-image:
       radial-gradient(ellipse at top, rgba(var(--gold-primary), 0.03) 0%, transparent 50%),
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    background-blend-mode: overlay;
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.04'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     min-height: 100vh;

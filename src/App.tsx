@@ -139,6 +139,33 @@ function DiagnosticsSync() {
     });
   }, [session, user, setSessionState]);
 
+  // Hide the bottom navbar while the on-screen keyboard is up.
+  // On Android, the soft keyboard slides up over the visual viewport;
+  // the fixed-position navbar would otherwise sit between the form
+  // and the keyboard, covering the input being typed into.
+  //
+  // We listen on `window.visualViewport.resize` because that's the
+  // only event that fires when the keyboard slides in/out (a regular
+  // window resize is NOT triggered by the keyboard on Capacitor).
+  // When the visual viewport's height shrinks below the inner-window
+  // height by more than ~100px, the keyboard is up — toggle the
+  // class on body so the CSS rule in index.css hides the navbar.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const KEYBOARD_THRESHOLD = 150; // px below baseline before we say "keyboard"
+    const update = () => {
+      const keyboardOpen = window.innerHeight - vv.height > KEYBOARD_THRESHOLD;
+      document.body.classList.toggle('keyboard-open', keyboardOpen);
+    };
+    vv.addEventListener('resize', update);
+    update();
+    return () => {
+      vv.removeEventListener('resize', update);
+      document.body.classList.remove('keyboard-open');
+    };
+  }, []);
+
   useEffect(() => {
     setAuthConfig({
       flowType: 'pkce',

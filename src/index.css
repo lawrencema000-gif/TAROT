@@ -1010,3 +1010,25 @@
   border-color: #d4af37;
   background: rgba(212, 175, 55, 0.12);
 }
+
+/* ─── Hide bottom nav while the on-screen keyboard is up ───────────
+ *
+ * On Android, the soft keyboard slides up over the visual viewport.
+ * The fixed-position bottom navbar (aria-label="Main navigation")
+ * stays glued to viewport bottom + ends up sandwiched between the
+ * form and the keyboard, blocking the input the user is typing into.
+ *
+ * Two-layer fix:
+ *   1. `body.keyboard-open` is toggled by the visualViewport listener
+ *      in App.tsx — works on every Capacitor / Android browser.
+ *   2. `:has(input:focus, ...)` is a CSS-only fallback that works in
+ *      modern Chromium-based webviews even before the JS effect runs.
+ *
+ * Both layers hide the nav with `display: none` rather than translate
+ * — translate would still steal the input's tap target. Display:none
+ * removes it entirely from the layout flow.
+ */
+body.keyboard-open nav[aria-label="Main navigation"],
+body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-label="Main navigation"] {
+  display: none;
+}

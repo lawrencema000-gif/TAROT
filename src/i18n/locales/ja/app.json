@@ -82,7 +82,16 @@
     "resetDidntReceive": "メールが届きませんか?迷惑メールフォルダをご確認いただくか、もう一度お試しください。",
     "tryAgain": "もう一度試す",
     "orDivider": "または",
-    "termsNotice": "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
+    "termsNotice": "続行すると、利用規約とプライバシーポリシーに同意したことになります。",
+    "setNewPassword": "新しいパスワードを設定",
+    "setNewPasswordDesc": "強力なパスワードを設定してください。",
+    "newPasswordPlaceholder": "新しいパスワード",
+    "confirmNewPasswordPlaceholder": "新しいパスワード（確認）",
+    "updatePassword": "パスワードを更新",
+    "passwordUpdated": "パスワードを更新しました",
+    "passwordUpdatedDesc": "新しいパスワードでログインできます。",
+    "passwordTooShort": "パスワードは 8 文字以上にしてください。",
+    "passwordsDontMatch": "パスワードが一致しません。"
   },
   "readings": {
     "title": "リーディング",

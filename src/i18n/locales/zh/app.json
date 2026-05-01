@@ -82,7 +82,16 @@
     "resetDidntReceive": "没收到邮件?请检查垃圾邮件文件夹或再试一次。",
     "tryAgain": "重试",
     "orDivider": "或",
-    "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。"
+    "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。",
+    "setNewPassword": "设置新密码",
+    "setNewPasswordDesc": "请为你的账号设置一个强密码。",
+    "newPasswordPlaceholder": "新密码",
+    "confirmNewPasswordPlaceholder": "确认新密码",
+    "updatePassword": "更新密码",
+    "passwordUpdated": "密码已更新",
+    "passwordUpdatedDesc": "你可以使用新密码登录了。",
+    "passwordTooShort": "密码至少需要 8 个字符。",
+    "passwordsDontMatch": "两次输入的密码不一致。"
   },
   "readings": {
     "title": "牌阵",

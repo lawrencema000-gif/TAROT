@@ -82,7 +82,16 @@
     "resetDidntReceive": "메일을 받지 못하셨나요? 스팸함을 확인하거나 다시 시도해 주세요.",
     "tryAgain": "다시 시도",
     "orDivider": "또는",
-    "termsNotice": "계속 진행하면 서비스 약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다."
+    "termsNotice": "계속 진행하면 서비스 약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다.",
+    "setNewPassword": "새 비밀번호 설정",
+    "setNewPasswordDesc": "계정에 사용할 강력한 비밀번호를 입력해 주세요.",
+    "newPasswordPlaceholder": "새 비밀번호",
+    "confirmNewPasswordPlaceholder": "새 비밀번호 확인",
+    "updatePassword": "비밀번호 변경",
+    "passwordUpdated": "비밀번호가 변경됐어요",
+    "passwordUpdatedDesc": "새 비밀번호로 로그인할 수 있어요.",
+    "passwordTooShort": "비밀번호는 8자 이상이어야 해요.",
+    "passwordsDontMatch": "비밀번호가 일치하지 않아요."
   },
   "readings": {
     "title": "리딩",

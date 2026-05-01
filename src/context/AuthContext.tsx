@@ -1049,8 +1049,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { SignInWithApple } = await import('@capacitor-community/apple-sign-in');
         const nativeSpan = startSpan('auth.apple.nativeSignIn');
         try {
+          // clientId here is the Apple **Services ID**.
+          //   - On iOS native, ASAuthorizationAppleIDProvider issues the
+          //     identity token with `aud` set to the Bundle ID
+          //     (com.arcanatarotapp), regardless of this clientId — so
+          //     the value here is mostly informational for native.
+          //   - The Services ID `com.arcanatarotapp.signinwithapple`
+          //     IS what's used during the OAuth web fallback path and is
+          //     also accepted by Supabase's Apple provider as a valid
+          //     audience claim. Both com.arcanatarotapp and the Services ID
+          //     must be registered in Supabase Auth → Providers → Apple
+          //     → Client IDs (comma-separated).
+          // The previous value 'com.arcana.app' was the OLD Android-era
+          // app id and DOES NOT match anything Apple knows about — that's
+          // why authorize() returned ASAuthorizationErrorUnknown (code 1000).
           const res = await SignInWithApple.authorize({
-            clientId: 'com.arcana.app',
+            clientId: 'com.arcanatarotapp.signinwithapple',
             redirectURI: 'https://ulzlthhkqjuohzjangcq.supabase.co/auth/v1/callback',
             scopes: 'email name',
             state: 'state',

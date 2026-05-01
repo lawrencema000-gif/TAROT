@@ -35,6 +35,7 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
 import { AuthPage } from './pages/AuthPage';
 import { LandingPage } from './pages/LandingPage';
+import { UpdatePasswordPage } from './pages/UpdatePasswordPage';
 
 // Lazy imports — loaded on demand when user navigates
 const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
@@ -320,6 +321,22 @@ function AppContent() {
           )}
         </div>
       </div>
+    );
+  }
+
+  // /reset-password — Supabase password recovery landing page. Must
+  // render BEFORE every auth guard because the recovery URL fragment
+  // (#access_token=…&type=recovery) makes the JS SDK silently set a
+  // recovery session, which makes `user` truthy. Without this branch,
+  // the user would land on HomePage instead of the password-update form.
+  // Conversely, even if the recovery session hasn't been restored yet
+  // (rare race during SDK init), we still want the form to render so
+  // the user isn't bounced to LP.
+  if (location.pathname === '/reset-password') {
+    return (
+      <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
+        <UpdatePasswordPage />
+      </ErrorBoundary>
     );
   }
 

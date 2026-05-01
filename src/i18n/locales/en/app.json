@@ -84,7 +84,16 @@
     "resetDidntReceive": "Didn't receive the email? Check your spam folder or try again.",
     "tryAgain": "Try Again",
     "orDivider": "or",
-    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy."
+    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "setNewPassword": "Set new password",
+    "setNewPasswordDesc": "Choose a strong password for your account.",
+    "newPasswordPlaceholder": "New password",
+    "confirmNewPasswordPlaceholder": "Confirm new password",
+    "updatePassword": "Update password",
+    "passwordUpdated": "Password updated",
+    "passwordUpdatedDesc": "You can now sign in with your new password.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordsDontMatch": "Passwords don't match."
   },
   "readings": {
     "title": "Readings",

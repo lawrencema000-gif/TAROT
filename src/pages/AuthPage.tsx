@@ -101,8 +101,14 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     }
     setResetLoading(true);
     try {
+      // The link has to land on a page that actually shows the
+      // "set new password" form — the LP doesn't, which is why the
+      // previous /?lang=… target appeared to silently do nothing.
+      // /reset-password renders UpdatePasswordPage which calls
+      // supabase.auth.updateUser() against the recovery session that
+      // the JS SDK auto-restores from the URL fragment.
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/?lang=${getLocale()}`,
+        redirectTo: `${window.location.origin}/reset-password?lang=${getLocale()}`,
       });
       if (error) {
         toast(getAuthErrorMessage(error), 'error');

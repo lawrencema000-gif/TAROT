@@ -96,7 +96,7 @@ workflows:
           cd ios/App
           pod install --repo-update
 
-      - name: Inject Info.plist values (AdMob + ATT + Bundle ID)
+      - name: Inject Info.plist values (AdMob + ATT + Bundle ID + Google URL Scheme + Compliance)
         script: |
           PLIST="ios/App/App/Info.plist"
           if [ ! -f "$PLIST" ]; then
@@ -113,8 +113,98 @@ workflows:
           # Bundle ID — overwrites whatever cap add ios generated, in case
           # the appId in capacitor.config.ts ever drifts from production.
           plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" "$PLIST"
+          # Export-compliance flag — TestFlight requires "Missing Compliance"
+          # to be answered. Setting this to false (we use ONLY iOS-standard
+          # HTTPS encryption, no proprietary crypto) auto-clears that prompt
+          # for every future TestFlight build, no manual click required.
+          plutil -replace ITSAppUsesNonExemptEncryption -bool false "$PLIST"
+
+          # Google Sign-In iOS URL scheme. The plugin
+          # @codetrix-studio/capacitor-google-auth uses Google's native
+          # GIDSignIn SDK on iOS, which OPENS the user's Safari/in-app
+          # browser via a custom URL scheme during the OAuth dance. The
+          # scheme MUST be the iOS Client ID with its parts reversed
+          # (com.googleusercontent.apps.<id>). Without this, GIDSignIn
+          # crashes natively the moment signIn() is called, killing the
+          # WebView with no JS-catchable exception.
+          #
+          # We inject via Python+plistlib because plutil's -insert syntax
+          # for nested array+dict additions is quirky and easy to break;
+          # plistlib treats Info.plist as a normal dict-of-arrays and
+          # round-trips cleanly.
+          GOOGLE_REVERSED_CLIENT_ID="com.googleusercontent.apps.804690093810-1p3mklfai9ejlbk7dr87od51qf7in56d"
+          python3 - <<PYEOF
+          import plistlib, sys
+          plist_path = "$PLIST"
+          scheme = "$GOOGLE_REVERSED_CLIENT_ID"
+          with open(plist_path, "rb") as f:
+              plist = plistlib.load(f)
+          url_types = plist.setdefault("CFBundleURLTypes", [])
+          # Idempotent: don't add the scheme twice if rerun.
+          already = any(scheme in (entry.get("CFBundleURLSchemes") or []) for entry in url_types)
+          if not already:
+              url_types.append({
+                  "CFBundleURLName": "com.arcanatarotapp.googleauth",
+                  "CFBundleURLSchemes": [scheme],
+              })
+              with open(plist_path, "wb") as f:
+                  plistlib.dump(plist, f)
+              print("::: Added Google URL scheme to CFBundleURLTypes")
+          else:
+              print("::: Google URL scheme already present, skipping")
+          PYEOF
+
           echo "::: Info.plist values set:"
-          plutil -p "$PLIST" | grep -E "(GADApplicationIdentifier|NSUserTrackingUsageDescription|CFBundleIdentifier)"
+          plutil -p "$PLIST" | grep -E "(GADApplicationIdentifier|NSUserTrackingUsageDescription|CFBundleIdentifier|ITSAppUsesNonExemptEncryption|CFBundleURLTypes)" || true
+
+      - name: Configure iOS entitlements (Sign in with Apple)
+        script: |
+          # The @capacitor-community/apple-sign-in plugin needs the
+          # `com.apple.developer.applesignin` entitlement to be embedded
+          # in the IPA, otherwise ASAuthorizationAppleIDProvider returns
+          # ASAuthorizationErrorUnknown (code 1000) at runtime — that's
+          # exactly what we hit on Build 12.
+          #
+          # Capacitor 8's `cap add ios` template does NOT generate this
+          # file by default, and Apple's signing flow needs:
+          #   1. App.entitlements with the applesignin key
+          #   2. project.pbxproj with CODE_SIGN_ENTITLEMENTS = App/App.entitlements
+          #
+          # We do both steps here so the build is self-healing — even if
+          # `cap add ios` regenerates a fresh project, this script
+          # restores the entitlement wiring.
+          ENTITLEMENTS="ios/App/App/App.entitlements"
+          cat > "$ENTITLEMENTS" <<'PLIST_EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>com.apple.developer.applesignin</key>
+              <array>
+                  <string>Default</string>
+              </array>
+          </dict>
+          </plist>
+          PLIST_EOF
+          echo "::: Created $ENTITLEMENTS"
+          cat "$ENTITLEMENTS"
+
+          # Wire the entitlements file into both Debug and Release configs
+          # of the Xcode project. Use the xcodeproj Ruby gem (preinstalled
+          # on Codemagic mac runners). If `cap add ios` already set this,
+          # the assignment is idempotent.
+          gem list xcodeproj -i >/dev/null 2>&1 || sudo gem install xcodeproj --no-document
+          ruby - <<RUBYEOF
+          require "xcodeproj"
+          proj = Xcodeproj::Project.open("ios/App/App.xcodeproj")
+          target = proj.targets.find { |t| t.name == "App" }
+          raise "App target not found" unless target
+          target.build_configurations.each do |config|
+            config.build_settings["CODE_SIGN_ENTITLEMENTS"] = "App/App.entitlements"
+            puts "::: #{config.name}: CODE_SIGN_ENTITLEMENTS = App/App.entitlements"
+          end
+          proj.save
+          RUBYEOF
 
       - name: 1 - Initialize signing keychain
         script: |
@@ -177,10 +267,19 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        # Upload to TestFlight, mark as available for internal testing.
-        # Beta groups need to be created in App Store Connect → TestFlight
-        # → Internal Testing first; uncomment + name them here once they exist.
-        submit_to_testflight: true
+        # IMPORTANT: submit_to_testflight: true would trigger Apple's
+        # *external* beta review queue, which requires "Test Information"
+        # (Feedback Email + Beta App Review contact) to be filled in App
+        # Store Connect first. For our purposes (internal testing only),
+        # we just want the IPA uploaded and made available to internal
+        # testers — which happens automatically WITHOUT this flag.
+        #
+        # Set submit_to_testflight: true ONLY when:
+        #   1. Test Information is filled at
+        #      https://appstoreconnect.apple.com/apps/6764630103/testflight/test-info
+        #   2. We have external tester groups defined in beta_groups
+        #
+        # submit_to_testflight: true   # disabled — see comment above
         # beta_groups:
         #   - "Internal Testers"
         # NOTE: cancel_previous_submissions only applies when

@@ -1029,6 +1029,7 @@
  * removes it entirely from the layout flow.
  */
 body.keyboard-open nav[aria-label="Main navigation"],
+body.sheet-open nav[aria-label="Main navigation"],
 body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-label="Main navigation"] {
   display: none;
 }

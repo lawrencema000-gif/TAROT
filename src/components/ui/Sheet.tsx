@@ -21,6 +21,13 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
     if (open) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      // Hide the bottom navbar while any Sheet is open. The Sheet renders
+      // at z-50 (above the nav's z-40), but its anchored-to-bottom
+      // content box doesn't reserve space for the navbar's height — so
+      // action buttons at the bottom end up visually behind the navbar.
+      // CSS in index.css listens for `body.sheet-open` and hides the
+      // navbar entirely while a sheet is up.
+      document.body.classList.add('sheet-open');
       // Focus the close button when sheet opens for keyboard/screen reader users
       setTimeout(() => closeRef.current?.focus(), 100);
     }
@@ -28,6 +35,7 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
+      document.body.classList.remove('sheet-open');
     };
   }, [open, onClose]);
 

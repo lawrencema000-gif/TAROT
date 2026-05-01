@@ -35,13 +35,72 @@ export function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // Auth pages don't need SEO metadata, and we don't want them indexed.
-    // setPageMeta is positional (title, description, image) — pass title
-    // for the browser tab + a short description for screen readers / OG.
     setPageMeta(
       t('auth.resetPassword', { defaultValue: 'Reset password' }) as string,
       t('auth.enterNewPassword', { defaultValue: 'Choose a new password for your Arcana account.' }) as string,
     );
+  }, [t]);
+
+  // Handle the email-link landing.
+  //
+  // Old PKCE flow (BROKEN cross-context): email link had `?code=xxx`.
+  // Browser had no code_verifier in localStorage so exchangeCodeForSession
+  // failed with "code challenge does not match previously saved code
+  // verifier" — that's the error the user reported.
+  //
+  // New flow: email template uses `{{ .TokenHash }}` instead of the
+  // PKCE-rendered `{{ .ConfirmationURL }}`. The link is now
+  // `/reset-password?token_hash=xxx&type=recovery` — works in any
+  // browser because verifyOtp doesn't rely on a stored client-side
+  // verifier; the token_hash itself authenticates the user against
+  // Supabase's auth backend.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type');
+    if (!tokenHash || type !== 'recovery') return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        });
+        if (cancelled) return;
+        if (error) {
+          // verifyOtp can fail if the link expired (24h default), was
+          // already used, or the user requested another link after this
+          // one. Surface that with a clear message rather than dumping
+          // the user into a broken form.
+          toast(
+            t('auth.resetLinkExpiredHint', {
+              defaultValue: 'Reset links are one-shot. If yours expired, request another from the sign-in page.',
+            }),
+            'error',
+          );
+        }
+        // On success: the verifyOtp call sets a recovery session and
+        // Supabase JS fires onAuthStateChange('PASSWORD_RECOVERY'),
+        // which AuthContext catches → flips passwordRecoveryMode=true →
+        // App.tsx force-renders this page (already mounted). No
+        // explicit redirect needed; the form below stays visible.
+        // Strip the token from the URL so a refresh doesn't re-fire.
+        if (window.location.search) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        toast(
+          t('auth.resetFailed', {
+            defaultValue: 'Could not verify reset link: {{err}}',
+            err: err instanceof Error ? err.message : String(err),
+          }),
+          'error',
+        );
+      }
+    })();
+    return () => { cancelled = true; };
   }, [t]);
 
   // If a user lands on /reset-password directly without an active

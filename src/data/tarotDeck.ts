@@ -844,8 +844,27 @@ export const minorArcana: TarotCard[] = buildMinorArcana();
 
 export const fullDeck: TarotCard[] = [...majorArcana, ...minorArcana];
 
+/**
+ * Draw `count` cards from `deck` without replacement, with a uniform
+ * random reversal per card.
+ *
+ * Uses an in-place Fisher-Yates shuffle: for each position from the end,
+ * swap with a uniformly random earlier position. This produces a true
+ * uniform permutation — unlike `[...deck].sort(() => Math.random() - 0.5)`,
+ * which violates the comparator contract (must be transitive) and yields
+ * a non-uniform distribution where some card positions are systematically
+ * more likely than others.
+ *
+ * For seeded / deterministic draws (daily card, share-link readings),
+ * use `drawSeededCards` from utils/cardDraw — it accepts a seed and
+ * uses the same Fisher-Yates over a seeded PRNG.
+ */
 export function drawCards(count: number, deck: TarotCard[] = fullDeck): { card: TarotCard; reversed: boolean }[] {
-  const shuffled = [...deck].sort(() => Math.random() - 0.5);
+  const shuffled = [...deck];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   return shuffled.slice(0, count).map(card => ({
     card,
     reversed: Math.random() > 0.5,

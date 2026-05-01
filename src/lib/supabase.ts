@@ -46,9 +46,9 @@ function createNullClientProxy(): SupabaseClient {
         return undefined;
       }
       throw new Error(
-        `Supabase client is not configured. ` +
-        `Attempted to access "${String(prop)}" but VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are missing. ` +
-        `Ensure the app renders MissingSupabaseConfig when isSupabaseConfigured is false.`
+        'Supabase client is not configured. ' +
+        'Attempted to access "' + String(prop) + '" but VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are missing. ' +
+        'Ensure the app renders MissingSupabaseConfig when isSupabaseConfigured is false.'
       );
     },
   };
@@ -64,7 +64,11 @@ function initSupabase(): SupabaseClient {
 
     return createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        flowType: 'pkce',
+        // Use legacy implicit flow rather than PKCE because the
+        // password-recovery email opens in the system browser, not
+        // the Capacitor WebView. PKCE requires the code-verifier in
+        // the SAME storage; iOS Preferences != Safari localStorage.
+        flowType: 'implicit',
         detectSessionInUrl: false,
         persistSession: true,
         autoRefreshToken: true,

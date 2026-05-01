@@ -1,31 +1,3 @@
-/**
- * Password update page — landing page for the link in
- * Supabase's password-recovery email.
- *
- * Flow:
- *   1. User taps "Forgot password" in AuthPage → resetPasswordForEmail()
- *      sends an email with a magic link.
- *   2. The link points back to {origin}/reset-password?lang=xx (set in
- *      AuthPage.tsx). When the user clicks it, Supabase verifies the
- *      one-time token server-side and redirects them here with the
- *      recovery session embedded in the URL fragment
- *      (#access_token=…&type=recovery).
- *   3. The Supabase JS SDK auto-detects that fragment on page load,
- *      sets the session, and fires `PASSWORD_RECOVERY` on
- *      onAuthStateChange. We don't need to read the fragment manually —
- *      it just means `supabase.auth.updateUser({ password })` will
- *      authenticate against the recovery session.
- *   4. User enters a new password here; we call updateUser() and
- *      navigate them home on success.
- *
- * Mobile note: the email link opens in the system browser (Mail →
- * Safari on iOS, Mail → Chrome on Android). After resetting, the user
- * comes back to the app and signs in with the new password. This matches
- * what most apps do today (Twitter, Spotify, Notion etc.) and avoids
- * the Universal Links / app-site-association setup that would otherwise
- * be needed to deep-link straight back into the native app.
- */
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -42,12 +14,55 @@ export function UpdatePasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
     setPageMeta(
       'Reset password',
       'Set a new password for your Arcana account.',
     );
+  }, []);
+
+  // The Supabase client is configured with detectSessionInUrl: false
+  // so we manage auth state ourselves in AuthContext. The recovery
+  // tokens that Supabase appends to the URL as a fragment
+  // (#access_token=...&refresh_token=...&type=recovery) are NOT
+  // picked up automatically. Parse them here and call setSession()
+  // so updateUser() authenticates against the recovery session.
+  // Without this step we'd get "Auth session missing".
+  useEffect(() => {
+    const hash = window.location.hash.startsWith('#')
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    if (!hash) {
+      setSessionReady(true);
+      return;
+    }
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
+    if (accessToken && refreshToken && type === 'recovery') {
+      supabase.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error }) => {
+          if (error) {
+            // eslint-disable-next-line no-console
+            console.warn('[UpdatePassword] setSession failed:', error.message);
+            toast(t('auth.resetFailed'), 'error');
+          }
+          // Scrub tokens out of the URL bar.
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname + window.location.search,
+          );
+          setSessionReady(true);
+        });
+    } else {
+      setSessionReady(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,10 +79,6 @@ export function UpdatePasswordPage() {
 
     setLoading(true);
     try {
-      // Recovery session is already set by the Supabase JS SDK from the
-      // URL fragment, so updateUser() will authenticate against it. If
-      // the user landed here without a recovery session (e.g. expired
-      // link, manually typed URL), Supabase returns "Auth session missing".
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
         toast(getAuthErrorMessage(error), 'error');
@@ -75,7 +86,6 @@ export function UpdatePasswordPage() {
         return;
       }
       setDone(true);
-      // Brief success state then redirect home so they can sign in.
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 2000);
@@ -85,6 +95,16 @@ export function UpdatePasswordPage() {
       setLoading(false);
     }
   };
+
+  if (!sessionReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-12 h-12 mx-auto rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   if (done) {
     return (

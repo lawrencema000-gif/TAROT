@@ -1404,28 +1404,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           optimisticallyMarkPremium();
           pollProfileUntilPremium(60_000, 2_000).catch(() => undefined);
         } else if (!rcIsPremium && profile.isPremium) {
-          // Downgrade detected: device knows the entitlement is gone.
-          // Confirm against the DB — the EXPIRATION webhook should have
-          // already flipped is_premium=false. If so, sync local state +
-          // surface a toast so the user isn't surprised by paywalls.
-          const { data: dbRow } = await supabase
-            .from('profiles')
-            .select('is_premium')
-            .eq('id', user.id)
-            .maybeSingle();
-          if (cancelled) return;
-          if (dbRow?.is_premium === false) {
-            setProfile((current) =>
-              current && current.isPremium ? { ...current, isPremium: false } : current,
+          // Downgrade detected: device's RC SDK reports no entitlement.
+          //
+          // The previous version of this branch only updated local UI if
+          // the DB ALREADY said is_premium=false (i.e. only when the
+          // EXPIRATION webhook had already done its job). If the webhook
+          // never fired — sandbox/test purchases, RC project misconfig,
+          // transient errors that exhausted retries — the DB stayed
+          // is_premium=true forever and so did the user. Server-side
+          // premium-gated edge functions (bazi-interpret etc) kept
+          // serving them content for free.
+          //
+          // The fix: trust the device's RC SDK. It gets fresh entitlement
+          // state directly from RC every app open, so it's authoritative
+          // even when the webhook missed.
+          //
+          // 1. Drop local UI to non-premium IMMEDIATELY so the user
+          //    stops seeing premium content this session.
+          // 2. Call the reconcile-premium-from-device edge function so
+          //    the DB catches up — that function is downgrade-only and
+          //    auth-scoped to ctx.userId (cannot be exploited).
+          // 3. Toast so the user isn't confused about why paywalls
+          //    suddenly appeared.
+          setProfile((current) =>
+            current && current.isPremium ? { ...current, isPremium: false } : current,
+          );
+          try {
+            const { error: reconcileErr } = await supabase.functions.invoke(
+              'reconcile-premium-from-device',
+              {
+                body: {
+                  hasPremiumEntitlement: false,
+                  debugContext: {
+                    platform: 'native',
+                    sdkVersion: 'rc-capacitor',
+                  },
+                },
+              },
             );
-            const { toast } = await import('../components/ui');
-            toast(
-              'Your Premium subscription has ended. You can re-subscribe anytime.',
-              'info',
-            );
+            if (reconcileErr) {
+              logWarn('auth.premium.reconcile_failed', 'Server-side reconcile rejected', {
+                error: String(reconcileErr).slice(0, 200),
+              });
+            }
+          } catch (err) {
+            logWarn('auth.premium.reconcile_error', 'Reconcile call threw', {
+              error: err instanceof Error ? err.message : String(err),
+            });
           }
-          // If DB still says premium, leave it — webhook hasn't fired yet
-          // (e.g. EXPIRATION still queued at RC). Next session will catch it.
+          if (cancelled) return;
+          const { toast } = await import('../components/ui');
+          toast(
+            'Your Premium subscription has ended. You can re-subscribe anytime.',
+            'info',
+          );
         }
       } catch {
         // RC unavailable / not initialised — stay on DB-only state.

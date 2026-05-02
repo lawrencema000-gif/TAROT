@@ -98,7 +98,7 @@ export function UpdatePasswordPage() {
 
   if (!sessionReady) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+      <div className="min-h-screen bg-mystic-950 flex flex-col items-center justify-center p-6 safe-top safe-bottom">
         <div className="w-full max-w-sm text-center">
           <div className="w-12 h-12 mx-auto rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
         </div>
@@ -108,7 +108,7 @@ export function UpdatePasswordPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+      <div className="min-h-screen bg-mystic-950 flex flex-col items-center justify-center p-6 safe-top safe-bottom">
         <div className="w-full max-w-sm text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
             <CheckCircle className="w-10 h-10 text-gold" />
@@ -125,7 +125,7 @@ export function UpdatePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+    <div className="min-h-screen bg-mystic-950 flex flex-col items-center justify-center p-6 safe-top safe-bottom">
       <div className="w-full max-w-sm">
         <button
           type="button"

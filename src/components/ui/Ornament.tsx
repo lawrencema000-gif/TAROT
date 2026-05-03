@@ -168,3 +168,182 @@ export function FourCornerFlourishes({ className, size = 26 }: { className?: str
     </>
   );
 }
+
+/**
+ * Four-point sparkle — a slim cross with concave sides, the shape of the
+ * sparkle that sits between section dividers and hero ornaments in the
+ * redesign mockups. Differs from `StarBurst` (eight rays) by reading as a
+ * single luminous point rather than a radiating sun.
+ *
+ * Stroke="currentColor" so it inherits text color; pair with
+ * `text-gold` / `text-gold-light` at the call site.
+ */
+export const SparkleFourPoint = memo(function SparkleFourPoint({
+  size = 16,
+  className,
+  filled = true,
+}: { size?: number; className?: string; filled?: boolean }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={filled ? 0 : 1}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      {/* Concave four-point star: each "arm" is a wedge that tapers to the
+          center. Center is implied (no fill mid-circle, just the four
+          arms meeting). */}
+      <path d="M 8 0 C 8 5, 8 5, 16 8 C 8 11, 8 11, 8 16 C 8 11, 8 11, 0 8 C 8 5, 8 5, 8 0 Z" />
+    </svg>
+  );
+});
+
+/**
+ * Horizontal divider with a single sparkle in the middle, flanked by thin
+ * fading gold lines. Lighter and quieter than `OrnateDivider` (which has
+ * a diamond + flanking stars). Matches the mockup section breaks.
+ *
+ *   ──────────────  ✦  ──────────────
+ *
+ * Use between page sections; pair with EyebrowLabel for the full mockup
+ * "TODAY'S RITUAL" treatment.
+ */
+export const SectionDivider = memo(function SectionDivider({
+  className = '',
+  width = 'w-full',
+  sparkleSize = 14,
+  tone = 'gold',
+}: {
+  className?: string;
+  /** Tailwind width class. Default `w-full`. */
+  width?: string;
+  sparkleSize?: number;
+  /** `gold` (default) or `mystic` for muted breaks. */
+  tone?: 'gold' | 'mystic';
+}) {
+  const lineColor = tone === 'gold' ? 'via-gold/50' : 'via-mystic-600/60';
+  const sparkleColor = tone === 'gold' ? 'text-gold' : 'text-mystic-400';
+  return (
+    <div className={`flex items-center justify-center gap-3 ${width} ${className}`} aria-hidden>
+      <span className={`flex-1 h-px bg-gradient-to-r from-transparent ${lineColor} to-transparent`} />
+      <SparkleFourPoint size={sparkleSize} className={sparkleColor} />
+      <span className={`flex-1 h-px bg-gradient-to-r from-transparent ${lineColor} to-transparent`} />
+    </div>
+  );
+});
+
+/**
+ * Eyebrow label — uppercase serif kicker text in gold, optionally flanked
+ * by thin fading gold rules. Used above section headings to set tone:
+ *
+ *   ── DAILY STREAK ──
+ *
+ * Pair with HeroGreeting for hero blocks, or precede a SectionDivider for
+ * a full antique-broadside masthead.
+ */
+export const EyebrowLabel = memo(function EyebrowLabel({
+  children,
+  rules = false,
+  align = 'center',
+  className = '',
+}: {
+  children: React.ReactNode;
+  /** Add flanking thin gold rules on either side. Default false. */
+  rules?: boolean;
+  align?: 'left' | 'center' | 'right';
+  className?: string;
+}) {
+  const alignment =
+    align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
+  if (!rules) {
+    return (
+      <span className={`font-display-eyebrow ${className}`}>{children}</span>
+    );
+  }
+  return (
+    <div className={`flex items-center gap-3 ${alignment} ${className}`}>
+      <span className="flex-1 max-w-[3rem] h-px bg-gradient-to-r from-transparent to-gold/50" aria-hidden />
+      <span className="font-display-eyebrow whitespace-nowrap">{children}</span>
+      <span className="flex-1 max-w-[3rem] h-px bg-gradient-to-r from-gold/50 to-transparent" aria-hidden />
+    </div>
+  );
+});
+
+/**
+ * Hero greeting — oversized Cormorant serif for greetings ("Good evening")
+ * and screen titles ("My Journey", "Astrology Insights"). Uses the
+ * `.heading-display-xl` utility from index.css for the typographic
+ * treatment (weight, tracking, leading).
+ *
+ * Renders an h1 by default; pass `as="h2"` (etc.) to override semantically.
+ */
+export function HeroGreeting({
+  children,
+  className = '',
+  as: Tag = 'h1',
+  tone = 'light',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  as?: 'h1' | 'h2' | 'h3';
+  /** `light` (default mystic-100) or `gold` for the foil treatment. */
+  tone?: 'light' | 'gold';
+}) {
+  const toneClass = tone === 'gold' ? 'text-gold' : 'text-mystic-100';
+  return (
+    <Tag className={`heading-display-xl ${toneClass} ${className}`}>
+      {children}
+    </Tag>
+  );
+}
+
+/**
+ * Hero subtitle — soft mystic-300 body copy designed to sit immediately
+ * under a HeroGreeting. Centered by default, comfortable line-height.
+ */
+export function HeroSubtitle({
+  children,
+  className = '',
+  align = 'center',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  align?: 'left' | 'center' | 'right';
+}) {
+  const alignment =
+    align === 'left' ? 'text-left' : align === 'right' ? 'text-right' : 'text-center';
+  return (
+    <p className={`text-mystic-300 leading-relaxed ${alignment} ${className}`}>
+      {children}
+    </p>
+  );
+}
+
+/**
+ * Smallest possible divider — a thin horizontal hairline in gold, fading
+ * at both ends. Use where SectionDivider feels too loud (e.g. between
+ * list rows or below a card title).
+ */
+export function HairlineRule({
+  className = '',
+  tone = 'gold',
+}: {
+  className?: string;
+  tone?: 'gold' | 'mystic';
+}) {
+  const toneClass = tone === 'gold'
+    ? 'via-gold/30'
+    : 'via-mystic-700/60';
+  return (
+    <div
+      className={`h-px w-full bg-gradient-to-r from-transparent ${toneClass} to-transparent ${className}`}
+      aria-hidden
+    />
+  );
+}

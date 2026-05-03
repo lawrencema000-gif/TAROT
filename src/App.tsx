@@ -86,6 +86,10 @@ const GlossaryEntryPage = lazy(() => import('./pages/GlossaryEntryPage').then(m 
 const CrystalsPage = lazy(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
 const CrystalEntryPage = lazy(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
+// Hidden /dev/redesign-showcase route — Phase 1 preview surface.
+// Not in BottomNav, not in any in-app link. Reach via URL only. Lazy
+// so it doesn't enter the main bundle.
+const RedesignShowcasePage = lazy(() => import('./pages/RedesignShowcasePage').then(m => ({ default: m.RedesignShowcasePage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -561,6 +565,7 @@ function AppContent() {
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                  <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

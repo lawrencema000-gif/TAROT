@@ -91,6 +91,21 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Generate iOS app icons from assets/icon.png
+        script: |
+          # @capacitor/assets reads assets/icon.png (1024x1024, sRGB, no
+          # alpha) and writes the full set of iOS icon sizes — including
+          # the 1024 marketing icon required for App Store listing —
+          # into ios/App/App/Assets.xcassets/AppIcon.appiconset/.
+          #
+          # Without this step, `cap add ios` ships Capacitor's default
+          # placeholder icons, causing the App Store listing icon to
+          # appear grayed-out / blank on the ASC Apps overview.
+          #
+          # Idempotent: re-running overwrites the generated icons each
+          # build, so the source of truth is always assets/icon.png.
+          npx @capacitor/assets generate --ios --assetPath assets
+
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App

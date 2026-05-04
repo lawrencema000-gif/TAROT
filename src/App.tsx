@@ -372,7 +372,7 @@ function AppContent() {
   }
 
   // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe'))) {
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe') || location.pathname.startsWith('/dev/'))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -408,6 +408,7 @@ function AppContent() {
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
+                <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
               </Routes>
             </Suspense>
           </main>

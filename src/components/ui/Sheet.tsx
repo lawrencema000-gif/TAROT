@@ -53,7 +53,13 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
       '[box-shadow:0_-12px_40px_-16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(212,175,55,0.10)]';
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title || 'Sheet'}>
+    <div
+      className="fixed inset-0 z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={title ? 'sheet-title' : undefined}
+      aria-label={title ? undefined : 'Sheet'}
+    >
       <div
         className="absolute inset-0 bg-gradient-to-t from-mystic-950/95 via-mystic-950/80 to-mystic-900/55 backdrop-blur-md animate-fade-in"
         onClick={onClose}
@@ -76,7 +82,7 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
             {/* Title uses the new heading-display-md scale for a more
                 editorial, broadside feel — and stays serif for CJK
                 fallback fonts via the @apply chain. */}
-            <h2 className="heading-display-md text-mystic-100 truncate">{title}</h2>
+            <h2 id="sheet-title" className="heading-display-md text-mystic-100 truncate">{title}</h2>
             <button
               ref={closeRef}
               onClick={onClose}

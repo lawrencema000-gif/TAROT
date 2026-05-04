@@ -71,7 +71,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={`
           ${variant === 'ornate' ? 'relative' : ''}
-          backdrop-blur-sm rounded-2xl border
+          backdrop-blur-sm rounded-2xl ${variant !== 'ritual' ? 'border' : ''}
           ${variantStyles[variant]}
           ${paddingStyles[padding]}
           ${interactiveClass}

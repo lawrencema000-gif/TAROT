@@ -83,7 +83,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
           />
 
           {/* Slide-up menu panel */}
-          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] mx-2 animate-in slide-in-from-bottom duration-200">
+          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-in slide-in-from-bottom duration-200">
             <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-mystic-700/30">
@@ -188,7 +188,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 >
                   <div className={`
                     relative p-1.5 rounded-xl transition-all duration-300
-                    ${isActive ? 'bg-gold/12 ring-1 ring-gold/25' : ''}
+                    ${isActive ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
                   `}>
                     <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
                   </div>
@@ -224,7 +224,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
             >
               <div className={`
                 relative p-1.5 rounded-xl transition-all duration-300
-                ${isMoreActive || moreOpen ? 'bg-gold/12 ring-1 ring-gold/25' : ''}
+                ${isMoreActive || moreOpen ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
               `}>
                 <MoreHorizontal className={`w-5 h-5 transition-all duration-300 ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
               </div>

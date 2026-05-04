@@ -16,7 +16,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
 import { WebAdSidebar } from './components/ads/WebAdSidebar';
 import { DevicePreview } from './components/dev/DevicePreview';
-import { ToastContainer, ListSkeleton } from './components/ui';
+import { ToastContainer, ListSkeleton, BrandWordmark } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -377,7 +377,10 @@ function AppContent() {
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
           <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-            <a href="/" className="font-display text-xl text-mystic-100 no-underline">☽ Arcana</a>
+            <a href="/" className="no-underline flex items-center gap-2" aria-label="Arcana home">
+              <span className="font-display text-xl text-mystic-100" aria-hidden>☽</span>
+              <BrandWordmark size={20} sparkle={false} />
+            </a>
             <div className="flex items-center gap-4">
               <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Card Meanings</a>
               <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Blog</a>

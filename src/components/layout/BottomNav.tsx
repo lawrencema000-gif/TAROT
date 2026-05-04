@@ -159,7 +159,11 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
 
       {/* Bottom navigation bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom" aria-label="Main navigation" role="tablist">
-        <div className="bg-gradient-to-t from-mystic-900 via-mystic-900/98 to-mystic-900/95 backdrop-blur-lg border-t border-mystic-700/30">
+        {/* Hairline gold separator above the bar — replaces the previous
+            mystic-700 border for a more refined brand-line treatment.
+            Fades at the edges for a softer attachment to the page. */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/25 to-transparent" aria-hidden />
+        <div className="bg-gradient-to-t from-mystic-950 via-mystic-900/98 to-mystic-900/92 backdrop-blur-xl">
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
             {visibleTabs.map(tab => {
               const Icon = tab.icon;
@@ -182,18 +186,25 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                     ${isActive ? 'text-gold' : 'text-mystic-500 hover:text-mystic-300'}
                   `}
                 >
-                  {isActive && (
-                    <div className="absolute inset-x-2 -top-px h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
-                  )}
                   <div className={`
                     relative p-1.5 rounded-xl transition-all duration-300
-                    ${isActive ? 'bg-gold/10' : ''}
+                    ${isActive ? 'bg-gold/12 ring-1 ring-gold/25' : ''}
                   `}>
-                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
+                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
                   </div>
-                  <span className={`text-[10px] font-medium transition-all duration-300 ${isActive ? 'text-gold' : ''}`}>
+                  <span className={`text-[10px] font-medium tracking-wide transition-all duration-300 ${isActive ? 'text-gold' : ''}`}>
                     {t(tab.labelKey)}
                   </span>
+                  {/* Active dot — small gold sparkle below the label,
+                      matching the redesign mockup. Appears at the bottom
+                      of the tab cell. Replaces the prior top gradient
+                      bar for a quieter, more brand-centric indicator. */}
+                  {isActive && (
+                    <span
+                      aria-hidden
+                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold shadow-[0_0_6px_rgba(212,175,55,0.7)]"
+                    />
+                  )}
                 </button>
               );
             })}
@@ -211,18 +222,21 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 ${isMoreActive || moreOpen ? 'text-gold' : 'text-mystic-500 hover:text-mystic-300'}
               `}
             >
-              {isMoreActive && (
-                <div className="absolute inset-x-2 -top-px h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
-              )}
               <div className={`
                 relative p-1.5 rounded-xl transition-all duration-300
-                ${isMoreActive || moreOpen ? 'bg-gold/10' : ''}
+                ${isMoreActive || moreOpen ? 'bg-gold/12 ring-1 ring-gold/25' : ''}
               `}>
-                <MoreHorizontal className={`w-5 h-5 transition-all duration-300 ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
+                <MoreHorizontal className={`w-5 h-5 transition-all duration-300 ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
               </div>
-              <span className={`text-[10px] font-medium transition-all duration-300 ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
+              <span className={`text-[10px] font-medium tracking-wide transition-all duration-300 ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
                 {t('nav.more')}
               </span>
+              {(isMoreActive || moreOpen) && (
+                <span
+                  aria-hidden
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold shadow-[0_0_6px_rgba(212,175,55,0.7)]"
+                />
+              )}
             </button>
           </div>
         </div>

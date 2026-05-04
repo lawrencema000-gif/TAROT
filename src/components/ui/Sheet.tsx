@@ -41,14 +41,21 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
 
   if (!open) return null;
 
+  // Refined surfaces for redesign-2026:
+  //   default — slate panel with a hairline gold separator below the
+  //             drag handle (subtle brand presence on every sheet)
+  //   glow    — same as default but with a gold halo bordering the
+  //             top edge for premium / paywall sheets
   const sheetStyles = variant === 'glow'
-    ? 'bg-gradient-to-b from-mystic-850 to-mystic-900 border-t border-gold/20 shadow-inner-glow'
-    : 'bg-mystic-900 border-t border-mystic-700/50';
+    ? 'bg-gradient-to-b from-mystic-850 to-mystic-900 ' +
+      '[box-shadow:0_-12px_60px_-12px_rgba(212,175,55,0.18),inset_0_1px_0_rgba(212,175,55,0.22)]'
+    : 'bg-gradient-to-b from-mystic-850 to-mystic-900 ' +
+      '[box-shadow:0_-12px_40px_-16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(212,175,55,0.10)]';
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title || 'Sheet'}>
       <div
-        className="absolute inset-0 bg-gradient-to-t from-mystic-950/95 via-mystic-950/80 to-mystic-900/60 backdrop-blur-md animate-fade-in"
+        className="absolute inset-0 bg-gradient-to-t from-mystic-950/95 via-mystic-950/80 to-mystic-900/55 backdrop-blur-md animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -56,19 +63,27 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
         ref={sheetRef}
         className={`absolute bottom-0 left-0 right-0 rounded-t-3xl animate-slide-up max-h-[90dvh] overflow-hidden flex flex-col ${sheetStyles}`}
       >
+        {/* Drag handle — slimmer, longer pill in muted gold for default,
+            brighter gold for glow variant. */}
         <div className="flex items-center justify-center pt-3 pb-2">
-          <div className={`w-12 h-1 rounded-full ${variant === 'glow' ? 'bg-gold/40' : 'bg-mystic-600'}`} />
+          <div
+            className={`h-[3px] w-10 rounded-full ${variant === 'glow' ? 'bg-gold/55' : 'bg-mystic-500/70'}`}
+            aria-hidden
+          />
         </div>
         {title && (
-          <div className="flex items-center justify-between px-6 pb-4 border-b border-mystic-800/50">
-            <h2 className="font-display text-xl font-semibold text-mystic-100">{title}</h2>
+          <div className="flex items-center justify-between gap-3 px-6 pb-4 border-b border-mystic-800/50">
+            {/* Title uses the new heading-display-md scale for a more
+                editorial, broadside feel — and stays serif for CJK
+                fallback fonts via the @apply chain. */}
+            <h2 className="heading-display-md text-mystic-100 truncate">{title}</h2>
             <button
               ref={closeRef}
               onClick={onClose}
               aria-label="Close"
-              className="p-2 rounded-full hover:bg-mystic-800 transition-colors"
+              className="shrink-0 p-2 rounded-full hairline-gold-soft text-mystic-300 hover:text-mystic-100 hover:border-gold/30 transition-colors"
             >
-              <X className="w-5 h-5 text-mystic-400" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         )}

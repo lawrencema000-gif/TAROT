@@ -90,6 +90,18 @@
   justify-content: center; padding: 120px 28px 80px; gap: 60px; overflow: hidden;
 }
 .lp-hero-content { position: relative; z-index: 3; max-width: 520px; flex-shrink: 0; }
+
+/* Redesign 2026 — brand lockup at the top of the hero. BrandMark
+   sits above BrandWordmark, both centered above the existing badge.
+   Allows the hero to lead with the ARCANA brand statement before
+   the word-reveal headline kicks in. */
+.lp-hero-lockup {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+  margin-bottom: 28px;
+}
+@media (max-width: 640px) {
+  .lp-hero-lockup { align-items: center; }
+}
 .lp-hero-visual { position: relative; z-index: 3; flex-shrink: 0; }
 
 .lp-hero-orb { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(120px); }

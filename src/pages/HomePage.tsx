@@ -463,6 +463,21 @@ export function HomePage() {
 
       {dailyMissionEnabled && <DailyMissionCard />}
 
+      {/* Eyebrow + divider groups the secondary feature shortcuts below
+          (pick-a-card, love tree, soulmate, quick reading, tarot
+          companion) into an intentional "Beyond today's ritual" cluster
+          rather than a loose stack of buttons. Only renders when at
+          least one of those features is enabled, so the home stays
+          tight when flags are off. */}
+      {(pickACardEnabled || loveTreeEnabled || soulmateScoreEnabled || quickReadingEnabled || tarotCompanionEnabled) && (
+        <div className="space-y-3 pt-2">
+          <SectionDivider tone="mystic" />
+          <EyebrowLabel className="block text-center">
+            {t('home.exploreMore', { defaultValue: 'Beyond today\'s ritual' })}
+          </EyebrowLabel>
+        </div>
+      )}
+
       {pickACardEnabled && (
         <button
           onClick={() => navigate('/pick-a-card')}

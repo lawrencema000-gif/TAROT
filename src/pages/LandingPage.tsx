@@ -4,7 +4,7 @@ import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
-import { BrandWordmark } from '../components/ui';
+import { BrandWordmark, BrandMark } from '../components/ui';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -459,6 +459,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         <div className="lp-hero-orb o1" /><div className="lp-hero-orb o2" /><div className="lp-hero-orb o3" />
 
         <div className="lp-hero-content">
+          {/* Redesign 2026 — brand lockup above the hero badge. Pulls
+              the BrandMark (arched window glyph) and BrandWordmark
+              (gold serif "ARCANA" with sparkle interpunct) from the
+              ad campaign. Sits above the existing word-reveal headline
+              so the brand statement reads first. */}
+          <div className="lp-hero-lockup lp-fade-in" style={{ animationDelay: '0.2s' }}>
+            <BrandMark size={56} className="text-gold drop-shadow-[0_0_14px_rgba(212,175,55,0.35)]" />
+            <BrandWordmark size={42} />
+          </div>
           <div className="lp-hero-badge"><span className="lp-hero-badge-dot" />{t('hero.badge')}</div>
           <h1 className="lp-hero-h1">
             <WordReveal text={t('hero.headlineTop')} className="lp-hero-line1" />

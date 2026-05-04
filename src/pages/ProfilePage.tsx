@@ -21,7 +21,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, Input, ChipGroup, toast } from '../components/ui';
+import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
@@ -204,7 +204,10 @@ export function ProfilePage() {
       <Card variant="glow" padding="lg">
         <div className="flex items-start gap-4">
           <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 flex items-center justify-center ring-2 ring-gold/20">
+            {/* Persona avatar — redesign-2026 ring-2 ring-gold/40 with
+                outer halo glow matches the mockup's "Starlit Seeker"
+                portrait treatment. */}
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 flex items-center justify-center ring-2 ring-gold/40 shadow-[0_0_24px_rgba(212,175,55,0.18)]">
               {zodiacInfo ? (
                 <span className="text-4xl">{zodiacInfo.symbol}</span>
               ) : (
@@ -218,26 +221,35 @@ export function ProfilePage() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-display text-xl text-mystic-100 truncate">{profile?.displayName || t('home.seeker')}</h2>
+            <h2 className="heading-display-md text-mystic-100 truncate">{profile?.displayName || t('home.seeker')}</h2>
             {zodiacInfo && (
-              <p className="text-gold text-sm">{zodiacInfo.name}</p>
+              <p className="text-gold text-sm mt-0.5">{zodiacInfo.name}</p>
             )}
-            <p className="text-sm text-mystic-500 truncate">{profile?.email}</p>
+            <p className="text-sm text-mystic-500 truncate mt-0.5">{profile?.email}</p>
           </div>
           <Button variant="ghost" size="sm" onClick={() => setShowEditProfile(true)}>
             <Edit2 className="w-4 h-4" />
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <div className="bg-mystic-800/50 rounded-xl p-3 text-center">
+        {/* Eyebrow + divider above the stats grid — matches the
+            "Your progress" treatment from the mockup. */}
+        <div className="mt-6 mb-3 flex items-center gap-3">
+          <EyebrowLabel className="!text-mystic-400">
+            {t('profile.yourProgress', { defaultValue: 'Your progress' })}
+          </EyebrowLabel>
+          <span className="flex-1 h-px bg-gradient-to-r from-gold/30 to-transparent" aria-hidden />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-mystic-800/50 rounded-xl p-3 text-center hairline-gold-soft">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Flame className="w-4 h-4 text-gold" />
               <span className="text-2xl font-display text-mystic-100">{profile?.streak || 0}</span>
             </div>
             <p className="text-xs text-mystic-500">{t('profile.dayStreak')}</p>
           </div>
-          <div className="bg-mystic-800/50 rounded-xl p-3 text-center">
+          <div className="bg-mystic-800/50 rounded-xl p-3 text-center hairline-gold-soft">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Star className="w-4 h-4 text-cosmic-blue" />
               <span className="text-2xl font-display text-mystic-100">{t('profile.level', { n: profile?.level || 1 })}</span>

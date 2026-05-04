@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle, Sparkles } from 'lucide-react';
-import { Button, Input, toast } from '../components/ui';
+import { Button, Input, toast, BrandWordmark } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useT } from '../i18n/useT';
@@ -200,6 +200,9 @@ export function ResetPasswordPage() {
         </button>
 
         <div className="text-center mb-10">
+          <div className="flex justify-center mb-5">
+            <BrandWordmark size={26} />
+          </div>
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
             <Sparkles className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />

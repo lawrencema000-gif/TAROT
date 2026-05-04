@@ -58,7 +58,7 @@ export function SpreadDetailPage() {
   if (!spread) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-2xl text-mystic-100 mb-2">Spread not found</h1>
+        <h1 className="heading-display-lg text-mystic-100 mb-2">Spread not found</h1>
         <button onClick={() => navigate('/spreads')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300 hover:text-mystic-100">
           <ArrowLeft className="w-4 h-4 inline mr-2" />Back to all spreads
         </button>
@@ -77,7 +77,7 @@ export function SpreadDetailPage() {
       </Link>
 
       <header className="mb-6">
-        <h1 className="font-display text-3xl text-mystic-100 mb-2">{spread.name}</h1>
+        <h1 className="heading-display-xl text-mystic-100 mb-2">{spread.name}</h1>
         <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-mystic-500 mb-3">
           <span className="text-gold">{spread.cardCount} cards</span>
           <span>·</span>

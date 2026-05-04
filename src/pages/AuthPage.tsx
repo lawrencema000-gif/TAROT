@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
-import { Button, Input, toast } from '../components/ui';
+import { Button, Input, toast, BrandWordmark, SectionDivider } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { supabase } from '../lib/supabase';
@@ -155,7 +155,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               <Mail className="w-10 h-10 text-gold" />
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
-            <h1 className="font-display text-3xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
+            <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
             <p className="text-mystic-400">
               {t('auth.verifySentTo', { email: verifyEmail })}
             </p>
@@ -208,7 +208,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               )}
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
-            <h1 className="font-display text-3xl text-mystic-100 mb-2">
+            <h1 className="heading-display-xl text-mystic-100 mb-2">
               {resetSent ? t('auth.checkEmail') : t('auth.resetPassword')}
             </h1>
             <p className="text-mystic-400">
@@ -256,12 +256,18 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
+          <div className="flex justify-center mb-5">
+            <BrandWordmark size={28} />
+          </div>
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
             <Sparkles className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
+          <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
           <p className="text-mystic-400">{t('auth.signInSub')}</p>
+          <div className="mt-4 text-gold/60 flex justify-center">
+            <SectionDivider tone="gold" />
+          </div>
         </div>
 
         <div className="space-y-4">

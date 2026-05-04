@@ -16,7 +16,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
 import { WebAdSidebar } from './components/ads/WebAdSidebar';
 import { DevicePreview } from './components/dev/DevicePreview';
-import { ToastContainer, ListSkeleton } from './components/ui';
+import { ToastContainer, ListSkeleton, BrandWordmark } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -86,6 +86,10 @@ const GlossaryEntryPage = lazy(() => import('./pages/GlossaryEntryPage').then(m 
 const CrystalsPage = lazy(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
 const CrystalEntryPage = lazy(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
+// Hidden /dev/redesign-showcase route — Phase 1 preview surface.
+// Not in BottomNav, not in any in-app link. Reach via URL only. Lazy
+// so it doesn't enter the main bundle.
+const RedesignShowcasePage = lazy(() => import('./pages/RedesignShowcasePage').then(m => ({ default: m.RedesignShowcasePage })));
 import { isNative } from './utils/platform';
 import { parseDeepLink } from './services/deepLink';
 import { App as CapApp } from '@capacitor/app';
@@ -368,12 +372,15 @@ function AppContent() {
   }
 
   // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe'))) {
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe') || location.pathname.startsWith('/dev/'))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
           <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-            <a href="/" className="font-display text-xl text-mystic-100 no-underline">☽ Arcana</a>
+            <a href="/" className="no-underline flex items-center gap-2" aria-label="Arcana home">
+              <span className="font-display text-xl text-mystic-100" aria-hidden>☽</span>
+              <BrandWordmark size={20} sparkle={false} />
+            </a>
             <div className="flex items-center gap-4">
               <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Card Meanings</a>
               <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Blog</a>
@@ -401,6 +408,7 @@ function AppContent() {
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
+                <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
               </Routes>
             </Suspense>
           </main>
@@ -561,6 +569,7 @@ function AppContent() {
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                  <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

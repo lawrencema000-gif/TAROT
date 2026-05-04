@@ -120,7 +120,7 @@ export function TarotCompanionPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Sparkles className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('tarotCompanion.title', { defaultValue: 'Tarot companion' })}
           </h1>
         </div>

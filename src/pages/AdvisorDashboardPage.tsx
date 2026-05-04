@@ -216,7 +216,7 @@ export function AdvisorDashboardPage() {
     <div className="space-y-5 pb-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('advisorDashboard.title', { defaultValue: 'Advisor dashboard' })}
           </h1>
           {advisorName && <p className="text-sm text-mystic-400">{advisorName}</p>}

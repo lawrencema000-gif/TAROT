@@ -90,7 +90,7 @@ export function BaziPage() {
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
           <Sparkles className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
           </h1>
         </div>
@@ -201,7 +201,7 @@ export function BaziPage() {
           <div className={`text-6xl mb-3 ${ELEMENT_COLOR[result.dayMasterElement]}`}>
             {ELEMENT_EMOJI[result.dayMasterElement]}
           </div>
-          <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+          <h2 className="heading-display-xl text-mystic-100">{name}</h2>
           <p className="text-gold/80 text-sm mt-2 italic">"{archetype}"</p>
         </Card>
 

@@ -206,7 +206,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 </div>
               </div>
               <div className="space-y-3">
-                <h1 className="font-display text-2xl text-mystic-100 leading-tight">
+                <h1 className="heading-display-lg text-mystic-100 leading-tight">
                   {t('language.title')}
                 </h1>
                 <p className="text-mystic-400 text-base leading-relaxed">
@@ -247,7 +247,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
               </div>
 
               <div className="space-y-4">
-                <h1 className="font-display text-3xl text-mystic-100 leading-tight">
+                <h1 className="heading-display-xl text-mystic-100 leading-tight">
                   {t('welcome.heading')}
                 </h1>
                 <p className="text-mystic-400 text-lg leading-relaxed">
@@ -289,7 +289,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-gold" />
                 </div>
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
+                <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('createAccount.heading')}
                 </h2>
                 <p className="text-mystic-400">

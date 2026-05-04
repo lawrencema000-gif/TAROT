@@ -82,7 +82,7 @@ export function FengShuiPage() {
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
           <Home className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
           </h1>
         </div>
@@ -272,7 +272,7 @@ export function FengShuiPage() {
               {t('fengshui.focusLabel', { defaultValue: 'Area needing attention' })}
             </h3>
           </div>
-          <h2 className="font-display text-2xl text-mystic-100 mb-2">{focusName}</h2>
+          <h2 className="heading-display-lg text-mystic-100 mb-2">{focusName}</h2>
           <p className="text-mystic-300 text-sm leading-relaxed mb-3">{focusMeaning}</p>
           <p className="text-mystic-200 text-sm leading-relaxed mt-3 pt-3 border-t border-pink-400/15">
             {t(`fengshui.areas.${reading.focusArea}.lowReading`, { defaultValue: focusInfo.lowReading })}
@@ -306,7 +306,7 @@ export function FengShuiPage() {
               {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
             </h3>
           </div>
-          <h2 className="font-display text-2xl text-mystic-100 mb-2">{strongName}</h2>
+          <h2 className="heading-display-lg text-mystic-100 mb-2">{strongName}</h2>
           <p className="text-mystic-300 text-sm leading-relaxed">
             {t(`fengshui.areas.${reading.strongestArea}.highReading`, { defaultValue: strongInfo.highReading })}
           </p>

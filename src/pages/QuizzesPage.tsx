@@ -589,7 +589,7 @@ export function QuizzesPage() {
             <div className={`w-20 h-20 mx-auto mb-4 rounded-full bg-mystic-800 flex items-center justify-center ${moodInfo.color}`}>
               <Smile className="w-10 h-10" />
             </div>
-            <h2 className="font-display text-2xl text-mystic-100 mb-2">{moodResult.overallMood}</h2>
+            <h2 className="heading-display-lg text-mystic-100 mb-2">{moodResult.overallMood}</h2>
             <p className="text-mystic-300">{moodInfo.message}</p>
 
             <div className="mt-6 flex justify-center">
@@ -731,7 +731,7 @@ export function QuizzesPage() {
 
           <Card variant="glow" padding="lg" className="text-center">
             <div className="text-5xl mb-3">{scoringEntry.emoji}</div>
-            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
             <p className="text-gold/80 text-sm mt-3 italic">"{tagline}"</p>
           </Card>
 
@@ -850,7 +850,7 @@ export function QuizzesPage() {
           <Card variant="glow" padding="lg" className="text-center">
             <div className="text-6xl mb-3">{emoji[key] || '✦'}</div>
             <p className="text-xs text-mystic-500 tracking-widest uppercase">{elements}</p>
-            <h2 className="font-display text-3xl text-mystic-100 mt-2">{primaryName}</h2>
+            <h2 className="heading-display-xl text-mystic-100 mt-2">{primaryName}</h2>
             {secondaryInfo && (
               <p className="text-sm text-cosmic-blue mt-2">
                 {tApp('ayurveda.withSecondary', {
@@ -986,7 +986,7 @@ export function QuizzesPage() {
             <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
               <Sparkles className="w-10 h-10 text-gold" />
             </div>
-            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
             <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
           </Card>
 
@@ -1077,7 +1077,7 @@ export function QuizzesPage() {
 
           <Card variant="glow" padding="lg" className="text-center">
             <div className="text-6xl mb-3">{glyphMap[key] || '✦'}</div>
-            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
             <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
           </Card>
 
@@ -1188,7 +1188,7 @@ export function QuizzesPage() {
                 <span className="text-xs tracking-widest text-gold/70 uppercase">{archetype}</span>
               </div>
             </div>
-            <h2 className="font-display text-3xl text-mystic-100">{name}</h2>
+            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
             <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
           </Card>
 
@@ -1313,7 +1313,7 @@ export function QuizzesPage() {
             <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
               <span className="font-display text-3xl text-gold">{mbtiResult.type}</span>
             </div>
-            <h2 className="font-display text-2xl text-mystic-100">{typeInfo?.title}</h2>
+            <h2 className="heading-display-lg text-mystic-100">{typeInfo?.title}</h2>
             <p className="text-gold/80 text-sm mb-3">{typeInfo?.subtitle}</p>
             <p className="text-mystic-300 leading-relaxed">{typeInfo?.description}</p>
           </Card>
@@ -1504,7 +1504,7 @@ export function QuizzesPage() {
 
           <Card variant="glow" padding="lg" className="text-center">
             <Pentagon className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-            <h2 className="font-display text-2xl text-mystic-100 mb-2">Your Big Five Profile</h2>
+            <h2 className="heading-display-lg text-mystic-100 mb-2">Your Big Five Profile</h2>
             <p className="text-mystic-400 text-sm">Five dimensions that define your personality</p>
           </Card>
 
@@ -1593,7 +1593,7 @@ export function QuizzesPage() {
             <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
               <span className="font-display text-4xl text-gold">{enResult.primaryType}</span>
             </div>
-            <h2 className="font-display text-2xl text-mystic-100">{typeInfo.name}</h2>
+            <h2 className="heading-display-lg text-mystic-100">{typeInfo.name}</h2>
             <p className="text-gold/80 text-sm mb-2">{typeInfo.title}</p>
             {enResult.wing && (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-mystic-800/50 rounded-full">
@@ -1773,7 +1773,7 @@ export function QuizzesPage() {
           <Card variant="glow" padding="lg" className="text-center">
             <Shield className={`w-16 h-16 text-${styleColors[atResult.style]} mx-auto mb-4`} />
             <p className="text-sm text-mystic-500 mb-1">Your Attachment Style</p>
-            <h2 className="font-display text-2xl text-mystic-100 mb-2">{styleInfo.name}</h2>
+            <h2 className="heading-display-lg text-mystic-100 mb-2">{styleInfo.name}</h2>
             <p className="text-mystic-400 text-sm">{styleInfo.subtitle}</p>
           </Card>
 
@@ -1940,7 +1940,7 @@ export function QuizzesPage() {
         <Card variant="glow" padding="lg" className="text-center">
           <Heart className="w-16 h-16 text-cosmic-rose mx-auto mb-4" />
           <p className="text-sm text-mystic-500 mb-1">Your Primary Love Language</p>
-          <h2 className="font-display text-2xl text-mystic-100 mb-4">{primaryInfo?.title}</h2>
+          <h2 className="heading-display-lg text-mystic-100 mb-4">{primaryInfo?.title}</h2>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-mystic-800/50 rounded-full">
             <span className="text-xs text-mystic-500">Secondary:</span>
             <span className="text-sm text-mystic-300">{secondaryInfo?.title}</span>
@@ -2102,7 +2102,7 @@ export function QuizzesPage() {
   return (
     <div className="space-y-6 pb-6">
       <div>
-        <h1 className="font-display text-2xl text-mystic-100">{tApp('quizzes.title')}</h1>
+        <h1 className="heading-display-lg text-mystic-100">{tApp('quizzes.title')}</h1>
         <p className="text-mystic-400 mt-1">{tApp('quizzes.subtitle')}</p>
       </div>
 

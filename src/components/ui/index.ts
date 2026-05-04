@@ -1,6 +1,24 @@
 export { Button } from './Button';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
-export { CornerFlourish, OrnateDivider, StarBurst, FourCornerFlourishes } from './Ornament';
+export {
+  CornerFlourish,
+  OrnateDivider,
+  StarBurst,
+  FourCornerFlourishes,
+  SparkleFourPoint,
+  SectionDivider,
+  EyebrowLabel,
+  HeroGreeting,
+  HeroSubtitle,
+  HairlineRule,
+} from './Ornament';
+export { BrandMark, BrandWordmark, BrandLockup } from './BrandMark';
+export {
+  FeaturePill,
+  FeaturePillGroup,
+  RitualRow,
+  AvailableNowLabel,
+} from './HomeRow';
 export { MysticalStar } from './MysticalStar';
 export { Progress, ProgressRing, type ProgressProps } from './Progress';
 export { Sheet } from './Sheet';

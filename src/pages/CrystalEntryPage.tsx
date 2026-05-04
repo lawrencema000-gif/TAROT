@@ -54,7 +54,7 @@ export function CrystalEntryPage() {
   if (!entry) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-2xl text-mystic-100 mb-2">Crystal not found</h1>
+        <h1 className="heading-display-lg text-mystic-100 mb-2">Crystal not found</h1>
         <button onClick={() => navigate('/crystals')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300">
           <ArrowLeft className="w-4 h-4 inline mr-2" />Back to crystals
         </button>
@@ -75,7 +75,7 @@ export function CrystalEntryPage() {
       <header className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <Gem className="w-7 h-7 text-gold" />
-          <h1 className="font-display text-3xl text-mystic-100">{entry.name}</h1>
+          <h1 className="heading-display-xl text-mystic-100">{entry.name}</h1>
         </div>
         <p className="text-mystic-300 leading-relaxed mt-3">{entry.longDescription}</p>
       </header>

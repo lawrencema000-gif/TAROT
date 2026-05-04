@@ -136,7 +136,7 @@ export function SpreadBuilderPage() {
       <header className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="w-5 h-5 text-gold" />
-          <h1 className="font-display text-3xl text-mystic-100">Custom spread builder</h1>
+          <h1 className="heading-display-xl text-mystic-100">Custom spread builder</h1>
         </div>
         <p className="text-sm text-mystic-400">
           Design your own spread with up to {MAX_POSITIONS} positions. Save unlimited custom spreads tied to your account.

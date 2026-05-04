@@ -4,6 +4,7 @@ import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
+import { BrandWordmark, BrandMark } from '../components/ui';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -435,7 +436,10 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       {/* ── Nav ── */}
       <nav className={`lp-nav ${navSolid ? 'solid' : ''}`}>
         <div className="lp-nav-in">
-          <div className="lp-nav-brand"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
+          <div className="lp-nav-brand flex items-center gap-2">
+            <span className="lp-nav-moon">☽</span>
+            <BrandWordmark size={18} sparkle={false} />
+          </div>
           <div className="lp-nav-right">
             <a href="/tarot-meanings" className="lp-nav-link">{t('nav.cardMeanings')}</a>
             <a href="#features" className="lp-nav-link">{t('nav.features')}</a>
@@ -455,6 +459,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         <div className="lp-hero-orb o1" /><div className="lp-hero-orb o2" /><div className="lp-hero-orb o3" />
 
         <div className="lp-hero-content">
+          {/* Redesign 2026 — brand lockup above the hero badge. Pulls
+              the BrandMark (arched window glyph) and BrandWordmark
+              (gold serif "ARCANA" with sparkle interpunct) from the
+              ad campaign. Sits above the existing word-reveal headline
+              so the brand statement reads first. */}
+          <div className="lp-hero-lockup lp-fade-in" style={{ animationDelay: '0.2s' }}>
+            <BrandMark size={56} className="text-gold drop-shadow-[0_0_14px_rgba(212,175,55,0.35)]" />
+            <BrandWordmark size={42} />
+          </div>
           <div className="lp-hero-badge"><span className="lp-hero-badge-dot" />{t('hero.badge')}</div>
           <h1 className="lp-hero-h1">
             <WordReveal text={t('hero.headlineTop')} className="lp-hero-line1" />
@@ -610,7 +623,10 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
         <div className="lp-wrap">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10 pt-10">
             <div className="col-span-2 sm:col-span-1">
-              <div className="lp-footer-brand mb-2"><span className="lp-nav-moon">☽</span><span className="lp-nav-name">Arcana</span></div>
+              <div className="lp-footer-brand mb-2 flex items-center gap-2">
+                <span className="lp-nav-moon">☽</span>
+                <BrandWordmark size={18} sparkle={false} />
+              </div>
               <p className="text-xs text-mystic-500 leading-relaxed">A daily ritual practice for tarot, astrology, and reflection.</p>
             </div>
             <div>

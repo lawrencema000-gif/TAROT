@@ -57,7 +57,7 @@ export function SpreadsPage() {
           <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
             <Layers className="w-5 h-5 text-gold" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100">Tarot Spreads</h1>
+          <h1 className="heading-display-xl text-mystic-100">Tarot Spreads</h1>
         </div>
         <p className="text-sm text-mystic-400 max-w-xl">
           {tarotSpreads.length} spreads — from a single daily card to the 10-card Celtic Cross — with position-by-position meanings, when to use each, and example questions.

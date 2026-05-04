@@ -34,7 +34,7 @@ export function SharedReadingPage() {
   if (!payload) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-2xl text-mystic-100 mb-2">This reading link is invalid</h1>
+        <h1 className="heading-display-lg text-mystic-100 mb-2">This reading link is invalid</h1>
         <p className="text-sm text-mystic-400 mb-6">The link may be malformed or from an older version of the app.</p>
         <button onClick={() => navigate('/')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300 hover:text-mystic-100 hover:border-mystic-500 transition-colors">
           <ArrowLeft className="w-4 h-4 inline mr-2" />
@@ -61,7 +61,7 @@ export function SharedReadingPage() {
           <Sparkles className="w-3.5 h-3.5 text-gold" />
           <span className="text-xs uppercase tracking-wider text-gold">Shared reading</span>
         </div>
-        <h1 className="font-display text-3xl text-mystic-100 mb-2">
+        <h1 className="heading-display-xl text-mystic-100 mb-2">
           {cards.length}-card {payload.s.replace(/-/g, ' ')}
         </h1>
         {payload.q && (

@@ -118,7 +118,7 @@ export function HumanDesignPage() {
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
           <Sparkles className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('humanDesign.title', { defaultValue: 'Human Design' })}
           </h1>
         </div>
@@ -224,7 +224,7 @@ export function HumanDesignPage() {
               <span className="text-xs text-mystic-500">{typeContent.percentOfPopulation}</span>
             </div>
           )}
-          <h2 className="font-display text-3xl text-mystic-100">{chart.type}</h2>
+          <h2 className="heading-display-xl text-mystic-100">{chart.type}</h2>
           <p className="text-gold/80 text-sm mt-2 italic">"{chart.strategy}"</p>
           <p className="text-xs text-mystic-500 mt-3">
             {t('humanDesign.profileLabel', { defaultValue: 'Profile' })}{' '}

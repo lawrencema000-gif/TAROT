@@ -237,7 +237,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                     <Heart className="w-8 h-8 text-gold" />
                   </span>
                 </div>
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
+                <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('oauth.welcome', { name: profile?.displayName || user?.email?.split('@')[0] || '' })}
                 </h2>
                 <p className="text-mystic-400 mb-6">
@@ -276,7 +276,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
                   <Calendar className="w-8 h-8 text-gold" />
                 </div>
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
+                <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('oauth.basics.heading')}
                 </h2>
                 <p className="text-mystic-400">{t('oauth.basics.hint')}</p>
@@ -357,7 +357,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           {step === 2 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
+                <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('oauth.tone.heading')}
                 </h2>
                 <p className="text-mystic-400">{t('oauth.tone.hint')}</p>
@@ -402,7 +402,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
                   <Bell className="w-8 h-8 text-gold" />
                 </div>
-                <h2 className="font-display text-2xl text-mystic-100 mb-2">
+                <h2 className="heading-display-lg text-mystic-100 mb-2">
                   Daily reminder?
                 </h2>
                 <p className="text-mystic-400">

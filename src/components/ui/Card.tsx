@@ -2,7 +2,7 @@ import { HTMLAttributes, forwardRef } from 'react';
 import { FourCornerFlourishes } from './Ornament';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glow' | 'elevated' | 'ornate';
+  variant?: 'default' | 'glow' | 'elevated' | 'ornate' | 'ritual';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   interactive?: boolean;
   /**
@@ -27,6 +27,12 @@ const variantStyles = {
     '[background-image:radial-gradient(ellipse_at_top,rgba(212,175,55,0.06),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(142,110,181,0.05),transparent_60%)] ' +
     'before:content-[""] before:absolute before:inset-[3px] before:rounded-[calc(1rem-3px)] ' +
     'before:border before:border-gold/20 before:pointer-events-none',
+  // Ritual: redesign-2026 tappable feature-card style — warm gradient
+  // panel with hairline gold border. Paired with the `.card-ritual`
+  // utility from index.css (handles hover lift + active shrink). Self-
+  // contained, no `before:` overlay, so it composes well with content
+  // images placed at card edges.
+  ritual: 'card-ritual border-0',
 };
 
 const paddingStyles = {
@@ -50,15 +56,25 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     ref,
   ) => {
     const showFlourishes = flourished ?? variant === 'ornate';
+    // The `ritual` variant has its own hover/active animation baked into
+    // the .card-ritual utility (border lift + soft shadow swell). We only
+    // add the cursor + tap feedback here; the visual transitions handled
+    // by the variant CSS prevent layering conflicts.
+    const interactiveClass =
+      interactive
+        ? variant === 'ritual'
+          ? 'cursor-pointer'
+          : 'cursor-pointer transition-all duration-300 hover:border-gold/30 hover:shadow-glow active:scale-[0.98]'
+        : '';
     return (
       <div
         ref={ref}
         className={`
           ${variant === 'ornate' ? 'relative' : ''}
-          backdrop-blur-sm rounded-2xl border
+          backdrop-blur-sm rounded-2xl ${variant !== 'ritual' ? 'border' : ''}
           ${variantStyles[variant]}
           ${paddingStyles[padding]}
-          ${interactive ? 'cursor-pointer transition-all duration-300 hover:border-gold/30 hover:shadow-glow active:scale-[0.98]' : ''}
+          ${interactiveClass}
           ${className}
         `}
         {...props}

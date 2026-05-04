@@ -172,7 +172,7 @@ export function PartnerCompatPage() {
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
           <Users className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('compat.title', { defaultValue: 'Partner Compatibility' })}
           </h1>
         </div>

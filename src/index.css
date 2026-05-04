@@ -494,6 +494,118 @@
     align-items: center;
     vertical-align: -0.18em;
   }
+
+  /* ── Redesign 2026 — display typography scale ─────────────────
+     Scale designed for the new mockup-style hero blocks:
+     - heading-display-xl: 2.5rem serif, used for greetings ("Good
+       evening", "My Journey", "Astrology Insights") and page titles
+       on Home/Profile/Insights. Pairs with HeroSubtitle below.
+     - heading-display-lg: 1.75rem serif, used for card-level
+       headings and report section openers.
+     - heading-display-md: 1.375rem serif, used for sheet titles
+       and inline accents that want a little display flavor without
+       dominating.
+     All three share Cormorant Garamond's antique character but
+     stay sharp at small sizes thanks to disabled discretionary
+     ligatures and tightened leading. CJK fallback chain preserved
+     for JP/KR/SC users. */
+  .heading-display-xl {
+    font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 5.5vw, 2.75rem);
+    letter-spacing: -0.005em;
+    line-height: 1.08;
+    font-feature-settings: 'liga' 1;
+  }
+  .heading-display-lg {
+    font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 3.8vw, 1.875rem);
+    letter-spacing: 0.001em;
+    line-height: 1.15;
+  }
+  .heading-display-md {
+    font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.125rem, 2.4vw, 1.375rem);
+    letter-spacing: 0.005em;
+    line-height: 1.2;
+  }
+
+  /* ── Redesign 2026 — hairline borders ─────────────────────────
+     Softer alternative to the existing border-glow utility. Uses
+     a 1px gold border at low opacity for cards/rows that want a
+     refined edge without committing to a full glow halo. */
+  .hairline-gold {
+    border: 1px solid rgba(var(--gold-primary), 0.18);
+  }
+  .hairline-gold-soft {
+    border: 1px solid rgba(var(--gold-primary), 0.10);
+  }
+  .hairline-mystic {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* ── Redesign 2026 — ritual card surface ──────────────────────
+     Tappable feature card style that matches the mockup's
+     "Daily Tarot" / "Reflection" rows on Home — slightly elevated
+     panel with a subtle warm gradient, gold hairline border, and
+     hover lift. Pair with the Card `variant="ritual"` (added in
+     Card.tsx) which applies this class plus padding. Renders well
+     against both the Celestial animated background and a static
+     image background. */
+  .card-ritual {
+    position: relative;
+    background-image:
+      linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(13, 13, 26, 0.92) 100%),
+      radial-gradient(ellipse at top right, rgba(var(--gold-primary), 0.05), transparent 60%);
+    border: 1px solid rgba(var(--gold-primary), 0.18);
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    transition:
+      transform 0.35s cubic-bezier(0.22, 0.8, 0.25, 1),
+      border-color 0.35s ease-out,
+      box-shadow 0.35s ease-out;
+  }
+  .card-ritual:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--gold-primary), 0.32);
+    box-shadow:
+      0 10px 28px -10px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(var(--gold-primary), 0.10),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  }
+  .card-ritual:active {
+    transform: translateY(-1px) scale(0.997);
+  }
+
+  /* ── Redesign 2026 — bullet-rule kicker ───────────────────────
+     A subtle bulleted divider used inline with eyebrow labels,
+     mostly inside cards where SectionDivider is too prominent.
+     Three centered dots, fading on the outer dots. */
+  .kicker-rule {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .kicker-rule::before,
+  .kicker-rule::after {
+    content: '';
+    display: block;
+    width: 0.18rem;
+    height: 0.18rem;
+    border-radius: 9999px;
+    background: rgba(var(--gold-primary), 0.5);
+  }
+
+  /* Soft inset frame — used inside ritual cards to host a quote or
+     micro-stat. Hairline gold border + faint warm glow. */
+  .inset-frame-gold {
+    border: 1px solid rgba(var(--gold-primary), 0.16);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.012);
+    box-shadow: inset 0 0 22px rgba(var(--gold-primary), 0.04);
+  }
 }
 
 /* ── Web Ad Sidebars (flanking content on wide desktops) ── */

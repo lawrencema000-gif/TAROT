@@ -91,7 +91,7 @@ export function LiveRoomsPage() {
     <div className="space-y-5 pb-6">
       <div className="flex items-center gap-3">
         <Mic className="w-6 h-6 text-gold" />
-        <h1 className="font-display text-2xl text-mystic-100">
+        <h1 className="heading-display-lg text-mystic-100">
           {t('liveRooms.title', { defaultValue: 'Live rooms' })}
         </h1>
       </div>

@@ -227,7 +227,7 @@ export function SoulmateScorePage() {
       <div className="space-y-5 pb-6">
         <div className="flex items-center gap-3">
           <Heart className="w-6 h-6 text-pink-400" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('soulmate.title', { defaultValue: 'Soulmate Score' })}
           </h1>
         </div>
@@ -262,7 +262,7 @@ export function SoulmateScorePage() {
           transition={{ duration: 0.3 }}
         >
           <Heart className="w-8 h-8 text-pink-400 mx-auto mb-2" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('soulmate.title', { defaultValue: 'Soulmate Score' })}
           </h1>
           <p className="text-sm text-mystic-400 max-w-md mx-auto mt-1">

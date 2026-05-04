@@ -12,7 +12,17 @@ import {
   MessageCircle,
   Heart,
 } from 'lucide-react';
-import { Card, Button, toast, HomePageSkeleton, MysticalStar, OrnateDivider } from '../components/ui';
+import {
+  Card,
+  Button,
+  toast,
+  HomePageSkeleton,
+  MysticalStar,
+  OrnateDivider,
+  EyebrowLabel,
+  SectionDivider,
+  SparkleFourPoint,
+} from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
@@ -345,7 +355,7 @@ export function HomePage() {
           <MysticalStar size={96} spinning />
         </div>
 
-        <h1 className="font-display-hero text-3xl text-gold-foil mb-2">
+        <h1 className="heading-display-xl text-gold-foil mb-2">
           {t('home.ritualReady.title')}
         </h1>
         <div className="mb-4 text-gold/60">
@@ -365,12 +375,12 @@ export function HomePage() {
 
   return (
     <div className="space-y-6 pb-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-mystic-400 text-sm mb-0.5">{greeting()},</p>
-          <h1 className="font-display text-2xl text-mystic-100">{displayName}.</h1>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <EyebrowLabel className="!text-mystic-400">{greeting()}</EyebrowLabel>
+          <h1 className="heading-display-xl text-mystic-100 mt-1 truncate">{displayName}.</h1>
           {profile?.seekerRank && (
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1.5">
               <span className="text-xs text-gold">{t('home.level', { n: profile.level })}</span>
               <span className="text-xs text-mystic-500">•</span>
               <span className="text-xs text-mystic-400">{localizeSeekerRank(profile.seekerRank)}</span>
@@ -379,7 +389,7 @@ export function HomePage() {
         </div>
         <button
           onClick={() => setShowCelebration(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-mystic-800/80 to-mystic-800/50 px-4 py-2.5 rounded-full active:scale-95 transition-transform border border-mystic-700/50"
+          className="shrink-0 flex items-center gap-2 bg-gradient-to-r from-mystic-800/80 to-mystic-800/50 px-4 py-2.5 rounded-full active:scale-95 transition-transform hairline-gold-soft hover:border-gold/30"
         >
           <Flame className="w-5 h-5 text-gold" />
           <span className="font-semibold text-gold">{streak}</span>
@@ -396,7 +406,7 @@ export function HomePage() {
             <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block animate-float-gentle">
               <MysticalStar size={72} />
             </div>
-            <h2 className="font-display-hero text-2xl text-gold-foil mb-2">{t('home.todaysRitual')}</h2>
+            <h2 className="heading-display-lg text-gold-foil mb-2">{t('home.todaysRitual')}</h2>
             <div className="flex justify-center mb-3 text-gold/60">
               <OrnateDivider width={120} />
             </div>
@@ -409,12 +419,21 @@ export function HomePage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display-hero text-xl text-gold-foil">{t('home.todaysRitual')}</h2>
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${ritualState.horoscopeViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
-              <div className={`w-2 h-2 rounded-full ${ritualState.tarotViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
-              <div className={`w-2 h-2 rounded-full ${ritualState.promptViewed ? 'bg-gold' : 'bg-mystic-700'}`} />
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="heading-display-lg text-gold-foil">{t('home.todaysRitual')}</h2>
+            <div className="flex items-center gap-2 shrink-0">
+              <SparkleFourPoint
+                size={12}
+                className={ritualState.horoscopeViewed ? 'text-gold' : 'text-mystic-700'}
+              />
+              <SparkleFourPoint
+                size={12}
+                className={ritualState.tarotViewed ? 'text-gold' : 'text-mystic-700'}
+              />
+              <SparkleFourPoint
+                size={12}
+                className={ritualState.promptViewed ? 'text-gold' : 'text-mystic-700'}
+              />
             </div>
           </div>
 
@@ -582,8 +601,9 @@ export function HomePage() {
 
       {savedToday.length > 0 && (
         <div className="space-y-3">
+          <SectionDivider tone="mystic" />
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-mystic-300">{t('home.savedToday')}</h3>
+            <EyebrowLabel>{t('home.savedToday')}</EyebrowLabel>
             <button
               onClick={() => openOverlay('saved')}
               className="text-xs text-gold hover:text-gold-light transition-colors"
@@ -612,12 +632,12 @@ export function HomePage() {
       {ritualState.completed && (
         <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900/80 border-gold/20">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center ring-1 ring-gold/30">
               <Sparkles className="w-7 h-7 text-gold" />
             </div>
             <div className="flex-1">
-              <h3 className="font-display text-lg text-gold">{t('home.ritualComplete')}</h3>
-              <p className="text-sm text-mystic-400">{t('home.streak', { n: streak })}</p>
+              <h3 className="heading-display-md text-gold">{t('home.ritualComplete')}</h3>
+              <p className="text-sm text-mystic-400 mt-0.5">{t('home.streak', { n: streak })}</p>
             </div>
           </div>
         </Card>

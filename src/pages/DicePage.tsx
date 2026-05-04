@@ -30,7 +30,7 @@ export function DicePage() {
     <div className="space-y-6 pb-6">
       <div className="flex items-center gap-3">
         <Dice6 className="w-6 h-6 text-gold" />
-        <h1 className="font-display text-2xl text-mystic-100">
+        <h1 className="heading-display-lg text-mystic-100">
           {t('dice.title', { defaultValue: 'Dice Oracle' })}
         </h1>
       </div>
@@ -53,7 +53,7 @@ export function DicePage() {
             <p className="text-xs text-mystic-500 tracking-widest uppercase">
               {t('dice.sumLabel', { defaultValue: 'Sum' })} {reading.sum}
             </p>
-            <h2 className="font-display text-2xl text-mystic-100 mt-2">{reading.title}</h2>
+            <h2 className="heading-display-lg text-mystic-100 mt-2">{reading.title}</h2>
           </Card>
 
           <Card padding="lg">

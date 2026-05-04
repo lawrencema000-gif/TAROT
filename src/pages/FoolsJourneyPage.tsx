@@ -43,7 +43,7 @@ export function FoolsJourneyPage() {
           <Sparkles className="w-3.5 h-3.5 text-gold" />
           <span className="text-xs uppercase tracking-wider text-gold">The Fool\'s Journey</span>
         </div>
-        <h1 className="font-display text-3xl text-mystic-100 mb-1">{current.title}</h1>
+        <h1 className="heading-display-xl text-mystic-100 mb-1">{current.title}</h1>
         <p className="text-sm text-mystic-400 italic">{current.theme}</p>
         <p className="text-xs text-mystic-500 mt-2">Level {currentLevel} of 22</p>
       </header>

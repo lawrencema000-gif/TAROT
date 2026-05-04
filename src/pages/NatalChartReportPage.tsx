@@ -259,7 +259,7 @@ export function NatalChartReportPage() {
       <div className="space-y-4 pb-6">
         <div className="flex items-center gap-3">
           <ScrollText className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
           </h1>
         </div>
@@ -296,7 +296,7 @@ export function NatalChartReportPage() {
       <div className="space-y-4 pb-6">
         <div className="flex items-center gap-3">
           <ScrollText className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
           </h1>
         </div>
@@ -305,7 +305,7 @@ export function NatalChartReportPage() {
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
             <Lock className="w-6 h-6 text-gold" />
           </div>
-          <h2 className="font-display-hero text-2xl text-gold-foil mb-2">
+          <h2 className="heading-display-lg text-gold-foil mb-2">
             {t('natalReport.cardTitle', { defaultValue: 'Your complete birth chart — printable' })}
           </h2>
           <div className="flex justify-center mb-3 text-gold/60">
@@ -443,7 +443,7 @@ export function NatalChartReportPage() {
       <div className="flex items-center justify-between no-print">
         <div className="flex items-center gap-3">
           <ScrollText className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
           </h1>
         </div>

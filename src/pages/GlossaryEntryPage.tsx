@@ -44,7 +44,7 @@ export function GlossaryEntryPage() {
   if (!entry) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-2xl text-mystic-100 mb-2">Term not found</h1>
+        <h1 className="heading-display-lg text-mystic-100 mb-2">Term not found</h1>
         <button onClick={() => navigate('/glossary')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300">
           <ArrowLeft className="w-4 h-4 inline mr-2" />Back to glossary
         </button>
@@ -65,7 +65,7 @@ export function GlossaryEntryPage() {
       <header className="mb-6">
         <span className="text-xs uppercase tracking-wider text-mystic-500">{entry.category}</span>
         <div className="flex items-baseline gap-3 mt-1">
-          <h1 className="font-display text-3xl text-mystic-100">{entry.term}</h1>
+          <h1 className="heading-display-xl text-mystic-100">{entry.term}</h1>
           {entry.pronunciation && (
             <span className="text-sm text-mystic-400 italic">/{entry.pronunciation}/</span>
           )}

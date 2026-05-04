@@ -63,7 +63,7 @@ export function AstrologyEntryPage() {
   if (!entry) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-2xl text-mystic-100 mb-2">Entry not found</h1>
+        <h1 className="heading-display-lg text-mystic-100 mb-2">Entry not found</h1>
         <button onClick={() => navigate('/astrology')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300 hover:text-mystic-100">
           <ArrowLeft className="w-4 h-4 inline mr-2" />Back to Astrology hub
         </button>
@@ -86,7 +86,7 @@ export function AstrologyEntryPage() {
           <span className="text-4xl text-gold">{entry.symbol}</span>
           <div>
             <span className="text-xs uppercase tracking-wider text-mystic-500">{CATEGORY_LABELS[entry.category]}</span>
-            <h1 className="font-display text-3xl text-mystic-100">{entry.name}</h1>
+            <h1 className="heading-display-xl text-mystic-100">{entry.name}</h1>
           </div>
         </div>
         <p className="text-mystic-300 leading-relaxed">{entry.longDescription}</p>

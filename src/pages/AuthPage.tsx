@@ -155,7 +155,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               <Mail className="w-10 h-10 text-gold" />
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
-            <h1 className="font-display text-3xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
+            <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
             <p className="text-mystic-400">
               {t('auth.verifySentTo', { email: verifyEmail })}
             </p>
@@ -208,7 +208,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               )}
               <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
-            <h1 className="font-display text-3xl text-mystic-100 mb-2">
+            <h1 className="heading-display-xl text-mystic-100 mb-2">
               {resetSent ? t('auth.checkEmail') : t('auth.resetPassword')}
             </h1>
             <p className="text-mystic-400">
@@ -260,7 +260,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             <Sparkles className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
+          <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
           <p className="text-mystic-400">{t('auth.signInSub')}</p>
         </div>
 

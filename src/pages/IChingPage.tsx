@@ -62,7 +62,7 @@ export function IChingPage() {
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
           <Sparkles className="w-6 h-6 text-gold" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('iching.title', { defaultValue: 'I-Ching Oracle' })}
           </h1>
         </div>
@@ -99,7 +99,7 @@ export function IChingPage() {
   if (stage === 'casting') {
     return (
       <div className="space-y-8 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="font-display-hero text-2xl text-gold-foil text-center">
+        <h2 className="heading-display-lg text-gold-foil text-center">
           {t('iching.casting', { defaultValue: 'Casting the coins…' })}
         </h2>
         <div className="text-gold/60">
@@ -207,7 +207,7 @@ export function IChingPage() {
           <p className="text-sm text-gold/70 tracking-widest uppercase">
             {t('iching.hexagramLabel', { defaultValue: 'Hexagram' })} {primary.number}
           </p>
-          <h2 className="font-display text-3xl text-mystic-100 mt-2">{localizedName}</h2>
+          <h2 className="heading-display-xl text-mystic-100 mt-2">{localizedName}</h2>
           <p className="text-mystic-500 text-sm mt-1">
             {primary.pinyin} · {primary.chinese}
           </p>

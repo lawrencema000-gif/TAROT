@@ -515,7 +515,7 @@ export function AdminPage() {
   return (
     <div className="space-y-6 pb-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-mystic-100">Admin Panel</h1>
+        <h1 className="heading-display-lg text-mystic-100">Admin Panel</h1>
         <Button
           variant="ghost"
           size="sm"

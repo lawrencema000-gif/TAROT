@@ -189,7 +189,7 @@ export function PickACardPage() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="font-display text-2xl text-mystic-100"
+          className="heading-display-lg text-mystic-100"
         >
           {t('pickACard.title', { defaultValue: 'Pick a card' })}
         </motion.h1>

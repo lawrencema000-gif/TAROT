@@ -174,7 +174,7 @@ export function ResetPasswordPage() {
             <CheckCircle className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100 mb-2">
+          <h1 className="heading-display-xl text-mystic-100 mb-2">
             {t('auth.resetSuccess', { defaultValue: 'Password updated' })}
           </h1>
           <p className="text-mystic-400 mb-2">
@@ -204,7 +204,7 @@ export function ResetPasswordPage() {
             <Sparkles className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100 mb-2">
+          <h1 className="heading-display-xl text-mystic-100 mb-2">
             {t('auth.resetPassword', { defaultValue: 'Reset password' })}
           </h1>
           <p className="text-mystic-400">

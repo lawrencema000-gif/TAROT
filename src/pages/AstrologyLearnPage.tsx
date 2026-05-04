@@ -54,7 +54,7 @@ export function AstrologyLearnPage() {
           <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
             <Compass className="w-5 h-5 text-gold" />
           </div>
-          <h1 className="font-display text-3xl text-mystic-100">Astrology Learn</h1>
+          <h1 className="heading-display-xl text-mystic-100">Astrology Learn</h1>
         </div>
         <p className="text-sm text-mystic-400 max-w-xl">
           {astrologyEntries.length} entries — every sign, planet, house, and aspect with full rulerships, correspondences, and frequently asked questions.

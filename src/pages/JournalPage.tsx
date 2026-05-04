@@ -492,7 +492,7 @@ export function JournalPage() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-mystic-100">{t('journal.title')}</h1>
+        <h1 className="heading-display-lg text-mystic-100">{t('journal.title')}</h1>
         <Button variant="primary" size="sm" onClick={openNewEntry}>
           <Plus className="w-4 h-4" />
           New
@@ -802,12 +802,12 @@ export function JournalPage() {
           <div className="grid grid-cols-2 gap-3">
             <Card padding="lg" className="text-center">
               <Flame className="w-8 h-8 text-gold mx-auto mb-2" />
-              <p className="font-display text-3xl text-mystic-100">{insights.currentStreak}</p>
+              <p className="heading-display-xl text-mystic-100">{insights.currentStreak}</p>
               <p className="text-xs text-mystic-400 mt-1">{t('journal.dayStreak')}</p>
             </Card>
             <Card padding="lg" className="text-center">
               <TrendingUp className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-              <p className="font-display text-3xl text-mystic-100">{insights.totalEntries}</p>
+              <p className="heading-display-xl text-mystic-100">{insights.totalEntries}</p>
               <p className="text-xs text-mystic-400 mt-1">{t('journal.totalEntries')}</p>
             </Card>
           </div>

@@ -67,7 +67,7 @@ export function AdvisorsPage() {
               <Sparkles className="w-6 h-6 text-gold" />
             </div>
             <div>
-              <h2 className="font-display text-2xl text-mystic-100">{selected.displayName}</h2>
+              <h2 className="heading-display-lg text-mystic-100">{selected.displayName}</h2>
               {selected.ratingAvg !== null && (
                 <div className="flex items-center gap-1 text-xs text-gold">
                   <Star className="w-3 h-3 fill-current" />
@@ -180,7 +180,7 @@ export function AdvisorsPage() {
     <div className="space-y-4 pb-6">
       <div className="flex items-center gap-3">
         <Users className="w-6 h-6 text-gold" />
-        <h1 className="font-display text-2xl text-mystic-100">
+        <h1 className="heading-display-lg text-mystic-100">
           {t('advisors.title', { defaultValue: 'Advisors' })}
         </h1>
       </div>

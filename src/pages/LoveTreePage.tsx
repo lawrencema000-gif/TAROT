@@ -109,7 +109,7 @@ export function LoveTreePage() {
       <div className="space-y-5 pb-6">
         <header className="text-center space-y-2 pt-2">
           <Heart className="w-10 h-10 text-pink-400 mx-auto" />
-          <h1 className="font-display text-2xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('loveTree.title', { defaultValue: 'Love Tree' })}
           </h1>
           <p className="text-sm text-mystic-400 max-w-md mx-auto">
@@ -230,7 +230,7 @@ export function LoveTreePage() {
           <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
             {t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
           </p>
-          <h2 className="font-display text-3xl text-mystic-100">
+          <h2 className="heading-display-xl text-mystic-100">
             {t(`loveTree.attachment.${result.attachment}.title`, { defaultValue: info.title })}
           </h2>
           <p className="text-sm italic text-gold mt-1">

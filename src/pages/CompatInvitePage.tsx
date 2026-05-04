@@ -236,7 +236,7 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
             {t('compatInvite.resultLabel', { defaultValue: 'Compatibility' })}
           </p>
         </div>
-        <h2 className="font-display text-2xl text-mystic-100 mb-3">
+        <h2 className="heading-display-lg text-mystic-100 mb-3">
           {nameA} <span className="text-gold">+</span> {nameB}
         </h2>
         {compat ? (

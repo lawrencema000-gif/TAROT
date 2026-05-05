@@ -32,6 +32,12 @@ android/app/gemini_*.json
 *.keystore
 *.jks
 
+# Local audit / scratch / secrets — never commit. Service account JSON
+# keys and other local diagnostic files live here and must stay out of
+# version control.
+.audit/secrets/
+.audit/secrets/**
+
 # Local Netlify folder
 .netlify
 .vercel

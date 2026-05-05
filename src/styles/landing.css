@@ -140,7 +140,13 @@
 .lp-hero-note { font-size: 0.78rem; color: var(--td); letter-spacing: 0.05em; }
 
 /* ── Orbiting Cards ── */
-.lp-orbit { position: relative; width: 360px; height: 360px; perspective: 600px; }
+/* Increased orbit container from 360 to 400 so the spinning cards
+   (translateX 120 + half-width 50 = 170 max from center) sit
+   comfortably inside the 200px half-width with breathing room.
+   Previously cards extended 190px but the container only allowed
+   180px, causing them to clip + appear "merged" at the edges as the
+   animation rotated them past the boundary. */
+.lp-orbit { position: relative; width: 400px; height: 400px; perspective: 600px; margin: 0 auto; }
 .lp-orbit-ring {
   position: absolute; inset: 20px; border-radius: 50%;
   border: 1px solid rgba(212,168,83,0.06);
@@ -157,7 +163,11 @@
 .lp-orbit-card {
   position: absolute; left: 50%; top: 50%;
   width: 100px; height: 155px; border-radius: 10px; overflow: hidden;
-  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(140px) rotate(calc(-1 * var(--angle)));
+  /* Reduced orbit radius from 140 to 130 so cards (50px half-width)
+     reach max 180px from center vs the new 200px container half —
+     20px of safe margin all around. Prevents the bottom-right
+     "card clipping" the user reported on the live hero. */
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(130px) rotate(calc(-1 * var(--angle)));
   animation: lp-orbit-spin 35s linear infinite;
   box-shadow: 0 8px 30px rgba(0,0,0,0.5); cursor: pointer;
   transition: box-shadow 0.4s, filter 0.4s;

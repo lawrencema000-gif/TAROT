@@ -145,11 +145,33 @@ export async function generateBaziReading(args: {
   // back to the raw shape for any caller that returns the legacy flat
   // payload (none currently, but keeps this resilient to handler
   // refactors).
-  const parsed = (await res.json()) as
-    | { data?: InterpretResponse; correlationId?: string }
-    | InterpretResponse;
-  if (parsed && typeof parsed === 'object' && 'data' in parsed && parsed.data) {
-    return parsed.data;
+  let parsed: { data?: InterpretResponse; correlationId?: string } | InterpretResponse;
+  try {
+    parsed = await res.json();
+  } catch (e) {
+    return { ok: false, error: `Server returned a non-JSON response: ${e instanceof Error ? e.message : String(e)}` };
   }
-  return parsed as InterpretResponse;
+  const unwrapped = (parsed && typeof parsed === 'object' && 'data' in parsed && parsed.data)
+    ? parsed.data
+    : (parsed as InterpretResponse);
+
+  // Defensive: the edge function should always return either ok=true with
+  // a reading object, or ok=false with an error string. If neither holds,
+  // surface a specific message instead of the empty-fallback in the UI
+  // ("Failed to generate reading"). This guards against truncated edge
+  // function responses (e.g. wall-clock timeout mid-write) that can leave
+  // the response shape malformed.
+  if (unwrapped?.ok && !unwrapped.reading) {
+    return {
+      ok: false,
+      error: 'The AI returned successfully but the reading was empty. This usually means the edge function timed out — please try again.',
+    };
+  }
+  if (unwrapped?.ok === false && !unwrapped.error) {
+    return {
+      ok: false,
+      error: 'AI generation failed without a specific error. Please try again — if it keeps failing, the AI provider may be overloaded.',
+    };
+  }
+  return unwrapped;
 }

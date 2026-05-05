@@ -242,6 +242,12 @@ function isReasoningModel(model: string): boolean {
   return model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
 }
 
+// Per-call wall-clock cap. Real successful gpt-5 calls land in 60-90s. We
+// abort at 90s so a single slow call doesn't eat the whole edge-function
+// budget — Supabase's wall-clock limit is 150s, and we need headroom for
+// fallback to gpt-5-mini and Gemini.
+const PER_CALL_TIMEOUT_MS = 90_000;
+
 async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
   const reasoning = isReasoningModel(model);
   const body: Record<string, unknown> = {
@@ -252,8 +258,9 @@ async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Pr
     ],
     // Bazi readings are ~3000-4000 tokens of structured JSON. Reasoning
     // models need extra headroom so internal reasoning doesn't eat the
-    // budget before the JSON is emitted.
-    max_completion_tokens: reasoning ? 16000 : 8000,
+    // budget before the JSON is emitted. With reasoning_effort=minimal,
+    // 10k completion budget comfortably covers reasoning + 4k output.
+    max_completion_tokens: reasoning ? 10000 : 8000,
     response_format: { type: "json_object" },
   };
   if (reasoning) {
@@ -261,47 +268,71 @@ async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Pr
   } else {
     body.temperature = 0.7;
   }
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    return { ok: false, status: res.status, body };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PER_CALL_TIMEOUT_MS);
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      return { ok: false, status: res.status, body: errBody };
+    }
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) return { ok: false, status: 0, body: "no text in OpenAI response" };
+    return { ok: true, text };
+  } catch (e) {
+    // AbortError → status 0 (treat as transient so we fall through to
+    // gpt-5-mini). Any other network error → also status 0.
+    const msg = String(e).slice(0, 200);
+    const isAbort = (e as { name?: string })?.name === "AbortError";
+    return { ok: false, status: 0, body: isAbort ? `openai timeout (${PER_CALL_TIMEOUT_MS}ms): ${msg}` : `openai network: ${msg}` };
+  } finally {
+    clearTimeout(timer);
   }
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text) return { ok: false, status: 0, body: "no text in OpenAI response" };
-  return { ok: true, text };
 }
 
 async function callGeminiOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8000,
-        responseMimeType: "application/json",
-      },
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    return { ok: false, status: res.status, body };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PER_CALL_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8000,
+          responseMimeType: "application/json",
+        },
+      }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      return { ok: false, status: res.status, body: errBody };
+    }
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) return { ok: false, status: 0, body: "no text in response" };
+    return { ok: true, text };
+  } catch (e) {
+    const msg = String(e).slice(0, 200);
+    const isAbort = (e as { name?: string })?.name === "AbortError";
+    return { ok: false, status: 0, body: isAbort ? `gemini timeout (${PER_CALL_TIMEOUT_MS}ms): ${msg}` : `gemini network: ${msg}` };
+  } finally {
+    clearTimeout(timer);
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) return { ok: false, status: 0, body: "no text in response" };
-  return { ok: true, text };
 }
 
 function fillMissingSections(parsed: ReadingShape): ReadingShape {
@@ -318,43 +349,79 @@ function fillMissingSections(parsed: ReadingShape): ReadingShape {
   return parsed;
 }
 
+// Validate the AI returned a complete, non-empty reading. Returns true
+// only if every required section is a real string (not a placeholder).
+// Used after parsing to decide whether to accept the call or fall through
+// to the next model/provider.
+function isReadingComplete(parsed: ReadingShape): boolean {
+  const required: (keyof ReadingShape)[] = [
+    "core_summary", "personality", "elements", "career", "wealth",
+    "relationships", "family", "hidden_stems", "branch_relations",
+    "health", "luck_pillar", "annual", "strategy", "closing_summary",
+  ];
+  // We need at least 12 of 14 sections to consider the reading usable.
+  // The 2-section slack lets a model that omits a niche section still
+  // succeed; fillMissingSections will paper over the gap. But if 6+ are
+  // missing/empty, treat the response as unusable.
+  let nonEmpty = 0;
+  for (const k of required) {
+    if (typeof parsed[k] === "string" && parsed[k].trim().length > 20) {
+      nonEmpty++;
+    }
+  }
+  return nonEmpty >= 12;
+}
+
 async function callAI(prompt: string): Promise<ReadingShape> {
-  // Provider chain: OpenAI primary (better narrative quality at the same
-  // ~$0.002/reading cost), Gemini fallback. Each provider has its own
-  // model fallback chain. Per-attempt retry on transient errors only.
+  // Provider chain: OpenAI primary (better narrative quality), Gemini
+  // fallback. With per-call AbortController at 90s and 1 retry per model,
+  // worst-case wall-clock is ~360s (4 attempts × 90s) — but that's only
+  // hit when EVERY attempt times out. Typical fast-fail on 429/transient
+  // settles in 100-180s. Supabase wall-clock cap is 150s, so the chain
+  // is sized to land below that for realistic failure modes.
   const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
   const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
   let lastErr = "no providers configured";
 
-  // ── OpenAI primary ──
+  // ── OpenAI primary ── 1 retry per model (2 attempts each) instead of 3
   if (openaiKey) {
     for (const model of OPENAI_MODELS) {
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         const r = await callOpenAIOnce(model, prompt, openaiKey);
         if (r.ok) {
           try {
-            return fillMissingSections(JSON.parse(r.text) as ReadingShape);
+            const parsed = JSON.parse(r.text) as ReadingShape;
+            if (!isReadingComplete(parsed)) {
+              lastErr = `${model} returned incomplete reading (sections missing)`;
+              break;
+            }
+            return fillMissingSections(parsed);
           } catch (e) {
             lastErr = `${model} returned invalid JSON: ${String(e).slice(0, 200)}`;
             break;
           }
         }
         lastErr = `openai ${model} ${r.status}: ${r.body.slice(0, 200)}`;
-        // Retry only on transient: 429 rate limit, 500/502/503 server errors
+        // Retry only on transient: 429 rate limit, 500/502/503 server errors, 0 (network/abort)
         if (r.status !== 429 && r.status !== 500 && r.status !== 502 && r.status !== 503 && r.status !== 0) break;
-        await sleep(1500 * (attempt + 1));
+        await sleep(1500);
       }
     }
   }
 
-  // ── Gemini fallback ──
+  // ── Gemini fallback ── 1 retry per model (2 attempts each) instead of 3
   if (geminiKey) {
     for (const model of GEMINI_MODELS) {
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         const r = await callGeminiOnce(model, prompt, geminiKey);
         if (r.ok) {
           try {
-            return fillMissingSections(JSON.parse(r.text) as ReadingShape);
+            const parsed = JSON.parse(r.text) as ReadingShape;
+            if (!isReadingComplete(parsed)) {
+              lastErr = `gemini ${model} returned incomplete reading`;
+              break;
+            }
+            return fillMissingSections(parsed);
           } catch (e) {
             lastErr = `${model} returned invalid JSON: ${String(e).slice(0, 200)}`;
             break;
@@ -362,7 +429,7 @@ async function callAI(prompt: string): Promise<ReadingShape> {
         }
         lastErr = `gemini ${model} ${r.status}: ${r.body.slice(0, 200)}`;
         if (r.status !== 503 && r.status !== 429 && r.status !== 0) break;
-        await sleep(1500 * (attempt + 1));
+        await sleep(1500);
       }
     }
   }

@@ -15,6 +15,19 @@ export {
 export { BrandMark, BrandWordmark, BrandLockup } from './BrandMark';
 export { TarotCardIcon, HoroscopeWheelIcon } from './NavIcons';
 export {
+  MbtiQuadrantIcon,
+  MbtiQuickIcon,
+  LoveLanguagesIcon,
+  MoodWaveIcon,
+  AttachmentRingsIcon,
+  BigFivePentagonIcon,
+  FourElementsIcon,
+  EnneagramIcon,
+  ShadowMaskIcon,
+  TarotCourtIcon,
+  AyurvedaDoshaIcon,
+} from './QuizIcons';
+export {
   FeaturePill,
   FeaturePillGroup,
   RitualRow,

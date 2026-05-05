@@ -821,67 +821,78 @@ export const quizMetadata = {
   mbti: {
     timeEstimate: '10-15 min',
     whatYouGet: ['Your type profile with strengths + blind spots', 'Stress mode patterns + recovery strategies', 'Relationship style notes + communication tips', 'Tarot archetype alignment'],
-    icon: 'brain',
+    // Custom 4-quadrant glyph — visualizes the four MBTI dimensions
+    icon: 'mbti-quadrant',
     color: 'cosmic-blue',
   },
   'love-language': {
     timeEstimate: '5-7 min',
     whatYouGet: ['Primary + secondary love language', '"When healthy" vs "when deprived" insight', 'Clear ways to ask for love in your language', 'Partner tips for supporting you'],
-    icon: 'heart',
+    // Heart with five radiating beams — one per love language
+    icon: 'love-languages',
     color: 'cosmic-rose',
   },
   'mood-check': {
     timeEstimate: '30 sec',
     whatYouGet: ['A mood profile (calm/charged/drained/steady)', 'A "best next step" recommendation', 'A journal prompt for your current state', 'Optional tarot archetype suggestion'],
-    icon: 'smile',
+    // Sine wave over baseline — emotional rhythm
+    icon: 'mood-wave',
     color: 'gold',
   },
   'big-five': {
     timeEstimate: '8-10 min',
     whatYouGet: ['Five trait scores with real-life interpretation', 'Strengths + potential pitfalls for each trait', 'Lifestyle and relationship suggestions', 'A "growth lever" for meaningful change'],
-    icon: 'pentagon',
+    // Pentagon with inner radar shape — the OCEAN scoring chart
+    icon: 'big-five-pentagon',
     color: 'emerald-400',
   },
   enneagram: {
     timeEstimate: '10-12 min',
     whatYouGet: ['Your Enneagram type + wing', 'Growth and stress direction paths', 'Core motivation, fear, and desire', 'Tarot archetype alignment'],
-    icon: 'target',
+    // The actual 9-pointed enneagram figure with classic internal lines
+    icon: 'enneagram',
     color: 'gold',
   },
   attachment: {
     timeEstimate: '5-7 min',
     whatYouGet: ['Your primary attachment pattern', 'Triggers + deactivation/activation behaviors', 'What you need from a partner to feel safe', 'A path toward secure attachment'],
-    icon: 'link',
+    // Two interlocked rings with a heart at intersection — the bond
+    icon: 'attachment-rings',
     color: 'pink-400',
   },
   'mbti-quick': {
     timeEstimate: '3 min',
     whatYouGet: ['Your 4-letter type, fast', 'Where your strengths live', 'Upgrade path to the full 70-question deep read', 'Tarot archetype alignment'],
-    icon: 'zap',
+    // Same 4-quadrant base as MBTI but with a lightning bolt for "quick"
+    icon: 'mbti-quick',
     color: 'cosmic-blue',
   },
   'court-match': {
     timeEstimate: '4 min',
     whatYouGet: ['Which of 16 tarot court cards mirrors you', 'Your elemental style (fire/water/air/earth)', 'Your current maturity rank (page/knight/queen/king)', 'Strengths, shadow, and an affirmation to carry'],
-    icon: 'crown',
+    // Crown above tarot card outline — royal court
+    icon: 'tarot-court',
     color: 'gold',
   },
   'shadow-archetype': {
     timeEstimate: '6 min',
     whatYouGet: ['Your dominant Jungian archetype (Lover, Warrior, Magician, Sovereign, Sage, Innocent, Explorer)', 'The gift it brings when healthy', 'The shadow it casts when wounded', 'A path toward integration + tarot pairing'],
-    icon: 'moon',
+    // Theatrical mask, half light / half shadow — the persona vs shadow
+    icon: 'shadow-mask',
     color: 'cosmic-violet',
   },
   'element-affinity': {
     timeEstimate: '2 min',
     whatYouGet: ['Your behavioural element (fire/water/air/earth)', 'How it differs from your astrology chart element', 'Strengths, shadow, and when it\'s running the show', 'An affirmation to carry'],
-    icon: 'flame',
+    // Four classical alchemy triangles — fire △, air △̄, water ▽, earth ▽̄
+    icon: 'four-elements',
     color: 'emerald-400',
   },
   'ayurveda-dosha': {
     timeEstimate: '5-7 min',
     whatYouGet: ['Your primary dosha (Vata, Pitta, or Kapha)', 'Your secondary dosha if you\'re dual-type', 'Diet and lifestyle tips that actually suit you', 'Warning signs you\'re out of balance'],
-    icon: 'flower',
+    // Three petals + center dot — the three doshas around the prakriti
+    icon: 'ayurveda-dosha',
     color: 'cosmic-violet',
   },
 };

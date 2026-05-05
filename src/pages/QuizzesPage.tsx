@@ -36,6 +36,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Card, Button, Progress, toast } from '../components/ui';
+import * as QuizIcons from '../components/ui/QuizIcons';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { supabase } from '../lib/supabase'; // still used for profile writes (owned by AuthContext pattern)
@@ -96,7 +97,25 @@ interface QuizResultData {
   label?: string;
 }
 
+// Custom per-quiz glyphs — each designed around what the quiz actually
+// measures, not a generic lucide icon. See src/components/ui/QuizIcons.tsx
+// for the design rationale per icon. The legacy lucide keys (brain, heart,
+// smile, pentagon, target, link) are kept as fallbacks for any future
+// quiz that hasn't been given a custom icon yet.
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  // Custom quiz icons (current set)
+  'mbti-quadrant': QuizIcons.MbtiQuadrantIcon,
+  'mbti-quick': QuizIcons.MbtiQuickIcon,
+  'love-languages': QuizIcons.LoveLanguagesIcon,
+  'mood-wave': QuizIcons.MoodWaveIcon,
+  'attachment-rings': QuizIcons.AttachmentRingsIcon,
+  'big-five-pentagon': QuizIcons.BigFivePentagonIcon,
+  'four-elements': QuizIcons.FourElementsIcon,
+  'enneagram': QuizIcons.EnneagramIcon,
+  'shadow-mask': QuizIcons.ShadowMaskIcon,
+  'tarot-court': QuizIcons.TarotCourtIcon,
+  'ayurveda-dosha': QuizIcons.AyurvedaDoshaIcon,
+  // Lucide fallbacks (legacy)
   brain: Brain,
   heart: Heart,
   smile: Smile,

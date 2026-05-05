@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
-import { Button, Input, toast, BrandWordmark, SectionDivider } from '../components/ui';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Button, Input, toast, BrandMark, BrandWordmark, SectionDivider } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
 import { supabase } from '../lib/supabase';
@@ -257,11 +257,10 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <div className="flex justify-center mb-5">
-            <BrandWordmark size={28} />
+            <BrandMark size={64} className="text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)]" />
           </div>
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
-            <Sparkles className="w-10 h-10 text-gold" />
-            <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
+          <div className="flex justify-center mb-6">
+            <BrandWordmark size={28} />
           </div>
           <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
           <p className="text-mystic-400">{t('auth.signInSub')}</p>

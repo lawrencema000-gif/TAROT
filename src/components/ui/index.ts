@@ -13,6 +13,7 @@ export {
   HairlineRule,
 } from './Ornament';
 export { BrandMark, BrandWordmark, BrandLockup } from './BrandMark';
+export { TarotCardIcon, HoroscopeWheelIcon } from './NavIcons';
 export {
   FeaturePill,
   FeaturePillGroup,

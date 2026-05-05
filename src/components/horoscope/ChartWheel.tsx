@@ -120,24 +120,36 @@ export function ChartWheel({ planets, houses, ascendant }: Props) {
           <rect x="0" y="0" width={SIZE} height={SIZE} filter="url(#parchmentNoiseHoroscope)" opacity="0.45" />
         </g>
 
-        {/* Double bead border */}
-        <circle cx={CENTER} cy={CENTER} r={R_OUTER_BEAD} fill="none" stroke="rgba(212,175,55,0.65)" strokeWidth={1} />
-        <circle cx={CENTER} cy={CENTER} r={R_OUTER_INNER} fill="none" stroke="rgba(212,175,55,0.55)" strokeWidth={0.8} />
-        {Array.from({ length: 36 }).map((_, i) => {
-          const angle = i * 10;
-          if (angle % 90 === 0) return null;
-          const [x, y] = polarToXY(angle, (R_OUTER_BEAD + R_OUTER_INNER) / 2);
-          return <circle key={`hbead-${i}`} cx={x} cy={y} r={1} fill="#d4af37" opacity={0.85} />;
-        })}
-        {[0, 90, 180, 270].map((angle) => {
-          const [x, y] = polarToXY(angle, (R_OUTER_BEAD + R_OUTER_INNER) / 2);
-          return (
-            <g key={`hdiamond-${angle}`} transform={`translate(${x} ${y}) rotate(45)`}>
-              <rect x={-2.3} y={-2.3} width={4.6} height={4.6} fill="#d4af37" />
-              <rect x={-2.3} y={-2.3} width={4.6} height={4.6} fill="none" stroke="rgba(244,214,104,0.9)" strokeWidth={0.4} />
-            </g>
-          );
-        })}
+        {/* Double bead border — animated.
+            The outermost ornamental ring (two concentric gold circles +
+            36 evenly-spaced beads + 4 cardinal diamonds) is purely
+            decorative; none of it carries chart-specific positional
+            information (the actual ASC/DESC/MC indicators are rendered
+            below as a separate layer). Wrapping just this group in a
+            slow rotation keeps the chart fully readable while adding
+            a subtle "cosmic clock" motion. 60s/turn is meditative —
+            noticeable on dwell but never distracting. The transform-
+            origin is the chart center. Opt out via prefers-reduced-
+            motion. */}
+        <g className="chart-rim-spin" style={{ transformOrigin: `${CENTER}px ${CENTER}px` }}>
+          <circle cx={CENTER} cy={CENTER} r={R_OUTER_BEAD} fill="none" stroke="rgba(212,175,55,0.65)" strokeWidth={1} />
+          <circle cx={CENTER} cy={CENTER} r={R_OUTER_INNER} fill="none" stroke="rgba(212,175,55,0.55)" strokeWidth={0.8} />
+          {Array.from({ length: 36 }).map((_, i) => {
+            const angle = i * 10;
+            if (angle % 90 === 0) return null;
+            const [x, y] = polarToXY(angle, (R_OUTER_BEAD + R_OUTER_INNER) / 2);
+            return <circle key={`hbead-${i}`} cx={x} cy={y} r={1} fill="#d4af37" opacity={0.85} />;
+          })}
+          {[0, 90, 180, 270].map((angle) => {
+            const [x, y] = polarToXY(angle, (R_OUTER_BEAD + R_OUTER_INNER) / 2);
+            return (
+              <g key={`hdiamond-${angle}`} transform={`translate(${x} ${y}) rotate(45)`}>
+                <rect x={-2.3} y={-2.3} width={4.6} height={4.6} fill="#d4af37" />
+                <rect x={-2.3} y={-2.3} width={4.6} height={4.6} fill="none" stroke="rgba(244,214,104,0.9)" strokeWidth={0.4} />
+              </g>
+            );
+          })}
+        </g>
 
         {/* Sign sectors — element-tinted */}
         {ZODIAC_SIGNS.map((sign: ZodiacSign, i: number) => {

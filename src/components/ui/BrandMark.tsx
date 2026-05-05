@@ -123,12 +123,18 @@ export function BrandWordmark({
       aria-label="Arcana"
     >
       <span aria-hidden>ARC</span>
-      <span aria-hidden className="inline-flex items-center px-[0.18em]">
+      {/* Sparkle interpunct — explicit gold fill (NOT currentColor)
+          because when foil=true the parent has color:transparent for
+          the gradient effect, and currentColor would also be
+          transparent → the sparkle would vanish, leaving an ugly gap
+          between ARC and ANA. Explicit fill keeps it solid gold even
+          inside foil text. */}
+      <span aria-hidden className="inline-flex items-center px-[0.12em]">
         <svg
-          width={size * 0.32}
-          height={size * 0.32}
+          width={size * 0.28}
+          height={size * 0.28}
           viewBox="0 0 16 16"
-          fill="currentColor"
+          fill="#d4af37"
           aria-hidden
         >
           <path d="M 8 0 C 8 5, 8 5, 16 8 C 8 11, 8 11, 8 16 C 8 11, 8 11, 0 8 C 8 5, 8 5, 8 0 Z" />

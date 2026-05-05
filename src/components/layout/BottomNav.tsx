@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Star, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon } from 'lucide-react';
+import { TarotCardIcon, HoroscopeWheelIcon } from '../ui/NavIcons';
 import { isWeb } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
@@ -21,8 +22,12 @@ const isExternal = (item: MoreItem): item is ExternalItem =>
 
 const visibleTabs: TabDef[] = [
   { id: 'home', labelKey: 'nav.home', icon: Home },
-  { id: 'readings', labelKey: 'nav.readings', icon: Sparkles },
-  { id: 'horoscope', labelKey: 'nav.horoscope', icon: Star },
+  // Readings → tarot card glyph (custom SVG; replaces the generic
+  // Sparkles to clearly signal "tarot/divination").
+  { id: 'readings', labelKey: 'nav.readings', icon: TarotCardIcon },
+  // Horoscope → 12-spoke zodiac wheel (custom SVG; replaces the
+  // generic Star to read as "natal chart" at a glance).
+  { id: 'horoscope', labelKey: 'nav.horoscope', icon: HoroscopeWheelIcon },
   { id: 'quizzes', labelKey: 'nav.quizzes', icon: Brain },
 ];
 
@@ -183,7 +188,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                     relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                     transition-all duration-300 touch-manipulation
                     active:scale-90
-                    ${isActive ? 'text-gold' : 'text-mystic-500 hover:text-mystic-300'}
+                    ${isActive ? 'text-gold' : 'text-gold/55 hover:text-gold/85'}
                   `}
                 >
                   <div className={`
@@ -219,7 +224,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
                 transition-all duration-300 touch-manipulation
                 active:scale-90
-                ${isMoreActive || moreOpen ? 'text-gold' : 'text-mystic-500 hover:text-mystic-300'}
+                ${isMoreActive || moreOpen ? 'text-gold' : 'text-gold/55 hover:text-gold/85'}
               `}
             >
               <div className={`

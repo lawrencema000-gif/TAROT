@@ -606,6 +606,23 @@
     background: rgba(255, 255, 255, 0.012);
     box-shadow: inset 0 0 22px rgba(var(--gold-primary), 0.04);
   }
+
+  /* Horoscope chart — outer rim slow spin.
+     Applied to just the decorative bead-and-diamond ring on the
+     ChartWheel SVG. Inner content (signs, houses, planets, ASC/DESC
+     labels) stays stationary so the chart remains fully readable.
+     60-second period feels like a cosmic clock — noticeable on dwell
+     but never distracting. Suspended for users who request reduced
+     motion (system accessibility preference). */
+  @keyframes chart-rim-spin-kf {
+    to { transform: rotate(360deg); }
+  }
+  .chart-rim-spin {
+    animation: chart-rim-spin-kf 60s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-rim-spin { animation: none; }
+  }
 }
 
 /* ── Web Ad Sidebars (flanking content on wide desktops) ── */

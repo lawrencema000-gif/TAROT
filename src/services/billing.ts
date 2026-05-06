@@ -685,8 +685,14 @@ export function getBillingService(): BillingService {
     const provider = detectProvider();
     console.log('[Billing] Detected provider:', provider, '| isNative:', isNative(), '| isAndroid:', isAndroid());
 
-    if (provider === 'google') {
-      console.log('[Billing] Using NativeBillingService (RevenueCat/Google Play)');
+    // BOTH 'apple' (iOS) and 'google' (Android) must route through
+    // NativeBillingService — the underlying RevenueCat SDK handles the
+    // store routing internally based on the platform-specific API key.
+    // Apple App Store and Google Play guidelines forbid Stripe for
+    // digital subscriptions, so 'apple' falling through to WebBilling
+    // would (a) break iOS purchases and (b) violate App Store policy.
+    if (provider === 'google' || provider === 'apple') {
+      console.log(`[Billing] Using NativeBillingService (RevenueCat/${provider === 'apple' ? 'App Store' : 'Google Play'})`);
       billingServiceInstance = new NativeBillingService();
     } else {
       console.log('[Billing] Using WebBillingService (Stripe - web only)');

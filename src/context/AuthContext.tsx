@@ -1466,6 +1466,103 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, [user?.id, profile?.isPremium, optimisticallyMarkPremium, pollProfileUntilPremium]);
 
+  // ─── Real-time premium-state sync ───────────────────────────────────
+  //
+  // Subscribe to Postgres UPDATE events on this user's `profiles` row so
+  // any server-side change (Stripe webhook flipping is_premium=false on
+  // cancellation, RC webhook flipping is_premium=true on upgrade,
+  // admin grants, daily reconcile job) reaches the in-session UI without
+  // waiting for the next JWT refresh (~60min) or page reload.
+  //
+  // Before this effect: a web user whose Stripe subscription was
+  // cancelled would continue to see all premium tabs unlocked for up
+  // to an hour — the DB had `is_premium=false` instantly via the
+  // webhook, but the connected browser tab had no way to learn about
+  // it. This was the highest-impact gap from the premium lifecycle
+  // audit.
+  //
+  // We also wire an `appStateChange` (native) + `visibilitychange`
+  // (web) listener so cold-resume / tab-return scenarios fetch fresh
+  // profile state. Realtime push handles live in-session changes;
+  // visibility refresh handles "user closed laptop, came back later"
+  // where the realtime channel may have dropped silently.
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // 1. Realtime subscription on this user's profile row
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Server pushed an update. Re-read the full profile so
+          // mapDbToProfile + downstream logic stays in one place.
+          // We don't trust the realtime payload directly because the
+          // row shape evolves (new columns, RLS-filtered fields,
+          // mapDbToProfile transformations) — easier to re-fetch.
+          const newRow = payload.new as Record<string, unknown> | undefined;
+          const newIsPremium = newRow?.is_premium;
+          // Only log when premium actually changed — reduces noise from
+          // every other column update (level, xp, streak, etc.).
+          if (newIsPremium !== undefined && newIsPremium !== profile?.isPremium) {
+            console.info('[auth] realtime premium change detected, re-fetching profile', {
+              from: profile?.isPremium,
+              to: newIsPremium,
+            });
+          }
+          fetchProfile(user.id);
+        },
+      )
+      .subscribe();
+
+    // 2. Visibility / foreground listener — refresh on app return.
+    // Web uses document.visibilityState, native Capacitor uses
+    // App.addListener('appStateChange'). Both reach the same goal:
+    // when the user returns to the app after being away, re-fetch
+    // profile so any change that happened while they were gone
+    // (subscription expired, support upgraded them, etc.) is
+    // reflected immediately rather than waiting for JWT refresh.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchProfile(user.id).catch((err) => {
+          console.warn('[auth] visibility-resume profile refresh failed:', err);
+        });
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    let nativeAppStateListener: { remove: () => void } | null = null;
+    if (isNative()) {
+      App.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) {
+          fetchProfile(user.id).catch((err) => {
+            console.warn('[auth] native appStateChange profile refresh failed:', err);
+          });
+        }
+      }).then((handle) => {
+        nativeAppStateListener = handle;
+      }).catch(() => {
+        // Capacitor not available in this context — ignore.
+      });
+    }
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+      nativeAppStateListener?.remove();
+    };
+  }, [user?.id, fetchProfile, profile?.isPremium]);
+
   const isAdmin = isAdminVerified;
 
   return (

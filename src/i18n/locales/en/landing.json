@@ -156,5 +156,24 @@
         "s": "Updated daily"
       }
     ]
+  },
+  "freeCourse": {
+    "badge": "Free 3-part email course",
+    "title": "Learn tarot in 3 emails",
+    "subtitle": "A free email series covering keywords, suit correspondences, and numerology basics — the foundation every reader needs.",
+    "lessons": {
+      "1": { "title": "Lesson 1", "topic": "The 78 Cards in 5 Keywords" },
+      "2": { "title": "Lesson 2", "topic": "Suit Correspondences (Wands, Cups, Swords, Pentacles)" },
+      "3": { "title": "Lesson 3", "topic": "Numerology Basics for Card Combinations" }
+    },
+    "emailPlaceholder": "your@email.com",
+    "cta": "Send me Lesson 1",
+    "sending": "Sending…",
+    "success": "You're in. Check your inbox.",
+    "disclaimer": "No spam. Unsubscribe with one click. 3 emails over 5 days.",
+    "errors": {
+      "invalidEmail": "Please enter a valid email.",
+      "signupFailed": "Couldn't sign you up — please try again in a moment."
+    }
   }
 }

@@ -156,5 +156,24 @@
         "s": "每日更新"
       }
     ]
+  },
+  "freeCourse": {
+    "badge": "免费三课邮件课程",
+    "title": "三封邮件,学会塔罗",
+    "subtitle": "一系列免费邮件,涵盖关键词、花色对应和基础数字学——每位塔罗读者必备的基础。",
+    "lessons": {
+      "1": { "title": "第一课", "topic": "用 5 个关键词理解 78 张牌" },
+      "2": { "title": "第二课", "topic": "花色对应(权杖、圣杯、宝剑、星币)" },
+      "3": { "title": "第三课", "topic": "牌组组合中的数字学基础" }
+    },
+    "emailPlaceholder": "your@email.com",
+    "cta": "给我寄第一课",
+    "sending": "发送中…",
+    "success": "已订阅。请查收邮箱。",
+    "disclaimer": "无垃圾邮件。一键退订。5 天内 3 封邮件。",
+    "errors": {
+      "invalidEmail": "请输入有效的邮箱地址。",
+      "signupFailed": "订阅失败,请稍后再试。"
+    }
   }
 }

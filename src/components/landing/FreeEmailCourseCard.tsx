@@ -10,24 +10,28 @@
 import { useState } from 'react';
 import { Mail, Check, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-
-const LESSONS = [
-  { title: 'Lesson 1', topic: 'The 78 Cards in 5 Keywords' },
-  { title: 'Lesson 2', topic: 'Suit Correspondences (Wands, Cups, Swords, Pentacles)' },
-  { title: 'Lesson 3', topic: 'Numerology Basics for Card Combinations' },
-];
+import { useT } from '../../i18n/useT';
 
 export function FreeEmailCourseCard() {
+  const { t } = useT('landing');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Lessons live in the locale file so titles + topics translate together.
+  // i18next can't return arrays of objects directly, so we read each lesson
+  // by index. Three lessons hardcoded matches the EN content shape.
+  const lessons = [1, 2, 3].map((n) => ({
+    title: t(`freeCourse.lessons.${n}.title`, { defaultValue: `Lesson ${n}` }) as string,
+    topic: t(`freeCourse.lessons.${n}.topic`, { defaultValue: '' }) as string,
+  }));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!email.includes('@')) {
-      setError('Please enter a valid email.');
+      setError(t('freeCourse.errors.invalidEmail', { defaultValue: 'Please enter a valid email.' }) as string);
       return;
     }
     setSubmitting(true);
@@ -49,7 +53,7 @@ export function FreeEmailCourseCard() {
         setDone(true);
         return;
       }
-      setError("Couldn't sign you up — please try again in a moment.");
+      setError(t('freeCourse.errors.signupFailed', { defaultValue: "Couldn't sign you up — please try again in a moment." }) as string);
       return;
     }
     setDone(true);
@@ -61,18 +65,18 @@ export function FreeEmailCourseCard() {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-gold" />
-            <span className="text-xs uppercase tracking-wider text-gold">Free 3-part email course</span>
+            <span className="text-xs uppercase tracking-wider text-gold">{t('freeCourse.badge', { defaultValue: 'Free 3-part email course' })}</span>
           </div>
           <h2 className="font-display text-2xl sm:text-3xl text-mystic-100 mb-2">
-            Learn tarot in 3 emails
+            {t('freeCourse.title', { defaultValue: 'Learn tarot in 3 emails' })}
           </h2>
           <p className="text-sm text-mystic-400 max-w-md mx-auto">
-            A free email series covering keywords, suit correspondences, and numerology basics — the foundation every reader needs.
+            {t('freeCourse.subtitle', { defaultValue: 'A free email series covering keywords, suit correspondences, and numerology basics — the foundation every reader needs.' })}
           </p>
         </div>
 
         <ul className="space-y-2 mb-6 max-w-md mx-auto">
-          {LESSONS.map((l) => (
+          {lessons.map((l) => (
             <li key={l.title} className="flex items-start gap-2.5 text-sm">
               <Check className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
               <span>
@@ -86,7 +90,7 @@ export function FreeEmailCourseCard() {
         {done ? (
           <div className="flex items-center justify-center gap-2 py-4 text-gold">
             <Check className="w-5 h-5" />
-            <span className="text-sm font-medium">You're in. Check your inbox.</span>
+            <span className="text-sm font-medium">{t('freeCourse.success', { defaultValue: "You're in. Check your inbox." })}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="max-w-md mx-auto">
@@ -97,7 +101,7 @@ export function FreeEmailCourseCard() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t('freeCourse.emailPlaceholder', { defaultValue: 'your@email.com' }) as string}
                   className="w-full pl-9 pr-3 py-3 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 outline-none text-sm"
                   required
                   autoComplete="email"
@@ -109,12 +113,14 @@ export function FreeEmailCourseCard() {
                 disabled={submitting}
                 className="px-5 py-3 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-sm disabled:opacity-50 whitespace-nowrap"
               >
-                {submitting ? 'Sending…' : 'Send me Lesson 1'}
+                {submitting
+                  ? (t('freeCourse.sending', { defaultValue: 'Sending…' }) as string)
+                  : (t('freeCourse.cta', { defaultValue: 'Send me Lesson 1' }) as string)}
               </button>
             </div>
             {error && <p className="text-xs text-red-400 mt-2 text-center">{error}</p>}
             <p className="text-[11px] text-mystic-500 mt-3 text-center">
-              No spam. Unsubscribe with one click. 3 emails over 5 days.
+              {t('freeCourse.disclaimer', { defaultValue: 'No spam. Unsubscribe with one click. 3 emails over 5 days.' })}
             </p>
           </form>
         )}

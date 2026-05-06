@@ -97,6 +97,20 @@
     "orDivider": "or",
     "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy."
   },
+  "cardMeaning": {
+    "astrology": "Astrological correspondence",
+    "element": "Element",
+    "planet": "Planet",
+    "zodiac": "Zodiac",
+    "decan": "Decan",
+    "hebrewLetter": "Hebrew letter",
+    "numerology": "Numerology",
+    "reinforcingCards": "Reinforcing cards",
+    "reinforcingIntro": "When {{name}} appears alongside these cards, the reading's energy intensifies — {{reason}}",
+    "opposingCards": "Opposing cards",
+    "opposingIntro": "These cards create tension with {{name}} — {{reason}}",
+    "faq": "Frequently asked questions"
+  },
   "readings": {
     "title": "Readings",
     "subtitle": "Choose a spread for today",
@@ -848,6 +862,17 @@
             }
           }
         }
+      },
+      "ayurveda-dosha": {
+        "title": "Ayurvedic Dosha",
+        "description": "Thirty questions on body, mind, and habits to reveal your dominant dosha — Vata (air/space), Pitta (fire/water), or Kapha (earth/water). Ayurveda is the traditional Indian system of mind-body wellness; your dosha shows the default way your nature expresses itself and what tends to throw it out of balance.",
+        "timeEstimate": "5-7 min",
+        "whatYouGet": [
+          "Your primary dosha (Vata, Pitta, or Kapha)",
+          "Your secondary dosha if you're dual-type",
+          "Diet and lifestyle tips that actually suit you",
+          "Warning signs you're out of balance"
+        ]
       }
     },
     "types": {

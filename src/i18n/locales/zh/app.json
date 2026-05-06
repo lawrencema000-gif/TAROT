@@ -95,6 +95,25 @@
     "orDivider": "或",
     "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。"
   },
+  "cardMeaning": {
+    "yesNo": {
+      "answer": {
+        "yes": "是",
+        "no": "否",
+        "maybe": "也许"
+      },
+      "keywordSeparator": "与",
+      "explanation": {
+        "yes": "{{name}}承载着正向与肯定的能量。这张牌支持前进与有利的结果。",
+        "no": "{{name}}暗示障碍、动荡或需要暂停。时机可能不对，或需要不同的方式。",
+        "maybe": "{{name}}依情境而定。答案取决于周围的牌与你的具体情况。"
+      },
+      "explanationKeywords": {
+        "yes": "这张牌{{keywords}}的能量偏向正面的结果。",
+        "no": "这张牌{{keywords}}的能量暗示挑战或延迟。"
+      }
+    }
+  },
   "readings": {
     "title": "牌阵",
     "subtitle": "选择今日的牌阵",
@@ -846,6 +865,17 @@
             }
           }
         }
+      },
+      "ayurveda-dosha": {
+        "title": "阿育吠陀体质",
+        "description": "通过 30 道关于身体、心智与习惯的问题揭示你的主导体质 — 瓦塔(风/空)、皮塔(火/水)或卡法(土/水)。阿育吠陀是印度传统的身心整合医学;你的体质显示了你天性的默认表达方式,以及容易让你失去平衡的因素。",
+        "timeEstimate": "5-7 分钟",
+        "whatYouGet": [
+          "你的主导体质(瓦塔、皮塔或卡法)",
+          "如果是双重体质,你的次要体质",
+          "真正适合你的饮食与生活方式建议",
+          "你失衡的预警信号"
+        ]
       }
     },
     "types": {
@@ -2952,25 +2982,6 @@
     "morningReflectionSub": "感恩与意图",
     "loveLanguageResult": "爱的语言结果",
     "wordsOfAffirmation": "肯定的话语"
-  },
-  "cardMeaning": {
-    "yesNo": {
-      "answer": {
-        "yes": "是",
-        "no": "否",
-        "maybe": "也许"
-      },
-      "keywordSeparator": "与",
-      "explanation": {
-        "yes": "{{name}}承载着正向与肯定的能量。这张牌支持前进与有利的结果。",
-        "no": "{{name}}暗示障碍、动荡或需要暂停。时机可能不对，或需要不同的方式。",
-        "maybe": "{{name}}依情境而定。答案取决于周围的牌与你的具体情况。"
-      },
-      "explanationKeywords": {
-        "yes": "这张牌{{keywords}}的能量偏向正面的结果。",
-        "no": "这张牌{{keywords}}的能量暗示挑战或延迟。"
-      }
-    }
   },
   "billing": {
     "purchaseCancelled": "购买已取消",

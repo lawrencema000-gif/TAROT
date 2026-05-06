@@ -341,17 +341,17 @@ export function TarotCardMeaningPage() {
           <>
             <div className="tm-contexts-full">
               <div className="tm-context-card">
-                <h3 className="tm-context-title"><span className="tm-context-icon">⌖</span> Astrological correspondence</h3>
+                <h3 className="tm-context-title"><span className="tm-context-icon">⌖</span> {t('cardMeaning.astrology', { defaultValue: 'Astrological correspondence' })}</h3>
                 <ul style={{ margin: 0, padding: '0 0 0 1.1em', color: '#cfc8dc', lineHeight: 1.7 }}>
-                  <li><strong style={{ color: '#e6dfff' }}>Element:</strong> {enrichment.element}</li>
-                  {enrichment.planet && <li><strong style={{ color: '#e6dfff' }}>Planet:</strong> {enrichment.planet}</li>}
-                  {enrichment.zodiac && <li><strong style={{ color: '#e6dfff' }}>Zodiac:</strong> {enrichment.zodiac}</li>}
-                  {enrichment.decan && <li><strong style={{ color: '#e6dfff' }}>Decan:</strong> {enrichment.decan}</li>}
-                  {enrichment.hebrewLetter && <li><strong style={{ color: '#e6dfff' }}>Hebrew letter:</strong> {enrichment.hebrewLetter}</li>}
+                  <li><strong style={{ color: '#e6dfff' }}>{t('cardMeaning.element', { defaultValue: 'Element' })}:</strong> {enrichment.element}</li>
+                  {enrichment.planet && <li><strong style={{ color: '#e6dfff' }}>{t('cardMeaning.planet', { defaultValue: 'Planet' })}:</strong> {enrichment.planet}</li>}
+                  {enrichment.zodiac && <li><strong style={{ color: '#e6dfff' }}>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}:</strong> {enrichment.zodiac}</li>}
+                  {enrichment.decan && <li><strong style={{ color: '#e6dfff' }}>{t('cardMeaning.decan', { defaultValue: 'Decan' })}:</strong> {enrichment.decan}</li>}
+                  {enrichment.hebrewLetter && <li><strong style={{ color: '#e6dfff' }}>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}:</strong> {enrichment.hebrewLetter}</li>}
                 </ul>
               </div>
               <div className="tm-context-card">
-                <h3 className="tm-context-title"><span className="tm-context-icon">∞</span> Numerology</h3>
+                <h3 className="tm-context-title"><span className="tm-context-icon">∞</span> {t('cardMeaning.numerology', { defaultValue: 'Numerology' })}</h3>
                 <p className="tm-context-text">{enrichment.numerology}</p>
               </div>
             </div>
@@ -359,9 +359,9 @@ export function TarotCardMeaningPage() {
             {/* Card Combinations — reinforcing + opposing pairs */}
             <div className="tm-contexts-full">
               <div className="tm-context-card">
-                <h3 className="tm-context-title"><span className="tm-context-icon">⊕</span> Reinforcing cards</h3>
+                <h3 className="tm-context-title"><span className="tm-context-icon">⊕</span> {t('cardMeaning.reinforcingCards', { defaultValue: 'Reinforcing cards' })}</h3>
                 <p className="tm-context-text" style={{ marginBottom: 8 }}>
-                  When {enCard.name} appears alongside these cards, the reading's energy intensifies — {enrichment.reinforcingReason.toLowerCase()}
+                  {t('cardMeaning.reinforcingIntro', { name: enCard.name, reason: enrichment.reinforcingReason.toLowerCase(), defaultValue: 'When {{name}} appears alongside these cards, the reading\'s energy intensifies — {{reason}}' })}
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {enrichment.reinforcingCards.map((c) => {
@@ -376,9 +376,9 @@ export function TarotCardMeaningPage() {
                 </div>
               </div>
               <div className="tm-context-card">
-                <h3 className="tm-context-title"><span className="tm-context-icon">⊖</span> Opposing cards</h3>
+                <h3 className="tm-context-title"><span className="tm-context-icon">⊖</span> {t('cardMeaning.opposingCards', { defaultValue: 'Opposing cards' })}</h3>
                 <p className="tm-context-text" style={{ marginBottom: 8 }}>
-                  These cards create tension with {enCard.name} — {enrichment.opposingReason.toLowerCase()}
+                  {t('cardMeaning.opposingIntro', { name: enCard.name, reason: enrichment.opposingReason.toLowerCase(), defaultValue: 'These cards create tension with {{name}} — {{reason}}' })}
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {enrichment.opposingCards.map((c) => {
@@ -396,7 +396,7 @@ export function TarotCardMeaningPage() {
 
             {/* Visible FAQ — mirrors FAQPage JSON-LD so users see the same Q&A Google does */}
             <div className="tm-context-card" style={{ marginTop: 16 }}>
-              <h3 className="tm-context-title"><span className="tm-context-icon">?</span> Frequently asked questions</h3>
+              <h3 className="tm-context-title"><span className="tm-context-icon">?</span> {t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}</h3>
               <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What does the {enCard.name} tarot card mean?</summary>
                 <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>{enCard.meaningUpright}</p>

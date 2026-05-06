@@ -3509,6 +3509,126 @@
     },
     "common": {
       "scoreDistribution": "Score distribution"
+    },
+    "jungian-functions": {
+      "title": "Jungian Functions",
+      "description": "Your dominant Jungian cognitive function — Ni, Ne, Si, Se, Ti, Te, Fi, or Fe — and how it stacks with your MBTI letters into the way you process the world.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your dominant Jungian cognitive function",
+        "How it shapes your MBTI",
+        "Shadow + integration"
+      ]
+    },
+    "love-styles": {
+      "title": "Love Styles",
+      "description": "Which of the four Greek love styles you lead with: Eros (passion), Philia (deep friendship), Storge (steady warmth), or Agape (unconditional). One isn't better — they ask different things of you.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Which of 4 Greek love styles you lead with",
+        "Strengths + shadow",
+        "Affirmation to carry"
+      ]
+    },
+    "parenting-style": {
+      "title": "Parenting Style",
+      "description": "Your default Baumrind parenting style — Authoritative, Authoritarian, Permissive, or Neglectful — under stress versus when you're at your best. What research says about each, and one affirmation to carry.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your default style (authoritative / authoritarian / permissive / neglectful)",
+        "What research says",
+        "Affirmation"
+      ]
+    },
+    "learning-style": {
+      "title": "Learning Style",
+      "description": "Your VARK preference — Visual, Auditory, Read/Write, or Kinesthetic. How you actually take in information, and how to design study + work to match the wiring.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your VARK style",
+        "How you best take in information",
+        "Study + work tips"
+      ]
+    },
+    "empath-hsp": {
+      "title": "Empath or HSP",
+      "description": "Empath, Highly Sensitive Person, both, or neither. What each means neurologically — they're related but not the same — and practical self-care for whichever wiring you have.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Empath, HSP, both, or neither",
+        "What each means neurologically",
+        "Practical self-care"
+      ]
+    },
+    "self-compassion": {
+      "title": "Self-Compassion",
+      "description": "Your dominant self-compassion stance — Self-Kind, Self-Judging, Mindful, or Over-Identified. Where you support yourself and where you don't, with one next-step affirmation.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your dominant self-compassion stance",
+        "Where you self-judge vs self-kind",
+        "Next-step affirmation"
+      ]
+    },
+    "mood-screener": {
+      "title": "Mood Screener",
+      "description": "A two-week mood signal read using non-diagnostic PHQ-2-style questions. NOT a diagnosis — a self-reflection mirror, with crisis resources surfaced if your answers suggest you need support.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "A 2-week mood signal read",
+        "NON-diagnostic self-reflection",
+        "Crisis resources if needed"
+      ]
+    },
+    "anxiety-profile": {
+      "title": "Anxiety Profile",
+      "description": "Where anxiety tends to show up in your body and life — somatic (body-first), generalised, social, or performance — and which tools tend to actually help that flavour.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Where anxiety shows up for you",
+        "What tools tend to work",
+        "Non-diagnostic self-reflection"
+      ]
+    },
+    "leadership-style": {
+      "title": "Leadership Style",
+      "description": "Your default leadership mode under pressure — Visionary, Servant, Commander, or Coach. Including who you should pair with, and where this style breaks under stress.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your default leadership mode",
+        "Who to pair with",
+        "Where the style breaks"
+      ]
+    },
+    "productivity-style": {
+      "title": "Productivity Style",
+      "description": "Your work-rhythm profile — Deep Worker, Sprinter, Connector, or Organiser. Where your energy actually lands, the ideal environment for it, and what to stop forcing.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your work-rhythm profile",
+        "Ideal environment",
+        "What to stop forcing"
+      ]
+    },
+    "relationship-readiness": {
+      "title": "Relationship Readiness",
+      "description": "Where you are in your readiness for partnership — ready, healing, avoiding, or rushing. Without judgment, with one thing to tend to first.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Where you are in readiness",
+        "What to tend first",
+        "Non-judgmental mirror"
+      ]
+    },
+    "wellness-type": {
+      "title": "Wellness Type",
+      "description": "How you best restore — Athlete (move), Healer (deep self-care), Contemplative (stillness), or Balanced (mix). The tools that actually work for your nature, not the trends.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "How you best restore",
+        "Which tools work for you",
+        "How to design your week"
+      ]
     }
   },
   "mood": {

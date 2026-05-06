@@ -130,8 +130,13 @@ export function saveMoodEntry(entry: Omit<MoodEntry, 'savedAt'>): MoodEntry {
   trimmed.sort((a, b) => (a.date > b.date ? 1 : -1));
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  } catch {
-    // ignore quota errors — mood diary is best-effort
+  } catch (err) {
+    // Don't crash the UI — but DO log to console so failures are
+    // visible in DevTools (quota exceeded, private-browsing storage
+    // disabled, JSON.stringify issue, etc.). Previously this catch
+    // silently swallowed all errors which made user-reported "mood
+    // doesn't work" issues impossible to diagnose.
+    console.warn('[mood] saveMoodEntry failed to persist to localStorage:', err);
   }
   return full;
 }

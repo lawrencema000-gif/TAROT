@@ -54,7 +54,9 @@
     "pickACardTitle": "抽一张牌",
     "pickACardSub": "30秒的日常仪式，一张召唤你的牌。",
     "soulmateTitle": "灵魂伴侣分数",
-    "soulmateSub": "与任何人对比星盘 — 得出 100 分制的契合度。"
+    "soulmateSub": "与任何人对比星盘 — 得出 100 分制的契合度。",
+    "loveTreeSub": "90 秒,12 道题 → 你的依恋风格化为一棵活树。",
+    "loveTreeTitle": "爱之树"
   },
   "auth": {
     "welcomeBack": "欢迎回来",
@@ -2081,6 +2083,18 @@
         "notAvailable": "广告暂不可用,请稍后再试。",
         "error": "出错了,请稍后再试。"
       }
+    },
+    "trialReminder": {
+      "badge": "3 天免费",
+      "benefits": {
+        "adFree": "完全无广告",
+        "allFeatures": "解锁全部高级功能",
+        "cancelAnytime": "可随时取消,无需付费"
+      },
+      "cta": "开始免费试用",
+      "dismiss": "稍后再说",
+      "subtitle": "免费解锁全部 3 天,之后 $19.99/年。可随时取消。",
+      "title": "免费试用高级版 3 天"
     }
   },
   "settings": {
@@ -3517,7 +3531,34 @@
       "earth": "土",
       "metal": "金",
       "water": "水"
-    }
+    },
+    "chartTypeLabel": "命盘类型",
+    "hiddenInfluencesLabel": "藏干影响",
+    "hiddenInfluencesSub": "每个地支携带 1–3 个隐藏天干,默默塑造该柱的能量。",
+    "innerForcesLabel": "内在力量",
+    "innerForcesSub": "每柱相对于你的内在元素映射到经典的十神原型。",
+    "luckyColorTodayLabel": "今日幸运色",
+    "luckyNumbersLabel": "幸运数字",
+    "nayinLabel": "你年柱的纳音",
+    "premiumTeaserBody": "解锁你的内在力量(经典十神)、藏干影响、纳音、辅助元素及其幸运色、方位、数字,以及今日幸运色组件。",
+    "premiumTeaserCta": "查看高级版",
+    "premiumTeaserTitle": "用高级版深入了解",
+    "strength": {
+      "balanced": {
+        "desc": "你的命盘自成平衡——元素之间相互呼应,处于较合理的均衡。",
+        "name": "平衡"
+      },
+      "receptive": {
+        "desc": "你的日主元素偏弱。你容易接收和吸收;成长边在于主张和自我滋养。",
+        "name": "接收型"
+      },
+      "strong": {
+        "desc": "你的日主元素偏旺。你自然主张;成长边在于流动与释放。",
+        "name": "主导型"
+      }
+    },
+    "supportingLabel": "你的辅助元素",
+    "supportingSub": "你的命盘倾向于这个元素以求平衡——穿它的颜色、面向它的方位、记住它的数字。"
   },
   "ayurveda": {
     "withSecondary": "（次要道夏：{{sec}}）",
@@ -3981,7 +4022,8 @@
     "claiming": "领取中…",
     "alreadyClaimed": "明天再来",
     "claimed": "+{{n}} 月光石 · 连续第 {{d}} 天",
-    "claimFailed": "无法领取今日奖励"
+    "claimFailed": "无法领取今日奖励",
+    "topUp": "充值"
   },
   "companion": {
     "title": "灵伴",
@@ -4569,5 +4611,40 @@
       "complex": "磁性强但摩擦多。吸引是真的，棱角也是。能扛住火候，则成长丰盈。",
       "testing": "模式不易自然流动。可行，但需要更多意图而非重力。"
     }
+  },
+  "askOracle": {
+    "cardLabel": "抽到的牌",
+    "contextLabel": "你的问题",
+    "cta": "请神谕为我读这个",
+    "drawing": "抽牌中…",
+    "errorGeneric": "无法连接神谕,请重试。",
+    "question": "请为我解读 — {{context}}。它在我的生活中指向什么?",
+    "redraw": "重新解读",
+    "share": "分享",
+    "sheetTitle": "神谕在解读",
+    "subtitle": "基于你的命盘与记忆的个性化解读"
+  },
+  "dailyMission": {
+    "doneSub": "新任务将于午夜到来。",
+    "doneTitle": "完成。做得好。",
+    "label": "今日任务",
+    "markDone": "标记完成"
+  },
+  "moonstoneTopUp": {
+    "generic": "购买失败",
+    "packLabel": {
+      "devotee": "信徒包",
+      "generous": "豪华包",
+      "regular": "常规包",
+      "starter": "入门包"
+    },
+    "packNotFound": "该套餐在商店中不可用。",
+    "playStorePurchase": "通过 Google Play 收费,在你的 Google 账号中管理购买。",
+    "popular": "热门",
+    "securePayment": "由 Stripe 提供的安全结账。一次性购买——可随时取消。",
+    "stripeFailed": "无法打开结账",
+    "subtitle": "解锁解读、给直播主播打赏、预约顾问咨询。",
+    "success": "{{n}} 月光石正在路上 — 几秒钟就到。",
+    "title": "充值月光石"
   }
 }

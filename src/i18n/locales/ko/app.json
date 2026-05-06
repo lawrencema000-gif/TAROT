@@ -54,7 +54,9 @@
     "pickACardTitle": "카드 뽑기",
     "pickACardSub": "30초 일일 뽑기. 당신을 부르는 한 장.",
     "soulmateTitle": "소울메이트 스코어",
-    "soulmateSub": "누구와도 차트를 비교 — 100점 만점 스코어."
+    "soulmateSub": "누구와도 차트를 비교 — 100점 만점 스코어.",
+    "loveTreeSub": "90초, 12문항 → 당신의 애착 스타일이 살아있는 나무로 나타납니다.",
+    "loveTreeTitle": "사랑의 나무"
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
@@ -2081,6 +2083,18 @@
         "notAvailable": "광고를 표시할 수 없습니다. 다시 시도해 주세요.",
         "error": "문제가 발생했습니다. 다시 시도해 주세요."
       }
+    },
+    "trialReminder": {
+      "badge": "3일 무료",
+      "benefits": {
+        "adFree": "광고 완전 제거",
+        "allFeatures": "모든 프리미엄 기능 잠금 해제",
+        "cancelAnytime": "언제든 취소 가능, 요금 없음"
+      },
+      "cta": "무료 체험 시작",
+      "dismiss": "나중에",
+      "subtitle": "3일 동안 모두 잠금 해제, 이후 $19.99/년. 언제든 취소 가능.",
+      "title": "프리미엄을 3일 무료로 체험"
     }
   },
   "settings": {
@@ -3517,7 +3531,34 @@
       "earth": "토",
       "metal": "금",
       "water": "수"
-    }
+    },
+    "chartTypeLabel": "차트 유형",
+    "hiddenInfluencesLabel": "지장간 영향",
+    "hiddenInfluencesSub": "각 지지는 1-3개의 추가 천간을 품어 기둥을 조용히 형성합니다.",
+    "innerForcesLabel": "내적인 힘",
+    "innerForcesSub": "각 기둥은 당신의 내적 원소를 기준으로 한 고전적 십신 원형에 매핑됩니다.",
+    "luckyColorTodayLabel": "오늘의 행운 색상",
+    "luckyNumbersLabel": "행운의 숫자",
+    "nayinLabel": "연주의 납음",
+    "premiumTeaserBody": "당신의 내적인 힘(고전 십신), 지장간 영향, 납음, 보조 원소와 그 행운 색상·방향·숫자, 오늘의 행운 색상 위젯을 잠금 해제.",
+    "premiumTeaserCta": "프리미엄 보기",
+    "premiumTeaserTitle": "프리미엄으로 더 깊이",
+    "strength": {
+      "balanced": {
+        "desc": "당신의 차트는 스스로 균형을 잡고 있습니다 — 원소들이 합리적인 균형으로 만납니다.",
+        "name": "균형"
+      },
+      "receptive": {
+        "desc": "당신의 일주 원소는 약합니다. 받아들이고 흡수하기 쉽고, 성장의 가장자리는 주장과 자기 자원화에 있습니다.",
+        "name": "수용형"
+      },
+      "strong": {
+        "desc": "당신의 일주 원소는 강합니다. 자연스럽게 주장하며, 성장의 가장자리는 흐름과 놓아줌에 있습니다.",
+        "name": "지배적"
+      }
+    },
+    "supportingLabel": "당신의 보조 원소",
+    "supportingSub": "당신의 차트가 균형을 위해 기우는 원소 — 그 색을 입고, 그 방향을 향하고, 그 숫자를 가까이."
   },
   "ayurveda": {
     "withSecondary": "(부 도샤: {{sec}})",
@@ -3981,7 +4022,8 @@
     "claiming": "받는 중…",
     "alreadyClaimed": "내일 다시 오세요",
     "claimed": "+{{n}} 문스톤 · {{d}}일 연속 접속",
-    "claimFailed": "오늘의 보상을 받을 수 없었어요"
+    "claimFailed": "오늘의 보상을 받을 수 없었어요",
+    "topUp": "충전"
   },
   "companion": {
     "title": "컴패니언",
@@ -4569,5 +4611,40 @@
       "complex": "자력이 있지만 마찰도 많아요. 끌림은 진짜, 모서리도 진짜. 열기를 유지할 수 있다면 성장의 보고예요.",
       "testing": "패턴이 쉽게 흐르지 않아요. 가능하지만 중력보다 의도가 더 필요해요."
     }
+  },
+  "askOracle": {
+    "cardLabel": "뽑힌 카드",
+    "contextLabel": "당신의 질문",
+    "cta": "오라클에게 묻기",
+    "drawing": "뽑는 중…",
+    "errorGeneric": "오라클에 연결할 수 없습니다. 다시 시도해주세요.",
+    "question": "이것을 저를 위해 읽어주세요 — {{context}}. 지금 제 삶에서 무엇을 가리키고 있나요?",
+    "redraw": "다시 읽기",
+    "share": "공유",
+    "sheetTitle": "오라클의 해석",
+    "subtitle": "당신의 차트와 기억을 바탕으로 한 맞춤 리딩"
+  },
+  "dailyMission": {
+    "doneSub": "새로운 미션은 자정에 도착합니다.",
+    "doneTitle": "완료. 잘하셨어요.",
+    "label": "오늘의 미션",
+    "markDone": "완료로 표시"
+  },
+  "moonstoneTopUp": {
+    "generic": "구매 실패",
+    "packLabel": {
+      "devotee": "디보티",
+      "generous": "제너러스",
+      "regular": "레귤러",
+      "starter": "스타터"
+    },
+    "packNotFound": "이 팩은 스토어에서 사용할 수 없습니다.",
+    "playStorePurchase": "Google Play에서 청구됩니다. Google 계정에서 구매를 관리하세요.",
+    "popular": "인기",
+    "securePayment": "Stripe로 안전하게 결제. 일회성 구매 — 언제든 취소 가능.",
+    "stripeFailed": "결제를 열 수 없습니다",
+    "subtitle": "리딩 잠금 해제, 라이브 호스트 팁 보내기, 어드바이저 세션 예약.",
+    "success": "{{n}}개의 문스톤이 도착합니다 — 몇 초 안에 계정에 반영됩니다.",
+    "title": "문스톤 충전"
   }
 }

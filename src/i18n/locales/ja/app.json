@@ -54,7 +54,9 @@
     "pickACardTitle": "カードを選ぶ",
     "pickACardSub": "30秒の日課。あなたを呼ぶ1枚を。",
     "soulmateTitle": "ソウルメイトスコア",
-    "soulmateSub": "誰とでも星盤を比較 — 100点満点のスコアに。"
+    "soulmateSub": "誰とでも星盤を比較 — 100点満点のスコアに。",
+    "loveTreeSub": "90秒、12問 → あなたの愛着スタイルが生きた木として現れます。",
+    "loveTreeTitle": "愛の木"
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -2081,6 +2083,18 @@
         "notAvailable": "広告を表示できませんでした。もう一度お試しください。",
         "error": "エラーが発生しました。もう一度お試しください。"
       }
+    },
+    "trialReminder": {
+      "badge": "3日間無料",
+      "benefits": {
+        "adFree": "広告完全なし",
+        "allFeatures": "プレミアム機能をすべてアンロック",
+        "cancelAnytime": "いつでもキャンセル可、課金なし"
+      },
+      "cta": "無料トライアルを始める",
+      "dismiss": "あとで",
+      "subtitle": "3日間すべてアンロック、その後 $19.99/年。いつでもキャンセル可。",
+      "title": "プレミアムを3日間無料で試す"
     }
   },
   "settings": {
@@ -3517,7 +3531,34 @@
       "earth": "土",
       "metal": "金",
       "water": "水"
-    }
+    },
+    "chartTypeLabel": "チャートの種類",
+    "hiddenInfluencesLabel": "蔵干の影響",
+    "hiddenInfluencesSub": "各地支は1〜3個の追加の天干を運び、柱を静かに形作ります。",
+    "innerForcesLabel": "内なる力",
+    "innerForcesSub": "各柱はあなたの内なる元素に対する古典的な十神の原型に対応します。",
+    "luckyColorTodayLabel": "今日のラッキーカラー",
+    "luckyNumbersLabel": "ラッキーナンバー",
+    "nayinLabel": "年柱の納音(魂の音)",
+    "premiumTeaserBody": "あなたの内なる力(古典十神)、蔵干の影響、納音、サポート元素とそのラッキーカラー・方角・数字、今日のラッキーカラーウィジェットをアンロック。",
+    "premiumTeaserCta": "プレミアムを見る",
+    "premiumTeaserTitle": "プレミアムでさらに深く",
+    "strength": {
+      "balanced": {
+        "desc": "あなたのチャートは自立しています — 元素同士が穏やかなバランスで出会っています。",
+        "name": "バランス"
+      },
+      "receptive": {
+        "desc": "あなたの日主元素は控えめです。受け止め吸収しやすく、成長の縁は主張と自己源泉化にあります。",
+        "name": "受容型"
+      },
+      "strong": {
+        "desc": "あなたの日主元素は豊かです。自然に主張でき、成長の縁は流れと手放しにあります。",
+        "name": "ドミナント"
+      }
+    },
+    "supportingLabel": "あなたのサポート元素",
+    "supportingSub": "あなたのチャートがバランスのために傾く元素 — その色を着て、その方角を向き、その数字を身近に。"
   },
   "ayurveda": {
     "withSecondary": "（副ドーシャ：{{sec}}）",
@@ -3981,7 +4022,8 @@
     "claiming": "受け取り中……",
     "alreadyClaimed": "また明日",
     "claimed": "+{{n}} ムーンストーン · {{d}}日目の連続ログイン",
-    "claimFailed": "今日の報酬を受け取れませんでした"
+    "claimFailed": "今日の報酬を受け取れませんでした",
+    "topUp": "チャージ"
   },
   "companion": {
     "title": "コンパニオン",
@@ -4569,5 +4611,40 @@
       "complex": "磁力があるが摩擦も多い。引き合いは本物、角もまた本物。熱を保てれば成長の宝庫。",
       "testing": "パターンは自然には流れません。可能ではあるが、引力より意図が必要。"
     }
+  },
+  "askOracle": {
+    "cardLabel": "引いたカード",
+    "contextLabel": "あなたの質問",
+    "cta": "オラクルに尋ねる",
+    "drawing": "引いています…",
+    "errorGeneric": "オラクルに接続できませんでした。もう一度お試しください。",
+    "question": "私のために読んでください — {{context}}。今、私の人生で何を指し示していますか?",
+    "redraw": "もう一度引く",
+    "share": "共有",
+    "sheetTitle": "オラクルの読み解き",
+    "subtitle": "あなたのチャートと記憶に基づくパーソナライズされたリーディング"
+  },
+  "dailyMission": {
+    "doneSub": "新しいミッションは深夜0時に届きます。",
+    "doneTitle": "完了。お見事です。",
+    "label": "今日のミッション",
+    "markDone": "完了にする"
+  },
+  "moonstoneTopUp": {
+    "generic": "購入に失敗しました",
+    "packLabel": {
+      "devotee": "デヴォーティー",
+      "generous": "ジェネラス",
+      "regular": "レギュラー",
+      "starter": "スターター"
+    },
+    "packNotFound": "このパックはストアで利用できません。",
+    "playStorePurchase": "Google Play で請求されます。Google アカウントで購入を管理してください。",
+    "popular": "人気",
+    "securePayment": "Stripe による安全な決済。一回限りの購入 — いつでもキャンセル可能。",
+    "stripeFailed": "決済を開けませんでした",
+    "subtitle": "リーディングをアンロック、ライブホストにチップ、アドバイザーセッションの予約。",
+    "success": "{{n}} のムーンストーンが届きます — 数秒でアカウントに反映されます。",
+    "title": "ムーンストーンをチャージ"
   }
 }

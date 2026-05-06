@@ -45,7 +45,7 @@ import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { ratePromptService } from '../services/ratePrompt';
 import { useT } from '../i18n/useT';
-import { localizeQuiz, localizeQuizMetadata } from '../i18n/localizeQuiz';
+import { localizeQuiz, localizeQuizMetadata, localizeExtraQuizMetadata } from '../i18n/localizeQuiz';
 import {
   mbtiQuiz,
   loveLanguageQuiz,
@@ -103,7 +103,7 @@ interface QuizResultData {
 // smile, pentagon, target, link) are kept as fallbacks for any future
 // quiz that hasn't been given a custom icon yet.
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  // Custom quiz icons (current set)
+  // Curated 11 (custom)
   'mbti-quadrant': QuizIcons.MbtiQuadrantIcon,
   'mbti-quick': QuizIcons.MbtiQuickIcon,
   'love-languages': QuizIcons.LoveLanguagesIcon,
@@ -115,7 +115,35 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'shadow-mask': QuizIcons.ShadowMaskIcon,
   'tarot-court': QuizIcons.TarotCourtIcon,
   'ayurveda-dosha': QuizIcons.AyurvedaDoshaIcon,
-  // Lucide fallbacks (legacy)
+  // Sprint-3 EXTRA quizzes — custom icon per quiz so every quiz card
+  // shows a unique glyph that signals what it measures (instead of the
+  // generic Sparkles fallback). Each key here matches the icon: string
+  // in EXTRA_QUIZ_METADATA in src/data/extraQuizzes.ts. Collision-prone
+  // keys (moon/heart used by multiple quizzes) were renamed to unique
+  // ids so each quiz can have its own glyph.
+  'dark-triad': QuizIcons.DarkTriadIcon,                           // dark-triad-v1
+  briefcase: QuizIcons.DiscIcon,                                   // disc-v1
+  'dollar-sign': QuizIcons.MoneyScriptIcon,                        // money-personality-v1
+  shield: QuizIcons.BoundariesIcon,                                // boundaries-v1
+  flame: QuizIcons.BurnoutIcon,                                    // burnout-v1
+  'message-circle': QuizIcons.CommunicationIcon,                   // communication-v1
+  swords: QuizIcons.ConflictIcon,                                  // conflict-v1
+  chronotype: QuizIcons.ChronotypeIcon,                            // chronotype-v1
+  palette: QuizIcons.CreativeTypeIcon,                             // creative-type-v1
+  sparkles: QuizIcons.SpiritualTypeIcon,                           // spiritual-type-v1
+  'jungian-functions': QuizIcons.JungianFunctionsIcon,             // jungian-functions-v1
+  'love-styles-icon': QuizIcons.LoveStylesIcon,                    // love-styles-v1
+  home: QuizIcons.ParentingStyleIcon,                              // parenting-style-v1
+  'book-open': QuizIcons.LearningStyleIcon,                        // learning-style-v1
+  'empath-hsp-icon': QuizIcons.EmpathHspIcon,                      // empath-hsp-v1
+  'self-compassion-icon': QuizIcons.SelfCompassionIcon,            // self-compassion-v1
+  activity: QuizIcons.MoodScreenerIcon,                            // mood-screener-v1
+  wind: QuizIcons.AnxietyProfileIcon,                              // anxiety-profile-v1
+  compass: QuizIcons.LeadershipIcon,                               // leadership-style-v1
+  settings: QuizIcons.ProductivityIcon,                            // productivity-style-v1
+  'relationship-readiness-icon': QuizIcons.RelationshipReadinessIcon, // relationship-readiness-v1
+  leaf: QuizIcons.WellnessTypeIcon,                                // wellness-type-v1
+  // Legacy lucide fallbacks (for any unmapped key)
   brain: Brain,
   heart: Heart,
   smile: Smile,
@@ -309,7 +337,11 @@ export function QuizzesPage() {
     ...(extraQuizzesEnabled ? EXTRA_QUIZZES.map((q) => ({
       quiz: localizeQuiz(q),
       type: 'extra-dimensional',
-      metadata: EXTRA_QUIZ_METADATA[q.id],
+      // Route extra-quiz metadata through localizeExtraQuizMetadata so
+      // timeEstimate + whatYouGet pick up the locale value when present.
+      // Without this, JP/KR/ZH users saw English "Your money script" etc.
+      // even though the quiz title/description were translated.
+      metadata: localizeExtraQuizMetadata(q.id, EXTRA_QUIZ_METADATA[q.id]),
     })) : []),
     {
       quiz: localizeQuiz(mbtiQuickQuiz),

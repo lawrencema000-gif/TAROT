@@ -98,18 +98,23 @@
     "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy."
   },
   "cardMeaning": {
-    "astrology": "Astrological correspondence",
-    "element": "Element",
-    "planet": "Planet",
-    "zodiac": "Zodiac",
-    "decan": "Decan",
-    "hebrewLetter": "Hebrew letter",
-    "numerology": "Numerology",
-    "reinforcingCards": "Reinforcing cards",
-    "reinforcingIntro": "When {{name}} appears alongside these cards, the reading's energy intensifies — {{reason}}",
-    "opposingCards": "Opposing cards",
-    "opposingIntro": "These cards create tension with {{name}} — {{reason}}",
-    "faq": "Frequently asked questions"
+    "yesNo": {
+      "answer": {
+        "yes": "Yes",
+        "no": "No",
+        "maybe": "Maybe"
+      },
+      "keywordSeparator": " and ",
+      "explanation": {
+        "yes": "{{name}} carries positive, affirming energy. This card supports forward movement and favorable outcomes.",
+        "no": "{{name}} suggests obstacles, upheaval, or the need to pause. The timing may not be right, or a different approach is needed.",
+        "maybe": "{{name}} is context-dependent. The answer depends on surrounding cards and your specific situation."
+      },
+      "explanationKeywords": {
+        "yes": "This card's energy of {{keywords}} leans toward a positive outcome.",
+        "no": "This card's energy of {{keywords}} suggests challenges or delays."
+      }
+    }
   },
   "readings": {
     "title": "Readings",
@@ -2992,25 +2997,6 @@
     "loveLanguageResult": "Love Language Result",
     "wordsOfAffirmation": "Words of Affirmation"
   },
-  "cardMeaning": {
-    "yesNo": {
-      "answer": {
-        "yes": "Yes",
-        "no": "No",
-        "maybe": "Maybe"
-      },
-      "keywordSeparator": " and ",
-      "explanation": {
-        "yes": "{{name}} carries positive, affirming energy. This card supports forward movement and favorable outcomes.",
-        "no": "{{name}} suggests obstacles, upheaval, or the need to pause. The timing may not be right, or a different approach is needed.",
-        "maybe": "{{name}} is context-dependent. The answer depends on surrounding cards and your specific situation."
-      },
-      "explanationKeywords": {
-        "yes": "This card's energy of {{keywords}} leans toward a positive outcome.",
-        "no": "This card's energy of {{keywords}} suggests challenges or delays."
-      }
-    }
-  },
   "billing": {
     "purchaseCancelled": "Purchase cancelled",
     "purchaseFailed": "Purchase failed",
@@ -3423,43 +3409,103 @@
   "extraQuizzes": {
     "dark-triad": {
       "title": "Dark Triad Shadow",
-      "description": "Three shadow traits psychologists call the 'dark triad' — narcissism, Machiavellianism, and psychopathy — exist to some degree in all of us. Surface where your shadow runs strongest."
+      "description": "Three shadow traits psychologists call the 'dark triad' — narcissism, Machiavellianism, and psychopathy — exist to some degree in all of us. Surface where your shadow runs strongest.",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Your dominant shadow trait",
+        "Healthy and shadow forms of each",
+        "Integration affirmation"
+      ]
     },
     "disc": {
       "title": "DISC Behavioural Profile",
-      "description": "A four-quadrant model of workplace behaviour: Dominance, Influence, Steadiness, Conscientiousness. See which style leads for you and how you naturally contribute to a team."
+      "description": "A four-quadrant model of workplace behaviour: Dominance, Influence, Steadiness, Conscientiousness. See which style leads for you and how you naturally contribute to a team.",
+      "timeEstimate": "5 min",
+      "whatYouGet": [
+        "Your workplace D/I/S/C profile",
+        "Strengths and blind spots",
+        "How to collaborate with other styles"
+      ]
     },
     "money-personality": {
       "title": "Money Personality",
-      "description": "Five distinct patterns of relating to money — the Saver, the Spender, the Avoider, the Monk, the Status-Seeker. See which script your money self is running."
+      "description": "Five distinct patterns of relating to money — the Saver, the Spender, the Avoider, the Monk, the Status-Seeker. See which script your money self is running.",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Your money script",
+        "When it serves you and when it doesn't",
+        "Reframe affirmation"
+      ]
     },
     "boundaries": {
       "title": "Boundaries Check-In",
-      "description": "Where are your boundaries strong, where are they weak, and where do they shift depending on who's asking? Four patterns: rigid walls, porous openness, healthy flex, situation-dependent."
+      "description": "Where are your boundaries strong, where are they weak, and where do they shift depending on who's asking? Four patterns: rigid walls, porous openness, healthy flex, situation-dependent.",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Where your boundaries are firm, porous, or situational",
+        "Strengths of each pattern",
+        "One concrete practice to try"
+      ]
     },
     "burnout": {
       "title": "Burnout Check",
-      "description": "Burnout has three measurable dimensions: exhaustion (drained energy), cynicism (distance from the work), and efficacy-loss (I'm not effective anymore). See where you are today."
+      "description": "Burnout has three measurable dimensions: exhaustion (drained energy), cynicism (distance from the work), and efficacy-loss (I'm not effective anymore). See where you are today.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Exhaustion vs cynicism vs efficacy-loss profile",
+        "Which dimension needs your attention first",
+        "A next-step affirmation"
+      ]
     },
     "communication": {
       "title": "Communication Style",
-      "description": "Four styles emerge under difficulty: passive (hide), aggressive (attack), passive-aggressive (sideways), assertive (clear + respectful). See your default and which is available when you're regulated."
+      "description": "Four styles emerge under difficulty: passive (hide), aggressive (attack), passive-aggressive (sideways), assertive (clear + respectful). See your default and which is available when you're regulated.",
+      "timeEstimate": "3 min",
+      "whatYouGet": [
+        "Your default style under stress",
+        "When you flex to assertive",
+        "A practice for the hard conversations"
+      ]
     },
     "conflict": {
       "title": "Conflict Style",
-      "description": "The Thomas-Kilmann model identifies five modes for handling conflict: competing, collaborating, compromising, avoiding, accommodating. See your preferred response — and which modes you need to practice."
+      "description": "The Thomas-Kilmann model identifies five modes for handling conflict: competing, collaborating, compromising, avoiding, accommodating. See your preferred response — and which modes you need to practice.",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Your Thomas-Kilmann conflict mode",
+        "When each mode serves you",
+        "Which modes to practice"
+      ]
     },
     "chronotype": {
       "title": "Sleep Chronotype",
-      "description": "Four sleep-wake personalities by Dr. Michael Breus: the Lion (morning), the Bear (daytime), the Wolf (evening), the Dolphin (restless). Find your rhythm — and when your real peak hours are."
+      "description": "Four sleep-wake personalities by Dr. Michael Breus: the Lion (morning), the Bear (daytime), the Wolf (evening), the Dolphin (restless). Find your rhythm — and when your real peak hours are.",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Your Breus chronotype — Lion/Bear/Wolf/Dolphin",
+        "Your natural peak hours",
+        "Sleep + schedule tips that actually suit you"
+      ]
     },
     "creative-type": {
       "title": "Creative Type",
-      "description": "Five ways of being creative — five roles in the creative process. The Maker, the Dreamer, the Performer, the Organiser, the Analyser. See which you take on naturally — and who you partner best with."
+      "description": "Five ways of being creative — five roles in the creative process. The Maker, the Dreamer, the Performer, the Organiser, the Analyser. See which you take on naturally — and who you partner best with.",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Your role in the creative process",
+        "Who you partner best with",
+        "Where you might get stuck"
+      ]
     },
     "spiritual-type": {
       "title": "Spiritual Type",
-      "description": "Five ways of relating to the sacred, across all traditions: the Mystic (direct experience), the Ritualist (ceremony), the Seeker (study), the Servant (devotion through action), the Warrior (discipline as path)."
+      "description": "Five ways of relating to the sacred, across all traditions: the Mystic (direct experience), the Ritualist (ceremony), the Seeker (study), the Servant (devotion through action), the Warrior (discipline as path).",
+      "timeEstimate": "4 min",
+      "whatYouGet": [
+        "Your path of practice — Mystic / Ritualist / Seeker / Servant / Warrior",
+        "Strengths and shadows of your path",
+        "Affirmation for the next step"
+      ]
     },
     "common": {
       "scoreDistribution": "Score distribution"

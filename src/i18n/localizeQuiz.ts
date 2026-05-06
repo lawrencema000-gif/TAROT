@@ -127,3 +127,35 @@ export function localizeQuizMetadata<T extends { timeEstimate: string; whatYouGe
   const whatYouGet = Array.isArray(whatYouGetRaw) ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
   return { ...fallback, timeEstimate, whatYouGet };
 }
+
+/**
+ * Localize the metadata (timeEstimate + whatYouGet) for a Sprint-3 EXTRA
+ * quiz (dark-triad, money-personality, boundaries, burnout, communication,
+ * etc.). These live under the `extraQuizzes.<key>.*` namespace in the
+ * locale JSON files instead of the `quizzes.definitions.*` namespace
+ * used by the curated 11. Falls back to the EN values from
+ * EXTRA_QUIZ_METADATA when the locale entry is missing.
+ *
+ * The QuizzesPage card currently passes EXTRA_QUIZ_METADATA[id] directly
+ * without going through any localize call, which is why JP/KR/ZH users
+ * saw English "Your money script", "Where your boundaries are firm…",
+ * etc. on the quiz cards even though `title` and `description` were
+ * translated.
+ */
+export function localizeExtraQuizMetadata<T extends { timeEstimate: string; whatYouGet: readonly string[] }>(
+  quizId: string,
+  fallback: T,
+): T {
+  // Strip the version suffix: "money-personality-v1" → "money-personality"
+  const key = quizId.replace(/-v\d+$/, '');
+  const timeEstimate = i18n.t(
+    `extraQuizzes.${key}.timeEstimate`,
+    { ns: 'app', defaultValue: fallback.timeEstimate },
+  );
+  const whatYouGetRaw = i18n.t(
+    `extraQuizzes.${key}.whatYouGet`,
+    { ns: 'app', returnObjects: true, defaultValue: fallback.whatYouGet },
+  );
+  const whatYouGet = Array.isArray(whatYouGetRaw) ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
+  return { ...fallback, timeEstimate, whatYouGet };
+}

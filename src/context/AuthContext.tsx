@@ -63,6 +63,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * Compute SHA-256 hash of a string and return as lowercase hex.
+ *
+ * Used by Apple Sign In: we hash the raw nonce before passing to
+ * Apple's authorize() so that Supabase's signInWithIdToken (which
+ * hashes the nonce parameter and compares against the JWT's nonce
+ * claim) ends up with the SAME hash on both sides.
+ *
+ * Uses Web Crypto API which is available in both browsers and the
+ * iOS WKWebView Capacitor uses.
+ */
+async function sha256Hex(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 interface DbProfile {
   id: string;
   email: string;
@@ -1049,6 +1069,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { SignInWithApple } = await import('@capacitor-community/apple-sign-in');
         const nativeSpan = startSpan('auth.apple.nativeSignIn');
         try {
+          // Nonce handling for Apple Sign In + Supabase:
+          //
+          // Apple's iOS native flow does NOT hash the nonce server-side
+          // (despite docs implying it might) — the JWT's `nonce` claim
+          // contains the EXACT string we passed to authorize().
+          //
+          // Supabase's signInWithIdToken hashes the `nonce` parameter
+          // with SHA-256 and compares against the JWT's nonce claim.
+          //
+          // So the correct pattern is:
+          //   1. Generate a raw nonce
+          //   2. Pass SHA-256(rawNonce) to Apple's authorize()  ← what's in JWT
+          //   3. Pass rawNonce to Supabase signInWithIdToken()  ← Supabase hashes it
+          //   → Supabase's SHA-256(rawNonce) matches JWT's nonce claim
+          //
+          // The previous code passed the raw nonce to BOTH, which caused
+          // Supabase to hash it again and compare against the unhashed
+          // JWT nonce → "nonces mismatch" error rejecting Apple Sign In.
+          const rawNonce = correlationId.replace(/-/g, '').slice(0, 32);
+          const hashedNonce = await sha256Hex(rawNonce);
+
           // clientId here is the Apple **Services ID**.
           //   - On iOS native, ASAuthorizationAppleIDProvider issues the
           //     identity token with `aud` set to the Bundle ID
@@ -1068,7 +1109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             redirectURI: 'https://ulzlthhkqjuohzjangcq.supabase.co/auth/v1/callback',
             scopes: 'email name',
             state: 'state',
-            nonce: correlationId.replace(/-/g, '').slice(0, 32),
+            nonce: hashedNonce,
           });
           const idToken = res.response.identityToken;
           if (!idToken) {
@@ -1080,7 +1121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { error } = await supabase.auth.signInWithIdToken({
             provider: 'apple',
             token: idToken,
-            nonce: correlationId.replace(/-/g, '').slice(0, 32),
+            nonce: rawNonce,
           });
           if (error) {
             const normalized = normalizeSupabaseError(error);

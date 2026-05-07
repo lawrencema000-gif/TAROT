@@ -1,0 +1,71 @@
+{
+  "total": 13,
+  "by_namespace": {
+    "achievements": [
+      {
+        "path": "achievements.progress",
+        "en": "{{current}} / {{target}}"
+      }
+    ],
+    "advisorBooking": [
+      {
+        "path": "advisorBooking.costPreview",
+        "en": "{{n}} Moonstones"
+      }
+    ],
+    "compatInvite": [
+      {
+        "path": "compatInvite.kinds.big-five",
+        "en": "Big Five"
+      },
+      {
+        "path": "compatInvite.kinds.enneagram",
+        "en": "Enneagram"
+      },
+      {
+        "path": "compatInvite.kinds.zodiac",
+        "en": "Zodiac"
+      }
+    ],
+    "crisis": [
+      {
+        "path": "crisis.text.title",
+        "en": "Crisis Text Line"
+      }
+    ],
+    "home": [
+      {
+        "path": "home.xpValue",
+        "en": "{{current}} / {{required}} XP"
+      }
+    ],
+    "natalReport": [
+      {
+        "path": "natalReport.variantNatal",
+        "en": "Natal"
+      },
+      {
+        "path": "natalReport.variant.natal",
+        "en": "Natal"
+      },
+      {
+        "path": "natalReport.variant.progressions",
+        "en": "Progressions"
+      },
+      {
+        "path": "natalReport.variant.solar-return",
+        "en": "Solar return"
+      },
+      {
+        "path": "natalReport.variant.synastry",
+        "en": "Synastry"
+      }
+    ],
+    "premium": [
+      {
+        "path": "premium.subscription.billingGooglePlay",
+        "en": "Google Play"
+      }
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "total": 10,
+  "by_namespace": {
+    "achievements": [
+      {
+        "path": "achievements.progress",
+        "en": "{{current}} / {{target}}"
+      }
+    ],
+    "compatInvite": [
+      {
+        "path": "compatInvite.kinds.mbti",
+        "en": "Personality (MBTI)"
+      },
+      {
+        "path": "compatInvite.kinds.love-language",
+        "en": "Love Language"
+      },
+      {
+        "path": "compatInvite.kinds.attachment",
+        "en": "Attachment Style"
+      },
+      {
+        "path": "compatInvite.kinds.big-five",
+        "en": "Big Five"
+      },
+      {
+        "path": "compatInvite.kinds.enneagram",
+        "en": "Enneagram"
+      },
+      {
+        "path": "compatInvite.kinds.zodiac",
+        "en": "Zodiac"
+      },
+      {
+        "path": "compatInvite.kinds.element",
+        "en": "Element"
+      }
+    ],
+    "home": [
+      {
+        "path": "home.xpValue",
+        "en": "{{current}} / {{required}} XP"
+      }
+    ],
+    "premium": [
+      {
+        "path": "premium.subscription.billingGooglePlay",
+        "en": "Google Play"
+      }
+    ]
+  }
+}

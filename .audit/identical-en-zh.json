@@ -1,0 +1,29 @@
+{
+  "total": 4,
+  "by_namespace": {
+    "achievements": [
+      {
+        "path": "achievements.progress",
+        "en": "{{current}} / {{target}}"
+      }
+    ],
+    "advisorBooking": [
+      {
+        "path": "advisorBooking.costPreview",
+        "en": "{{n}} Moonstones"
+      }
+    ],
+    "crisis": [
+      {
+        "path": "crisis.text.title",
+        "en": "Crisis Text Line"
+      }
+    ],
+    "premium": [
+      {
+        "path": "premium.subscription.billingGooglePlay",
+        "en": "Google Play"
+      }
+    ]
+  }
+}

@@ -458,7 +458,11 @@ export function QuizzesPage() {
       let resultLabel = '';
 
       if (progress.quiz.type === 'mbti') {
-        calculatedResult = calculateMBTI(newAnswers);
+        // Pass the active quiz definition so the scorer can route by
+        // question.dimension instead of guessing from ID prefix. Without
+        // this the Quick MBTI quiz (qei1, qsn1, ...) silently scores
+        // every question as 0 and always returns ESTJ.
+        calculatedResult = calculateMBTI(newAnswers, progress.quiz);
         resultLabel = calculatedResult.type;
       } else if (progress.quiz.type === 'court-match') {
         calculatedResult = calculateCourtMatch(newAnswers);

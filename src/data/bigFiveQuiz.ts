@@ -69,7 +69,22 @@ export interface BigFiveResult {
   extraversion: number;
   agreeableness: number;
   neuroticism: number;
+  /**
+   * 1-99 percentage of max raw score per dimension. Despite the legacy
+   * field name `percentiles`, these are NOT norm-referenced population
+   * percentiles — they're raw-score-percentages clamped to 1-99. New
+   * code should prefer `percentageScore`. Both fields point to the
+   * same numbers; the alias exists for backwards-compat.
+   */
   percentiles: {
+    openness: number;
+    conscientiousness: number;
+    extraversion: number;
+    agreeableness: number;
+    neuroticism: number;
+  };
+  /** Same numbers as `percentiles`, accurately named. */
+  percentageScore: {
     openness: number;
     conscientiousness: number;
     extraversion: number;
@@ -87,18 +102,41 @@ export function calculateBigFive(scores: Record<string, number>): BigFiveResult 
     neuroticism: 0,
   };
 
+  // Track per-dimension question counts so we can normalize against the
+  // actual maximum possible for each trait, not a hard-coded 50. Without
+  // this, a user who skips even one Openness question (or if a future
+  // refactor changes question counts) would have their Openness score
+  // deflated by 10% per skipped question.
+  const counts: Record<string, number> = {
+    openness: 0,
+    conscientiousness: 0,
+    extraversion: 0,
+    agreeableness: 0,
+    neuroticism: 0,
+  };
   Object.entries(scores).forEach(([key, value]) => {
     const question = bigFiveQuiz.questions.find(q => q.id === key);
     if (question?.dimension) {
       dimensions[question.dimension] += value;
+      counts[question.dimension] += 1;
     }
   });
 
   Object.keys(dimensions).forEach(key => {
-    dimensions[key] = Math.round((dimensions[key] / 50) * 100);
+    // Likert max per question is 5; max raw score per dimension is
+    // count*5. Fall back to 1 to avoid divide-by-zero if no questions
+    // for a dimension were answered.
+    const maxRaw = Math.max(1, counts[key] * 5);
+    dimensions[key] = Math.round((dimensions[key] / maxRaw) * 100);
   });
 
-  const toPercentile = (score: number) => Math.min(99, Math.max(1, Math.round(score)));
+  // Renamed `percentiles` → `percentageScore`. The previous label was
+  // misleading: these are 0-100 trait percentages of max possible
+  // raw score, NOT norm-referenced population percentiles. A score of
+  // 70 means the user agreed with high-trait questions 70% as strongly
+  // as they could, which is different from "ranking above 70% of the
+  // population." Renaming makes the semantics honest.
+  const clampPct = (score: number) => Math.min(99, Math.max(1, Math.round(score)));
 
   return {
     openness: dimensions.openness,
@@ -106,12 +144,19 @@ export function calculateBigFive(scores: Record<string, number>): BigFiveResult 
     extraversion: dimensions.extraversion,
     agreeableness: dimensions.agreeableness,
     neuroticism: dimensions.neuroticism,
-    percentiles: {
-      openness: toPercentile(dimensions.openness),
-      conscientiousness: toPercentile(dimensions.conscientiousness),
-      extraversion: toPercentile(dimensions.extraversion),
-      agreeableness: toPercentile(dimensions.agreeableness),
-      neuroticism: toPercentile(dimensions.neuroticism),
+    percentageScore: {
+      openness: clampPct(dimensions.openness),
+      conscientiousness: clampPct(dimensions.conscientiousness),
+      extraversion: clampPct(dimensions.extraversion),
+      agreeableness: clampPct(dimensions.agreeableness),
+      neuroticism: clampPct(dimensions.neuroticism),
+    },
+    // Backwards-compat alias — keep `percentiles` available for any
+    // existing UI code that reads it. Both fields point to the same
+    // object so updates in one are reflected in the other. Remove the
+    // alias once all readers migrate to `percentageScore`.
+    get percentiles() {
+      return this.percentageScore;
     },
   };
 }

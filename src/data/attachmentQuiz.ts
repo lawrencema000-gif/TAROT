@@ -2,7 +2,11 @@ import type { QuizDefinition } from '../types';
 
 export const attachmentQuiz: QuizDefinition = {
   id: 'attachment-v1',
-  type: 'big-five',
+  // Was 'big-five' — copy-paste error from another quiz template.
+  // The QuizzesPage routes scoring by quiz.id so the wrong type field
+  // didn't break the user-visible flow, but it was fragile (any
+  // future code that switched on quiz.type would have mis-routed).
+  type: 'attachment',
   title: 'Attachment Style Assessment',
   description: 'This assessment maps your relationship wiring across two axes: anxiety (fear of abandonment) and avoidance (discomfort with closeness). Your attachment style is not a permanent label—it is a pattern you developed to stay safe in early relationships, and it can shift over time with awareness and intention. You will receive your primary attachment pattern, your specific triggers and protective behaviors, what you need from a partner to feel safe, and a practical path toward secure attachment.',
   questions: [

@@ -48,14 +48,31 @@ export function calculateDimensional<K extends string>(
   dimensions: K[],
 ): DimensionalResult<K> {
   const scores = Object.fromEntries(dimensions.map((d) => [d, 0])) as Record<K, number>;
+  // Track question count per dimension so dimensions with unequal
+  // question counts (e.g. Jungian Functions: 2 questions for Ni/Ne/Si/Fe
+  // but only 1 each for Se/Ti/Te/Fi) get fairly compared. Without this
+  // normalisation, a 2-question dimension has 2× the scoring ceiling
+  // and can win even when the user identifies more strongly with a
+  // 1-question dimension.
+  const counts = Object.fromEntries(dimensions.map((d) => [d, 0])) as Record<K, number>;
   for (const q of quiz.questions) {
     const v = answers[q.id];
     if (v === undefined || !q.dimension) continue;
     const dim = q.dimension as K;
-    if (dim in scores) scores[dim] += v;
+    if (dim in scores) {
+      scores[dim] += v;
+      counts[dim] += 1;
+    }
   }
+  // Normalise to AVERAGE-per-question (Likert mean) for the comparison.
+  // We keep the raw `scores` shape for downstream UI, but compare via
+  // averages so the primary winner is the one the user agreed most
+  // strongly with regardless of how many questions hit that dimension.
+  const averages = Object.fromEntries(
+    dimensions.map((d) => [d, counts[d] > 0 ? scores[d] / counts[d] : 0]),
+  ) as Record<K, number>;
   const primary = dimensions.reduce(
-    (top, d) => (scores[d] > scores[top] ? d : top),
+    (top, d) => (averages[d] > averages[top] ? d : top),
     dimensions[0],
   );
   return { primary, scores };

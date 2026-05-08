@@ -84,26 +84,51 @@ export const loveLanguageQuiz: QuizDefinition = {
   ],
 };
 
-export function calculateMBTI(scores: Record<string, number>): { type: string; dimensions: Record<string, number> } {
+/**
+ * MBTI scorer.
+ *
+ * Critical history: until 2026-05-08 this function pattern-matched
+ * question IDs by prefix (`ei1`, `sn3`, ...). The Quick MBTI quiz
+ * (mbti-quick-v1) uses prefixed IDs (`qei1`, `qsn1`, ...) which never
+ * matched any branch — every score stayed 0 — so the quick quiz ALWAYS
+ * returned ESTJ regardless of user answers. The fix routes scoring by
+ * `question.dimension` from the quiz definition. Forward-keyed (E/S/T/J
+ * positively-worded) questions have options[0].value === 1; reverse-
+ * keyed questions have options[0].value === 5. We use that property to
+ * detect direction without hard-coding question ID lists.
+ *
+ * Pass the quiz definition that the answers came from so we can look
+ * up dimensions + keying. Defaults to mbtiQuiz for backward compat.
+ */
+export function calculateMBTI(
+  scores: Record<string, number>,
+  quizDef: QuizDefinition = mbtiQuiz,
+): { type: string; dimensions: Record<string, number> } {
   let e = 0, i = 0, s = 0, n = 0, t = 0, f = 0, j = 0, p = 0;
 
   Object.entries(scores).forEach(([key, value]) => {
-    if (key.startsWith('ei')) {
-      const isEQuestion = ['ei1', 'ei3', 'ei5', 'ei7', 'ei9', 'ei11'].includes(key);
-      if (isEQuestion) e += value;
-      else i += (6 - value);
-    } else if (key.startsWith('sn')) {
-      const isSQuestion = ['sn1', 'sn3', 'sn5', 'sn7', 'sn9', 'sn11'].includes(key);
-      if (isSQuestion) s += value;
-      else n += (6 - value);
-    } else if (key.startsWith('tf')) {
-      const isTQuestion = ['tf1', 'tf3', 'tf5', 'tf7', 'tf9', 'tf11'].includes(key);
-      if (isTQuestion) t += value;
-      else f += (6 - value);
-    } else if (key.startsWith('jp')) {
-      const isJQuestion = ['jp1', 'jp3', 'jp5', 'jp7', 'jp9', 'jp11'].includes(key);
-      if (isJQuestion) j += value;
-      else p += (6 - value);
+    const q = quizDef.questions.find((qq) => qq.id === key);
+    if (!q || !q.dimension) return;
+    // Forward-keyed for the first pole (E/S/T/J): options[0].value === 1.
+    // Reverse-keyed (favouring I/N/F/P): options[0].value === 5.
+    const forwardKeyed = q.options[0]?.value === 1;
+    switch (q.dimension) {
+      case 'EI':
+        if (forwardKeyed) e += value;
+        else i += (6 - value);
+        break;
+      case 'SN':
+        if (forwardKeyed) s += value;
+        else n += (6 - value);
+        break;
+      case 'TF':
+        if (forwardKeyed) t += value;
+        else f += (6 - value);
+        break;
+      case 'JP':
+        if (forwardKeyed) j += value;
+        else p += (6 - value);
+        break;
     }
   });
 

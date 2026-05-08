@@ -105,6 +105,39 @@ Deno.serve(handler<Req, Resp>({
       return { changed: false, isPremium: false, reason: "already-not-premium" };
     }
 
+    // 2.5. Admin exemption.
+    //
+    // Admin accounts (rows in public.user_roles with role='admin') get
+    // premium grants that should NOT be auto-downgraded by the device
+    // reconcile flow. Two reasons:
+    //   - Test accounts: developers test premium flows from a phone
+    //     without an active RC entitlement; the daily reconcile would
+    //     otherwise revert any admin grant they made via SQL.
+    //   - Comp accounts: support/operations grants premium to a creator
+    //     or partner; we don't want a stale RC SDK reading on their
+    //     device to revoke that grant.
+    //
+    // The webhook still flips is_premium=false on real RC EXPIRATION
+    // events, so admins paying with real money still see correct state.
+    // This exemption only blocks the device-driven downgrade path.
+    const { data: adminRow } = await ctx.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (adminRow) {
+      ctx.log.info("reconcile_premium_from_device.admin_exempt", {
+        userId,
+        debugContext: body.debugContext,
+      });
+      return {
+        changed: false,
+        isPremium: true,
+        reason: "admin-account-exempt-from-device-downgrade",
+      };
+    }
+
     // 3. The downgrade case. Device says no entitlement, DB says premium.
     //    Flip the DB.
     ctx.log.info("reconcile_premium_from_device.downgrading", {

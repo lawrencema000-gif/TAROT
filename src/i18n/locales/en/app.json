@@ -116,6 +116,49 @@
       }
     }
   },
+  "celestial": {
+    "eyebrow": "Celestial Map",
+    "title": "Where your stars align",
+    "disclaimer": "The lines mark where each planet was rising, setting, or at its meridian when you were born. They are signals, not destiny.",
+    "needBirthDate": {
+      "title": "We need your birth date first",
+      "body": "Your celestial map is drawn from your birth chart. Add your birth date (and time, if you know it) on the Profile page and your map will be ready.",
+      "cta": "Go to Profile"
+    },
+    "previewLock": {
+      "title": "You're seeing the Sun + Moon preview.",
+      "body": "Unlock all 40 planetary lines, city interpretations, and AI travel readings with Premium — or get a single travel reading for 250 Moonstones.",
+      "cta": "Unlock full map"
+    },
+    "filter": {
+      "all": "All",
+      "love": "Love",
+      "career": "Career",
+      "travel": "Travel",
+      "healing": "Healing",
+      "home": "Home",
+      "growth": "Growth"
+    },
+    "city": {
+      "unknown": "Open ocean / remote",
+      "noLines": "No planetary lines run within 700 km of here. This place is celestially quiet for your chart — neither helping nor hindering.",
+      "activeLines": "Active lines here",
+      "lockedCount_one": "{{count}} more planetary line runs through here",
+      "lockedCount_other": "{{count}} more planetary lines run through here",
+      "unlockHint": "Unlock the full map with Premium",
+      "aiReading": {
+        "title": "Personal travel reading",
+        "body": "Get a tailored interpretation weaving these lines together with your birth chart and what you're seeking — written specifically for you.",
+        "loading": "Drawing your reading…",
+        "ctaPremium": "Generate reading",
+        "ctaMoonstones": "Unlock for 250 Moonstones",
+        "error": "Could not generate the reading just now. Please try again in a moment.",
+        "label": "Your reading",
+        "cautionsLabel": "Watch for",
+        "practiceLabel": "First three days here"
+      }
+    }
+  },
   "readings": {
     "title": "Readings",
     "subtitle": "Choose a spread for today",
@@ -132,7 +175,8 @@
       "partner": "Partner",
       "fengshui": "Feng Shui",
       "runes": "Runes",
-      "dice": "Dice"
+      "dice": "Dice",
+      "celestial": "Celestial Map"
     },
     "dailyRemaining": "{{used}} / {{limit}} free readings today",
     "upgradeForUnlimited": "Upgrade for unlimited",

@@ -69,6 +69,7 @@ const TarotCompanionPage = lazy(() => import('./pages/TarotCompanionPage').then(
 const LiveRoomsPage = lazy(() => import('./pages/LiveRoomsPage').then(m => ({ default: m.LiveRoomsPage })));
 const LiveRoomPage = lazy(() => import('./pages/LiveRoomPage').then(m => ({ default: m.LiveRoomPage })));
 const PickACardPage = lazy(() => import('./pages/PickACardPage').then(m => ({ default: m.PickACardPage })));
+const CelestialMapPage = lazy(() => import('./pages/CelestialMapPage').then(m => ({ default: m.CelestialMapPage })));
 const SoulmateScorePage = lazy(() => import('./pages/SoulmateScorePage').then(m => ({ default: m.SoulmateScorePage })));
 const LoveTreePage = lazy(() => import('./pages/LoveTreePage').then(m => ({ default: m.LoveTreePage })));
 const MirrorPage = lazy(() => import('./pages/MirrorPage').then(m => ({ default: m.MirrorPage })));
@@ -558,6 +559,7 @@ function AppContent() {
                   <Route path="/sandbox" element={<SandboxPage />} />
                   <Route path="/advisors/dashboard" element={<AdvisorDashboardPage />} />
                   <Route path="/pick-a-card" element={<PickACardPage />} />
+                  <Route path="/celestial-map" element={<CelestialMapPage />} />
                   <Route path="/soulmate-score" element={<SoulmateScorePage />} />
                   <Route path="/love-tree" element={<LoveTreePage />} />
                   <Route path="/mirror" element={<MirrorPage />} />

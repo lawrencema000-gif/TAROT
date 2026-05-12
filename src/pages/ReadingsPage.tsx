@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   TarotSection,
@@ -26,7 +27,7 @@ const FengShuiSection = lazy(() => import('./FengShuiPage').then(m => ({ default
 const RunesSection = lazy(() => import('./RunesPage').then(m => ({ default: m.RunesPage })));
 const DiceSection = lazy(() => import('./DicePage').then(m => ({ default: m.DicePage })));
 
-type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'runes' | 'dice' | 'library';
+type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'runes' | 'dice' | 'celestial' | 'library';
 
 interface TabDef {
   id: ReadingTab;
@@ -241,6 +242,7 @@ function ReadingsTabStrip({
 export function ReadingsPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
+  const navigate = useNavigate();
   const isPremium = !!profile?.isPremium;
   const [activeTab, setActiveTab] = useState<ReadingTab>('tarot');
   const [showPaywall, setShowPaywall] = useState(false);
@@ -257,6 +259,7 @@ export function ReadingsPage() {
   const fengShuiEnabled = useFeatureFlag('feng-shui');
   const runesEnabled = useFeatureFlag('runes');
   const diceEnabled = useFeatureFlag('dice');
+  const celestialEnabled = useFeatureFlag('celestial-map');
 
   const handleShowPaywall = (feature: string) => {
     setPaywallFeature(feature);
@@ -286,12 +289,19 @@ export function ReadingsPage() {
     ...(fengShuiEnabled ? [{ id: 'fengshui' as const, labelKey: 'readings.tabs.fengshui', icon: Home }] : []),
     ...(runesEnabled ? [{ id: 'runes' as const, labelKey: 'readings.tabs.runes', icon: Hash }] : []),
     ...(diceEnabled ? [{ id: 'dice' as const, labelKey: 'readings.tabs.dice', icon: Dice6 }] : []),
+    ...(celestialEnabled ? [{ id: 'celestial' as const, labelKey: 'readings.tabs.celestial', icon: Globe2 }] : []),
     { id: 'library', labelKey: 'readings.tabs.library', icon: BookOpen },
   ];
 
   const handleTabClick = (tab: (typeof tabs)[number]) => {
     if (tab.premium && !isPremium) {
       handleShowPaywall(t(tab.labelKey) as string);
+      return;
+    }
+    if (tab.id === 'celestial') {
+      // Celestial Map is a standalone surface with its own header, map
+      // canvas, and paywall — navigate rather than render inline.
+      navigate('/celestial-map');
       return;
     }
     setActiveTab(tab.id);

@@ -1,7 +1,7 @@
 {
   "name": "arcana",
   "private": true,
-  "version": "1.1.9",
+  "version": "1.1.10",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
@@ -30,7 +30,6 @@
   "dependencies": {
     "@capacitor-community/admob": "8.0.0",
     "@capacitor-community/apple-sign-in": "7.1.0",
-    "@capgo/capacitor-app-tracking-transparency": "8.1.6",
     "@capacitor/android": "8.0.1",
     "@capacitor/app": "8.0.0",
     "@capacitor/browser": "8.0.0",
@@ -40,11 +39,13 @@
     "@capacitor/preferences": "8.0.0",
     "@capacitor/splash-screen": "8.0.0",
     "@capacitor/status-bar": "8.0.0",
+    "@capgo/capacitor-app-tracking-transparency": "8.1.6",
     "@codetrix-studio/capacitor-google-auth": "3.4.0-rc.4",
     "@revenuecat/purchases-capacitor": "12.0.4",
     "@sentry/capacitor": "3.2.1",
     "@sentry/react": "10.43.0",
     "@supabase/supabase-js": "^2.57.4",
+    "astronomy-engine": "^2.1.19",
     "dompurify": "^3.4.0",
     "framer-motion": "^12.35.0",
     "i18next": "^26.0.5",
@@ -52,9 +53,11 @@
     "i18next-http-backend": "^3.0.4",
     "livekit-client": "^2.7.3",
     "lucide-react": "^0.344.0",
+    "mapbox-gl": "^3.23.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^17.0.4",
+    "react-map-gl": "^8.1.1",
     "react-router-dom": "^7.13.1",
     "three": "^0.160.0",
     "web-vitals": "^5.2.0",

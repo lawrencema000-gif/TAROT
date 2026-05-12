@@ -96,6 +96,10 @@ export function CelestialMapPage() {
     // existing app's accuracy posture for natal charts anyway.
     const time = profile.birthTime || '12:00';
     const utcDate = new Date(`${profile.birthDate}T${time}:00Z`);
+    // Guard against malformed birth data — astronomy-engine throws on
+    // Invalid Date, which would crash the whole page. Fall through to
+    // the empty state CTA instead.
+    if (Number.isNaN(utcDate.getTime())) return null;
     return { utcDate };
   }, [profile?.birthDate, profile?.birthTime]);
 
@@ -117,8 +121,18 @@ export function CelestialMapPage() {
   // derive the filtered version each render. The full set is what we
   // pass into the City Insight Panel so it can count locked lines and
   // surface "X more lines run through here" upgrade hints.
+  //
+  // try/catch is defensive — astronomy-engine can throw for far-future
+  // or far-past dates outside its ephemeris range. If compute fails we
+  // surface the empty state CTA rather than crashing the whole page.
   const allLines = useMemo(() => {
-    return birth ? computeCelestialLines(birth) : null;
+    if (!birth) return null;
+    try {
+      return computeCelestialLines(birth);
+    } catch (err) {
+      console.warn('[CelestialMap] compute failed:', err);
+      return null;
+    }
   }, [birth]);
 
   const filteredLines = useMemo(() => {
@@ -132,8 +146,11 @@ export function CelestialMapPage() {
     };
   }, [allLines, visiblePlanets]);
 
-  // ── Empty state — no birth data yet ──────────────────────────────
-  if (!birth) {
+  // ── Empty state — no birth data yet, OR compute failed ──────────
+  // Fold both conditions into the same UX: ask the user to set / fix
+  // their birth date on Profile. (If allLines is null, computation
+  // threw — usually from a malformed date that slipped past the guard.)
+  if (!birth || allLines === null) {
     return (
       <div className="space-y-6 pb-32">
         <header className="space-y-2">

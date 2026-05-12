@@ -1,14 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Globe2, Heart, Briefcase, Plane, Sparkles, Home as HomeIcon, Sprout, Crown } from 'lucide-react';
 import { Card, Button, EyebrowLabel, SectionDivider } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { CelestialMapView } from '../components/celestial/CelestialMapView';
 import { CityInsightPanel } from '../components/celestial/CityInsightPanel';
+import { CelestialMapIntroLoader } from '../components/celestial/CelestialMapIntroLoader';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
+
+const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
 /**
  * Celestial Map — astrocartography surface.
@@ -63,7 +67,22 @@ export function CelestialMapPage() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [tappedPoint, setTappedPoint] = useState<{ lon: number; lat: number } | null>(null);
   const [showInsightPanel, setShowInsightPanel] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
+
+  // First-open intro loader. Persisted in localStorage so subsequent
+  // visits go straight to the map. Setting the flag pre-emptively means
+  // a refresh during the 4-second animation still counts as "seen".
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(INTRO_SEEN_KEY)) {
+        setShowIntro(true);
+        localStorage.setItem(INTRO_SEEN_KEY, '1');
+      }
+    } catch {
+      // private mode / storage unavailable — silently skip the intro.
+    }
+  }, []);
 
   // Compose the birth-data we'll feed to the astrocartography compute.
   // Conservative: if birth time is missing we still render but cap
@@ -156,31 +175,37 @@ export function CelestialMapPage() {
       </header>
 
       {!isPremium && (
-        <Card variant="ritual" padding="md" className="border-gold/30">
-          <div className="flex items-start gap-3">
-            <Crown className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-mystic-100 mb-1">
-                {t('celestial.previewLock.title', {
-                  defaultValue: 'You’re seeing the Sun + Moon preview.',
-                })}
-              </p>
-              <p className="text-xs text-mystic-400 leading-relaxed mb-3">
-                {t('celestial.previewLock.body', {
-                  defaultValue:
-                    'Unlock all 40 planetary lines, city interpretations, and AI travel readings with Premium — or get a single travel reading for 250 Moonstones.',
-                })}
-              </p>
-              <Button
-                variant="gold"
-                size="sm"
-                onClick={() => setShowPaywall(true)}
-              >
-                {t('celestial.previewLock.cta', { defaultValue: 'Unlock full map' })}
-              </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+        >
+          <Card variant="ritual" padding="md" className="border-gold/30">
+            <div className="flex items-start gap-3">
+              <Crown className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-mystic-100 mb-1">
+                  {t('celestial.previewLock.title', {
+                    defaultValue: 'You’re seeing the Sun + Moon preview.',
+                  })}
+                </p>
+                <p className="text-xs text-mystic-400 leading-relaxed mb-3">
+                  {t('celestial.previewLock.body', {
+                    defaultValue:
+                      'Unlock all 40 planetary lines, city interpretations, and AI travel readings with Premium — or get a single travel reading for 250 Moonstones.',
+                  })}
+                </p>
+                <Button
+                  variant="gold"
+                  size="sm"
+                  onClick={() => setShowPaywall(true)}
+                >
+                  {t('celestial.previewLock.cta', { defaultValue: 'Unlock full map' })}
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
       )}
 
       {/* Life-area filter */}
@@ -188,13 +213,17 @@ export function CelestialMapPage() {
         className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }) => {
+        {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }, i) => {
           const isActive = activeFilter === id;
           return (
-            <button
+            <motion.button
               key={id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.04, duration: 0.3, ease: 'easeOut' }}
+              whileTap={{ scale: 0.94 }}
               onClick={() => setActiveFilter(id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all active:scale-95 flex-shrink-0 snap-start ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-colors flex-shrink-0 snap-start ${
                 isActive
                   ? 'bg-gold/20 text-gold border border-gold/30 shadow-glow'
                   : 'bg-mystic-800/50 text-mystic-300 border border-transparent hover:bg-mystic-800'
@@ -202,14 +231,20 @@ export function CelestialMapPage() {
             >
               <Icon className="w-4 h-4" />
               <span className="text-sm">{t(key, { defaultValue: defaultLabel })}</span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
 
       {/* The map itself — fixed aspect so it doesn’t collapse on
           orientation changes or short viewports. */}
-      <div className="rounded-2xl overflow-hidden hairline-gold-soft" style={{ aspectRatio: '4 / 3', minHeight: 360 }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.985 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+        className="rounded-2xl overflow-hidden hairline-gold-soft"
+        style={{ aspectRatio: '4 / 3', minHeight: 360 }}
+      >
         {filteredLines && (
           <CelestialMapView
             lines={filteredLines}
@@ -229,7 +264,7 @@ export function CelestialMapPage() {
             }}
           />
         )}
-      </div>
+      </motion.div>
 
       <p className="text-xs text-mystic-500 text-center px-6 leading-relaxed">
         {t('celestial.disclaimer', {
@@ -265,6 +300,11 @@ export function CelestialMapPage() {
         feature={t('celestial.title', { defaultValue: 'Celestial Map' }) as string}
       />
       {EarnSheet}
+
+      <CelestialMapIntroLoader
+        open={showIntro}
+        onDone={() => setShowIntro(false)}
+      />
     </div>
   );
 }

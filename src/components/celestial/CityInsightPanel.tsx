@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MapPin, Crown, Sparkles, Coins, Loader2, AlertCircle } from 'lucide-react';
 import { Sheet, Button } from '../ui';
 import { useT } from '../../i18n/useT';
@@ -219,13 +220,16 @@ export function CityInsightPanel({
               {t('celestial.city.activeLines', { defaultValue: 'Active lines here' })}
             </h3>
             <div className="space-y-2">
-              {visibleHits.map((hit) => {
+              {visibleHits.map((hit, i) => {
                 const key = `${hit.planet}-${hit.angle}`;
                 const interp = getInterpretation(hit.planet, hit.angle);
                 const isExpanded = expandedKey === key;
                 return (
-                  <div
+                  <motion.div
                     key={key}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.3, ease: 'easeOut' }}
                     className="rounded-xl bg-mystic-800/50 hairline-gold-soft overflow-hidden"
                   >
                     <button
@@ -257,14 +261,25 @@ export function CityInsightPanel({
                         aria-hidden
                       />
                     </button>
-                    {isExpanded && (
-                      <div className="px-4 pb-4 pt-1 border-t border-mystic-800/60">
-                        <p className="text-sm text-mystic-300 leading-relaxed">
-                          {interp.body}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          key="body"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: 'easeOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 pt-1 border-t border-mystic-800/60">
+                            <p className="text-sm text-mystic-300 leading-relaxed">
+                              {interp.body}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 );
               })}
             </div>
@@ -351,7 +366,12 @@ export function CityInsightPanel({
 
         {/* ── AI reading result ─────────────────────────────────── */}
         {reading && (
-          <div className="rounded-2xl bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="rounded-2xl bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5 space-y-4"
+          >
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gold" />
               <span className="text-xs uppercase tracking-wider text-gold/90 font-medium">
@@ -393,7 +413,7 @@ export function CityInsightPanel({
               </p>
               <p className="text-xs text-mystic-200 leading-relaxed">{reading.practice}</p>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </Sheet>

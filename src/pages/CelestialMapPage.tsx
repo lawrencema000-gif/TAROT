@@ -7,6 +7,7 @@ import { useT } from '../i18n/useT';
 import { CelestialMapView } from '../components/celestial/CelestialMapView';
 import { CityInsightPanel } from '../components/celestial/CityInsightPanel';
 import { CelestialMapIntroLoader } from '../components/celestial/CelestialMapIntroLoader';
+import { CelestialBirthDataForm } from '../components/celestial/CelestialBirthDataForm';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
@@ -61,7 +62,7 @@ const FREE_TIER_PLANETS = new Set<PlanetName>(['Sun', 'Moon']);
 
 export function CelestialMapPage() {
   const { t } = useT('app');
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const isPremium = !!profile?.isPremium;
   const [activeFilter, setActiveFilter] = useState<LifeArea>('all');
   const [showPaywall, setShowPaywall] = useState(false);
@@ -147,35 +148,48 @@ export function CelestialMapPage() {
   }, [allLines, visiblePlanets]);
 
   // ── Empty state — no birth data yet, OR compute failed ──────────
-  // Fold both conditions into the same UX: ask the user to set / fix
-  // their birth date on Profile. (If allLines is null, computation
-  // threw — usually from a malformed date that slipped past the guard.)
+  // Inline birth-data form: most users entered this at signup, but
+  // OAuth users + accounts with legacy/malformed date strings hit
+  // this path. Keep them on the page instead of bouncing through
+  // /profile — fewer taps, higher conversion to actually seeing the
+  // map. The form pre-fills anything the profile already has so the
+  // user only types what's missing.
   if (!birth || allLines === null) {
+    const headlineKey = profile?.birthDate
+      ? 'celestial.needBirthDate.titleFix'
+      : 'celestial.needBirthDate.title';
+    const headlineDefault = profile?.birthDate
+      ? 'Let’s fix your birth date'
+      : 'We need your birth date first';
+    const bodyKey = profile?.birthDate
+      ? 'celestial.needBirthDate.bodyFix'
+      : 'celestial.needBirthDate.body';
+    const bodyDefault = profile?.birthDate
+      ? 'Your saved birth date couldn’t be read. Re-enter it below and your map will be ready.'
+      : 'Your celestial map is drawn from your birth chart. Enter your birth date — and time + place if you know them — and your map will be ready.';
     return (
       <div className="space-y-6 pb-32">
         <header className="space-y-2">
           <EyebrowLabel rules>{t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}</EyebrowLabel>
           <h1 className="heading-display-xl text-mystic-100 text-center">
-            {t('celestial.needBirthDate.title', { defaultValue: 'We need your birth date first' })}
+            {t(headlineKey, { defaultValue: headlineDefault })}
           </h1>
           <SectionDivider />
         </header>
         <Card variant="ritual" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
-            {t('celestial.needBirthDate.body', {
-              defaultValue:
-                'Your celestial map is drawn from your birth chart. Add your birth date (and time, if you know it) on the Profile page and your map will be ready.',
-            })}
+          <p className="text-mystic-300 text-sm leading-relaxed mb-5">
+            {t(bodyKey, { defaultValue: bodyDefault })}
           </p>
-          <Button
-            variant="primary"
-            fullWidth
+          <CelestialBirthDataForm onSaved={refreshProfile} />
+          <button
+            type="button"
             onClick={() => {
               window.location.href = '/profile';
             }}
+            className="block mt-4 mx-auto text-xs text-mystic-500 hover:text-mystic-300 underline underline-offset-2 transition-colors"
           >
-            {t('celestial.needBirthDate.cta', { defaultValue: 'Go to Profile' })}
-          </Button>
+            {t('celestial.needBirthDate.secondary', { defaultValue: 'Edit full profile instead' })}
+          </button>
         </Card>
       </div>
     );

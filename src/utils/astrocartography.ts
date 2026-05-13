@@ -24,6 +24,7 @@ import {
   Body,
   Equator,
   MakeTime,
+  Observer,
   SiderealTime,
 } from 'astronomy-engine';
 
@@ -79,9 +80,16 @@ const PLANET_BODIES: Record<PlanetName, Body> = {
  */
 function computePlanetCoords(utcDate: Date): Record<PlanetName, { raDeg: number; decDeg: number }> {
   const time = MakeTime(utcDate);
+  // astronomy-engine's `Equator` requires an Observer instance whenever
+  // ofdate=true (apparent coordinates) — it rejects null. For
+  // astrocartography we want geocentric apparent RA/Dec, so we feed it
+  // an Observer at lat 0, lon 0, height 0 (the geocentric origin).
+  // The chart angles fall out the same as a true geocentric calc to
+  // well within the precision astrocartography cares about.
+  const observer = new Observer(0, 0, 0);
   const out = {} as Record<PlanetName, { raDeg: number; decDeg: number }>;
   for (const planet of PLANETS) {
-    const eq = Equator(PLANET_BODIES[planet], time, /* observer */ null as never, /* ofdate */ true, /* aberration */ true);
+    const eq = Equator(PLANET_BODIES[planet], time, observer, /* ofdate */ true, /* aberration */ true);
     out[planet] = {
       raDeg: eq.ra * 15, // astronomy-engine returns RA in hours; convert to degrees
       decDeg: eq.dec,

@@ -91,15 +91,28 @@ export function CelestialMapPage() {
   // silently (would draw wildly inaccurate lines).
   const birth = useMemo(() => {
     if (!profile?.birthDate) return null;
-    // Combine date + time + use Z (we don't have tz here; for Stage E
-    // we'll wire tz lookup from birthPlace). For Stage A this gives a
-    // reasonable first approximation — within 1-2 hours which is the
-    // existing app's accuracy posture for natal charts anyway.
-    const time = profile.birthTime || '12:00';
-    const utcDate = new Date(`${profile.birthDate}T${time}:00Z`);
-    // Guard against malformed birth data — astronomy-engine throws on
-    // Invalid Date, which would crash the whole page. Fall through to
-    // the empty state CTA instead.
+    // Normalise birthDate to ISO YYYY-MM-DD if it slipped in as a
+    // legacy free-text format like "06/15/1995". `new Date()` accepts
+    // both shapes; we reformat so the timestamp concat below works.
+    let dateIso = profile.birthDate;
+    if (!/^\d{4}-\d{2}-\d{2}/.test(dateIso)) {
+      const reparsed = new Date(dateIso);
+      if (Number.isNaN(reparsed.getTime())) return null;
+      const y = reparsed.getFullYear();
+      const m = String(reparsed.getMonth() + 1).padStart(2, '0');
+      const d = String(reparsed.getDate()).padStart(2, '0');
+      dateIso = `${y}-${m}-${d}`;
+    } else {
+      dateIso = dateIso.slice(0, 10);
+    }
+    // Normalise birthTime: accept "HH:MM" or "HH:MM:SS" (legacy format),
+    // emit "HH:MM:SS" for the ISO timestamp.
+    const rawTime = profile.birthTime || '12:00';
+    const timeMatch = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(rawTime);
+    const hms = timeMatch
+      ? `${timeMatch[1]}:${timeMatch[2]}:${timeMatch[3] ?? '00'}`
+      : '12:00:00';
+    const utcDate = new Date(`${dateIso}T${hms}Z`);
     if (Number.isNaN(utcDate.getTime())) return null;
     return { utcDate };
   }, [profile?.birthDate, profile?.birthTime]);

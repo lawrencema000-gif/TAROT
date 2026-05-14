@@ -411,6 +411,9 @@ Deno.serve(handler<RunBody>({
     });
 
     // 3. Generate cover image via Imagen (non-fatal on failure).
+    // Re-read the key here — it's declared inside generateArticle() above
+    // for the article-gen path, but the run scope doesn't inherit it.
+    const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
     const imageBytes = await generateCoverImage(topic, geminiKey);
     let coverUrl: string | null = null;
     if (imageBytes) {

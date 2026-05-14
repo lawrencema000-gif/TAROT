@@ -1,6 +1,49 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import './utils/polyfills'; // must load before any code that may call Array.at / String.at
 import App from './App.tsx';
+
+// Stale-chunk recovery. When a new deploy replaces hashed JS chunks,
+// any browser still showing the previous index.html will reference
+// chunk hashes that no longer exist on the CDN. Netlify's SPA fallback
+// serves index.html for those missing URLs; the browser then tries to
+// execute HTML as JS and emits one of:
+//   - "'text/html' is not a valid JavaScript MIME type"
+//   - "Failed to load module script"
+//   - "Importing a module script failed"
+// All of these mean the same thing: the page is on an obsolete bundle
+// and just needs to refetch index.html. We force one hard reload (guarded
+// by sessionStorage so we never reload-loop if the new index.html also
+// fails for some reason).
+{
+  const onStaleChunk = (msg: string) => {
+    if (sessionStorage.getItem('arcana_stale_chunk_reloaded')) return;
+    sessionStorage.setItem('arcana_stale_chunk_reloaded', String(Date.now()));
+    console.warn('[stale-chunk] reloading after:', msg);
+    window.location.reload();
+  };
+  window.addEventListener('error', (e) => {
+    const msg = String(e.message || '');
+    if (
+      msg.includes('not a valid JavaScript MIME type') ||
+      msg.includes('Importing a module script failed') ||
+      msg.includes('Failed to load module script')
+    ) {
+      onStaleChunk(msg);
+    }
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const reason = e?.reason;
+    const msg = reason instanceof Error ? reason.message : String(reason ?? '');
+    if (
+      msg.includes('not a valid JavaScript MIME type') ||
+      msg.includes('Importing a module script failed') ||
+      msg.includes('Failed to fetch dynamically imported module')
+    ) {
+      onStaleChunk(msg);
+    }
+  });
+}
 import { initAnalytics } from './services/analytics';
 import { captureAttributionFromUrl } from './utils/attribution';
 import { initWebVitals } from './utils/webVitals';
@@ -75,6 +118,18 @@ if (import.meta.env.VITE_SENTRY_DSN) {
             'Non-Error promise rejection captured',
             // AbortController on user navigation away.
             'AbortError',
+            // Stale-chunk reloads — handled inline at the top of main.tsx
+            // and force a one-shot page refresh. Sentry capturing these
+            // adds noise without action.
+            'not a valid JavaScript MIME type',
+            'Importing a module script failed',
+            'Failed to load module script',
+            'Failed to fetch dynamically imported module',
+            // Sentry's own onIframeLoad reaching into a cross-origin
+            // ad/analytics iframe — instrumentation noise, never caused
+            // by app code.
+            "Failed to read a named property 'Element' from 'Window'",
+            'Blocked a frame with origin',
           ],
         },
         // The 2nd arg is the inner @sentry/react init function — Capacitor

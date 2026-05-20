@@ -242,9 +242,80 @@ Write the article now. Reply with the JSON object only — no markdown, no pream
     throw new AppError("ARTICLE_GEN_FAILED", `All providers failed. Last: ${lastErr}`, 502);
   }
 
-  const parsed = parseDelimitedArticle(completion);
+  let parsed = parseDelimitedArticle(completion);
+
+  // If any required field is missing on the first try, give the model
+  // one more chance with a stricter, format-focused prompt that names
+  // the specific fields it missed. The vast majority of "Article
+  // missing required fields" Sentry events are caused by the model
+  // wrapping the response in markdown or omitting the SLUG/EXCERPT
+  // line — both fully recoverable with a targeted re-ask.
+  const missingFields = ["title", "slug", "excerpt", "content_markdown"].filter(
+    (f) => !parsed[f as keyof typeof parsed],
+  );
+  if (missingFields.length > 0) {
+    console.warn(`[article-gen] retry — missing: ${missingFields.join(", ")}. First 400 chars: ${completion.slice(0, 400)}`);
+    const retryPrompt = `${userPrompt}
+
+⚠ STRICT FORMAT REMINDER ⚠
+Your previous response was missing these required fields: ${missingFields.join(", ")}.
+
+Re-emit the entire response in PLAIN TEXT (no JSON, no \`\`\` code fences, no markdown wrapping). The delimiters must appear EXACTLY as:
+
+TITLE: …
+SLUG: kebab-case-slug
+EXCERPT: 140-160 chars
+TAGS: a, b, c
+---CONTENT---
+…body markdown…
+---FAQS---
+Q: …
+A: …
+---END---
+
+All four header lines (TITLE / SLUG / EXCERPT / TAGS) MUST appear before ---CONTENT---. Reply with the document only.`;
+
+    let retryCompletion = "";
+    let retryErr = "no provider attempted on retry";
+    if (openaiKey) {
+      for (const m of OPENAI_MODELS) {
+        try {
+          retryCompletion = await callOpenAI(retryPrompt, m, openaiKey);
+          break;
+        } catch (e) {
+          retryErr = String(e).slice(0, 300);
+        }
+      }
+    }
+    if (!retryCompletion && geminiKey) {
+      for (const m of GEMINI_MODELS) {
+        try {
+          retryCompletion = await callGemini(retryPrompt, m, geminiKey);
+          break;
+        } catch (e) {
+          retryErr = String(e).slice(0, 300);
+        }
+      }
+    }
+    if (retryCompletion) {
+      const retryParsed = parseDelimitedArticle(retryCompletion);
+      // Only swap in the retry result if it parses cleanly — partial
+      // retries that fix some fields but break others would be worse
+      // than the original.
+      if (retryParsed.title && retryParsed.slug && retryParsed.excerpt && retryParsed.content_markdown) {
+        parsed = retryParsed;
+        completion = retryCompletion;
+        console.warn(`[article-gen] retry succeeded`);
+      } else {
+        console.warn(`[article-gen] retry still missing fields: ${JSON.stringify({ title: !!retryParsed.title, slug: !!retryParsed.slug, excerpt: !!retryParsed.excerpt, content: !!retryParsed.content_markdown })}`);
+      }
+    } else {
+      console.warn(`[article-gen] retry call failed: ${retryErr}`);
+    }
+  }
+
   if (!parsed.title || !parsed.slug || !parsed.content_markdown || !parsed.excerpt) {
-    console.warn(`[article-gen] missing fields. First 400 chars: ${completion.slice(0, 400)}`);
+    console.warn(`[article-gen] missing fields after retry. First 400 chars: ${completion.slice(0, 400)}`);
     throw new AppError("ARTICLE_GEN_MISSING_FIELDS", "Article missing required fields", 502);
   }
 

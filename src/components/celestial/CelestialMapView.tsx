@@ -148,7 +148,11 @@ export function CelestialMapView({ lines, onMapClick, onLineClick }: Props) {
     // We use the inverted lon/lat against the original GeoJSON
     // coordinates — same coordinate space, no projection drift.
     if (onLineClick) {
-      const tolerance = 3; // viewBox-pixel tolerance against projected coords
+      // 12 viewBox pixels ≈ 5-6 device pixels at the rendered scale —
+      // comfortable for finger taps without false-positives. Was 3 px
+      // originally which was below the Material 44pt touch-target spec
+      // (caught by the post-launch audit).
+      const tolerance = 12;
       for (const { planet, angle } of planetPaths) {
         const feat = lines.features.find(
           (f) => f.properties!.planet === planet && f.properties!.angle === angle,

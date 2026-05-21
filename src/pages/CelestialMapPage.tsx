@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Globe2, Heart, Briefcase, Plane, Sparkles, Home as HomeIcon, Sprout, Crown } from 'lucide-react';
 import { Card, Button, EyebrowLabel, SectionDivider } from '../components/ui';
@@ -8,10 +8,14 @@ import { CelestialMapView } from '../components/celestial/CelestialMapView';
 import { CityInsightPanel } from '../components/celestial/CityInsightPanel';
 import { CelestialMapIntroLoader } from '../components/celestial/CelestialMapIntroLoader';
 import { CelestialBirthDataForm } from '../components/celestial/CelestialBirthDataForm';
+import { CelestialCitySearch } from '../components/celestial/CelestialCitySearch';
+import { CelestialPowerPlaces } from '../components/celestial/CelestialPowerPlaces';
+import { CelestialEducationSection, CelestialAnglesSection } from '../components/celestial/CelestialEducationSection';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
+import type { City } from '../utils/celestialGeo';
 
 const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
@@ -70,6 +74,26 @@ export function CelestialMapPage() {
   const [showInsightPanel, setShowInsightPanel] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
+  const mapSectionRef = useRef<HTMLDivElement | null>(null);
+
+  // Centralised handler for "pick this city" coming from any source —
+  // CitySearch, CelestialPowerPlaces, or future suggestions. Sets the
+  // tap point, opens the insight panel, and smooth-scrolls the map
+  // into view so the action feels connected to the map below.
+  function handleCityPick(city: City) {
+    setTappedPoint({ lon: city.lon, lat: city.lat });
+    setShowInsightPanel(true);
+    requestAnimationFrame(() => {
+      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function handleLifeAreaCardPick(area: 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth') {
+    setActiveFilter(area);
+    requestAnimationFrame(() => {
+      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   // First-open intro loader. Persisted in localStorage so subsequent
   // visits go straight to the map. Setting the flag pre-emptively means
@@ -209,12 +233,18 @@ export function CelestialMapPage() {
   }
 
   return (
-    <div className="space-y-4 pb-32">
+    <div className="space-y-8 pb-32">
       <header className="space-y-2">
         <EyebrowLabel rules>{t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}</EyebrowLabel>
         <h1 className="heading-display-xl text-mystic-100 text-center">
           {t('celestial.title', { defaultValue: 'Where your stars align' })}
         </h1>
+        <p className="text-sm text-mystic-300 text-center max-w-md mx-auto leading-relaxed">
+          {t('celestial.hero.subtitle', {
+            defaultValue:
+              'Divine your best living, loving, working, and healing locations — drawn from the exact moment of your birth.',
+          })}
+        </p>
         <SectionDivider />
       </header>
 
@@ -252,70 +282,103 @@ export function CelestialMapPage() {
         </motion.div>
       )}
 
-      {/* Life-area filter */}
-      <div
-        className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scroll-smooth"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }, i) => {
-          const isActive = activeFilter === id;
-          return (
-            <motion.button
-              key={id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.04, duration: 0.3, ease: 'easeOut' }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => setActiveFilter(id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-colors flex-shrink-0 snap-start ${
-                isActive
-                  ? 'bg-gold/20 text-gold border border-gold/30 shadow-glow'
-                  : 'bg-mystic-800/50 text-mystic-300 border border-transparent hover:bg-mystic-800'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span className="text-sm">{t(key, { defaultValue: defaultLabel })}</span>
-            </motion.button>
-          );
-        })}
+      {/* ── "What this is" + use-case grid (taps set filter) ─── */}
+      <CelestialEducationSection onPickLifeArea={handleLifeAreaCardPick} />
+
+      {/* ── Interactive map section ──────────────────────────── */}
+      <div ref={mapSectionRef} className="space-y-3 scroll-mt-4">
+        <div className="space-y-1">
+          <h2 className="text-sm uppercase tracking-wider text-gold/90 font-medium">
+            {t('celestial.mapSection.title', { defaultValue: 'Your map' })}
+          </h2>
+          <p className="text-xs text-mystic-400 leading-relaxed">
+            {t('celestial.mapSection.subtitle', {
+              defaultValue:
+                'Tap any spot to see what lines run through it. Or search a specific city below.',
+            })}
+          </p>
+        </div>
+
+        {/* City search — autocomplete from our curated 280-city dataset */}
+        <CelestialCitySearch onPick={handleCityPick} />
+
+        {/* Life-area filter — keep as the compact in-place toggle */}
+        <div
+          className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }, i) => {
+            const isActive = activeFilter === id;
+            return (
+              <motion.button
+                key={id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.04, duration: 0.3, ease: 'easeOut' }}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => setActiveFilter(id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-colors flex-shrink-0 snap-start ${
+                  isActive
+                    ? 'bg-gold/20 text-gold border border-gold/30 shadow-glow'
+                    : 'bg-mystic-800/50 text-mystic-300 border border-transparent hover:bg-mystic-800'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="text-sm">{t(key, { defaultValue: defaultLabel })}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* The map itself */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.985 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+          className="rounded-2xl overflow-hidden hairline-gold-soft"
+          style={{ aspectRatio: '4 / 3', minHeight: 360 }}
+        >
+          {filteredLines && (
+            <CelestialMapView
+              lines={filteredLines}
+              onMapClick={(lonLat) => {
+                const [lon, lat] = lonLat;
+                setTappedPoint({ lon, lat });
+                setShowInsightPanel(true);
+              }}
+              onLineClick={(planet, angle) => {
+                // Tapping a line currently routes through the same panel
+                // anchored to the tap location — the panel surfaces the
+                // line in its "active lines here" list with the closest
+                // distance. Future enhancement: pre-expand that specific
+                // line on open.
+                void planet;
+                void angle;
+              }}
+            />
+          )}
+        </motion.div>
+
+        <p className="text-xs text-mystic-500 text-center px-6 leading-relaxed">
+          {t('celestial.disclaimer', {
+            defaultValue:
+              'The lines mark where each planet was rising, setting, or at its meridian when you were born. They are signals, not destiny.',
+          })}
+        </p>
       </div>
 
-      {/* The map itself — fixed aspect so it doesn’t collapse on
-          orientation changes or short viewports. */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.985 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-        className="rounded-2xl overflow-hidden hairline-gold-soft"
-        style={{ aspectRatio: '4 / 3', minHeight: 360 }}
-      >
-        {filteredLines && (
-          <CelestialMapView
-            lines={filteredLines}
-            onMapClick={(lonLat) => {
-              const [lon, lat] = lonLat;
-              setTappedPoint({ lon, lat });
-              setShowInsightPanel(true);
-            }}
-            onLineClick={(planet, angle) => {
-              // Tapping a line currently routes through the same panel
-              // anchored to the tap location — the panel surfaces the
-              // line in its "active lines here" list with the closest
-              // distance. Future enhancement: pre-expand that specific
-              // line on open.
-              void planet;
-              void angle;
-            }}
-          />
-        )}
-      </motion.div>
+      {/* ── "Your power places" — computed top cities ────────── */}
+      {allLines && (
+        <CelestialPowerPlaces
+          allLines={allLines}
+          isPremium={isPremium}
+          onPick={handleCityPick}
+          onUpgrade={() => setShowPaywall(true)}
+        />
+      )}
 
-      <p className="text-xs text-mystic-500 text-center px-6 leading-relaxed">
-        {t('celestial.disclaimer', {
-          defaultValue:
-            'The lines mark where each planet was rising, setting, or at its meridian when you were born. They are signals, not destiny.',
-        })}
-      </p>
+      {/* ── "How to read the lines" — explainer of AC/DC/MC/IC ── */}
+      <CelestialAnglesSection />
 
       {filteredLines && allLines && (
         <CityInsightPanel

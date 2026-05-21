@@ -25,8 +25,10 @@ import { captureEdgeException } from "../_shared/sentry.ts";
  */
 
 const SITE_URL = "https://tarotlife.app";
-const INDEXNOW_KEY = "7c4e2b3a8f6d4a1c9e8b5d2f7a3c6e8b";
-const INDEXNOW_KEY_FILE = "arcana-indexnow-7c4e2b3a8f6d.txt";
+// IndexNow key read from env (was previously committed in plain text).
+// The key file at /{key}.txt on the site must contain the same value.
+const INDEXNOW_KEY = Deno.env.get("INDEXNOW_KEY") || "";
+const INDEXNOW_KEY_FILE = INDEXNOW_KEY ? `${INDEXNOW_KEY}.txt` : "";
 
 const MAJOR_ARCANA = [
   "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
@@ -110,6 +112,12 @@ Deno.serve(handler<unknown>({
 
     const batches = chunk(urls, 1000);
     const pingResults: Array<{ status: number; ok: boolean }> = [];
+    // No-op the whole loop when INDEXNOW_KEY is unset — avoids sending
+    // empty-key requests to the IndexNow API that would all 422.
+    if (!INDEXNOW_KEY) {
+      ctx.log.info("daily_seo_boost.indexnow_skipped", { reason: "no INDEXNOW_KEY env var" });
+      return { ok: true, urls: urls.length, batches: 0, results: [], skipped: true };
+    }
     for (const batch of batches) {
       try {
         const res = await fetch("https://api.indexnow.org/indexnow", {

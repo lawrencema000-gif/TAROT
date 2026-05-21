@@ -65,10 +65,18 @@ export async function listSaved(
   };
 }
 
-export async function deleteById(id: string): Promise<Result<void>> {
-  const { error } = await supabase.from('tarot_readings').delete().eq('id', id);
+export async function deleteById(id: string, userId: string): Promise<Result<void>> {
+  // Belt-and-suspenders: RLS already restricts deletes to the owner.
+  // Binding the delete to user_id too means an accidental RLS
+  // regression can't let a malicious caller delete someone else's
+  // reading by enumerating UUIDs.
+  const { error } = await supabase
+    .from('tarot_readings')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
   if (error) {
-    captureException('dal.tarotReadings.deleteById', error, { id });
+    captureException('dal.tarotReadings.deleteById', error, { id, userId });
     return { ok: false, error: error.message };
   }
   return { ok: true, data: undefined };

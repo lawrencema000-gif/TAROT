@@ -183,11 +183,12 @@ export function LibrarySection() {
   };
 
   const handleDelete = async (type: 'highlight' | 'reading' | 'premium', id: string) => {
+    if (!user) return;
     const res = type === 'highlight'
       ? await savedHighlightsDalRef.deleteById(id)
       : type === 'premium'
         ? await premiumReadingsDal.deleteByIdOnly(id)
-        : await tarotReadingsDal.deleteById(id);
+        : await tarotReadingsDal.deleteById(id, user.id);
 
     if (!res.ok) {
       toast(t('library.toasts.deleteFailed'), 'error');

@@ -94,10 +94,16 @@ export async function updateById(
   id: string,
   input: JournalEntryInput,
 ): Promise<Result<void>> {
+  // Belt-and-suspenders: RLS already restricts writes to the owner,
+  // but we additionally bind the update to the input.userId so that
+  // an accidental RLS regression (policy set to `true`, table
+  // restored without policies, etc.) can't let a malicious caller
+  // overwrite someone else's row by knowing or guessing its UUID.
   const { error } = await supabase
     .from('journal_entries')
     .update(toDbShape(input))
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', input.userId);
   if (error) {
     captureException('dal.journalEntries.updateById', error, { id, userId: input.userId });
     return { ok: false, error: error.message };
@@ -105,10 +111,15 @@ export async function updateById(
   return { ok: true, data: undefined };
 }
 
-export async function deleteById(id: string): Promise<Result<void>> {
-  const { error } = await supabase.from('journal_entries').delete().eq('id', id);
+export async function deleteById(id: string, userId: string): Promise<Result<void>> {
+  // Same ownership guard as updateById above — defence-in-depth.
+  const { error } = await supabase
+    .from('journal_entries')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
   if (error) {
-    captureException('dal.journalEntries.deleteById', error, { id });
+    captureException('dal.journalEntries.deleteById', error, { id, userId });
     return { ok: false, error: error.message };
   }
   return { ok: true, data: undefined };

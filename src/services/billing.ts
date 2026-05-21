@@ -9,6 +9,14 @@ import { isNative, isAndroid, isIOS } from '../utils/platform';
 import { supabase } from '../lib/supabase';
 import { preventDoubleBilling } from './billingGuard';
 
+// Dev-only logger. Production builds shouldn't leak RevenueCat user
+// IDs, transaction IDs, entitlement names, or purchase payloads to
+// the browser console — both for noise + minor privacy reasons. Use
+// `dlog` in place of `console.log` for any verbose RevenueCat trace.
+const dlog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
+
 export type BillingProvider = 'google' | 'apple' | 'samsung' | 'web';
 
 export interface Product {
@@ -121,7 +129,7 @@ class NativeBillingService implements BillingService {
         });
         this.initialized = true;
         if (import.meta.env.DEV) {
-          console.log(`[RevenueCat] Initialized for ${isIOS() ? 'iOS' : 'Android'} with user ID:`, userId);
+          dlog(`[RevenueCat] Initialized for ${isIOS() ? 'iOS' : 'Android'} with user ID:`, userId);
         }
         return true;
       }
@@ -155,7 +163,7 @@ class NativeBillingService implements BillingService {
       this.userId = undefined;
       if (this.initialized) {
         await Purchases.logOut();
-        console.log('[RevenueCat] User logged out');
+        dlog('[RevenueCat] User logged out');
       }
     } catch (error) {
       console.error('[RevenueCat] Failed to log out:', error);
@@ -168,10 +176,10 @@ class NativeBillingService implements BillingService {
     }
 
     try {
-      console.log('[RevenueCat] Fetching offerings...');
+      dlog('[RevenueCat] Fetching offerings...');
       const offerings = await Purchases.getOfferings();
 
-      console.log('[RevenueCat] Offerings response:', {
+      dlog('[RevenueCat] Offerings response:', {
         hasCurrent: !!offerings.current,
         currentId: offerings.current?.identifier,
         allOfferingsCount: Object.keys(offerings.all || {}).length,
@@ -186,7 +194,7 @@ class NativeBillingService implements BillingService {
 
       this.packages = offerings.current.availablePackages;
 
-      console.log('[RevenueCat] Available packages:', this.packages.map(pkg => ({
+      dlog('[RevenueCat] Available packages:', this.packages.map(pkg => ({
         identifier: pkg.identifier,
         productId: pkg.product.identifier,
         price: pkg.product.priceString,
@@ -278,13 +286,13 @@ class NativeBillingService implements BillingService {
       await this.initialize();
     }
 
-    console.log('[RevenueCat] Starting purchase for:', _productId, 'hasRcPackage:', !!product?.rcPackage);
+    dlog('[RevenueCat] Starting purchase for:', _productId, 'hasRcPackage:', !!product?.rcPackage);
 
     try {
       let packageToPurchase = product?.rcPackage;
 
       if (!packageToPurchase) {
-        console.log('[RevenueCat] No rcPackage provided, fetching products...');
+        dlog('[RevenueCat] No rcPackage provided, fetching products...');
         const products = await this.getProducts();
         const foundProduct = products.find((p) =>
           p.id === _productId ||
@@ -313,7 +321,7 @@ class NativeBillingService implements BillingService {
         packageToPurchase = foundProduct.rcPackage;
       }
 
-      console.log('[RevenueCat] Purchasing package:', packageToPurchase.identifier);
+      dlog('[RevenueCat] Purchasing package:', packageToPurchase.identifier);
 
       const result = await Purchases.purchasePackage({
         aPackage: packageToPurchase,
@@ -322,7 +330,7 @@ class NativeBillingService implements BillingService {
       const isPremium = result.customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
       const transactionId = result.transaction?.transactionIdentifier || result.productIdentifier;
 
-      console.log('[RevenueCat] Purchase result:', {
+      dlog('[RevenueCat] Purchase result:', {
         isPremium,
         transactionId,
         entitlements: Object.keys(result.customerInfo.entitlements.active),
@@ -369,7 +377,7 @@ class NativeBillingService implements BillingService {
       const result = await Purchases.restorePurchases();
       const isPremium = !!result.customerInfo.entitlements.active[ENTITLEMENT_ID];
 
-      console.log('[RevenueCat] Restore result:', {
+      dlog('[RevenueCat] Restore result:', {
         isPremium,
         entitlements: Object.keys(result.customerInfo.entitlements.active),
       });
@@ -683,13 +691,13 @@ let billingServiceInstance: BillingService | null = null;
 export function getBillingService(): BillingService {
   if (!billingServiceInstance) {
     const provider = detectProvider();
-    console.log('[Billing] Detected provider:', provider, '| isNative:', isNative(), '| isAndroid:', isAndroid());
+    dlog('[Billing] Detected provider:', provider, '| isNative:', isNative(), '| isAndroid:', isAndroid());
 
     if (provider === 'google') {
-      console.log('[Billing] Using NativeBillingService (RevenueCat/Google Play)');
+      dlog('[Billing] Using NativeBillingService (RevenueCat/Google Play)');
       billingServiceInstance = new NativeBillingService();
     } else {
-      console.log('[Billing] Using WebBillingService (Stripe - web only)');
+      dlog('[Billing] Using WebBillingService (Stripe - web only)');
       billingServiceInstance = new WebBillingService();
     }
   }

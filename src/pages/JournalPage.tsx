@@ -318,9 +318,10 @@ export function JournalPage() {
   };
 
   const deleteEntry = async (entryId: string) => {
+    if (!user) return;
     if (!confirm(t('journal.toast.deleteConfirm'))) return;
 
-    await journalEntries.deleteById(entryId);
+    await journalEntries.deleteById(entryId, user.id);
     loadEntries();
     toast(t('journal.toast.deleted'), 'success');
   };

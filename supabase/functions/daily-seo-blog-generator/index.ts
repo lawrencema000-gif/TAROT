@@ -43,8 +43,10 @@ function isReasoningModel(model: string): boolean {
 // free Gemini tier without any external account setup.
 const POLLINATIONS_BASE = "https://image.pollinations.ai/prompt";
 const SITE_URL = "https://tarotlife.app";
-const INDEXNOW_KEY_FILE = "arcana-indexnow-7c4e2b3a8f6d.txt"; // hex32 stored at site root
-const INDEXNOW_KEY = "7c4e2b3a8f6d4a1c9e8b5d2f7a3c6e8b"; // hex32, must match the file
+// IndexNow key is read from env so it isn't committed to the repo.
+// The key file at /{key}.txt on the site must contain the same value.
+const INDEXNOW_KEY = Deno.env.get("INDEXNOW_KEY") || "";
+const INDEXNOW_KEY_FILE = INDEXNOW_KEY ? `${INDEXNOW_KEY}.txt` : "";
 
 // ────────────────────────────────────────────────────────────────────
 // Types
@@ -408,6 +410,9 @@ async function generateCoverImage(topic: Topic, _apiKey: string): Promise<Uint8A
 // ────────────────────────────────────────────────────────────────────
 
 async function pingIndexNow(slug: string): Promise<void> {
+  // No-op when the key isn't configured — avoids sending an empty-key
+  // request that IndexNow would reject anyway.
+  if (!INDEXNOW_KEY) return;
   const fullUrl = `${SITE_URL}/blog/${slug}`;
   try {
     const res = await fetch("https://api.indexnow.org/indexnow", {

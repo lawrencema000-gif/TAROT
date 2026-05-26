@@ -75,14 +75,17 @@ export function CelestialMapPage() {
   const [showIntro, setShowIntro] = useState(false);
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
+  const mapEngineRef = useRef<{ flyTo: (lonLat: [number, number]) => void } | null>(null);
 
   // Centralised handler for "pick this city" coming from any source —
   // CitySearch, CelestialPowerPlaces, or future suggestions. Sets the
-  // tap point, opens the insight panel, and smooth-scrolls the map
-  // into view so the action feels connected to the map below.
+  // tap point, opens the insight panel, and asks the map engine to
+  // animate (rotate the globe or pan the flat view) so the city sits
+  // centre. The map section is then scrolled into view if needed.
   function handleCityPick(city: City) {
     setTappedPoint({ lon: city.lon, lat: city.lat });
     setShowInsightPanel(true);
+    mapEngineRef.current?.flyTo([city.lon, city.lat]);
     requestAnimationFrame(() => {
       mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -355,6 +358,7 @@ export function CelestialMapPage() {
                 void planet;
                 void angle;
               }}
+              onEngineReady={(api) => { mapEngineRef.current = api; }}
             />
           )}
         </motion.div>

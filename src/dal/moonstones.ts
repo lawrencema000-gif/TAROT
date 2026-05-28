@@ -81,11 +81,18 @@ export async function doDailyCheckin(): Promise<Result<CheckinResult>> {
   }
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return { ok: false, error: 'No result from RPC' };
+  // amount_awarded === 0 is the signal the RPC uses for "already
+  // checked in today" — it skips the credit and returns the existing
+  // streak state. The previous derivation `streak_day > 1 && !is_streak_continuation`
+  // actually identified a BROKEN streak (new streak after a gap),
+  // which had the opposite UI semantics. Fixed here so the Claim
+  // button can correctly suppress on same-day re-clicks.
+  const amountAwarded = row.amount_awarded as number;
   const outcome = {
-    amountAwarded: row.amount_awarded as number,
+    amountAwarded,
     streakDay: row.streak_day as number,
     isStreakContinuation: row.is_streak_continuation as boolean,
-    alreadyCheckedIn: (row.streak_day as number) > 1 && !(row.is_streak_continuation as boolean),
+    alreadyCheckedIn: amountAwarded === 0,
   };
   // Refetch + broadcast balance so the home widget updates without a re-mount.
   if (outcome.amountAwarded > 0) {

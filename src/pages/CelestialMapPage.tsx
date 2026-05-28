@@ -121,13 +121,18 @@ export function CelestialMapPage() {
     // Normalise birthDate to ISO YYYY-MM-DD if it slipped in as a
     // legacy free-text format like "06/15/1995". `new Date()` accepts
     // both shapes; we reformat so the timestamp concat below works.
+    //
+    // Safari/iOS hazard: bare date strings like "06/15/1995" parse as
+    // LOCAL midnight, not UTC. For a user in UTC-8 the date shifts to
+    // the previous day before we reformat. Use UTC accessors so the
+    // day stays put regardless of viewer timezone.
     let dateIso = profile.birthDate;
     if (!/^\d{4}-\d{2}-\d{2}/.test(dateIso)) {
       const reparsed = new Date(dateIso);
       if (Number.isNaN(reparsed.getTime())) return null;
-      const y = reparsed.getFullYear();
-      const m = String(reparsed.getMonth() + 1).padStart(2, '0');
-      const d = String(reparsed.getDate()).padStart(2, '0');
+      const y = reparsed.getUTCFullYear();
+      const m = String(reparsed.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(reparsed.getUTCDate()).padStart(2, '0');
       dateIso = `${y}-${m}-${d}`;
     } else {
       dateIso = dateIso.slice(0, 10);

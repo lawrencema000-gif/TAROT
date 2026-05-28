@@ -45,11 +45,13 @@ export function CelestialBirthDataForm({ onSaved }: Props) {
     // Already ISO?
     if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10);
     // Try Date parse — handles a lot of common formats.
+    // UTC accessors avoid a Safari/iOS local-tz shift that would
+    // bump the date by one day for users in negative offsets.
     const parsed = new Date(raw);
     if (Number.isNaN(parsed.getTime())) return '';
-    const y = parsed.getFullYear();
-    const m = String(parsed.getMonth() + 1).padStart(2, '0');
-    const d = String(parsed.getDate()).padStart(2, '0');
+    const y = parsed.getUTCFullYear();
+    const m = String(parsed.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(parsed.getUTCDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   })();
 
@@ -65,9 +67,10 @@ export function CelestialBirthDataForm({ onSaved }: Props) {
     if (profile?.birthDate && !birthDate) {
       const parsed = new Date(profile.birthDate);
       if (!Number.isNaN(parsed.getTime())) {
-        const y = parsed.getFullYear();
-        const m = String(parsed.getMonth() + 1).padStart(2, '0');
-        const d = String(parsed.getDate()).padStart(2, '0');
+        // UTC accessors — see initialDate comment above.
+        const y = parsed.getUTCFullYear();
+        const m = String(parsed.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(parsed.getUTCDate()).padStart(2, '0');
         setBirthDate(`${y}-${m}-${d}`);
       }
     }

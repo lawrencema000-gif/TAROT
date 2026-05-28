@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCelestialMapEngine, type MapMode } from './useCelestialMapEngine';
 import { CelestialMapControls } from './CelestialMapControls';
+import { GLOBAL_CITIES } from '../../data/citiesGlobal';
+import type { City } from '../../utils/celestialGeo';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
 
 /**
@@ -52,6 +54,8 @@ interface Props {
   >;
   onMapClick?: (lonLat: [number, number]) => void;
   onLineClick?: (planet: PlanetName, angle: Angle) => void;
+  /** Tap on a visible city dot — opens the panel for that city. */
+  onCityClick?: (city: City) => void;
   /**
    * Optional initial mode override — defaults to flat. Useful for users
    * who told us they prefer the globe (we'd persist via localStorage).
@@ -62,15 +66,39 @@ interface Props {
    * (search, power-places) can centre the map on a chosen city.
    */
   onEngineReady?: (engine: { flyTo: (lonLat: [number, number]) => void }) => void;
+  /**
+   * Whether to show ALL 280 cities (premium) or only the top by
+   * population (free tier). Defaults to top 30.
+   */
+  cityLimit?: number;
 }
 
-export function CelestialMapView({ lines, onMapClick, onLineClick, initialMode = 'flat', onEngineReady }: Props) {
+export function CelestialMapView({
+  lines,
+  onMapClick,
+  onLineClick,
+  onCityClick,
+  initialMode = 'flat',
+  onEngineReady,
+  cityLimit = 30,
+}: Props) {
   const engine = useCelestialMapEngine({ lines, initialMode });
   const svgRef = useRef<SVGSVGElement | null>(null);
   const groupRef = useRef<SVGGElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [showHint, setShowHint] = useState(false);
+  const [hoveredCity, setHoveredCity] = useState<City | null>(null);
+
+  // The cities we render as visible dots on the map. Free users get the
+  // 30 most populated (covers every major destination); premium users
+  // can see all 280. We sort once at module mount and slice each render
+  // — slicing 280 items is free.
+  const visibleCities = useMemo(() => {
+    return [...GLOBAL_CITIES]
+      .sort((a, b) => b.pop - a.pop)
+      .slice(0, cityLimit);
+  }, [cityLimit]);
 
   // Wire the engine's handlers to the actual SVG element.
   useEffect(() => {
@@ -404,6 +432,101 @@ export function CelestialMapView({ lines, onMapClick, onLineClick, initialMode =
             })}
           </g>
 
+          {/* ── City dots ──────────────────────────────────────────
+              280-city dataset rendered as tiny tappable circles. Each
+              dot sits inside the zoom group so it pans+zooms with the
+              map. Hover shows a tooltip; tap opens the City Insight
+              Panel via the parent's onCityClick.
+
+              Visibility: in globe mode, a city behind the sphere has
+              a projected coordinate but its great-circle distance to
+              the viewer's centre exceeds 90°. We filter those out so
+              the back of the globe stays clean.
+          */}
+          <g className="celestial-cities">
+            {visibleCities.map((city) => {
+              const proj = engine.project([city.lon, city.lat]);
+              if (!proj) return null;
+              // In globe mode, hide cities on the back hemisphere.
+              if (engine.mode === 'globe') {
+                // Check if projected within viewBox (orthographic returns
+                // NaN-equivalent for the far side — but d3 returns the
+                // 2D coords anyway, so we also test the inverse:
+                // re-invert and compare distance.
+                const inv = engine.invert(proj);
+                if (!inv) return null;
+                // Greater than ~0.5° divergence between original and
+                // re-projected = far side.
+                const dLon = Math.abs(((city.lon - inv[0] + 540) % 360) - 180);
+                if (dLon > 1) return null;
+              }
+              const isHovered = hoveredCity?.name === city.name && hoveredCity?.cc === city.cc;
+              const r = isHovered ? 2.6 : 1.6;
+              return (
+                <g
+                  key={`${city.name}-${city.cc}`}
+                  onMouseEnter={() => setHoveredCity(city)}
+                  onMouseLeave={() => setHoveredCity(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCityClick?.(city);
+                  }}
+                  style={{ cursor: onCityClick ? 'pointer' : 'default' }}
+                >
+                  {/* Soft halo (only when hovered) */}
+                  {isHovered && (
+                    <circle
+                      cx={proj[0]}
+                      cy={proj[1]}
+                      r={6}
+                      fill="rgba(244,214,104,0.18)"
+                      pointerEvents="none"
+                    />
+                  )}
+                  {/* Invisible larger hit area for easier tapping */}
+                  <circle
+                    cx={proj[0]}
+                    cy={proj[1]}
+                    r={8}
+                    fill="transparent"
+                  />
+                  {/* The visible dot */}
+                  <circle
+                    cx={proj[0]}
+                    cy={proj[1]}
+                    r={r}
+                    fill={isHovered ? '#f4d668' : '#bfbfd1'}
+                    fillOpacity={isHovered ? 1 : 0.7}
+                    stroke="#0a0a0f"
+                    strokeWidth={0.6}
+                    style={{
+                      transition: 'r 180ms ease, fill 180ms ease, fill-opacity 180ms ease',
+                    }}
+                  />
+                  {/* In-map label when hovered (rendered inside the SVG
+                      so it pans/zooms with the dot; the floating HTML
+                      tooltip below shows the full country + flag). */}
+                  {isHovered && (
+                    <text
+                      x={proj[0] + 6}
+                      y={proj[1] - 6}
+                      style={{
+                        fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                        fontSize: 11,
+                        fontWeight: 500,
+                        letterSpacing: '0.04em',
+                      }}
+                      fill="#f4d668"
+                      pointerEvents="none"
+                    >
+                      {city.name}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+
           {/* Tap pin — animated gold drop with pulse */}
           {pinXY && (
             <g pointerEvents="none">
@@ -463,9 +586,9 @@ export function CelestialMapView({ lines, onMapClick, onLineClick, initialMode =
         )}
       </AnimatePresence>
 
-      {/* ── Hover tooltip ───────────────────────────────────────── */}
+      {/* ── Hover tooltip (planet line) ─────────────────────────── */}
       <AnimatePresence>
-        {engine.hovered && (
+        {engine.hovered && !hoveredCity && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -475,6 +598,29 @@ export function CelestialMapView({ lines, onMapClick, onLineClick, initialMode =
           >
             <span style={{ color: PLANET_COLORS[engine.hovered.planet] }}>●</span>
             <span className="ml-2">{engine.hovered.planet} {engine.hovered.angle}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Hover tooltip (city) ────────────────────────────────── */}
+      <AnimatePresence>
+        {hoveredCity && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg bg-mystic-900/85 backdrop-blur-md hairline-gold-soft text-xs text-mystic-100 pointer-events-none flex items-center gap-2"
+          >
+            <span className="text-base" aria-hidden>
+              {hoveredCity.cc
+                ? String.fromCodePoint(...hoveredCity.cc.toUpperCase().split('').map((c) => 127397 + c.charCodeAt(0)))
+                : '📍'}
+            </span>
+            <div>
+              <div className="font-medium">{hoveredCity.name}</div>
+              <div className="text-[10px] text-mystic-400">{hoveredCity.country}</div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -19,6 +19,12 @@ import type { City } from '../utils/celestialGeo';
 
 const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
+// Visible city counts on the map. Free users see the 30 most-populated
+// cities (covers every major destination); premium sees the full list
+// for finer-grained relocation planning.
+const GLOBAL_CITY_LIMIT_FREE = 30;
+const GLOBAL_CITY_LIMIT_PREMIUM = 280;
+
 /**
  * Celestial Map — astrocartography surface.
  *
@@ -363,7 +369,12 @@ export function CelestialMapPage() {
                 void planet;
                 void angle;
               }}
+              onCityClick={handleCityPick}
               onEngineReady={(api) => { mapEngineRef.current = api; }}
+              // Free users get the 30 most-populated cities (every
+              // major destination covered). Premium gets the full set
+              // for finer-grained planning.
+              cityLimit={isPremium ? GLOBAL_CITY_LIMIT_PREMIUM : GLOBAL_CITY_LIMIT_FREE}
             />
           )}
         </motion.div>

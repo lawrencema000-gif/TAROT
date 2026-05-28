@@ -52,6 +52,20 @@ export interface UserProfile {
   background_url?: string;
   subscribedToNewsletter: boolean;
   createdAt: string;
+  /** Celestial Map "Find Your Place" saved result. One slot per user. */
+  destinedPlace?: DestinedPlace;
+}
+
+export interface DestinedPlace {
+  city: {
+    name: string;
+    country: string;
+    cc: string;
+    lat: number;
+    lon: number;
+  };
+  intent: 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth' | 'all';
+  savedAt: string;
 }
 
 export interface TarotCard {

@@ -12,6 +12,7 @@ import { CelestialCitySearch } from '../components/celestial/CelestialCitySearch
 import { CelestialPowerPlaces } from '../components/celestial/CelestialPowerPlaces';
 import { CelestialEducationSection, CelestialAnglesSection } from '../components/celestial/CelestialEducationSection';
 import { FindYourPlace } from '../components/celestial/FindYourPlace';
+import { DestinedPlaceBanner } from '../components/celestial/DestinedPlaceBanner';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
@@ -73,7 +74,7 @@ const FREE_TIER_PLANETS = new Set<PlanetName>(['Sun', 'Moon']);
 
 export function CelestialMapPage() {
   const { t } = useT('app');
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile, updateProfile } = useAuth();
   const isPremium = !!profile?.isPremium;
   const [activeFilter, setActiveFilter] = useState<LifeArea>('all');
   const [showPaywall, setShowPaywall] = useState(false);
@@ -388,6 +389,28 @@ export function CelestialMapPage() {
         </p>
       </div>
 
+      {/* ── Saved destined-place revisit banner ─────────────────── */}
+      {profile?.destinedPlace && (
+        <DestinedPlaceBanner
+          place={profile.destinedPlace}
+          onRevisit={() => {
+            const dp = profile.destinedPlace!;
+            mapEngineRef.current?.flyTo([dp.city.lon, dp.city.lat]);
+            setTappedPoint({ lon: dp.city.lon, lat: dp.city.lat });
+            setShowInsightPanel(true);
+          }}
+          onDismiss={async () => {
+            // Clear by writing null. updateProfile only sends the
+            // fields we pass, so we explicitly null out destinedPlace.
+            // Cast through unknown because the type field is
+            // optional-only — Partial<UserProfile> doesn't naturally
+            // express "set to null".
+            await updateProfile({ destinedPlace: undefined } as Partial<typeof profile>);
+            await refreshProfile();
+          }}
+        />
+      )}
+
       {/* ── "Find Your Place" — headline AI reveal ─────────────── */}
       {allLines && (
         <FindYourPlace
@@ -407,6 +430,16 @@ export function CelestialMapPage() {
             // AND the reading rising into view.
             mapEngineRef.current?.flyTo([city.lon, city.lat]);
             setTappedPoint({ lon: city.lon, lat: city.lat });
+          }}
+          onSave={async ({ city, intent: savedIntent }) => {
+            await updateProfile({
+              destinedPlace: {
+                city: { name: city.name, country: city.country, cc: city.cc, lat: city.lat, lon: city.lon },
+                intent: savedIntent,
+                savedAt: new Date().toISOString(),
+              },
+            });
+            await refreshProfile();
           }}
         />
       )}

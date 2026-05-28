@@ -57,6 +57,8 @@ interface Props {
   trySpend: () => Promise<boolean>;
   /** When the reveal opens, the parent flies the map to this city. */
   onReveal: (city: PlaceScore['city']) => void;
+  /** Persist the user's chosen destined place via profile update. */
+  onSave: (place: { city: PlaceScore['city']; intent: LifeIntent }) => Promise<void>;
 }
 
 type Phase =
@@ -77,9 +79,25 @@ export function FindYourPlace({
   onUpgrade,
   trySpend,
   onReveal,
+  onSave,
 }: Props) {
   const { t } = useT('app');
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  async function handleSave() {
+    if (phase.kind !== 'done') return;
+    setSaving(true);
+    try {
+      await onSave({ city: phase.result.city, intent });
+      setSavedFlash(true);
+      // Auto-fade the "Saved!" state back to normal after 2.5s.
+      setTimeout(() => setSavedFlash(false), 2500);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   // Score every city against the current intent. Memoised so the
   // expensive Σ over (cities × lines) only runs when inputs change.
@@ -271,6 +289,9 @@ export function FindYourPlace({
                     <ReadingBody
                       reading={phase.reading}
                       onReroll={handleReroll}
+                      onSave={handleSave}
+                      saving={saving}
+                      savedFlash={savedFlash}
                     />
                   </RevealHero>
                 )}
@@ -409,9 +430,15 @@ function ReadingLoading() {
 function ReadingBody({
   reading,
   onReroll,
+  onSave,
+  saving,
+  savedFlash,
 }: {
   reading: CelestialReadingResponse;
   onReroll: () => void;
+  onSave: () => Promise<void>;
+  saving: boolean;
+  savedFlash: boolean;
 }) {
   const { t } = useT('app');
   return (
@@ -472,13 +499,33 @@ function ReadingBody({
       )}
 
       <div className="flex gap-2 pt-2">
-        <Button variant="ghost" size="md" onClick={onReroll}>
+        <Button variant="ghost" size="md" onClick={onReroll} disabled={saving}>
           <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
           {t('celestial.findPlace.reading.rerollCta', { defaultValue: 'Try another' })}
         </Button>
-        <Button variant="primary" size="md" fullWidth>
-          <Bookmark className="w-4 h-4 mr-2" aria-hidden />
-          {t('celestial.findPlace.reading.saveCta', { defaultValue: 'Save this place' })}
+        <Button
+          variant={savedFlash ? 'secondary' : 'primary'}
+          size="md"
+          fullWidth
+          disabled={saving || savedFlash}
+          onClick={onSave}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />
+              {t('celestial.findPlace.reading.saving', { defaultValue: 'Saving…' })}
+            </>
+          ) : savedFlash ? (
+            <>
+              <Bookmark className="w-4 h-4 mr-2 fill-current" aria-hidden />
+              {t('celestial.findPlace.reading.saved', { defaultValue: 'Saved ✨' })}
+            </>
+          ) : (
+            <>
+              <Bookmark className="w-4 h-4 mr-2" aria-hidden />
+              {t('celestial.findPlace.reading.saveCta', { defaultValue: 'Save this place' })}
+            </>
+          )}
         </Button>
       </div>
     </motion.div>

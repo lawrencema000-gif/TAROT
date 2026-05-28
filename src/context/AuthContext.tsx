@@ -110,6 +110,7 @@ interface DbProfile {
   background_url?: string;
   subscribed_to_newsletter: boolean;
   created_at: string;
+  destined_place?: import('../types').DestinedPlace | null;
 }
 
 function mapDbToProfile(db: DbProfile): UserProfile {
@@ -146,6 +147,7 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     background_url: db.background_url,
     subscribedToNewsletter: db.subscribed_to_newsletter ?? true,
     createdAt: db.created_at,
+    destinedPlace: db.destined_place ?? undefined,
   };
 }
 
@@ -176,6 +178,7 @@ const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   streak: 'streak',
   lastRitualDate: 'last_ritual_date',
   locale: 'locale',
+  destinedPlace: 'destined_place',
 };
 
 function mapProfileToDb(profile: Partial<UserProfile>): Record<string, unknown> {

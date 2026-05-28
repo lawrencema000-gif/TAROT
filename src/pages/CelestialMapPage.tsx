@@ -18,6 +18,7 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
 import type { City } from '../utils/celestialGeo';
+import type { DestinedPlace } from '../types';
 
 const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
@@ -84,6 +85,15 @@ export function CelestialMapPage() {
   const { tryConsume, EarnSheet } = useMoonstoneSpend('celestial-travel-reading', { cost: 250 });
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
   const mapEngineRef = useRef<{ flyTo: (lonLat: [number, number]) => void } | null>(null);
+
+  // In-session destined place — set when the user runs Find Your Place
+  // for an immediate map reveal, even before they tap Save. Once they
+  // save, profile.destinedPlace mirrors this and persists across visits.
+  // We track separately so the on-map beacon plays its entrance animation
+  // ONCE per reveal (not every pan/zoom).
+  const [revealedPlace, setRevealedPlace] = useState<DestinedPlace | null>(null);
+  const [beaconEntranceTick, setBeaconEntranceTick] = useState(0);
+  const activeDestinedPlace = revealedPlace ?? profile?.destinedPlace ?? undefined;
 
   // Centralised handler for "pick this city" coming from any source —
   // CitySearch, CelestialPowerPlaces, or future suggestions. Sets the
@@ -377,6 +387,11 @@ export function CelestialMapPage() {
               // major destination covered). Premium gets the full set
               // for finer-grained planning.
               cityLimit={isPremium ? GLOBAL_CITY_LIMIT_PREMIUM : GLOBAL_CITY_LIMIT_FREE}
+              destinedPlace={activeDestinedPlace}
+              // Only animate the beacon entrance on a fresh reveal —
+              // not on every pan/zoom/re-render. The tick changes only
+              // when the user runs Find Your Place again.
+              destinedAnimateEntrance={beaconEntranceTick > 0 && revealedPlace !== null}
             />
           )}
         </motion.div>
@@ -424,12 +439,18 @@ export function CelestialMapPage() {
           onUpgrade={() => setShowPaywall(true)}
           trySpend={tryConsume}
           onReveal={(city) => {
-            // Drop a pin + open the city panel (the map's flyTo handles
-            // the camera animation). The reveal modal sits on top of
-            // the map so the user sees both the cinematic city zoom
-            // AND the reading rising into view.
+            // Drop a pin + fly to the city + show the beacon on the
+            // map. The beacon plays its entrance animation (bumping
+            // beaconEntranceTick forces the AnimatePresence on the
+            // beacon to replay if a user re-reveals the same place).
             mapEngineRef.current?.flyTo([city.lon, city.lat]);
             setTappedPoint({ lon: city.lon, lat: city.lat });
+            setRevealedPlace({
+              city: { name: city.name, country: city.country, cc: city.cc, lat: city.lat, lon: city.lon },
+              intent: activeFilter,
+              savedAt: new Date().toISOString(),
+            });
+            setBeaconEntranceTick((n) => n + 1);
           }}
           onSave={async ({ city, intent: savedIntent }) => {
             await updateProfile({

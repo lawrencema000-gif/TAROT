@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCelestialMapEngine, type MapMode } from './useCelestialMapEngine';
 import { CelestialMapControls } from './CelestialMapControls';
+import { CelestialDestinedBeacon } from './CelestialDestinedBeacon';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
-import type { City } from '../../utils/celestialGeo';
+import { haversineKm, type City } from '../../utils/celestialGeo';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
+import type { DestinedPlace } from '../../types';
 
 /**
  * Interactive SVG world map for astrocartography.
@@ -71,6 +73,17 @@ interface Props {
    * population (free tier). Defaults to top 30.
    */
   cityLimit?: number;
+  /**
+   * If set, render the destined-place beacon on the map: large gold
+   * pin + rays + pulsing halo + constellation lines from contributing
+   * planets to the city. Driven by profile.destinedPlace AND by the
+   * in-session reveal flow.
+   */
+  destinedPlace?: DestinedPlace;
+  /** Set to true on a fresh reveal so the beacon plays its entrance
+   *  animation; false on subsequent renders so it doesn't replay
+   *  every pan/zoom. */
+  destinedAnimateEntrance?: boolean;
 }
 
 export function CelestialMapView({
@@ -81,6 +94,8 @@ export function CelestialMapView({
   initialMode = 'flat',
   onEngineReady,
   cityLimit = 30,
+  destinedPlace,
+  destinedAnimateEntrance = false,
 }: Props) {
   const engine = useCelestialMapEngine({ lines, initialMode });
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -236,6 +251,53 @@ export function CelestialMapView({
   // Tap pin's projected coordinates (recomputed when projection changes
   // so the pin tracks rotation in globe mode).
   const pinXY = engine.tapPin ? engine.project([engine.tapPin.lon, engine.tapPin.lat]) : null;
+
+  // ── Destined place: projected coords + constellation segments ───
+  // For each planet line passing within 700km of the destined city,
+  // find the closest point on that line + project both endpoints. The
+  // beacon component renders the lines as dashed gold paths "drawing
+  // in" toward the city.
+  const destinedXY = useMemo(() => {
+    if (!destinedPlace) return null;
+    return engine.project([destinedPlace.city.lon, destinedPlace.city.lat]);
+  }, [destinedPlace, engine]);
+
+  const constellationSegments = useMemo(() => {
+    if (!destinedPlace || !destinedXY) return [];
+    const dest = destinedPlace.city;
+    const RADIUS_KM = 700;
+    const PLANET_COLOR_LOCAL: Record<PlanetName, string> = {
+      Sun: '#f4d668', Moon: '#e6e0ff', Mercury: '#a8e8e0', Venus: '#f0b8a0',
+      Mars: '#e07a5f', Jupiter: '#d4af37', Saturn: '#c2b280', Uranus: '#80c8e8',
+      Neptune: '#8e6eb5', Pluto: '#a83253',
+    };
+    // Find closest sample point on each planet line within radius.
+    const segs: Array<{ from: [number, number]; to: [number, number]; color: string }> = [];
+    const bestPerPlanet = new Map<string, { lon: number; lat: number; km: number }>();
+    for (const feat of lines.features) {
+      const { planet, angle } = feat.properties!;
+      const key = `${planet}-${angle}`;
+      const coords = feat.geometry.coordinates as [number, number][];
+      for (const [lon, lat] of coords) {
+        const km = haversineKm(dest.lat, dest.lon, lat, lon);
+        if (km <= RADIUS_KM) {
+          const prev = bestPerPlanet.get(key);
+          if (!prev || km < prev.km) bestPerPlanet.set(key, { lon, lat, km });
+        }
+      }
+    }
+    // Project + build segments (up to 4 closest).
+    const sorted = [...bestPerPlanet.entries()]
+      .sort((a, b) => a[1].km - b[1].km)
+      .slice(0, 4);
+    for (const [key, { lon, lat }] of sorted) {
+      const fromXY = engine.project([lon, lat]);
+      if (!fromXY) continue;
+      const planet = key.split('-')[0] as PlanetName;
+      segs.push({ from: fromXY, to: destinedXY, color: PLANET_COLOR_LOCAL[planet] });
+    }
+    return segs;
+  }, [destinedPlace, destinedXY, engine, lines]);
 
   return (
     <div
@@ -526,6 +588,21 @@ export function CelestialMapView({
               );
             })}
           </g>
+
+          {/* ── Destined-place beacon ──────────────────────────────
+              Big animated gold pin + rays + pulsing halo + constellation
+              lines from contributing planets, when a destined place is
+              set. Lives inside the zoom group so it pans/zooms with
+              the map; constellation segments recompute on rotation
+              changes in globe mode via the useMemo dep on `engine`. */}
+          {destinedPlace && destinedXY && (
+            <CelestialDestinedBeacon
+              place={destinedPlace}
+              cityXY={destinedXY}
+              constellationSegments={constellationSegments}
+              animateEntrance={destinedAnimateEntrance}
+            />
+          )}
 
           {/* Tap pin — animated gold drop with pulse */}
           {pinXY && (

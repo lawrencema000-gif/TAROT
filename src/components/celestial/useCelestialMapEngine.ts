@@ -3,7 +3,6 @@ import { geoEquirectangular, geoOrthographic, geoPath, geoGraticule10, geoInterp
 import { feature, mesh } from 'topojson-client';
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity, type D3ZoomEvent, type ZoomBehavior, type ZoomTransform } from 'd3-zoom';
-import { drag, type D3DragEvent } from 'd3-drag';
 import { easeCubicInOut } from 'd3-ease';
 import worldData from 'world-atlas/countries-110m.json';
 import type { Topology, GeometryCollection } from 'topojson-specification';
@@ -111,6 +110,18 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
 
   const pathGenerator = useMemo(() => geoPath(projection), [projection]);
 
+  // Stable refs for the pointer handlers below — they read latest
+  // values without re-binding listeners on every rotation tick (which
+  // would cause the gesture to drop mid-drag).
+  const projectionRef = useRef(projection);
+  const rotationRef = useRef(rotation);
+  useEffect(() => {
+    projectionRef.current = projection;
+  }, [projection]);
+  useEffect(() => {
+    rotationRef.current = rotation;
+  }, [rotation]);
+
   const paths = useMemo(() => {
     const countries = feature(topology, topology.objects.countries);
     const borders = mesh(topology, topology.objects.countries, (a, b) => a !== b);
@@ -202,51 +213,83 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
   );
 
   // ── Globe drag-to-rotate ──────────────────────────────────────────
-  // Attached separately from zoom so we can disable it in flat mode
-  // without rebuilding the whole zoom behavior. Uses a stable ref so
-  // we don't double-bind on re-renders.
+  // Raw pointer-event handlers attached directly to the SVG. This is
+  // the second attempt — the first used d3-drag with a `target.tagName
+  // === 'svg'` filter, which only fired on truly empty SVG areas. On a
+  // globe the SVG is dense with continent paths and planet lines, so
+  // the filter rejected drag on almost every pixel and rotation never
+  // worked.
+  //
+  // Raw handlers fire regardless of which child element is the target —
+  // we capture the gesture at the root and only forward to child
+  // handlers (city dot click, line tap) when the gesture is a CLICK,
+  // not a drag (movement > 5px from start).
   useEffect(() => {
     const svgEl = svgRef.current;
     if (!svgEl || mode !== 'globe') return;
 
-    let dragStart: [number, number] = [0, 0];
+    let active = false;
+    let startX = 0;
+    let startY = 0;
     let startRotation: [number, number, number] = [0, 0, 0];
+    let totalDelta = 0;
 
-    const dragBehavior = drag<SVGSVGElement, unknown>()
-      .filter((event) => {
-        // Don't capture drag when the user is interacting with a
-        // child element that should handle its own input (e.g. the
-        // tap-to-open-panel on cities). Empty area = our drag.
-        const target = event.target as Element | null;
-        return !!(target?.tagName === 'svg' || target?.classList.contains('celestial-drag-surface'));
-      })
-      .on('start', (event: D3DragEvent<SVGSVGElement, unknown, unknown>) => {
-        dragStart = [event.x, event.y];
-        startRotation = [...rotation];
-      })
-      .on('drag', (event: D3DragEvent<SVGSVGElement, unknown, unknown>) => {
-        const dx = event.x - dragStart[0];
-        const dy = event.y - dragStart[1];
-        // Scale pixel delta to degrees by the projection scale so the
-        // globe rotates at a natural rate. Approximate factor: 0.4
-        // deg/px works well for our viewBox size.
-        const scale = projection.scale();
-        const sensitivity = 80 / scale;
-        const newLambda = startRotation[0] + dx * sensitivity;
-        // Clamp φ so the user can't flip past the poles.
-        const newPhi = Math.max(-85, Math.min(85, startRotation[1] + dy * sensitivity));
-        setRotation([newLambda, newPhi, startRotation[2]]);
-      });
+    function onPointerDown(e: PointerEvent) {
+      if (e.button !== 0 && e.pointerType !== 'touch') return;
+      active = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startRotation = [...rotationRef.current];
+      totalDelta = 0;
+      svgEl!.setPointerCapture(e.pointerId);
+    }
 
-    select(svgEl).call(dragBehavior);
+    function onPointerMove(e: PointerEvent) {
+      if (!active) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      totalDelta = Math.max(totalDelta, Math.abs(dx) + Math.abs(dy));
+      // Scale pixel delta to degrees by the projection scale so the
+      // rotation feels natural at any zoom level.
+      const scale = projectionRef.current?.scale() ?? 200;
+      const sensitivity = 80 / scale;
+      const newLambda = startRotation[0] + dx * sensitivity;
+      // Clamp φ so the user can't flip past the poles.
+      const newPhi = Math.max(-85, Math.min(85, startRotation[1] + dy * sensitivity));
+      setRotation([newLambda, newPhi, startRotation[2]]);
+    }
+
+    function onPointerUp(e: PointerEvent) {
+      if (!active) return;
+      active = false;
+      try { svgEl!.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+      // If the gesture was a real drag (movement > threshold), swallow
+      // the subsequent click so the tap-to-open-panel doesn't fire.
+      // Without this guard, rotating then releasing on a city dot
+      // would open that city's panel.
+      if (totalDelta > 6) {
+        const stopClick = (clickEv: MouseEvent) => {
+          clickEv.stopPropagation();
+          clickEv.preventDefault();
+          svgEl!.removeEventListener('click', stopClick, true);
+        };
+        svgEl!.addEventListener('click', stopClick, true);
+        // Auto-cleanup in case no click event fires (e.g. touch release
+        // outside the element).
+        setTimeout(() => svgEl!.removeEventListener('click', stopClick, true), 50);
+      }
+    }
+
+    svgEl.addEventListener('pointerdown', onPointerDown);
+    svgEl.addEventListener('pointermove', onPointerMove);
+    svgEl.addEventListener('pointerup', onPointerUp);
+    svgEl.addEventListener('pointercancel', onPointerUp);
     return () => {
-      // Detach by replacing with a no-op drag behaviour. d3-drag has no
-      // explicit "remove" — calling .on('start', null) etc. is the way.
-      select(svgEl).on('.drag', null);
+      svgEl.removeEventListener('pointerdown', onPointerDown);
+      svgEl.removeEventListener('pointermove', onPointerMove);
+      svgEl.removeEventListener('pointerup', onPointerUp);
+      svgEl.removeEventListener('pointercancel', onPointerUp);
     };
-    // projection is stable per (mode, rotation); we depend on
-    // `mode` here so this only re-runs when toggling.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   // ── Mode transition animation (flat ↔ globe) ──────────────────────

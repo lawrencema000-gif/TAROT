@@ -28,6 +28,13 @@ import { z } from "npm:zod@3.24.1";
 const ANGLES = ["AC", "DC", "MC", "IC"] as const;
 
 const RequestSchema = z.object({
+  /**
+   * Reading mode. "travel" is the original tap-anywhere-on-the-map
+   * reading. "best-place" is the headline "Find Your Place" reveal:
+   * longer, richer, returns the why-this-place-fits-you narrative
+   * for the single top-ranked city the client scored locally.
+   */
+  mode: z.enum(["travel", "best-place"]).default("travel"),
   city: z.object({
     name: z.string().min(1).max(120),
     country: z.string().min(1).max(120),
@@ -67,14 +74,16 @@ interface LineNote {
 interface Resp {
   /** One-line verdict — "Strong career line, mixed for love" kind of thing. */
   verdict: string;
-  /** 2-4 sentence main reading. */
+  /** 2-4 sentence main reading (travel mode) OR longer narrative (best-place mode). */
   body: string;
   /** Per-line nuance — at most 4, sorted by closest distance. */
   lineNotes: LineNote[];
   /** What to watch out for — one sentence. */
   cautionsNote: string;
-  /** Concrete "first three days here" practice — 2-3 sentence ritual. */
+  /** Concrete practice ritual — 2-3 sentences. */
   practice: string;
+  /** Only present in "best-place" mode — a short poetic closing line. */
+  closingBlessing?: string;
 }
 
 const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
@@ -130,6 +139,57 @@ Schema:
   "practice": string
 }`;
 
+/**
+ * Best-place reading system prompt — the headline "Find Your Place"
+ * feature. Longer body (5-7 sentences), explicit case-making for why
+ * this city tops the user's chart for the chosen intent, and a poetic
+ * closing line.
+ */
+const BEST_PLACE_SYSTEM = `You are an astrocartography reader. The user just ran a "Find My Best Place" query on their personal celestial map. Our algorithm has ranked this city as their #1 match for their stated life-area intent. Your job is to write the case for it.
+
+You will receive:
+- The winning city + country.
+- The user's INTENT (love / career / travel / healing / home / growth / all).
+- The planetary lines active within 700km, sorted closest first.
+- Light personal context (zodiac sign, MBTI) — use sparingly.
+
+Astrocartography canon (Jim Lewis tradition):
+- AC: identity, how you present, fresh start
+- DC: partners, mirrors, one-to-ones
+- MC: reputation, career, public visibility
+- IC: home, foundations, ancestry, private life
+- Sun: identity / recognition. Moon: emotion / home-feeling.
+- Mercury: communication / trade. Venus: love / beauty / ease.
+- Mars: drive / heat. Jupiter: expansion / luck.
+- Saturn: structure / gravitas. Uranus: disruption / reinvention.
+- Neptune: dream / art / spirituality. Pluto: transformation / depth.
+
+Your job (this is the headline "destined place" reveal — write with quiet conviction):
+
+1. VERDICT — one tight, declarative line declaring this city as their best fit for the chosen intent. ~14 words. Confident but not boastful.
+2. BODY — 5-7 sentences explaining WHY this city tops their chart. Lead with the closest, strongest line. Name specific planet+angle combinations and translate them into plain language ("Jupiter on your career meridian passes 40km from here — the line of public recognition runs almost through the city centre"). Weave 2-3 lines together as a coherent narrative. Make it feel like the writer KNOWS this is the right place, not hedging.
+3. LINE NOTES — for the 3-4 most influential lines (closest first), one short sentence each: what specifically that line brings.
+4. CAUTIONS — one honest sentence on what to watch for. The map shows alignment, not guarantees.
+5. PRACTICE — a richer "first month here" practice plan: 2-3 sentences naming a specific habit or place-based ritual the user can do once they arrive (or visit) to ground into the lines.
+6. CLOSING BLESSING — a single poetic line. 8-14 words. Brand-true: mystical but grounded, gold not garish. Examples: "May your Saturn line teach you what stays." / "Walk slowly — the place is already meeting you halfway."
+
+Rules:
+- Voice: confident-but-soft. Treat this as a personal letter from a trusted advisor, not a press release.
+- Astrocartography is a signal map, NOT a guarantee. Avoid binding language ("you will...", "this place will give you...").
+- Specific over generic — name distances, planets, angles, neighbourhoods you can plausibly infer. Don't invent street names.
+- If contributingLines is sparse (1-2 lines), still write the reading but lower the certainty in BODY accordingly.
+- Output MUST be valid JSON matching the schema. No markdown, no preamble.
+
+Schema:
+{
+  "verdict": string,
+  "body": string,
+  "lineNotes": [ { "planet": string, "angle": string, "note": string } ] (2-4),
+  "cautionsNote": string,
+  "practice": string,
+  "closingBlessing": string
+}`;
+
 async function callAI(input: Req): Promise<Resp> {
   const locale = input.userContext?.locale ?? "en";
   const localeLine = locale !== "en"
@@ -151,7 +211,8 @@ async function callAI(input: Req): Promise<Resp> {
     ? `\n\nPersonal context (use sparingly):\n${ctxLines.join("\n")}`
     : "";
 
-  const userPrompt = `Tapped place: ${input.city.name}, ${input.city.country} (${input.city.lat.toFixed(2)}°, ${input.city.lon.toFixed(2)}°)
+  const placeLabel = input.mode === "best-place" ? "Winning city" : "Tapped place";
+  const userPrompt = `${placeLabel}: ${input.city.name}, ${input.city.country} (${input.city.lat.toFixed(2)}°, ${input.city.lon.toFixed(2)}°)
 Intent: ${input.intent}
 
 Active lines within 700 km:
@@ -159,11 +220,14 @@ ${linesList}${ctxBlock}
 
 Reply with ONLY the JSON object matching the schema, nothing else.${localeLine}`;
 
+  // best-place needs more headroom because the body is 5-7 sentences
+  // plus the closing blessing.
+  const isBestPlace = input.mode === "best-place";
   const parsed = await callAIJson<Resp>({
-    system: SYSTEM,
+    system: isBestPlace ? BEST_PLACE_SYSTEM : SYSTEM,
     userPrompt,
-    temperature: 0.7,
-    maxOutputTokens: 800,
+    temperature: isBestPlace ? 0.78 : 0.7,
+    maxOutputTokens: isBestPlace ? 1400 : 800,
   });
 
   if (
@@ -174,6 +238,10 @@ Reply with ONLY the JSON object matching the schema, nothing else.${localeLine}`
     !parsed.practice
   ) {
     throw new AppError("AI_MALFORMED_RESPONSE", "AI response missing required fields", 502);
+  }
+  // best-place additionally requires closingBlessing.
+  if (isBestPlace && !parsed.closingBlessing) {
+    throw new AppError("AI_MALFORMED_RESPONSE", "Best-place reading missing closingBlessing", 502);
   }
 
   return parsed;
@@ -206,7 +274,7 @@ Deno.serve(handler<Req, Resp>({
     const key = await aiCacheKey(
       "celestial-travel-reading",
       CACHE_MODEL_TAG,
-      `${body.birth.utc}|${cityKey}|${body.intent}|${linesKey}`,
+      `${body.mode}|${body.birth.utc}|${cityKey}|${body.intent}|${linesKey}`,
       ctxKey,
     );
 

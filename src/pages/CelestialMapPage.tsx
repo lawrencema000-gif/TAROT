@@ -11,6 +11,7 @@ import { CelestialBirthDataForm } from '../components/celestial/CelestialBirthDa
 import { CelestialCitySearch } from '../components/celestial/CelestialCitySearch';
 import { CelestialPowerPlaces } from '../components/celestial/CelestialPowerPlaces';
 import { CelestialEducationSection, CelestialAnglesSection } from '../components/celestial/CelestialEducationSection';
+import { FindYourPlace } from '../components/celestial/FindYourPlace';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
@@ -386,6 +387,29 @@ export function CelestialMapPage() {
           })}
         </p>
       </div>
+
+      {/* ── "Find Your Place" — headline AI reveal ─────────────── */}
+      {allLines && (
+        <FindYourPlace
+          allLines={allLines}
+          intent={activeFilter}
+          birthUtc={birth.utcDate.toISOString()}
+          zodiacSign={profile?.birthDate ? getZodiacSign(profile.birthDate) : undefined}
+          mbtiType={profile?.mbtiType ?? undefined}
+          locale={typeof navigator !== 'undefined' ? navigator.language?.slice(0, 2) : undefined}
+          isPremium={isPremium}
+          onUpgrade={() => setShowPaywall(true)}
+          trySpend={tryConsume}
+          onReveal={(city) => {
+            // Drop a pin + open the city panel (the map's flyTo handles
+            // the camera animation). The reveal modal sits on top of
+            // the map so the user sees both the cinematic city zoom
+            // AND the reading rising into view.
+            mapEngineRef.current?.flyTo([city.lon, city.lat]);
+            setTappedPoint({ lon: city.lon, lat: city.lat });
+          }}
+        />
+      )}
 
       {/* ── "Your power places" — computed top cities ────────── */}
       {allLines && (

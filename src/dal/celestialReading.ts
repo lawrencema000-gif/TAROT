@@ -15,6 +15,9 @@ import type { Result } from './dailyRituals';
 export type LifeIntent = 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth' | 'all';
 
 export interface CelestialReadingRequest {
+  /** Reading mode — "travel" (default, tap-anywhere) or "best-place"
+   *  (richer narrative for the headline "Find Your Place" feature). */
+  mode?: 'travel' | 'best-place';
   city: {
     name: string;
     country: string;
@@ -41,6 +44,8 @@ export interface CelestialReadingResponse {
   lineNotes: Array<{ planet: string; angle: string; note: string }>;
   cautionsNote: string;
   practice: string;
+  /** Only present in best-place mode — a short poetic closing line. */
+  closingBlessing?: string;
 }
 
 /**

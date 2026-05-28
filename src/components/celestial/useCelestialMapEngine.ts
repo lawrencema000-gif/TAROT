@@ -146,6 +146,14 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
     [projection],
   );
 
+  // Track the current mode for d3-zoom's filter without rebinding the
+  // whole behaviour on every mode change. d3's filter sees the latest
+  // value via the ref.
+  const modeRef = useRef<MapMode>(initialMode);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
   // Attach d3-zoom + d3-drag handlers to the SVG. Re-runs whenever the
   // svg/group refs land. d3-zoom mutates a CSS transform on the group;
   // d3-drag (globe mode only) drives the rotation state.
@@ -156,8 +164,26 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
       if (!svgEl) return;
 
       // ── d3-zoom ─────────────────────────────────────────────────
+      // Filter: in globe mode, REJECT mousedown/touchstart so that
+      // d3-drag (attached separately) can capture the rotation gesture.
+      // Wheel + pinch still pass through so zoom continues to work in
+      // both modes. Without this filter, d3-zoom and d3-drag fight over
+      // the same pointer events and rotation never fires.
       const z = zoom<SVGSVGElement, unknown>()
         .scaleExtent(ZOOM_RANGE)
+        .filter((event) => {
+          // Allow wheel + pinch (touch with 2 fingers) at all times.
+          // Block primary mousedown / single-finger touchstart when in
+          // globe mode so the drag handler gets them.
+          const isPrimaryDrag =
+            event.type === 'mousedown' || event.type === 'touchstart' || event.type === 'pointerdown';
+          if (isPrimaryDrag && modeRef.current === 'globe') {
+            return false;
+          }
+          // Defer to d3-zoom's default filter: no ctrl-wheel for browser
+          // zoom, no right-click pan, etc.
+          return !event.ctrlKey && !event.button;
+        })
         .on('zoom', (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
           setTransform(event.transform);
           // Apply the transform to the group via CSS — far cheaper than
@@ -169,7 +195,7 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
       zoomBehaviorRef.current = z;
       select(svgEl).call(z);
 
-      // Suppress double-tap-to-zoom on touch (rotation owns drag).
+      // Suppress browser pan-zoom on touch (we handle it ourselves).
       svgEl.style.touchAction = 'none';
     },
     [],

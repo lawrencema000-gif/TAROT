@@ -392,6 +392,14 @@ export function CelestialMapPage() {
               // not on every pan/zoom/re-render. The tick changes only
               // when the user runs Find Your Place again.
               destinedAnimateEntrance={beaconEntranceTick > 0 && revealedPlace !== null}
+              // Pass the user's birth coords if we have them — this
+              // surfaces the "Find me" button in the map controls,
+              // which centres the camera on the birth city.
+              birthLocation={
+                profile?.birthLat != null && profile?.birthLon != null
+                  ? { lat: profile.birthLat, lon: profile.birthLon }
+                  : undefined
+              }
             />
           )}
         </motion.div>

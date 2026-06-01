@@ -84,6 +84,13 @@ interface Props {
    *  animation; false on subsequent renders so it doesn't replay
    *  every pan/zoom. */
   destinedAnimateEntrance?: boolean;
+  /**
+   * Optional birth lon/lat of the user. When set, the "Find me" button
+   * appears in the controls overlay and centres the map on this point
+   * when tapped. We pass it as a separate prop (vs reading from the
+   * profile here) so the view stays decoupled from the auth context.
+   */
+  birthLocation?: { lon: number; lat: number };
 }
 
 export function CelestialMapView({
@@ -96,6 +103,7 @@ export function CelestialMapView({
   cityLimit = 30,
   destinedPlace,
   destinedAnimateEntrance = false,
+  birthLocation,
 }: Props) {
   const engine = useCelestialMapEngine({ lines, initialMode });
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -646,6 +654,11 @@ export function CelestialMapView({
         onZoomIn={engine.zoomIn}
         onZoomOut={engine.zoomOut}
         onReset={engine.reset}
+        onFindMe={
+          birthLocation
+            ? () => engine.flyTo([birthLocation.lon, birthLocation.lat])
+            : undefined
+        }
       />
 
       {/* ── One-time interaction hint ───────────────────────────── */}

@@ -316,8 +316,17 @@ async function callGemini(prompt: string, model: string): Promise<AiCallResult> 
   }
 
   const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  // A 200 with no usable text (safety-blocked candidate, empty parts,
+  // MAX_TOKENS with no content) must be treated as a FAILURE so the
+  // fallback chain moves on — previously this returned text:"" which the
+  // caller cached + saved as a "successful" blank reading.
+  if (!text || typeof text !== "string" || text.trim().length === 0) {
+    const finishReason = data.candidates?.[0]?.finishReason ?? "unknown";
+    throw new Error(`Gemini returned no usable text (finishReason=${finishReason})`);
+  }
   return {
-    text: data.candidates?.[0]?.content?.parts?.[0]?.text || "",
+    text: text.trim(),
     usage: (data.usageMetadata as UsageMetadata) ?? {},
     model,
   };

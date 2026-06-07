@@ -100,10 +100,25 @@ interface OpenAIModerationResult {
   category_scores: Record<string, number>;
 }
 
-async function runOpenAIModeration(text: string): Promise<OpenAIModerationResult | null> {
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) return null; // soft-fail: if no key, fall back to crisis-only screening
+/**
+ * Result of attempting OpenAI moderation. We MUST distinguish three cases
+ * that previously collapsed into `null`:
+ *   - 'screened'  → the API ran and returned a verdict (clean OR flagged)
+ *   - 'unavailable' → no key, network error, or non-200 — we could NOT screen
+ * Treating 'unavailable' the same as 'clean' was a fail-OPEN bug: during any
+ * OpenAI outage, all content auto-published unscreened. We now fail to
+ * 'review' (write but hide from public feeds, queue for a human) instead.
+ */
+type ModerationOutcome =
+  | { state: "screened"; result: OpenAIModerationResult }
+  | { state: "unavailable"; reason: string };
 
+async function runOpenAIModeration(text: string): Promise<ModerationOutcome> {
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) return { state: "unavailable", reason: "no-api-key" };
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
   try {
     const res = await fetch("https://api.openai.com/v1/moderations", {
       method: "POST",
@@ -115,35 +130,51 @@ async function runOpenAIModeration(text: string): Promise<OpenAIModerationResult
         model: "omni-moderation-latest",
         input: text,
       }),
+      signal: controller.signal,
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { state: "unavailable", reason: `http-${res.status}` };
     const json = await res.json() as { results?: OpenAIModerationResult[] };
-    return json.results?.[0] ?? null;
-  } catch {
-    return null;
+    const result = json.results?.[0];
+    if (!result) return { state: "unavailable", reason: "empty-result" };
+    return { state: "screened", result };
+  } catch (e) {
+    const aborted = e instanceof DOMException && e.name === "AbortError";
+    return { state: "unavailable", reason: aborted ? "timeout" : "network-error" };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
-function classifyFromOpenAI(result: OpenAIModerationResult | null): {
+function classifyFromOpenAI(outcome: ModerationOutcome): {
   verdict: "allow" | "review" | "block";
   categories: string[];
+  screened: boolean;
 } {
-  if (!result) return { verdict: "allow", categories: [] };
+  // Could not screen → FAIL SAFE to review (not allow). The post is
+  // written but hidden from public feeds and queued for a human, so an
+  // OpenAI outage never publishes unscreened content. This is the
+  // deliberate middle ground between fail-open (auto-publish, unsafe)
+  // and fail-closed (block all posts, hostile to legit users during a
+  // blip).
+  if (outcome.state === "unavailable") {
+    return { verdict: "review", categories: [`unscreened:${outcome.reason}`], screened: false };
+  }
+  const result = outcome.result;
   const flagged = Object.entries(result.categories)
     .filter(([, v]) => v === true)
     .map(([k]) => k);
-  if (flagged.length === 0) return { verdict: "allow", categories: [] };
+  if (flagged.length === 0) return { verdict: "allow", categories: [], screened: true };
   for (const cat of flagged) {
     if (HARD_BLOCK_CATEGORIES.has(cat)) {
-      return { verdict: "block", categories: flagged };
+      return { verdict: "block", categories: flagged, screened: true };
     }
   }
   for (const cat of flagged) {
     if (REVIEW_CATEGORIES.has(cat)) {
-      return { verdict: "review", categories: flagged };
+      return { verdict: "review", categories: flagged, screened: true };
     }
   }
-  return { verdict: "allow", categories: flagged };
+  return { verdict: "allow", categories: flagged, screened: true };
 }
 
 const CRISIS_RESOURCES = {
@@ -168,9 +199,17 @@ Deno.serve(handler<Request, ModerationResponse>({
     // determines whether we surface resources regardless of other signals.
     const crisis = detectCrisis(content);
 
-    // Run OpenAI Moderation (soft-fail on network error).
-    const openAIResult = await runOpenAIModeration(content);
-    const { verdict: openAIVerdict, categories } = classifyFromOpenAI(openAIResult);
+    // Run OpenAI Moderation. On unavailability we FAIL TO REVIEW (not
+    // allow) — see classifyFromOpenAI. `screened=false` is logged so we
+    // can alert on screening-outage spikes.
+    const openAIOutcome = await runOpenAIModeration(content);
+    const { verdict: openAIVerdict, categories, screened } = classifyFromOpenAI(openAIOutcome);
+    if (!screened) {
+      ctx.log.warn("moderation.unscreened_failsafe_review", {
+        reason: categories[0],
+        surface,
+      });
+    }
 
     // Final verdict:
     //   - Crisis post never blocks — we route to resources instead.

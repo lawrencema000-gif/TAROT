@@ -440,6 +440,11 @@ async function callAI(prompt: string): Promise<ReadingShape> {
 Deno.serve(handler<BaziInput>({
   fn: "bazi-interpret",
   auth: "required",
+  // ai:true wires the master AI kill-switch (feature_flags.ai-enabled)
+  // + the per-user daily ceiling. This function previously bypassed both
+  // because it manages its own provider chain — but the kill-switch must
+  // cover every AI spender so AI can be paused globally without a deploy.
+  ai: true,
   rateLimit: { max: 5, windowMs: 60_000 },
   run: async (ctx, body) => {
     if (!body) throw new AppError("MISSING_BODY", "Request body required", 400);

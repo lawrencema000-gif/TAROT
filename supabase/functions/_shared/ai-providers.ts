@@ -115,6 +115,12 @@ async function openAIChat(
     body.temperature = temperature;
   }
 
+  // AbortController timeout — without it a hung OpenAI request never
+  // resolves, so the Gemini fallback in runChain never engages on a
+  // stall (only on an explicit non-200 or network throw). 30s is well
+  // past p99 for our prompt sizes; anything slower should fail over.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -123,6 +129,7 @@ async function openAIChat(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
     if (!res.ok) {
       return { ok: false, status: res.status, body: (await res.text()).slice(0, 300) };
@@ -134,7 +141,10 @@ async function openAIChat(
     }
     return { ok: true, text: text.trim() };
   } catch (e) {
-    return { ok: false, status: 0, body: `openai network: ${String(e).slice(0, 200)}` };
+    const aborted = e instanceof DOMException && e.name === "AbortError";
+    return { ok: false, status: 0, body: aborted ? "openai: timeout (30s)" : `openai network: ${String(e).slice(0, 200)}` };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -155,11 +165,17 @@ async function geminiChat(
     parts: [{ text: m.content }],
   }));
 
+  // AbortController timeout — same rationale as openAIChat. A stalled
+  // Gemini call (when it is the active provider) should fail out cleanly
+  // rather than hanging the whole edge invocation.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents,
@@ -187,7 +203,10 @@ async function geminiChat(
     }
     return { ok: true, text: text.trim() };
   } catch (e) {
-    return { ok: false, status: 0, body: `gemini network: ${String(e).slice(0, 200)}` };
+    const aborted = e instanceof DOMException && e.name === "AbortError";
+    return { ok: false, status: 0, body: aborted ? "gemini: timeout (30s)" : `gemini network: ${String(e).slice(0, 200)}` };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

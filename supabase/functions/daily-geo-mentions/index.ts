@@ -187,6 +187,9 @@ Deno.serve(handler<unknown>({
   fn: "daily-geo-mentions",
   auth: "webhook",
   webhookSecretEnv: "CRON_SECRET",
+  // ai:true wires the master AI kill-switch. Webhook (no ctx.userId) so
+  // no per-user ceiling — just the global feature_flags.ai-enabled pause.
+  ai: true,
   rateLimit: { max: 5, windowMs: 60_000 },
   run: async (ctx) => {
     const today = new Date().toISOString().split("T")[0];

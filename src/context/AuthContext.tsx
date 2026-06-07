@@ -239,6 +239,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // state writes if the user signed out (or switched accounts) while the
   // profile query was in flight. Set in the onAuthStateChange listener.
   const activeUserIdRef = useRef<string | null>(null);
+  // Timestamp (ms epoch) until which an optimistic premium flip is
+  // honored even if a concurrent fetchProfile reads is_premium=false from
+  // a not-yet-updated DB row. Set by optimisticallyMarkPremium after a
+  // purchase; bounded so a webhook that never lands eventually reverts.
+  const optimisticPremiumUntilRef = useRef<number>(0);
+  // Latest isPremium value, mirrored into a ref so the realtime channel's
+  // change handler can compare without the channel effect depending on
+  // profile?.isPremium (which would tear down + re-subscribe on every
+  // premium flip — the exact event we care about).
+  const isPremiumRef = useRef<boolean | undefined>(undefined);
 
   const fetchProfile = useCallback(async (userId: string) => {
     // Deduplicate: skip if already fetching for this user
@@ -273,6 +283,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data) {
       const profile = mapDbToProfile(data as DbProfile);
+      // Preserve an in-flight optimistic premium flip. After a purchase
+      // we flip isPremium=true locally before the webhook updates the DB.
+      // If a fetchProfile (triggered by realtime/visibility/poll) reads
+      // the row in that window and the webhook hasn't landed yet, the row
+      // still says is_premium=false — writing it would flicker the UI
+      // back to locked. Within the bounded optimistic window we keep the
+      // flag true; once the window expires (webhook truly never landed)
+      // the DB value wins and the user reverts to free.
+      if (!profile.isPremium && Date.now() < optimisticPremiumUntilRef.current) {
+        profile.isPremium = true;
+      }
+      isPremiumRef.current = profile.isPremium;
       setProfile(profile);
 
       // Sync locale between profile and client i18n state.
@@ -1302,6 +1324,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * access — far better than seeing 'success' then a still-locked UI.
    */
   const optimisticallyMarkPremium = useCallback(() => {
+    // Honor the optimistic flag for up to 90s — the realistic worst-case
+    // webhook propagation window. fetchProfile reads this ref so a stale
+    // DB read during that window can't clobber the flip back to locked.
+    optimisticPremiumUntilRef.current = Date.now() + 90_000;
+    isPremiumRef.current = true;
     setProfile((current) => {
       if (!current) return current;
       if (current.isPremium) return current;
@@ -1469,6 +1496,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, [user?.id, profile?.isPremium, optimisticallyMarkPremium, pollProfileUntilPremium]);
 
+  // Mirror the latest isPremium into a ref so the realtime change
+  // handler (below) can compare without the channel effect depending on
+  // it. Covers every setProfile path: fetchProfile, optimistic flip,
+  // native reconcile downgrade, updateProfile.
+  useEffect(() => {
+    isPremiumRef.current = profile?.isPremium;
+  }, [profile?.isPremium]);
+
   // ─── Real-time premium-state sync ───────────────────────────────────
   //
   // Subscribe to Postgres UPDATE events on this user's `profiles` row so
@@ -1511,11 +1546,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // mapDbToProfile transformations) — easier to re-fetch.
           const newRow = payload.new as Record<string, unknown> | undefined;
           const newIsPremium = newRow?.is_premium;
-          // Only log when premium actually changed — reduces noise from
-          // every other column update (level, xp, streak, etc.).
-          if (newIsPremium !== undefined && newIsPremium !== profile?.isPremium) {
+          // Compare against the ref (not profile?.isPremium) so this
+          // effect does NOT depend on isPremium — otherwise the channel
+          // tears down + re-subscribes on every premium flip, the exact
+          // event we most need a stable subscription for.
+          if (newIsPremium !== undefined && newIsPremium !== isPremiumRef.current) {
             console.info('[auth] realtime premium change detected, re-fetching profile', {
-              from: profile?.isPremium,
+              from: isPremiumRef.current,
               to: newIsPremium,
             });
           }
@@ -1564,7 +1601,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       nativeAppStateListener?.remove();
     };
-  }, [user?.id, fetchProfile, profile?.isPremium]);
+    // Intentionally NOT depending on profile?.isPremium — the change
+    // handler reads isPremiumRef instead, so the channel stays subscribed
+    // across premium flips. Re-subscribing only on user.id/fetchProfile.
+  }, [user?.id, fetchProfile]);
 
   const isAdmin = isAdminVerified;
 

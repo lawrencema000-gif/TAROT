@@ -447,6 +447,11 @@ Deno.serve(handler<RunBody>({
   fn: "daily-seo-blog-generator",
   auth: "webhook",
   webhookSecretEnv: "CRON_SECRET",
+  // ai:true wires the master AI kill-switch. As a webhook (no ctx.userId)
+  // the per-user daily ceiling does not apply — this only adds the global
+  // feature_flags.ai-enabled pause so AI spend can be stopped without a
+  // deploy.
+  ai: true,
   rateLimit: { max: 10, windowMs: 60_000 },
   run: async (ctx, body) => {
     // Provider key check happens inside generateArticle so the chain can

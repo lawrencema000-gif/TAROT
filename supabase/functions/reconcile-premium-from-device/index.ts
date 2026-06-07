@@ -138,8 +138,51 @@ Deno.serve(handler<Req, Resp>({
       };
     }
 
-    // 3. The downgrade case. Device says no entitlement, DB says premium.
-    //    Flip the DB.
+    // 2.6. Off-device (non-store) subscription exemption — CRITICAL.
+    //
+    // The device's RevenueCat SDK only has visibility into purchases that
+    // flow through RevenueCat: Google Play, Apple App Store, Samsung. It
+    // has ZERO visibility into:
+    //   - Stripe web subscriptions (provider='stripe')
+    //   - Legacy/web grants (provider='web')
+    //   - Promo / comp / partner grants (provider='promo')
+    //
+    // So when a user who subscribed via Stripe on the web installs the
+    // Android app and opens it, the device RC SDK correctly reports "no
+    // entitlement" (they never bought through Play) — but that reading is
+    // IGNORANCE, not authority. Without this guard, opening the mobile
+    // app would downgrade a paying Stripe web subscriber AND mark their
+    // active subscription "expired". A real money-losing bug.
+    //
+    // We only downgrade when the device's "no entitlement" is
+    // authoritative — i.e. the user has NO active off-device subscription.
+    // Store-provider subs (google/apple/samsung) DO flow through RC, so
+    // their expiry is correctly reflected in the device reading and the
+    // downgrade should proceed for those.
+    const { data: offDeviceSub } = await ctx.supabase
+      .from("subscriptions")
+      .select("provider, status")
+      .eq("user_id", userId)
+      .in("provider", ["stripe", "web", "promo"])
+      .in("status", ["active", "trial", "grace_period"])
+      .maybeSingle();
+    if (offDeviceSub) {
+      ctx.log.info("reconcile_premium_from_device.off_device_sub_exempt", {
+        userId,
+        provider: offDeviceSub.provider,
+        status: offDeviceSub.status,
+        debugContext: body.debugContext,
+      });
+      return {
+        changed: false,
+        isPremium: true,
+        reason: `off-device-subscription-exempt:${offDeviceSub.provider}`,
+      };
+    }
+
+    // 3. The downgrade case. Device says no entitlement, DB says premium,
+    //    not an admin, and no off-device subscription exists. The device's
+    //    "no entitlement" reading is now authoritative. Flip the DB.
     ctx.log.info("reconcile_premium_from_device.downgrading", {
       userId,
       debugContext: body.debugContext,

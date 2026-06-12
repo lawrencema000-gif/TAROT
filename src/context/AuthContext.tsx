@@ -86,6 +86,8 @@ interface DbProfile {
   birth_place?: string;
   birth_lat?: number;
   birth_lon?: number;
+  birth_tz?: string | null;
+  birth_utc?: string | null;
   timezone: string;
   goals: Goal[];
   tone_preference: TonePreference;
@@ -123,6 +125,8 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     birthPlace: db.birth_place,
     birthLat: db.birth_lat,
     birthLon: db.birth_lon,
+    birthTz: db.birth_tz ?? undefined,
+    birthUtc: db.birth_utc ?? undefined,
     timezone: db.timezone,
     goals: db.goals || [],
     tonePreference: db.tone_preference || 'gentle',
@@ -163,6 +167,10 @@ const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   birthPlace: 'birth_place',
   birthLat: 'birth_lat',
   birthLon: 'birth_lon',
+  // birthTz is client-writable (derived from geocoded birth place).
+  // birth_utc is intentionally ABSENT — computed by a DB trigger,
+  // never written from the client.
+  birthTz: 'birth_tz',
   timezone: 'timezone',
   goals: 'goals',
   tonePreference: 'tone_preference',

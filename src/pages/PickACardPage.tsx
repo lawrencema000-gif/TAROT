@@ -10,6 +10,7 @@ import { drawSeededCards } from '../utils/cardDraw';
 import { getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
 import { shareOrDownloadCard } from '../utils/shareCard';
+import { localDateStr, localYesterdayStr } from '../utils/localDate';
 import type { TarotCard } from '../types';
 
 /**
@@ -46,14 +47,15 @@ interface StreakState {
   lastDate: string | null;
 }
 
+// Local-midnight keys: the pick + streak are client-only state, so the
+// "day" should roll over at the user's local midnight — the UTC date
+// flips at 4pm for a US-West user and 9am next-day for Tokyo.
 function todayKey(): string {
-  return new Date().toISOString().split('T')[0];
+  return localDateStr();
 }
 
 function yesterdayKey(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
+  return localYesterdayStr();
 }
 
 export function PickACardPage() {

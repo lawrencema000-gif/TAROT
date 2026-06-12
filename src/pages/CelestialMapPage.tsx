@@ -135,6 +135,14 @@ export function CelestialMapPage() {
   // expectations in the empty-state UI; we don't fudge a fake time
   // silently (would draw wildly inaccurate lines).
   const birth = useMemo(() => {
+    // Prefer the trigger-maintained canonical instant: birth_date +
+    // birth_time interpreted in the BIRTH-PLACE timezone (historical
+    // DST included). The fallback below treats the local birth time as
+    // UTC, which can be off by up to ±14h.
+    if (profile?.birthUtc) {
+      const d = new Date(profile.birthUtc);
+      if (!Number.isNaN(d.getTime())) return { utcDate: d };
+    }
     if (!profile?.birthDate) return null;
     // Normalise birthDate to ISO YYYY-MM-DD if it slipped in as a
     // legacy free-text format like "06/15/1995". `new Date()` accepts
@@ -165,7 +173,7 @@ export function CelestialMapPage() {
     const utcDate = new Date(`${dateIso}T${hms}Z`);
     if (Number.isNaN(utcDate.getTime())) return null;
     return { utcDate };
-  }, [profile?.birthDate, profile?.birthTime]);
+  }, [profile?.birthUtc, profile?.birthDate, profile?.birthTime]);
 
   const visiblePlanets: Set<PlanetName> | null = useMemo(() => {
     const filterSet = LIFE_AREA_PLANETS[activeFilter];
@@ -435,7 +443,26 @@ export function CelestialMapPage() {
       )}
 
       {/* ── "Find Your Place" — headline AI reveal ─────────────── */}
-      {allLines && (
+      {/* Gated on birth time: without it we assume noon, and the
+          rising/midheaven lines this feature scores against can be off
+          by thousands of km. Recommending a city to move to off a
+          guessed chart would be dishonest — ask for the time instead. */}
+      {allLines && !profile?.birthTime && (
+        <Card className="p-5 space-y-3">
+          <EyebrowLabel>{t('celestial.findPlace.eyebrow', { defaultValue: 'Find your place' })}</EyebrowLabel>
+          <h3 className="heading-display-md text-mystic-100">
+            {t('celestial.findPlace.needsTimeTitle', { defaultValue: 'Add your birth time to unlock this' })}
+          </h3>
+          <p className="text-sm text-mystic-400 leading-relaxed">
+            {t('celestial.findPlace.needsTimeBody', {
+              defaultValue:
+                'Find Your Place matches cities against your rising and midheaven lines — and those depend entirely on the time you were born. Without it we’d be guessing, so we’d rather wait until your map is real. Even an approximate time helps.',
+            })}
+          </p>
+          <CelestialBirthDataForm onSaved={refreshProfile} />
+        </Card>
+      )}
+      {allLines && !!profile?.birthTime && (
         <FindYourPlace
           allLines={allLines}
           intent={activeFilter}

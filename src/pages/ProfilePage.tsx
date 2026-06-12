@@ -171,6 +171,12 @@ export function ProfilePage() {
     if (selectedLocation) {
       updateData.birthLat = selectedLocation.lat;
       updateData.birthLon = selectedLocation.lon;
+      // Resolve the birth-place IANA timezone from the coordinates so
+      // the DB trigger computes birth_utc with the right offset (the
+      // device tz fallback is wrong for users who moved since birth).
+      const { deriveBirthTz } = await import('../utils/birthTz');
+      const birthTz = await deriveBirthTz(selectedLocation.lat, selectedLocation.lon);
+      if (birthTz) updateData.birthTz = birthTz;
     }
 
     const { error } = await updateProfile(updateData);

@@ -142,7 +142,7 @@ export function CelestialBirthDataForm({ onSaved }: Props) {
       <p className="text-xs text-mystic-500 leading-relaxed">
         {t('celestial.form.accuracyHint', {
           defaultValue:
-            'Time and place sharpen the lines. Without them the map still renders, but may be off by a few hundred kilometers near the equator.',
+            'Birth time matters a lot here: without it we assume noon, and your rising and midheaven lines can land on the wrong continent. Add your time — even an approximate one — for a map you can trust.',
         })}
       </p>
 

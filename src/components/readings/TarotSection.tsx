@@ -49,13 +49,16 @@ import { TarotShuffleView } from './tarot/TarotShuffleView';
 import { TarotSelectView } from './tarot/TarotSelectView';
 import { TarotRevealView } from './tarot/TarotRevealView';
 import { TarotHomeView } from './tarot/TarotHomeView';
+import { localDateStr } from '../../utils/localDate';
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
 
 async function getDailyReadingCount(): Promise<number> {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    // Local date: the free-tier daily counter should reset at the
+    // user's midnight, not at UTC midnight (4pm US-West / 9am Tokyo).
+    const today = localDateStr();
     const storedDate = await appStorage.get(DAILY_READINGS_DATE_KEY);
     if (storedDate !== today) {
       await appStorage.set(DAILY_READINGS_DATE_KEY, today);
@@ -70,7 +73,7 @@ async function getDailyReadingCount(): Promise<number> {
 
 async function incrementDailyReadingCount(): Promise<void> {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateStr();
     await appStorage.set(DAILY_READINGS_DATE_KEY, today);
     const current = await getDailyReadingCount();
     await appStorage.set(DAILY_READINGS_KEY, (current + 1).toString());

@@ -18,6 +18,14 @@ export interface UserProfile {
   birthPlace?: string;
   birthLat?: number;
   birthLon?: number;
+  /** IANA timezone of the BIRTH PLACE (e.g. Asia/Tokyo). Derived from
+   *  geocoded coordinates when available; the DB falls back to the
+   *  device timezone for the birth_utc computation. */
+  birthTz?: string;
+  /** Canonical UTC instant of birth (ISO string). Computed by a DB
+   *  trigger from birth_date + birth_time interpreted in birthTz —
+   *  read this for all chart math; never recompute locally. */
+  birthUtc?: string;
   timezone: string;
   goals: Goal[];
   tonePreference: TonePreference;

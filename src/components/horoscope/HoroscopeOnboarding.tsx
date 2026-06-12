@@ -108,13 +108,19 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
     setComputing(true);
     setComputeError('');
     try {
-      const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Birth-place timezone from the geocoded coordinates — this is
+      // what the birth time should be interpreted in. The device tz is
+      // only a fallback (wrong for anyone who moved since birth).
+      const { deriveBirthTz } = await import('../../utils/birthTz');
+      const birthTz = await deriveBirthTz(loc.lat, loc.lon);
+      const tz = birthTz || profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
       const chartMode: ChartMode = profile.birthTime ? 'exact' : 'unknown';
 
       await updateProfile({
         birthPlace: loc.displayName,
         birthLat: loc.lat,
         birthLon: loc.lon,
+        ...(birthTz ? { birthTz } : {}),
       });
 
       await computeChart({

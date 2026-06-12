@@ -33,6 +33,7 @@ import { useRitual } from '../context/RitualContext';
 import { useGamification } from '../context/GamificationContext';
 import { dailyRituals, savedHighlights } from '../dal';
 import { getZodiacSign } from '../utils/zodiac';
+import { localDateStr } from '../utils/localDate';
 // horoscopes loaded lazily to keep main bundle small
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
@@ -88,7 +89,12 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [dailyPrompt, setDailyPrompt] = useState('');
+  // `today` (UTC) keys the server-side ritual/highlight rows — keep it
+  // UTC so reads and deletes match what was written. `localToday` keys
+  // client-only daily content (card seed, prompt) so it rolls over at
+  // the user's local midnight, not 4pm/9am depending on timezone.
   const today = new Date().toISOString().split('T')[0];
+  const localToday = localDateStr();
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
 
   useImagePreloader(
@@ -151,14 +157,14 @@ export function HomePage() {
   }, [user, today]);
 
   useEffect(() => {
-    import('../data/horoscopes').then(m => setDailyPrompt(m.getDailyPrompt(today)));
-  }, [today]);
+    import('../data/horoscopes').then(m => setDailyPrompt(m.getDailyPrompt(localToday)));
+  }, [localToday]);
 
   useEffect(() => {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
       setTarotCards(cards);
-      const seed = `${user?.id || 'anonymous'}_${today}`;
+      const seed = `${user?.id || 'anonymous'}_${localToday}`;
       const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);
       cacheLastViewedCard(drawn.card, drawn.reversed);

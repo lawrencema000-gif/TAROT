@@ -13,6 +13,7 @@
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
 import { geoEclipticLongitude } from "../_shared/astro.ts";
+import { birthMomentFromProfile } from "../_shared/birth.ts";
 import { z } from "npm:zod@3.24.1";
 
 const SIGNS = [
@@ -108,17 +109,19 @@ Deno.serve(handler<Req, Resp>({
   run: async (ctx, body) => {
     const { data: profile } = await ctx.supabase
       .from("profiles")
-      .select("birth_date, birth_time")
+      .select("birth_utc, birth_date, birth_time, birth_tz, timezone")
       .eq("id", ctx.userId!)
       .maybeSingle();
     if (!profile?.birth_date) {
       throw new AppError("BIRTH_DATE_MISSING", "Birth date required for solar return", 404);
     }
 
-    const birthDate = profile.birth_date as string;
-    const birthTime = (profile.birth_time as string) || "12:00";
-    const birthMoment = new Date(`${birthDate}T${birthTime}:00Z`);
-    if (Number.isNaN(birthMoment.getTime())) {
+    // Canonical birth instant (trigger-maintained birth_utc, with an
+    // Intl fallback). The old inline parse appended "Z" to the LOCAL
+    // birth time (off by the birth-place UTC offset) and broke entirely
+    // on HH:MM:SS-formatted birth_time values.
+    const birthMoment = birthMomentFromProfile(profile);
+    if (!birthMoment) {
       throw new AppError("BIRTH_MOMENT_INVALID", "Could not parse birth moment", 400);
     }
     const natalSunLon = sunLonAt(birthMoment);

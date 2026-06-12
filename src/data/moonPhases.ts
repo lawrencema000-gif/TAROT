@@ -3,11 +3,11 @@
  * synodic period and returns an 8-phase classification with ritual prompts
  * for each. Client-only — no API calls.
  *
- * Reference full moon: 2000-01-06 18:14 UTC (canonical ephemeris anchor).
+ * Reference NEW moon: 2000-01-06 18:14 UTC (canonical ephemeris anchor).
  * Synodic period: 29.53059 days.
  */
 
-const REFERENCE_NEW_MOON_UTC = new Date('2000-01-06T18:14:00Z').getTime() - (14.7653 * 86400000);
+const REFERENCE_NEW_MOON_UTC = new Date('2000-01-06T18:14:00Z').getTime();
 const SYNODIC_MS = 29.53059 * 86400000;
 
 export type MoonPhaseKey =

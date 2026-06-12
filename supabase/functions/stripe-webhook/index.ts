@@ -58,11 +58,14 @@ Deno.serve(
         throw new AppError("WEBHOOK_SECRET_MISSING", "Stripe webhook secret not configured", 500);
       }
 
-      // Stripe signature verification needs the RAW body — it was NOT parsed
-      // by the handler wrapper because there's no JSON content-type match for
-      // the handler's default parse path on Stripe's POST (Stripe sends JSON
-      // but we need the raw text for HMAC). We re-read via clone().
-      const rawBody = await ctx.req.clone().text();
+      // Stripe signature verification needs the RAW body. The handler
+      // wrapper has ALREADY consumed the request body (it reads + JSON-
+      // parses every non-GET request before invoking run), so
+      // `ctx.req.clone()` throws "Body is unusable" here — which made
+      // every SIGNED Stripe webhook 500 while unsigned probes passed the
+      // earlier header check and looked healthy. Use the raw text the
+      // handler captured during its single read.
+      const rawBody = ctx.rawBody;
 
       let event: Stripe.Event;
       try {

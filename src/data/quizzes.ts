@@ -94,8 +94,10 @@ export const loveLanguageQuiz: QuizDefinition = {
  * returned ESTJ regardless of user answers. The fix routes scoring by
  * `question.dimension` from the quiz definition. Forward-keyed (E/S/T/J
  * positively-worded) questions have options[0].value === 1; reverse-
- * keyed questions have options[0].value === 5. We use that property to
- * detect direction without hard-coding question ID lists.
+ * keyed questions have options[0].value === 5 — i.e. option values are
+ * pre-reversed in the quiz data, so the recorded answer is always
+ * first-pole-coded and no per-question direction handling is needed in
+ * the aggregation (see comment inside the function body).
  *
  * Pass the quiz definition that the answers came from so we can look
  * up dimensions + keying. Defaults to mbtiQuiz for backward compat.
@@ -106,28 +108,46 @@ export function calculateMBTI(
 ): { type: string; dimensions: Record<string, number> } {
   let e = 0, i = 0, s = 0, n = 0, t = 0, f = 0, j = 0, p = 0;
 
+  // Every recorded answer value is already FIRST-pole strength on a 1-5
+  // scale (5 = strongly E/S/T/J, 1 = strongly I/N/F/P) for forward AND
+  // reverse-keyed questions alike, because reverse-keyed questions bake
+  // the reversal into their option values: forward-keyed questions list
+  // options Strongly Disagree = 1 ... Strongly Agree = 5
+  // (options[0].value === 1), reverse-keyed list Strongly Disagree = 5
+  // ... Strongly Agree = 1 (options[0].value === 5).
+  //
+  // Aggregation history: the previous version added forward-keyed
+  // answers only to the first-pole bucket (e += value) and reverse-keyed
+  // answers only to the second-pole bucket (i += 6 - value), then
+  // compared bucket SUMS. With an unbalanced keying mix per dimension
+  // (the Quick quiz has 2 forward + 1 reverse item per axis) the buckets
+  // had different ceilings, shifting the decision boundary off the
+  // neutral midpoint — an all-neutral answer set scored e=6 vs i=3 on
+  // every axis and deterministically produced ESTJ, and one mild
+  // I-leaning answer among neutrals still scored E. Scoring every item
+  // into BOTH poles symmetrically (first += v, second += 6 - v) makes
+  // the comparison mathematically equivalent to "per-dimension MEAN of
+  // pole-coded values vs the 3.0 Likert midpoint" while preserving the
+  // existing tie convention below (exact midpoint → E/S/T/J).
   Object.entries(scores).forEach(([key, value]) => {
     const q = quizDef.questions.find((qq) => qq.id === key);
     if (!q || !q.dimension) return;
-    // Forward-keyed for the first pole (E/S/T/J): options[0].value === 1.
-    // Reverse-keyed (favouring I/N/F/P): options[0].value === 5.
-    const forwardKeyed = q.options[0]?.value === 1;
     switch (q.dimension) {
       case 'EI':
-        if (forwardKeyed) e += value;
-        else i += (6 - value);
+        e += value;
+        i += (6 - value);
         break;
       case 'SN':
-        if (forwardKeyed) s += value;
-        else n += (6 - value);
+        s += value;
+        n += (6 - value);
         break;
       case 'TF':
-        if (forwardKeyed) t += value;
-        else f += (6 - value);
+        t += value;
+        f += (6 - value);
         break;
       case 'JP':
-        if (forwardKeyed) j += value;
-        else p += (6 - value);
+        j += value;
+        p += (6 - value);
         break;
     }
   });

@@ -26,6 +26,7 @@
 
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 import { z } from "npm:zod@3.24.1";
 
 const SIGNS = [
@@ -91,8 +92,10 @@ function lonToSign(lon: number): ZodiacSign {
   return SIGNS[Math.floor(normDeg(lon) / 30)];
 }
 
+// GEOCENTRIC via shared helper — the paid year-ahead report's transit
+// walker previously ran on heliocentric longitudes (wrong everything).
 function planetLon(body: Astronomy.Body, date: Date): number {
-  return Astronomy.EclipticLongitude(body, date);
+  return geoEclipticLongitude(body, date);
 }
 
 function orbForAspect(tLon: number, nLon: number, angle: number): number {

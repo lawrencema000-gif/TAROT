@@ -226,6 +226,24 @@ function seededRandom(seed: number): () => number {
   };
 }
 
+/**
+ * Canonical zodiac order. The sign's INDEX (0-11) is folded into the
+ * daily seed — the previous approach summed the first two character
+ * codes of the sign name, which collided for 'cancer'/'capricorn' and
+ * 'taurus'/'libra', giving those pairs byte-identical daily horoscopes.
+ */
+const SIGN_ORDER: ZodiacSign[] = [
+  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo',
+  'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
+];
+
+/** Deterministic per-sign, per-date seed: same sign + same date → same content. */
+function horoscopeSeed(sign: ZodiacSign, date: string): number {
+  const dateNum = new Date(date).getTime();
+  const signIndex = SIGN_ORDER.indexOf(sign);
+  return dateNum * 13 + signIndex * 101;
+}
+
 export function generateDailyHoroscope(sign: ZodiacSign, date: string): {
   general: string;
   love: string;
@@ -234,10 +252,7 @@ export function generateDailyHoroscope(sign: ZodiacSign, date: string): {
   luckyNumber: number;
   luckyColor: string;
 } {
-  const dateNum = new Date(date).getTime();
-  const signNum = sign.charCodeAt(0) + sign.charCodeAt(1);
-  const seed = dateNum + signNum;
-  const random = seededRandom(seed);
+  const random = seededRandom(horoscopeSeed(sign, date));
 
   const colors = localizedColors();
   const general = localizedTemplates('general');
@@ -255,10 +270,7 @@ export function generateDailyHoroscope(sign: ZodiacSign, date: string): {
 }
 
 export function generateEnhancedHoroscope(sign: ZodiacSign, date: string): EnhancedHoroscope {
-  const dateNum = new Date(date).getTime();
-  const signNum = sign.charCodeAt(0) + sign.charCodeAt(1);
-  const seed = dateNum + signNum;
-  const random = seededRandom(seed);
+  const random = seededRandom(horoscopeSeed(sign, date));
 
   const colors = localizedColors();
   const dayOfWeek = new Date(date).getDay();

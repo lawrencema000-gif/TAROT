@@ -95,14 +95,14 @@ const KUA_META: Record<KuaNumber, Pick<KuaProfile, 'group' | 'element' | 'trigra
  * Eight Mansions table. Ordered as [SQ, TY, YN, FW, JM, WG, LS, HH].
  */
 const KUA_DIRECTIONS: Record<KuaNumber, [Direction, Direction, Direction, Direction, Direction, Direction, Direction, Direction]> = {
-  1: ['SE', 'E',  'S',  'N',  'SW', 'NE', 'W',  'NW'],
-  2: ['NE', 'W',  'NW', 'SW', 'N',  'SE', 'E',  'S'],
+  1: ['SE', 'E',  'S',  'N',  'SW', 'NE', 'NW', 'W'],
+  2: ['NE', 'W',  'NW', 'SW', 'N',  'SE', 'S',  'E'],
   3: ['S',  'N',  'SE', 'E',  'W',  'NW', 'NE', 'SW'],
-  4: ['N',  'S',  'E',  'SE', 'NW', 'W',  'SW', 'NE'],
-  6: ['W',  'NE', 'SW', 'NW', 'S',  'E',  'SE', 'N'],
-  7: ['NW', 'SW', 'NE', 'W',  'E',  'S',  'N',  'SE'],
-  8: ['SW', 'NW', 'W',  'NE', 'SE', 'N',  'S',  'E'],
-  9: ['E',  'SE', 'N',  'S',  'NE', 'SW', 'NW', 'W'],
+  4: ['N',  'S',  'E',  'SE', 'NE', 'SW', 'W',  'NW'],
+  6: ['W',  'NE', 'SW', 'NW', 'S',  'E',  'N',  'SE'],
+  7: ['NW', 'SW', 'NE', 'W',  'E',  'S',  'SE', 'N'],
+  8: ['SW', 'NW', 'W',  'NE', 'SE', 'N',  'E',  'S'],
+  9: ['E',  'SE', 'N',  'S',  'NW', 'W',  'SW', 'NE'],
 };
 
 function buildProfile(kua: KuaNumber): KuaProfile {
@@ -136,9 +136,9 @@ function buildProfile(kua: KuaNumber): KuaProfile {
  * boundary. This matches how Bazi handles the same boundary elsewhere
  * in the app.
  *
- * Male formula:    11 - (sum of last two digits of year, reduced to single digit)
+ * Male formula:    10 - (sum of last two digits of year, reduced to single digit)
  *   (After 2000: 9 - (sum of last two digits, reduced))
- * Female formula:  4 + (sum of last two digits, reduced)
+ * Female formula:  5 + (sum of last two digits, reduced)
  *   (After 2000: 6 + (sum of last two digits, reduced))
  *
  * 5 maps to 2 for males and 8 for females (as 5 has no Kua trigram).
@@ -167,11 +167,11 @@ export function computeKua(birthYear: number, gender: Gender, birthDate?: string
   const isModern = effectiveYear >= 2000;
 
   if (gender === 'male') {
-    raw = isModern ? (9 - digitSum) : (11 - digitSum);
+    raw = isModern ? (9 - digitSum) : (10 - digitSum);
     while (raw <= 0) raw += 9;
     raw = ((raw - 1) % 9) + 1;
   } else {
-    raw = isModern ? (6 + digitSum) : (4 + digitSum);
+    raw = isModern ? (6 + digitSum) : (5 + digitSum);
     raw = ((raw - 1) % 9) + 1;
   }
 

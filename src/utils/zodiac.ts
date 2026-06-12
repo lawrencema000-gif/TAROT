@@ -122,9 +122,11 @@ export const zodiacData: Record<ZodiacSign, ZodiacInfo> = {
 };
 
 export function getZodiacSign(birthDate: string): ZodiacSign {
-  const date = new Date(birthDate);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  // Parse 'YYYY-MM-DD' components directly. Using `new Date(birthDate)`
+  // parsed the string as UTC midnight, but getMonth()/getDate() read back
+  // in LOCAL time — in negative-UTC timezones (the Americas) that yields
+  // the PREVIOUS day, mis-assigning sun signs for cusp-day births.
+  const [, month, day] = birthDate.split('-').map(Number);
 
   if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return 'aries';
   if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return 'taurus';

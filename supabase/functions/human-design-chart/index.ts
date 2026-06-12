@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 
 /**
  * Human Design chart — real bodygraph from ecliptic longitudes.
@@ -273,7 +274,8 @@ function bodyLongitudes(date: Date): BodyLon[] {
     ["Pluto",   Astronomy.Body.Pluto],
   ];
   for (const [name, b] of bodies) {
-    out.push({ body: name, lon: normDeg(Astronomy.EclipticLongitude(b, date)) });
+    // GEOCENTRIC via shared helper (was heliocentric — wrong gates).
+    out.push({ body: name, lon: normDeg(geoEclipticLongitude(b, date)) });
   }
   return out;
 }

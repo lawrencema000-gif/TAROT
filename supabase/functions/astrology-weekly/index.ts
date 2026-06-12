@@ -16,6 +16,7 @@ import {
   formatShortLocalized,
 } from "../_shared/astrology-content-extra.ts";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 
 type Planet = "Sun" | "Moon" | "Mercury" | "Venus" | "Mars" | "Jupiter" | "Saturn" | "Uranus" | "Neptune" | "Pluto";
 type AspectType = "conjunction" | "opposition" | "trine" | "square" | "sextile";
@@ -30,10 +31,10 @@ interface WeeklyRequest {
   locale?: string;
 }
 
+// GEOCENTRIC longitudes via the shared helper (the old planet fallback
+// was heliocentric — wrong sign most days).
 function getPlanetLongitude(body: Astronomy.Body | "Sun" | "Moon", date: Date): number {
-  if (body === "Sun") return Astronomy.SunPosition(date).elon;
-  if (body === "Moon") return Astronomy.EclipticGeoMoon(date).lon;
-  return Astronomy.EclipticLongitude(body as Astronomy.Body, date);
+  return geoEclipticLongitude(body, date);
 }
 
 function seededRandom(seed: number): () => number {

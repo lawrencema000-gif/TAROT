@@ -12,6 +12,7 @@
 
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 import { z } from "npm:zod@3.24.1";
 
 const SIGNS = [
@@ -53,9 +54,11 @@ interface Resp {
 
 function normDeg(d: number): number { return ((d % 360) + 360) % 360; }
 function sunLonAt(d: Date): number { return normDeg(Astronomy.SunPosition(d).elon); }
+// GEOCENTRIC via shared helper (old fallback was heliocentric — wrong
+// signs for every planet, Moon pinned opposite the Sun).
 function longitudeOf(body: Astronomy.Body | "Sun", date: Date): number {
   if (body === "Sun") return sunLonAt(date);
-  return Astronomy.EclipticLongitude(body, date);
+  return geoEclipticLongitude(body, date);
 }
 
 /**

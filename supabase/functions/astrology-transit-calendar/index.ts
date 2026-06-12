@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -66,9 +67,9 @@ const aspectDefs: { type: AspectType; angle: number; maxOrb: number }[] = [
   { type: "sextile", angle: 60, maxOrb: 2 },
 ];
 
+// GEOCENTRIC via shared helper (old fallback was heliocentric).
 function getPlanetLongitude(body: Astronomy.Body | "Sun", date: Date): number {
-  if (body === "Sun") return Astronomy.SunPosition(date).elon;
-  return Astronomy.EclipticLongitude(body as Astronomy.Body, date);
+  return geoEclipticLongitude(body, date);
 }
 
 Deno.serve(

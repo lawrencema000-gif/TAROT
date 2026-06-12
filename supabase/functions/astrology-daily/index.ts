@@ -16,6 +16,7 @@ import {
   type Element as LElement,
 } from "../_shared/astrology-content.ts";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -91,7 +92,9 @@ function getCurrentPlanets(now: Date): TransitPlanetData[] {
   ];
 
   for (const [name, body] of bodyMap) {
-    const lon = Astronomy.EclipticLongitude(body, now);
+    // GEOCENTRIC longitude (shared helper) — EclipticLongitude is
+    // heliocentric and put planets in the wrong sign most days.
+    const lon = geoEclipticLongitude(body, now);
     const signData = lonToSign(lon);
     planets.push({ planet: name, longitude: lon, sign: signData.sign });
   }

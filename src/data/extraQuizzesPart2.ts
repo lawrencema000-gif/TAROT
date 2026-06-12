@@ -4,7 +4,10 @@
 // EXTRA_QUIZZES to keep the runner logic unchanged.
 
 import type { QuizDefinition } from '../types';
-import type { DimensionalResultInfo } from './extraQuizzes';
+// Type-only imports — keep them type-only: extraQuizzes.ts imports this
+// module at runtime (EXTRA_QUIZZES_PART2), so a runtime import back the
+// other way would create a circular dependency.
+import type { DimensionalResult, DimensionalResultInfo } from './extraQuizzes';
 
 const likert = [
   { value: 1, label: 'Strongly Disagree' },
@@ -234,6 +237,77 @@ export const PHQ2_INFO: Record<PHQ2Result, DimensionalResultInfo> = {
   moderate: { name: 'Moderate signal', tagline: 'Multiple symptoms present — professional support worth considering.', summary: 'Several symptoms of sustained low mood show up in your answers. This deserves more attention than self-help alone can give. Consider talking to a therapist, GP, or mental-health service. You are not broken. This is workable and you deserve support.', strengths: ['Willingness to check in with yourself — that\'s real'], shadow: ['Isolation makes this worse', 'Waiting too long to reach out', 'Self-blame for being in this state'], affirmation: 'This is a load I don\'t have to carry alone. I reach out — today.' },
   'seek-support': { name: 'Higher signal — reach out', tagline: 'Strong signals of sustained low mood — please talk to someone.', summary: 'Your answers show strong signals of persistent low mood. This is NOT a diagnosis, but it is a clear invitation to reach out to professional support. Crisis resources: Text HOME to 741741 (Crisis Text Line, US/UK/CA/Ireland), call 988 (US Suicide & Crisis Lifeline), or contact your local mental health services. You are not alone.', strengths: ['Being honest in this screener — that\'s strength'], shadow: ['The voice saying "I\'m fine, I don\'t need help" is often the voice that needs it most'], affirmation: 'I reach for real support. I call. I text. I ask. I am worth the reach.' },
 };
+
+// ---------------------------------------------------------------
+// Dedicated Mood Screener scorer (safety-relevant)
+// ---------------------------------------------------------------
+// The generic calculateDimensional "max average wins" typing understated
+// risk: a user endorsing BOTH core depression items could still be
+// routed to "Low signal" if their 'low'-dimension answers averaged
+// higher, and exact ties resolved to the least-severe dimension. This
+// scorer applies the validated PHQ-2 cutoff first, then falls back to
+// average-typing with ties resolving TOWARD the more supportive result.
+
+// The two core mood items that correspond to the actual PHQ-2 instrument
+// ("felt down or depressed" + "little interest or pleasure").
+const PHQ2_CORE_ITEM_IDS = ['lw1', 'lw2'] as const;
+
+// Map an agreement Likert answer (1-5) onto the PHQ-2 frequency scale
+// (0-3): linear rescale ((v - 1) * 3 / 4) rounded half-up, so the
+// Neutral midpoint resolves UP (toward the supportive result, never
+// away — this is a safety screener, so borderline reads as elevated):
+//   1 Strongly Disagree → 0  ("not at all")
+//   2 Disagree          → 1  ("several days")
+//   3 Neutral           → 2  (1.5 rounds up — borderline resolves up)
+//   4 Agree             → 2  ("more than half the days")
+//   5 Strongly Agree    → 3  ("nearly every day")
+const likertToPhq2 = (value: number): number => Math.round(((value - 1) * 3) / 4);
+
+export function scoreMoodScreener(
+  answers: Record<string, number>,
+): DimensionalResult<PHQ2Result> {
+  // Ascending severity order — used for tie-breaking below.
+  const dimensions: PHQ2Result[] = ['low', 'mild', 'moderate', 'seek-support'];
+
+  // Raw per-dimension sums, same shape calculateDimensional returns, so
+  // the generic extra-dimensional results screen (score-distribution
+  // bars) keeps working unchanged.
+  const scores: Record<PHQ2Result, number> = { low: 0, mild: 0, moderate: 0, 'seek-support': 0 };
+  const counts: Record<PHQ2Result, number> = { low: 0, mild: 0, moderate: 0, 'seek-support': 0 };
+  for (const q of phq2Quiz.questions) {
+    const v = answers[q.id];
+    if (v === undefined || !q.dimension) continue;
+    const dim = q.dimension as PHQ2Result;
+    if (dim in scores) {
+      scores[dim] += v;
+      counts[dim] += 1;
+    }
+  }
+
+  // Validated PHQ-2 cutoff first: each core item scored 0-3, summed to
+  // 0-6; a total >= 3 is a positive screen and always routes to the
+  // supportive result, regardless of how positively the other items
+  // were answered.
+  const phq2Total = PHQ2_CORE_ITEM_IDS.reduce(
+    (total, id) => total + (answers[id] !== undefined ? likertToPhq2(answers[id]) : 0),
+    0,
+  );
+  if (phq2Total >= 3) {
+    return { primary: 'seek-support', scores };
+  }
+
+  // Below the cutoff: per-question-average typing (as the generic scorer
+  // does), but iterating in ascending severity with >= so an exact tie
+  // resolves toward the MORE supportive/severe result, never away.
+  const averages = Object.fromEntries(
+    dimensions.map((d) => [d, counts[d] > 0 ? scores[d] / counts[d] : 0]),
+  ) as Record<PHQ2Result, number>;
+  let primary: PHQ2Result = dimensions[0];
+  for (const d of dimensions) {
+    if (averages[d] >= averages[primary]) primary = d;
+  }
+  return { primary, scores };
+}
 
 // Combined export table — extraQuizzes.ts's EXTRA_QUIZ_SCORING will be
 // extended at the registration site to include these.

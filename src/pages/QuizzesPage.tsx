@@ -73,6 +73,7 @@ import {
   calculateExtraQuiz,
   type DimensionalResult,
 } from '../data/extraQuizzes';
+import { scoreMoodScreener } from '../data/extraQuizzesPart2';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
@@ -477,7 +478,13 @@ export function QuizzesPage() {
         calculatedResult = calculateDosha(newAnswers);
         resultLabel = calculatedResult.primary;
       } else if (progress.quiz.type === 'extra-dimensional') {
-        const extra = calculateExtraQuiz(progress.quiz.id, newAnswers);
+        // The PHQ-2-style Mood Screener uses a dedicated scorer with the
+        // validated PHQ-2 cutoff (core-item total >= 3 → supportive
+        // result). The generic max-average typing could let "low" win
+        // even when both core depression items were endorsed.
+        const extra = progress.quiz.id === 'mood-screener-v1'
+          ? scoreMoodScreener(newAnswers)
+          : calculateExtraQuiz(progress.quiz.id, newAnswers);
         if (extra) {
           calculatedResult = extra;
           resultLabel = extra.primary;
@@ -485,13 +492,19 @@ export function QuizzesPage() {
       } else if (progress.quiz.type === 'love-language') {
         calculatedResult = calculateLoveLanguage(newAnswers);
         resultLabel = calculatedResult.primary;
+      } else if (progress.quiz.type === 'attachment') {
+        // attachmentQuiz.type was corrected from 'big-five' to
+        // 'attachment'. Without this top-level branch, type 'attachment'
+        // matched nothing, fell into the mood-check fallback below,
+        // persisted a mood label (e.g. "Depleted") as the result, and
+        // the attachment results screen crashed reading
+        // attachmentDescriptions[undefined].
+        calculatedResult = calculateAttachment(newAnswers);
+        resultLabel = calculatedResult.style;
       } else if (progress.quiz.type === 'big-five') {
         if (progress.quiz.id === 'mood-check-v1') {
           calculatedResult = calculateMoodCheck(newAnswers);
           resultLabel = calculatedResult.overallMood;
-        } else if (progress.quiz.id === 'attachment-v1') {
-          calculatedResult = calculateAttachment(newAnswers);
-          resultLabel = calculatedResult.style;
         } else {
           calculatedResult = calculateBigFive(newAnswers);
           resultLabel = tApp('quizzes.resultSections.bigFiveProfile');
@@ -500,6 +513,15 @@ export function QuizzesPage() {
         calculatedResult = calculateEnneagram(newAnswers);
         resultLabel = `${tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: calculatedResult.primaryType })}${calculatedResult.wing ? `w${calculatedResult.wing}` : ''}`;
       } else {
+        // No scoring branch matched this quiz type. Falling back to the
+        // mood-check scorer keeps production from crashing, but reaching
+        // here is always a dispatcher bug (a quiz type without a branch),
+        // so surface it loudly in dev instead of silently mis-scoring.
+        if (import.meta.env.DEV) {
+          console.error(
+            `[QuizzesPage] No scoring branch for quiz type "${progress.quiz.type}" (id "${progress.quiz.id}") — falling back to mood-check scoring. Add a branch for this type.`,
+          );
+        }
         calculatedResult = calculateMoodCheck(newAnswers);
         resultLabel = calculatedResult.overallMood;
       }

@@ -10,6 +10,7 @@
 
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 import { z } from "npm:zod@3.24.1";
 
 const RequestSchema = z.object({
@@ -49,9 +50,12 @@ const BODIES: { name: string; body: Astronomy.Body | "Sun" }[] = [
 
 function normDeg(d: number): number { return ((d % 360) + 360) % 360; }
 
+// GEOCENTRIC longitude via the shared helper. The old fallback used
+// Astronomy.EclipticLongitude (heliocentric) — the transit-overlay Moon
+// was pinned opposite the Sun moving ~1°/day instead of ~13°, and every
+// planet's sign was wrong most days.
 function longitudeOf(body: Astronomy.Body | "Sun", date: Date): number {
-  if (body === "Sun") return Astronomy.SunPosition(date).elon;
-  return Astronomy.EclipticLongitude(body, date);
+  return geoEclipticLongitude(body, date);
 }
 
 Deno.serve(handler<Req, Resp>({

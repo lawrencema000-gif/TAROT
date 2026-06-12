@@ -18,6 +18,7 @@ import {
   formatShortLocalized,
 } from "../_shared/astrology-content-extra.ts";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -227,7 +228,7 @@ Deno.serve(
 
       const outerPlanetTransits: { planet: Planet; sign: ZodiacSign; theme: string }[] = [];
       for (const [name, body] of outerBodies) {
-        const lon = Astronomy.EclipticLongitude(body, midMonth);
+        const lon = geoEclipticLongitude(body, midMonth);
         const signData = lonToSign(lon);
         const planetEl = (SIGN_ELEMENTS[signData.sign] || "Fire") as LElement;
         const themes = outerThemes[name]?.[planetEl];
@@ -249,10 +250,10 @@ Deno.serve(
         const pBody = Astronomy.Body[pName];
         for (let day = 1; day <= endOfMonth.getUTCDate(); day++) {
           const d = new Date(Date.UTC(year, month, day));
-          const lon = Astronomy.EclipticLongitude(pBody, d);
+          const lon = geoEclipticLongitude(pBody, d);
           const sign = lonToSign(lon).sign;
           const prevD = new Date(Date.UTC(year, month, day - 1 < 1 ? 1 : day - 1));
-          const prevLon = Astronomy.EclipticLongitude(pBody, prevD);
+          const prevLon = geoEclipticLongitude(pBody, prevD);
           const prevSign = lonToSign(prevLon).sign;
 
           if (sign !== prevSign && day > 1) {

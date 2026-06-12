@@ -16,6 +16,7 @@
 
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 import { z } from "npm:zod@3.24.1";
 
 const SIGNS = [
@@ -75,9 +76,10 @@ interface Resp {
 }
 
 function normDeg(d: number): number { return ((d % 360) + 360) % 360; }
+// GEOCENTRIC via shared helper (old fallback was heliocentric — the
+// partner's Moon sign was wrong even when a birth time was supplied).
 function longitudeOf(body: Astronomy.Body | "Sun", date: Date): number {
-  if (body === "Sun") return Astronomy.SunPosition(date).elon;
-  return Astronomy.EclipticLongitude(body, date);
+  return geoEclipticLongitude(body, date);
 }
 
 // Convert a local birth date/time in the given IANA timezone to a UTC

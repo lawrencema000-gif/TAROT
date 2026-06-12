@@ -3,9 +3,11 @@ import type { QuizDefinition } from '../types';
 export const attachmentQuiz: QuizDefinition = {
   id: 'attachment-v1',
   // Was 'big-five' — copy-paste error from another quiz template.
-  // The QuizzesPage routes scoring by quiz.id so the wrong type field
-  // didn't break the user-visible flow, but it was fragile (any
-  // future code that switched on quiz.type would have mis-routed).
+  // NOTE: QuizzesPage's answerQuestion dispatcher routes scoring by
+  // quiz.type FIRST, so this field must stay 'attachment' and the
+  // dispatcher must keep a matching `type === 'attachment'` branch —
+  // when the two disagreed, the quiz fell through to the mood-check
+  // fallback and the attachment results screen crashed.
   type: 'attachment',
   title: 'Attachment Style Assessment',
   description: 'This assessment maps your relationship wiring across two axes: anxiety (fear of abandonment) and avoidance (discomfort with closeness). Your attachment style is not a permanent label—it is a pattern you developed to stay safe in early relationships, and it can shift over time with awareness and intention. You will receive your primary attachment pattern, your specific triggers and protective behaviors, what you need from a partner to feel safe, and a practical path toward secure attachment.',
@@ -66,6 +68,11 @@ export function calculateAttachment(scores: Record<string, number>): AttachmentR
   let anxietyCount = 0;
   let avoidanceCount = 0;
 
+  // Reverse-keyed items (e.g. at1 "I find it easy to get close to
+  // others") bake the reversal into their option VALUES (their option
+  // lists run Strongly Disagree = 5 ... Strongly Agree = 1), so every
+  // recorded answer is already dimension-coded: higher always means
+  // more anxious / more avoidant. No extra reverse handling needed here.
   Object.entries(scores).forEach(([key, value]) => {
     const question = attachmentQuiz.questions.find(q => q.id === key);
     if (question?.dimension === 'anxiety') {
@@ -77,22 +84,32 @@ export function calculateAttachment(scores: Record<string, number>): AttachmentR
     }
   });
 
-  const anxiety = anxietyCount > 0 ? Math.round((anxietyTotal / (anxietyCount * 5)) * 100) : 50;
-  const avoidance = avoidanceCount > 0 ? Math.round((avoidanceTotal / (avoidanceCount * 5)) * 100) : 50;
-
-  const anxietyThreshold = 50;
-  const avoidanceThreshold = 50;
+  // Classify on raw 1-5 Likert MEANS against the scale midpoint (3.0),
+  // mirroring scoreLoveTree in loveTree.ts (means <= 3 are the "low"
+  // side of each axis). The previous version normalized each dimension
+  // as (total / (count * 5)) * 100 — which maps an all-neutral (all 3s)
+  // respondent to 60, not 50 — and then compared against thresholds of
+  // 50, so a perfectly neutral respondent was misclassified as
+  // fearful-avoidant.
+  const anxietyMean = anxietyCount > 0 ? anxietyTotal / anxietyCount : 3;
+  const avoidanceMean = avoidanceCount > 0 ? avoidanceTotal / avoidanceCount : 3;
 
   let style: AttachmentStyle;
-  if (anxiety < anxietyThreshold && avoidance < avoidanceThreshold) {
+  if (anxietyMean <= 3 && avoidanceMean <= 3) {
     style = 'secure';
-  } else if (anxiety >= anxietyThreshold && avoidance < avoidanceThreshold) {
+  } else if (anxietyMean > 3 && avoidanceMean <= 3) {
     style = 'anxious';
-  } else if (anxiety < anxietyThreshold && avoidance >= avoidanceThreshold) {
+  } else if (anxietyMean <= 3 && avoidanceMean > 3) {
     style = 'avoidant';
   } else {
     style = 'fearful-avoidant';
   }
+
+  // 0-100 display scores for the results screen: ((mean - 1) / 4) * 100
+  // maps the 1-5 mean onto 0-100 so a neutral respondent displays as
+  // exactly 50 (the old raw/max mapping displayed neutral as 60).
+  const anxiety = Math.round(((anxietyMean - 1) / 4) * 100);
+  const avoidance = Math.round(((avoidanceMean - 1) / 4) * 100);
 
   const secureScore = Math.max(0, 100 - (anxiety + avoidance) / 2);
   const anxiousScore = anxiety * (1 - avoidance / 200);

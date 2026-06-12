@@ -1,6 +1,13 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude, isRetrogradeGeo } from "../_shared/astro.ts";
+
+// Bump whenever the chart math changes so stale stored charts can be
+// invalidated by migration. v2: geocentric planet longitudes (were
+// heliocentric), corrected Ascendant formula (was returning the
+// Descendant), geocentric retrograde detection.
+const CHART_VERSION = 2;
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -83,10 +90,17 @@ function computeAscendant(utcDate: Date, lat: number, lon: number): number {
   const oblRad = (obliquity * Math.PI) / 180;
   const ramcRad = (ramc * Math.PI) / 180;
 
-  const y = -Math.cos(ramcRad);
-  const x =
+  // Textbook formula: ASC = atan2( cos(RAMC), −(sin(RAMC)·cos(ε) + tan(φ)·sin(ε)) ).
+  // The previous version had both atan2 arguments negated relative to
+  // this, which lands exactly 180° away — it returned the DESCENDANT,
+  // making every rising sign and all 12 houses the opposite of reality
+  // (verified against a brute-force horizon solver across 10 RAMC/lat
+  // combinations, including the equator and the southern hemisphere).
+  const y = Math.cos(ramcRad);
+  const x = -(
     Math.sin(ramcRad) * Math.cos(oblRad) +
-    Math.tan(latRad) * Math.sin(oblRad);
+    Math.tan(latRad) * Math.sin(oblRad)
+  );
   const asc = (Math.atan2(y, x) * 180) / Math.PI;
   return normDeg(asc);
 }
@@ -118,17 +132,10 @@ interface PlanetData {
   retrograde: boolean;
 }
 
-function isRetrograde(body: Astronomy.Body, utcDate: Date): boolean {
-  const dayMs = 86400000;
-  const before = new Date(utcDate.getTime() - dayMs);
-  const after = new Date(utcDate.getTime() + dayMs);
-  const lonBefore = Astronomy.EclipticLongitude(body, before);
-  const lonAfter = Astronomy.EclipticLongitude(body, after);
-  let diff = lonAfter - lonBefore;
-  if (diff > 180) diff -= 360;
-  if (diff < -180) diff += 360;
-  return diff < 0;
-}
+// Retrograde via the shared GEOCENTRIC central difference. The old
+// in-file version differentiated the heliocentric longitude, which is
+// always prograde — no chart ever showed a retrograde planet.
+const isRetrograde = isRetrogradeGeo;
 
 function computePlanets(
   utcDate: Date,
@@ -170,7 +177,7 @@ function computePlanets(
   ];
 
   for (const [name, body] of bodyMap) {
-    const lon = Astronomy.EclipticLongitude(body, utcDate);
+    const lon = geoEclipticLongitude(body, utcDate);
     const signData = lonToSign(lon);
     planets.push({
       planet: name,
@@ -316,7 +323,7 @@ Deno.serve(
         .upsert(
           {
             user_id: ctx.userId!,
-            chart_version: 1,
+            chart_version: CHART_VERSION,
             natal_json: natalChart,
             big_three_json: bigThree,
             dominants_json: dominants,

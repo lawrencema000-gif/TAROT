@@ -117,9 +117,22 @@ Deno.serve(
             ctx.log.error("revenuecat_webhook.moonstone_ledger_failed", {
               err: ledgerErr, userId, productId, amount,
             });
-            // Don't throw — idempotency already claimed the eventId.
-            // A stuck ledger insert means manual reconciliation, not a
-            // double-credit on retry.
+            // The user PAID for these Moonstones. If the credit insert
+            // failed transiently, release the idempotency claim so
+            // RevenueCat's retry re-processes the event and credits
+            // them, then signal failure (RC retries on 5xx). Without
+            // this, the eventId stayed claimed, the retry no-op'd as a
+            // duplicate, and the paid credit was permanently lost.
+            await ctx.supabase
+              .from("webhook_events")
+              .delete()
+              .eq("source", "revenuecat")
+              .eq("event_id", eventId);
+            throw new AppError(
+              "MOONSTONE_CREDIT_FAILED",
+              "Ledger insert failed — retry will re-credit",
+              500,
+            );
           } else {
             ctx.log.info("revenuecat_webhook.moonstones_credited", {
               userId, productId, amount,

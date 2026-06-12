@@ -50,6 +50,15 @@ export interface HandlerContext {
   userSupabase: SupabaseClient | null;
   /** The raw request, in case a function needs headers we didn't lift. */
   req: Request;
+  /**
+   * The raw request body TEXT, exactly as received. The handler consumes
+   * the request body once (for JSON parsing) before `run` is invoked, so
+   * `ctx.req.clone()` THROWS inside `run` (the body is already used —
+   * fetch-spec behavior). Functions that need the raw payload for HMAC
+   * verification (stripe-webhook, revenuecat-webhook) MUST read this
+   * instead of re-reading/cloning the request. Empty string for GET/HEAD.
+   */
+  rawBody: string;
 }
 
 export interface AppErrorShape {
@@ -232,11 +241,16 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
       }
 
       // ── Body parse + optional schema validation ──
+      // NOTE: this consumes the Request body. After this point,
+      // `req.clone()` THROWS ("Body is unusable", per fetch spec).
+      // Functions needing the raw payload (webhook HMAC verification)
+      // must read ctx.rawBody — set below from this single read.
       let body: TBody = {} as TBody;
+      let rawBody = "";
       if (req.method !== "GET" && req.method !== "HEAD") {
         try {
-          const text = await req.text();
-          body = (text ? JSON.parse(text) : {}) as TBody;
+          rawBody = await req.text();
+          body = (rawBody ? JSON.parse(rawBody) : {}) as TBody;
         } catch {
           return errorEnvelope({
             code: "INVALID_JSON",
@@ -275,6 +289,7 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
         supabase,
         userSupabase,
         req,
+        rawBody,
       };
       log.info("request.start");
 

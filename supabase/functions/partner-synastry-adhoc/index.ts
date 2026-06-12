@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import { AppError, handler } from "../_shared/handler.ts";
+import { geoEclipticLongitude } from "../_shared/astro.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -140,10 +141,8 @@ function computePositions(utc: Date, skipMoon: boolean): Position[] {
   const out: Position[] = [];
   for (const b of BODIES) {
     if (b.name === "Moon" && skipMoon) continue;
-    let lon: number;
-    if (b.body === "Sun") lon = normDeg(Astronomy.SunPosition(utc).elon);
-    else if (b.body === "Moon") lon = normDeg(Astronomy.EclipticGeoMoon(utc).lon);
-    else lon = normDeg(Astronomy.EclipticLongitude(b.body as Astronomy.Body, utc));
+    // GEOCENTRIC via shared helper (planet fallback was heliocentric).
+    const lon = normDeg(geoEclipticLongitude(b.body, utc));
     const { sign, degree } = lonToSign(lon);
     out.push({ planet: b.name, longitude: lon, sign, degree });
   }

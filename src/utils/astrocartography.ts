@@ -193,9 +193,10 @@ export type CelestialLineFeature = GeoJSON.Feature<
  * GeoJSON FeatureCollection ready to add as a Mapbox source.
  *
  * Resolution: AC/DC lines are sampled at 1° latitude steps (~180 points
- * per line); MC/IC lines are straight north-south meridians (2 points
- * each). The 1° step is plenty smooth at any zoom level — Mapbox draws
- * great-circle interpolation between the points.
+ * per line); MC/IC lines are straight north-south meridians, also
+ * densified to 1° latitude steps (171 points) so vertex-sampling
+ * proximity consumers can see them. The 1° step is plenty smooth at any
+ * zoom level — Mapbox draws great-circle interpolation between the points.
  */
 export function computeCelestialLines(birth: BirthData): GeoJSON.FeatureCollection<
   GeoJSON.LineString,
@@ -240,14 +241,17 @@ export function computeCelestialLines(birth: BirthData): GeoJSON.FeatureCollecti
 }
 
 function meridianFeature(planet: PlanetName, angle: 'MC' | 'IC', lon: number): CelestialLineFeature {
+  // Densify the meridian to 1°-latitude vertices (mirroring the AC/DC
+  // sampling). Consumers (celestialScoring, celestialGeo, power places,
+  // constellation segments, line tap hit-testing) measure point-to-VERTEX
+  // distance, so a 2-point line [-85, 85] made MC/IC lines invisible to
+  // every proximity feature for mid-latitude cities. The rendered path is
+  // unchanged — the vertices are collinear.
   return {
     type: 'Feature',
     geometry: {
       type: 'LineString',
-      coordinates: [
-        [lon, -85],
-        [lon, 85],
-      ],
+      coordinates: Array.from({ length: 171 }, (_, i) => [lon, i - 85]),
     },
     properties: { planet, angle, label: `${planet} ${angle}` },
   };

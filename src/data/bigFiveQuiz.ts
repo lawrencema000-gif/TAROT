@@ -123,11 +123,21 @@ export function calculateBigFive(scores: Record<string, number>): BigFiveResult 
   });
 
   Object.keys(dimensions).forEach(key => {
-    // Likert max per question is 5; max raw score per dimension is
-    // count*5. Fall back to 1 to avoid divide-by-zero if no questions
-    // for a dimension were answered.
-    const maxRaw = Math.max(1, counts[key] * 5);
-    dimensions[key] = Math.round((dimensions[key] / maxRaw) * 100);
+    // Normalize the raw 1-5 Likert sum onto 0-100 so the Likert midpoint
+    // lands exactly at 50: the raw sum ranges from count*1 (all
+    // "Strongly Disagree" on trait-coded values) to count*5, so subtract
+    // the floor (count) and divide by the span (count*4). All-neutral
+    // (3s) → 50, all-1s → 0, all-5s → 100. The previous raw/(count*5)
+    // mapping put all-neutral at 60, which combined with the UI's >=60
+    // "high" band meant a fully neutral respondent read "higher than
+    // average" on all five traits, and "Disagree"-leaning users could
+    // still land in the high band. (Reverse-keyed items need no special
+    // handling: their option values are pre-reversed in the quiz
+    // definition, so summed values are already trait-coded.)
+    const count = counts[key];
+    dimensions[key] = count > 0
+      ? Math.round(((dimensions[key] - count) / (count * 4)) * 100)
+      : 50; // no questions answered for this dimension → neutral midpoint
   });
 
   // Renamed `percentiles` → `percentageScore`. The previous label was

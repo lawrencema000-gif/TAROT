@@ -12,16 +12,15 @@
 // Once the centre star is known, the other 8 palaces are filled by
 // flying that centre value through the Lo Shu magic square pattern:
 //
-//   Lo Shu base (centre 5):
-//     NW=4   N=9   NE=2
-//     W=3    C=5   E=7
-//     SW=8   S=1   SE=6
+//   Lo Shu base (centre 5), north-at-top:
+//     NW=6   N=1   NE=8
+//     W=7    C=5   E=3
+//     SW=2   S=9   SE=4
 //
 // To get a year's layout, shift every Lo Shu cell by (centreStar - 5)
-// mod 9. So 2026 (centre 1) shifts every cell by -4: NW=9, N=5, NE=7,
-// W=8, C=1, E=3, SW=4, S=6, SE=2. Star 5 (the worst — Wu Wang) lands
-// in the North in 2026, NOT the SE as the original hard-coded table
-// claimed.
+// mod 9. So 2026 (centre 1) shifts every cell by -4: NW=2, N=6, NE=4,
+// W=3, C=1, E=8, SW=7, S=5, SE=9. Star 5 (the worst — Wu Wang) lands
+// in the SOUTH in 2026.
 
 export type FlyingStar = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export type Direction = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW' | 'Center';
@@ -42,9 +41,9 @@ export interface AnnualStarReading {
  * All other annual layouts are derived by shifting these values.
  */
 const LO_SHU: Record<Direction, FlyingStar> = {
-  NW: 4, N: 9, NE: 2,
-  W:  3, Center: 5, E: 7,
-  SW: 8, S: 1, SE: 6,
+  NW: 6, N: 1, NE: 8,
+  W:  7, Center: 5, E: 3,
+  SW: 2, S: 9, SE: 4,
 };
 
 /**

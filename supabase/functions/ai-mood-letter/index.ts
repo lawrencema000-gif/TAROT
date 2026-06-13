@@ -107,6 +107,7 @@ Deno.serve(handler<Req, Resp>({
   methods: ["POST"],
   rateLimit: { max: 5, windowMs: 60_000 },
   ai: true,
+  spend: { actionKey: "mood-letter", cost: 50 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     // Cache by entries + context. Same recent entries = same letter.

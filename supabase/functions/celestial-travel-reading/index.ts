@@ -253,6 +253,7 @@ Deno.serve(handler<Req, Resp>({
   methods: ["POST"],
   rateLimit: { max: 8, windowMs: 60_000 },
   ai: true,
+  spend: { actionKey: "celestial-travel-reading", cost: 250 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     // Cache key is built from city coords + intent + the planet+angle

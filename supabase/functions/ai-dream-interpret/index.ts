@@ -149,6 +149,7 @@ Deno.serve(handler<Req, Resp>({
   methods: ["POST"],
   rateLimit: { max: 10, windowMs: 60_000 },
   ai: true,
+  spend: { actionKey: "dream-interpret", cost: 50 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     // Build a deterministic cache key from the inputs that affect the

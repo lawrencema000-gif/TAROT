@@ -6,15 +6,23 @@
 //   async function handleGenerate() {
 //     const ok = await tryConsume();
 //     if (!ok) return;            // hook already opened the earn sheet
-//     // ...invoke edge function
+//     // ...invoke edge function — the SERVER debits + refunds on failure
 //   }
 //   return <>... {EarnSheet}</>;
+//
+// IMPORTANT: tryConsume is now a READ-ONLY gate check. The actual debit (and
+// refund-on-failure) is server-authoritative inside the AI edge function's
+// handler — the client never holds the spend or refund capability, which is
+// what closes the self-refund exploit. tryConsume only surfaces the earn
+// sheet proactively when the user can't afford the action; the edge function
+// also rejects with INSUFFICIENT_BALANCE/AI_SOFT_CAP if the balance changes
+// between the check and the call.
 //
 // On premium users tryConsume() succeeds with no debit. Soft cap (50/24h)
 // is enforced server-side; if hit, the sheet shows the soft-cap variant.
 
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { spendForAction, refundAction, ACTION_COST } from '../dal/moonstoneSpend';
+import { useCallback, useMemo, useState } from 'react';
+import { getGateStatus, ACTION_COST } from '../dal/moonstoneSpend';
 import { EarnMoonstonesSheet, type EarnSheetReason } from '../components/moonstones/EarnMoonstonesSheet';
 
 interface UseMoonstoneSpendOptions {
@@ -27,62 +35,42 @@ export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOpti
   const [reason, setReason] = useState<EarnSheetReason>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const [resetAt, setResetAt] = useState<string | null>(null);
-  const idemRef = useRef<string | null>(null);
-  const inFlightRef = useRef(false);
 
   const tryConsume = useCallback(async (): Promise<boolean> => {
-    // Concurrency guard — if a tryConsume is already in flight (rapid
-    // double-tap, network-laggy click), reject the second call so we never
-    // emit two simultaneous spend RPC calls. Each call generates a fresh
-    // idempotency key, so without this guard a double-tap would slip past
-    // the server idempotency check and double-debit the user.
-    if (inFlightRef.current) return false;
-    inFlightRef.current = true;
-    try {
-      // Fresh idempotency key per attempt. The page is expected to call
-      // refund() on AI failure BEFORE retrying — otherwise the prior debit
-      // is orphaned (idem key is overwritten on the next tryConsume).
-      idemRef.current = `${actionKey}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      const res = await spendForAction(actionKey, cost, idemRef.current);
-      if (!res.ok) {
-        setReason('insufficient');
-        setBalance(null);
-        setResetAt(null);
-        setOpen(true);
-        return false;
-      }
-      if (res.data.allowed) {
-        if (res.data.newBalance !== null) setBalance(res.data.newBalance);
-        return true;
-      }
-      if (res.data.softCapReached) {
-        setReason('soft-cap');
-        setResetAt(res.data.resetAt);
-        setBalance(null);
-      } else {
-        setReason('insufficient');
-        setBalance(res.data.newBalance);
-        setResetAt(null);
-      }
+    // Read-only gate check — does NOT debit. The edge function does the real
+    // debit server-side. This just decides whether to proactively show the
+    // earn sheet before the user spends a round-trip on a call that would be
+    // rejected for insufficient balance.
+    const res = await getGateStatus(actionKey, cost);
+    if (!res.ok) {
+      setReason('insufficient');
+      setBalance(null);
+      setResetAt(null);
       setOpen(true);
       return false;
-    } finally {
-      inFlightRef.current = false;
     }
+    if (res.data.allowed) {
+      if (res.data.balance !== null) setBalance(res.data.balance);
+      return true;
+    }
+    if (res.data.softCapReached) {
+      setReason('soft-cap');
+      setResetAt(res.data.resetAt);
+      setBalance(null);
+    } else {
+      setReason('insufficient');
+      setBalance(res.data.balance);
+      setResetAt(null);
+    }
+    setOpen(true);
+    return false;
   }, [actionKey, cost]);
 
   const refund = useCallback(async (): Promise<void> => {
-    // Called by pages when their AI invocation fails after a successful
-    // spend. Restores Moonstones via the `refund_action_spend` RPC. The
-    // idempotency key was generated in tryConsume; we still hold it in
-    // the ref because the hook owns its lifecycle.
-    const idem = idemRef.current;
-    if (!idem) return;
-    const res = await refundAction(idem);
-    if (res.ok && res.data.refunded) {
-      setBalance(res.data.newBalance);
-    }
-    idemRef.current = null;
+    // No-op. Refunds are now server-authoritative: the AI edge function
+    // refunds itself if the reading fails. Kept so existing call sites
+    // (which call refund() on AI failure) keep compiling and behave as a
+    // harmless no-op. Safe to delete from call sites over time.
   }, []);
 
   const closeSheet = useCallback(() => setOpen(false), []);

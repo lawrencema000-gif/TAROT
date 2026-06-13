@@ -392,6 +392,7 @@ Deno.serve(handler<RequestBody, ResponseBody>({
   methods: ["POST"],
   rateLimit: { max: 10, windowMs: 60_000 },
   ai: true,
+  spend: { actionKey: "human-design", cost: 50 },
   run: (_ctx, body) => {
     if (!body?.birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.birthDate)) {
       throw new AppError("INVALID_INPUT", "Valid birthDate (YYYY-MM-DD) required", 400);

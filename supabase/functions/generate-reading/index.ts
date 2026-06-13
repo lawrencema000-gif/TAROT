@@ -390,6 +390,7 @@ Deno.serve(
     // is the durable per-user quota enforced against premium_readings.
     rateLimit: { max: 5, windowMs: 60_000 },
     ai: true,
+    spend: { actionKey: "tarot-ai-interpret", cost: 50 },
     run: async (ctx, body) => {
       // --- Input validation ---
       if (!body.cards || body.cards.length === 0) {

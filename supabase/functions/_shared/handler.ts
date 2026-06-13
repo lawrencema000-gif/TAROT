@@ -108,6 +108,19 @@ export interface HandlerOptions<TBody, TResp> {
    */
   ai?: boolean | { ceiling?: number };
   /**
+   * Server-authoritative Moonstone spend. When set, the handler debits the
+   * user BEFORE `run` (after the AI killswitch/ceiling) and REFUNDS the debit
+   * if `run` throws. This is what makes the economy tamper-proof: the client
+   * can no longer self-refund a delivered reading because it never holds the
+   * refund capability.
+   *
+   * Only authenticated users are charged — anonymous callers of optional-auth
+   * functions pass through free (matching the daily-ceiling behaviour). The
+   * debit is idempotent on the request correlation id, so a retried request
+   * is not double-charged. `cost` defaults to 50.
+   */
+  spend?: { actionKey: string; cost?: number };
+  /**
    * Zod schema for the request body. When set, the body is parsed + validated
    * before `run` is called. Invalid bodies return 400 INVALID_REQUEST with
    * the field-level issues under error.details.
@@ -335,7 +348,71 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
         }
       }
 
-      const result = await opts.run(ctx, body);
+      // ── Server-authoritative Moonstone spend ──
+      // Debit AFTER the AI gate (don't charge if AI is paused/over-ceiling)
+      // and BEFORE run. We refund below if run throws. Only authenticated
+      // users are charged; the debit is idempotent on the correlation id.
+      let spendIdem: string | null = null;
+      if (opts.spend && ctx.userId) {
+        spendIdem = correlationId;
+        const { data: spendRows, error: spendErr } = await supabase.rpc(
+          "spend_moonstones_for_action_srv",
+          {
+            p_user_id: ctx.userId,
+            p_action_key: opts.spend.actionKey,
+            p_cost: opts.spend.cost ?? 50,
+            p_idempotency_key: spendIdem,
+          },
+        );
+        if (spendErr) {
+          // Fail-open on a transient spend error (mirrors the daily-ceiling
+          // fail-open) — never block a paying user because the ledger is
+          // briefly unreachable. Nothing to refund since the debit didn't land.
+          log.error("spend.rpc_failed", { err: spendErr.message, actionKey: opts.spend.actionKey });
+          spendIdem = null;
+        } else {
+          const row = Array.isArray(spendRows) ? spendRows[0] : spendRows;
+          if (row && row.allowed === false) {
+            spendIdem = null; // nothing was debited
+            if (row.soft_cap_reached) {
+              return errorEnvelope({
+                code: "AI_SOFT_CAP",
+                message: "You've reached today's AI limit. It resets in a few hours.",
+                status: 429,
+                details: { resetAt: row.reset_at ?? null },
+              }, cors, correlationId);
+            }
+            return errorEnvelope({
+              code: "INSUFFICIENT_BALANCE",
+              message: "You don't have enough Moonstones for this reading.",
+              status: 402,
+              details: { balance: row.new_balance ?? null },
+            }, cors, correlationId);
+          }
+          // allowed (incl. premium bypass) — keep spendIdem so a run failure
+          // refunds the debit / clears the premium soft-cap log entry.
+        }
+      }
+
+      let result: unknown;
+      try {
+        result = await opts.run(ctx, body);
+      } catch (runErr) {
+        // The AI (or any run-stage work) failed after we charged — refund so
+        // the user isn't billed for a reading they never received.
+        if (spendIdem && ctx.userId) {
+          const { error: refundErr } = await supabase.rpc("refund_action_spend_srv", {
+            p_user_id: ctx.userId,
+            p_idempotency_key: spendIdem,
+          });
+          if (refundErr) {
+            log.error("spend.refund_failed", { err: refundErr.message, spendIdem });
+          } else {
+            log.info("spend.refunded", { spendIdem });
+          }
+        }
+        throw runErr;
+      }
       const durationMs = Math.round(performance.now() - started);
       log.info("request.end", { durationMs, status: 200 });
 

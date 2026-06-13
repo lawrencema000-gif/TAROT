@@ -200,6 +200,7 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
   ai: true,
+  spend: { actionKey: "companion-session", cost: 50 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {
     const userId = ctx.userId!;

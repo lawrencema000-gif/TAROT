@@ -302,6 +302,7 @@ Deno.serve(handler<Req, Resp>({
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
   ai: true,
+  spend: { actionKey: "partner-compat", cost: 50 },
   requestSchema: RequestSchema,
   run: (_ctx, body) => {
     const myUtc = localToUTC(body.myBirthDate, body.myBirthTime, body.myTimezone);

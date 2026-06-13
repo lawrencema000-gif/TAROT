@@ -502,6 +502,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         reversed: d.reversed,
         position: getPositionLabel(i),
       })),
+      // Persist the AI interpretation so a saved reading keeps it on reload
+      // (it's the expensive, non-reproducible part — local focus/traditional
+      // text is re-derived deterministically). Omitted when none was generated.
+      interpretation: aiInterpretation ?? undefined,
       saved: true,
     });
 

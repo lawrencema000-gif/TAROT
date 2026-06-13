@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import type { CustomSpreadInput } from '../components/readings/TarotSection';
 import type { LucideIcon } from 'lucide-react';
 import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
@@ -243,10 +244,24 @@ export function ReadingsPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isPremium = !!profile?.isPremium;
   const [activeTab, setActiveTab] = useState<ReadingTab>('tarot');
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState('');
+
+  // A custom spread handed off from the builder via router state. Captured
+  // once at mount (lazy initializer) and then the history state is cleared
+  // so a tab switch or refresh doesn't re-launch the same custom reading.
+  const [customSpread] = useState<CustomSpreadInput | undefined>(
+    () => (location.state as { customSpread?: CustomSpreadInput } | null)?.customSpread,
+  );
+  useEffect(() => {
+    if ((location.state as { customSpread?: CustomSpreadInput } | null)?.customSpread) {
+      navigate('.', { replace: true, state: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Feature-flag gated — each defaults off in production. Flip per-user or
   // globally in Supabase `feature_flags` table to roll out.
@@ -323,7 +338,7 @@ export function ReadingsPage() {
       />
 
       {activeTab === 'tarot' && (
-        <TarotSection onShowPaywall={handleShowPaywall} />
+        <TarotSection onShowPaywall={handleShowPaywall} customSpread={customSpread} />
       )}
 
       {activeTab === 'horoscope' && (

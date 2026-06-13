@@ -92,6 +92,7 @@ interface QuizProgress {
 interface QuizResultData {
   id: string;
   quiz_type: string;
+  quiz_id: string;
   result: string;
   scores: Record<string, number>;
   completed_at: string;
@@ -302,8 +303,12 @@ export function QuizzesPage() {
     setLoading(false);
   };
 
-  const getLastResult = (quizType: string): QuizResultData | undefined => {
-    return pastResults.find(r => r.quiz_type === quizType);
+  // Key on quiz_id, NOT quiz_type: several cards share a type (both MBTI
+  // variants are type 'mbti'; all ~20 extra quizzes are 'extra-dimensional'),
+  // so a type match would show the same chip on cards the user never took.
+  // listForUser orders by completed_at DESC, so .find returns the latest.
+  const getLastResult = (quizId: string): QuizResultData | undefined => {
+    return pastResults.find(r => r.quiz_id === quizId);
   };
 
   const formatDate = (dateStr: string) => {
@@ -2190,9 +2195,9 @@ export function QuizzesPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {quizzes.map(({ quiz, type, metadata }) => {
+          {quizzes.map(({ quiz, metadata }) => {
             const Icon = iconMap[metadata.icon] || Sparkles;
-            const lastResult = getLastResult(type);
+            const lastResult = getLastResult(quiz.id);
             const hasResult = !!lastResult;
 
             return (

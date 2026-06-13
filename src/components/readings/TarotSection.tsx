@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   ChevronRight,
@@ -16,6 +16,7 @@ import {
   Briefcase,
   ArrowUp,
   ArrowDown,
+  Share2,
 } from 'lucide-react';
 import { Card, Button, Sheet, Chip, toast } from '../ui';
 import { useT } from '../../i18n/useT';
@@ -24,6 +25,8 @@ import { useRitual } from '../../context/RitualContext';
 import { useGamification } from '../../context/GamificationContext';
 import { tarotReadings } from '../../dal';
 import { getAllTarotCards } from '../../services/tarotCards';
+import { shareOrDownloadCard } from '../../utils/shareCard';
+import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
 import { TarotCardDetail } from './TarotCardDetail';
 import { CelticCrossLayout } from './CelticCrossLayout';
 import { generatePremiumReading, tarotCardToReadingCard, getSpreadPositions } from '../../services/readingInterpretation';
@@ -85,8 +88,21 @@ async function incrementDailyReadingCount(): Promise<void> {
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
 type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
 
+/**
+ * A user-built custom spread launched into the reading flow. `id` is
+ * namespaced 'custom:<uuid>' so it never collides with a hardcoded
+ * spreadConfigs id and persists cleanly into tarot_readings.spread_type.
+ */
+export interface CustomSpreadInput {
+  id: string;
+  name: string;
+  positions: string[];
+  count: number;
+}
+
 interface TarotSectionProps {
   onShowPaywall: (feature: string) => void;
+  customSpread?: CustomSpreadInput;
 }
 
 const focusAreas: FocusArea[] = ['Love', 'Career', 'Self', 'Money', 'Health', 'General'];
@@ -112,7 +128,7 @@ const spreadConfigs = [
 
 type SpreadConfig = typeof spreadConfigs[number];
 
-export function TarotSection({ onShowPaywall }: TarotSectionProps) {
+export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps) {
   const { t } = useT('app');
   // Phase-5 rollout: when ON, render the extracted view components
   // from ./tarot/. Starts OFF at 0% — flip rollout_percent in the DB to
@@ -121,6 +137,17 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   const spreadName = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.name`);
   const spreadDesc = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.description`);
   const focusLabel = (f: FocusArea) => t(focusAreaI18nKey[f]);
+
+  // Unified spread metadata — resolves either a hardcoded spread or the
+  // active user-built custom spread to { count, free, name }. Custom
+  // spreads are always free (the builder is a premium-independent surface).
+  const getSpreadMeta = (id: string): { count: number; free: boolean; name: string } | undefined => {
+    if (customSpread && id === customSpread.id) {
+      return { count: customSpread.count, free: true, name: customSpread.name };
+    }
+    const s = spreadConfigs.find(sc => sc.id === id);
+    return s ? { count: s.count, free: s.free, name: spreadName(s) } : undefined;
+  };
   const { user, profile, refreshProfile } = useAuth();
   const { tarotRefreshTrigger } = useRitual();
   const { openRatePrompt } = useGamification();
@@ -245,13 +272,26 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
     setAiInterpretation(null);
   };
 
+  // Auto-launch into the reading flow when arriving from the custom-spread
+  // builder (ReadingsPage passes the spread via router state). Fires once
+  // per distinct custom spread so "New reading" doesn't bounce the user
+  // back into it.
+  const customLaunchedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!customSpread || customLaunchedRef.current === customSpread.id) return;
+    customLaunchedRef.current = customSpread.id;
+    setCurrentSpread(customSpread.id);
+    handleStartDraw();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customSpread?.id]);
+
   const handleFocusSelect = (focus: FocusArea) => {
     setSelectedFocus(focus);
   };
 
   const handleDraw = () => {
     if (!selectedFocus) return;
-    const spread = spreadConfigs.find(s => s.id === currentSpread);
+    const spread = getSpreadMeta(currentSpread);
     if (!spread) return;
 
     if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[currentSpread]) {
@@ -261,7 +301,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
         setPendingSpreadId(currentSpread);
         setShowWatchAdSheet(true);
       } else {
-        onShowPaywall(spreadName(spread));
+        onShowPaywall(spread.name);
       }
       return;
     }
@@ -312,7 +352,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   const handleCardSelect = (cardId: number) => {
-    const spread = spreadConfigs.find(s => s.id === currentSpread);
+    const spread = getSpreadMeta(currentSpread);
     if (!spread) return;
 
     if (selectedIndices.includes(cardId)) {
@@ -323,7 +363,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   const handleRevealSelected = async () => {
-    const spread = spreadConfigs.find(s => s.id === currentSpread);
+    const spread = getSpreadMeta(currentSpread);
     if (!spread || selectedIndices.length !== spread.count) return;
     if (tarotCards.length === 0) return;
 
@@ -403,6 +443,51 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
 
   const allRevealed = drawnCards.every(c => c.revealed);
 
+  // Share the WHOLE reading as a deep link (opens in SharedReadingPage) plus
+  // a branded image of the featured card. The deep link is the orphaned
+  // encodeReading producer side — without this, no /reading/:token link was
+  // ever generated. Used by both the legacy reveal path and the split-view
+  // TarotRevealView (via onShare).
+  const handleShareReading = async () => {
+    if (drawnCards.length === 0) return;
+    const featured = drawnCards.find(c => c.revealed) ?? drawnCards[0];
+    const keyword = featured.card.keywords?.[0] ?? '';
+    const shareUrl = buildShareUrl(
+      encodeReading({
+        spreadSlug: currentSpread,
+        cards: drawnCards.map(d => ({ id: d.card.id, reversed: d.reversed })),
+        date: new Date().toISOString(),
+      }),
+    );
+    const shareText = `${t('readings.shareText', {
+      defaultValue: 'My {{spread}} tarot reading on Arcana',
+      spread: getSpreadMeta(currentSpread)?.name ?? '',
+    })}\n${shareUrl}`;
+
+    const outcome = await shareOrDownloadCard(
+      {
+        variant: 'tarot',
+        cardName: featured.card.name,
+        orientation: featured.reversed ? 'reversed' : 'upright',
+        keyword,
+        cardImageUrl: getCardImage(featured.card),
+      },
+      `arcana-reading-${currentSpread}.png`,
+      shareText,
+    );
+
+    if (outcome === 'downloaded') {
+      toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
+    } else if (outcome === 'failed') {
+      try {
+        await navigator.clipboard?.writeText(shareText);
+        toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
+      } catch {
+        toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
+      }
+    }
+  };
+
   const handleSaveReading = async () => {
     if (!user || drawnCards.length === 0) return;
 
@@ -480,6 +565,10 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   };
 
   const getPositionLabel = (index: number): string => {
+    // Custom spread: use the user-authored position names.
+    if (customSpread && currentSpread === customSpread.id) {
+      return customSpread.positions[index] || t('readings.positions.generic', { index: index + 1 });
+    }
     if (currentSpread === 'single') return t('readings.positions.yourCard');
     if (currentSpread === 'three-card') {
       const keys = ['past', 'present', 'future'] as const;
@@ -672,7 +761,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   }
 
   if (view === 'select') {
-    const spread = spreadConfigs.find(s => s.id === currentSpread);
+    const spread = getSpreadMeta(currentSpread);
     const needsMore = spread ? spread.count - selectedIndices.length : 0;
 
     if (useSplitViews) {
@@ -767,14 +856,14 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
   }
 
   if (view === 'reveal') {
-    const spread = spreadConfigs.find(s => s.id === currentSpread);
+    const spreadTitleText = getSpreadMeta(currentSpread)?.name ?? '';
 
     if (useSplitViews) {
       return (
         <TarotRevealView
           drawnCards={drawnCards}
           currentSpread={currentSpread}
-          spreadTitle={spread ? spreadName(spread) : ''}
+          spreadTitle={spreadTitleText}
           selectedFocus={selectedFocus}
           allRevealed={allRevealed}
           isSaved={isSaved}
@@ -790,6 +879,7 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           getFocusInterpretation={getFocusInterpretation}
           onBack={() => setView('home')}
           onSave={handleSaveReading}
+          onShare={handleShareReading}
           onRevealCard={handleRevealCard}
           onRevealAll={revealAll}
           onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
@@ -810,22 +900,32 @@ export function TarotSection({ onShowPaywall }: TarotSectionProps) {
           >
             {t('readings.back')}
           </button>
-          <button
-            onClick={handleSaveReading}
-            disabled={!allRevealed}
-            className="p-2 rounded-full hover:bg-mystic-800 transition-all active:scale-90"
-          >
-            {isSaved ? (
-              <BookmarkCheck className="w-5 h-5 text-gold" />
-            ) : (
-              <Bookmark className="w-5 h-5 text-mystic-400" />
-            )}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleShareReading}
+              disabled={!allRevealed}
+              aria-label={t('readings.share', { defaultValue: 'Share reading' }) as string}
+              className="p-2 rounded-full hover:bg-mystic-800 transition-all active:scale-90 disabled:opacity-40"
+            >
+              <Share2 className="w-5 h-5 text-mystic-400" />
+            </button>
+            <button
+              onClick={handleSaveReading}
+              disabled={!allRevealed}
+              className="p-2 rounded-full hover:bg-mystic-800 transition-all active:scale-90"
+            >
+              {isSaved ? (
+                <BookmarkCheck className="w-5 h-5 text-gold" />
+              ) : (
+                <Bookmark className="w-5 h-5 text-mystic-400" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="text-center">
           <p className="text-xs text-mystic-500 uppercase tracking-wider">{selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}</p>
-          <h2 className="font-display text-xl text-mystic-100">{spread ? spreadName(spread) : ''}</h2>
+          <h2 className="font-display text-xl text-mystic-100">{spreadTitleText}</h2>
         </div>
 
         {currentSpread === 'celtic-cross' ? (

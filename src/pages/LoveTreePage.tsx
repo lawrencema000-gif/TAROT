@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sparkles, Share2, ArrowLeft } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
@@ -6,6 +6,8 @@ import { useT } from '../i18n/useT';
 import { LOVE_TREE_QUIZ, ATTACHMENT_INFO, scoreLoveTree } from '../data/loveTree';
 import { LoveTree } from '../components/ritual/LoveTree';
 import { shareOrDownloadCard } from '../utils/shareCard';
+import { useAuth } from '../context/AuthContext';
+import { quizResults as quizResultsDal } from '../dal';
 
 /**
  * Love Tree — a 12-question attachment-style reading rendered as a
@@ -33,9 +35,13 @@ const LIKERT: Array<{ value: number; label: string }> = [
 
 export function LoveTreePage() {
   const { t } = useT('app');
+  const { user } = useAuth();
   const [stage, setStage] = useState<Stage>('intro');
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  // Guards the one-time persist per completed run (React re-renders /
+  // StrictMode double-invoke would otherwise double-insert).
+  const savedRef = useRef(false);
 
   const totalItems = LOVE_TREE_QUIZ.length;
   const progress = Math.round(((index) / totalItems) * 100);
@@ -44,6 +50,24 @@ export function LoveTreePage() {
     if (stage !== 'result') return null;
     return scoreLoveTree(answers);
   }, [stage, answers]);
+
+  // Persist the result to quiz_results on first entry to the result stage,
+  // mirroring how every other quiz persists (QuizzesPage). Uses a distinct
+  // quiz_type 'love-tree' — its 4-value scale ('fearful') differs from the
+  // regular attachment quiz ('fearful-avoidant'), so they must not share a
+  // type in history. Fire-and-forget; no-op when signed out.
+  useEffect(() => {
+    if (stage !== 'result' || !result || !user || savedRef.current) return;
+    savedRef.current = true;
+    void quizResultsDal.insert({
+      userId: user.id,
+      quizType: 'love-tree',
+      quizId: 'love-tree-v1',
+      result: result.attachment,
+      scores: result as unknown as Record<string, unknown>,
+      label: ATTACHMENT_INFO[result.attachment].title,
+    });
+  }, [stage, result, user]);
 
   const handleAnswer = (value: number) => {
     const item = LOVE_TREE_QUIZ[index];
@@ -63,6 +87,7 @@ export function LoveTreePage() {
       setStage('intro');
       setIndex(0);
       setAnswers({});
+      savedRef.current = false;
     }
   };
 
@@ -70,6 +95,7 @@ export function LoveTreePage() {
     setStage('intro');
     setIndex(0);
     setAnswers({});
+    savedRef.current = false;
   };
 
   const handleShare = async () => {

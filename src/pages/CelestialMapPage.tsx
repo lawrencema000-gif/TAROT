@@ -186,6 +186,12 @@ export function CelestialMapPage() {
     for (const p of filterSet) {
       if (FREE_TIER_PLANETS.has(p)) intersection.add(p);
     }
+    // "Growth" (Jupiter/Uranus/Pluto) is the one life-area whose planets are
+    // entirely outside the free tier — the intersection is empty, which used
+    // to render a silently blank map. Fall back to the Sun+Moon teaser so a
+    // free user always sees lines (matching the 'all'/null branch above and
+    // the previewLock upgrade card already on screen).
+    if (intersection.size === 0) return FREE_TIER_PLANETS;
     return intersection;
   }, [activeFilter, isPremium]);
 

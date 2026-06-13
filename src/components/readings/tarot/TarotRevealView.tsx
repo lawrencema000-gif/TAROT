@@ -20,10 +20,8 @@ import {
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
-import { Card, Button, toast } from '../../ui';
+import { Card, Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
-import { shareOrDownloadCard } from '../../../utils/shareCard';
-import { getBundledCardPath } from '../../../config/bundledImages';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import type { TarotCard } from '../../../types';
 import type { FocusArea } from './types';
@@ -50,6 +48,7 @@ interface TarotRevealViewProps {
   getFocusInterpretation: (card: TarotCard, focus: FocusArea | null, reversed: boolean) => FocusInterp | null;
   onBack: () => void;
   onSave: () => void;
+  onShare: () => void;
   onRevealCard: (index: number) => void;
   onRevealAll: () => void;
   onCardClick: (card: TarotCard, reversed: boolean) => void;
@@ -80,6 +79,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
     getFocusInterpretation,
     onBack,
     onSave,
+    onShare,
     onRevealCard,
     onRevealAll,
     onCardClick,
@@ -375,41 +375,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
             </Button>
             <Button
               variant="outline"
-              onClick={async () => {
-                // Auto-share cosmic card — highest-traffic surface, reuses the
-                // Week-4 `tarot` variant of the share-card renderer.
-                const featured = drawnCards.find((c) => c.revealed) ?? drawnCards[0];
-                if (!featured) return;
-                const keyword = featured.card.keywords?.[0] ?? spreadTitle;
-                const shareText = t('readings.shareText', {
-                  defaultValue: 'I drew {{name}} ({{orientation}}) in my {{spread}} — {{keyword}}',
-                  name: featured.card.name,
-                  orientation: featured.reversed ? 'reversed' : 'upright',
-                  spread: spreadTitle,
-                  keyword,
-                }) as string;
-                const outcome = await shareOrDownloadCard(
-                  {
-                    variant: 'tarot',
-                    cardName: featured.card.name,
-                    orientation: featured.reversed ? 'reversed' : 'upright',
-                    keyword,
-                    cardImageUrl: getBundledCardPath(featured.card.id) || undefined,
-                  },
-                  `arcana-${featured.card.name.toLowerCase().replace(/\s+/g, '-')}.png`,
-                  shareText,
-                );
-                if (outcome === 'downloaded') {
-                  toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
-                } else if (outcome === 'failed') {
-                  try {
-                    await navigator.clipboard?.writeText(shareText);
-                    toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
-                  } catch {
-                    toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
-                  }
-                }
-              }}
+              onClick={onShare}
               className="min-h-[44px]"
             >
               <Share2 className="w-4 h-4" />

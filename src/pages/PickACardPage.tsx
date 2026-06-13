@@ -10,6 +10,7 @@ import { drawSeededCards } from '../utils/cardDraw';
 import { getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
 import { shareOrDownloadCard } from '../utils/shareCard';
+import { encodeReading, buildShareUrl } from '../services/shareableReadings';
 import { localDateStr, localYesterdayStr } from '../utils/localDate';
 import type { TarotCard } from '../types';
 
@@ -139,12 +140,23 @@ export function PickACardPage() {
   const handleShare = async () => {
     if (!pickedCard || !picked) return;
     const keyword = pickedCard.keywords?.[0] ?? '';
-    const shareText = t('pickACard.shareText', {
+    const baseText = t('pickACard.shareText', {
       defaultValue: "Today I drew {{name}} ({{orientation}}) — {{keyword}}",
       name: pickedCard.name,
       orientation: picked.reversed ? t('pickACard.reversed', { defaultValue: 'reversed' }) : t('pickACard.upright', { defaultValue: 'upright' }),
       keyword,
     }) as string;
+
+    // Deep link so a recipient opens the actual card in SharedReadingPage,
+    // not just an image. Single-card "spread".
+    const shareUrl = buildShareUrl(
+      encodeReading({
+        spreadSlug: 'single',
+        cards: [{ id: pickedCard.id, reversed: picked.reversed }],
+        date: new Date().toISOString(),
+      }),
+    );
+    const shareText = `${baseText}\n${shareUrl}`;
 
     const result = await shareOrDownloadCard(
       {

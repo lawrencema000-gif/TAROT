@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Sparkles, Play } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { toast } from '../components/ui';
@@ -231,9 +231,26 @@ export function SpreadBuilderPage() {
                   </button>
                 </div>
                 {s.description && <p className="text-xs text-mystic-400 mb-2">{s.description}</p>}
-                <div className="text-xs text-mystic-500">
+                <div className="text-xs text-mystic-500 mb-3">
                   {s.positions.length} position{s.positions.length === 1 ? '' : 's'} · {new Date(s.created_at).toLocaleDateString()}
                 </div>
+                <button
+                  onClick={() =>
+                    navigate('/readings', {
+                      state: {
+                        customSpread: {
+                          id: `custom:${s.id}`,
+                          name: s.name,
+                          positions: s.positions.map((p) => p.name),
+                          count: s.positions.length,
+                        },
+                      },
+                    })
+                  }
+                  className="w-full py-2 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                >
+                  <Play className="w-4 h-4" /> Start a reading
+                </button>
               </div>
             ))}
           </div>

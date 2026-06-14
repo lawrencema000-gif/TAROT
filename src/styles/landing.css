@@ -338,6 +338,12 @@
   border: 1px solid rgba(255,255,255,0.06); border-radius: 16px;
   padding: 20px 22px; z-index: 10; animation: lp-popup-in 0.3s ease-out;
   box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 30px rgba(212,168,83,0.03);
+  /* The popup is anchored to the bottom of the wheel and overlaps the
+     bottom-half sign hit-areas. Without this, hovering a bottom sign pops
+     the popup UNDER the cursor, stealing the SVG <g>'s mouseleave and
+     causing an enter/leave flicker loop. It's purely informational text
+     (no interactive children), so it must not capture pointer events. */
+  pointer-events: none;
 }
 @keyframes lp-popup-in { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 .lp-chart-popup-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }

@@ -1,5 +1,5 @@
 {
-	"appId": "com.arcana.app",
+	"appId": "com.arcanatarotapp",
 	"appName": "Arcana",
 	"webDir": "dist",
 	"server": {
@@ -51,7 +51,7 @@
 			"forceCodeForRefreshToken": true
 		},
 		"SignInWithApple": {
-			"clientId": "com.arcana.app",
+			"clientId": "com.arcanatarotapp.signinwithapple",
 			"redirectURI": "https://ulzlthhkqjuohzjangcq.supabase.co/auth/v1/callback",
 			"scopes": "email name",
 			"state": "state"

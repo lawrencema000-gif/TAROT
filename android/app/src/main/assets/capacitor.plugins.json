@@ -32,6 +32,10 @@
 		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
 	},
 	{
+		"pkg": "@capgo/capacitor-app-tracking-transparency",
+		"classpath": "ee.forgr.capacitor.apptrackingtransparency.AppTrackingTransparencyPlugin"
+	},
+	{
 		"pkg": "@codetrix-studio/capacitor-google-auth",
 		"classpath": "com.codetrixstudio.capacitor.GoogleAuth.GoogleAuth"
 	},

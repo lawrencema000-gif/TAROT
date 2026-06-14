@@ -1,0 +1,1 @@
+function o(){document.querySelectorAll('script[type="application/ld+json"][data-seo]').forEach(e=>e.remove())}function n(e){const t=document.createElement("script");t.type="application/ld+json",t.setAttribute("data-seo","true"),t.textContent=JSON.stringify(e),document.head.appendChild(t)}export{n as a,o as r};

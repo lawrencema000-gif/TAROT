@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://tarotlife.app/</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/?lang=en"/>
@@ -13,7 +13,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/blog</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog?lang=en"/>
@@ -24,7 +24,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings?lang=en"/>
@@ -34,8 +34,63 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/tarot-meanings"/>
   </url>
   <url>
+    <loc>https://tarotlife.app/spreads</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary"/>
+  </url>
+  <url>
     <loc>https://tarotlife.app/horoscope</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/horoscope?lang=en"/>
@@ -43,6 +98,28 @@
     <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/horoscope?lang=ko"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/horoscope?lang=zh"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/horoscope"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/signin</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/signin?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/signin?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/signin?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/signin?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/signin"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/signup</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/signup?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/signup?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/signup?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/signup?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/signup"/>
   </url>
   <url>
     <loc>https://tarotlife.app/privacy-policy.html</loc>
@@ -56,8 +133,2043 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/privacy-policy.html"/>
   </url>
   <url>
+    <loc>https://tarotlife.app/astrology/aries</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/aries?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/aries?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/aries?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/aries?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/aries"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/taurus</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/taurus?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/taurus?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/taurus?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/taurus?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/taurus"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/gemini</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/gemini?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/gemini?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/gemini?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/gemini?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/gemini"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/cancer</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/cancer?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/cancer?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/cancer?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/cancer?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/cancer"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/leo</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/leo?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/leo?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/leo?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/leo?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/leo"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/virgo</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/virgo?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/virgo?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/virgo?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/virgo?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/virgo"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/libra</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/libra?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/libra?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/libra?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/libra?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/libra"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/scorpio</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/scorpio?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/scorpio?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/scorpio?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/scorpio?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/scorpio"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/sagittarius</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/sagittarius?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/sagittarius?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/sagittarius?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/sagittarius?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/sagittarius"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/capricorn</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/capricorn?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/capricorn?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/capricorn?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/capricorn?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/capricorn"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/aquarius</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/aquarius?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/aquarius?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/aquarius?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/aquarius?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/aquarius"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/pisces</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/pisces?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/pisces?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/pisces?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/pisces?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/pisces"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/sun</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/sun?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/sun?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/sun?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/sun?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/sun"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/moon</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/moon?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/moon?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/moon?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/moon?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/moon"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/mercury</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/mercury?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/mercury?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/mercury?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/mercury?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/mercury"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/venus</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/venus?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/venus?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/venus?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/venus?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/venus"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/mars</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/mars?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/mars?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/mars?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/mars?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/mars"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/jupiter</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/jupiter?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/jupiter?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/jupiter?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/jupiter?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/jupiter"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/saturn</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/saturn?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/saturn?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/saturn?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/saturn?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/saturn"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/uranus</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/uranus?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/uranus?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/uranus?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/uranus?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/uranus"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/neptune</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/neptune?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/neptune?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/neptune?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/neptune?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/neptune"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/pluto</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/pluto?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/pluto?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/pluto?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/pluto?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/pluto"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/first-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/first-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/first-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/first-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/first-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/first-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/second-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/second-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/second-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/second-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/second-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/second-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/third-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/third-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/third-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/third-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/third-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/third-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/fourth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/fourth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/fourth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/fourth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/fourth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/fourth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/fifth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/fifth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/fifth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/fifth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/fifth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/fifth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/sixth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/sixth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/sixth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/sixth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/sixth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/sixth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/seventh-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/seventh-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/seventh-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/seventh-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/seventh-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/seventh-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/eighth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/eighth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/eighth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/eighth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/eighth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/eighth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/ninth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/ninth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/ninth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/ninth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/ninth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/ninth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/tenth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/tenth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/tenth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/tenth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/tenth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/tenth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/eleventh-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/eleventh-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/eleventh-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/eleventh-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/eleventh-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/eleventh-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/twelfth-house</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/twelfth-house?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/twelfth-house?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/twelfth-house?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/twelfth-house?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/twelfth-house"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/conjunction</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/conjunction?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/conjunction?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/conjunction?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/conjunction?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/conjunction"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/sextile</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/sextile?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/sextile?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/sextile?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/sextile?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/sextile"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/square</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/square?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/square?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/square?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/square?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/square"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/trine</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/trine?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/trine?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/trine?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/trine?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/trine"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/opposition</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/opposition?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/opposition?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/opposition?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/opposition?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/opposition"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/astrology/quincunx</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/astrology/quincunx?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/astrology/quincunx?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/astrology/quincunx?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/astrology/quincunx?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/astrology/quincunx"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/one-card-daily</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/one-card-daily?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/one-card-daily?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/one-card-daily?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/one-card-daily?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/one-card-daily"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/three-card-past-present-future</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/three-card-past-present-future?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/three-card-past-present-future?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/three-card-past-present-future?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/three-card-past-present-future?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/three-card-past-present-future"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/celtic-cross</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/celtic-cross?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/celtic-cross?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/celtic-cross?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/celtic-cross?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/celtic-cross"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/horseshoe</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/horseshoe?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/horseshoe?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/horseshoe?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/horseshoe?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/horseshoe"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/relationship-cross</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/relationship-cross?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/relationship-cross?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/relationship-cross?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/relationship-cross?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/relationship-cross"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/soulmate</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/soulmate?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/soulmate?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/soulmate?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/soulmate?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/soulmate"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/love-yes-no</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/love-yes-no?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/love-yes-no?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/love-yes-no?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/love-yes-no?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/love-yes-no"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/career-path</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/career-path?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/career-path?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/career-path?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/career-path?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/career-path"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/job-decision</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/job-decision?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/job-decision?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/job-decision?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/job-decision?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/job-decision"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/money-flow</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/money-flow?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/money-flow?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/money-flow?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/money-flow?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/money-flow"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/mind-body-spirit</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/mind-body-spirit?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/mind-body-spirit?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/mind-body-spirit?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/mind-body-spirit?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/mind-body-spirit"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/weekly-forecast</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/weekly-forecast?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/weekly-forecast?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/weekly-forecast?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/weekly-forecast?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/weekly-forecast"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/shadow-work</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/shadow-work?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/shadow-work?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/shadow-work?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/shadow-work?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/shadow-work"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/higher-self</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/higher-self?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/higher-self?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/higher-self?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/higher-self?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/higher-self"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/new-moon-intentions</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/new-moon-intentions?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/new-moon-intentions?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/new-moon-intentions?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/new-moon-intentions?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/new-moon-intentions"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/full-moon-release</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/full-moon-release?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/full-moon-release?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/full-moon-release?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/full-moon-release?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/full-moon-release"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/crossroads</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/crossroads?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/crossroads?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/crossroads?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/crossroads?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/crossroads"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/yes-no-pulse</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/yes-no-pulse?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/yes-no-pulse?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/yes-no-pulse?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/yes-no-pulse?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/yes-no-pulse"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-fool-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-fool-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-fool-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-fool-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-fool-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-fool-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-magician-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-magician-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-magician-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-magician-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-magician-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-magician-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-high-priestess-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-high-priestess-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-high-priestess-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-high-priestess-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-high-priestess-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-high-priestess-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-empress-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-empress-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-empress-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-empress-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-empress-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-empress-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-emperor-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-emperor-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-emperor-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-emperor-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-emperor-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-emperor-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-hierophant-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-hierophant-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-hierophant-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-hierophant-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-hierophant-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-hierophant-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-lovers-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-lovers-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-lovers-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-lovers-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-lovers-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-lovers-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-chariot-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-chariot-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-chariot-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-chariot-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-chariot-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-chariot-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/strength-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/strength-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/strength-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/strength-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/strength-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/strength-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-hermit-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-hermit-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-hermit-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-hermit-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-hermit-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-hermit-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-wheel-of-fortune-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-wheel-of-fortune-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-wheel-of-fortune-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-wheel-of-fortune-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-wheel-of-fortune-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-wheel-of-fortune-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/justice-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/justice-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/justice-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/justice-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/justice-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/justice-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-hanged-man-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-hanged-man-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-hanged-man-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-hanged-man-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-hanged-man-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-hanged-man-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/death-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/death-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/death-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/death-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/death-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/death-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/temperance-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/temperance-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/temperance-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/temperance-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/temperance-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/temperance-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-devil-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-devil-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-devil-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-devil-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-devil-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-devil-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-tower-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-tower-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-tower-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-tower-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-tower-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-tower-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-star-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-star-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-star-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-star-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-star-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-star-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-moon-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-moon-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-moon-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-moon-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-moon-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-moon-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-sun-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-sun-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-sun-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-sun-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-sun-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-sun-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/judgement-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/judgement-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/judgement-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/judgement-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/judgement-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/judgement-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/spreads/the-world-spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/spreads/the-world-spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/spreads/the-world-spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/spreads/the-world-spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/spreads/the-world-spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/spreads/the-world-spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/1</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/1?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/1?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/1?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/1?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/1"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/2</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/2?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/2?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/2?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/2?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/2"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/3</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/3?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/3?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/3?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/3?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/3"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/4</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/4?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/4?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/4?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/4?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/4"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/5</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/5?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/5?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/5?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/5?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/5"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/6</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/6?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/6?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/6?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/6?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/6"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/7</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/7?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/7?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/7?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/7?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/7"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/8</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/8?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/8?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/8?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/8?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/8"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/9</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/9?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/9?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/9?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/9?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/9"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/11</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/11?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/11?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/11?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/11?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/11"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/22</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/22?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/22?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/22?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/22?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/22"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/numerology/33</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/numerology/33?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/numerology/33?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/numerology/33?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/numerology/33?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/numerology/33"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/rose-quartz</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/rose-quartz?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/rose-quartz?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/rose-quartz?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/rose-quartz?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/rose-quartz"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/rhodonite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/rhodonite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/rhodonite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/rhodonite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/rhodonite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/rhodonite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/rhodochrosite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/rhodochrosite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/rhodochrosite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/rhodochrosite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/rhodochrosite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/rhodochrosite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/malachite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/malachite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/malachite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/malachite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/malachite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/malachite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/emerald</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/emerald?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/emerald?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/emerald?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/emerald?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/emerald"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/black-tourmaline</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/black-tourmaline?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/black-tourmaline?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/black-tourmaline?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/black-tourmaline?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/black-tourmaline"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/obsidian</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/obsidian?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/obsidian?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/obsidian?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/obsidian?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/obsidian"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/hematite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/hematite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/hematite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/hematite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/hematite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/hematite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/jet</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/jet?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/jet?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/jet?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/jet?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/jet"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/smoky-quartz</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/smoky-quartz?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/smoky-quartz?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/smoky-quartz?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/smoky-quartz?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/smoky-quartz"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/citrine</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/citrine?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/citrine?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/citrine?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/citrine?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/citrine"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/pyrite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/pyrite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/pyrite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/pyrite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/pyrite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/pyrite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/green-aventurine</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/green-aventurine?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/green-aventurine?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/green-aventurine?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/green-aventurine?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/green-aventurine"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/jade</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/jade?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/jade?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/jade?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/jade?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/jade"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/tigers-eye</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/tigers-eye?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/tigers-eye?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/tigers-eye?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/tigers-eye?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/tigers-eye"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/clear-quartz</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/clear-quartz?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/clear-quartz?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/clear-quartz?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/clear-quartz?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/clear-quartz"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/fluorite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/fluorite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/fluorite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/fluorite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/fluorite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/fluorite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/sodalite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/sodalite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/sodalite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/sodalite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/sodalite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/sodalite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/lapis-lazuli</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/lapis-lazuli?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/lapis-lazuli?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/lapis-lazuli?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/lapis-lazuli?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/lapis-lazuli"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/sapphire</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/sapphire?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/sapphire?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/sapphire?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/sapphire?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/sapphire"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/amethyst</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/amethyst?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/amethyst?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/amethyst?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/amethyst?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/amethyst"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/selenite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/selenite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/selenite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/selenite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/selenite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/selenite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/bloodstone</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/bloodstone?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/bloodstone?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/bloodstone?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/bloodstone?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/bloodstone"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/carnelian</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/carnelian?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/carnelian?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/carnelian?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/carnelian?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/carnelian"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/turquoise</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/turquoise?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/turquoise?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/turquoise?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/turquoise?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/turquoise"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/moonstone</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/moonstone?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/moonstone?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/moonstone?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/moonstone?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/moonstone"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/labradorite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/labradorite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/labradorite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/labradorite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/labradorite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/labradorite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/opal</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/opal?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/opal?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/opal?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/opal?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/opal"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/kyanite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/kyanite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/kyanite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/kyanite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/kyanite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/kyanite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/crystals/angelite</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/crystals/angelite?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/crystals/angelite?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/crystals/angelite?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/crystals/angelite?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/crystals/angelite"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/arcana</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/arcana?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/arcana?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/arcana?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/arcana?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/arcana"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/major-arcana</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/major-arcana?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/major-arcana?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/major-arcana?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/major-arcana?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/major-arcana"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/minor-arcana</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/minor-arcana?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/minor-arcana?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/minor-arcana?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/minor-arcana?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/minor-arcana"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/suit</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/suit?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/suit?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/suit?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/suit?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/suit"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/court-cards</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/court-cards?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/court-cards?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/court-cards?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/court-cards?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/court-cards"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/page</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/page?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/page?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/page?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/page?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/page"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/knight</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/knight?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/knight?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/knight?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/knight?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/knight"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/queen</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/queen?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/queen?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/queen?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/queen?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/queen"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/king</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/king?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/king?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/king?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/king?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/king"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/spread</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/spread?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/spread?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/spread?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/spread?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/spread"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/querent</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/querent?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/querent?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/querent?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/querent?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/querent"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/reversed</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/reversed?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/reversed?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/reversed?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/reversed?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/reversed"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/upright</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/upright?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/upright?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/upright?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/upright?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/upright"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/significator</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/significator?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/significator?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/significator?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/significator?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/significator"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/deck</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/deck?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/deck?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/deck?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/deck?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/deck"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/natal-chart</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/natal-chart?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/natal-chart?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/natal-chart?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/natal-chart?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/natal-chart"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/ascendant</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/ascendant?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/ascendant?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/ascendant?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/ascendant?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/ascendant"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/descendant</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/descendant?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/descendant?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/descendant?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/descendant?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/descendant"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/midheaven</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/midheaven?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/midheaven?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/midheaven?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/midheaven?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/midheaven"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/ic</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/ic?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/ic?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/ic?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/ic?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/ic"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/transit</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/transit?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/transit?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/transit?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/transit?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/transit"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/retrograde</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/retrograde?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/retrograde?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/retrograde?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/retrograde?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/retrograde"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/conjunction</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/conjunction?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/conjunction?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/conjunction?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/conjunction?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/conjunction"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/opposition</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/opposition?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/opposition?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/opposition?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/opposition?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/opposition"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/square</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/square?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/square?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/square?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/square?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/square"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/trine</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/trine?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/trine?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/trine?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/trine?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/trine"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/sextile</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/sextile?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/sextile?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/sextile?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/sextile?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/sextile"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/aspect</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/aspect?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/aspect?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/aspect?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/aspect?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/aspect"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/ephemeris</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/ephemeris?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/ephemeris?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/ephemeris?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/ephemeris?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/ephemeris"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/decan</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/decan?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/decan?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/decan?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/decan?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/decan"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/life-path</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/life-path?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/life-path?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/life-path?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/life-path?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/life-path"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/expression-number</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/expression-number?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/expression-number?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/expression-number?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/expression-number?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/expression-number"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/soul-urge</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/soul-urge?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/soul-urge?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/soul-urge?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/soul-urge?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/soul-urge"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/master-number</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/master-number?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/master-number?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/master-number?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/master-number?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/master-number"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/karmic-number</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/karmic-number?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/karmic-number?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/karmic-number?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/karmic-number?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/karmic-number"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/numerology</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/numerology?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/numerology?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/numerology?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/numerology?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/numerology"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/pythagorean</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/pythagorean?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/pythagorean?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/pythagorean?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/pythagorean?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/pythagorean"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/chaldean</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/chaldean?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/chaldean?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/chaldean?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/chaldean?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/chaldean"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/chakra</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/chakra?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/chakra?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/chakra?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/chakra?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/chakra"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/aura</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/aura?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/aura?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/aura?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/aura?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/aura"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/third-eye</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/third-eye?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/third-eye?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/third-eye?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/third-eye?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/third-eye"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/kundalini</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/kundalini?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/kundalini?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/kundalini?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/kundalini?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/kundalini"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/akashic-records</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/akashic-records?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/akashic-records?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/akashic-records?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/akashic-records?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/akashic-records"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/karma</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/karma?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/karma?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/karma?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/karma?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/karma"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/meditation</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/meditation?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/meditation?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/meditation?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/meditation?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/meditation"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/mindfulness</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/mindfulness?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/mindfulness?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/mindfulness?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/mindfulness?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/mindfulness"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/manifestation</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/manifestation?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/manifestation?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/manifestation?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/manifestation?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/manifestation"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/smudging</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/smudging?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/smudging?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/smudging?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/smudging?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/smudging"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/grounding</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/grounding?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/grounding?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/grounding?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/grounding?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/grounding"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/intuition</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/intuition?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/intuition?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/intuition?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/intuition?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/intuition"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/divination</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/divination?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/divination?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/divination?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/divination?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/divination"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/scrying</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/scrying?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/scrying?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/scrying?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/scrying?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/scrying"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/oracle</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/oracle?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/oracle?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/oracle?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/oracle?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/oracle"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/runes</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/runes?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/runes?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/runes?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/runes?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/runes"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/i-ching</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/i-ching?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/i-ching?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/i-ching?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/i-ching?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/i-ching"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/lenormand</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/lenormand?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/lenormand?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/lenormand?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/lenormand?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/lenormand"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/palmistry</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/palmistry?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/palmistry?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/palmistry?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/palmistry?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/palmistry"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/dowsing</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/dowsing?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/dowsing?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/dowsing?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/dowsing?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/dowsing"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/new-moon</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/new-moon?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/new-moon?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/new-moon?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/new-moon?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/new-moon"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/full-moon</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/full-moon?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/full-moon?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/full-moon?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/full-moon?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/full-moon"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/eclipse</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/eclipse?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/eclipse?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/eclipse?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/eclipse?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/eclipse"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/mercury-retrograde</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/mercury-retrograde?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/mercury-retrograde?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/mercury-retrograde?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/mercury-retrograde?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/mercury-retrograde"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/glossary/mercury-station</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/glossary/mercury-station?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/glossary/mercury-station?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/glossary/mercury-station?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/glossary/mercury-station?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/glossary/mercury-station"/>
+  </url>
+  <url>
     <loc>https://tarotlife.app/tarot-meanings/the-fool</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-fool?lang=en"/>
@@ -68,7 +2180,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-magician</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-magician?lang=en"/>
@@ -79,7 +2191,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-high-priestess</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-high-priestess?lang=en"/>
@@ -90,7 +2202,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-empress</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-empress?lang=en"/>
@@ -101,7 +2213,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-emperor</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-emperor?lang=en"/>
@@ -112,7 +2224,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-hierophant</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-hierophant?lang=en"/>
@@ -123,7 +2235,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-lovers</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-lovers?lang=en"/>
@@ -134,7 +2246,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-chariot</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-chariot?lang=en"/>
@@ -145,7 +2257,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/strength</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/strength?lang=en"/>
@@ -156,7 +2268,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-hermit</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-hermit?lang=en"/>
@@ -167,7 +2279,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-wheel-of-fortune</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-wheel-of-fortune?lang=en"/>
@@ -178,7 +2290,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/justice</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/justice?lang=en"/>
@@ -189,7 +2301,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-hanged-man</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-hanged-man?lang=en"/>
@@ -200,7 +2312,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/death</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/death?lang=en"/>
@@ -211,7 +2323,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/temperance</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/temperance?lang=en"/>
@@ -222,7 +2334,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-devil</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-devil?lang=en"/>
@@ -233,7 +2345,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-tower</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-tower?lang=en"/>
@@ -244,7 +2356,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-star</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-star?lang=en"/>
@@ -255,7 +2367,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-moon</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-moon?lang=en"/>
@@ -266,7 +2378,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-sun</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-sun?lang=en"/>
@@ -277,7 +2389,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/judgement</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/judgement?lang=en"/>
@@ -288,7 +2400,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/the-world</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/the-world?lang=en"/>
@@ -299,7 +2411,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ace-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ace-of-wands?lang=en"/>
@@ -310,7 +2422,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/two-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/two-of-wands?lang=en"/>
@@ -321,7 +2433,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/three-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/three-of-wands?lang=en"/>
@@ -332,7 +2444,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/four-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/four-of-wands?lang=en"/>
@@ -343,7 +2455,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/five-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/five-of-wands?lang=en"/>
@@ -354,7 +2466,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/six-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/six-of-wands?lang=en"/>
@@ -365,7 +2477,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/seven-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/seven-of-wands?lang=en"/>
@@ -376,7 +2488,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/eight-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/eight-of-wands?lang=en"/>
@@ -387,7 +2499,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/nine-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/nine-of-wands?lang=en"/>
@@ -398,7 +2510,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ten-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ten-of-wands?lang=en"/>
@@ -409,7 +2521,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/page-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/page-of-wands?lang=en"/>
@@ -420,7 +2532,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/knight-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/knight-of-wands?lang=en"/>
@@ -431,7 +2543,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/queen-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/queen-of-wands?lang=en"/>
@@ -442,7 +2554,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/king-of-wands</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/king-of-wands?lang=en"/>
@@ -453,7 +2565,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ace-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ace-of-cups?lang=en"/>
@@ -464,7 +2576,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/two-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/two-of-cups?lang=en"/>
@@ -475,7 +2587,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/three-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/three-of-cups?lang=en"/>
@@ -486,7 +2598,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/four-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/four-of-cups?lang=en"/>
@@ -497,7 +2609,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/five-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/five-of-cups?lang=en"/>
@@ -508,7 +2620,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/six-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/six-of-cups?lang=en"/>
@@ -519,7 +2631,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/seven-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/seven-of-cups?lang=en"/>
@@ -530,7 +2642,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/eight-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/eight-of-cups?lang=en"/>
@@ -541,7 +2653,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/nine-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/nine-of-cups?lang=en"/>
@@ -552,7 +2664,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ten-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ten-of-cups?lang=en"/>
@@ -563,7 +2675,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/page-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/page-of-cups?lang=en"/>
@@ -574,7 +2686,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/knight-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/knight-of-cups?lang=en"/>
@@ -585,7 +2697,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/queen-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/queen-of-cups?lang=en"/>
@@ -596,7 +2708,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/king-of-cups</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/king-of-cups?lang=en"/>
@@ -607,7 +2719,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ace-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ace-of-swords?lang=en"/>
@@ -618,7 +2730,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/two-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/two-of-swords?lang=en"/>
@@ -629,7 +2741,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/three-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/three-of-swords?lang=en"/>
@@ -640,7 +2752,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/four-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/four-of-swords?lang=en"/>
@@ -651,7 +2763,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/five-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/five-of-swords?lang=en"/>
@@ -662,7 +2774,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/six-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/six-of-swords?lang=en"/>
@@ -673,7 +2785,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/seven-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/seven-of-swords?lang=en"/>
@@ -684,7 +2796,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/eight-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/eight-of-swords?lang=en"/>
@@ -695,7 +2807,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/nine-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/nine-of-swords?lang=en"/>
@@ -706,7 +2818,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ten-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ten-of-swords?lang=en"/>
@@ -717,7 +2829,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/page-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/page-of-swords?lang=en"/>
@@ -728,7 +2840,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/knight-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/knight-of-swords?lang=en"/>
@@ -739,7 +2851,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/queen-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/queen-of-swords?lang=en"/>
@@ -750,7 +2862,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/king-of-swords</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/king-of-swords?lang=en"/>
@@ -761,7 +2873,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ace-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ace-of-pentacles?lang=en"/>
@@ -772,7 +2884,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/two-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/two-of-pentacles?lang=en"/>
@@ -783,7 +2895,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/three-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/three-of-pentacles?lang=en"/>
@@ -794,7 +2906,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/four-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/four-of-pentacles?lang=en"/>
@@ -805,7 +2917,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/five-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/five-of-pentacles?lang=en"/>
@@ -816,7 +2928,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/six-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/six-of-pentacles?lang=en"/>
@@ -827,7 +2939,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/seven-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/seven-of-pentacles?lang=en"/>
@@ -838,7 +2950,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/eight-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/eight-of-pentacles?lang=en"/>
@@ -849,7 +2961,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/nine-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/nine-of-pentacles?lang=en"/>
@@ -860,7 +2972,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/ten-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/ten-of-pentacles?lang=en"/>
@@ -871,7 +2983,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/page-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/page-of-pentacles?lang=en"/>
@@ -882,7 +2994,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/knight-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/knight-of-pentacles?lang=en"/>
@@ -893,7 +3005,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/queen-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/queen-of-pentacles?lang=en"/>
@@ -904,7 +3016,7 @@
   </url>
   <url>
     <loc>https://tarotlife.app/tarot-meanings/king-of-pentacles</loc>
-    <lastmod>2026-04-28</lastmod>
+    <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/tarot-meanings/king-of-pentacles?lang=en"/>
@@ -912,6 +3024,303 @@
     <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/tarot-meanings/king-of-pentacles?lang=ko"/>
     <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/tarot-meanings/king-of-pentacles?lang=zh"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/tarot-meanings/king-of-pentacles"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/what-is-iching-explained</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/what-is-iching-explained?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/what-is-iching-explained?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/what-is-iching-explained?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/what-is-iching-explained?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/what-is-iching-explained"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/tarot-vs-oracle-cards-difference-and-when-to-use</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/tarot-vs-oracle-cards-difference-and-when-to-use?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/tarot-vs-oracle-cards-difference-and-when-to-use?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/tarot-vs-oracle-cards-difference-and-when-to-use?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/tarot-vs-oracle-cards-difference-and-when-to-use?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/tarot-vs-oracle-cards-difference-and-when-to-use"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/what-is-human-design</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/what-is-human-design?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/what-is-human-design?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/what-is-human-design?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/what-is-human-design?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/what-is-human-design"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/what-is-bazi-beginners-guide</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/what-is-bazi-beginners-guide?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/what-is-bazi-beginners-guide?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/what-is-bazi-beginners-guide?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/what-is-bazi-beginners-guide?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/what-is-bazi-beginners-guide"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/numerology-compatibility-life-path-pairings</loc>
+    <lastmod>2026-06-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/numerology-compatibility-life-path-pairings?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/numerology-compatibility-life-path-pairings?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/numerology-compatibility-life-path-pairings?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/numerology-compatibility-life-path-pairings?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/numerology-compatibility-life-path-pairings"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/destiny-number-vs-life-path</loc>
+    <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/destiny-number-vs-life-path?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/destiny-number-vs-life-path?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/destiny-number-vs-life-path?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/destiny-number-vs-life-path?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/destiny-number-vs-life-path"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/angel-number-444-meaning</loc>
+    <lastmod>2026-06-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/angel-number-444-meaning?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/angel-number-444-meaning?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/angel-number-444-meaning?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/angel-number-444-meaning?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/angel-number-444-meaning"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/angel-number-333-meaning</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/angel-number-333-meaning?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/angel-number-333-meaning?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/angel-number-333-meaning?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/angel-number-333-meaning?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/angel-number-333-meaning"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/angel-number-1111-meaning</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/angel-number-1111-meaning?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/angel-number-1111-meaning?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/angel-number-1111-meaning?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/angel-number-1111-meaning?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/angel-number-1111-meaning"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/life-path-9-meaning-humanitarian</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/life-path-9-meaning-humanitarian?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/life-path-9-meaning-humanitarian?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/life-path-9-meaning-humanitarian?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/life-path-9-meaning-humanitarian?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/life-path-9-meaning-humanitarian"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/life-path-7-meaning-the-seekers-path</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/life-path-7-meaning-the-seekers-path?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/life-path-7-meaning-the-seekers-path?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/life-path-7-meaning-the-seekers-path?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/life-path-7-meaning-the-seekers-path?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/life-path-7-meaning-the-seekers-path"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/life-path-number-meaning-explained</loc>
+    <lastmod>2026-06-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/life-path-number-meaning-explained?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/life-path-number-meaning-explained?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/life-path-number-meaning-explained?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/life-path-number-meaning-explained?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/life-path-number-meaning-explained"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/crystals-for-anxiety-7-stones-that-actually-help</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/crystals-for-anxiety-7-stones-that-actually-help?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/crystals-for-anxiety-7-stones-that-actually-help?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/crystals-for-anxiety-7-stones-that-actually-help?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/crystals-for-anxiety-7-stones-that-actually-help?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/crystals-for-anxiety-7-stones-that-actually-help"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/moonstone-meaning-intuition-feminine-energy</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/moonstone-meaning-intuition-feminine-energy?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/moonstone-meaning-intuition-feminine-energy?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/moonstone-meaning-intuition-feminine-energy?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/moonstone-meaning-intuition-feminine-energy?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/moonstone-meaning-intuition-feminine-energy"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/lapis-lazuli-meaning-truth-communication</loc>
+    <lastmod>2026-05-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/lapis-lazuli-meaning-truth-communication?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/lapis-lazuli-meaning-truth-communication?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/lapis-lazuli-meaning-truth-communication?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/lapis-lazuli-meaning-truth-communication?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/lapis-lazuli-meaning-truth-communication"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/obsidian-meaning-shadow-work-grounding-truth</loc>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/obsidian-meaning-shadow-work-grounding-truth?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/obsidian-meaning-shadow-work-grounding-truth?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/obsidian-meaning-shadow-work-grounding-truth?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/obsidian-meaning-shadow-work-grounding-truth?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/obsidian-meaning-shadow-work-grounding-truth"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/selenite-meaning-cleansing-high-vibration</loc>
+    <lastmod>2026-05-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/selenite-meaning-cleansing-high-vibration?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/selenite-meaning-cleansing-high-vibration?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/selenite-meaning-cleansing-high-vibration?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/selenite-meaning-cleansing-high-vibration?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/selenite-meaning-cleansing-high-vibration"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/citrine-meaning-abundance-uses-properties"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/black-tourmaline-meaning-protection-grounding-uses</loc>
+    <lastmod>2026-05-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/black-tourmaline-meaning-protection-grounding-uses?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/black-tourmaline-meaning-protection-grounding-uses?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/black-tourmaline-meaning-protection-grounding-uses?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/black-tourmaline-meaning-protection-grounding-uses?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/black-tourmaline-meaning-protection-grounding-uses"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/clear-quartz-meaning-and-uses</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/clear-quartz-meaning-and-uses?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/clear-quartz-meaning-and-uses?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/clear-quartz-meaning-and-uses?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/clear-quartz-meaning-and-uses?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/clear-quartz-meaning-and-uses"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/rose-quartz-meaning-and-how-to-use-it</loc>
+    <lastmod>2026-05-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/rose-quartz-meaning-and-how-to-use-it?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/rose-quartz-meaning-and-how-to-use-it?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/rose-quartz-meaning-and-how-to-use-it?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/rose-quartz-meaning-and-how-to-use-it?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/rose-quartz-meaning-and-how-to-use-it"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/amethyst-meaning-properties-uses-chakras</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/amethyst-meaning-properties-uses-chakras?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/amethyst-meaning-properties-uses-chakras?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/amethyst-meaning-properties-uses-chakras?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/amethyst-meaning-properties-uses-chakras?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/amethyst-meaning-properties-uses-chakras"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/teeth-falling-out-dream-meaning</loc>
+    <lastmod>2026-05-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/teeth-falling-out-dream-meaning?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/teeth-falling-out-dream-meaning?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/teeth-falling-out-dream-meaning?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/teeth-falling-out-dream-meaning?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/teeth-falling-out-dream-meaning"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/dreaming-about-snakes-meaning</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/dreaming-about-snakes-meaning?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/dreaming-about-snakes-meaning?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/dreaming-about-snakes-meaning?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/dreaming-about-snakes-meaning?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/dreaming-about-snakes-meaning"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/the-lovers-tarot-meaning-beyond-romance</loc>
+    <lastmod>2026-05-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/the-lovers-tarot-meaning-beyond-romance?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/the-lovers-tarot-meaning-beyond-romance?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/the-lovers-tarot-meaning-beyond-romance?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/the-lovers-tarot-meaning-beyond-romance?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/the-lovers-tarot-meaning-beyond-romance"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/the-tower-tarot-card-meaning</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/the-tower-tarot-card-meaning?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/the-tower-tarot-card-meaning?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/the-tower-tarot-card-meaning?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/the-tower-tarot-card-meaning?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/the-tower-tarot-card-meaning"/>
+  </url>
+  <url>
+    <loc>https://tarotlife.app/blog/the-fool-tarot-card-meaning-beginners-guide</loc>
+    <lastmod>2026-05-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/the-fool-tarot-card-meaning-beginners-guide?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/the-fool-tarot-card-meaning-beginners-guide?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/the-fool-tarot-card-meaning-beginners-guide?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/the-fool-tarot-card-meaning-beginners-guide?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/the-fool-tarot-card-meaning-beginners-guide"/>
   </url>
   <url>
     <loc>https://tarotlife.app/blog/how-to-read-tarot-cards-beginners-guide</loc>
@@ -925,15 +3334,15 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/how-to-read-tarot-cards-beginners-guide"/>
   </url>
   <url>
-    <loc>https://tarotlife.app/blog/tarot-card-meanings-complete-guide</loc>
+    <loc>https://tarotlife.app/blog/mbti-zodiac-personality-combination</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=ja"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=ko"/>
-    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=zh"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination"/>
   </url>
   <url>
     <loc>https://tarotlife.app/blog/daily-horoscope-routine</loc>
@@ -947,15 +3356,15 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/daily-horoscope-routine"/>
   </url>
   <url>
-    <loc>https://tarotlife.app/blog/mbti-zodiac-personality-combination</loc>
+    <loc>https://tarotlife.app/blog/tarot-card-meanings-complete-guide</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=ja"/>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=ko"/>
-    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination?lang=zh"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/mbti-zodiac-personality-combination"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tarotlife.app/blog/tarot-card-meanings-complete-guide"/>
   </url>
   <url>
     <loc>https://tarotlife.app/blog/five-love-languages-explained</loc>

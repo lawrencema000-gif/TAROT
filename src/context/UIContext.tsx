@@ -24,6 +24,13 @@ const ROUTE_TO_TAB: Record<string, Tab> = Object.fromEntries(
   Object.entries(TAB_ROUTES).map(([tab, route]) => [route, tab as Tab])
 ) as Record<string, Tab>;
 
+/** True when the pathname is one of the bottom-nav tab roots. Deep pages
+ *  (/people/:id, /pick-a-card, /reports/*, …) return false — the Android
+ *  hardware-back handler uses this to go BACK instead of exiting the app. */
+export function isTabRoot(pathname: string): boolean {
+  return pathname in ROUTE_TO_TAB;
+}
+
 interface UIContextType {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;

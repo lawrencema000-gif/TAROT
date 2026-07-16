@@ -1,0 +1,359 @@
+{
+  "summary": "Multi-agent scan of the TAROT app for improvement opportunities across 6 dimensions, adversarially prioritized",
+  "agentCount": 7,
+  "logs": [],
+  "result": {
+    "prioritized": {
+      "top": [
+        {
+          "rank": 1,
+          "title": "Ship the daily notification the app already promises",
+          "detail": "Onboarding step 4 (src/pages/OAuthOnboardingPage.tsx:399-451) collects a reminder time and SettingsSheet has a toggle (src/components/overlays/SettingsSheet.tsx:608-643), but no notification plugin exists in package.json and nothing anywhere schedules or sends — profiles.notification_time is written and never read. Add @capacitor/local-notifications: request permission the moment the user taps 'Yes, remind me daily', schedule 'Your card of the day is waiting' at the chosen time, reschedule on settings change, plus a streak-at-risk evening nudge; optionally a Supabase cron email digest for web. This is the #1 retention channel for a daily-ritual app and currently a broken onboarding promise (merged: UX #1 + retention #1).",
+          "impact": "high — top retention lever for the whole app",
+          "effort": "medium (native local notifications; large only if server push/email digest added)",
+          "dimension": "retention + UX"
+        },
+        {
+          "rank": 2,
+          "title": "Wire paywall funnel analytics and fix the dead-end 'Get premium' CTA",
+          "detail": "trackPaywallViewed (src/services/analytics.ts:282) and trackPurchaseSuccess (:286 — fires the GA4 'purchase' event Google Ads imports for ROAS) have zero call sites; PaywallSheet opens and completes purchases emitting nothing, so ad spend is optimizing blind. In the same funnel, EarnMoonstonesSheet's 'Get premium' (src/components/moonstones/EarnMoonstonesSheet.tsx:101-104) navigates to /profile?upgrade=1 which ProfilePage never reads — the highest-intent moment dead-ends. Wire view/purchase events with source attribution and open PaywallSheet directly from the earn sheet (merged: retention #4 + UX #6).",
+          "impact": "high — direct revenue measurement + conversion recovery",
+          "effort": "small — a few lines",
+          "dimension": "retention + monetization"
+        },
+        {
+          "rank": 3,
+          "title": "Flip four shelf-ready feature flags: Career report, Year-Ahead report, MoonPhaseCard, DailyWisdomCard",
+          "detail": "career-report and year-ahead-report are enabled=false/0% while the identical natal-chart-report unlock pipeline (reportUnlocks + create-report-checkout + astrology-year-ahead edge fn) is live at 100% — both 408-line pages are complete pay-per-report revenue sitting dark. moon-phases and daily-wisdom home cards (HomePage.tsx:468, :601) are likewise finished and OFF. Flip the flags, add cross-sells where intent peaks (Year-Ahead after the horoscope, Career after MBTI/career quiz), and measure day-2 retention on the home cards (merged: features #6 + #10).",
+          "impact": "high — immediate revenue + daily-return content",
+          "effort": "small — flag flips plus two cross-sell links",
+          "dimension": "shallow/underused features"
+        },
+        {
+          "rank": 4,
+          "title": "Turn on the viral loops and fix share deep links that drop the token",
+          "detail": "referral and compat-invite flags are OFF with literally 0 redemptions despite complete stacks (src/dal/referrals.ts anti-abuse RPCs, 225-line ReferralSheet, 327-line CompatInvitePage with joint-reading merge). Meanwhile the native appUrlOpen handler (src/App.tsx:286-304) discards the /reading/:token id so shared-reading recipients land on a generic tab, and parseDeepLink (src/services/deepLink.ts:15) only accepts host 'arcana.app' while shares are built for tarotlife.app. Flip both flags, route deep links to /reading/:token and /tarot-meanings/:slug, add a referrer milestone ladder + reward copy, and surface invites after PartnerCompat/SoulmateScore results and streak milestones instead of only Profile (merged: features #2 + UX #7 + retention #12).",
+          "impact": "high — the app's only k-factor mechanics, currently at zero",
+          "effort": "small — flags, routing fix, and surfacing",
+          "dimension": "features + UX + retention"
+        },
+        {
+          "rank": 5,
+          "title": "Make achievement unlocks celebrate everywhere, not just on a buried page",
+          "detail": "48 active achievements and 476 recorded unlocks, with checks firing from ~15 surfaces, but the celebration modal and notified-queue drain live only inside AchievementsPage (src/pages/AchievementsPage.tsx:52-61) hidden in the More menu — mid-session unlocks show nothing. getUnnotifiedAchievements (src/services/achievements.ts:143) is already built: lift the drain into a global provider in App.tsx so AchievementUnlockModal fires anywhere, and add a Share button (achievement_shares table + functions exist with 0 rows ever written).",
+          "impact": "high — cheapest gamification win in the codebase",
+          "effort": "small",
+          "dimension": "shallow/underused features"
+        },
+        {
+          "rank": 6,
+          "title": "Give Mirror and Fool's Journey entry points — they are finished and orphaned",
+          "detail": "MirrorPage (206 lines, 'Spotify Wrapped for your readings': most-drawn cards, suit balance, reversal rate, streaks) and FoolsJourneyPage are complete but the only references to /mirror and /journey in the whole app are the route registrations (src/App.tsx:565, :572) — no nav item, no Profile link, no teaser. Add a 'Your Mirror' card on ProfilePage, a post-save teaser ('The Moon is now your 3rd most-drawn card'), and a Journey link from the level UI.",
+          "impact": "high — sticky retention surface at near-zero cost",
+          "effort": "small — the features are done, just unlinked",
+          "dimension": "shallow/underused features"
+        },
+        {
+          "rank": 7,
+          "title": "Surface the daily SEO blog inside the native app",
+          "detail": "66 published posts growing +1/day from daily-seo-blog-generator, served from Supabase — yet BottomNav gates the blog tab behind isWeb() (src/components/layout/BottomNav.tsx:66) and HomePage never references it, so the Android store audience never sees content that is already generated and paid for. Add a 'Today from Arcana' card on HomePage linking to /blog/:slug (route already registered) and drop the isWeb() gate. Converts an SEO cost center into daily in-app freshness and directly feeds the planned content-expansion goal with content that already exists.",
+          "impact": "high — daily fresh content for the store audience, zero content cost",
+          "effort": "small",
+          "dimension": "features + content"
+        },
+        {
+          "rank": 8,
+          "title": "Stop the tarot reveal from silently discarding paid AI readings",
+          "detail": "In the reveal view, Back (src/components/readings/TarotSection.tsx:901-905) and 'New reading' (:1198-1200) do setView('home') with no guard — a free user can spend 50 moonstones on an AI interpretation (tryConsumeAi :536), tap Back reflexively, and lose it forever. Also handleSaveReading (:491-529) never disables after success, so the bookmark and Save button insert duplicate tarot_readings rows. Add an unsaved-reading confirm when leaving with allRevealed && !isSaved (or auto-save any reading that generated AI text) and disable save when isSaved.",
+          "impact": "high — protects paid output and trust in the core reading flow",
+          "effort": "small",
+          "dimension": "UX flows"
+        },
+        {
+          "rank": 9,
+          "title": "Fix ritual shortcuts landing on the wrong content (and crediting before viewing)",
+          "detail": "HomePage.handleReadHoroscope (src/pages/HomePage.tsx:252-255) marks the ritual step done then setActiveTab('readings'), but ReadingsPage always initializes to the tarot section (src/pages/ReadingsPage.tsx:249) — the user asked for their horoscope, lands on tarot spreads, and got credit for nothing. handleTarotMeaning has the same pattern. Pass an initial-section param via router state (the customSpread pattern at ReadingsPage.tsx:256-266 already exists) and only credit the ritual step on arrival at the destination.",
+          "impact": "high — the daily ritual is the core loop and this breaks two of its steps",
+          "effort": "small",
+          "dimension": "UX flows"
+        },
+        {
+          "rank": 10,
+          "title": "Fix Android hardware back exiting the app from every deep page",
+          "detail": "The backButton handler (src/App.tsx:307-321) only understands overlays and tabs, and UIContext.resolveTab (src/context/UIContext.tsx:41-45) maps every non-tab route (/pick-a-card, /ai/*, /love-tree, /reports/*, /spreads/*, /iching…) to activeTab='home' — so hardware back on any deep feature page calls CapApp.exitApp(). Same root cause makes the Header show the Home title on all deep pages, and several deep pages render no in-page back button. Check location.pathname in the handler and navigate(-1) when not on a tab root; add a shared back-header to deep feature pages.",
+          "impact": "high — instant-quit bug across the whole deep-feature surface on the primary platform",
+          "effort": "medium",
+          "dimension": "UX flows"
+        },
+        {
+          "rank": 11,
+          "title": "Get ~1.7MB of CJK locale JSON out of the boot path",
+          "detail": "src/i18n/config.ts:29-44 statically imports app/common/onboarding/landing JSON for all 4 locales, and localizeCard/localizeAspect/localizePlanetInSign/localizeTransit plus src/data/horoscopes.ts eagerly bundle ja/ko/zh tables — the two biggest modulepreloaded chunks are mostly CJK text English users never read, and the configured HttpBackend lazy path can never work (no public/locales dir exists). Make every localize*.ts resolve its locale table via dynamic import keyed on getLocale() with en fallback, keep only en bundled. Expected ~450-550KB gzip off first load (~45% of boot JS).",
+          "impact": "high — biggest single first-load win",
+          "effort": "medium",
+          "dimension": "performance"
+        },
+        {
+          "rank": 12,
+          "title": "Boot-path code-splitting quick wins: lucide namespace import, eager pre-login pages, vendor catch-all",
+          "detail": "Three small import fixes: (1) `import * as LucideIcons` in AchievementCard/AchievementUnlockModal/CategoryProgress defeats tree-shaking and preloads the full 459KB/118KB-gz icon set — replace with an explicit ~30-icon map; (2) LandingPage/Onboarding/OAuthOnboarding/Auth/ResetPassword are eagerly imported in App.tsx:33-38 though each session needs one branch, and FreeReadingDemo statically imports fullDeck, preloading the 92KB-gz tarot deck for everyone — lazy() them and dynamic-import the deck; (3) delete the manualChunks `return 'vendor'` catch-all (vite.config.ts:92) that drags tz-lookup/topojson/dompurify (lazy-route-only deps) into a 201KB-gz boot chunk. Verify with a bundle visualizer.",
+          "impact": "high — ~200KB+ gzip off boot for every user",
+          "effort": "small",
+          "dimension": "performance"
+        },
+        {
+          "rank": 13,
+          "title": "Fix render-blocking Google Fonts @import and stop serving 6 CJK families to everyone",
+          "detail": "src/index.css:1 loads all fonts via CSS @import — a 3-hop serial chain (bundle CSS → fonts CSS → woff2) directly on FCP/LCP — and requests six Noto JP/KR/SC families for every visitor regardless of locale. Move Inter + Cormorant Garamond to a <link> (or self-hosted preload) in index.html to parallelize with JS, and inject the Noto families at runtime only when i18n.language is ja/ko/zh. Preconnects already exist, so this is pure win.",
+          "impact": "high — direct FCP/LCP improvement on the live site",
+          "effort": "small",
+          "dimension": "performance"
+        },
+        {
+          "rank": 14,
+          "title": "Lighten the muted text tokens — 1,100+ call sites currently fail WCAG contrast",
+          "detail": "text-mystic-500 (#484870) measures 2.31:1 on the body background (555 uses) and text-mystic-400 (#6b6b8a) measures 3.89:1 (591 uses) — both below the 4.5:1 AA floor and both carry meaningful copy (eyebrow labels, calendar day names, paywall microcopy, placeholders). One token-level change in tailwind.config.js:14-16 (mystic-400 → ~#8f8fae, mystic-500 → ~#7a7a9a, or a semantic text-muted alias) fixes the entire app at once on a live public website.",
+          "impact": "high — app-wide legibility/accessibility on tarotlife.app",
+          "effort": "small — single token change",
+          "dimension": "visual design system"
+        },
+        {
+          "rank": 15,
+          "title": "Accessibility one-liners: global focus-visible, restore pinch-zoom, honor reduced motion",
+          "detail": "Three tiny fixes, one PR: (1) zero focus-visible styles exist in src — keyboard users on the live website cannot see focus; add a global `:focus-visible` outline in src/index.css @layer base and switch Button/Input from focus: to focus-visible:; (2) index.html:19 sets maximum-scale=1.0/user-scalable=no, blocking low-vision zoom on web (WCAG 1.4.4) — remove for web or inject only under Capacitor.isNativePlatform(); (3) the 19-file framer-motion layer ignores prefers-reduced-motion — wrap the app root in `<MotionConfig reducedMotion=\"user\">` (merged: visual #2 + #9 + #10).",
+          "impact": "high — three systemic accessibility gaps on a live site",
+          "effort": "small — a few lines total",
+          "dimension": "visual design system"
+        },
+        {
+          "rank": 16,
+          "title": "Consolidate the three contradictory streaks and add a freeze/repair mechanic",
+          "detail": "Three independent streaks show different flame numbers on one screen: profile.streak increments on mere app open with UTC-date rollover (src/context/AuthContext.tsx:334-355), the moonstone check-in streak only advances on a manual Claim tap (moonstones_ledger.sql:170-190), and DailyMissionCard keeps a device-local streak lost on reinstall. Consolidate to one server-authoritative streak advanced by meaningful action, fix the UTC bug, then add the missing churn-guard: streak repair for moonstones/ads on the day after a break plus a premium grace day — the single most proven virtual-currency sink in habit apps and currently the biggest missing moonstone sink (merged: retention #2 + #3).",
+          "impact": "high — fixes a trust-breaking inconsistency and the classic uninstall cliff",
+          "effort": "medium",
+          "dimension": "retention + monetization"
+        },
+        {
+          "rank": 17,
+          "title": "Fix the web free-user dead-end economy: signup grant + web moonstone pack",
+          "detail": "On tarotlife.app, rewarded ads are native-only (EarnMoonstonesSheet.tsx:159), moonstone packs were removed from the UI (MOONSTONE_PACKS in src/services/billing.ts:71-76 and the create-moonstone-checkout edge function are dead code), and there is no signup grant — a web visitor needs ~4-5 days of check-ins to afford one 50-moonstone AI reading and never hits the 'aha moment' that sells premium. Grant 50-100 moonstones at signup (referral already promises 100) and/or resurrect the $2.99 web pack through the existing checkout function as an impulse mid-tier.",
+          "impact": "high — unblocks the web funnel's path to conversion",
+          "effort": "medium",
+          "dimension": "retention + monetization"
+        },
+        {
+          "rank": 18,
+          "title": "Make quiz results durable: view-result path, back confirm, previous-question",
+          "detail": "Tapping a completed quiz card restarts it (src/pages/QuizzesPage.tsx:2204-2210) even though the full scores blob is persisted in quiz_results — the rich result screens are unreachable after leaving. The in-quiz back arrow calls resetQuiz with no confirmation (:603), so one mistap on question 40 of the 44-item Big Five discards everything, answers can't be corrected, and progress isn't persisted across backgrounding. Add a 'View last result' rehydration path, an abandon confirm (or auto-saved draft), and a previous-question button.",
+          "impact": "high — protects 15+ minutes of user investment in a marquee feature",
+          "effort": "medium",
+          "dimension": "UX flows"
+        },
+        {
+          "rank": 19,
+          "title": "Journal correctness fixes: wrong-date saves, lost drafts, backwards error toasts",
+          "detail": "Three small data/trust bugs on a daily-ritual surface: (1) tapping a past day opens a blank editor but saveEntry files it under today (src/pages/JournalPage.tsx:287) — silent data corruption of streaks/insights; thread the tapped date through editor state. (2) The editor Sheet closes on backdrop tap/Escape with no dirty-check and content lives only in useState — add a discard confirm or an appStorage draft keyed by date. (3) HomePage.handleTarotSave failure branches toast the SUCCESS strings styled as errors ('Saved to highlights' in red when the save failed, HomePage.tsx:262-278) — add proper saveFailed/removeFailed strings (merged: UX #8 + #9 + #11).",
+          "impact": "medium — data integrity and trust on daily surfaces",
+          "effort": "small",
+          "dimension": "UX flows"
+        },
+        {
+          "rank": 20,
+          "title": "Monetization tuning pass: cap ad-minting, reprice lifetime, cap the trial modal, auto-claim check-in",
+          "detail": "Four small fixes: (1) MOONSTONES_PER_AD (50) exactly equals one AI reading and rewarded ads are unlimited per day (src/services/rewardedAds.ts:22-25, :182-184) — native users mint premium's headline benefit free at ~$0.01 eCPM; cap at ~3/day or use diminishing rewards. (2) Lifetime $29.99 vs yearly $19.99 caps best-user LTV — reprice to 3-5x yearly or drop it, and add '$1.67/mo — save 58%' framing on the yearly row (PaywallSheet.tsx:70-74, :432-480). (3) TrialReminderModal fires 30s into every session forever with only a sessionStorage guard — persist show-count, cap frequency, and trigger at high-intent moments like ratePrompt.ts already does. (4) Auto-claim the daily check-in on first open so daily users stop breaking their reward streak by scrolling past the Claim button (merged: retention #7 + #8 + #9 + #10).",
+          "impact": "medium — plugs an active economy leak and lifts LTV",
+          "effort": "small",
+          "dimension": "retention + monetization"
+        }
+      ],
+      "redesignNotes": "PREREQUISITES BEFORE THE SCROLL-SNAP REDESIGN TOUCHES CODE: (1) Finish the tarot-section-split rollout (stuck at 10% for weeks) to 100% and delete the legacy TarotSection branch — otherwise every redesign change to that surface is implemented and tested twice. (2) Cheap re-render insurance for the new consumers the redesign adds: useMemo the AuthContext (AuthContext.tsx:1620) and RitualContext provider values, and make FeatureFlagProvider diff fetched flags before setState (currently re-renders all subscribers every 5 min). (3) Add a bundle-size budget + rollup-plugin-visualizer CI tripwire (~600KB gz modulepreload budget) so the redesign/content expansion doesn't silently regrow boot JS the way the 1.7MB locale chunks did. (4) Replace AnimatePresence mode=\"wait\" with a crossfade + preload lazy chunks on nav intent (onPointerDown in BottomNav) — with scroll-snap this serialized fade→skeleton→fade becomes the dominant perceived latency. (5) Lazy() the Settings/Paywall/Subscription/Diagnostics sheet graph out of the boot shell; move Sentry replay to lazyLoadIntegration; add immutable cache headers for /bundled-cards, /card-backs, /icons, /backgrounds in netlify.toml and use the existing 4.7KB thumbs (getThumbPath) for LandingPage's decorative marquee/orbit.\n\nDESIGN-SYSTEM PHASE (current branch) should absorb these visual findings rather than fixing them piecemeal: add semantic tokens (love/rose, success, danger, warning, info, plus the de facto brand mauve #8e6eb5) and sweep the 91x pink-400 / 79x emerald-400 / 206 hex literals onto them; build ONE Modal/Sheet primitive with dialog semantics, focus trap, shared entrance animation, and a localized close label, then migrate the 6 bespoke overlays (PaywallSheet, SubscriptionSheet, WatchAdSheet, RateAppSheet, AchievementUnlockModal, TrialReminderModal); add an IconButton primitive (min 44px + required aria-label) and fix Chip's invalid nested-interactive remove affordance; extract a SegmentedTabs component (the ~25 hand-rolled pill rows are also the natural building block for scroll-snap sections); migrate the 10+ hand-rolled inputs onto kit Input; move the 5 stale advisor/live/companion h1s + PaywallSheet heading onto the heading-display scale; install tailwindcss-animate or swap the dead animate-in classes to existing utilities; build a ConfirmSheet to replace native confirm() in Journal; regroup the flat 33-card quiz list into collapsible category sections with pinned marquee quizzes as part of the redesign's IA work.\n\nPEOPLE / FRIEND-CHARTS FEATURE: seed it from the existing compat_invites stack (CompatInvitePage already stores another person's MBTI/birthDate against the account — turning on the flag per top-list item 4 gives you live data before the feature ships). Content prerequisites that the feature lives or dies on: 78 sign-pair essays across love/friendship/work axes (compatibility currently collapses to 16 element pairs), a synastry-voiced aspect set — especially Venus-Mars, Moon-Venus, Sun-Moon cross-aspects (only 45 of 225 combos written, none of the headline chemistry aspects), and fix the Chinese zodiac Jan 1–CNY boundary bug (chineseZodiac.ts:4-8 — wrong animal) if animal pairings are included.\n\nAI ASTROLOGER: build it by deepening AiCompanionPage (flag already ON at 100% with entry point, moonstone gating, and edge function live) rather than greenfield: add a companion_messages table (history is currently localStorage-only, lost across devices), feed recent readings + natal placements + today's transits into userContext (now just zodiac+MBTI+name), and ship the premium tier (DAILY_LIMIT=20 is hardcoded; premium users get zero benefit). Consider debuting it as the always-available 'first advisor' to give the fully-built-but-dark advisor marketplace (~1,700 lines, all flags OFF, 0 interest rows) instant supply — otherwise park/strip advisor and live-rooms routes (live_rooms has no creation UI and 0 rows) until there's a strategy. Sandbox (3D reading, orphaned, three.js already in its own lazy chunk) fits the richer-art direction as a low-risk 'Labs' card.\n\nCONTENT EXPANSION priority order (all findings from the content-depth scan fold here): (1) the 98 missing planet-in-house entries (Mercury/Uranus/Neptune/Pluto have ZERO; most natal-chart taps show mad-libs filler) and 60 missing outer-planet-in-sign entries — the biggest depth gap vs Co-Star/TimePassages; (2) fast-mover transit interpretations (~140 short entries for Sun/Moon/Mercury/Venus/Mars × natal points × aspects) — these simultaneously replace the daily horoscope's 25 shared sign-agnostic templates (text repeats within ~25 days, two signs can get identical copy) with transit-driven dailies AND power the push-notification content that top-list item 1 needs; (3) retrograde + eclipse modules (dates through 2027, survival guides, by-natal-house) — the most-searched topics in the niche, currently absent, and pre-scheduled push events 3-4x/year; (4) moon-in-sign day-moods + 24 full/new-moon-by-sign write-ups (moon engine already computes triggers; pairs with flipping the moon-phases flag); (5) angel numbers + personal year/month cycles (annual re-engagement hook) and karmic debt numbers; (6) Chinese zodiac profiles + pair compat + annual forecasts bridging casual users into the existing BaZi depth; (7) crystals 30→100+ (schema is excellent, pure production) and dreams 155→300 (each symbol directly raises interpreter hit-rate; both are SEO page farms). All new content must flow through the 4-locale i18n pipeline — and as part of that workstream, sweep the existing hardcoded-English conversion surfaces into useT: EarnMoonstonesSheet (100% English), onboarding step 4, app-shell loading strings, journal mood/category labels, quiz encouragement + mood-check/love-language result screens, PaywallSheet trial line, InsightChip labels, and Sheet's hardcoded 'Close' aria-label.\n\nSOCIAL + RECAP (bundle with the People/social phase): relaunch Community/Whispering Well only WITH a seeding plan or the one first impression is an empty feed — add 'Share to Community' on completed readings, a daily card-of-the-day cron thread, and launch anonymous Whispering Well first. The weekly 'Your week in the cards' recap + lapsed-user comeback grant ('The cards missed you' + small moonstone gift after 3+ days away) pairs naturally with the redesign's shareable-art direction; all data already exists in xp_activities, moonstone_transactions, and journal entries, and recaps double as a premium teaser (summary free, full pattern analysis premium — journal_insights already promises this). Also attach real payoffs to the existing gamification stack while redesigning Home: moonstones/card-back cosmetics on level-up (card_back_url/background_url slots already exist), plumb DailyMissionCard's onDone into XP/moonstones (currently 'UI-only'), and raise the 2-moonstone quiz reward above noise level."
+    },
+    "rawCounts": [
+      {
+        "dimension": "UX flows + friction",
+        "count": 12
+      },
+      {
+        "dimension": "visual design system consistency",
+        "count": 12
+      },
+      {
+        "dimension": "performance",
+        "count": 12
+      },
+      {
+        "dimension": "Shallow / underused features — flag audit, entry points, and cheap deepening wins",
+        "count": 12
+      },
+      {
+        "dimension": "content depth vs competitors",
+        "count": 12
+      },
+      {
+        "dimension": "retention + monetization mechanics",
+        "count": 12
+      }
+    ]
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Scan"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Prioritize"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "scan:ux-flows",
+      "phaseIndex": 1,
+      "phaseTitle": "Scan",
+      "agentId": "aa87e04f82898d6a7",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784037414661,
+      "queuedAt": 1784037414604,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "UX flows + friction",
+      "promptPreview": "You are a READ-ONLY scanner of the TAROT app repo at C:\\Users\\lmao\\TAROT (Capacitor + React + Vite + TS mystic-wellness app; live at tarotlife.app; Supabase backend). Use Glob/Grep/Read to inspect. DO NOT EDIT FILES. Context: the app just went through 5 correctness sprints (astronomy math, birth-time pipeline, quiz scoring, economy security, feature wiring) — do NOT re-report those areas as broken…",
+      "lastProgressAt": 1784037794543,
+      "tokens": 171469,
+      "toolCalls": 32,
+      "durationMs": 379881,
+      "resultPreview": "{\"dimension\":\"UX flows + friction\",\"findings\":[{\"title\":\"Onboarding promises a daily reminder that is never delivered — no notification system exists\",\"detail\":\"OAuthOnboardingPage step 4 (src/pages/OAuthOnboardingPage.tsx:399-451) asks 'Daily reminder?' with a time picker and saves notificationsEnabled/notificationTime to the profile, but nothing ever fires: there is no @capacitor/local-notificat…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "scan:design-system",
+      "phaseIndex": 1,
+      "phaseTitle": "Scan",
+      "agentId": "a9f15e9f27b64476d",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784037414666,
+      "queuedAt": 1784037414605,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "visual design system consistency",
+      "promptPreview": "You are a READ-ONLY scanner of the TAROT app repo at C:\\Users\\lmao\\TAROT (Capacitor + React + Vite + TS mystic-wellness app; live at tarotlife.app; Supabase backend). Use Glob/Grep/Read to inspect. DO NOT EDIT FILES. Context: the app just went through 5 correctness sprints (astronomy math, birth-time pipeline, quiz scoring, economy security, feature wiring) — do NOT re-report those areas as broken…",
+      "lastProgressAt": 1784037838749,
+      "tokens": 94585,
+      "toolCalls": 49,
+      "durationMs": 424083,
+      "resultPreview": "{\"dimension\":\"visual design system consistency\",\"findings\":[{\"title\":\"Muted text tokens fail WCAG contrast across the entire app\",\"detail\":\"text-mystic-500 (#484870) measures 2.31:1 on the mystic-950 body background and is used 555 times; text-mystic-400 (#6b6b8a) measures 3.89:1 (below the 4.5:1 AA floor for normal text) and is used 591 times — both routinely carry meaningful copy: eyebrow labels…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "scan:performance",
+      "phaseIndex": 1,
+      "phaseTitle": "Scan",
+      "agentId": "a45ef301869961c6a",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784037414667,
+      "queuedAt": 1784037414605,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "performance",
+      "promptPreview": "You are a READ-ONLY scanner of the TAROT app repo at C:\\Users\\lmao\\TAROT (Capacitor + React + Vite + TS mystic-wellness app; live at tarotlife.app; Supabase backend). Use Glob/Grep/Read to inspect. DO NOT EDIT FILES. Context: the app just went through 5 correctness sprints (astronomy math, birth-time pipeline, quiz scoring, economy security, feature wiring) — do NOT re-report those areas as broken…",
+      "lastProgressAt": 1784038110170,
+      "tokens": 108269,
+      "toolCalls": 50,
+      "durationMs": 695503,
+      "resultPreview": "{\"dimension\":\"performance\",\"findings\":[{\"title\":\"~1.7MB of ja/ko/zh translation JSON is statically bundled into the boot path for every user\",\"detail\":\"The two biggest chunks on the critical path are mostly CJK translations English users never read. src/i18n/config.ts:29-44 statically imports app.json/common/onboarding/landing for all 4 locales (app.json alone is 184-217KB per locale, 782KB total)…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "scan:features-halfbuilt",
+      "phaseIndex": 1,
+      "phaseTitle": "Scan",
+      "agentId": "ad95d7e4f821735db",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784037414668,
+      "queuedAt": 1784037414605,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Shallow / underused features — flag audit, entry points, an…",
+      "promptPreview": "You are a READ-ONLY scanner of the TAROT app repo at C:\\Users\\lmao\\TAROT (Capacitor + React + Vite + TS mystic-wellness app; live at tarotlife.app; Supabase backend). Use Glob/Grep/Read to inspect. DO NOT EDIT FILES. Context: the app just went through 5 correctness sprints (astronomy math, birth-time pipeline, quiz scoring, economy security, feature wiring) — do NOT re-report those areas as broken…",
+      "lastProgressAt": 1784037907432,
+      "tokens": 105009,
+      "toolCalls": 57,
+      "durationMs": 492763,
+      "resultPreview": "{\"dimension\":\"Shallow / underused features — flag audit, entry points, and cheap deepening wins\",\"findings\":[{\"title\":\"Achievement unlocks are silent everywhere except the buried Achievements page\",\"detail\":\"48 active achievements and 476 recorded unlocks exist in prod, and checkAchievementProgress() fires from ~15 surfaces (TarotSection.tsx:414-425, HomePage.tsx:237-240, AuthContext.tsx:363, leve…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "scan:content-depth",
+      "phaseIndex": 1,
+      "phaseTitle": "Scan",
+      "agentId": "a63889354b1db5600",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784037414668,
+      "queuedAt": 1784037414605,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "content depth vs competitors",
+      "promptPreview": "You are a READ-ONLY scanner of the TAROT app repo at C:\\Users\\lmao\\TAROT (Capacitor + React + Vite + TS mystic-wellness app; live at tarotlife.app; Supabase backend). Use Glob/Grep/Read to inspect. DO NOT EDIT FILES. Context: the app just went through 5 correctness sprints (astronomy math, birth-time pipeline, quiz scoring, economy security, feature wiring) — do NOT re-report those areas as broken…",
+      "lastProgressAt": 1784037920149,
+      "tokens": 129580,
+      "toolCalls": 52,
+      "durationMs": 505481,
+      "resultPreview": "{\"dimension\":\"content depth vs competitors\",\"findings\":[{\"title\":\"Daily horoscopes are sign-agnostic template mashups (25 shared sentences per category)\",\"detail\":\"C:\\\\Users\\\\lmao\\\\TAROT\\\\src\\\\data\\\\horoscopes.ts:15-153 holds exactly 25 general, 25 love, 25 career, 25 mood, and 25 action-step templates SHARED across all 12 signs — the only per-sign data is 5 keyword tags (line 197). A user sees re…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "scan:retention-monetization",
+      "phaseIndex": 1,
+      "phaseTitle": "Scan",
+      "agentId": "afe0e5de323b6d2f6",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784037414669,
+      "queuedAt": 1784037414605,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "retention + monetization mechanics",
+      "promptPreview": "You are a READ-ONLY scanner of the TAROT app repo at C:\\Users\\lmao\\TAROT (Capacitor + React + Vite + TS mystic-wellness app; live at tarotlife.app; Supabase backend). Use Glob/Grep/Read to inspect. DO NOT EDIT FILES. Context: the app just went through 5 correctness sprints (astronomy math, birth-time pipeline, quiz scoring, economy security, feature wiring) — do NOT re-report those areas as broken…",
+      "lastProgressAt": 1784037881297,
+      "tokens": 112705,
+      "toolCalls": 53,
+      "durationMs": 466628,
+      "resultPreview": "{\"dimension\":\"retention + monetization mechanics\",\"findings\":[{\"title\":\"Notifications are a complete no-op — the #1 retention channel for a daily-ritual app doesn't exist\",\"detail\":\"The app collects a notification time during onboarding (C:/Users/lmao/TAROT/src/pages/OAuthOnboardingPage.tsx:432) and has a Settings toggle (C:/Users/lmao/TAROT/src/components/overlays/SettingsSheet.tsx:608-643, handl…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "judge:prioritize",
+      "phaseIndex": 2,
+      "phaseTitle": "Prioritize",
+      "agentId": "a3475a4662587435d",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1784038110275,
+      "queuedAt": 1784038110187,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "PREREQUISITES BEFORE THE SCROLL-SNAP REDESIGN TOUCHES CODE:…",
+      "promptPreview": "You are the prioritization judge for an app-improvement scan. Here are findings from 6 scanners (JSON): [{\"dimension\":\"UX flows + friction\",\"findings\":[{\"title\":\"Onboarding promises a daily reminder that is never delivered — no notification system exists\",\"detail\":\"OAuthOnboardingPage step 4 (src/pages/OAuthOnboardingPage.tsx:399-451) asks 'Daily reminder?' with a time picker and saves notificatio…",
+      "lastProgressAt": 1784038419055,
+      "tokens": 55927,
+      "toolCalls": 1,
+      "durationMs": 308778,
+      "resultPreview": "{\"top\":[{\"rank\":1,\"title\":\"Ship the daily notification the app already promises\",\"detail\":\"Onboarding step 4 (src/pages/OAuthOnboardingPage.tsx:399-451) collects a reminder time and SettingsSheet has a toggle (src/components/overlays/SettingsSheet.tsx:608-643), but no notification plugin exists in package.json and nothing anywhere schedules or sends — profiles.notification_time is written and neve…"
+    }
+  ],
+  "totalTokens": 777544,
+  "totalToolCalls": 294
+}

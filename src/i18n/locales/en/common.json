@@ -29,7 +29,8 @@
     "community": "Community",
     "whisperingWell": "Whispering Well",
     "companion": "Companion",
-    "advisors": "Advisors"
+    "advisors": "Advisors",
+    "people": "People"
   },
   "actions": {
     "continue": "Continue",

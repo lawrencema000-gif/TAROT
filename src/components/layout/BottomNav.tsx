@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../ui/NavIcons';
 import { isWeb } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
@@ -15,10 +16,13 @@ interface BottomNavProps {
 // Label here is a translation key under common:nav.* — rendered via t().
 type TabDef = { id: Tab; labelKey: string; icon: React.ElementType };
 type ExternalItem = { id: string; labelKey: string; icon: React.ElementType; externalHref: string };
-type MoreItem = TabDef | ExternalItem;
+type RouteItem = { id: string; labelKey: string; icon: React.ElementType; route: string };
+type MoreItem = TabDef | ExternalItem | RouteItem;
 
 const isExternal = (item: MoreItem): item is ExternalItem =>
   (item as ExternalItem).externalHref !== undefined;
+const isRoute = (item: MoreItem): item is RouteItem =>
+  (item as RouteItem).route !== undefined;
 
 const visibleTabs: TabDef[] = [
   { id: 'home', labelKey: 'nav.home', icon: Home },
@@ -43,14 +47,20 @@ const adminTab: TabDef = { id: 'admin', labelKey: 'nav.admin', icon: Shield };
 
 export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNavProps) {
   const { t } = useT();
+  const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
   const communityEnabled = useFeatureFlag('community');
   const whisperingWellEnabled = useFeatureFlag('whispering-well');
   const companionEnabled = useFeatureFlag('ai-companion');
   const advisorsEnabled = useFeatureFlag('advisors');
 
-  // Build the list of items inside the More menu
-  const moreItems: MoreItem[] = [...moreMenuTabs];
+  // Build the list of items inside the More menu.
+  // People is a route (not a tab) — the Cosmos-update headline feature, so
+  // it leads the menu.
+  const moreItems: MoreItem[] = [
+    { id: 'people', labelKey: 'nav.people', icon: Users, route: '/people' },
+    ...moreMenuTabs,
+  ];
   if (companionEnabled) {
     moreItems.push({ id: 'companion' as Tab, labelKey: 'nav.companion', icon: Sparkles });
   }
@@ -68,7 +78,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   if (isAdmin) moreItems.push(adminTab);
   moreItems.push(shopItem);
 
-  const moreTabIds = moreItems.filter((item): item is TabDef => !isExternal(item)).map(t => t.id);
+  const moreTabIds = moreItems.filter((item): item is TabDef => !isExternal(item) && !isRoute(item)).map(t => t.id);
   const isMoreActive = moreTabIds.includes(activeTab as Tab);
 
   const handleMoreItemClick = (tab: Tab) => {
@@ -107,7 +117,8 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 {moreItems.map(item => {
                   const Icon = item.icon;
                   const external = isExternal(item);
-                  const isActive = !external && activeTab === item.id;
+                  const routed = isRoute(item);
+                  const isActive = !external && !routed && activeTab === item.id;
                   const baseClass = `
                         flex flex-col items-center gap-2 py-4 px-2 rounded-xl
                         transition-all duration-200 touch-manipulation active:scale-95
@@ -143,6 +154,18 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                       >
                         {inner}
                       </a>
+                    );
+                  }
+
+                  if (routed) {
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => { setMoreOpen(false); navigate(item.route); }}
+                        className={baseClass}
+                      >
+                        {inner}
+                      </button>
                     );
                   }
 

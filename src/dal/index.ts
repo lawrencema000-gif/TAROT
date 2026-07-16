@@ -21,6 +21,7 @@ export * as savedHighlights from './savedHighlights';
 export * as journalEntries from './journalEntries';
 export * as tarotReadings from './tarotReadings';
 export * as quizResults from './quizResults';
+export * as people from './people';
 export * as blogPosts from './blogPosts';
 export * as dailyReadingsCache from './dailyReadingsCache';
 export * as premiumReadings from './premiumReadings';

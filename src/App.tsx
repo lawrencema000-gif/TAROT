@@ -7,7 +7,7 @@ import { useT } from './i18n/useT';
 import { syncHreflangTags } from './i18n/hreflang';
 import { AppProvider } from './context/AppContext';
 import { FeatureFlagProvider } from './context/FeatureFlagContext';
-import { useUI } from './context/UIContext';
+import { useUI, isTabRoot } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
 import { usePostCheckout } from './hooks/usePostCheckout';
 import { UpdateAvailableBanner } from './components/overlays/UpdateAvailableBanner';
@@ -39,6 +39,9 @@ import { LandingPage } from './pages/LandingPage';
 
 // Lazy imports — loaded on demand when user navigates
 const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
+const PeoplePage = lazy(() => import('./pages/PeoplePage').then(m => ({ default: m.PeoplePage })));
+const PersonDetailPage = lazy(() => import('./pages/PersonDetailPage').then(m => ({ default: m.PersonDetailPage })));
+const PersonComparePage = lazy(() => import('./pages/PersonComparePage').then(m => ({ default: m.PersonComparePage })));
 const QuizzesPage = lazy(() => import('./pages/QuizzesPage').then(m => ({ default: m.QuizzesPage })));
 const HoroscopePage = lazy(() => import('./pages/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
 const AchievementsPage = lazy(() => import('./pages/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
@@ -303,12 +306,19 @@ function AppContent() {
     return () => { listener.then(l => l.remove()).catch(() => {}); };
   }, [setActiveTab]);
 
-  // Android hardware back button: close overlay → go home → exit app
+  // Android hardware back button: close overlay → back out of deep pages →
+  // go home → exit app. Deep pages (/people/:id, /pick-a-card, /reports/*…)
+  // resolve to activeTab='home', so without the isTabRoot check a single
+  // back press from any of them exited the app outright.
   useEffect(() => {
     if (!isNative()) return;
     const listener = CapApp.addListener('backButton', () => {
       if (activeOverlay) {
         closeOverlay();
+        return;
+      }
+      if (!isTabRoot(location.pathname)) {
+        navigate(-1);
         return;
       }
       if (activeTab !== 'home') {
@@ -318,7 +328,7 @@ function AppContent() {
       CapApp.exitApp();
     });
     return () => { listener.then(l => l.remove()).catch(() => {}); };
-  }, [activeOverlay, closeOverlay, activeTab, setActiveTab]);
+  }, [activeOverlay, closeOverlay, activeTab, setActiveTab, location.pathname, navigate]);
 
   const handleOnboardingComplete = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
@@ -563,6 +573,9 @@ function AppContent() {
                   <Route path="/soulmate-score" element={<SoulmateScorePage />} />
                   <Route path="/love-tree" element={<LoveTreePage />} />
                   <Route path="/mirror" element={<MirrorPage />} />
+                  <Route path="/people" element={<PeoplePage />} />
+                  <Route path="/people/:id" element={<PersonDetailPage />} />
+                  <Route path="/people/:id/compare" element={<PersonComparePage />} />
                   <Route path="/reading/:token" element={<SharedReadingPage />} />
                   <Route path="/spreads" element={<SpreadsPage />} />
                   <Route path="/spreads/:slug" element={<SpreadDetailPage />} />

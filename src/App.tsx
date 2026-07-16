@@ -285,7 +285,9 @@ function AppContent() {
     setShowOAuthCancel(false);
   }, [isProcessingOAuth]);
 
-  // Deep link routing for shared content URLs
+  // Deep link routing for shared content URLs. Route to the ACTUAL target
+  // (with its id/token) — previously the id was discarded and recipients
+  // landed on a generic tab instead of the shared reading/card.
   useEffect(() => {
     if (!isNative()) return;
     const listener = CapApp.addListener('appUrlOpen', ({ url }) => {
@@ -293,10 +295,12 @@ function AppContent() {
       if (!route || route.type === 'unknown') return;
       switch (route.type) {
         case 'reading':
-          setActiveTab('readings');
+          if (route.id) navigate(`/reading/${route.id}`);
+          else setActiveTab('readings');
           break;
         case 'card':
-          setActiveTab('readings');
+          if (route.id) navigate(`/tarot-meanings/${route.id}`);
+          else setActiveTab('readings');
           break;
         case 'horoscope':
           setActiveTab('horoscope');
@@ -304,7 +308,7 @@ function AppContent() {
       }
     });
     return () => { listener.then(l => l.remove()).catch(() => {}); };
-  }, [setActiveTab]);
+  }, [setActiveTab, navigate]);
 
   // Android hardware back button: close overlay → back out of deep pages →
   // go home → exit app. Deep pages (/people/:id, /pick-a-card, /reports/*…)

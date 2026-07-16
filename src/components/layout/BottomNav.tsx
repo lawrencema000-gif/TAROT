@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../ui/NavIcons';
-import { isWeb } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import type { Tab } from '../../types';
@@ -73,7 +72,10 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   if (whisperingWellEnabled) {
     moreItems.push({ id: 'whispering-well' as Tab, labelKey: 'nav.whisperingWell', icon: Moon });
   }
-  if (isWeb()) moreItems.push(blogTab);
+  // Blog is now visible on native too — 60+ generated posts were web-only
+  // (scan finding #7); the /blog route reads from Supabase and works fine
+  // in the app WebView.
+  moreItems.push(blogTab);
   moreItems.push(profileTab);
   if (isAdmin) moreItems.push(adminTab);
   moreItems.push(shopItem);

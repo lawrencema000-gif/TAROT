@@ -221,6 +221,119 @@
 .lp-play-badge-label { font-size: 0.58rem; color: rgba(255,255,255,0.6); letter-spacing: 0.03em; text-transform: uppercase; }
 .lp-play-badge-store { font-size: 1rem; font-weight: 600; color: #fff; }
 
+/* ══ Scroll-stop panels + ambient art (Cosmos Update) ═══════════════════
+   html.lp-snap is set only while the landing is mounted. Proximity snapping
+   makes each section "land" as you release the scroll without hijacking it
+   (mandatory would trap long sections like the FAQ). Ambient layers are
+   pure CSS gradients / inline-SVG backgrounds animated with transform +
+   opacity only — no images, no layout thrash, GPU-composited. */
+html.lp-snap { scroll-snap-type: y proximity; }
+html.lp-snap .lp-sec,
+html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
+@media (max-height: 599px) {
+  /* Short viewports: sections overflow the screen — snapping would hide
+     content with no way to rest mid-section. Disable entirely. */
+  html.lp-snap { scroll-snap-type: none; }
+}
+
+/* isolation creates a local stacking context so the z-index:-1 layers sit
+   behind ALL section content (including absolutely-positioned children like
+   the hero orbs) without touching any child's own positioning. */
+[data-ambient] { position: relative; isolation: isolate; }
+[data-ambient]::before,
+[data-ambient]::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: -1;
+}
+
+/* aurora — hero: two counter-drifting color fields + a slow conic sheen */
+[data-ambient='aurora']::before {
+  background:
+    radial-gradient(60% 45% at 18% 22%, rgba(96, 76, 180, 0.20), transparent 70%),
+    radial-gradient(50% 40% at 82% 12%, rgba(212, 168, 83, 0.10), transparent 70%),
+    radial-gradient(45% 45% at 70% 85%, rgba(58, 110, 165, 0.14), transparent 70%);
+  animation: amb-drift-a 26s ease-in-out infinite alternate;
+}
+[data-ambient='aurora']::after {
+  background: conic-gradient(from 210deg at 50% -10%,
+    transparent 0deg, rgba(140, 120, 220, 0.05) 60deg,
+    rgba(212, 168, 83, 0.05) 120deg, transparent 200deg);
+  animation: amb-drift-b 34s ease-in-out infinite alternate;
+}
+
+/* nebula — features: deep violet/teal clouds, slow breathing */
+[data-ambient='nebula']::before {
+  background:
+    radial-gradient(55% 60% at 15% 65%, rgba(88, 60, 160, 0.16), transparent 70%),
+    radial-gradient(45% 50% at 88% 30%, rgba(40, 120, 130, 0.12), transparent 70%);
+  animation: amb-drift-a 30s ease-in-out infinite alternate;
+}
+[data-ambient='nebula']::after {
+  background: radial-gradient(30% 30% at 55% 50%, rgba(212, 168, 83, 0.05), transparent 75%);
+  animation: amb-breathe 12s ease-in-out infinite;
+}
+
+/* constellation — deck showcase: faint star-line lattice (inline SVG) */
+[data-ambient='constellation']::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg stroke='rgba(212,168,83,0.10)' stroke-width='0.6'%3E%3Cpath d='M40 80 L130 40 L210 95 L305 60 L380 110' fill='none'/%3E%3Cpath d='M60 300 L150 250 L240 310 L330 260' fill='none'/%3E%3Cpath d='M210 95 L240 310'/%3E%3C/g%3E%3Cg fill='rgba(230,200,140,0.35)'%3E%3Ccircle cx='40' cy='80' r='1.6'/%3E%3Ccircle cx='130' cy='40' r='2.1'/%3E%3Ccircle cx='210' cy='95' r='1.4'/%3E%3Ccircle cx='305' cy='60' r='1.9'/%3E%3Ccircle cx='380' cy='110' r='1.3'/%3E%3Ccircle cx='60' cy='300' r='1.8'/%3E%3Ccircle cx='150' cy='250' r='1.3'/%3E%3Ccircle cx='240' cy='310' r='2.0'/%3E%3Ccircle cx='330' cy='260' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 420px 420px;
+  opacity: 0.55;
+  animation: amb-pan 60s linear infinite;
+}
+
+/* halo — zodiac wheel: a breathing ring of gold light behind the chart */
+[data-ambient='halo']::before {
+  background: radial-gradient(circle at 50% 46%,
+    transparent 30%, rgba(212, 168, 83, 0.07) 40%,
+    transparent 52%, rgba(140, 120, 220, 0.05) 64%, transparent 76%);
+  animation: amb-breathe 10s ease-in-out infinite;
+}
+
+/* dust — trust band: sparse rising gold motes */
+[data-ambient='dust']::before {
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 80%, rgba(230, 200, 140, 0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 30%, rgba(230, 200, 140, 0.35), transparent 100%),
+    radial-gradient(1.7px 1.7px at 58% 65%, rgba(230, 200, 140, 0.42), transparent 100%),
+    radial-gradient(1.1px 1.1px at 79% 40%, rgba(230, 200, 140, 0.3), transparent 100%),
+    radial-gradient(1.3px 1.3px at 92% 75%, rgba(230, 200, 140, 0.45), transparent 100%);
+  animation: amb-rise 18s linear infinite;
+}
+
+/* dawn — final CTA: warm light rising from the horizon line */
+[data-ambient='dawn']::before {
+  background:
+    linear-gradient(0deg, rgba(212, 168, 83, 0.10) 0%, transparent 45%),
+    radial-gradient(70% 55% at 50% 108%, rgba(224, 140, 90, 0.14), transparent 70%);
+  animation: amb-breathe 14s ease-in-out infinite;
+}
+
+@keyframes amb-drift-a {
+  from { transform: translate3d(-2.5%, -1.5%, 0) scale(1.02); }
+  to   { transform: translate3d(2.5%, 1.5%, 0) scale(1.06); }
+}
+@keyframes amb-drift-b {
+  from { transform: translate3d(1.5%, 0, 0) rotate(-1.2deg); }
+  to   { transform: translate3d(-1.5%, 0, 0) rotate(1.2deg); }
+}
+@keyframes amb-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.035); }
+}
+@keyframes amb-pan {
+  from { background-position: 0 0; }
+  to   { background-position: 420px 420px; }
+}
+@keyframes amb-rise {
+  from { transform: translateY(2.5%); opacity: 0.65; }
+  50%  { opacity: 1; }
+  to   { transform: translateY(-2.5%); opacity: 0.65; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ambient]::before, [data-ambient]::after { animation: none; }
+  html.lp-snap { scroll-snap-type: none; }
+}
+
 /* ── Sections ── */
 .lp-sec {
   padding: 110px 0; position: relative; z-index: 2;

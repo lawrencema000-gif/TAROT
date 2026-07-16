@@ -263,9 +263,14 @@ function FaqItem({ q, a, i: idx }: { q: string; a: string; i: number }) {
 }
 
 // ─── Section ───────────────────────────────────────────────────
-function Sec({ children, id, className = '' }: { children: React.ReactNode; id?: string; className?: string }) {
+// `ambient` picks a section-specific animated background layer (pure
+// CSS/SVG, transform+opacity only — see landing.css "Ambient art").
+// Sections are also scroll-snap stops: html.lp-snap uses proximity
+// snapping so each panel "lands" as you scroll without hijacking.
+type Ambient = 'aurora' | 'nebula' | 'constellation' | 'halo' | 'dust' | 'dawn';
+function Sec({ children, id, className = '', ambient }: { children: React.ReactNode; id?: string; className?: string; ambient?: Ambient }) {
   const { ref, v } = useReveal();
-  return <section ref={ref} id={id} className={`lp-sec ${v ? 'vis' : ''} ${className}`}>{children}</section>;
+  return <section ref={ref} id={id} data-ambient={ambient} className={`lp-sec ${v ? 'vis' : ''} ${className}`}>{children}</section>;
 }
 
 // ─── Google Play Badge ─────────────────────────────────────────
@@ -412,6 +417,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [onScroll]);
 
+  // Scroll-stop panels: proximity snapping on the document while the
+  // landing is mounted (removed on unmount so the app shell scrolls
+  // normally). Proximity — not mandatory — so long sections never trap
+  // the scroll; each panel just "lands" when you release near it.
+  useEffect(() => {
+    document.documentElement.classList.add('lp-snap');
+    return () => document.documentElement.classList.remove('lp-snap');
+  }, []);
+
   useEffect(() => {
     setPageMeta(t('meta.title'), t('meta.description'));
     setWebsiteSchema();
@@ -455,7 +469,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       {/* ── Main content (hero onwards) ── */}
       <main>
       {/* ── Hero ── */}
-      <section className="lp-hero">
+      <section className="lp-hero" data-ambient="aurora">
         <div className="lp-hero-orb o1" /><div className="lp-hero-orb o2" /><div className="lp-hero-orb o3" />
 
         <div className="lp-hero-content">
@@ -499,7 +513,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <div className="lp-divider" />
 
       {/* ── Trust ── */}
-      <Sec className="lp-trust">
+      <Sec className="lp-trust" ambient="dust">
         <div className="lp-wrap">
           <RatingStrip />
           <div className="lp-trust-grid">
@@ -525,7 +539,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <div className="lp-divider" />
 
       {/* ── Features (Bento) ── */}
-      <Sec id="features">
+      <Sec id="features" ambient="nebula">
         <div className="lp-wrap">
           <div className="lp-header">
             <span className="lp-tag">{t('features.tag')}</span>
@@ -543,7 +557,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <div className="lp-divider" />
 
       {/* ── Card Showcase (Dual Marquee) ── */}
-      <Sec className="lp-showcase">
+      <Sec className="lp-showcase" ambient="constellation">
         <div className="lp-wrap">
           <div className="lp-header">
             <span className="lp-tag">{t('deck.tag')}</span>
@@ -558,7 +572,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <div className="lp-divider" />
 
       {/* ── Zodiac ── */}
-      <Sec id="zodiac">
+      <Sec id="zodiac" ambient="halo">
         <div className="lp-wrap">
           <div className="lp-header">
             <span className="lp-tag">{t('zodiac.tag')}</span>
@@ -601,7 +615,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
       <div className="lp-divider" />
 
       {/* ── Final CTA ── */}
-      <Sec className="lp-cta-final">
+      <Sec className="lp-cta-final" ambient="dawn">
         <div className="lp-wrap" style={{ textAlign: 'center' }}>
           <div className="lp-cta-moon-wrap">
             <div className="lp-cta-moon">☽</div>

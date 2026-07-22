@@ -24,6 +24,11 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 import { createClient } from '@supabase/supabase-js';
+import {
+  loadContentData, wrapBody, SEO_STYLE,
+  tarotCardBody, astroBody, crystalBody, glossaryBody, numerologyBody, spreadBody, blogPostBody,
+  hubBody, tarotHubLinks, astroHubLinks, crystalHubLinks, glossaryHubLinks, numerologyHubLinks, spreadHubLinks, blogHubLinks,
+} from './seo-body.mjs';
 
 const DIST = resolve('dist');
 const TEMPLATE_PATH = join(DIST, 'index.html');
@@ -375,8 +380,19 @@ function signupMeta() {
 // twitter, and injects JSON-LD <script>s before </head>.
 // ────────────────────────────────────────────────────────────────────
 
-function rewriteHead(template, meta) {
+// Canonical URLs must match what Netlify actually serves. The prerendered
+// files live at `x/index.html`, so Netlify serves them at the TRAILING-SLASH
+// URL (`/x/`) and 301-redirects the no-slash form. Previously canonical + og
+// + sitemap used the no-slash form → every URL was a redirect and each page's
+// canonical pointed at a redirecting URL. Normalize to the slash form so the
+// canonical is a direct 200 that matches the served + sitemap URL.
+function withSlash(u) {
+  return u.endsWith('/') ? u : `${u}/`;
+}
+
+function rewriteHead(template, meta, body) {
   let html = template;
+  const canon = withSlash(meta.canonical);
 
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(meta.title)}</title>`);
   html = html.replace(
@@ -386,9 +402,9 @@ function rewriteHead(template, meta) {
 
   // canonical — replace existing or insert
   if (/<link rel="canonical"/.test(html)) {
-    html = html.replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${escapeAttr(meta.canonical)}" />`);
+    html = html.replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${escapeAttr(canon)}" />`);
   } else {
-    html = html.replace('</head>', `    <link rel="canonical" href="${escapeAttr(meta.canonical)}" />\n  </head>`);
+    html = html.replace('</head>', `    <link rel="canonical" href="${escapeAttr(canon)}" />\n  </head>`);
   }
 
   // OG/Twitter title + description + url
@@ -402,7 +418,7 @@ function rewriteHead(template, meta) {
   );
   html = html.replace(
     /<meta property="og:url" content="[^"]*" \/>/,
-    `<meta property="og:url" content="${escapeAttr(meta.canonical)}" />`,
+    `<meta property="og:url" content="${escapeAttr(canon)}" />`,
   );
   html = html.replace(
     /<meta name="twitter:title" content="[^"]*" \/>/,
@@ -433,6 +449,14 @@ function rewriteHead(template, meta) {
     html = html.replace('</head>', `${blocks}\n  </head>`);
   }
 
+  // Static body content — the SEO fix. Injected inside #root; main.tsx uses
+  // createRoot().render() which replaces these children on hydration, so
+  // crawlers index the real content and users get instant first paint.
+  if (body) {
+    html = html.replace('</head>', `${SEO_STYLE}\n  </head>`);
+    html = html.replace('<div id="root"></div>', `<div id="root">${wrapBody(body)}</div>`);
+  }
+
   return html;
 }
 
@@ -443,8 +467,8 @@ function escapeAttr(s) {
   return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
-function writeRoute(routePath, meta, template) {
-  const html = rewriteHead(template, meta);
+function writeRoute(routePath, meta, template, body) {
+  const html = rewriteHead(template, meta, body);
   // Map "/" → dist/index.html (overwrite root template too — outer routes
   // should not rely on root meta), "/x" → dist/x/index.html
   const cleanPath = routePath === '/' ? '' : routePath.replace(/^\/+/, '');
@@ -461,7 +485,7 @@ async function fetchBlogPosts() {
     const supa = createClient(url, key);
     const { data } = await supa
       .from('blog_posts')
-      .select('slug, title, excerpt, cover_image, published_at, updated_at')
+      .select('slug, title, excerpt, content, cover_image, published_at, updated_at')
       .eq('published', true)
       .order('published_at', { ascending: false })
       .limit(200);
@@ -479,59 +503,86 @@ async function main() {
   const template = readFileSync(TEMPLATE_PATH, 'utf8');
   let count = 0;
 
-  // Public root + auth pages + main hubs
+  // Load rich content from src/data (via esbuild) + build slug lookups.
+  let data = {};
+  try { data = await loadContentData(); }
+  catch (e) { console.warn('[prerender-meta] content data load failed — writing head-only:', e.message); }
+  const cardByName = {}; for (const c of data.fullDeck || []) cardByName[c.name] = c;
+  const enrichFor = (c) => c.arcana === 'major' ? (data.majorEnrichment || {})[c.id] : (data.minorEnrichment || {})[toSlug(c.name)];
+  const bySlug = (arr, k = 'slug') => { const m = {}; for (const e of arr || []) m[e[k]] = e; return m; };
+  const astroMap = bySlug(data.astrologyEntries);
+  const crystalMap = bySlug(data.crystalEntries);
+  const glossaryMap = bySlug(data.glossaryEntries);
+  const numeroMap = bySlug(data.numerologyEntries);
+  const spreadMap = data.spreadMap || {};
+
+  // Public root + auth pages + main hubs. Hubs get crawlable link lists so
+  // Googlebot can reach every leaf page from raw HTML.
   writeRoute('/', homeMeta(), template); count++;
   writeRoute('/signin', signinMeta(), template); count++;
   writeRoute('/signup', signupMeta(), template); count++;
-  writeRoute('/tarot-meanings', tarotMeaningsHubMeta(), template); count++;
-  writeRoute('/spreads', spreadsHubMeta(), template); count++;
-  writeRoute('/astrology', astrologyHubMeta(), template); count++;
-  writeRoute('/numerology', numerologyHubMeta(), template); count++;
-  writeRoute('/crystals', crystalsHubMeta(), template); count++;
-  writeRoute('/glossary', glossaryHubMeta(), template); count++;
-  writeRoute('/blog', blogHubMeta(), template); count++;
+  writeRoute('/tarot-meanings', tarotMeaningsHubMeta(), template,
+    hubBody('Tarot Card Meanings — All 78 Cards', 'Complete Rider-Waite-Smith tarot meanings: upright, reversed, love, career, yes/no, and astrological correspondences for every card.', tarotHubLinks(data.fullDeck || []))); count++;
+  writeRoute('/spreads', spreadsHubMeta(), template,
+    hubBody('Tarot Spreads Library', 'Position-by-position guidance for every tarot spread — from the daily one-card to the Celtic Cross and lunar cycles.', spreadHubLinks(SPREAD_SLUGS, spreadMap))); count++;
+  writeRoute('/astrology', astrologyHubMeta(), template,
+    hubBody('Astrology Reference', 'The 12 zodiac signs, 10 planets, 12 houses, and major aspects — with rulerships, meanings, and correspondences.', astroHubLinks(data.astrologyEntries || []))); count++;
+  writeRoute('/numerology', numerologyHubMeta(), template,
+    hubBody('Numerology — Life Path Numbers', 'The 9 core numbers plus master numbers 11, 22 and 33 — personality, love, career, and tarot correspondences.', numerologyHubLinks(data.numerologyEntries || []))); count++;
+  writeRoute('/crystals', crystalsHubMeta(), template,
+    hubBody('Crystal Meanings', 'Metaphysical properties, chakra associations, and how to use 30 healing crystals.', crystalHubLinks(data.crystalEntries || []))); count++;
+  writeRoute('/glossary', glossaryHubMeta(), template,
+    hubBody('Tarot, Astrology & Numerology Glossary', 'Definitions across tarot, astrology, numerology, and divination.', glossaryHubLinks(data.glossaryEntries || []))); count++;
 
   // 78 tarot card pages
-  for (const card of ALL_CARDS) {
-    writeRoute(`/tarot-meanings/${toSlug(card)}`, tarotCardMeta(card), template);
+  for (const name of ALL_CARDS) {
+    const card = cardByName[name];
+    const body = card ? tarotCardBody(card, enrichFor(card)) : '';
+    writeRoute(`/tarot-meanings/${toSlug(name)}`, tarotCardMeta(name), template, body);
     count++;
   }
 
-  // 18 spread leaf pages
+  // spread leaf pages
   for (const slug of SPREAD_SLUGS) {
-    writeRoute(`/spreads/${slug}`, spreadDetailMeta(slug), template);
+    writeRoute(`/spreads/${slug}`, spreadDetailMeta(slug), template, spreadBody(slug, spreadMap[slug]));
     count++;
   }
 
-  // 40 astrology leaf pages
+  // astrology leaf pages
   for (const slug of ASTRO_SLUGS) {
-    writeRoute(`/astrology/${slug}`, astrologyEntryMeta(slug), template);
+    const e = astroMap[slug];
+    writeRoute(`/astrology/${slug}`, astrologyEntryMeta(slug), template, e ? astroBody(e) : '');
     count++;
   }
 
-  // 12 numerology leaf pages
+  // numerology leaf pages
   for (const slug of NUMEROLOGY_SLUGS) {
-    writeRoute(`/numerology/${slug}`, numerologyEntryMeta(slug), template);
+    const e = numeroMap[slug];
+    writeRoute(`/numerology/${slug}`, numerologyEntryMeta(slug), template, e ? numerologyBody(e) : '');
     count++;
   }
 
-  // 30 crystal leaf pages
+  // crystal leaf pages
   for (const slug of CRYSTAL_SLUGS) {
-    writeRoute(`/crystals/${slug}`, crystalEntryMeta(slug), template);
+    const e = crystalMap[slug];
+    writeRoute(`/crystals/${slug}`, crystalEntryMeta(slug), template, e ? crystalBody(e) : '');
     count++;
   }
 
-  // 63 glossary leaf pages
+  // glossary leaf pages
   for (const slug of GLOSSARY_SLUGS) {
-    writeRoute(`/glossary/${slug}`, glossaryEntryMeta(slug), template);
+    const e = glossaryMap[slug];
+    writeRoute(`/glossary/${slug}`, glossaryEntryMeta(slug), template, e ? glossaryBody(e) : '');
     count++;
   }
 
   // Blog posts (dynamic)
   try { const env = readFileSync('.env', 'utf8'); env.split('\n').forEach((line) => { const [k, ...v] = line.split('='); if (k && !k.startsWith('#')) process.env[k.trim()] = v.join('=').trim(); }); } catch {}
   const posts = await fetchBlogPosts();
+  // Blog hub with links to every post
+  writeRoute('/blog', blogHubMeta(), template, hubBody('Arcana Blog', 'Articles on tarot, astrology, and daily practice — new posts daily.', blogHubLinks(posts))); count++;
   for (const post of posts) {
-    writeRoute(`/blog/${post.slug}`, blogPostMeta(post), template);
+    writeRoute(`/blog/${post.slug}`, blogPostMeta(post), template, blogPostBody(post));
     count++;
   }
 

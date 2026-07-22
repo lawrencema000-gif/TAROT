@@ -226,15 +226,26 @@ async function generate() {
     });
   }
 
+  // Netlify serves the prerendered `x/index.html` files at the TRAILING-SLASH
+  // URL and 301-redirects the no-slash form. List the slash form so every
+  // sitemap URL is a direct 200 that matches the page's canonical (files like
+  // privacy-policy.html and the root keep their exact form).
+  const slashLoc = (u) => {
+    if (u.endsWith('/')) return u;
+    const lastSeg = u.split('?')[0].split('/').pop();
+    if (lastSeg.includes('.')) return u; // a file, e.g. privacy-policy.html
+    return `${u}/`;
+  };
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${urls.map(u => `  <url>
-    <loc>${u.loc}</loc>
+${urls.map(u => { const loc = slashLoc(u.loc); return `  <url>
+    <loc>${loc}</loc>
     ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
-${hreflangLinks(u.loc)}
-  </url>`).join('\n')}
+${hreflangLinks(loc)}
+  </url>`; }).join('\n')}
 </urlset>`;
 
   writeFileSync(resolve('public/sitemap.xml'), xml);

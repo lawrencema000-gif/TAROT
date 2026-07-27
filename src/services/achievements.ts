@@ -209,11 +209,25 @@ export async function checkAchievementProgress(
       return [];
     }
 
-    return (data || []).filter((a: UnlockedAchievement) => a.newly_unlocked);
+    const unlocked = (data || []).filter((a: UnlockedAchievement) => a.newly_unlocked);
+    if (unlocked.length) announceUnlock();
+    return unlocked;
   } catch (error) {
     console.error('Failed to check achievement progress:', error);
     return [];
   }
+}
+
+/**
+ * Broadcast that something newly unlocked so the app-shell celebration
+ * drainer (GlobalAchievementCelebration) can fire the unlock modal from ANY
+ * screen. Before this, celebrations only played inside AchievementsPage —
+ * unlocks earned mid-session anywhere else showed nothing.
+ */
+export const ACHIEVEMENT_UNLOCKED_EVENT = 'achievement:unlocked';
+function announceUnlock(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(ACHIEVEMENT_UNLOCKED_EVENT));
 }
 
 export async function checkLevelMilestones(
@@ -235,7 +249,9 @@ export async function checkLevelMilestones(
       return [];
     }
 
-    return (data || []).filter((a: UnlockedAchievement) => a.newly_unlocked);
+    const unlocked = (data || []).filter((a: UnlockedAchievement) => a.newly_unlocked);
+    if (unlocked.length) announceUnlock();
+    return unlocked;
   } catch (error) {
     console.error('Failed to check level milestones:', error);
     return [];
@@ -257,7 +273,9 @@ export async function unlockAchievement(
       return null;
     }
 
-    return data?.[0] || null;
+    const row = data?.[0] || null;
+    if (row?.success) announceUnlock();
+    return row;
   } catch (error) {
     console.error('Failed to unlock achievement:', error);
     return null;
@@ -310,6 +328,7 @@ export async function checkSpecificCardAchievement(userId: string, cardName: str
         .from('user_achievements')
         .insert({ user_id: userId, achievement_id: achievement.id, progress: newProgress, target: mapping.target, unlocked_at: nowUnlocked ? new Date().toISOString() : null });
     }
+    if (nowUnlocked) announceUnlock();
   } catch (e) {
     console.error('Failed to check specific card achievement:', e);
   }

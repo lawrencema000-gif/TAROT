@@ -1,7 +1,7 @@
 {
   "name": "arcana",
   "private": true,
-  "version": "1.1.10",
+  "version": "1.2.0",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
@@ -36,6 +36,7 @@
     "@capacitor/cli": "8.3.0",
     "@capacitor/core": "8.0.1",
     "@capacitor/haptics": "8.0.1",
+    "@capacitor/local-notifications": "^8.2.1",
     "@capacitor/preferences": "8.0.0",
     "@capacitor/splash-screen": "8.0.0",
     "@capacitor/status-bar": "8.0.0",

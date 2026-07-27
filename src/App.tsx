@@ -6,6 +6,9 @@ import i18n from './i18n/config';
 import { useT } from './i18n/useT';
 import { syncHreflangTags } from './i18n/hreflang';
 import { AppProvider } from './context/AppContext';
+import { useRitual } from './context/RitualContext';
+import { syncDailyReminder, syncStreakNudge } from './services/localNotifications';
+import { GlobalAchievementCelebration } from './components/achievements/GlobalAchievementCelebration';
 import { FeatureFlagProvider } from './context/FeatureFlagContext';
 import { useUI, isTabRoot } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
@@ -192,6 +195,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const { levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useGamification();
+  const { ritualCompleted } = useRitual();
   const { openDiagnostics } = useDiagnostics();
   usePostCheckout();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -333,6 +337,21 @@ function AppContent() {
     });
     return () => { listener.then(l => l.remove()).catch(() => {}); };
   }, [activeOverlay, closeOverlay, activeTab, setActiveTab, location.pathname, navigate]);
+
+  // Daily reminder ⇄ profile state. Covers sign-in, onboarding opt-in, and
+  // every Settings change, since all of them mutate the profile. The first
+  // enabled sync on native prompts for permission (Android 13+ runtime).
+  useEffect(() => {
+    if (!profile) return;
+    syncDailyReminder(!!profile.notificationsEnabled, profile.notificationTime);
+  }, [profile?.notificationsEnabled, profile?.notificationTime, profile]);
+
+  // Streak-keeper nudge: exists only while today's ritual is incomplete.
+  // Cancelled the instant the ritual completes; never fires for finished days.
+  useEffect(() => {
+    if (!profile) return;
+    syncStreakNudge(!!profile.notificationsEnabled, ritualCompleted);
+  }, [profile?.notificationsEnabled, ritualCompleted, profile]);
 
   const handleOnboardingComplete = () => {
     appStorage.set(ONBOARDING_KEY, 'true');
@@ -599,6 +618,7 @@ function AppContent() {
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
 
         <UpdateAvailableBanner />
+        <GlobalAchievementCelebration />
 
         <SearchSheet
           open={activeOverlay === 'search'}

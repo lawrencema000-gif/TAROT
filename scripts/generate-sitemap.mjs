@@ -45,24 +45,10 @@ const MINOR_ARCANA = MINOR_SUITS.flatMap(suit =>
 
 const ALL_CARDS = [...MAJOR_ARCANA, ...MINOR_ARCANA];
 
-// Supported locales mirror src/i18n/config.ts SUPPORTED_LOCALES.
-const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'];
-
-/**
- * Emit xhtml:link alternates for every supported locale plus x-default so
- * Google serves the right-language page in SERPs. We encode locale as a
- * ?lang=xx query param since the SPA routes all locales through the same
- * URL space; the client's i18next LanguageDetector picks it up on load.
- */
-function hreflangLinks(baseLoc) {
-  const sep = baseLoc.includes('?') ? '&' : '?';
-  const alt = (locale) => `${baseLoc}${sep}lang=${locale}`;
-  const lines = SUPPORTED_LOCALES.map(
-    (locale) => `    <xhtml:link rel="alternate" hreflang="${locale}" href="${alt(locale)}"/>`
-  );
-  lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${baseLoc}"/>`);
-  return lines.join('\n');
-}
+// hreflang alternates intentionally NOT emitted — see the note above the
+// XML template. ?lang=xx query variants are not real localized pages
+// (identical English HTML, canonical → base), so advertising them only
+// multiplied crawl noise ~5× and polluted Search Console.
 
 async function fetchBlogPosts() {
   if (!supabaseUrl || !supabaseKey) return [];
@@ -237,14 +223,20 @@ async function generate() {
     return `${u}/`;
   };
 
+  // NOTE: hreflang alternates removed deliberately. They advertised
+  // ?lang=xx query variants of every URL (~1,760 entries), but those serve
+  // IDENTICAL English HTML whose canonical points back at the base page —
+  // localization happens client-side. Google crawled ~1,400 junk URLs and
+  // filed them all under "Alternate page with proper canonical tag" in
+  // Search Console (validation permanently failing). A single canonical
+  // URL per page with no fake alternates is the correct shape here.
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(u => { const loc = slashLoc(u.loc); return `  <url>
     <loc>${loc}</loc>
     ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
-${hreflangLinks(loc)}
   </url>`; }).join('\n')}
 </urlset>`;
 

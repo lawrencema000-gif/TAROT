@@ -390,6 +390,33 @@ function withSlash(u) {
   return u.endsWith('/') ? u : `${u}/`;
 }
 
+/** Slash-normalize a site URL unless it's a file (has an extension) or an
+ *  anchor-style @id. Query strings survive: /blog?q=x → /blog/?q=x. */
+function slashSiteUrl(u) {
+  const [base, qs] = u.split('?');
+  const last = base.split('/').pop();
+  if (!last || last.includes('.') || last.includes('#')) return u;
+  const slashed = base.endsWith('/') ? base : `${base}/`;
+  return qs !== undefined ? `${slashed}?${qs}` : slashed;
+}
+
+/** Deep-walk JSON-LD and normalize every URL-bearing string that points at
+ *  our site to the trailing-slash form, so structured data agrees with the
+ *  canonical + sitemap (they were emitting the no-slash redirect form). */
+function normalizeJsonLdUrls(node) {
+  if (Array.isArray(node)) return node.map(normalizeJsonLdUrls);
+  if (node && typeof node === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(node)) {
+      out[k] = (typeof v === 'string' && v.startsWith(SITE_URL))
+        ? slashSiteUrl(v)
+        : normalizeJsonLdUrls(v);
+    }
+    return out;
+  }
+  return node;
+}
+
 function rewriteHead(template, meta, body) {
   let html = template;
   const canon = withSlash(meta.canonical);
@@ -441,10 +468,11 @@ function rewriteHead(template, meta, body) {
     );
   }
 
-  // JSON-LD blocks injected before </head>
+  // JSON-LD blocks injected before </head> (URLs slash-normalized so
+  // structured data matches the canonical/sitemap form).
   if (meta.jsonLd && meta.jsonLd.length) {
     const blocks = meta.jsonLd
-      .map((d) => `    <script type="application/ld+json">${JSON.stringify(d)}</script>`)
+      .map((d) => `    <script type="application/ld+json">${JSON.stringify(normalizeJsonLdUrls(d))}</script>`)
       .join('\n');
     html = html.replace('</head>', `${blocks}\n  </head>`);
   }

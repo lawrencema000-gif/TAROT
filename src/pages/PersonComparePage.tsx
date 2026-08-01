@@ -2,10 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Card, Button, EyebrowLabel } from '../components/ui';
+import { NatalWheel } from '../components/charts/NatalWheel';
+import { AspectGrid } from '../components/charts/AspectGrid';
 import { useAuth } from '../context/AuthContext';
 import { people as peopleDal } from '../dal';
 import { supabase } from '../lib/supabase';
 import { type NatalChart, PLANET_GLYPH, SIGN_GLYPH, computeSynastry, synastryScore } from '../lib/chart';
+
+type CompareTab = 'synastry' | 'composite' | 'davison' | 'progressed-composite';
+const TABS: { key: CompareTab; label: string; blurb: string }[] = [
+  { key: 'synastry', label: 'Synastry', blurb: 'How your two charts talk to each other' },
+  { key: 'composite', label: 'Composite', blurb: 'The midpoint chart of the relationship itself' },
+  { key: 'davison', label: 'Davison', blurb: 'A real sky, halfway between your births in time and space' },
+  { key: 'progressed-composite', label: 'Progressed', blurb: 'Where the relationship chart has evolved to now' },
+];
 
 type Interp = typeof import('../data/interpretations');
 
@@ -26,6 +36,25 @@ export function PersonComparePage() {
   const [interp, setInterp] = useState<Interp | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [tab, setTab] = useState<CompareTab>('synastry');
+  const [relCharts, setRelCharts] = useState<Partial<Record<CompareTab, NatalChart>>>({});
+  const [relLoading, setRelLoading] = useState(false);
+
+  // Relationship-chart tabs (composite / davison / progressed) — fetched
+  // lazily from the pure-compute chart-suite endpoint, cached per tab.
+  useEffect(() => {
+    if (tab === 'synastry' || !id || relCharts[tab]) return;
+    let cancelled = false;
+    setRelLoading(true);
+    supabase.functions.invoke('astrology-chart-suite', { body: { type: tab, personId: id } })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        const chart = (data?.data?.chart ?? data?.chart) as NatalChart | undefined;
+        if (!error && chart) setRelCharts((prev) => ({ ...prev, [tab]: chart }));
+        setRelLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [tab, id, relCharts]);
 
   const load = useCallback(async () => {
     if (!id || !profile) return;
@@ -76,6 +105,46 @@ export function PersonComparePage() {
         </div>
       </div>
 
+      {/* Chart-type tabs */}
+      <div className="flex gap-1.5 justify-center flex-wrap">
+        {TABS.map((tDef) => (
+          <button key={tDef.key} onClick={() => setTab(tDef.key)}
+            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${tab === tDef.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400 hover:border-mystic-500'}`}>
+            {tDef.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-center text-xs text-mystic-500 -mt-3">{TABS.find((tDef) => tDef.key === tab)?.blurb}</p>
+
+      {tab !== 'synastry' ? (
+        relLoading && !relCharts[tab] ? (
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 text-gold animate-spin" /></div>
+        ) : relCharts[tab] ? (
+          <>
+            <Card className="p-4 flex justify-center">
+              <div className="w-full max-w-[360px]"><NatalWheel chart={relCharts[tab]!} /></div>
+            </Card>
+            {relCharts[tab]!.aspects.length > 0 && (
+              <Card className="p-4 space-y-3">
+                <h3 className="heading-display-md text-mystic-100">Aspects in this chart</h3>
+                <AspectGrid aspects={relCharts[tab]!.aspects} />
+                <div className="space-y-2 pt-1">
+                  {relCharts[tab]!.aspects.slice(0, 5).map((a, i) => (
+                    <div key={i} className="text-sm">
+                      <span className="text-mystic-200">{a.planet1} {a.type} {a.planet2}</span>
+                      <span className="text-mystic-600 text-xs"> · orb {a.orb}°</span>
+                      {interp && <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </>
+        ) : (
+          <Card className="p-6 text-center"><p className="text-sm text-mystic-300">Couldn't cast this chart. Try again.</p></Card>
+        )
+      ) : (
+      <>
       {/* Harmony score ring */}
       <Card className="p-6 text-center space-y-2">
         <div className="text-5xl font-display text-gold-foil">{score}<span className="text-2xl text-mystic-500">/100</span></div>
@@ -111,8 +180,10 @@ export function PersonComparePage() {
           ))}
         </div>
       </Card>
+      </>
+      )}
 
-      <p className="text-center text-xs text-mystic-600">For reflection &amp; entertainment. Synastry describes dynamics, not destiny.</p>
+      <p className="text-center text-xs text-mystic-600">For reflection &amp; entertainment. These charts describe dynamics, not destiny.</p>
     </div>
   );
 }

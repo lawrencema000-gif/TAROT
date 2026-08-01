@@ -45,6 +45,7 @@ const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ defa
 const PeoplePage = lazy(() => import('./pages/PeoplePage').then(m => ({ default: m.PeoplePage })));
 const PersonDetailPage = lazy(() => import('./pages/PersonDetailPage').then(m => ({ default: m.PersonDetailPage })));
 const PersonComparePage = lazy(() => import('./pages/PersonComparePage').then(m => ({ default: m.PersonComparePage })));
+const ChartSuitePage = lazy(() => import('./pages/ChartSuitePage').then(m => ({ default: m.ChartSuitePage })));
 const QuizzesPage = lazy(() => import('./pages/QuizzesPage').then(m => ({ default: m.QuizzesPage })));
 const HoroscopePage = lazy(() => import('./pages/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
 const AchievementsPage = lazy(() => import('./pages/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
@@ -599,6 +600,7 @@ function AppContent() {
                   <Route path="/people" element={<PeoplePage />} />
                   <Route path="/people/:id" element={<PersonDetailPage />} />
                   <Route path="/people/:id/compare" element={<PersonComparePage />} />
+                  <Route path="/charts" element={<ChartSuitePage />} />
                   <Route path="/reading/:token" element={<SharedReadingPage />} />
                   <Route path="/spreads" element={<SpreadsPage />} />
                   <Route path="/spreads/:slug" element={<SpreadDetailPage />} />

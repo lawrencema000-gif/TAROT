@@ -30,7 +30,8 @@
     "whisperingWell": "Whispering Well",
     "companion": "Companion",
     "advisors": "Advisors",
-    "people": "People"
+    "people": "People",
+    "charts": "Charts"
   },
   "actions": {
     "continue": "Continue",

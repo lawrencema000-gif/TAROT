@@ -58,6 +58,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   // it leads the menu.
   const moreItems: MoreItem[] = [
     { id: 'people', labelKey: 'nav.people', icon: Users, route: '/people' },
+    { id: 'charts', labelKey: 'nav.charts', icon: HoroscopeWheelIcon, route: '/charts' },
     ...moreMenuTabs,
   ];
   if (companionEnabled) {

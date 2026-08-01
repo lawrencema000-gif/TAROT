@@ -1,0 +1,2004 @@
+{
+  "summary": "Deep multi-angle scrape of Cece (com.lingocc.cc5) + Arcana feature inventory + adversarial completeness pass + gap synthesis",
+  "agentCount": 11,
+  "logs": [
+    "research done: 5/5 angles, 151 feature signals",
+    "critic found 4 thin areas — dispatching follow-ups",
+    "[followup:Exact enumeration of all] failed: API Error: Connection closed mid-response. The response above may be incomplete."
+  ],
+  "result": {
+    "research": [
+      {
+        "angle": "Cece (測測, com.lingocc.cc5) by LIGHTFUL AI TECHNOLOGIES PTE. LTD. (Singapore) positions itself as a \"know yourself, live positively\" self-discovery super-app: professional astrology (20 chart types) + BaZi + Zi Wei fused with AI agent chat (3-second answers across star dice/tarot/bazi/natal tools), 50+ psychological tests, an MBTI-style 16-personality social layer (WeChat-friend synastry, friend-circle personality maps), a test-taker community, and paid certified experts — monetized via IAP from ~$0.70 to ~$115 per item. Critically, the Google Play build (1.0.9, 50K+ installs, no visible star rating) is a badly-maintained port of a much larger Chinese flagship (reviewers cite official version 10.36.0), with reviews revealing crash bugs in the synastry feature, forced login, overseas payment failure, no dark mode, and a cluttered content feed — a big exploitable gap for a polished international competitor.",
+        "features": [
+          {
+            "name": "AI agent chat (multiple AI intelligent agents)",
+            "category": "ai",
+            "depth": "Users hold in-depth conversations with different AI agents (AI智能体) about astrology, BaZi, emotions, and daily life — framed as the core interaction model of the app alongside human community and experts.",
+            "evidence": "Play description (en_IN + zh): 'engage in in-depth interactions with different AI agents' / '与不同的AI智能体...展开深入的互动交流'"
+          },
+          {
+            "name": "AI intelligent Q&A across divination tools",
+            "category": "ai",
+            "depth": "AI interpretation layer covering multiple divination tools in one Q&A surface: astro dice (星骰), tarot, BaZi, natal/birth charts, and stars. Advertised 3-second response time for question analysis.",
+            "evidence": "Description section 【AI智能问答，快捷又方便】: 'AI解读，覆盖星骰塔罗八字星盘多种工具；3秒响应'"
+          },
+          {
+            "name": "Personalized AI question recommendations",
+            "category": "ai",
+            "depth": "Recommendation engine that suggests questions to ask the AI — 'guessing what you think and asking what you ask' (猜你所想，问你所问) — i.e. prompt suggestions personalized to the user's chart/profile to drive engagement.",
+            "evidence": "Description: '个性化的问题推荐，猜你所想，问你所问'"
+          },
+          {
+            "name": "Natal chart analysis — 20 chart types",
+            "category": "astrology-charts",
+            "depth": "Flagship 'professional astrology analysis tool' explicitly covering 20 types of astrological charts (20种星盘) — far beyond a basic natal chart (implies natal, transit, synastry, composite, returns, progressions, etc.).",
+            "evidence": "Description: '必备的专业星座分析工具，覆盖20种星盘'"
+          },
+          {
+            "name": "Free chart/BaZi analysis reports",
+            "category": "reports",
+            "depth": "'Diverse' astrology-chart and BaZi analysis reports viewable for free (免费查看) — free reports as acquisition funnel, with paid IAP items layered on top (THB 26–4,050 per item).",
+            "evidence": "Description: '多样化的星盘八字分析报告，免费查看'"
+          },
+          {
+            "name": "BaZi (Chinese Four Pillars) analysis",
+            "category": "bazi",
+            "depth": "BaZi (八字) is first-class alongside Western astrology — in the app title itself (測測 - 星座，八字，AI問答), in chart analysis reports, and as one of the AI Q&A tools.",
+            "evidence": "App title + description sections 【星盘八字分析...】 and AI tools list"
+          },
+          {
+            "name": "Zi Wei Dou Shu (紫微) calculation",
+            "category": "fortune",
+            "depth": "Zi Wei Dou Shu charting exists in-app; a 2-star review complains the new version's Ziwei calculations are wrong ('新版app嘅紫微計錯哂…以前明明是正確的') — confirming an existing accurate implementation previously.",
+            "evidence": "Review by Peace Chen, 2026-01-03, en_IN page"
+          },
+          {
+            "name": "Yuanfen synastry / compatibility charting (緣分合盤)",
+            "category": "astrology-charts",
+            "depth": "Dedicated relationship-compatibility charting feature where users select saved profile archives (檔案) to run two-person synastry. Notoriously buggy on the Play build: 3 separate reviews report a black-screen crash when selecting a profile; dev replied it was fixed in a new version.",
+            "evidence": "Reviews: 'God tried your App...' (2025-07-03), Leon Yu (2025-05-18), Washington Dam (2025-04-18) + LIGHTFUL AI dev replies"
+          },
+          {
+            "name": "Astro dice (星骰) divination",
+            "category": "fortune",
+            "depth": "Astrology dice as one of the AI-interpreted divination tools (planet/sign/house dice rolls answered by AI).",
+            "evidence": "Description AI tools list: '星骰塔罗八字星盘'"
+          },
+          {
+            "name": "Tarot readings with AI interpretation",
+            "category": "tarot",
+            "depth": "Tarot is one of the AI Q&A tools — AI interprets draws within the 3-second-response Q&A flow rather than as a standalone-only module.",
+            "evidence": "Description: 'AI interpretation, covering multiple tools including stars, dice, tarot, birth charts'"
+          },
+          {
+            "name": "16-personality (MBTI-style) test, revamped",
+            "category": "tests",
+            "depth": "Newly relaunched personality test ('人格测试焕新上线') with i-person/e-person framing and 'more diverse' result interpretations; positioned as the social/viral growth feature.",
+            "evidence": "Description section 【人格测试焕新上线，趣味解读好友圈】"
+          },
+          {
+            "name": "WeChat friend compatibility (one-click 合盘)",
+            "category": "community",
+            "depth": "Run compatibility charts against WeChat friends and 'unlock your tacit-understanding score (默契度) with one click' — viral social loop piggybacking on WeChat graph (mainland-oriented; likely absent/broken in overseas build).",
+            "evidence": "Description: '和微信好友进行合盘，一键解锁默契度'"
+          },
+          {
+            "name": "Friend-circle personality map",
+            "category": "community",
+            "depth": "View friends' test results and see the distribution of all 16 personality types across your friends/Moments at a glance ('朋友圈16种人格分布一目了然') — social comparison dashboard.",
+            "evidence": "Description: '查看好友测试結果，朋友圈16种人格分布一目了然'"
+          },
+          {
+            "name": "Interactive discussion zones per test",
+            "category": "community",
+            "depth": "New interactive discussion area (互动讨论区) where test-takers chat about their results/new discoveries — community attached to test outcomes, not a generic forum.",
+            "evidence": "Description: '新增互动讨论区，与测友暢聊新发现'"
+          },
+          {
+            "name": "Test-taker community (测友)",
+            "category": "community",
+            "depth": "App-wide community of 'fellow test-takers' for discussing astrology, BaZi, emotional sharing, and daily life — one of three interaction pillars (AI agents / community / experts).",
+            "evidence": "Both descriptions, opening paragraph"
+          },
+          {
+            "name": "Certified experts (认证达人) consultations",
+            "category": "community",
+            "depth": "In-depth interactions with certified/verified experts — implies a paid human-reading marketplace layered over the AI features (consistent with IAP items up to THB 4,050 ≈ USD 115).",
+            "evidence": "Description: '与不同的AI智能体、众多测友和认证达人展开深入的互动交流'"
+          },
+          {
+            "name": "50+ psychological tests",
+            "category": "tests",
+            "depth": "Library of 50+ 'professional yet fun' psychological tests (专业不乏趣味性的50+心理测试) beyond the personality test — quiz-content engine for retention.",
+            "evidence": "Description section 【星盘八字分析 心理测试 个人报告】"
+          },
+          {
+            "name": "Personalized personal reports",
+            "category": "reports",
+            "depth": "Individual reports built from 'professional knowledge + refined algorithms' (专业知识＋精细算法的个人报告) — algorithmic premium report product distinct from free chart reports.",
+            "evidence": "Description: '专业知识＋精细算法的个人报告'"
+          },
+          {
+            "name": "Home content feed",
+            "category": "design",
+            "depth": "Home screen is a content/recommendation feed — a 3-star review complains 'too much junk info on the homepage' (首页垃圾信息太多); dev reply asks which info to tune, confirming an editorially-mixed feed.",
+            "evidence": "Review by Mengjun Liu (2025-10-29, zh page) + LIGHTFUL AI reply"
+          },
+          {
+            "name": "Profile archives with photo/album access",
+            "category": "other",
+            "depth": "Users save person profiles (档案) for synastry and grant photo-album permission; a review reports album picker failing despite granted permission — indicates photo upload (avatars/profiles) in the flow.",
+            "evidence": "Review by 小卡 (2025-08-27, zh page): '给相册权限了还是开不到相册'"
+          },
+          {
+            "name": "Membership subscription (会员)",
+            "category": "monetization",
+            "depth": "A membership tier exists but overseas payment is broken on the Play build — 1-star review: 'can't pay for membership' (不能付款会员). Monetization = membership + per-item IAP + likely expert fees.",
+            "evidence": "Review by sweet flower (2025-08-06, en_IN page)"
+          },
+          {
+            "name": "IAP price range THB 26.00 – THB 4,050.00 per item",
+            "category": "monetization",
+            "depth": "Per-item in-app purchases from ~USD 0.72 to ~USD 112 (Thai-baht storefront) — wide ladder consistent with micro-reports at the bottom and expert readings/annual memberships at the top.",
+            "evidence": "Play data blob: '[\"THB 26.00 – THB 4,050.00 per item\",[0]]'; 'In-app purchases' badge on en_IN page"
+          },
+          {
+            "name": "Scale: 50K+ downloads, no visible star rating",
+            "category": "other",
+            "depth": "Exactly 51,522 installs ('50K+' badge); JSON-LD contains no aggregateRating and no score renders — too few ratings to display. Lifestyle category, Rated 12+. This Play build is a minor overseas satellite of a huge Chinese app.",
+            "evidence": "Data blob: '[\"50,000+\",50000,51522,\"50K+\"]'; schema.org JSON-LD"
+          },
+          {
+            "name": "Play build far behind flagship (1.0.9 vs 10.36.0)",
+            "category": "other",
+            "depth": "Play version 1.0.9 (updated 6 Nov 2025); reviewers report the official/iOS Cece is at 10.36.0 with 'many new features' missing from Android Play ('苹果有的很多新功能都没有', '不如自己去官网搜吧'). No 'What's new' changelog section is published on the listing at all.",
+            "evidence": "Reviews by Weijing Shi (2026-02-20), Jiaxin Wan (2026-04-19); 'Updated on 6 Nov 2025'; changelog section absent from both pages"
+          },
+          {
+            "name": "Forced login gate",
+            "category": "design",
+            "depth": "App is unusable without login — 1-star review: '强迫登录，不登陆用不了，谨慎下载' (forced login, can't use without it, download with caution); another reports login failure + black screen even after reinstall.",
+            "evidence": "Reviews by JL Zhou (2025-08-27) and Aria Stone (2025-11-05), zh page"
+          },
+          {
+            "name": "No dark mode; small fonts",
+            "category": "design",
+            "depth": "Reviews complain there is no dark mode (night mode setting exists but background stays white/blinding when reading charts at night) and body text is too small ('字太细了') — concrete UX gaps.",
+            "evidence": "Reviews: 'God tried your App...' (2025-07-03) and Li Xuan Lau (2025-03-29)"
+          },
+          {
+            "name": "App relaunch bug (must reinstall)",
+            "category": "other",
+            "depth": "3-star review reports the app won't reopen after being closed, requiring uninstall/reinstall each time — yet reviewer still calls it 'fun and informative'.",
+            "evidence": "Review by Abby Lee (2026-02-12, en_IN page)"
+          },
+          {
+            "name": "Chinese-only content blocks sharing",
+            "category": "other",
+            "depth": "Top-voted zh review (5 stars, +3): 'wish there were an English version — want to recommend it to friends but they can't read Chinese, a pity' — the app's content is effectively Chinese-only despite an English store listing; direct opening for an English-native competitor.",
+            "evidence": "Review by 苍蝇yyds (2026-05-12, zh page)"
+          },
+          {
+            "name": "Perceived accuracy as praise driver",
+            "category": "other",
+            "depth": "Positive reviews are short and center on accuracy and usability: '很准，很好用' (+1), '好用，准确。', 'well designed ui and integrating AI to give predictions and advice' — AI predictions + accuracy = the retained value proposition.",
+            "evidence": "Reviews by 胡志军 (2025-02-24), yee sim (2026-05-06), Musho Pea (2025-09-14)"
+          },
+          {
+            "name": "Active developer review responses",
+            "category": "other",
+            "depth": "LIGHTFUL AI replies to negative reviews in Chinese (bug-fixed-please-update apologies, asks follow-up questions about feed complaints, thanks supporters) — 6 distinct replies found across both pages.",
+            "evidence": "Dev reply blobs on both pages, author 'LIGHTFUL AI'"
+          },
+          {
+            "name": "Positioning: self-knowledge & positive living",
+            "category": "other",
+            "depth": "Brand frame is psychological well-being, not fortune-telling: 'help users understand themselves and live a positive life... strengthens your confidence and motivation to face life's challenges. Come to Cece and discover a better version of yourself' — wellness framing wraps the divination stack.",
+            "evidence": "Opening paragraphs of both descriptions; JSON-LD tagline 'Meet a better self with QiCei'"
+          }
+        ],
+        "notes": "Method: curl'd both pages with desktop UA, parsed AF_initDataCallback blobs with Python regex. Hard facts: title 測測 - 星座，八字，AI問答 (zh-CN: 测测 - 星座，八字，AI问答); developer LIGHTFUL AI / LIGHTFUL AI TECHNOLOGIES PTE. LTD.; Lifestyle; Rated 12+; 50,000+ installs (exact 51,522); IAP THB 26.00–4,050.00 per item (storefront geo-detected as TH; ≈ USD 0.72–112); updated 6 Nov 2025; current Play version 1.0.9 (review versions seen: 1.0.5/1.0.7/1.0.8/1.0.9); listing languages Chinese (Traditional) + English (India). NO aggregate star rating is displayed (absent from JSON-LD too) and NO 'What's new' changelog section exists on either language page — the only '新功能' hit was inside a review complaining the Play build lacks the iOS version's new features. 20 reviews extracted (9 en_IN + 11 zh) with dates, stars, thumbs-up, and 6 developer replies; feature signals from reviews: 緣分合盤 synastry (crash-prone), 紫微 calculation regression, membership payment broken overseas, forced login, no dark mode, home feed clutter, album-permission bug, version-lag vs official 10.36.0. Teardown takeaway: the moat is the integrated stack (20 chart types + BaZi/ZiWei + AI Q&A over 5 divination tools + 16-personality social graph + expert marketplace); the exposed flank internationally is localization, build parity, payments, and dark-mode/UX polish.",
+        "sources": [
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5&hl=en_IN",
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5&hl=zh"
+        ]
+      },
+      {
+        "angle": "Feature-depth teardown of 测测 (Cece, App Store id756771906, pkg com.xxwolo.cc5 / intl com.lingocc.cc5, by 北京力拓飞远科技/Cece Group, CEO 任永亮, Tencent-invested) — China's most feature-dense astrology super-app. Core finding: it is a two-layer machine. Layer 1 is a free, genuinely deep divination toolbox (20 astrology chart types incl. progressions/returns/firdaria/solar-arc, bazi+ziwei+28 mansions+numerology, tarot, astro dice, 50+ psych tests) used as traffic. Layer 2 is the monetization engine: a paid human-expert marketplace (~20-26k certified 达人, voice Q&A from ¥3-30+/question, per-minute live calls 0.5-58.56 coins/min across 10 expert tiers, 30-50% platform take), coins (1币≈¥1, IAP ¥6-698), and VIP/SVIP subscriptions (¥9.9 first month→¥25/mo, ¥58/q, ¥178/yr, SVIP ¥69/mo). Since ~2020 it rebranded from 星座 app to \"泛心理\" (pan-psychology) AI community — adding 小测AI bot (~50k users/day), an AI virtual counselor, and a 3D psychological sandbox — without removing the mystic toolbox. 55M registered users, ~$5M+/yr App Store revenue, 80% female 16-28 core demo.",
+        "features": [
+          {
+            "name": "本命盘 natal chart",
+            "category": "astrology-charts",
+            "depth": "Free professional natal chart from birth data: planets, houses, aspects with detailed written interpretations; marketing positions chart engine against desktop tools (astrolog32, Janus, Winstar, Zet). Auto-computes planetary movement against the personal chart, which also powers the personalized daily fortune. Charts can be attached to community posts and paid questions for experts to read (解盘).",
+            "evidence": "downkuai.com/android/158058.html; 87g.com/az/38384.html; woshipm case study"
+          },
+          {
+            "name": "20种星盘 chart-type suite (personal charts)",
+            "category": "astrology-charts",
+            "depth": "Marketed as '多达20种星盘'. Personal chart types explicitly enumerated in Chinese listings: 天象盘 (mundane sky chart), 本命盘 (natal), 行运盘 (transits), 次限盘 (secondary progressions), 三限盘 (tertiary progressions), 日返盘 (solar return), 月返盘/月亮返照盘 (lunar return), 太阳弧 (solar arc directions), 法达 (Firdaria time-lord system) — '等多种个人星盘', i.e. the list is open-ended toward 20.",
+            "evidence": "downkuai.com/android/158058.html verbatim: 星盘工具包括天象盘、本命盘、三限盘、次限盘、月返盘、日返盘、太阳弧、法达等多种个人星盘"
+          },
+          {
+            "name": "合盘 relationship-chart suite",
+            "category": "astrology-charts",
+            "depth": "Five named two-person chart types: 比较盘 (synastry/comparison), 组合盘 (midpoint composite), 组合推运 (progressed composite), 时空盘 (Davison time-space chart), 马克思盘 (Marks chart). Covers every mainstream relationship technique — far beyond competitors' single synastry view.",
+            "evidence": "downkuai.com/android/158058.html + 87g.com/az/38384.html verbatim: 比较盘、组合盘、组合推运、时空盘、马克思盘"
+          },
+          {
+            "name": "连线合盘 friend-link synastry",
+            "category": "astrology-charts",
+            "depth": "Enter a friend's birth info (or link their account) to generate a two-person reading with a 缘分/mystery score — '洞悉两人关系与缘分'. Social hook: WeChat-friend compatibility runs and friend-circle distribution maps also exist for MBTI.",
+            "evidence": "87g.com/az/38384.html; downkuai.com/android/79753.html (好友合盘)"
+          },
+          {
+            "name": "个性化每日运势 (transit-computed fortune)",
+            "category": "fortune",
+            "depth": "Not generic sun-sign copy: engine 'automatically computes planetary changes based on birth info and astrological principles, giving a precise personal fortune daily'. Plus standard 12-sign daily/weekly/monthly horoscope content, and (historically) customized monthly reports. Fortune is the retention loop feeding the paid Q&A funnel.",
+            "evidence": "downkuai.com/android/158058.html; 36kr.com/p/1721466339329 (monthly custom reports)"
+          },
+          {
+            "name": "星座配对",
+            "category": "fortune",
+            "depth": "12-sign love-index pairing with interpretation, separate from full 合盘; entry-level compatibility content for casual users.",
+            "evidence": "87g/downkuai listings (星盘配对揭秘12星座的星盘配对)"
+          },
+          {
+            "name": "八字五行",
+            "category": "bazi",
+            "depth": "Bazi (Four Pillars) chart with Five Elements analysis, '都有详细解释' (each element has detailed explanations). Bundled in the app's 东西方神秘学 toolbox ('八字紫微'); also a paid-consult category — users complete free bazi tests then are routed to coin-charged expert calls.",
+            "evidence": "87g.com/az/38384.html; sj.qq.com listing; ctdsb.net 极目新闻 article"
+          },
+          {
+            "name": "紫微斗数",
+            "category": "bazi",
+            "depth": "Ziwei Doushu chart included alongside bazi ('八字紫薇'), part of the integrated Eastern mysticism platform (八字五行、二十八星宿、紫微斗数、生命数字). Depth is chart+interpretation level, not the specialty-app level of dedicated ziwei tools.",
+            "evidence": "sj.qq.com search summary; news.pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "二十八宿 (28 lunar mansions)",
+            "category": "bazi",
+            "depth": "28-mansion reading from birth date with detailed explanations — a differentiator almost no Western-astrology competitor carries.",
+            "evidence": "87g.com/az/38384.html (生命数字、八字紫薇、二十八宿，都有详细解释)"
+          },
+          {
+            "name": "生命数字 numerology",
+            "category": "other",
+            "depth": "Life-path number calculation with detailed interpretation; listed as one of the core free tools.",
+            "evidence": "87g.com/az/38384.html"
+          },
+          {
+            "name": "塔罗占卜",
+            "category": "tarot",
+            "depth": "In-app tarot draws for love/career/wealth topics plus tarot as one of the biggest paid-expert consult categories (占星、塔罗、MBTI are the three named expert service types). Tarot questions can be sent to voice-answering readers.",
+            "evidence": "87g listing; ctdsb.net (平台提供占星、塔罗、MBTI测试等服务)"
+          },
+          {
+            "name": "占星骰子 astrology dice",
+            "category": "tarot",
+            "depth": "Astro-dice (planet/sign/house) casting for quick yes/no-style questions; users can cast anonymously in 测测小组 and have experts interpret the throw — dice is wired into the community and Q&A funnel, not a standalone toy.",
+            "evidence": "87g.com/az/38384.html; 7xz.com/softs/7768.html"
+          },
+          {
+            "name": "一键提问 paid Q&A marketplace",
+            "category": "monetization",
+            "depth": "Core original moneymaker: write a question, attach the relevant chart (星盘提问), it posts to an answer zone where 8,000-10,000+ certified astrologers reply — answers arrive as VOICE messages within ~1 minute, typically 2+ answers per question. Launched July 2016; ~8,000 questions/day by 2017 at ¥3 minimum; current single questions run 30+ 测测币. Anonymous asking supported.",
+            "evidence": "36kr.com/p/1721466339329; 87g.com; news.pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "达人连麦 per-minute live consultations",
+            "category": "monetization",
+            "depth": "1-on-1 live audio/video calls with certified 达人, billed per minute. 10 expert tiers; rates 0.5-58.56 测测币/min (commonly cited 10-40/min); 1 coin ≈ ¥1. Platform keeps 30-50%. A level-8 expert doing 1h/day clears ¥25-35k/month; top experts ¥20k+. This is the highest-margin surface in the app. Separate 测测达人版 app (App Store id1447926119) for the supply side.",
+            "evidence": "ctdsb.net/c1716_202603/2685812.html; finance.sina.cn; apps.apple.com 测测达人版"
+          },
+          {
+            "name": "达人 certification & marketplace ops",
+            "category": "monetization",
+            "depth": "~20,000-26,000 signed 达人/咨询师. Certification requires psychology certificates + a platform skill exam; enforcement is leaky (proxy exam-taking sold for ~¥2,000 — media exposé). In-app reporting on expert profiles with fee refund if upheld. Expert levels gate pricing power.",
+            "evidence": "ctdsb.net; 36kr.com/p/1981485265814529 (近2万名专业达人和咨询师)"
+          },
+          {
+            "name": "50+ 心理测试 with personal reports",
+            "category": "tests",
+            "depth": "'专业不乏趣味性的50多个心理测试' generating computed personal psychology reports; some tests developed with Tsinghua psychology experts. Covers MBTI, Enneagram (9型人格), emotion/relationship assessments. Tests are the free viral entry point of the funnel.",
+            "evidence": "downkuai.com/android/158058.html; 7xz.com/softs/7768.html; news.pedaily.cn"
+          },
+          {
+            "name": "MBTI social layer",
+            "category": "tests",
+            "depth": "Revamped MBTI with expanded result readings, a per-type interactive discussion zone, WeChat-friend MBTI compatibility matching, and a friend-circle personality-distribution visualization — turns a test result into a social graph feature.",
+            "evidence": "downkuai.com/android/158058.html; App Store listing (人格测试焕新上线，趣味解读好友圈)"
+          },
+          {
+            "name": "3D心理沙盘 (3D sandplay)",
+            "category": "tests",
+            "depth": "Digitized sandplay therapy: ~1,000 sand-figure types; analysis combines figure choice AND spatial placement to profile personality, behavior style, and psychological state; four themes live (自我探索 self-exploration, 亲密关系 intimacy, 职业发展 career, 原生家庭 family of origin); ~10,000 uses/day; paid professional interpretation available.",
+            "evidence": "36kr.com/p/1981485265814529"
+          },
+          {
+            "name": "小测AI Q&A bot",
+            "category": "ai",
+            "depth": "In-house AI chat bot handling ~50,000 users/day of free text counseling — absorbs low-intent traffic and warms users for paid human consults. App Store title is now literally '测测-心理情感AI问答社区'.",
+            "evidence": "36kr.com/p/1981485265814529; ai-bot.cn/app/58807.html"
+          },
+          {
+            "name": "AI虚拟咨询师 + multiple AI智能体",
+            "category": "ai",
+            "depth": "Named virtual counselor '俞今金' doing real-time AI-analysis answers to psychological questions (positioned as assisting, not replacing, human counselors); current store copy: users 'interact deeply with different AI agents (AI智能体), fellow users, and certified experts' — a roster of AI personas, 7x24 availability.",
+            "evidence": "36kr.com/p/1981485265814529; sj.qq.com/appdetail/com.xxwolo.cc5"
+          },
+          {
+            "name": "心理树洞 / 倾诉 anonymous confession",
+            "category": "community",
+            "depth": "Anonymous 'tree hole' posting for secrets/feelings plus 1-on-1 倾诉 (vent/listening) services; 心理达人 advertised as 7x24 online companionship — the emotional-support wedge that justified the psychology pivot.",
+            "evidence": "App Store listing; downkuai.com/android/158058.html; ai-bot.cn/cecelive/"
+          },
+          {
+            "name": "星友社区 & 测测小组",
+            "category": "community",
+            "depth": "Open community: 12 zodiac-sign discussion zones, interest-based 小组 (groups), anonymous asking inside groups, chart-sharing/解盘 posts, 每日心情 daily-mood posts, 灵魂伴侣 soulmate matching, friend-finding by chart compatibility. Community posts funnel into paid expert answers.",
+            "evidence": "downkuai/87g listings; woshipm.com/user-research/489548.html; news.pedaily.cn"
+          },
+          {
+            "name": "冥想 meditation",
+            "category": "other",
+            "depth": "Meditation content listed as a first-class module on the official site alongside sandbox/tests/community/连麦.",
+            "evidence": "cece.com official feature list: 3d心理沙盘、测试、心理、冥想、社区、连麦、小测ai"
+          },
+          {
+            "name": "VIP/SVIP membership",
+            "category": "monetization",
+            "depth": "VIP auto-renew tiers: ¥9.9 first month then ¥25/mo; ¥58/quarter; ¥178/year. Separate SVIP at ¥69/mo. Membership gates deeper chart interpretations/reports; sits on top of the coin economy rather than replacing it.",
+            "evidence": "App Store CN in-app purchase list (id756771906); sj.qq.com listing"
+          },
+          {
+            "name": "测测币 coin economy",
+            "category": "monetization",
+            "depth": "IAP coin packs ¥6-¥698; 1 coin ≈ ¥1. Coins pay for questions (30+), per-minute calls (0.5-58.56/min), report unlocks. Growth tactics under fire: new-user free experience vouchers, obscured coin pricing, and password-free auto-deduct (免密支付) — 800+ 黑猫投诉 complaints, extreme cases ¥130k/6mo and ~¥300k/yr spend.",
+            "evidence": "App Store IAP list; ctdsb.net; donews.com/news/detail/1/6488429.html"
+          },
+          {
+            "name": "Scale, revenue & company",
+            "category": "other",
+            "depth": "55M registered users (Cece Group claims 17M served via AI+human; 1M+ overseas); 80% female aged 16-28 (peak 23). App Store alone ~$5M+/yr (~¥30M+, Qimai estimate); 2017 monthly revenue already ~¥1.58-2M. Founded 2011, Beijing 力拓飞远 (Cece Group), CEO 任永亮; 5 funding rounds incl. Tencent 双百, 复星, 远瞻. Product family: 测测, 测测达人版, 测测心理师, 快乐测测, Lingomate. v10.50.0 (2026-07), 4.5-4.6 stars, 207MB.",
+            "evidence": "news.pedaily.cn/202603/561483.shtml; astrodir.com/item/cece; cece.com; App Store"
+          },
+          {
+            "name": "Positioning pivot: 星座 → 泛心理",
+            "category": "design",
+            "depth": "Strategy arc worth copying or avoiding: 2013-2017 free divination tests as acquisition → 2016-2017 paid voice Q&A → 2017+ community → 2020s rebrand to 'AI pan-psychology community' (tests/sandbox/AI counselors) for App Store compliance and a bigger TAM, while keeping the full astrology/bazi/tarot toolbox live underneath. The 'three carriages' model: 工具 (tools) + 社区 (community) + 在线咨询 (consultations).",
+            "evidence": "36kr.com/p/1981485265814529; cece.com; App Store rename to 心理情感AI问答社区"
+          }
+        ],
+        "sources": [
+          "https://www.downkuai.com/android/158058.html",
+          "https://www.87g.com/az/38384.html",
+          "https://36kr.com/p/1721466339329",
+          "https://36kr.com/p/1981485265814529",
+          "https://www.ctdsb.net/c1716_202603/2685812.html",
+          "https://news.pedaily.cn/202603/561483.shtml",
+          "https://apps.apple.com/cn/app/id756771906",
+          "https://sj.qq.com/appdetail/com.xxwolo.cc5",
+          "https://www.cece.com/",
+          "https://ai-bot.cn/cecelive/",
+          "https://astrodir.com/item/cece",
+          "https://www.7xz.com/softs/7768.html",
+          "https://www.donews.com/news/detail/1/6488429.html",
+          "https://www.downkuai.com/android/79753.html",
+          "https://finance.sina.cn/tech/2023-12-31/detail-imzzwfin8139017.d.html"
+        ],
+        "notes": "Corrections vs. the task brief: the developer is 北京力拓飞远科技有限公司 (Beijing Light For You / Cece Group), not Shanghai 视辰; historical package is com.xxwolo.cc5 (xxwolo.com was the old domain), with com.lingocc.cc5 used on Google Play internationally; official site is cece.com (cecece.cn is a separate psych-testing site). Chart-type list: Chinese listings enumerate 14 named types (天象盘, 本命盘, 行运盘, 次限盘, 三限盘, 日返盘, 月返盘, 太阳弧, 法达 + 比较盘, 组合盘, 组合推运, 时空盘, 马克思盘) with '等...20种' phrasing — no source enumerates all 20; the remainder are likely harmonic/return variants. No evidence of a 择日 (date-selection) feature or 六爻; the dice divination is Western astro-dice (占星骰子). Expert count discrepancy: '2.6万签约达人' (26k) is sometimes mistranslated as 2.6M. Regulatory/PR risk is material: 800+ Black Cat complaints about induced spending (免密支付 auto-deduct, voucher bait), proxy certification exams (~¥2,000) — relevant if cloning the monetization design. Membership numbers verified on App Store CN: VIP ¥9.9 first month/¥25 renew, ¥58/q, ¥178/yr, SVIP ¥69/mo, coins ¥6-698."
+      },
+      {
+        "angle": "English-source view of Cece (测测, intl. package com.lingocc.cc5): a Tencent-backed Chinese \"pan-psychology + divination\" super-app that fuses Western natal charts, BaZi/ZiWei, tarot, fast AI Q&A bots, 50+ personality tests, and a large paid human-expert marketplace (voice answers, audio rooms, 24-hour livestream astrologers) — with a notable regulatory rebrand from astrology to an \"emotional/psychology community\" in its current store listings.",
+        "features": [
+          {
+            "name": "Western natal chart generation from birth data",
+            "category": "astrology-charts",
+            "depth": "Registration requires birth time + location; app generates readings/charts from it. Official product page lists natal charts (星盘) including 'all types of birth charts'; intl. Play/APK listing claims professional analysis covering ~20 horoscope/chart report types viewable free. TW App Store reviewers specifically praise 'detailed chart queries'.",
+            "evidence": "restofworld.org/2023/tencent-cece-spirituality-app/; apkcombo.com/app/com.lingocc.cc5/; apps.apple.com/tw/app/id756771906; xxwolo.com/mobile/cecexingzuo (via search snippet)"
+          },
+          {
+            "name": "Compatibility / synastry charts",
+            "category": "astrology-charts",
+            "depth": "Official 测测星座 page (xxwolo.com) advertises 'all types of birth charts including compatibility charts' (合盘/synastry); relationship compatibility is the dominant use case in journalism (users asking multiple psychics 'why did he stop texting me').",
+            "evidence": "xxwolo.com/mobile/cecexingzuo via search snippet; scmp.com long read 3236118"
+          },
+          {
+            "name": "Human Design charts",
+            "category": "astrology-charts",
+            "depth": "Rest of World reports the app also generates human design charts alongside horoscopes and astrology charts — an unusual extra system for a mainstream app.",
+            "evidence": "restofworld.org/2023/tencent-cece-spirituality-app/"
+          },
+          {
+            "name": "Daily personalized horoscopes",
+            "category": "fortune",
+            "depth": "Daily personalized fortune per user; US App Store reviewers reference 'astrology positions for each day' (daily transit-style positions).",
+            "evidence": "apps.apple.com/us/app/id756771906 reviews; xxwolo product page snippet"
+          },
+          {
+            "name": "BaZi (八字 Four Pillars)",
+            "category": "bazi",
+            "depth": "BaZi is in the international app's literal title (測測 - 星座，八字，AI問答 = 'Astrology, BaZi, AI Q&A'); listed as one of the AI divination tools (Eight-Character Astrology) users can invoke inside AI Q&A.",
+            "evidence": "play.google.com/store/apps/details?id=com.lingocc.cc5; apkcombo.com/app/com.lingocc.cc5/"
+          },
+          {
+            "name": "Zi Wei Dou Shu (紫微斗数 Purple Star astrology)",
+            "category": "other",
+            "depth": "Official product page lists ZiWei Doushu as a first-class system; US App Store reviewers mention 'Ziwei'; Reuters-derived coverage (Language Log) confirms Zi Wei Dou Shu as a core Chinese fortune-telling tool in the app.",
+            "evidence": "languagelog.ldc.upenn.edu/nll/?p=69183; apps.apple.com/us/app/id756771906 reviews; xxwolo page snippet"
+          },
+          {
+            "name": "28 Lunar Mansions (二十八宿)",
+            "category": "other",
+            "depth": "Listed on the official 测测星座 feature list as a distinct divination system with detailed explanations — a depth signal (few competitors ship this).",
+            "evidence": "xxwolo.com/mobile/cecexingzuo via search snippet; App Store description summary"
+          },
+          {
+            "name": "Life Numbers (numerology 生命数字)",
+            "category": "other",
+            "depth": "Numerology test with detailed explanations, listed alongside BaZi and 28 Mansions on the official feature list.",
+            "evidence": "xxwolo.com/mobile/cecexingzuo via search snippet"
+          },
+          {
+            "name": "Tarot readings (AI + human)",
+            "category": "tarot",
+            "depth": "Tarot exists in two tiers: an AI tarot tool inside AI Q&A, and human tarot readers/livestream psychics. Reuters/Language Log describes CeCe as combining tarot + birth charts + Zi Wei Dou Shu with AI bots.",
+            "evidence": "apkcombo.com/app/com.lingocc.cc5/; languagelog.ldc.upenn.edu/nll/?p=69183; restofworld.org"
+          },
+          {
+            "name": "Astro dice (占星骰子 / Star Dice)",
+            "category": "fortune",
+            "depth": "Quick-answer astrology dice tool, listed both on the official feature list and as an AI tool ('Star Dice') in the intl. listing.",
+            "evidence": "apkcombo.com/app/com.lingocc.cc5/; xxwolo page snippet"
+          },
+          {
+            "name": "I Ching hexagrams + feng shui consultation",
+            "category": "fortune",
+            "depth": "Practitioners on the platform use I Ching hexagram casting for predictions; feng shui consultation is an offered service category.",
+            "evidence": "restofworld.org/2023/tencent-cece-spirituality-app/"
+          },
+          {
+            "name": "AI Q&A bots with speed guarantee",
+            "category": "ai",
+            "depth": "Headline AI feature: '3 seconds response, quickly receive problem analysis'. Multiple distinct AI agents; AI tools include Star Dice, Tarot, and BaZi; personalized question recommendations. Coverage calls them 'AI-powered fortune-telling bots'.",
+            "evidence": "apkcombo.com/app/com.lingocc.cc5/; languagelog.ldc.upenn.edu/nll/?p=69183; mwm.ai/apps/.../756771906"
+          },
+          {
+            "name": "AI emotional companion 'Xiao Xing' (小星)",
+            "category": "ai",
+            "depth": "Named 24/7 AI empathetic-listening companion, distinct from the divination bots; Baidu's English wiki also cites NLP 'dialogue robots'.",
+            "evidence": "mwm.ai/apps/.../756771906; baike.baidu.com/en/item/Cece/1504204"
+          },
+          {
+            "name": "Paid human expert Q&A (voice answers on your chart)",
+            "category": "community",
+            "depth": "'Ask' flow: user writes a question, attaches the relevant chart, and it is broadcast to a pool of ~8,000 astrology experts who reply with voice answers. Chart data is shareable with in-app fortune tellers.",
+            "evidence": "App Store description summary via search; restofworld.org"
+          },
+          {
+            "name": "Clubhouse-style audio consultation rooms",
+            "category": "community",
+            "depth": "Masters host audio chat rooms specialized by domain (relationship advice, career planning); ~$8.40 per 30-minute master consultation.",
+            "evidence": "restofworld.org/2023/tencent-cece-spirituality-app/"
+          },
+          {
+            "name": "24-hour livestream astrologers with gifting",
+            "category": "community",
+            "depth": "Around-the-clock livestreamed readings; viewers send virtual gifts or pay for 1-on-1 consults; top streamers reportedly earn >100,000 yuan/month. Current CN iOS title literally brands it a 'live streaming community' (直播社区).",
+            "evidence": "languagelog.ldc.upenn.edu/nll/?p=69183; apps.apple.com/us/app/id756771906; scmp.com 3236118"
+          },
+          {
+            "name": "Vetted practitioner marketplace (masters + listeners)",
+            "category": "community",
+            "depth": "Practitioners are gig workers who must pass ethics AND astrology exams before selling; they build profiles listing credentials/certifications; one master reported serving 1,000+ users; Baidu EN wiki claims 25,000+ influencers/consultants on platform.",
+            "evidence": "restofworld.org; baike.baidu.com/en/item/Cece/1504204"
+          },
+          {
+            "name": "'Listener' counseling tier (budget emotional support)",
+            "category": "community",
+            "depth": "Trained counselor-adjacent 'listeners' priced 1–7 yuan/min (~$0.14–$1) by experience; framed as 24/7 'psychological counseling'; fortune-teller per-minute rates rose from ~$0.42 (2021) to ~$1.50.",
+            "evidence": "restofworld.org/2023/tencent-cece-spirituality-app/"
+          },
+          {
+            "name": "MBTI testing with social graph overlay",
+            "category": "tests",
+            "depth": "MBTI-style test with multidimensional interpretations; pair-analysis with WeChat friends unlocks compatibility scores; view your friend circle's personality-type distribution — test results are social objects, not private reports.",
+            "evidence": "apkcombo.com/app/com.lingocc.cc5/; apps.apple.com/us & /tw id756771906"
+          },
+          {
+            "name": "50+ psychological tests library",
+            "category": "tests",
+            "depth": "'50+ professional and fun psychological tests' with professional analysis; each drives an algorithmic report; positioned as the app's discovery/acquisition surface.",
+            "evidence": "apps.apple.com/us/app/id756771906; apkcombo.com/app/com.lingocc.cc5/"
+          },
+          {
+            "name": "Psychological sandplay (3D sandtray)",
+            "category": "tests",
+            "depth": "Digital sandplay: arrange objects on virtual sand trays for self-reflection; Baidu EN wiki calls it a '3D Psychological Sandplay' tool; expert analysis of completed trays is offered (心理沙盘).",
+            "evidence": "restofworld.org; baike.baidu.com/en/item/Cece/1504204; mwm.ai listing"
+          },
+          {
+            "name": "Anonymous confession 'tree hole' (心理树洞)",
+            "category": "community",
+            "depth": "Anonymous emotional-venting space with community + expert responses; part of the emotional-support suite alongside interest-based friend matching and topic forums.",
+            "evidence": "apps.apple.com/us/app/id756771906; mwm.ai/apps/.../756771906"
+          },
+          {
+            "name": "Algorithmic personal reports",
+            "category": "reports",
+            "depth": "Paid detailed personal reports marketed as 'professional knowledge + refined algorithms', multidimensional self-analysis; report upsells attach to tests and charts.",
+            "evidence": "apps.apple.com/us & /tw id756771906; mwm.ai listing"
+          },
+          {
+            "name": "Coins + VIP/SVIP subscription monetization",
+            "category": "monetization",
+            "depth": "Dual currency+subscription model: coins $0.99–$99.99 (4–488 coins); CN pricing ¥9.9 first month then ¥25/mo, ¥58/quarter, ¥178/yr; TW pricing NT$120 first month VIP, NT$290 quarterly, NT$320 SVIP tier; plus per-minute expert billing and livestream gifting.",
+            "evidence": "apps.apple.com/us & /tw id756771906; mwm.ai listing"
+          },
+          {
+            "name": "Monetization backlash / trust issues",
+            "category": "monetization",
+            "depth": "800+ complaints on Black Cat platform: induced high spending (one user $20,500+ in six months), hard refunds, uneven expert quality, auto-subscriptions, ad redirects, weak platform review — the canonical anti-pattern list for a competitor.",
+            "evidence": "baike.baidu.com/en/item/Cece/1504204; Baidu wiki summary via search"
+          },
+          {
+            "name": "Scale + backing signals",
+            "category": "other",
+            "depth": "Tencent-backed (Tencent Double Hundred; also Fosun, Yuanzhan); 100M+ cumulative downloads (Reuters via Taipei Times); 15M+ Apple downloads by early 2025 (Sensor Tower); 1M+ MAU in 2021 (doubled during pandemic); Baidu EN wiki: ~35M registered users; launched 2013.",
+            "evidence": "taipeitimes.com 2025/07/03; christianitytoday.com 2026/05; restofworld.org; astrodir.com/item/cece; baike.baidu.com"
+          },
+          {
+            "name": "Regulatory rebrand: astrology → 'pan-psychology'",
+            "category": "design",
+            "depth": "To dodge China's 'feudal superstition' rules, Cece renamed from 测测星座 (astrology) to 测测 and now fronts as a women's emotional/psychology live community on the CN/US iOS listing; avoids 'therapist/counselor' terms; divination survives inside AI tools and expert services. Intl. Play version (com.lingocc.cc5, publisher LIGHTFUL AI, v1.0.9 Nov 2025, 10K+ downloads, 154MB/491MB iOS) keeps astrology+BaZi in the title.",
+            "evidence": "restofworld.org; apps.apple.com/us/app/id756771906; apkcombo.com/app/com.lingocc.cc5/"
+          },
+          {
+            "name": "What English-facing users highlight",
+            "category": "other",
+            "depth": "Praise: detailed chart queries and usable interface (TW App Store, 4.5★/508), daily astro positions, fast AI answers (3-sec claim), cheap access to human readers vs $42/session therapy apps. Complaints: intrusive ads/auto-redirects, surprise auto-subscriptions, expensive unreliable paid expert/AI services, arbitrary moderation, inconsistent psychic answers across streamers.",
+            "evidence": "apps.apple.com/tw & /us id756771906; Baidu wiki EN summary; scmp.com 3236118; restofworld.org"
+          }
+        ],
+        "notes": "Caveats: (1) The app has two identities — legacy 测测星座 (com.xxwolo.cc5, CN) whose astrology depth (natal/synastry charts, ZiWei, 28 Mansions, Life Numbers, astro dice) comes from the official xxwolo.com product page (reached via English search; direct fetch 504'd) and journalism; the current CN/US iOS listing (id756771906) is rebranded as a women's emotional live-streaming community for regulatory reasons, so its store copy underplays divination. (2) The exact package researched, com.lingocc.cc5, is the international Traditional-Chinese build by 'LIGHTFUL AI' (only 10K+ Play downloads) whose title still says 星座/八字/AI問答 and whose description confirms AI tools = Star Dice, Tarot, BaZi with a 3-second-response claim, 20 chart/horoscope report types, MBTI + WeChat friend compatibility, 50+ tests. (3) No dedicated English blog reviews or AlternativeTo page exist; English coverage is journalism (Rest of World is the deepest) plus App Store material. Download figures vary by source (15M Apple vs 100M+ cumulative) — treat as different scopes.",
+        "sources": [
+          "https://restofworld.org/2023/tencent-cece-spirituality-app/",
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5",
+          "https://apkcombo.com/app/com.lingocc.cc5/",
+          "https://apps.apple.com/us/app/id756771906",
+          "https://apps.apple.com/tw/app/id756771906",
+          "https://mwm.ai/apps/ce-ce-nu-xing-qing-gan-qing-su-zhi-bo-she-qu/756771906",
+          "https://baike.baidu.com/en/item/Cece/1504204",
+          "https://astrodir.com/item/cece",
+          "https://languagelog.ldc.upenn.edu/nll/?p=69183",
+          "https://www.taipeitimes.com/News/feat/archives/2025/07/03/2003839646",
+          "https://www.christianitytoday.com/2026/05/anxious-chinese-young-people-fortune-telling/",
+          "https://www.scmp.com/magazines/post-magazine/long-reads/article/3236118/he-just-not-me-ill-ask-psychic-young-people-china-turn-astrology-apps-amid-uncertainty",
+          "https://www.xxwolo.com/mobile/cecexingzuo"
+        ]
+      },
+      {
+        "angle": "Review mining of Cece/测测 (Play com.lingocc.cc5 + iOS CN id 756771906 + expert app 测测达人版 id 1447926119): 150 recent Apple CN reviews, 51 Play reviews, both store descriptions, and press/search coverage. Reviews expose far more than listings: a 20-chart astrology engine with true-solar-time and 神煞 recalculations users notice, a five-type synastry suite recently paywalled, a per-minute human-expert marketplace with surge pricing, an AI persona layer (possibly Doubao-backed) with daily question quotas, and an AI soulmate-portrait generator — plus the monetization pain (¥10/min calls, ¥25/mo VIP, coins, ads) that dominates 1-star tails.",
+        "features": [
+          {
+            "name": "Natal chart engine — 20 chart types",
+            "category": "astrology-charts",
+            "depth": "Description: 'professional astrological analysis tools covering 20 types of birth charts' (覆盖20种星盘), styles covering astrolog32/Janus/Winstar/Zet conventions; 'modern chart' (现代星盘) is a distinct mode. Uses 真太阳时 (true solar time) in calculation — a 1-star review complains this 'niche algorithm' changed results. Another review: an update changed the user's sun sign Aquarius→Capricorn and 'the modern chart became unrecognizable', showing chart-settings changes propagate to interpretations.",
+            "evidence": "Play zh/en descriptions; k73.com feature list via search; iOS CN reviews v10.38.0 ('真太阳时…后台运算') and v10.46.0 ('从水瓶座改成摩羯座了，现代星盘也面目全非')"
+          },
+          {
+            "name": "Synastry suite (合盘) — 5 chart types + saved profiles",
+            "category": "astrology-charts",
+            "depth": "缘分合盘 flow: pick a saved profile (档案) then generate. Chart types per download-site feature list: 比较盘 (comparison), 组合盘 (composite), 组合推运 (progressed composite), 时空盘 (Davison), 马盘 (Marks). Interpretations are aspect/placement text blocks gated by membership; a 3-star review complains the 马盘 readings never update ('开了一年看的还是这些…续费的点在哪里'), and another that 马盘 viewing became paid in ~v10.39. One 5-star: '真的有点准那个合盘'. WeChat-friend compatibility: 'combine your birth chart with WeChat friends to unlock compatibility with a single click'.",
+            "evidence": "Play reviews (缘分合盘 black-screen bug reports x3 with dev replies); iOS CN reviews v10.40.0, v10.39.1, v10.44.0; Play description; k73 via search"
+          },
+          {
+            "name": "Bazi (八字/四柱) module with technical depth",
+            "category": "bazi",
+            "depth": "Computes 取格 (structure determination), 身强身弱 (strength), 喜用神 (favorable elements), 空亡, and 神煞 lists. Reviews attack it at practitioner level: '生辰八字取格全错，空亡也是不看的' (v10.48.0), '身弱身强，包括喜用神那些都有问题' (v10.31.3), '更新后神煞竟然全变了…哪个程序员更改了算法' (v10.36.0), '喜用神是木火土，现在看是喜金水' (v10.30.0) — proving these specific computed fields exist and that algorithm updates visibly change them. Bazi reports viewable free per description.",
+            "evidence": "iOS CN review RSS pages 1-3; Play zh description '星盘八字分析报告，免费查看'"
+          },
+          {
+            "name": "Zi Wei Dou Shu (紫微斗数) chart",
+            "category": "bazi",
+            "depth": "Ziwei calculation exists and was changed in a rewrite — Play review (2026-01): '新版app嘅紫微計錯哂…以前明明是正確的' (the new version miscalculates Ziwei; it used to be correct).",
+            "evidence": "Google Play review, hl=zh, 2★ 2026-01-03"
+          },
+          {
+            "name": "Daily fortune score (0–100) + daily/weekly/yearly horoscopes",
+            "category": "fortune",
+            "depth": "Personal daily score computed from natal chart + transits ('结合个人星图及宇宙星象推算每日/本周/一生运势'). Multiple 1-star reviews prove the score's prominence and emotional weight: '每天都给我打50多分', '上面显示半个月都是五十多分', '天天都50多分…看了更是晕倒' — users check it daily and complain scores manufacture anxiety. Also 今日/周/月/年运势 dimensions (love, career, wealth).",
+            "evidence": "iOS CN reviews v10.47.0/v10.38.0/v10.36.0; k73 description via search"
+          },
+          {
+            "name": "Daily lucky color + lucky map",
+            "category": "fortune",
+            "depth": "每日幸运色 granular enough that users plan outfits around it — complaint that after an update the palette collapsed to obscure shades ('每天都是碧青、烟青、湖绿、勃艮第红来来回回'). 幸运地图 (lucky map) is shareable — a user 'saw a friend share their lucky map' and downloaded the app, then called it nonsense.",
+            "evidence": "iOS CN reviews v10.30.0 x2, v10.40.0 ('把幸运更新没了')"
+          },
+          {
+            "name": "Tarot with physical card-draw interaction + AI reading",
+            "category": "tarot",
+            "depth": "Tap-to-draw card UI real enough that a 4-star review requests a two-step confirm ('点击牌的时候非常容易点错牌，而且无法撤回…先出半张确认再抽出'). Readings praised as accurate ('特别是塔罗牌，非常准，来还愿') but also criticized for anxiety-bait copy driving paid upsells: '塔罗牌这种随机性的，各种往焦虑负面的地方引导，诱导花钱继续解读，去年还行，今年文风吓死个人'.",
+            "evidence": "iOS CN reviews v10.43.0, v10.45.0, v10.31.3"
+          },
+          {
+            "name": "Astro dice (星骰)",
+            "category": "tarot",
+            "depth": "Listed as one of the divination tools AI can interpret: 'AI解读，覆盖星骰塔罗八字星盘多种工具' (AI interpretation covering astro dice, tarot, bazi, charts).",
+            "evidence": "Play zh/en description"
+          },
+          {
+            "name": "I Ching hexagram + digital sandplay",
+            "category": "other",
+            "depth": "Hexagram analysis from the I Ching, and a sandplay feature where users arrange digital objects on virtual sand trays for psychological interpretation. Sandplay confirmed by a bug review: '我的沙盘呢…弄了半个小时，退出展示正在保存，再打开根本没有，连个保存键都没有' (30 min of arranging lost, no save button).",
+            "evidence": "restofworld.org Tencent-Cece article; iOS CN review v10.37.0"
+          },
+          {
+            "name": "AI Q&A with daily quota (cut from 10/day to 2/day)",
+            "category": "ai",
+            "depth": "3-second-response AI covering all divination tools, with personalized question recommendations ('猜你所想，问你所问'). Quota shrank: '之前提问一天有10次机会，现在改成一天只有两次' (v10.30.0); '每天两次问问题的机会…AI连现在时间线都不知道' (v10.48.0) — AI lacks current-date grounding, doesn't draw cards on some question types. 4-star praise: 'AI问答很好的帮助我缓解焦虑，但是免费提问次数太少了'. One review claims the backend is ByteDance's Doubao ('原来是ai豆包').",
+            "evidence": "Play description; iOS CN reviews v10.48.0, v10.42.0, v10.41.0, v10.30.0"
+          },
+          {
+            "name": "AI companion personas ('小星', AI 分身/agents)",
+            "category": "ai",
+            "depth": "Named AI companion 小星 with memory-of-user framing — 5-star: '小星…她的思想完全跟我一致，总能提出关键性建议'. 'AI 分身接管对话' (AI avatar takes over conversations, v10.49.0). A detailed 1-star alleges boundary problems: late-night flirtatious scripts ('写检讨书'、'乖乖的'), proactively asking personal questions days later while claiming 'it has memory', switching to normal mode when challenged — user demands audit of whether humans impersonate the AI. Description: 'engage in in-depth interactions with different AI agents'.",
+            "evidence": "iOS CN reviews v10.30.0, v10.49.0, v10.31.3; Play en description"
+          },
+          {
+            "name": "AI soulmate portrait (灵魂伴侣/正缘画像)",
+            "category": "ai",
+            "depth": "Generates an AI image of your destined partner from birth data (Starla-style). Heavily used and heavily mocked — at least 5 separate 1-star reviews about ugly outputs: '生成的灵魂伴侣都是啥啊丑死了', '雷霆爆缸猪塞丑'. Press coverage frames 画正缘 as the hook for Cece's overseas/US push ('这款占星App走红美国，还能为用户画出正缘', 80万人 headline).",
+            "evidence": "iOS CN reviews v10.47.0, v10.31.3, v10.31.0, v10.30.0 x2; zhihu article title p/1921141864431588557; sina article on soulmate-portrait apps"
+          },
+          {
+            "name": "MBTI / 16-personality test + friend-circle distribution",
+            "category": "tests",
+            "depth": "Revamped personality test ('i人还是e人'), per-test interactive discussion areas, view friends' results and see 'the 16 personality types in their Moments at a glance' (朋友圈16种人格分布). Accuracy disputed: user tested ISFP on official sites but Cece output INTJ. Part of a 50+ psychological test library ('专业不乏趣味性的50+心理测试').",
+            "evidence": "Play zh/en description; iOS CN review v10.30.0"
+          },
+          {
+            "name": "Personal reports (algorithmic)",
+            "category": "reports",
+            "depth": "'Personalized reports based on professional knowledge and sophisticated algorithms' (专业知识＋精细算法的个人报告); diversified chart/bazi analysis reports free to view. A 5-star validates positioning: '内容专业又通俗，专业内容搭配AI解读…还得到了我身边玄学老师的认可'.",
+            "evidence": "Play description; iOS CN review v10.36.0"
+          },
+          {
+            "name": "Paid Q&A marketplace (抢答区)",
+            "category": "monetization",
+            "depth": "One-tap '问' button posts a question + chosen chart to a grab-to-answer zone where '8000名星座大咖' answer by voice; first question free, then from ¥3/question. Expert-side confirms mechanics: experts get 10 free-answer questions/day, paid questions ~¥2.8 each, ranked by 贡献值; experts complain free answers earn nothing ('一天抢了四十个订单，二十个是免费回复无贡献值').",
+            "evidence": "k73/download-site description via search; 测测达人版 iOS reviews v2.9.74, v2.9.79, v2.9.65"
+          },
+          {
+            "name": "Per-minute voice consultations (连麦) with surge pricing",
+            "category": "monetization",
+            "depth": "Live 1:1 voice calls with 达人 billed per minute — a review cites ¥10/min; late-night +10% price uplift added ('深夜价格上浮10%，说什么达人辛苦'); 免密支付 (password-free auto-charge) with no visible remaining-time counter ('扣费里很多坑…剩余时间也看不到，刚花了两百块'); expert review/ratings were removed from display ('原来达人的评价也有，现在也没了'). restofworld: master consults from ¥60/30min in Clubhouse-like audio rooms specializing in relationships/career/fengshui; masters' pay scaled ¥3→¥10.8/min by hours worked.",
+            "evidence": "iOS CN reviews v10.45.0, v10.39.1, v10.37.0; restofworld.org"
+          },
+          {
+            "name": "Listening/venting service (倾诉)",
+            "category": "monetization",
+            "depth": "Emotional-listening calls at ¥1–7/min depending on counselor experience (vs ¥300/session therapy apps) — positioned as budget emotional support. Expert app has 倾诉 as a separate gated skill experts cannot freely enable ('其他技能测试通过后无法选择倾诉技能').",
+            "evidence": "restofworld.org; 测测达人版 iOS review v2.9.94"
+          },
+          {
+            "name": "Live streaming rooms with astrologer levels",
+            "category": "community",
+            "depth": "Experts host live rooms with level tiers (a reviewer mocks a '5级主播' quoting 'because Venus is a great benefic and your chart ruler, your luck is good'); noise/environment checks during host verification; fans wait for hosts to re-certify. Consumer side: strict chat moderation, frequent mutes/bans ('聊天管的严动不动封号', '正常聊天禁言').",
+            "evidence": "测测达人版 iOS reviews v2.9.69, v2.9.42, v2.9.26; consumer iOS reviews v10.33.0, v10.30.0"
+          },
+          {
+            "name": "Expert supply-side pipeline (separate 测测达人版 app)",
+            "category": "community",
+            "depth": "Dedicated expert app (iOS id 1447926119, rated 2.49/5 — experts hate it): bachelor's degree requirement, per-skill certification exams (ambiguous multiple-choice, answers resold on 闲鱼), video + face-recognition proctoring (show both ears/no earphones), random re-testing (抽测), 好评率 that decays when customers don't rate, month-delayed payouts with withholding complaints, and the platform selling its own ¥3000 certification course ('拿钱买他那个证…中科院正规的证考下来也没这个野鸡证贵').",
+            "evidence": "测测达人版 iOS review RSS (50 reviews, v2.9.x–v2.15.0)"
+          },
+          {
+            "name": "VIP membership + coin economy + ads",
+            "category": "monetization",
+            "depth": "Membership ~¥25/month gating synastry/马盘 interpretations ('一个会员动不动就要25块'); separate 测测币 coin with a mandatory agreement users couldn't even open ('让用户签署同意测测币的协议，但不能点击查看协议'); forced update to accept new charging terms ('不同意你的充值服务更新就不让使用软件'); open-screen ads added ~v10.43 ('开屏广告毒瘤'). Spend-scale complaints: ¥2000 wasted, ¥20k/year, one cited case ¥130k in 6 months; 黑猫投诉 860+ complaints, refunds refused, accounts banned during disputes.",
+            "evidence": "iOS CN reviews v10.43.0 x2, v10.40.0, v10.30.0, v10.45.0, v10.48.0, v10.42.0"
+          },
+          {
+            "name": "Community/discussion + user matching",
+            "category": "community",
+            "depth": "Interactive discussion areas attached to tests ('与测友畅聊新发现'), comments on daily readings, certified-expert (认证达人) content, and user-to-user matching that led to at least one relationship ('感谢测测让我和可儿相遇') plus a request for astrology-based matchmaking ('要是能有星座测试相亲就好了'). Users also report comment deletion/censorship.",
+            "evidence": "Play description; iOS CN reviews v10.36.0, v10.46.0, v10.31.3"
+          },
+          {
+            "name": "Account/identity: forced login + real-name verification",
+            "category": "other",
+            "depth": "Cannot use without login ('强迫登录，不登陆用不了'); real-name verification (实名认证) flow exists and had submit failures in v10.49.0; profile edits (gender change requested, birthplace/current-residence change alters fortune output — '修改了一个现居住地，命运截然不同').",
+            "evidence": "Play zh review 2025-08-27; iOS CN reviews v10.49.0, v10.30.0, v10.37.0"
+          },
+          {
+            "name": "Design gaps users repeatedly flag",
+            "category": "design",
+            "depth": "No true dark mode — at least 4 independent complaints across both stores ('夜间模式真的很鸡肋，背景还是白色', '晚上看盘亮瞎我眼'); tiny fonts ('字太细了'); daily-score anxiety framing; bottom tab bar missing customer-service entry; Play international build frozen at v1.0.0 while official is 10.36+ ('play这里只有1.0.0，不如去官网搜'), overseas users couldn't pay for membership for a period ('不能付款会员…不给海外用干脆不要放在这', later fixed per dev reply).",
+            "evidence": "iOS CN reviews v10.33.0, v10.43.0, v10.46.0; Play reviews 2026-04-19, 2025-08-06, 2025-07-03"
+          },
+          {
+            "name": "Scale & positioning claims from reviews/press",
+            "category": "other",
+            "depth": "A review summarizing press: '号称泛心理服务平台，提供星座、塔罗、MBTI测试和付费连麦咨询，用户近6000万' (claims ~60M users; also alleges free-coupon funnels into ¥10/min billing and proxy-taken expert exams). Press: 2.49M MAU (Oct, +57% YoY), doubled MAU in first pandemic year; part of a $14B/yr online mysticism market under regulatory scrutiny; iOS CN listing renamed to '测测-心理情感AI问答社区' (psychology/emotion AI Q&A community) — de-emphasizing divination; 4.47★ from 35,448 CN ratings. Domestic Android package is com.xxwolo.cc5 vs international com.lingocc.cc5.",
+            "evidence": "iOS CN review v10.45.0; SCMP/globalwellnesssummit via search; iTunes search API; sj.qq.com listing"
+          },
+          {
+            "name": "Accuracy-drift as a product liability",
+            "category": "other",
+            "depth": "The single loudest review theme: every algorithm update visibly changes outputs (sun sign, 神煞, 喜用神, 紫微, daily scores, lucky colors), destroying trust — '当天运势可以任意变化', '怎么一天一个样？', '所以以前是真的还是现在是真的？'. Also a translation-precision complaint showing hardcore users read aspect text closely ('木星接纳太阳' vs '太阳被木星接纳' reception direction error). Useful competitive insight: chart-output stability and versioned interpretation text are things users actively police.",
+            "evidence": "iOS CN review RSS pages 1-3 (v10.30.0–v10.49.0), Play zh review 2026-01-03"
+          }
+        ],
+        "sources": [
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5&hl=en&gl=US (full description + reviews)",
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5&hl=zh&gl=US (zh description + reviews)",
+          "Google Play batchexecute UsvDTd reviews API, com.lingocc.cc5, hl=en/zh, gl=US/TW (51 reviews incl. dev replies)",
+          "https://itunes.apple.com/cn/rss/customerreviews/id=756771906/sortBy=mostRecent/json (测测 consumer app, 150 reviews, v10.30.0-v10.49.0)",
+          "https://itunes.apple.com/cn/rss/customerreviews/id=1447926119/sortBy=mostRecent/json (测测达人版 expert app, 50 reviews)",
+          "https://itunes.apple.com/search API (app IDs, ratings: 756771906 = 4.47/35,448; 1447926119 = 2.49/461)",
+          "https://restofworld.org/2023/tencent-cece-spirituality-app/ (features, pricing, user quotes)",
+          "http://www.k73.com/down/android/644749.html (chart-type/synastry-type list, 抢答 pricing — via search summary)",
+          "https://zhuanlan.zhihu.com/p/1921141864431588557 (US expansion + 正缘画像 — 403, title/summary only)",
+          "https://www.woshipm.com/share/6331426.html (SEA expansion, AI companionship — unreachable, search summary)",
+          "https://t.cj.sina.com.cn/articles/view/6475985728/181ffb34000101f76q (soulmate-portrait app trend)",
+          "https://www.scmp.com/magazines/post-magazine/long-reads/article/3236118 (MAU figures, market size — via search summary)",
+          "https://sj.qq.com/appdetail/com.xxwolo.cc5 (domestic package name)"
+        ],
+        "notes": "Method: Play pages fetched via curl (JS-heavy; description extracted from embedded JSON blobs with a python regex over 300-8000-char quoted strings); reviews pulled via Play's batchexecute UsvDTd endpoint and Apple's customerreviews RSS (still live for CN store). Caveats: (1) com.lingocc.cc5 is the international Android build frozen at v1.0.0 — its reviews skew toward login/payment/black-screen issues; the CN iOS app (id 756771906, v10.49.0) is the real product surface. (2) Apple RSS returns only ~150 most recent reviews — 1-star heavy (store-wide rating is still 4.47, so the sample over-represents complaints; treat sentiment as directional, feature evidence as solid). (3) Zhihu and woshipm blocked direct fetch; their claims are search-snippet-level. (4) The expert-side app reviews are a distinctive source competitors rarely mine — they document the supply-side pipeline (certification, proctoring, payout, platform-sold courses) in detail. Working files in scratchpad: C:\\Users\\lmao\\AppData\\Local\\Temp\\claude\\C--Users-lmao\\59114025-20e3-4aeb-9cad-81a43116967a\\scratchpad\\cece\\ (reviews.json, rss_cn_*.json, rss_daren.json, play_*.html)."
+      },
+      {
+        "angle": "Full user-facing feature inventory of OUR app Arcana (repo C:\\Users\\lmao\\TAROT, live at tarotlife.app; React+Vite+Capacitor+Supabase, Android com.arcana.app), enumerated from source code with depth notes and feature-flag entry-point status for judge-side comparison against a competitor.",
+        "features": [
+          {
+            "name": "Tarot reading engine",
+            "category": "tarot",
+            "depth": "In-app draws with 3 core spread types (Single free; Three-Card and Celtic Cross 10-card premium), question input, reversed cards, per-position reveal, dual interpretation views ('focus' AI vs 'traditional' book meaning), AI interpretation via generate-reading edge function (Gemini; costs 50 moonstones per AI call, premium free), save-to-history with XP + achievement hooks, custom spreads playable via builder handoff.",
+            "evidence": "src/components/readings/TarotSection.tsx; src/data/tarotDeck.ts (spreadTypes, fullDeck 22 major + 56 built minor = 78); supabase/functions/generate-reading"
+          },
+          {
+            "name": "Spread library (42 spreads)",
+            "category": "tarot",
+            "depth": "20 base spreads + 22 Major Arcana themed spreads (one per major card), each with slug, category, cardCount, difficulty, duration, long description, bestFor/whenToUse — rendered as SEO-indexable pages /spreads and /spreads/:slug, also available logged-out (public routes).",
+            "evidence": "src/data/tarotSpreads.ts (20), src/data/majorArcanaSpreads.ts (22), src/pages/SpreadsPage.tsx, SpreadDetailPage.tsx, App.tsx routes"
+          },
+          {
+            "name": "Custom spread builder",
+            "category": "tarot",
+            "depth": "/spreads/builder — design your own spread with up to 13 positions (name + meaning each), save to DB, list of saved spreads, launch a reading with the custom spread through ReadingsPage (CustomSpreadInput handoff).",
+            "evidence": "src/pages/SpreadBuilderPage.tsx; src/pages/ReadingsPage.tsx"
+          },
+          {
+            "name": "Card meanings hub (78 pages)",
+            "category": "tarot",
+            "depth": "/tarot-meanings + per-card /tarot-meanings/:slug for all 78 cards; filter by arcana/suit; each card has upright/reversed, love meaning, career meaning, scene description, reflection prompt, keywords, custom AI-generated card art; contextual enrichment (majorArcanaContextual, suit + court themes); fully localized; public SEO routes.",
+            "evidence": "src/pages/TarotMeaningsPage.tsx, TarotCardMeaningPage.tsx; src/data/tarotDeck.ts, tarotMeanings.ts, tarotEnrichment.ts"
+          },
+          {
+            "name": "Pick-a-Card daily",
+            "category": "tarot",
+            "depth": "3 face-down fanned cards, tap-to-flip animation, one-line reading, deterministic per-user-per-day, remembered until midnight (localStorage), free acquisition surface. Flag 'pick-a-card' rolled out ON at 100%.",
+            "evidence": "src/pages/PickACardPage.tsx; supabase/migrations/20260524000000_rollout_pick_a_card.sql"
+          },
+          {
+            "name": "URL-shareable readings",
+            "category": "tarot",
+            "depth": "Readings encoded to base64url token (spread slug + card/reversed pairs + question + date, versioned schema) → /reading/:token public route reconstructs full reading on recipient device; explicitly built as organic-acquisition surface (Labyrinthos-inspired). Plus share-card image generation (shareOrDownloadCard) used by Love Tree / Soulmate Score.",
+            "evidence": "src/services/shareableReadings.ts; src/pages/SharedReadingPage.tsx; src/services/share.ts"
+          },
+          {
+            "name": "Mirror — reading stats",
+            "category": "tarot",
+            "depth": "/mirror aggregates the user's tarot history client-side: total readings/cards, reversal %, most-drawn card/suit/number, top-5 cards, suit breakdown bars, major/minor arcana bar, streak days, first-reading date; week/month/all periods. Explicitly Labyrinthos-Mirror-inspired, no AI cost.",
+            "evidence": "src/services/mirror.ts; src/pages/MirrorPage.tsx (SuitBars, ArcanaBar)"
+          },
+          {
+            "name": "Fool's Journey progression",
+            "category": "tarot",
+            "depth": "/journey — 22-level progression mapped 1:1 to Major Arcana (level titles 'The Wandering Seeker' → 'Returned Whole'), themes + milestones, tied to the existing profile XP level system.",
+            "evidence": "src/data/foolsJourney.ts; src/pages/FoolsJourneyPage.tsx"
+          },
+          {
+            "name": "Daily ritual home loop",
+            "category": "other",
+            "depth": "Home = daily ritual: tarot flip card, daily horoscope card, journaling prompt card, Daily Wisdom quote (32-quote pool, flag ON), Tonight's Moon phase card (11 phase entries, flag), Daily Energy Mission (41-prompt pool, deterministic pick, local streak, flag ON at 100%), moonstone widget, streak tracking with milestone XP (7/30/100/365 days), offline-cached ritual state.",
+            "evidence": "src/pages/HomePage.tsx; src/components/ritual/* ; src/data/dailyMissions.ts, dailyWisdom.ts, moonPhases.ts; migrations 20260527 rollout_daily_mission"
+          },
+          {
+            "name": "AI Companion (4 personas)",
+            "category": "ai",
+            "depth": "/companion multi-turn chat with 4 selectable personas (Sage/Oracle/Mystic/Priestess), per-persona local history (40 msgs), backed by ai-companion-chat edge function; plus contextual 'Ask the Oracle about this' buttons seeded from tarot cards, hexagrams, chart aspects across the app. Entry in More menu gated by 'ai-companion' flag.",
+            "evidence": "src/pages/AiCompanionPage.tsx; src/components/oracle/AskOracleButton.tsx; supabase/functions/ai-companion-chat"
+          },
+          {
+            "name": "Tarot Companion (card chat)",
+            "category": "ai",
+            "depth": "/ai/tarot — draws a card then opens a focused multi-turn AI chat about that card (oracle persona, auto-seeded context); moonstone-metered per session. Flag 'ai-tarot-companion' seeded OFF (admin-allowlisted); home tile behind flag.",
+            "evidence": "src/pages/TarotCompanionPage.tsx; migrations 20260512000000_session_e_feature_flags.sql"
+          },
+          {
+            "name": "AI Quick Reading (3-second)",
+            "category": "ai",
+            "depth": "/ai/quick — single-shot question → server draws a card, weaves with user's natal signals (memoryUsed flag), 2-paragraph reading via Gemini 2.0 Flash; moonstone-metered. Flag 'ai-quick-reading' seeded OFF (admin-allowlisted).",
+            "evidence": "src/pages/QuickReadingPage.tsx; supabase/functions/ai-quick-reading"
+          },
+          {
+            "name": "Dream Interpreter",
+            "category": "ai",
+            "depth": "AI-first (gpt-4o-mini primary, Gemini 2.5 Flash fallback, strict-JSON Jungian output: core theme, emotional tone, 2-4 archetypes, symbol-by-symbol meanings + reflection questions, shadow prompt, integration suggestion, compensatory move) with graceful offline fallback to a local 168-keyword symbol dictionary. Premium-gated tab under Readings, flag 'dream-interpreter'.",
+            "evidence": "src/pages/DreamInterpreterPage.tsx; src/data/dreamSymbols.ts, dreamSubsystems.ts; supabase/functions/ai-dream-interpret"
+          },
+          {
+            "name": "Journal + AI coach",
+            "category": "other",
+            "depth": "Full journal: entries with 21 template prompts, mood emoji tagging, search, calendar, tags, linked readings, streak/stats visuals, XP per entry; optional AI journal coach behind 'journal-coach' flag (ai-journal-coach edge fn).",
+            "evidence": "src/pages/JournalPage.tsx; src/data/journalTemplates.ts; supabase/functions/ai-journal-coach"
+          },
+          {
+            "name": "Mood Diary + AI mood letter",
+            "category": "other",
+            "depth": "Readings-tab mood log (categories, y-value trend history, pattern derivation) + AI-written 'mood letter' (letter, dominant theme, care suggestion) via ai-mood-letter edge fn. Flag 'mood-diary'.",
+            "evidence": "src/pages/MoodDiaryPage.tsx; src/data/moodDiary.ts; supabase/functions/ai-mood-letter"
+          },
+          {
+            "name": "Chart/graph component inventory",
+            "category": "design",
+            "depth": "NatalWheel (deterministic SVG wheel: zodiac ring, house spokes, planets at true ecliptic longitude, aspect lines, overlay ring for variants); components/chart/ChartWheel (interactive 'astrolabe edition': gold bead frame, degree ticks, element-tinted sectors, tap-planet detail); components/horoscope/ChartWheel (view-only astrolabe twin); ElementBalance (element + modality bar charts); AspectGrid (classic triangular aspect matrix with glyphs/orbs); Mirror SuitBars + ArcanaBar; Love Tree morphing SVG tree; Human Design 9-centre interactive bodygraph SVG; Bazi four-pillar table; Celestial Map d3-geo dual-projection map (equirectangular + orthographic globe, zoom, flyTo beacon); mood trend history; year-ahead month timeline.",
+            "evidence": "src/components/charts/{NatalWheel,ElementBalance,AspectGrid}.tsx; src/components/chart/ChartWheel.tsx; src/components/horoscope/ChartWheel.tsx; src/components/celestial/useCelestialMapEngine.ts; src/pages/{MirrorPage,HumanDesignPage,BaziPage,LoveTreePage}.tsx"
+          },
+          {
+            "name": "Natal chart + variants",
+            "category": "astrology-charts",
+            "depth": "Real ephemeris computation (astronomy-engine in edge functions): natal chart with planets/houses/aspects, rendered in Horoscope→Chart tab (premium) and free-ish deep report page; variant overlays behind flags (both seeded ON 100%): today's transits, secondary progressions (with progressed age), solar return for chosen year, synastry vs a saved person — each via dedicated edge functions (astrology-compute-natal, -progressions, -solar-return, -synastry, -current-positions, -geocode with global city DB).",
+            "evidence": "src/pages/NatalChartReportPage.tsx; src/components/horoscope/BirthChart.tsx; supabase/functions/astrology-*"
+          },
+          {
+            "name": "Horoscopes (daily/weekly/monthly) + transit explorer",
+            "category": "astrology-charts",
+            "depth": "Horoscope hub with 4 tabs: Today (free sun-sign daily, server astrology-daily + local template fallback with general/love/career/mood/action steps), Chart (premium), Forecast (premium weekly + monthly via astrology-weekly/-monthly edge fns with themes), Explore (premium: personal transit calendar via astrology-transit-calendar with per-transit interpretations, houses explorer, aspects explorer).",
+            "evidence": "src/pages/HoroscopePage.tsx; src/components/horoscope/{TodayForYou,Forecast,Explore}.tsx; src/data/horoscopes.ts, transits.ts"
+          },
+          {
+            "name": "People (chart others + synastry + AI)",
+            "category": "astrology-charts",
+            "depth": "/people 'Cece-style' circle: save unlimited people (partner/family/friend/other) with birth data; per-person full natal chart page (astrology-person-chart edge fn) with planet-by-planet interpretations; /people/:id/compare full synastry vs your chart; PersonAIReading — moonstone-gated AI reading of a saved person with 4 focus lenses (Overview/Love/Career/Growth) via ai-person-reading edge fn. In main nav More menu (no flag).",
+            "evidence": "src/pages/{PeoplePage,PersonDetailPage,PersonComparePage}.tsx; src/components/people/{PersonForm,PersonAIReading}.tsx"
+          },
+          {
+            "name": "Celestial Map (astrocartography) + Find Your Place",
+            "category": "astrology-charts",
+            "depth": "Full astrocartography world map: 40 planetary lines (10 planets × AC/DC/MC/IC), life-area filters (love/career/travel/healing/home/growth) mapping to traditional planet sets, ~207-city global dataset (30 free / 280 premium cap), city tap → insight panel with line meanings, one-shot AI Travel Reading (250 moonstones via celestial-travel-reading edge fn); 'Find Your Place' flagship: one tap scores every city against chart + intent, cinematic reveal + AI long-form reading (premium/250 moonstones); free tier sees Sun+Moon lines only. Flag 'celestial-map' rolled out ON.",
+            "evidence": "src/pages/CelestialMapPage.tsx; src/components/celestial/* (FindYourPlace.tsx, CityInsightPanel.tsx); src/data/citiesGlobal.ts, celestialInterpretations.ts; migration 20260512014330"
+          },
+          {
+            "name": "Astrology interpretation libraries",
+            "category": "astrology-charts",
+            "depth": "Hand-written interpretation corpus, keys aligned to edge-function output: PLANET_IN_SIGN 120 entries (10 planets × 12 signs), PLANET_IN_HOUSE 120 (10 × 12 houses), aspect content = 5 aspect essences + 45 planet-pair dynamics composed at render, 12 house meanings with keywords, sign-to-sign compatibility 78 pairs with element/modality-grounded scores; plus transit interpretation library and localization wrappers (ja/ko/zh) for all of it.",
+            "evidence": "src/data/interpretations/{planetInSign,planetInHouse,aspectMeanings,houseMeanings,signCompatibility}.ts; src/i18n/localize*.ts"
+          },
+          {
+            "name": "Paid deep reports (3)",
+            "category": "reports",
+            "depth": "Natal Chart Deep Report ($9.99 / 200 moonstones, flag rolled out ON): full wheel + variant overlays + element balance + aspect grid + planet-by-planet write-ups; Year-Ahead Forecast ($12.99 / 300 moonstones, flag seeded OFF): 12 monthly briefings of personal transits with themes + intensity; Career Archetype Report ($6.99 / 150 moonstones, flag seeded OFF): MBTI-derived archetype content, no LLM cost. All bypass to free for Premium subscribers; Stripe report-checkout retained via create-report-checkout.",
+            "evidence": "src/pages/{NatalChartReportPage,YearAheadReportPage,CareerReportPage}.tsx; src/data/careerArchetypes.ts; supabase/functions/astrology-year-ahead, create-report-checkout"
+          },
+          {
+            "name": "Soulmate Score",
+            "category": "fortune",
+            "depth": "Free viral surface: 0-100 synastry score from real cross-aspects (harmony/friction formula weighting luminaries + Venus/Mars), big share-ready score card with 4 strongest aspects. Flag 'soulmate-score' rolled out ON at 100%.",
+            "evidence": "src/pages/SoulmateScorePage.tsx; migration 20260525000000"
+          },
+          {
+            "name": "Partner Compatibility (synastry + MBTI)",
+            "category": "fortune",
+            "depth": "Readings tab (premium, flag 'partner-compat'): real cross-aspect synastry via partner-synastry-adhoc edge fn (astronomy-engine; 18 most meaningful cross-aspects, harmonious/challenging/intense flavors, elemental blend, overall score) + optional MBTI cognitive-function layer (16 types matrix) as a supporting note.",
+            "evidence": "src/pages/PartnerCompatPage.tsx; src/data/partnerCompat.ts, mbtiCognitiveFunctions.ts; supabase/functions/partner-synastry-adhoc"
+          },
+          {
+            "name": "Bazi (Four Pillars)",
+            "category": "bazi",
+            "depth": "Premium Readings tab (flag 'bazi'): computed Four Pillars chart (heavenly stems/earthly branches, day master info, ten gods, five-element cycle graph); 'bazi-depth' classical layers rolled out ON: Inner Forces / Hidden Influences (hidden stems) / Nayin / Day-master strength / Supporting element / Today's Lucky Color; plus premium AI Bazi reading via bazi-interpret edge fn below the computed chart.",
+            "evidence": "src/pages/BaziPage.tsx; src/data/bazi.ts, baziDeep.ts; src/components/bazi/BaziAIReading.tsx; migration 20260526000000_rollout_bazi_depth.sql"
+          },
+          {
+            "name": "I Ching",
+            "category": "fortune",
+            "depth": "Readings tab (flag 'iching'): full 64-hexagram library, animated 3-coin toss × 6 lines, changing lines → transformed hexagram, question framing, Ask-Oracle follow-up per hexagram.",
+            "evidence": "src/pages/IChingPage.tsx; src/data/ichingHexagrams.ts (64 hexagrams)"
+          },
+          {
+            "name": "Runes",
+            "category": "fortune",
+            "depth": "Readings tab (flag 'runes'): 24-stave Elder Futhark with meanings, 3-rune cast.",
+            "evidence": "src/pages/RunesPage.tsx; src/data/runes.ts (24 staves)"
+          },
+          {
+            "name": "Dice oracle",
+            "category": "fortune",
+            "depth": "Readings tab (flag 'dice'): three-dice cast, 16 possible readings (sums 3-18).",
+            "evidence": "src/pages/DicePage.tsx; src/data/diceOracle.ts"
+          },
+          {
+            "name": "Feng Shui",
+            "category": "fortune",
+            "depth": "Readings tab (flag 'feng-shui'): personal Kua number (gender + birth year) with 4 favorable + 4 unfavorable directions and meanings; 9-area Bagua reading; room-by-room guidance (7 rooms); 31 common-problem fixes; annual afflictions/flying-star reading per year.",
+            "evidence": "src/pages/FengShuiPage.tsx; src/data/fengShui{Kua,Bagua,Rooms,Problems,Annual}.ts"
+          },
+          {
+            "name": "Human Design",
+            "category": "fortune",
+            "depth": "Premium Readings tab (flag 'human-design'): REAL computation via human-design-chart edge fn (astronomy-engine → 64 I-Ching gates on the Rave wheel, Personality + Design activations 13+13): Type (5 types), Strategy/Signature/Not-self, Authority with decision guidance, Profile lines, interactive 9-centre bodygraph SVG, defined channels + gates.",
+            "evidence": "src/pages/HumanDesignPage.tsx; src/data/humanDesign.ts, humanDesignCases.ts; supabase/functions/human-design-chart"
+          },
+          {
+            "name": "Learn hubs (astrology/numerology/crystals/glossary) + cosmic profile",
+            "category": "other",
+            "depth": "Public SEO learn libraries with index + per-slug entry pages: Astrology 42 entries, Numerology 14, Crystals 32, Glossary 65; plus zodiac content library; Cosmic Profile card on Profile (sun sign, Chinese zodiac animal, numerology Life Path + Expression/Soul Urge/Personality numbers).",
+            "evidence": "src/data/{astrologyLearn,numerologyLearn,crystalsLearn,glossaryLearn,zodiacContent}.ts; src/pages/*LearnPage/*EntryPage; src/components/profile/CosmicProfileSection.tsx; src/utils/numerology"
+          },
+          {
+            "name": "Quizzes (33 total)",
+            "category": "other",
+            "depth": "11 core: full MBTI + quick MBTI, Big Five, Attachment style, Enneagram, Love Language, Mood Check, Ayurveda Dosha (30-q, flag ON), Element Affinity, Shadow Archetype, Tarot Court Card match; + 22 'extra' dimensional quizzes (flag ON): Dark Triad, DISC, Money, Boundaries, Burnout, Communication, Conflict, Sleep, Creative, Spiritual, Jungian, Love Styles, Parenting, Learning, Empath, Self-Compassion, PHQ-2, Anxiety Profile, Leadership, Productivity, Relationship Readiness, Wellness Type. Mid-quiz hints, per-quiz custom icons, localized, share result, XP per completion; results feed personalization + career report + compat.",
+            "evidence": "src/pages/QuizzesPage.tsx; src/data/quizzes.ts, extraQuizzes*.ts, and the 8 dedicated quiz files; migration 20260529000000_audit_p0_fixes.sql"
+          },
+          {
+            "name": "Gamification (XP/levels/achievements)",
+            "category": "other",
+            "depth": "XP system with per-activity rewards (ritual 50, quiz 25, journal 15, save 10, view 5), streak milestone bonuses (7/30/100/365 → 100-2500 XP), seeker-rank levels feeding Fool's Journey titles; 48 seeded achievement definitions across 5 categories × 4 rarities with progress tracking, hidden + premium-only achievements, notification toasts; /achievements trophy page.",
+            "evidence": "src/services/{levelSystem,achievements}.ts; supabase/migrations/20260127070447_seed_achievement_definitions.sql; src/pages/AchievementsPage.tsx"
+          },
+          {
+            "name": "Moonstone economy",
+            "category": "monetization",
+            "depth": "Virtual currency relaunched (flag ON): every AI action costs 50 moonstones via server-side spend RPC; earning only — rewarded ad +50 (unlimited/day), daily check-in +5-50 scaled by streak, quiz completion; direct purchase DISABLED ('moonstone-topup' OFF; $2.99-$39.99 pack definitions dormant in code); premium bypasses with silent 50-actions/24h soft cap; larger sinks: reports 150-300, travel readings 250.",
+            "evidence": "supabase/migrations/20260620000000_moonstones_relaunch.sql; src/components/moonstones/EarnMoonstonesSheet.tsx; src/services/{billing,rewardedAds}.ts; src/hooks useMoonstoneSpend"
+          },
+          {
+            "name": "Premium subscription",
+            "category": "monetization",
+            "depth": "Monthly $3.99 / Yearly $19.99 (3-day free trial + trial reminder modal) / Lifetime $29.99; RevenueCat native billing + Stripe web checkout + customer portal + webhook reconciliation (revenuecat-webhook, stripe-webhook, reconcile-premium-*); unlocks all premium tabs (chart, forecast, explore, bazi, HD, dream, partner), all reports, full celestial map, AI without moonstone debits.",
+            "evidence": "src/services/billing.ts; src/components/premium/{PaywallSheet,SubscriptionSheet,TrialReminderModal}.tsx; supabase/functions/create-checkout-session etc."
+          },
+          {
+            "name": "Ads",
+            "category": "monetization",
+            "depth": "Rewarded ads (AdMob via Capacitor) opt-in, ON — +50 moonstones each; forced ads (interstitial + app-open) built but DISABLED by flag 'forced-ads-enabled' OFF for ad-free positioning (per Labyrinthos competitive audit); web ad components (sidebar/in-article/native-grid) exist behind config; server ad-config + ad-events edge fns.",
+            "evidence": "supabase/migrations/20260630000000_disable_forced_ads.sql; src/services/{ads,rewardedAds,adConfig}.ts; src/components/ads/*"
+          },
+          {
+            "name": "Community + Whispering Well (built, OFF)",
+            "category": "community",
+            "depth": "Full community feed: 8 topics, composer, comments, 5 reaction types, reporting, server-side AI moderation pipeline (flag 'community-moderation-required' ON), crisis banner; Whispering Well = anonymous-only mode with distinct palette at /whispering-well. BOTH hidden: flags 'community' + 'whispering-well' set enabled=false/0% (migration 2026-06-02) — routes resolve but no nav entry renders.",
+            "evidence": "src/pages/CommunityPage.tsx; src/dal/community; supabase/functions/community-moderate; migrations 20260602000000_hide_community_features.sql"
+          },
+          {
+            "name": "Advisors marketplace + Live Rooms (built, mostly OFF)",
+            "category": "community",
+            "depth": "Advisor directory + profile + interest capture (live), but booking ('advisor-booking'), LiveKit voice ('advisor-voice', 'live-rooms-voice'), payouts/Stripe-Connect cashout ('advisor-payouts'), self-serve verification ('advisor-verify'), replays ('live-replays') all flag-gated OFF/admin-only; 'advisors' nav flag explicitly OFF at 0%. Live Rooms MVP = scheduled audio events listing + RSVP; voice via VoiceStrip when enabled; livekit-token edge fn exists.",
+            "evidence": "src/pages/{AdvisorsPage,AdvisorBookingPage,AdvisorSessionPage,AdvisorDashboardPage,AdvisorVerifyPage,LiveRoomsPage,LiveRoomPage}.tsx; migrations session F/G + 20260529000000_audit_p0_fixes.sql"
+          },
+          {
+            "name": "Referrals + compat invites + affiliate (built, OFF)",
+            "category": "monetization",
+            "depth": "Peer referral: personal code, share sheet, redeem within 30 days, 100 moonstones per side, invite counter — flag 'referral' seeded OFF; compatibility deep-link invites /invite/:code merging both users' quiz/zodiac results — flag 'compat-invite' seeded OFF; affiliate program flag ('affiliate-program', 10% rev-share) seeded OFF.",
+            "evidence": "src/components/referral/ReferralSheet.tsx; src/components/compat/InviteFriendSheet.tsx; src/pages/CompatInvitePage.tsx; migrations session B/D"
+          },
+          {
+            "name": "Platform: notifications, i18n, blog/SEO, onboarding, accounts",
+            "category": "other",
+            "depth": "Local notifications (native): daily ritual reminder at user-chosen time + 20:30 streak-keeper nudge auto-cancelled on completion; i18n 4 locales (en/ja/ko/zh) with localized decks, quizzes, interpretations, hreflang; Blog at /blog with AI daily SEO blog generator + newsletter/welcome-email edge fns and web ad slots; marketing LandingPage; onboarding (email + OAuth variants) collecting birth data, goals → personalization service (goal→spread/section mapping); global search (cards/readings/journal); offline caching; GDPR account-export + account-delete edge fns; admin page (card-art upload manager + flag grants); AI kill-switch flag 'ai-enabled' ON.",
+            "evidence": "src/services/{localNotifications,personalization,search,offline}.ts; src/i18n/config.ts; src/pages/{BlogPage,LandingPage,OnboardingPage,OAuthOnboardingPage,AdminPage}.tsx; supabase/functions/daily-seo-blog-generator, account-export, account-delete"
+          }
+        ],
+        "notes": "Flag-state caveats: states above reflect the migration record (authoritative last-written state in repo); production DB could have been flipped since via admin UI. Confirmed ON by rollout migrations: pick-a-card, soulmate-score, bazi-depth, daily-mission, love-tree, celestial-map, natal-chart-report, ayurveda-dosha, extra-quizzes, chart-transits, chart-variants, moonstones, rewarded-ad, ai-enabled, community-moderation-required. Confirmed OFF by migrations: community, whispering-well, forced-ads-enabled, moonstone-topup, advisors (0%). Seeded OFF with admin-allowlist grants (owner can see them; no global rollout migration found): runes, dice, moon-phases, iching, bazi, human-design, feng-shui, dream-interpreter, mood-diary, partner-compat, ai-companion, ai-quick-reading, ai-tarot-companion, journal-coach, referral, compat-invite, affiliate-program, career-report, year-ahead-report, advisor-booking/voice/payouts/verify, live-rooms, live-rooms-voice, live-replays, daily-wisdom, daily-checkin — several of these are clearly live in the shipped app (Readings tabs), so treat 'seeded OFF' as 'likely flipped ON in prod DB, unverifiable from code alone'. Love Tree (12-q attachment quiz → animated SVG tree, free, ON) is folded conceptually with quizzes/graphs but lives at /love-tree (src/pages/LoveTreePage.tsx). Unusual extra: BottomNav includes an external Shop link to yinyangguardian.com. Feature count pressure forced merging paid reports and platform items into combined entries.",
+        "sources": [
+          "C:\\Users\\lmao\\TAROT\\src\\App.tsx (route table)",
+          "C:\\Users\\lmao\\TAROT\\src\\pages\\ (66 pages)",
+          "C:\\Users\\lmao\\TAROT\\src\\components\\ (charts, chart, celestial, people, horoscope, premium, moonstones, ritual, oracle, referral, ads)",
+          "C:\\Users\\lmao\\TAROT\\src\\data\\ (58 content libraries incl. interpretations/)",
+          "C:\\Users\\lmao\\TAROT\\src\\services\\ (billing, mirror, achievements, levelSystem, shareableReadings, localNotifications, rewardedAds)",
+          "C:\\Users\\lmao\\TAROT\\supabase\\functions\\ (54 edge functions)",
+          "C:\\Users\\lmao\\TAROT\\supabase\\migrations\\ (feature-flag seed + rollout/hide migrations)",
+          "C:\\Users\\lmao\\TAROT\\src\\context\\FeatureFlagContext.tsx + src\\dal\\featureFlags.ts",
+          "C:\\Users\\lmao\\TAROT\\src\\i18n\\config.ts",
+          "C:\\Users\\lmao\\TAROT\\src\\components\\layout\\BottomNav.tsx"
+        ]
+      },
+      {
+        "angle": "六爻 divination, 择日/黄历 (auspicious-date almanac), and other Chinese verticals: 姓名测试, AI 手相/面相 photo scan, 宠物星盘 (pet astrology)",
+        "features": [
+          {
+            "name": "六爻排盘/六爻占卜 (Liu Yao hexagram casting) — ABSENT",
+            "category": "fortune",
+            "depth": "Verdict: not shipped, neither as a self-serve 排盘 tool nor as a documented expert-consult category. Full-HTML keyword scan of the Google Play listing (com.lingocc.cc5, updated 2025-11-06): 0 occurrences of 六爻. site:xxwolo.com search for 六爻 returns nothing on the domain (only 占星骰子/星盘 aspect pages are indexed). App Store CN description, 应用宝 v10.50.0 description, and third-party download-site feature lists (v10.16–10.45) never mention it. Cece's Chinese-metaphysics stack is 八字五行 + 紫微斗数 + 二十八宿 + 生命数字 — hexagram divination is covered only by the western-style 占星骰子 (astro dice), not I Ching/六爻. Expert-marketplace category lists reported by 36kr/DoNews/pingwest are 占星/塔罗/八字/紫微/MBTI/九型/心理沙盘/冥想 — no 六爻 category (individual masters could improvise it in paid Q&A, but no category or tool exists). Standalone competitors (六爻排盘 id586945890, 易师汇, 六爻卦摊) own this niche.",
+            "evidence": "https://play.google.com/store/apps/details?id=com.lingocc.cc5 (parsed HTML, 六爻=0 hits); site:xxwolo.com search; https://36kr.com/p/1721466339329"
+          },
+          {
+            "name": "择日/择吉 + 黄历/老黄历 almanac — ABSENT",
+            "category": "fortune",
+            "depth": "Verdict: not shipped. No 黄历/择日/宜忌 module in any store description (Play HTML: 黄历=0, 择日=0), no almanac in the tool lists of any download-site listing, and no expert category for date-picking. Cece's daily content is astrology-transit-based 今日/本周/本月运势 computed from the user's natal chart — personalized horoscope, not a lunar-calendar 宜/忌 almanac, and no wedding/move date-picking service. The 择日 vertical lives in dedicated almanac apps (顺历, 中华老黄历) and on rival consult marketplace 高人汇, which pingwest explicitly describes as offering 择日生子 — contrasted against Cece which it describes as a 星座+塔罗 community.",
+            "evidence": "https://www.pingwest.com/a/221025 (择日/黄历 attributed to 高人汇, not 测测); Play HTML keyword scan; https://sj.qq.com/appdetail/com.xxwolo.cc5"
+          },
+          {
+            "name": "姓名测试/起名 (name analysis / baby naming) — ABSENT",
+            "category": "fortune",
+            "depth": "Verdict: not shipped. Play HTML: 姓名=0, 起名=0, 测名=0. No name-scoring or naming tool in App Store CN, 应用宝, or any of five third-party listing descriptions; no naming expert category. Chinese searches for 测测 + 姓名测试 surface only dedicated competitors (美名腾, 起名大师, 卜易居). Name input in Cece is only used for chart profiles/social identity, not 五格/三才 analysis.",
+            "evidence": "Play/App Store/应用宝 descriptions; WebSearch 测测app 姓名测试 (no Cece results)"
+          },
+          {
+            "name": "AI 手相/面相 photo-scan reading — ABSENT",
+            "category": "ai",
+            "depth": "Verdict: not shipped despite Cece's heavy AI pivot. Play HTML: 手相=0, 面相=0. Cece's AI layer is text Q&A ('AI解读，覆盖星骰塔罗八字星盘多种工具, 3秒响应') plus AI 智能体 chat agents — input is birth data and questions, never camera photos. No palm/face scan appears in any store description, version note, or feature list. The CN photo-scan niche is owned by standalone apps (面相大师 id1457634472: 108-point face scan) and WeChat mini-program source kits; regulator/media scrutiny of face-data collection (南都 report) makes this a compliance-risky feature Cece has avoided. One search-engine summary sentence claiming Cece has photo palm reading could not be corroborated by any primary listing and conflicts with all first-party descriptions.",
+            "evidence": "Play listing AI section verbatim; https://apps.apple.com/cn/app/id756771906; competitor https://apps.apple.com/cn/app/id1457634472"
+          },
+          {
+            "name": "宠物星盘/宠物占星 (pet astrology) — ABSENT",
+            "category": "fortune",
+            "depth": "Verdict: not shipped. Play HTML: 宠物=0. No pet-chart tool in any listing; the only pet connection found is pets as a community discussion topic (weekly chart-discussion threads) inside Cece's social feed. Chinese pet-astrology content lives on media sites (新月占星) and generic chart tools, not as a Cece module. Its 合盘 (synastry) is human-to-human (WeChat-friend 合盘, couple pairing scores) only.",
+            "evidence": "WebSearch 测测 宠物星盘 (community-topic mention only); Play HTML keyword scan"
+          },
+          {
+            "name": "What Cece ships instead (context): 星盘20种 + 八字/紫微/二十八宿/生命数字 + 塔罗/星骰 + AI问答",
+            "category": "astrology-charts",
+            "depth": "Confirmed self-serve toolset: 20 chart types (本命/合盘/组合/组合推运/时空盘/马盘/法达/太阳弧, Astrolog-engine), 八字五行, 紫微斗数, 二十八宿, 生命数字, 占星骰子, 塔罗, 50+ psych tests, personal reports — free to view basic, monetized via 测测币 (¥6–¥698 packs), VIP ¥25–30/mo, SVIP ¥69/mo, and expert consult (questions from ¥3; ~26k signed experts; categories 占星/塔罗/八字/紫微/MBTI/心理; top experts ~¥2M/yr). Current CN positioning has pivoted to '心理情感AI问答社区' (psychology/AI framing) — the divination-vertical expansion the five absent features represent appears deliberately avoided, consistent with CN 封建迷信 content-compliance pressure.",
+            "evidence": "https://apps.apple.com/cn/app/id756771906 (IAP list); Play listing description; https://www.87g.com/az/38384.html; https://www.donews.com/news/detail/1/6488429.html"
+          }
+        ],
+        "notes": "Method: Apple App Store CN page (id756771906) fetched directly; Google Play listing for com.lingocc.cc5 fetched via curl with desktop UA and parsed with python (keyword occurrence counts across the full 1.06MB HTML including embedded AF_initDataCallback JSON — the most conclusive negative evidence: 六爻/黄历/择日/姓名/起名/手相/面相/宠物 all = 0 hits, while 八字=14, 星盘=8, 塔罗=2 confirm the parse works); 应用宝 com.xxwolo.cc5 listing (v10.50.0, 2026-07-30); site:xxwolo.com searches (xxwolo.com homepage itself 504s — backend degraded, only static 占星骰子/aspect pages reachable); five third-party CN download-site descriptions spanning v10.16–10.50; and expert-marketplace journalism (36kr, DoNews, pingwest, 测测达人版 expert app id1447926119). Version-history notes on App Store CN are all boilerplate ('修复了若干问题') so module launches cannot be dated from them. Confidence: high for absence of self-serve tools (five independent description sources + full-HTML scans agree); moderate-high for absence as expert categories (category lists come from journalism and the expert-app's 倾诉达人/技能达人 track descriptions, not an exhaustive in-app category screenshot — individual 达人 could still freelance 六爻/择日 answers inside generic paid Q&A). Strategic takeaway for a competitor: these five verticals are open flanks Cece has deliberately left to niche apps (六爻排盘 apps, 老黄历 apps, 起名 apps, 面相大师, 高人汇), likely due to CN compliance positioning as a 'psychology community'.",
+        "sources": [
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5&hl=zh",
+          "https://apps.apple.com/cn/app/id756771906",
+          "https://sj.qq.com/appdetail/com.xxwolo.cc5",
+          "https://apps.apple.com/cn/app/id1447926119",
+          "https://www.87g.com/az/38384.html",
+          "https://www.donews.com/news/detail/1/6488429.html",
+          "https://36kr.com/p/1721466339329",
+          "https://www.pingwest.com/a/221025",
+          "https://www.xxwolo.com/p_engine/zhixinlu/",
+          "https://www.xxwolo.com/dice/astro",
+          "https://www.32r.com/app/33225.html",
+          "https://www.downkuai.com/android/79753.html",
+          "https://apps.apple.com/cn/app/id1457634472",
+          "https://www.32r.com/app/140703.html"
+        ]
+      },
+      {
+        "angle": "VIP vs SVIP entitlement matrix + per-feature coin price list (what exactly each tier and each coin-sink unlocks)",
+        "features": [
+          {
+            "name": "VIP subscription price ladder",
+            "category": "monetization",
+            "depth": "连续包月 first month ¥9.9 then ¥25/mo; one-off 1个月的会员 ¥30; 连续包季 ¥58/quarter (~¥19.3/mo); 连续包年 ¥178/yr (~¥14.8/mo). Auto-renew governed by m.cece.com 自动续费服务协议 (cancel >=24h before cycle end). HK App Store: VIP HK$32/mo, quarterly HK$58.",
+            "evidence": "Apple App Store CN id756771906 App内购买项目 + subscription blurb; m.cece.com/agreement/subscription_service.html"
+          },
+          {
+            "name": "SVIP tier exists as separate SKU, delta undocumented",
+            "category": "monetization",
+            "depth": "SKU 测测连续包月会员SVIP ¥69/mo (HK$88/mo) sits above VIP ¥25/mo. No public itemization of SVIP-only benefits found anywhere (official site has no VIP page; agreement doc lists no entitlements). By analogy with the official VIP blurb, SVIP presumably scales AI quota/discount depth — treat as unverified.",
+            "evidence": "Apple App Store CN + HK IAP lists id756771906; cece.com nav has no membership page"
+          },
+          {
+            "name": "Official VIP benefit list (what membership unlocks)",
+            "category": "monetization",
+            "depth": "App Store official blurb: 会员享有 \"定制化心情曲线、掌握自我情绪、测测AI智能解读工具、更多优惠\" — custom mood curve, AI interpretation toolset, extra discounts. Third-party deep review adds: 完整测评报告解锁 (full test-report unlocks), AI对话次数扩展 (bigger AI chat quota), 专属内容访问 (exclusive content). No public evidence of monthly free-coin grants or fixed consult-discount percentages.",
+            "evidence": "apps.apple.com/hk + /cn id756771906 description; woshipm.com/evaluating/6391148.html"
+          },
+          {
+            "name": "Coin economy has a dual exchange rate (channel arbitrage)",
+            "category": "monetization",
+            "depth": "Press-verified in-app rate: \"汇率约为1元兑换1测测币\" (Android/H5 direct recharge). But iOS IAP SKUs price coins at ~¥1.43-1.5/币: 4币=¥6, 17币=¥25, 42币=¥60, 68币=¥98, 208币=¥298, 488币=¥698 — the Apple 30% cut is passed to the user as a worse rate, not absorbed.",
+            "evidence": "极目新闻 3·15 investigation (m.sohu.com/a/996211503_121478296) vs Apple App Store CN IAP list"
+          },
+          {
+            "name": "iOS coin SKU ladder (complete)",
+            "category": "monetization",
+            "depth": "6 coin SKUs: 4枚¥6 / 17枚¥25 / 42枚¥60 / 68枚¥98 / 208枚¥298 / 488枚¥698. HK equivalents HK$8/32/68/118/288/788. Google Play intl build (com.lingocc.cc5, 'Cece 测测 - 星座，八字，AI问答') declares IAP range US$0.99–114.99 per item.",
+            "evidence": "Apple App Store CN/HK id756771906; Google Play HTML fetched via curl+python (每件US$0.99-US$114.99)"
+          },
+          {
+            "name": "连麦 (live voice consult) per-minute tier system",
+            "category": "monetization",
+            "depth": "达人 graded into 10 levels; two mic modes: 普麦 (public) and 私麦 (private). Price floats by level+mode: floor 0.5币/min, ceiling 58.56币/min. Mainstream band 10–40币/min. Observed examples: 2.8元/min and 10.8元/min experts (user 兰兰), a Level-8 达人 at 27.96币/min. Sessions culturally floor at ~10 min ('一个问题至少10分钟打底'), so one call = ¥28–¥280 typical.",
+            "evidence": "极目新闻/红星资本局 3·15 report (sohu mirror + ctdsb.net); pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "提问 (question posting / 抢答区) pricing + first-free funnel",
+            "category": "monetization",
+            "depth": "Every new user gets exactly one free question ('每个用户有一次免费提问机会'); afterwards each question costs minimum ~¥3, and a normal expert-answered question runs 30+ 测测币 ('一次提问最高可能要付30测测币以上'). 悬赏 (bounty) add-on: higher bounty → more attentive answers. This is the main entry-level coin sink.",
+            "evidence": "app-description text surfaced via 87g/downkuai search results; pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "Paid micro-tests as low-ticket sink",
+            "category": "tests",
+            "depth": "One-off novelty tests sold at ~¥3 each (e.g. 荣耀本命英雄测试, 4000+ buyers at 3块钱); 50+ psychology tests are free at basic level with paid deep interpretations — the ¥3 price point doubles as first-payment conversion.",
+            "evidence": "pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "Free chart engine as top-of-funnel; interpretation is the paywall",
+            "category": "astrology-charts",
+            "depth": "20 chart types (本命/行运/三限/月返 etc.) and basic 星盘八字分析报告 are explicitly free ('多样化的星盘八字分析报告，免费查看'), positioning against Astrolog32/JANUS/WINSTAR/ZET. Monetization sits one layer up: human 达人 interpretation of the chart via Q&A/连麦, and 深度报告 referenced in complaints. No fixed platform-wide coin price per 星盘/合盘/八字/紫微 report was found — interpretation pricing is set per-达人 (per-question or per-minute), not as catalog SKUs.",
+            "evidence": "Google Play description (extracted from gp_cc5.html); 87g.com/az/38384.html; Black Cat complaint summaries"
+          },
+          {
+            "name": "AI Q&A: free hook, membership expands quota",
+            "category": "ai",
+            "depth": "Model is '免费AI+付费人工': AI 解读 covers 星骰/塔罗/八字/星盘, 3-second response, personalized question suggestions — free as hook; membership extends AI对话次数 and unlocks 测测AI智能解读工具. Runs on in-house 心元大模型 (CAC-registered 2024). AI also teaches/administers the 达人 certification exams.",
+            "evidence": "Google Play description; baike.baidu/DoNews '免费AI+付费人工' framing; geekpark.net/news/352673; woshipm review"
+          },
+          {
+            "name": "正缘画像 (AI soulmate portrait) — sold via experts, no fixed SKU",
+            "category": "fortune",
+            "depth": "Deliverable = description of future partner's looks/height/build/complexion, near-or-far, family values. Sold through 达人 question/连麦 flows (so price = that expert's question fee, typically 30+币, or minutes on mic), not a platform-listed fixed-price report. No exact coin price publicly documented.",
+            "evidence": "pedaily.cn coverage of 正缘画像 content; absence across App Store SKU list and all press price lists"
+          },
+          {
+            "name": "Expert revenue split and earnings",
+            "category": "monetization",
+            "depth": "Platform-达人 split: 达人 keep ~50–70% (platform takes 30–50%). Top 大V earn ~¥20k/mo from Q&A alone; ordinary 大V ¥hundreds–thousands/mo; one astrologer made ~¥2M in a single month in 2016 boom.",
+            "evidence": "极目新闻 3·15 report; pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "Refunds paid in 测测币, not cash",
+            "category": "monetization",
+            "depth": "Even upheld complaints are refunded as platform coins rather than RMB ('仅退还测测币'), keeping value locked in the sink economy. Recurrent theme across Black Cat complaints (¥215 case et al.).",
+            "evidence": "tousu.sina.com.cn complaint 17397196558 snippet; DoNews 6488429"
+          },
+          {
+            "name": "Dark-pattern complaint cluster: hidden rates + 免密支付",
+            "category": "monetization",
+            "depth": "800+ Black Cat complaints by 2026-03-12: coin-to-RMB rate not shown before payment ('计价模糊'), passwordless auto-deduct (免密支付) complaints, 诱导高额消费, refund refusal. Platform's public defense: consumption is voluntary + 青少年模式 caps minors' spend/time.",
+            "evidence": "Black Cat complaint search results (tousu.sina.com.cn); DoNews 6488429; 极目新闻 3·15"
+          },
+          {
+            "name": "Whale evidence calibrating sink depth",
+            "category": "monetization",
+            "depth": "Documented cases: ¥130,000 in 6 months (user 兰兰, 八字-to-astrology consults, ended up more depressed), ~¥300,000 in one year (中新经纬-reported user), another ~¥100,000; small-claims at ¥215. Confirms per-minute consult is the deep sink, not reports.",
+            "evidence": "极目新闻/红星资本局; DoNews 6471211 (测测APP用户称一年被诱导消费近30万元); guancha.cn repost"
+          },
+          {
+            "name": "Revenue scale anchor",
+            "category": "monetization",
+            "depth": "App Store (iOS) alone grossed US$5M+ (~¥30M+) in trailing year per pedaily 2026-03; total 'year revenue 上亿' headline; 55M registered users, 75%+ female, 80% tier-1/2 cities.",
+            "evidence": "pedaily.cn/202603/561483.shtml; sina.cn mirror; geekpark interview"
+          },
+          {
+            "name": "Ads status (ad-removal as VIP perk unconfirmed)",
+            "category": "monetization",
+            "depth": "Both stores label the app 内含广告/contains ads; founder says he 'cut a batch of experience-harming ads' in 2025. No source lists 免广告 as an explicit VIP entitlement — do not copy that assumption into the matrix.",
+            "evidence": "App Store CN page labels; woshipm review quoting 任永亮"
+          },
+          {
+            "name": "达人 supply-side gate (certification economy)",
+            "category": "community",
+            "depth": "Entry requires psychology cert + 测测技能考试; black market does 替考 at ¥1,500 (psych cert) / ¥2,000 (Cece skill exam, '包过') — indicates certification is the platform's quality-tier lever behind consult pricing levels.",
+            "evidence": "极目新闻 3·15 investigation"
+          },
+          {
+            "name": "Sister apps in the funnel",
+            "category": "other",
+            "depth": "测测达人版 (com.xxwolo.live / iOS id1447926119) is the expert-side app with 抢答 (grab-answer) from homepage; product family also 测测心理师 and 快乐测测 per official site — consumer app sinks feed a two-sided marketplace.",
+            "evidence": "apps.apple.com id1447926119; cece.com /product/ nav"
+          }
+        ],
+        "notes": "Confirmed hard numbers: full iOS SKU ladder (coins 4/17/42/68/208/488 at ¥6/25/60/98/298/698; VIP ¥9.9→25/mo, ¥30 one-off, ¥58/qtr, ¥178/yr; SVIP ¥69/mo), 连麦 0.5–58.56币/min across 10 expert levels with 普麦/私麦 modes, question min ~¥3 and typical 30+币, one free question per new user, 1币≈¥1 on direct recharge vs ~¥1.43/币 on iOS. GAPS that public sources genuinely do not contain: (1) itemized SVIP-vs-VIP delta; (2) fixed coin prices for individual 星盘/合盘/八字/紫微 report unlocks and 正缘画像 — structurally these are per-达人 priced services (question fee or per-minute), not platform catalog SKUs, which is why no price list exists; (3) VIP monthly free-coin grant / exact consult discount % — no evidence found, likely surfaced only in-app. Black Cat detail pages, zhihu, baike, and qimai were all network-blocked from this host (ECONNREFUSED/403); only SERP snippets of complaints were usable. If exact per-report prices are required, the only reliable route is installing com.xxwolo.cc5 in an Android emulator and screenshotting the 报告/会员中心 paywalls. Scratch files (Google Play HTML + parser): C:\\Users\\lmao\\AppData\\Local\\Temp\\claude\\C--Users-lmao\\59114025-20e3-4aeb-9cad-81a43116967a\\scratchpad\\gp_cc5.html and parse_gp.py.",
+        "sources": [
+          "https://apps.apple.com/cn/app/id756771906",
+          "https://apps.apple.com/hk/app/%E6%B5%8B%E6%B5%8B-%E5%BF%83%E7%90%86%E6%83%85%E6%84%9Fai%E9%97%AE%E7%AD%94%E7%A4%BE%E5%8C%BA/id756771906",
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5&hl=zh&gl=US",
+          "https://news.pedaily.cn/202603/561483.shtml",
+          "https://m.sohu.com/a/996211503_121478296",
+          "https://www.ctdsb.net/c1716_202603/2685812.html",
+          "https://www.donews.com/news/detail/1/6488429.html",
+          "https://www.donews.com/news/detail/1/6471211.html",
+          "https://tousu.sina.com.cn/complaint/view/17397196558",
+          "https://www.woshipm.com/evaluating/6391148.html",
+          "https://m.cece.com/agreement/subscription_service.html",
+          "https://www.geekpark.net/news/352673",
+          "https://www.sina.cn/news/detail/5274583533883186.html",
+          "https://www.87g.com/az/38384.html",
+          "https://www.cece.com/"
+        ]
+      },
+      {
+        "angle": "Livestream/audio-room gift economy mechanics + 测测学院/paid course (knowledge-payment) layer",
+        "features": [
+          {
+            "name": "测测币 coin system (dual pricing: 1:1 direct, ~1.43x iOS premium)",
+            "category": "monetization",
+            "depth": "In-app currency 测测币; official recharge rate 1元 = 1测测币 (极目新闻 2026-03 states '1元兑换1测测币'). iOS App Store IAP packs carry ~43-50% premium (Apple-cut pass-through): 4币=¥6, 17币=¥25, 42币=¥60, 68币=¥98, 208币=¥298, 488币=¥698. Coins are prepaid before any paid service (连麦, 问答, reports). International build (com.lingocc.cc5) IAP range THB 26–4,050 per item.",
+            "evidence": "https://www.ctdsb.net/c1716_202603/2685812.html + https://apps.apple.com/cn/app/id756771906 + Google Play com.lingocc.cc5 (curl-parsed)"
+          },
+          {
+            "name": "Metered 连麦 (per-minute paid mic) — core of the live economy",
+            "category": "monetization",
+            "depth": "Live consultations billed per minute at rates set by the 达人's tier: official spread 最低0.5测测币/分钟 到 最高58.56测测币/分钟; a Tier-8 达人 example bills 27.96币/分钟. Earlier reporting cites the common band as 10–40币/分钟 (≈¥10–40/min); a Black Cat complainant reports 1.3 to 20+ 元 rates; huxiu interviewee: '有一些主播一分钟就得十块，一会儿几百块钱就没了'. Sessions practically require ~10 min minimum. This metered mic time — not gift SKUs — is the dominant revenue mechanic.",
+            "evidence": "https://www.ctdsb.net/c1716_202603/2685812.html + https://news.pedaily.cn/202603/561483.shtml + https://www.huxiu.com/article/4837012.html + https://tousu.sina.com.cn/complaint/view/17366437412/"
+          },
+          {
+            "name": "Room/mic types: 普麦 vs 私麦, voice-first rooms, 在线沙龙 group audio",
+            "category": "monetization",
+            "depth": "Two on-air modes documented: 普麦 (public mic — the reading is heard by the whole room, cheaper) and 私麦 (private 1-on-1 mic, premium). Rooms are voice-first (语音直播间); the iOS listing historically carried the subtitle '测测-女性情感倾诉直播社区' (women's emotional-venting live community), now '心理情感AI问答社区'. The expert-side app added 在线沙龙 (multi-person group audio salons, '支持更多人一起热聊'). Historical 2017 launch: 91 signed 主播, of whom 40 opened 超级粉丝 channels offering customized 1-on-1 连麦.",
+            "evidence": "https://www.ctdsb.net/c1716_202603/2685812.html + https://apps.apple.com/cn/app/id1447926119 (what's-new) + https://36kr.com/p/1721466339329 + App Store CN/US listing subtitles for id756771906"
+          },
+          {
+            "name": "Paid-seat/queue mechanics: 花钱上麦 + gift-to-ask pattern",
+            "category": "monetization",
+            "depth": "Users 'pay to go on mic for comfort' (花钱上麦找安慰, 21世纪经济报道 on 测测星座); in 占星直播间 generally, questions queue and 'you must 刷对应金额的礼物 (send a gift of the matching amount) to get answered; 连麦解惑价更高, priced per minute; a big streamer earns 1,000+元 per hour on-air' (36kr on 玄学直播 — pattern, not Cece-attributed). On Cece specifically the documented paywall is 排队→上麦→按分钟扣币; no Cece-specific gift SKU names/prices (e.g. themed gifts) surfaced in ANY public source — gift catalog appears undocumented outside the app, with gifts presumably bought in 测测币.",
+            "evidence": "https://news.qq.com/rain/a/20210909A093HB00 + https://36kr.com/p/2545768925636353 (industry mechanics)"
+          },
+          {
+            "name": "10-tier 达人 level/ranking system gating per-minute price",
+            "category": "monetization",
+            "depth": "达人 are ranked on a 10-level system (十级); the level caps/sets the per-minute 连麦 rate (Tier 8 example = 27.96币/min; top of scale 58.56币/min). Complaint reporting describes users being funneled from cheap low-tier streamers to '收费更高、评价更好的高等级咨询师'. Level derives from platform exams + 实时贡献 (real-time contribution score tracked daily in 测测达人版).",
+            "evidence": "https://www.ctdsb.net/c1716_202603/2685812.html + https://www.huxiu.com/article/4837012.html + https://sj.qq.com/appdetail/com.xxwolo.live"
+          },
+          {
+            "name": "Revenue split: 达人 keep ~50–70%",
+            "category": "monetization",
+            "depth": "极目新闻 (2026-03) reports the 达人 share of 连麦 revenue at 约50%-70% depending on tier/volume; 2017-era Q&A math also implies ~50/50. No evidence of a separate guild cut layer.",
+            "evidence": "https://www.ctdsb.net/c1716_202603/2685812.html + https://news.pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "No 公会/guild layer — direct exclusive signing of 达人",
+            "category": "monetization",
+            "depth": "Unlike typical 语音厅 platforms, no Cece 公会/agency recruitment posts, guild-split tables, or third-party 公会入驻 pages exist anywhere searchable. The model is platform-direct: 2.5万–2.6万 '平台独家签约达人咨询师' (exclusively signed expert consultants), onboarded via in-app 达人入驻 plus the separate 测测达人版 console app. Verdict: recruitment/certification/settlement are all first-party; the 40-60% guild-commission figures that surface in search results are Douyin-generic, not Cece.",
+            "evidence": "https://www.stcn.com/article/detail/1625438.html + https://www.ctdsb.net/c1716_202603/2685812.html + absence across 猎聘/BOSS直聘/知乎 guild searches"
+          },
+          {
+            "name": "测测达人版 — dedicated streamer/expert console app",
+            "category": "monetization",
+            "depth": "Separate app (iOS id1447926119, Android com.xxwolo.live — package literally 'live'; v2.17.0, 2026-07). Features: 一键连麦 (one-tap go-live to take paid calls), 快速抢答 (grab open paid questions), 实时贡献 (real-time daily contribution/earnings tracking), streamer screen tools (swipe to hide chat), 在线沙龙 group rooms, plus 专业课程 (professional psychology courses) and the AI学-练-考 certification system. This is the supply-side hub for the whole gift/mic economy.",
+            "evidence": "https://apps.apple.com/cn/app/id1447926119 + https://sj.qq.com/appdetail/com.xxwolo.live"
+          },
+          {
+            "name": "语音抢答 paid Q&A (voice answer marketplace)",
+            "category": "monetization",
+            "depth": "Text/voice Q&A: user posts a question (minimum ~3元 in 2017, now 30币+ per pedaily), certified 达人 race to grab it and reply with ≥10-second voice answers, paid by answer quality; ~8,000 questions/day and 2 replies within a minute back in 2017. First question free as acquisition hook. This was the 2016 pivot that saved the company ('2016年几乎破产, 上线付费问答/语音后盈利, 月增20%, 2017年3月单月营收158万').",
+            "evidence": "https://36kr.com/p/1721466339329 + https://www.87g.com/az/38384.html + https://news.pedaily.cn/202603/561483.shtml"
+          },
+          {
+            "name": "Top-streamer earnings ladder",
+            "category": "monetization",
+            "depth": "Founder 任永亮 disclosure: top consultants on the platform make 年收入接近200万元 (~¥2M/yr); platform PR: 心理咨询主播月入两万; 2017 data: best Q&A 大V ¥20k/month, ordinary certified 达人 几百到几千/month. Demand side documents the flip: complainants spent ¥40k in 2-3 months, >¥10k in one month on 付费连麦 alone, ¥130k in 6 months, ~¥100k in one Black Cat complaint.",
+            "evidence": "https://www.sfccn.com/2021/9-9/5OMDE0MDVfMTY2ODE5OA.html + https://www.huxiu.com/article/4837012.html + https://www.ctdsb.net/c1716_202603/2685812.html"
+          },
+          {
+            "name": "达人 certification pipeline: credential + 4 AI-run platform exams",
+            "category": "monetization",
+            "depth": "To sell on-mic services a 达人 needs (a) an external credential (e.g. 中国心理卫生协会 psychology certificate) and (b) to pass 4个技能考试 platform exams — taught, generated and graded by AI ('AI教课、AI出题、AI考试'). Certification tracks exist per discipline: 占星 (leveled), 塔罗达人, 心理达人, 国学/divination. Leaked question banks circulate (e.g. '测测基础认证题库·咨询师职业道德与守则考试题库答案-测测达人版' on book118), and a black market sells remote 代考 exam-passing at ¥2000 with '包过' guarantees — the 极目新闻 exposé's headline finding ('达人资质可代考').",
+            "evidence": "https://news.pedaily.cn/202603/561483.shtml + https://www.ctdsb.net/c1716_202603/2685812.html + https://max.book118.com/html/2023/0619/7113144104005123.shtm"
+          },
+          {
+            "name": "Education layer verdict: internal 达人 academy YES, consumer course store NO",
+            "category": "monetization",
+            "depth": "No branded '测测学院/测测学堂' consumer knowledge-payment storefront exists — searches for it return nothing, app listings/IAP lists show zero course SKUs, and the founder interview frames 知识付费 only as the 2016-era inspiration for the paid-consultation marketplace. What DOES exist is a supply-side academy embedded in 测测达人版: 专业课程 ('专业心理学课程，提升自我价值') + the full AI学-练-考 (learn-practice-test) system that feeds the 达人 certification pipeline — i.e., Cece trains its sellers, it does not retail astrology courses to end users. Industry course prices in adjacent reporting (基础班8000元/人; 若道/伦敦占星学院 ~¥1.6万 programs) belong to competitors, not Cece.",
+            "evidence": "https://apps.apple.com/cn/app/id1447926119 + https://news.qq.com/rain/a/20250804A08NCB00 + absent-evidence searches for 测测学院/测测学堂"
+          },
+          {
+            "name": "Consumer memberships + report upsells around the live economy",
+            "category": "monetization",
+            "depth": "iOS IAP: 测测连续包月会员 ¥25/mo (first month ¥9.90), SVIP连续包月 ¥69/mo, single month ¥30, quarterly ¥58, annual ¥178. Custom natal-chart reports and annual-fortune deep-dives sell at 几十元至上百元 each, cross-sold from live rooms and Q&A.",
+            "evidence": "https://apps.apple.com/cn/app/id756771906 + https://www.huxiu.com/article/4837012.html"
+          },
+          {
+            "name": "Scale + risk context of the live economy",
+            "category": "monetization",
+            "depth": "5,500万 registered users (85-80% female), 2.5-2.6万 signed 达人, ~200 staff, 年收入上亿 (¥100M+ annual revenue), App Store alone ~$5M/yr; Tencent strategic investor (2021, Series B with 百合网/九合/远瞻); Cece Group rebranded 心言集团 (Xinyan Group). Compliance overhang: 800–1000 黑猫投诉 complaints (诱导高额消费, refund refusal, fake-qualification 达人) — the same exposés that documented the coin rates and splits.",
+            "evidence": "https://www.ctdsb.net/c1716_202603/2685812.html + https://www.stcn.com/article/detail/1625438.html + https://www.sina.cn/news/detail/5274583533883186.html"
+          }
+        ],
+        "notes": "Key deltas vs prior surface coverage: (1) The 'gift economy' is really a METERED-MIC economy — per-minute 连麦 (0.5–58.56 测测币/min, tier-gated by a 10-level 达人 ladder, 普麦 public vs 私麦 private modes, 50–70% to the 达人) dwarfs gifting; no public gift SKU/price table for Cece exists in any indexed source (gap: SKU names/prices only visible in-app; complaints and journalism all describe spend via 连麦 minutes and coin recharges, never named gifts). (2) No 公会/guild layer — 达人 are exclusively platform-signed (2.5-2.6万) and managed through the first-party 测测达人版 console; guild-split numbers appearing in search results are Douyin-generic. (3) Education verdict: NO consumer-facing 测测学院/course store; YES internal academy — 专业课程 + AI学-练-考 inside 测测达人版 feeding certification (external credential + 4 AI-graded exams), with a ¥2000 代考 black market as the tell that certification is the real gate to earning. Founder 任永亮; group renamed 心言集团. Cece official sites (xxwolo.com, cece.com) unreachable from this network (CN-hosted, ECONNREFUSED/timeout) — could not enumerate 达人入驻 landing pages directly.",
+        "sources": [
+          "https://www.ctdsb.net/c1716_202603/2685812.html",
+          "https://news.pedaily.cn/202603/561483.shtml",
+          "https://www.huxiu.com/article/4837012.html",
+          "https://36kr.com/p/1721466339329",
+          "https://news.qq.com/rain/a/20210909A093HB00",
+          "https://www.sfccn.com/2021/9-9/5OMDE0MDVfMTY2ODE5OA.html",
+          "https://apps.apple.com/cn/app/id756771906",
+          "https://apps.apple.com/cn/app/id1447926119",
+          "https://sj.qq.com/appdetail/com.xxwolo.live",
+          "https://sj.qq.com/appdetail/com.xxwolo.cc5",
+          "https://www.87g.com/az/38384.html",
+          "https://news.qq.com/rain/a/20250804A08NCB00",
+          "https://www.stcn.com/article/detail/1625438.html",
+          "https://max.book118.com/html/2023/0619/7113144104005123.shtm",
+          "https://play.google.com/store/apps/details?id=com.lingocc.cc5"
+        ]
+      }
+    ],
+    "critic": {
+      "missingAreas": [
+        {
+          "area": "Exact enumeration of all '20种星盘' chart types + 排盘 engine settings + 紫微斗数 module depth",
+          "searchPrompt": "Research the chart-engine depth of Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, international package com.lingocc.cc5, iOS App Store id756771906, official site xxwolo.com). Marketing claims '多达20种星盘' (20 chart types) but only ~8 are confirmed so far (本命盘, 天象盘, 比较盘, 组合盘, 组合推运, 时空盘, 马盘, plus generic mentions of progressions/returns/firdaria/solar-arc). Goal 1: produce the full named list of all 20 chart types in Chinese + English (look for 次限盘/三限盘, 太阳返照盘, 月亮返照盘, 日弧盘, 法达, 卜卦盘/horary, 太阳弧, 复合中点盘, etc.). Goal 2: what settings the 排盘 engine exposes — house systems (宫位制), 真太阳时 toggle, asteroids (小行星), fixed stars (恒星), aspect orb settings. Goal 3: depth of the 紫微斗数 module — does it show 十二宫, 四化, 大限/流年/流月运限, 星曜庙旺? Use WebSearch with Chinese queries such as: \"测测 20种星盘 都有哪些\", \"测测app 星盘 次限 三限 返照盘 法达\", \"测测 排盘 设置 宫位制 真太阳时\", \"测测 紫微斗数 四化 大限 流年\". Chinese third-party app-store listing pages (豌豆荚, 应用宝, 华为应用市场, PP助手 pages for 测测) often paste the developer's full feature bullet list — search \"测测 豌豆荚\" / \"测测星座 应用宝\". If you fetch the Google Play page for com.lingocc.cc5, note it cannot be fetched naively: use curl with a desktop browser User-Agent, save the HTML, and extract the description/what's-new from the embedded script-tag JSON with a small python script. Deliver a table: chart type (中文/EN) → confirmed/unconfirmed → source."
+        },
+        {
+          "area": "六爻 divination, 择日/黄历 (auspicious-date almanac), and other Chinese verticals: 姓名测试, AI 手相/面相 photo scan, 宠物星盘 (pet astrology)",
+          "searchPrompt": "Determine whether the Cece 测测 app (Chinese astrology super-app; CN package com.xxwolo.cc5, intl com.lingocc.cc5, iOS id756771906, official site xxwolo.com) ships any of these common Chinese-divination-super-app verticals, none of which appear in prior research: (1) 六爻排盘/六爻占卜 (Liu Yao hexagram casting with 装卦/世应/六亲 — distinct from a generic I Ching reading), (2) 择日/择吉 and 黄历/老黄历 almanac (daily 宜/忌, auspicious date picking for weddings/moves), (3) 姓名测试/起名 (name analysis or baby naming), (4) AI 手相/面相 photo-scan reading (palm/face reading from camera upload), (5) 宠物星盘/宠物占星 (pet astrology). For each: does it exist in Cece, is it free or paid (coins/VIP/expert consult), and how deep is it? Use WebSearch with Chinese queries: \"测测app 六爻\", \"测测 六爻排盘\", \"测测 黄历 择日\", \"测测 姓名测试\", \"测测 面相 手相 AI\", \"测测 宠物星盘\", plus \"site:xxwolo.com\" searches and Apple App Store CN page for id756771906 (its 新功能/version-history notes often announce new modules). Also check the expert-consult category list (占星/塔罗/八字 categories on 测测达人 pages) — 六爻 and 择日 often appear as expert service categories even if no self-serve tool exists. If checking the Google Play listing for com.lingocc.cc5, fetch it with curl using a desktop browser User-Agent and parse the embedded JSON out of the HTML with a short python script (naive fetches fail). Deliver: present/absent verdict per vertical with evidence, and whether it is a self-serve tool vs an expert-marketplace service category."
+        },
+        {
+          "area": "VIP vs SVIP entitlement matrix + per-feature coin price list (what exactly each tier and each coin-sink unlocks)",
+          "searchPrompt": "Prior research on Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, intl com.lingocc.cc5, iOS id756771906) captured VIP pricing (¥9.9 first month → ¥25/mo, ¥58/quarter, ¥178/yr; SVIP ¥69/mo; coins ¥6–698, 1币≈¥1) but NOT what each tier actually unlocks. Build the entitlement matrix: (1) exact benefit list of VIP vs SVIP (which chart interpretations, 合盘 readings, reports, daily-fortune detail, ad removal, discount rates on expert consults, free AI-question quota, free coins/month?); (2) the per-item coin price list for major sinks — unlock price of each 星盘 interpretation, 合盘 report, 八字 report, 紫微 report, AI soulmate portrait (正缘画像), question posting (抢答区), per-minute 连麦 tiers; (3) funnel mechanics: first-question-free coupons, new-user 优惠券, VIP-only free reports. Use WebSearch in Chinese: \"测测 会员 权益\", \"测测 VIP SVIP 区别 权益\", \"测测app 会员 多少钱 有什么用\", \"测测币 价格 解锁\", \"测测 正缘画像 多少钱\", \"测测 提问 多少币\". Black Cat complaint pages (黑猫投诉 搜索 \"测测\") are excellent for exact prices users paid — search \"黑猫投诉 测测 会员\" / \"黑猫投诉 测测币\". Also pull the iOS in-app-purchase SKU list from the Apple App Store CN page for id756771906 (the 'App内购买项目' section names each SKU with price). For the Google Play page of com.lingocc.cc5, fetch with curl using a desktop browser User-Agent and extract the IAP range and description from the embedded script-tag JSON via python (naive fetch fails). Deliver: a tier-benefit table and a coin-sink price table with sources."
+        },
+        {
+          "area": "Livestream/audio-room gift economy mechanics + 测测学院/paid course (knowledge-payment) layer",
+          "searchPrompt": "Two monetization surfaces of Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, intl com.lingocc.cc5, iOS id756771906, company 北京力拓飞远科技/Cece Group, official site xxwolo.com) are only surface-covered: (1) the live-streaming/audio-room economy — prior research knows 24h livestream astrologers, gifting, and streamer levels exist, but not the mechanics: virtual gift SKU names and coin prices, streamer level/ranking system, 公会/guild or agency structure for 达人, room types (video vs 语音直播间 audio rooms vs group 连麦), paid seat/queue mechanics for on-air chart readings, revenue split for streamers, top-streamer earnings; (2) the education layer — does Cece sell astrology/tarot/psychology COURSES to users (知识付费), e.g. 测测学院/测测学堂/占星课程, recorded classes, training that feeds its 达人 certification pipeline, and course price points. Use WebSearch with Chinese queries: \"测测 直播 礼物 价格\", \"测测app 语音直播间\", \"测测 达人 公会 入驻\", \"测测 主播 等级\", \"测测 连麦 分成\", \"测测学院 课程\", \"测测 占星课程 价格\", \"力拓飞远 测测 直播\". Recruiting/job posts (BOSS直聘/拉勾 for 力拓飞远) and 达人入驻 pages often reveal revenue-split and guild structure; 知乎 and 小红书 posts by former 达人 detail gift economics. Cross-check the separate expert app 测测达人版 (iOS id1447926119) description for streaming/course tooling. If any Google Play page must be read, fetch it with curl using a desktop browser User-Agent and parse the embedded JSON with python (naive fetches fail). Deliver: gift-economy mechanics (SKUs, prices, splits, guilds), room-type inventory, and a verdict + details on whether a paid course/academy layer exists."
+        }
+      ],
+      "confidence": "medium — coverage of the core free toolbox, AI layer, expert marketplace, and headline pricing is strong and multi-sourced, but the teardown still lacks the concrete enumerations a judge needs: the actual list behind '20种星盘', 紫微 module depth, 六爻/择日/黄历 and other Chinese verticals (entirely unprobed), the VIP/SVIP benefit matrix and per-item coin sinks, and the livestream gift economy + course/academy monetization layer."
+    },
+    "synthesis": {
+      "gapMatrix": [
+        {
+          "ceceFeature": "Natal chart engine (free, pro-grade interpretations)",
+          "ceceDepth": "Free natal chart from birth data with planets/houses/aspects and detailed written interpretations; true-solar-time option; positioned against Astrolog32/Janus/Winstar/Zet",
+          "arcanaStatus": "PARITY",
+          "gap": "none",
+          "category": "astrology-charts"
+        },
+        {
+          "ceceFeature": "20-chart-type personal suite (transits, 2nd/3rd progressions, solar/lunar returns, solar arc, Firdaria, mundane sky chart)",
+          "ceceDepth": "Flagship marketing claim '覆盖20种星盘'; 14 named types enumerated in CN listings; free to view, interpretation monetized",
+          "arcanaStatus": "PARTIAL(5 types live: natal, transits, secondary progressions, solar return, synastry — all real ephemeris; missing lunar return, tertiary progressions, solar arc, Firdaria, mundane)",
+          "gap": "large",
+          "category": "astrology-charts"
+        },
+        {
+          "ceceFeature": "Relationship chart suite: 比较盘/组合盘/组合推运/时空盘/马盘 (synastry, composite, progressed composite, Davison, Marks)",
+          "ceceDepth": "Five distinct two-person chart techniques with membership-gated interpretation text; covers every mainstream relationship method",
+          "arcanaStatus": "PARTIAL(synastry only — People compare, partner-compat adhoc, Soulmate Score; no composite/Davison/progressed-composite/Marks)",
+          "gap": "moderate",
+          "category": "astrology-charts"
+        },
+        {
+          "ceceFeature": "Saved profile archives (档案) + friend synastry",
+          "ceceDepth": "Save person profiles, run 缘分合盘 against them; notoriously crash-prone on the intl Play build (3 black-screen reviews)",
+          "arcanaStatus": "AHEAD(People module: unlimited saved people with relationship tags, per-person full natal chart pages, full synastry compare, moonstone-gated AI person reading with 4 focus lenses)",
+          "gap": "we-lead",
+          "category": "astrology-charts"
+        },
+        {
+          "ceceFeature": "Transit-computed daily fortune with 0-100 score + daily/weekly/monthly/yearly dimensions",
+          "ceceDepth": "Personal daily score computed from natal+transits, love/career/wealth dimensions; the emotional retention hook users check daily (and complain manufactures anxiety)",
+          "arcanaStatus": "PARTIAL(personalized daily via astrology-daily, weekly/monthly forecasts, personal transit calendar; no headline numeric daily score)",
+          "gap": "small",
+          "category": "fortune"
+        },
+        {
+          "ceceFeature": "Daily lucky color + shareable lucky map",
+          "ceceDepth": "Granular daily lucky color users dress by; lucky map shared socially (documented acquisition vector)",
+          "arcanaStatus": "PARTIAL(Bazi-depth Today's Lucky Color exists; no daily shareable lucky-map artifact)",
+          "gap": "small",
+          "category": "fortune"
+        },
+        {
+          "ceceFeature": "12-sign pairing compatibility content",
+          "ceceDepth": "Entry-level sign-to-sign love index with interpretation",
+          "arcanaStatus": "PARITY",
+          "gap": "none",
+          "category": "fortune"
+        },
+        {
+          "ceceFeature": "BaZi module with practitioner-level fields",
+          "ceceDepth": "取格 (structure), 身强身弱, 喜用神, 空亡, 神煞 lists, five-element analysis — users police these at expert level in reviews",
+          "arcanaStatus": "PARTIAL(pillars, day master, ten gods, hidden stems, nayin, strength, supporting element, lucky color + AI reading; missing shensha, kongwang, formal structure determination, luck-pillar 大运 timeline)",
+          "gap": "small",
+          "category": "bazi"
+        },
+        {
+          "ceceFeature": "Zi Wei Dou Shu chart",
+          "ceceDepth": "Ziwei charting with interpretations; accurate legacy implementation (users noticed a regression, proving engagement)",
+          "arcanaStatus": "MISSING",
+          "gap": "moderate",
+          "category": "bazi"
+        },
+        {
+          "ceceFeature": "28 Lunar Mansions (二十八宿)",
+          "ceceDepth": "Birth-date mansion reading with detailed explanations — a rarity differentiator",
+          "arcanaStatus": "MISSING",
+          "gap": "small",
+          "category": "bazi"
+        },
+        {
+          "ceceFeature": "Life-number numerology",
+          "ceceDepth": "Single life-path number with detailed interpretation",
+          "arcanaStatus": "AHEAD(Life Path + Expression + Soul Urge + Personality numbers in Cosmic Profile, plus 14-entry numerology learn hub)",
+          "gap": "we-lead",
+          "category": "other"
+        },
+        {
+          "ceceFeature": "Tarot (draw UI + AI interpretation + human readers)",
+          "ceceDepth": "Tap-to-draw card UI, AI reading in Q&A flow, tarot as top paid-expert category; accuracy praised, anxiety-bait upsell copy criticized",
+          "arcanaStatus": "AHEAD(42 spreads incl. Celtic Cross, custom 13-position spread builder, 78 SEO card pages with custom art, dual AI/traditional interpretations, shareable reading URLs, Mirror stats)",
+          "gap": "we-lead",
+          "category": "tarot"
+        },
+        {
+          "ceceFeature": "Astro dice (占星骰子: planet/sign/house) with AI interpretation",
+          "ceceDepth": "Western astro-dice casting wired into AI Q&A and community expert interpretation",
+          "arcanaStatus": "PARTIAL(generic 3-dice numeric oracle with 16 readings; not planet/sign/house astro dice, no AI layer)",
+          "gap": "small",
+          "category": "fortune"
+        },
+        {
+          "ceceFeature": "I Ching hexagrams",
+          "ceceDepth": "Hexagram casting exists mainly via practitioners/expert consults; no strong self-serve tool documented",
+          "arcanaStatus": "AHEAD(full 64-hexagram library, animated 3-coin cast, changing lines to transformed hexagram, Ask-Oracle follow-up)",
+          "gap": "we-lead",
+          "category": "fortune"
+        },
+        {
+          "ceceFeature": "Human Design charts",
+          "ceceDepth": "Generates human design charts alongside horoscopes (per Rest of World); depth unclear",
+          "arcanaStatus": "AHEAD(real astronomy-engine computation: 64 gates, 26 activations, type/strategy/authority/profile, interactive 9-centre bodygraph SVG, channels)",
+          "gap": "we-lead",
+          "category": "fortune"
+        },
+        {
+          "ceceFeature": "Unified AI Q&A hub — 3-second answers across all divination tools + daily quota",
+          "ceceDepth": "One AI surface routing star dice/tarot/bazi/natal chart questions, 3s response claim, ~50k users/day on 小测AI; quota (2/day free) drives membership",
+          "arcanaStatus": "PARTIAL(pieces exist — AI Quick Reading 3-sec single-shot with natal memory, Tarot Companion, AI Companion, contextual AskOracle buttons — but no single cross-tool Q&A hub)",
+          "gap": "moderate",
+          "category": "ai"
+        },
+        {
+          "ceceFeature": "Personalized AI question recommendations (猜你所想)",
+          "ceceDepth": "Engine suggests questions personalized to user profile/chart to drive engagement",
+          "arcanaStatus": "PARTIAL(AskOracle seeds contextual questions from cards/hexagrams/aspects; no personalized suggestion engine from chart+behavior)",
+          "gap": "small",
+          "category": "ai"
+        },
+        {
+          "ceceFeature": "Named AI companion personas with memory (小星, AI 分身)",
+          "ceceDepth": "Roster of AI agents, persistent-memory claims, proactive re-engagement (with documented boundary problems)",
+          "arcanaStatus": "PARTIAL(4 personas with per-persona 40-msg local history; no persistent server-side memory or proactive outreach)",
+          "gap": "small",
+          "category": "ai"
+        },
+        {
+          "ceceFeature": "AI soulmate portrait (正缘画像)",
+          "ceceDepth": "Image-gen of destined partner from birth data — Cece's documented viral hook for its US/overseas push (800k users headline)",
+          "arcanaStatus": "MISSING(Soulmate Score is score+aspects only, no generated portrait image)",
+          "gap": "large",
+          "category": "ai"
+        },
+        {
+          "ceceFeature": "16-personality/MBTI with social graph overlay",
+          "ceceDepth": "Revamped test + WeChat-friend compatibility scores + friend-circle 16-type distribution visualization — test results as social objects",
+          "arcanaStatus": "PARTIAL(full+quick MBTI, cognitive-function compat layer; compat-invite deep links built but OFF; no friend-distribution graph)",
+          "gap": "moderate",
+          "category": "tests"
+        },
+        {
+          "ceceFeature": "50+ psychological test library",
+          "ceceDepth": "50+ tests (some with Tsinghua psych input), each generating algorithmic reports; the free viral entry point",
+          "arcanaStatus": "PARTIAL(33 quizzes with hints, localization, XP, share, personalization feeds — quality comparable, count lower)",
+          "gap": "small",
+          "category": "tests"
+        },
+        {
+          "ceceFeature": "3D psychological sandplay",
+          "ceceDepth": "~1,000 sand figures, analysis of choice + spatial placement, 4 themes, ~10k uses/day, paid pro interpretation",
+          "arcanaStatus": "MISSING",
+          "gap": "moderate",
+          "category": "tests"
+        },
+        {
+          "ceceFeature": "Meditation content",
+          "ceceDepth": "First-class module on official site alongside sandbox/tests/community",
+          "arcanaStatus": "MISSING",
+          "gap": "small",
+          "category": "other"
+        },
+        {
+          "ceceFeature": "Test-taker community + per-test discussion zones + sign zones + chart-sharing posts",
+          "ceceDepth": "12 sign zones, interest groups, discussion areas attached to test results, chart posts feeding paid expert answers — one of three interaction pillars",
+          "arcanaStatus": "PARTIAL(full community feed with 8 topics, reactions, AI moderation pipeline BUILT but flag OFF; no per-test/per-card threads or sign zones)",
+          "gap": "large",
+          "category": "community"
+        },
+        {
+          "ceceFeature": "Anonymous confession tree hole (心理树洞) / venting",
+          "ceceDepth": "Anonymous emotional posting + 1:1 倾诉 listening services, 7x24 framing — the wedge that justified the psychology pivot",
+          "arcanaStatus": "PARTIAL(Whispering Well anonymous mode fully built with distinct palette, flag OFF; no paid listener tier)",
+          "gap": "moderate",
+          "category": "community"
+        },
+        {
+          "ceceFeature": "Paid human expert Q&A marketplace (voice grab-answer, chart attached)",
+          "ceceDepth": "~20-26k certified 达人; question + chart posts to 抢答区, voice answers in ~1 min, from ¥3 to 30+ coins; the pivot that saved the company; platform takes 30-50%",
+          "arcanaStatus": "PARTIAL(advisor directory + profiles + interest capture live; booking, voice, payouts, verification all built but flagged OFF; no async voice-answer Q&A model at all)",
+          "gap": "critical",
+          "category": "community"
+        },
+        {
+          "ceceFeature": "Per-minute metered live voice consults (连麦) with 10-tier pricing",
+          "ceceDepth": "0.5-58.56 coins/min across 10 expert levels, 普麦/私麦 modes, surge pricing, 免密支付 auto-deduct (their top complaint source); the highest-margin surface",
+          "arcanaStatus": "PARTIAL(LiveKit voice + advisor session pages built, OFF; no per-minute metering, tier ladder, or live billing UI)",
+          "gap": "large",
+          "category": "monetization"
+        },
+        {
+          "ceceFeature": "24h livestream/audio rooms with gifting",
+          "ceceDepth": "Around-the-clock streamed readings, virtual gifts, group salons; top streamers >¥100k/mo",
+          "arcanaStatus": "PARTIAL(Live Rooms MVP: scheduled audio events + RSVP + VoiceStrip, OFF; no gifting/tips economy)",
+          "gap": "moderate",
+          "category": "community"
+        },
+        {
+          "ceceFeature": "Expert certification + supply-side pipeline (exams, tiers, console app)",
+          "ceceDepth": "Credential + 4 AI-graded exams, 10-level ladder gating price, real-time earnings console (测测达人版), internal course academy — leaky (¥2k proxy-exam black market)",
+          "arcanaStatus": "PARTIAL(advisor-verify + advisor dashboard pages built, OFF; no exams, tiering, or earnings console)",
+          "gap": "moderate",
+          "category": "community"
+        },
+        {
+          "ceceFeature": "VIP/SVIP dual membership",
+          "ceceDepth": "VIP ¥9.9 first month→¥25/mo, ¥178/yr; SVIP ¥69/mo (delta undocumented); gates deeper interpretations + AI quota",
+          "arcanaStatus": "PARITY(Premium $3.99/mo, $19.99/yr with 3-day trial, $29.99 lifetime; RevenueCat + Stripe; unlocks all AI/reports/tabs — simpler and cheaper)",
+          "gap": "none",
+          "category": "monetization"
+        },
+        {
+          "ceceFeature": "Coin economy (测测币) with purchase packs ¥6-698",
+          "ceceDepth": "Dual exchange rate, refunds-in-coins, hidden rates, 免密支付 — 800+ Black Cat complaints, whale cases to ¥300k/yr; a regulatory liability",
+          "arcanaStatus": "PARTIAL(moonstones earn-only by deliberate design — rewarded ads, check-in, quizzes; topup flag OFF; server-side spend RPC) — intentional ethical divergence, not a deficit",
+          "gap": "none",
+          "category": "monetization"
+        },
+        {
+          "ceceFeature": "Algorithmic paid personal reports",
+          "ceceDepth": "'Professional knowledge + refined algorithms' reports, tens-to-hundreds RMB, cross-sold from tests/charts/live rooms",
+          "arcanaStatus": "PARITY(Natal Deep Report $9.99, Year-Ahead $12.99, Career Archetype $6.99; moonstone or cash; premium bypass)",
+          "gap": "none",
+          "category": "reports"
+        },
+        {
+          "ceceFeature": "Free-tools acquisition funnel",
+          "ceceDepth": "Free charts/bazi reports and tests as top-of-funnel; interpretation is the paywall",
+          "arcanaStatus": "AHEAD(free tier plus a public web SEO surface Cece lacks internationally: 78 card pages, 42 spread pages, 150+ learn entries, blog generator, shareable reading URLs)",
+          "gap": "we-lead",
+          "category": "design"
+        },
+        {
+          "ceceFeature": "Home content feed",
+          "ceceDepth": "Editorial/recommendation feed — users complain of 'junk info' clutter",
+          "arcanaStatus": "AHEAD(clean daily-ritual loop: tarot flip, horoscope, journal prompt, moon phase, daily mission, streaks — retention-designed, not feed-cluttered)",
+          "gap": "we-lead",
+          "category": "design"
+        },
+        {
+          "ceceFeature": "Dark mode + typography polish",
+          "ceceDepth": "No true dark mode (4+ independent complaints, 'blinding at night'), tiny fonts",
+          "arcanaStatus": "AHEAD(dark cosmic visual identity by default; no equivalent complaint surface)",
+          "gap": "we-lead",
+          "category": "design"
+        },
+        {
+          "ceceFeature": "International build parity + overseas payments",
+          "ceceDepth": "Play build frozen at 1.0.9 vs flagship 10.50, broken overseas membership payments, forced login, Chinese-only content — their exposed flank",
+          "arcanaStatus": "AHEAD(single up-to-date codebase web+Android, working RevenueCat/Stripe billing, public logged-out routes, en/ja/ko/zh localization)",
+          "gap": "we-lead",
+          "category": "other"
+        },
+        {
+          "ceceFeature": "Output stability & trust (algorithm versioning)",
+          "ceceDepth": "Loudest review theme: every update visibly changes sun signs, 神煞, 喜用神, daily scores — users actively police drift and lose trust",
+          "arcanaStatus": "AHEAD(deterministic astronomy-engine computation with hand-written versioned interpretation corpora; no drift complaint class)",
+          "gap": "we-lead",
+          "category": "other"
+        }
+      ],
+      "weLead": [
+        "Astrocartography: Celestial Map with 40 planetary lines, 207-city dataset, life-area filters, AI Travel Reading, and Find Your Place city-scoring — Cece has nothing comparable",
+        "Deterministic real-ephemeris engine (astronomy-engine) with stable outputs and versioned interpretation text — directly counters Cece's #1 trust complaint (accuracy drift on every update)",
+        "Public web SEO acquisition surface: 78 card-meaning pages, 42 spread pages, 150+ learn-hub entries, AI blog, URL-shareable readings — Cece has zero international web funnel",
+        "Custom spread builder (up to 13 user-defined positions, saved and playable) — no Cece equivalent",
+        "Self-serve I Ching (64 hexagrams, changing lines), Elder Futhark runes, and Feng Shui (Kua, Bagua, room guidance, annual stars) — Cece offers these only via paid experts or not at all",
+        "Human Design with real computed gates/type/authority/profile and interactive 9-centre bodygraph",
+        "Journal with 21 templates + AI journal coach, and Mood Diary with trend history + AI mood letter — Cece's 'mood curve' is a thin VIP perk",
+        "AI Dream Interpreter (Jungian structured output with offline 168-symbol fallback) — absent in Cece",
+        "Gamification: XP/levels, 48 achievements, streak milestones, Fool's Journey 22-level progression — Cece has none",
+        "People module UX: unlimited saved people, per-person chart pages, AI focus-lens readings — vs Cece's crash-prone 档案/synastry flow on the intl build",
+        "Clean daily-ritual home loop vs Cece's cluttered feed (a documented user complaint)",
+        "Dark-first cosmic design language; Cece's top UX complaints are no dark mode and tiny fonts",
+        "Working international monetization: RevenueCat + Stripe + trial + lifetime; Cece's overseas payments are broken and its Play build is frozen at 1.0.9",
+        "Four-locale localization (en/ja/ko/zh) with localized decks, quizzes, and interpretation corpora — Cece's international content is effectively Chinese-only",
+        "Ethical monetization posture: earn-only moonstones, forced ads disabled, transparent pricing — a trust moat against Cece's 800+ dark-pattern complaints and regulatory overhang"
+      ],
+      "plan": [
+        {
+          "phase": 1,
+          "title": "Chart-suite parity blitz — honestly claim '20+ chart types'",
+          "items": [
+            "Add lunar return edge function + UI (clone solar-return pattern)",
+            "Add tertiary progressions and solar arc directions (parameterize existing progressions function)",
+            "Add Firdaria time-lord calculator with timeline visualization",
+            "Add composite (midpoint) and Davison charts to People compare (reuse synastry cross-aspect renderer)",
+            "Add progressed composite as a composite variant",
+            "Add 'sky right now' mundane chart (astrology-current-positions already exists — needs a wheel view)",
+            "Render all new types through the existing NatalWheel overlay-ring + AspectGrid + ElementBalance components",
+            "Marketing copy + SEO pages per chart type"
+          ],
+          "effort": "3-4 weeks",
+          "rationale": "Cece's flagship claim is '20 chart types'; Arcana already owns the ephemeris engine, wheel renderer, and interpretation corpus, so each new type is a thin edge function + overlay — the cheapest path to neutralizing their headline differentiator and beating their relationship-chart suite (which is paywalled and text-only) with our interactive graphs."
+        },
+        {
+          "phase": 2,
+          "title": "Oracle Hub: unified 3-second AI Q&A + daily score engine",
+          "items": [
+            "Build one Oracle hub routing questions across tarot/astro-dice/I Ching/bazi/natal context (compose existing ai-quick-reading, tarot companion, AskOracle plumbing)",
+            "Personalized question-suggestion engine from natal signals + quiz results + recent activity ('guess what you want to ask')",
+            "Upgrade Dice page to true astro dice (planet/sign/house) with AI interpretation",
+            "Daily Cosmic Score 0-100 computed from personal transits with a transparent 'why this score' aspect breakdown (anti-anxiety framing — Cece's score is a complaint magnet)",
+            "Unify lucky color into the daily ritual card + shareable daily card image",
+            "Persistent server-side companion memory (opt-in) so personas recall past sessions"
+          ],
+          "effort": "2-3 weeks",
+          "rationale": "Matches Cece's core interaction model (fast AI answers across all tools + a daily number users check compulsively) while fixing their documented failures: no cross-session grounding, quota frustration, and anxiety-bait scoring. Builds entirely on the existing AI stack and moonstone metering."
+        },
+        {
+          "phase": 3,
+          "title": "Soulmate Portrait + viral social loops",
+          "items": [
+            "AI soulmate portrait image generation seeded from natal/synastry signals, attached to the existing Soulmate Score share card",
+            "Flip ON referral (100 moonstones/side) and compat-invite deep links",
+            "Friend circle v1: accepted invites build a friend list showing MBTI type, element, and sun sign distribution graphs (contacts/share-link based — the Western adaptation of Cece's WeChat graph)",
+            "One-tap friend synastry from the friend list (reuses People compare)",
+            "Share-card templates for portrait, score, MBTI type, and daily score"
+          ],
+          "effort": "2-3 weeks",
+          "rationale": "The soulmate portrait is Cece's proven US-expansion viral hook and our single largest MISSING item; Arcana already has the score math, share infra, and invite system built — this phase converts them into a growth loop without cloning WeChat."
+        },
+        {
+          "phase": 4,
+          "title": "Community launch (flip the dark features ON)",
+          "items": [
+            "Enable community + Whispering Well flags (moderation pipeline already ON)",
+            "Add per-quiz and per-card discussion threads (Cece's test-discussion zones)",
+            "Add 12 zodiac sign zones as pinned topics",
+            "Allow attaching a reading/chart snapshot to posts (chart-sharing posts)",
+            "Seed content + daily prompt automation; crisis banner QA",
+            "Community achievements + XP hooks"
+          ],
+          "effort": "2-3 weeks build + ongoing ops",
+          "rationale": "Community is one of Cece's three pillars and our version is fully built but disabled — the highest-leverage flip in the codebase. Per-test discussion zones and sign zones are the two Cece patterns our feed lacks; both are thin additions to the existing topic system."
+        },
+        {
+          "phase": 5,
+          "title": "Eastern depth pack — close the remaining calc gaps",
+          "items": [
+            "Zi Wei Dou Shu chart: 12 palaces, 14 major stars, four transformations, palace interpretations + AI reading (mirror BaziPage architecture)",
+            "BaZi upgrade: luck-pillar (大运) timeline graph, shensha list, kongwang, formal structure (取格) determination",
+            "28 Lunar Mansions birth reading + daily mansion in the ritual loop",
+            "Golden-test all new Eastern calculations against published reference charts (weaponize Cece's accuracy-drift failure)",
+            "Localize for zh/ja/ko locales already shipped"
+          ],
+          "effort": "4-6 weeks",
+          "rationale": "Ziwei and mansions are the only divination systems where Arcana is outright MISSING vs Cece; bazi is already close. Shipping these with verifiable accuracy and stable outputs attacks the exact trust wound Cece's reviews expose, and serves our existing CJK locales."
+        },
+        {
+          "phase": 6,
+          "title": "Human layer v1 — the ethical advisor marketplace",
+          "items": [
+            "Go live: advisor booking + verification + Stripe Connect payouts (all built, flagged OFF)",
+            "Add async Q&A: user posts question with chart attached, advisors answer in text/voice within SLA (Cece's 抢答区 adapted)",
+            "Advisor tier ladder (verified → pro → master) gating listing placement, not hidden prices",
+            "Transparent upfront per-item pricing in cash or moonstones; cash refunds (never currency-locked)",
+            "Advisor earnings dashboard (reuse AdvisorDashboardPage)",
+            "Recruit initial 20-50 advisors from tarot/astrology creator communities"
+          ],
+          "effort": "4-6 weeks + supply recruitment",
+          "rationale": "The expert marketplace is Cece's revenue moat and our one CRITICAL gap; the scaffolding already exists behind flags. Differentiator is trust: upfront pricing, real refunds, and visible vetting — the inverse of the dark patterns generating Cece's 800+ complaints."
+        },
+        {
+          "phase": 7,
+          "title": "Live audio v2 — metered sessions and salons",
+          "items": [
+            "Per-minute metered 1:1 voice sessions (LiveKit) with an always-visible spend/time counter and hard budget caps set before connecting",
+            "Scheduled group audio salons with paid host Q&A slots (upgrade Live Rooms MVP)",
+            "Optional tipping (flat tips, no gift-SKU economy)",
+            "Session replays for hosts (live-replays flag exists)",
+            "Advisor availability + surge-free consistent pricing"
+          ],
+          "effort": "3-4 weeks",
+          "rationale": "Completes marketplace depth to match Cece's 连麦 (their highest-margin surface) while designing directly against their top complaints: hidden rates, no remaining-time display, and auto-deduct. The visible meter is both an ethical stance and a marketable feature."
+        },
+        {
+          "phase": 8,
+          "title": "Psychology breadth — tests, sandplay, calm",
+          "items": [
+            "Expand quiz library 33 → 50+ (values, career anchors, stress styles, chronotype, friendship, grief, self-esteem, motivation…)",
+            "MBTI/element friend-distribution graphs on profile (feeds Phase 3 friend circle)",
+            "Sandplay-lite: drag-and-drop symbolic scene builder with AI interpretation of choice + placement, 4 themes, with save (fixing Cece's lost-work bug)",
+            "Guided meditation/audio content tied to daily ritual and moon phases",
+            "Mood curve upgrade: richer trend visualization + weekly AI mood letter cadence"
+          ],
+          "effort": "4-5 weeks",
+          "rationale": "Matches Cece's 'pan-psychology' breadth claim (50+ tests, sandplay ~10k uses/day) with cheaper, mostly content-driven work on the existing quiz engine; sandplay-lite would be a genuine first for Western-market apps."
+        },
+        {
+          "phase": 9,
+          "title": "Graph depth + stability polish",
+          "items": [
+            "Time-lord/Firdaria and luck-pillar horizontal timeline components (shared design)",
+            "Transit-intensity heatmap calendar (upgrade transit calendar to a graph)",
+            "Composite/Davison wheel overlays on the astrolabe ChartWheel",
+            "Animated daily-score gauge + 30-day score sparkline",
+            "Chart settings: house system selection, true-solar-time toggle for bazi, orb preferences",
+            "Versioned interpretation text with changelog note when content updates (trust feature)",
+            "Performance + dark/light QA pass on all chart components"
+          ],
+          "effort": "3-4 weeks",
+          "rationale": "Wins the 'graphs' axis outright: Cece's depth is mostly text behind paywalls while Arcana already has the strongest visualization stack in the category — this phase makes every new Phase 1/5 computation visually interactive and locks in the stability story Cece keeps fumbling."
+        },
+        {
+          "phase": 10,
+          "title": "Open-flank verticals Cece deliberately avoided",
+          "items": [
+            "Liu Yao (六爻) casting mode layered on the existing I Ching engine (najia lines, six relatives, moving-line judgment)",
+            "Auspicious dates: personal 'good day' finder from transits + Chinese almanac 宜/忌 layer, with calendar export",
+            "Pet astrology charts (novelty natal chart for pets via People with species tag) — pure share bait",
+            "Palm/face scan explicitly rejected (biometric/compliance risk — same call Cece made)",
+            "Name-number analysis added to Cosmic Profile (numerology extension)"
+          ],
+          "effort": "2-3 weeks",
+          "rationale": "Cece left 六爻, date-selection, naming, and pet astrology to niche apps due to CN compliance positioning; a Western app faces no such constraint. Cheap wins on existing engines that make Arcana strictly broader than the flagship, not just the Play port."
+        }
+      ]
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Research"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Critic"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 3,
+      "title": "Synthesize"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "research:play-listing",
+      "phaseIndex": 1,
+      "phaseTitle": "Research",
+      "agentId": "a8c2bb13d65b97dc3",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785614984374,
+      "queuedAt": 1785614984299,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Cece (測測, com.lingocc.cc5) by LIGHTFUL AI TECHNOLOGIES PT…",
+      "promptPreview": "You are researching the astrology app \"Cece\" (測測), package com.lingocc.cc5, for a competitive teardown. Play Store pages are JS-heavy; plain WebFetch truncates. Use Bash: curl -s -A \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36\" \"<url>\" -o page.html, then extract with python (write a small .py file; regex for long quoted strings: re.findall(r'\"([^\"]{300,600…",
+      "lastProgressAt": 1785615365436,
+      "tokens": 70353,
+      "toolCalls": 20,
+      "durationMs": 381059,
+      "resultPreview": "{\"angle\":\"Cece (測測, com.lingocc.cc5) by LIGHTFUL AI TECHNOLOGIES PTE. LTD. (Singapore) positions itself as a \\\"know yourself, live positively\\\" self-discovery super-app: professional astrology (20 chart types) + BaZi + Zi Wei fused with AI agent chat (3-second answers across star dice/tarot/bazi/natal tools), 50+ psychological tests, an MBTI-style 16-personality social layer (WeChat-friend synastr…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "research:chinese-sources",
+      "phaseIndex": 1,
+      "phaseTitle": "Research",
+      "agentId": "acf74f1d050bc929c",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785614984387,
+      "queuedAt": 1785614984300,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Feature-depth teardown of 测测 (Cece, App Store id756771906…",
+      "promptPreview": "You are researching the Chinese astrology super-app 测测 (Cece / 测测星座, by Shanghai 视辰/Lingo, package com.lingocc.cc5) — the most feature-dense astrology app in the Chinese market. Its real depth is documented in CHINESE sources. Use WebSearch (queries in Chinese) + WebFetch on results.\n\nSearches to run (at minimum): \"测测app 功能 星盘\", \"测测星座 20种盘 本命盘 合盘\", \"测测 八字 功能\", \"测测app 评测\", \"测测 塔罗 AI问答\", \"测测星座 会员 价格…",
+      "lastProgressAt": 1785615442208,
+      "tokens": 60221,
+      "toolCalls": 33,
+      "durationMs": 457821,
+      "resultPreview": "{\"angle\":\"Feature-depth teardown of 测测 (Cece, App Store id756771906, pkg com.xxwolo.cc5 / intl com.lingocc.cc5, by 北京力拓飞远科技/Cece Group, CEO 任永亮, Tencent-invested) — China's most feature-dense astrology super-app. Core finding: it is a two-layer machine. Layer 1 is a free, genuinely deep divination toolbox (20 astrology chart types incl. progressions/returns/firdaria/solar-arc, bazi+ziwei+28 mansio…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "research:english-sources",
+      "phaseIndex": 1,
+      "phaseTitle": "Research",
+      "agentId": "a2d9cfbe06a111a0d",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785614984389,
+      "queuedAt": 1785614984300,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "English-source view of Cece (测测, intl. package com.lingoc…",
+      "promptPreview": "You are researching the astrology app \"Cece\" (測測, com.lingocc.cc5) via ENGLISH sources. Use WebSearch + WebFetch.\n\nSearch: \"Cece astrology app review\", \"测测 Cece app English\", \"Cece app AI astrology features\", \"lingocc cc5\", \"Cece app iOS App Store\" (the iOS listing at apps.apple.com often has a longer description — find + fetch it), and any blog/App-comparison articles that mention Cece. Also chec…",
+      "lastProgressAt": 1785615358462,
+      "tokens": 56998,
+      "toolCalls": 30,
+      "durationMs": 374073,
+      "resultPreview": "{\"angle\":\"English-source view of Cece (测测, intl. package com.lingocc.cc5): a Tencent-backed Chinese \\\"pan-psychology + divination\\\" super-app that fuses Western natal charts, BaZi/ZiWei, tarot, fast AI Q&A bots, 50+ personality tests, and a large paid human-expert marketplace (voice answers, audio rooms, 24-hour livestream astrologers) — with a notable regulatory rebrand from astrology to an \\\"emo…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "research:review-mining",
+      "phaseIndex": 1,
+      "phaseTitle": "Research",
+      "agentId": "a6dfc69f8a240295a",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785614984391,
+      "queuedAt": 1785614984300,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Review mining of Cece/测测 (Play com.lingocc.cc5 + iOS CN i…",
+      "promptPreview": "You are mining USER REVIEWS of the Cece astrology app (com.lingocc.cc5) to learn which features exist and how deep they go — reviews often reveal features listings don't. Play Store pages are JS-heavy; plain WebFetch truncates. Use Bash: curl -s -A \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36\" \"<url>\" -o page.html, then extract with python (write a small .…",
+      "lastProgressAt": 1785615480421,
+      "tokens": 73276,
+      "toolCalls": 24,
+      "durationMs": 496030,
+      "resultPreview": "{\"angle\":\"Review mining of Cece/测测 (Play com.lingocc.cc5 + iOS CN id 756771906 + expert app 测测达人版 id 1447926119): 150 recent Apple CN reviews, 51 Play reviews, both store descriptions, and press/search coverage. Reviews expose far more than listings: a 20-chart astrology engine with true-solar-time and 神煞 recalculations users notice, a five-type synastry suite recently paywalled, a per-minute huma…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "research:arcana-inventory",
+      "phaseIndex": 1,
+      "phaseTitle": "Research",
+      "agentId": "ad8695bfc42796dfc",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785614984393,
+      "queuedAt": 1785614984300,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Full user-facing feature inventory of OUR app Arcana (repo …",
+      "promptPreview": "You are inventorying OUR app (Arcana, repo at C:\\Users\\lmao\\TAROT — React+Capacitor+Supabase, live at tarotlife.app) so a judge can compare it feature-by-feature against a competitor. READ-ONLY: use Glob/Grep/Read. DO NOT EDIT.\n\nEnumerate every user-facing feature WITH DEPTH NOTES, including: tarot (spreads count incl. custom builder, AI interpretation, deck browse, card meanings pages, pick-a-car…",
+      "lastProgressAt": 1785615582647,
+      "tokens": 117500,
+      "toolCalls": 56,
+      "durationMs": 598254,
+      "resultPreview": "{\"angle\":\"Full user-facing feature inventory of OUR app Arcana (repo C:\\\\Users\\\\lmao\\\\TAROT, live at tarotlife.app; React+Vite+Capacitor+Supabase, Android com.arcana.app), enumerated from source code with depth notes and feature-flag entry-point status for judge-side comparison against a competitor.\",\"features\":[{\"name\":\"Tarot reading engine\",\"category\":\"tarot\",\"depth\":\"In-app draws with 3 core sp…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "critic:completeness",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "aff310aff99a02e78",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785615582870,
+      "queuedAt": 1785615582681,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "medium — coverage of the core free toolbox, AI layer, exper…",
+      "promptPreview": "You are a completeness critic for a competitive teardown of the Cece astrology app (测测, com.lingocc.cc5). Here is everything 5 researchers found (JSON): [{\"angle\":\"Cece (測測, com.lingocc.cc5) by LIGHTFUL AI TECHNOLOGIES PTE. LTD. (Singapore) positions itself as a \\\"know yourself, live positively\\\" self-discovery super-app: professional astrology (20 chart types) + BaZi + Zi Wei fused with AI agent …",
+      "lastProgressAt": 1785615690982,
+      "tokens": 39996,
+      "toolCalls": 1,
+      "durationMs": 108111,
+      "resultPreview": "{\"missingAreas\":[{\"area\":\"Exact enumeration of all '20种星盘' chart types + 排盘 engine settings + 紫微斗数 module depth\",\"searchPrompt\":\"Research the chart-engine depth of Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, international package com.lingocc.cc5, iOS App Store id756771906, official site xxwolo.com). Marketing claims '多达20种星盘' (20 chart types) but only ~8 are confirmed so far (…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "followup:Exact enumeration of all",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "a827a64ba2b0ec201",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1785615690999,
+      "queuedAt": 1785615690995,
+      "attempt": 1,
+      "lastToolName": "WebSearch",
+      "lastToolSummary": "测测app 紫微斗数 排盘 四化 大限 流年",
+      "promptPreview": "Research the chart-engine depth of Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, international package com.lingocc.cc5, iOS App Store id756771906, official site xxwolo.com). Marketing claims '多达20种星盘' (20 chart types) but only ~8 are confirmed so far (本命盘, 天象盘, 比较盘, 组合盘, 组合推运, 时空盘, 马盘, plus generic mentions of progressions/returns/firdaria/solar-arc). Goal 1: produce the full na…",
+      "lastProgressAt": 1785616088591,
+      "error": "API Error: Connection closed mid-response. The response above may be incomplete.",
+      "tokens": 78429,
+      "toolCalls": 24,
+      "durationMs": 397591
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "followup:六爻 divination, 择日/黄历 (au",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "afc236dedbb1a01f5",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785615691002,
+      "queuedAt": 1785615690995,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "六爻 divination, 择日/黄历 (auspicious-date almanac), and o…",
+      "promptPreview": "Determine whether the Cece 测测 app (Chinese astrology super-app; CN package com.xxwolo.cc5, intl com.lingocc.cc5, iOS id756771906, official site xxwolo.com) ships any of these common Chinese-divination-super-app verticals, none of which appear in prior research: (1) 六爻排盘/六爻占卜 (Liu Yao hexagram casting with 装卦/世应/六亲 — distinct from a generic I Ching reading), (2) 择日/择吉 and 黄历/老黄历 almanac (daily 宜/忌,…",
+      "lastProgressAt": 1785616209442,
+      "tokens": 75941,
+      "toolCalls": 39,
+      "durationMs": 518440,
+      "resultPreview": "{\"angle\":\"六爻 divination, 择日/黄历 (auspicious-date almanac), and other Chinese verticals: 姓名测试, AI 手相/面相 photo scan, 宠物星盘 (pet astrology)\",\"features\":[{\"name\":\"六爻排盘/六爻占卜 (Liu Yao hexagram casting) — ABSENT\",\"category\":\"fortune\",\"depth\":\"Verdict: not shipped, neither as a self-serve 排盘 tool nor as a documented expert-consult category. Full-HTML keyword scan of the Google Play listing (com.lingocc.cc5,…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 9,
+      "label": "followup:VIP vs SVIP entitlement",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "a9cd7cf2475298d8f",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785615691004,
+      "queuedAt": 1785615690995,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "VIP vs SVIP entitlement matrix + per-feature coin price lis…",
+      "promptPreview": "Prior research on Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, intl com.lingocc.cc5, iOS id756771906) captured VIP pricing (¥9.9 first month → ¥25/mo, ¥58/quarter, ¥178/yr; SVIP ¥69/mo; coins ¥6–698, 1币≈¥1) but NOT what each tier actually unlocks. Build the entitlement matrix: (1) exact benefit list of VIP vs SVIP (which chart interpretations, 合盘 readings, reports, daily-fortun…",
+      "lastProgressAt": 1785616732826,
+      "tokens": 86910,
+      "toolCalls": 64,
+      "durationMs": 1041822,
+      "resultPreview": "{\"angle\":\"VIP vs SVIP entitlement matrix + per-feature coin price list (what exactly each tier and each coin-sink unlocks)\",\"features\":[{\"name\":\"VIP subscription price ladder\",\"category\":\"monetization\",\"depth\":\"连续包月 first month ¥9.9 then ¥25/mo; one-off 1个月的会员 ¥30; 连续包季 ¥58/quarter (~¥19.3/mo); 连续包年 ¥178/yr (~¥14.8/mo). Auto-renew governed by m.cece.com 自动续费服务协议 (cancel >=24h before cycle end). HK…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 10,
+      "label": "followup:Livestream/audio-room gi",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "aee057b089d072818",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785615691006,
+      "queuedAt": 1785615690996,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Livestream/audio-room gift economy mechanics + 测测学院/pai…",
+      "promptPreview": "Two monetization surfaces of Cece 测测 (Chinese astrology super-app; CN package com.xxwolo.cc5, intl com.lingocc.cc5, iOS id756771906, company 北京力拓飞远科技/Cece Group, official site xxwolo.com) are only surface-covered: (1) the live-streaming/audio-room economy — prior research knows 24h livestream astrologers, gifting, and streamer levels exist, but not the mechanics: virtual gift SKU names and coin pr…",
+      "lastProgressAt": 1785616489299,
+      "tokens": 82534,
+      "toolCalls": 47,
+      "durationMs": 798292,
+      "resultPreview": "{\"angle\":\"Livestream/audio-room gift economy mechanics + 测测学院/paid course (knowledge-payment) layer\",\"features\":[{\"name\":\"测测币 coin system (dual pricing: 1:1 direct, ~1.43x iOS premium)\",\"category\":\"monetization\",\"depth\":\"In-app currency 测测币; official recharge rate 1元 = 1测测币 (极目新闻 2026-03 states '1元兑换1测测币'). iOS App Store IAP packs carry ~43-50% premium (Apple-cut pass-through): 4币=¥6, 17币=¥25, 42币…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 11,
+      "label": "judge:synthesis",
+      "phaseIndex": 3,
+      "phaseTitle": "Synthesize",
+      "agentId": "a35d8eed0dd762aed",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1785616732922,
+      "queuedAt": 1785616732838,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "You are the synthesis judge for \"Arcana overtakes Cece\". FULL RESEARCH (JSON): [{\"angle\":\"Cece (測測, com.lingocc.cc5) by LIGHTFUL AI TECHNOLOGIES PTE. LTD. (Singapore) positions itself as a \\\"know yourself, live positively\\\" self-discovery super-app: professional astrology (20 chart types) + BaZi + Zi Wei fused with AI agent chat (3-second answers across star dice/tarot/bazi/natal tools), 50+ psych…",
+      "lastProgressAt": 1785617031334,
+      "tokens": 77940,
+      "toolCalls": 1,
+      "durationMs": 298392,
+      "resultPreview": "{\"gapMatrix\":[{\"ceceFeature\":\"Natal chart engine (free, pro-grade interpretations)\",\"ceceDepth\":\"Free natal chart from birth data with planets/houses/aspects and detailed written interpretations; true-solar-time option; positioned against Astrolog32/Janus/Winstar/Zet\",\"arcanaStatus\":\"PARITY\",\"gap\":\"none\",\"category\":\"astrology-charts\"},{\"ceceFeature\":\"20-chart-type personal suite (transits, 2nd/3rd…"
+    }
+  ],
+  "totalTokens": 820098,
+  "totalToolCalls": 339
+}

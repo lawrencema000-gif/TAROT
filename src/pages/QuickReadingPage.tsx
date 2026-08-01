@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Sparkles, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
@@ -8,6 +8,19 @@ import { getLocale } from '../i18n/config';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { ORACLE_SUGGESTIONS, type OracleContext } from '../data/oracleSuggestions';
+import { localDateStr } from '../utils/localDate';
+
+const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
+  { key: 'general', label: 'Anything' },
+  { key: 'love', label: 'Love' },
+  { key: 'career', label: 'Career' },
+  { key: 'tarot', label: 'Tarot' },
+  { key: 'astrology', label: 'Astrology' },
+  { key: 'bazi', label: 'Bazi' },
+  { key: 'dice', label: 'Quick call' },
+  { key: 'iching', label: 'I Ching' },
+];
 
 /**
  * AI 3-second reading — single-shot Q&A with a grounded oracle voice.
@@ -28,7 +41,19 @@ export function QuickReadingPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QuickReadingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [context, setContext] = useState<OracleContext>('general');
   const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('quick-reading');
+
+  // "Guess what you want to ask" — 4 suggestion chips per lens, rotating
+  // daily so the hub feels alive without any server round-trip.
+  const suggestions = useMemo(() => {
+    const pool = ORACLE_SUGGESTIONS[context] ?? [];
+    const day = localDateStr();
+    let h = 0;
+    for (let i = 0; i < day.length; i++) h = (h * 31 + day.charCodeAt(i)) | 0;
+    const start = Math.abs(h) % Math.max(1, pool.length);
+    return Array.from({ length: Math.min(4, pool.length) }, (_, i) => pool[(start + i) % pool.length]);
+  }, [context]);
 
   const submit = useCallback(async () => {
     if (question.trim().length < 3) return;
@@ -44,8 +69,14 @@ export function QuickReadingPage() {
       locale: getLocale(),
       displayName: profile?.displayName ?? undefined,
     };
+    // Context lens rides inside the question so the server prompt stays
+    // schema-stable; sliced to the 500-char contract.
+    const label = ORACLE_CONTEXTS.find((c) => c.key === context)?.label ?? '';
+    const sent = context === 'general'
+      ? question.trim()
+      : `[${label} question] ${question.trim()}`.slice(0, 500);
     const { data, error: err } = await supabase.functions.invoke('ai-quick-reading', {
-      body: { question: question.trim(), userContext },
+      body: { question: sent, userContext },
     });
     setLoading(false);
     if (err) {
@@ -163,6 +194,26 @@ export function QuickReadingPage() {
           })}
         </p>
       </Card>
+
+      {/* Oracle lenses + daily-rotating suggestion chips */}
+      <div className="space-y-2.5">
+        <div className="flex flex-wrap gap-1.5">
+          {ORACLE_CONTEXTS.map((c) => (
+            <button key={c.key} onClick={() => setContext(c.key)}
+              className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${context === c.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400 hover:border-mystic-500'}`}>
+              {c.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {suggestions.map((s) => (
+            <button key={s} onClick={() => setQuestion(s)}
+              className="px-3 py-1.5 rounded-xl text-xs bg-mystic-800/50 border border-mystic-700/40 text-mystic-300 hover:border-gold/30 hover:text-mystic-100 transition-colors text-left">
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <Card padding="lg">
         <label className="block text-[10px] uppercase tracking-widest text-mystic-500 mb-2">

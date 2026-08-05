@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, ChevronRight, Users, Loader2, Sparkles } from 'lucide-react';
 import { Card, Button, Sheet, EyebrowLabel, SectionDivider } from '../components/ui';
 import { PersonForm } from '../components/people/PersonForm';
+import { FriendCircleStats } from '../components/people/FriendCircleStats';
 import { useAuth } from '../context/AuthContext';
 import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
@@ -58,6 +59,7 @@ export function PeoplePage() {
         </Card>
       ) : (
         <div className="space-y-3">
+          <FriendCircleStats people={list} />
           {list.map((p) => (
             <button key={p.id} onClick={() => navigate(`/people/${p.id}`)}
               className="w-full flex items-center gap-3 rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/30 transition-colors text-left active:scale-[0.99]">

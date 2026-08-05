@@ -295,6 +295,76 @@ export async function callAIJson<T>(opts: CallJson): Promise<T> {
 }
 
 /**
+ * Image generation — OpenAI images primary, Gemini Imagen fallback.
+ * Returns a base64 PNG/JPEG payload (no data: prefix) or null if no provider
+ * is configured / all attempts fail, so callers can degrade gracefully.
+ *
+ * Callers MUST pass prompts that describe symbolic or illustrative artwork.
+ * We never generate photorealistic likenesses of people: a realistic
+ * "this is a real person" image invites misidentification of actual humans
+ * and has no place in a reflection app. The negative styling below is a
+ * second line of defence on top of caller prompts.
+ */
+export async function generateImage(
+  prompt: string,
+  opts: { size?: "1024x1024" | "1024x1536"; } = {},
+): Promise<{ b64: string; mime: string } | null> {
+  const size = opts.size ?? "1024x1024";
+  const guarded =
+    `${prompt}\n\nSTYLE REQUIREMENTS: stylized illustration / painted artwork only. ` +
+    `Not a photograph, not photorealistic, not a real identifiable person, no text, no watermark.`;
+
+  const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
+  if (openaiKey) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
+        // JPEG at quality 82 keeps the painterly look but ships ~300-600KB
+        // instead of a ~4MB PNG — this payload goes to phones on mobile data.
+        body: JSON.stringify({
+          model: "gpt-image-1", prompt: guarded, size, n: 1,
+          output_format: "jpeg", output_compression: 82,
+        }),
+        signal: AbortSignal.timeout(90_000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const b64 = data?.data?.[0]?.b64_json;
+        if (typeof b64 === "string" && b64.length > 100) return { b64, mime: "image/jpeg" };
+      }
+    } catch {
+      // fall through to Gemini
+    }
+  }
+
+  const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
+  if (geminiKey) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instances: [{ prompt: guarded }],
+          parameters: { sampleCount: 1, aspectRatio: size === "1024x1536" ? "3:4" : "1:1" },
+        }),
+        signal: AbortSignal.timeout(90_000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const b64 = data?.predictions?.[0]?.bytesBase64Encoded;
+        if (typeof b64 === "string" && b64.length > 100) return { b64, mime: "image/png" };
+      }
+    } catch {
+      // fall through to null
+    }
+  }
+
+  return null;
+}
+
+/**
  * Embedding helper — Gemini-only since OpenAI embeddings have a different
  * dim (1536 vs 768) and the pgvector schema is fixed at 768. Returns null
  * on any error so callers can fall back to no-memory mode.

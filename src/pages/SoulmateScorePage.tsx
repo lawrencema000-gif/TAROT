@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
+import { SoulmatePortrait } from '../components/soulmate/SoulmatePortrait';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -413,6 +414,8 @@ export function SoulmateScorePage() {
                 </div>
               </Card>
             )}
+
+            <SoulmatePortrait />
 
             <div className="flex gap-3">
               <Button variant="outline" onClick={reset} className="flex-1">

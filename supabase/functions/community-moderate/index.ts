@@ -36,6 +36,18 @@ import { z } from "npm:zod@3.24.1";
 const RequestSchema = z.object({
   content: z.string().min(1).max(5000),
   surface: z.enum(["post", "comment", "whispering-well"]),
+  /**
+   * When present, this function PUBLISHES the content itself after screening
+   * instead of only returning a verdict. This is the only path that can set a
+   * real moderation_status: client inserts are force-pending by trigger and
+   * pending rows are invisible under RLS, so publishing here is what makes
+   * screening authoritative rather than advisory.
+   */
+  publish: z.object({
+    topic: z.string().min(1).max(64).optional(),
+    isAnonymous: z.boolean().optional(),
+    postId: z.string().uuid().optional(),   // required for comments
+  }).optional(),
 });
 
 type Request = z.infer<typeof RequestSchema>;
@@ -44,6 +56,10 @@ interface ModerationResponse {
   verdict: "allow" | "review" | "block";
   crisis: boolean;
   categories: string[];
+  /** id of the row created when `publish` was requested */
+  publishedId?: string;
+  /** status the row landed with ('allowed' | 'flagged') */
+  publishedStatus?: string;
   crisisResources?: {
     us: { name: string; number: string };
     textLine: { name: string; instructions: string };
@@ -255,10 +271,63 @@ Deno.serve(handler<Request, ModerationResponse>({
       );
     }
 
+    // ── Publish (service-role) ────────────────────────────────────────────
+    // Screening passed, so write the row ourselves with its true status.
+    // 'allow' → 'allowed' (public). 'review' → 'flagged' (author + admins
+    // only, per RLS) so a human can promote or remove it. Client-side inserts
+    // can never reach either state — the force-pending trigger sees them as
+    // `authenticated`, and pending rows are invisible under RLS.
+    let publishedId: string | undefined;
+    let publishedStatus: string | undefined;
+
+    if (body.publish) {
+      const status = verdict === "allow" ? "allowed" : "flagged";
+      const isComment = surface === "comment";
+
+      if (isComment && !body.publish.postId) {
+        throw new AppError("POST_ID_REQUIRED", "postId is required to publish a comment", 400);
+      }
+
+      const row = isComment
+        ? {
+            user_id: ctx.userId,
+            post_id: body.publish.postId,
+            content,
+            is_anonymous: body.publish.isAnonymous ?? false,
+            moderation_status: status,
+            moderation_categories: categories,
+            crisis_flagged: crisis,
+          }
+        : {
+            user_id: ctx.userId,
+            topic: body.publish.topic ?? "general",
+            content,
+            // Whispering Well posts are always anonymous regardless of input.
+            is_anonymous: surface === "whispering-well" ? true : (body.publish.isAnonymous ?? false),
+            moderation_status: status,
+            moderation_categories: categories,
+            crisis_flagged: crisis,
+          };
+
+      const { data: created, error: insErr } = await ctx.supabase
+        .from(isComment ? "community_comments" : "community_posts")
+        .insert(row)
+        .select("id")
+        .single();
+
+      if (insErr) {
+        ctx.log.error("moderation.publish_failed", { err: insErr.message, surface });
+        throw new AppError("PUBLISH_FAILED", "Could not post right now. Try again.", 500);
+      }
+      publishedId = created?.id as string;
+      publishedStatus = status;
+    }
+
     return {
       verdict,
       crisis,
       categories,
+      ...(publishedId ? { publishedId, publishedStatus } : {}),
       ...(crisis ? { crisisResources: CRISIS_RESOURCES } : {}),
     };
   },

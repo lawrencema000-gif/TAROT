@@ -4,7 +4,7 @@ import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
-import { moderateContent, type ModerationSurface } from '../services/moderation';
+import { publishContent, type ModerationSurface } from '../services/moderation';
 import { CrisisBanner } from '../components/community/CrisisBanner';
 import type {
   CommunityPost,
@@ -448,7 +448,13 @@ function Composer({
     setSubmitting(true);
 
     const surface: ModerationSurface = mode === 'whispering-well' ? 'whispering-well' : 'post';
-    const moderation = await moderateContent(content, surface);
+    // Screen AND publish server-side in one call — the only path that can
+    // produce a publicly visible post (client inserts land 'pending' and stay
+    // invisible under RLS).
+    const moderation = await publishContent(content, surface, {
+      topic: selectedTopic,
+      isAnonymous: mode === 'whispering-well' ? true : isAnon,
+    });
 
     if (moderation.crisis) onCrisisDetected();
 
@@ -463,15 +469,9 @@ function Composer({
       return;
     }
 
-    const res = await community.createPost({
-      userId: user.id,
-      topic: selectedTopic,
-      content,
-      isAnonymous: mode === 'whispering-well' ? true : isAnon,
-    });
     setSubmitting(false);
-    if (res.ok) {
-      if (moderation.verdict === 'review') {
+    if (moderation.publishedId) {
+      if (moderation.publishedStatus === 'flagged') {
         toast(
           t('community.postedUnderReview', {
             defaultValue: 'Posted — our team will review shortly.',
@@ -606,7 +606,10 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
     }
     setSubmitting(true);
 
-    const moderation = await moderateContent(newComment, surface);
+    const moderation = await publishContent(newComment, surface, {
+      postId: post.id,
+      isAnonymous: isAnonComment,
+    });
     if (moderation.crisis) onCrisisDetected();
     if (moderation.verdict === 'block') {
       setSubmitting(false);
@@ -619,17 +622,13 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       return;
     }
 
-    const res = await community.createComment({
-      postId: post.id,
-      userId: user.id,
-      content: newComment,
-      isAnonymous: isAnonComment,
-    });
     setSubmitting(false);
-    if (res.ok) {
-      setComments((prev) => [...prev, res.data]);
+    if (moderation.publishedId) {
       setNewComment('');
-      if (moderation.verdict === 'review') {
+      // Re-read from the server so we render exactly what RLS exposes
+      // (a 'flagged' comment is author-visible only).
+      load();
+      if (moderation.publishedStatus === 'flagged') {
         toast(
           t('community.commentUnderReview', {
             defaultValue: 'Comment posted — our team will review shortly.',

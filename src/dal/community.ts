@@ -5,9 +5,21 @@ import { supabase } from '../lib/supabase';
 import { captureException } from '../utils/telemetry';
 import type { Result } from './dailyRituals';
 
+/** Zodiac sign zones — each sign gets its own room in the feed. */
+export const SIGN_ZONES = [
+  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo',
+  'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
+] as const;
+export type SignZone = (typeof SIGN_ZONES)[number];
+
 export type CommunityTopic =
   | 'general' | 'tarot' | 'astrology' | 'moon'
-  | 'love' | 'shadow' | 'career' | 'wellness' | 'whispering-well';
+  | 'love' | 'shadow' | 'career' | 'wellness' | 'whispering-well'
+  | SignZone;
+
+export function isSignZone(topic: string): topic is SignZone {
+  return (SIGN_ZONES as readonly string[]).includes(topic);
+}
 
 export type ReactionType = 'heart' | 'sparkle' | 'moon' | 'eye' | 'flame';
 

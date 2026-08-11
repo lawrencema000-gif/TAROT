@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Sparkles, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
+import { SIGN_ZONES, type SignZone } from '../dal/community';
+import { getZodiacSign } from '../utils/zodiac';
+import { awardXP } from '../services/levelSystem';
 import { publishContent, type ModerationSurface } from '../services/moderation';
 import { CrisisBanner } from '../components/community/CrisisBanner';
 import type {
@@ -33,6 +36,17 @@ const TOPICS: { id: CommunityTopic | 'all'; labelKey: string }[] = [
   { id: 'wellness',  labelKey: 'community.topics.wellness' },
 ];
 
+/** Sign-zone chips, rendered as a second row with each sign's glyph. */
+const SIGN_LABEL: Record<string, string> = {
+  aries: 'Aries', taurus: 'Taurus', gemini: 'Gemini', cancer: 'Cancer',
+  leo: 'Leo', virgo: 'Virgo', libra: 'Libra', scorpio: 'Scorpio',
+  sagittarius: 'Sagittarius', capricorn: 'Capricorn', aquarius: 'Aquarius', pisces: 'Pisces',
+};
+const SIGN_ZONE_GLYPH: Record<string, string> = {
+  aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋', leo: '♌', virgo: '♍',
+  libra: '♎', scorpio: '♏', sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓',
+};
+
 const REACTION_ICONS: Record<ReactionType, React.ComponentType<{ className?: string }>> = {
   heart: Heart,
   sparkle: Sparkles,
@@ -58,7 +72,7 @@ function formatRelativeTime(iso: string): string {
 
 export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const { t } = useT('app');
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [view, setView] = useState<View>('feed');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +82,18 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [crisisBannerOpen, setCrisisBannerOpen] = useState(false);
 
   const isWhisperingWell = mode === 'whispering-well';
+
+  // The user's own sun sign leads the zone row — their "home room".
+  // getZodiacSign returns the same lowercase sign union the zones use.
+  const mySign = useMemo<SignZone | null>(() => {
+    if (!profile?.birthDate) return null;
+    try { return getZodiacSign(profile.birthDate) as SignZone; } catch { return null; }
+  }, [profile?.birthDate]);
+
+  const orderedSignZones = useMemo<SignZone[]>(
+    () => (mySign ? [mySign, ...SIGN_ZONES.filter((z) => z !== mySign)] : [...SIGN_ZONES]),
+    [mySign],
+  );
 
   // Load feed
   const loadFeed = useCallback(async () => {
@@ -245,6 +271,28 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
               }`}
             >
               {t(t_.labelKey, { defaultValue: t_.id })}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Sign zones — every sign gets its own room. The user's own sign is
+          pinned first so there's always an obvious place to land. */}
+      {!isWhisperingWell && (
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {orderedSignZones.map((z) => (
+            <button
+              key={z}
+              onClick={() => setSelectedTopic(z)}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all border flex items-center gap-1.5 ${
+                selectedTopic === z
+                  ? 'bg-cosmic-violet/25 text-mystic-100 border-cosmic-violet/50'
+                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
+              }`}
+            >
+              <span style={{ fontFamily: 'serif' }}>{SIGN_ZONE_GLYPH[z]}</span>
+              {SIGN_LABEL[z]}
+              {z === mySign && <span className="text-[9px] uppercase tracking-wider text-gold">you</span>}
             </button>
           ))}
         </div>
@@ -471,6 +519,8 @@ function Composer({
 
     setSubmitting(false);
     if (moderation.publishedId) {
+      // Reward participation (fire-and-forget; XP must never block posting).
+      void awardXP(user.id, 'community_post');
       if (moderation.publishedStatus === 'flagged') {
         toast(
           t('community.postedUnderReview', {
@@ -624,6 +674,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
 
     setSubmitting(false);
     if (moderation.publishedId) {
+      void awardXP(user.id, 'community_comment');
       setNewComment('');
       // Re-read from the server so we render exactly what RLS exposes
       // (a 'flagged' comment is author-visible only).

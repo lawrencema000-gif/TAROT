@@ -27,7 +27,9 @@ export type ActivityType =
   | 'streak_milestone_7'
   | 'streak_milestone_30'
   | 'streak_milestone_100'
-  | 'streak_milestone_365';
+  | 'streak_milestone_365'
+  | 'community_post'
+  | 'community_comment';
 
 const XP_REWARDS: Record<ActivityType, number> = {
   ritual_complete: 50,
@@ -40,6 +42,8 @@ const XP_REWARDS: Record<ActivityType, number> = {
   streak_milestone_30: 500,
   streak_milestone_100: 2000,
   streak_milestone_365: 5000,
+  community_post: 15,
+  community_comment: 5,
 };
 
 export async function awardXP(

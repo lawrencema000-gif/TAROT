@@ -17,6 +17,7 @@ import {
   type FiveElement,
 } from '../data/bazi';
 import { computeBaziDeep, type Gender as BaziGender } from '../data/baziDeep';
+import { LuckPillarTimeline } from '../components/charts/LuckPillarTimeline';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { BaziAIReadingPanel } from '../components/bazi/BaziAIReading';
 
@@ -57,8 +58,8 @@ export function BaziPage() {
   // computes when gender is provided since luck-pillar direction depends
   // on year polarity x gender.
   const deepResult = useMemo(
-    () => (result && gender ? computeBaziDeep(result, birthDate, gender) : null),
-    [result, gender, birthDate],
+    () => (result && gender ? computeBaziDeep(result, birthDate, gender, birthTime) : null),
+    [result, gender, birthDate, birthTime],
   );
 
   useEffect(() => {
@@ -574,6 +575,12 @@ export function BaziPage() {
               <h3 className="font-medium text-mystic-200 mb-3">
                 {t('bazi.luckPillarsHeading', { defaultValue: 'Your 80-year luck pillar timeline' })}
               </h3>
+              <div className="mb-4">
+                <LuckPillarTimeline
+                  pillars={deepResult.luckPillars}
+                  currentAge={birthDate ? Math.floor((Date.now() - new Date(`${birthDate}T12:00:00Z`).getTime()) / (365.2425 * 86400000)) : null}
+                />
+              </div>
               <div className="space-y-2">
                 {deepResult.luckPillars.map((p, i) => {
                   const isCurrent = deepResult.currentLuckPillar &&

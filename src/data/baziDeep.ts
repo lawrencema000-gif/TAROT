@@ -6,6 +6,7 @@
 // element balance, day master, ten gods, hidden stems, and nayin) and
 // adds the layers a real consultation surfaces beyond the basic chart.
 
+import { luckStartAge } from '../utils/solarTerms';
 import {
   STEMS,
   BRANCHES,
@@ -29,7 +30,10 @@ export type Gender = 'male' | 'female';
 // ────────────────────────────────────────────────────────────────────
 
 export interface LuckPillar {
-  /** Approximate age range when this pillar is active (start age, end age). */
+  /** True when startAge came from the exact solar-term calculation rather
+   *  than the legacy fallback heuristic. */
+  startAgeExact: boolean;
+  /** Age range when this pillar is active (start age, end age). */
   startAge: number;
   endAge: number;
   /** Approximate calendar-year start (rough — uses solar age, not lunar). */
@@ -53,13 +57,18 @@ export interface LuckPillar {
  *   - Yang-year males + Yin-year females  → forward (clockwise through stems/branches)
  *   - Yin-year males + Yang-year females  → reverse (counterclockwise)
  *
- * Start age varies (typically 1-10 years old) based on the gap between
- * birth and the next solar term; we approximate with a sensible default.
+ * Start age comes from the classical 3-days-to-1-year rule measured against
+ * the EXACT adjacent sectional solar term (via astronomy-engine), not a
+ * fixed guess: forward charts count birth → next 節, reverse charts count
+ * previous 節 → birth. This used to be hardcoded to 5 or 7, which shifted
+ * every user's whole 大运 timeline by up to four years.
  */
 export function computeLuckPillars(
   result: BaziResult,
   gender: Gender,
   birthYear: number,
+  birthDate?: string,
+  birthTime?: string,
 ): LuckPillar[] {
   const yearPolarity = STEM_ELEMENT[result.year.stem].polarity;
   const isForward =
@@ -69,9 +78,23 @@ export function computeLuckPillars(
   const monthStemIdx = STEMS.indexOf(result.month.stem);
   const monthBranchIdx = BRANCHES.indexOf(result.month.branch);
 
-  // Start age — heuristic: yang-male / yin-female tend to start younger
-  // (~3-7), the others start later (~5-10). We pick 5 + offset.
-  const startAge = isForward ? 5 : 7;
+  // Exact start age from the adjacent solar term when we know the birth
+  // moment; fall back to the old heuristic only if the ephemeris search
+  // fails or no date was supplied.
+  let startAge = isForward ? 5 : 7;
+  let startAgeExact = false;
+  if (birthDate && /^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+    const hhmm = birthTime && /^\d{1,2}:\d{2}/.test(birthTime) ? birthTime.slice(0, 5) : '12:00';
+    const birth = new Date(`${birthDate}T${hhmm}:00Z`);
+    if (!Number.isNaN(birth.getTime())) {
+      const exact = luckStartAge(birth, isForward);
+      if (exact) {
+        // Classical charts quote the start age to the nearest year.
+        startAge = Math.max(0, Math.round(exact.years * 10) / 10);
+        startAgeExact = true;
+      }
+    }
+  }
 
   const pillars: LuckPillar[] = [];
   for (let i = 1; i <= 8; i++) {
@@ -93,6 +116,7 @@ export function computeLuckPillars(
     const yearEnd = birthYear + ageEnd;
 
     pillars.push({
+      startAgeExact,
       startAge: ageStart,
       endAge: ageEnd,
       startYear: yearStart,
@@ -607,10 +631,11 @@ export function computeBaziDeep(
   result: BaziResult,
   birthDate: string,
   gender: Gender,
+  birthTime?: string,
   currentYear: number = new Date().getFullYear(),
 ): BaziDeepResult {
   const birthYear = parseInt(birthDate.split('-')[0], 10);
-  const luckPillars = computeLuckPillars(result, gender, birthYear);
+  const luckPillars = computeLuckPillars(result, gender, birthYear, birthDate, birthTime);
   return {
     luckPillars,
     currentLuckPillar: currentLuckPillar(luckPillars, currentYear),

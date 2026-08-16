@@ -20,6 +20,7 @@ import { computeBaziDeep, type Gender as BaziGender } from '../data/baziDeep';
 import { LuckPillarTimeline } from '../components/charts/LuckPillarTimeline';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { BaziAIReadingPanel } from '../components/bazi/BaziAIReading';
+import { determineStructure, STRUCTURE_MEANINGS, STRUCTURE_INTRO } from '../data/baziStructure';
 
 type Stage = 'input' | 'result';
 
@@ -53,6 +54,10 @@ export function BaziPage() {
   const showDepth = depthEnabled; // content rendered; premium gates the deep layers
   const deepening = useMemo(() => (result ? deepenBazi(result) : null), [result]);
   const luckyColor = useMemo(() => (result ? todaysLuckyColor(result) : null), [result]);
+  // 格局 — the chart's organising principle, read from the month command. A
+  // traditional reader names this before saying anything else, so it sits high
+  // on the page rather than among the deep layers.
+  const structure = useMemo(() => (result ? determineStructure(result) : null), [result]);
   // Phase-2 deep mode (luck pillars / annual luck / spirit stars / branch
   // relations / climate / life-area summaries / pillar narratives) only
   // computes when gender is provided since luck-pillar direction depends
@@ -610,6 +615,34 @@ export function BaziPage() {
                 })}
               </div>
             </Card>
+
+            {/* 格局 — formal structure */}
+            {structure && STRUCTURE_MEANINGS[structure.key] && (
+              <Card padding="lg">
+                <h3 className="font-medium text-cosmic-violet mb-1">
+                  {t('bazi.structureHeading', { defaultValue: 'Your chart structure' })}
+                </h3>
+                <p className="text-xs text-mystic-500 mb-3">{STRUCTURE_INTRO}</p>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-2xl text-gold" style={{ fontFamily: 'serif' }}>
+                    {STRUCTURE_MEANINGS[structure.key].cn}
+                  </span>
+                  <span className="text-mystic-100">{STRUCTURE_MEANINGS[structure.key].title}</span>
+                </div>
+                <p className="text-sm text-mystic-300 leading-relaxed">
+                  {STRUCTURE_MEANINGS[structure.key].text}
+                </p>
+                <p className="text-[13px] text-mystic-400 leading-relaxed mt-2">
+                  {STRUCTURE_MEANINGS[structure.key].strengthNote}
+                </p>
+                <p className="text-[11px] text-mystic-600 mt-3">
+                  Taken from your month branch
+                  {structure.revealed
+                    ? ', whose hidden stem is revealed in the chart above.'
+                    : '. Nothing in your stems reveals it, so it is read from the branch’s principal hidden stem.'}
+                </p>
+              </Card>
+            )}
 
             {/* Spirit stars */}
             {deepResult.spiritStars.length > 0 && (

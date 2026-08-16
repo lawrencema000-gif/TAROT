@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users, Grid3x3 } from 'lucide-react';
+import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users, Grid3x3, Orbit } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
@@ -60,6 +60,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
     { id: 'people', labelKey: 'nav.people', icon: Users, route: '/people' },
     { id: 'charts', labelKey: 'nav.charts', icon: HoroscopeWheelIcon, route: '/charts' },
     { id: 'ziwei', labelKey: 'nav.ziwei', icon: Grid3x3, route: '/ziwei' },
+    { id: 'mansions', labelKey: 'nav.mansions', icon: Orbit, route: '/mansions' },
     ...moreMenuTabs,
   ];
   if (companionEnabled) {

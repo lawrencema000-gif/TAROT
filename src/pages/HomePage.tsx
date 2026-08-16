@@ -27,6 +27,7 @@ import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
 import { DailyCosmicScore } from '../components/ritual/DailyCosmicScore';
+import { DailyMansionCard } from '../components/ritual/DailyMansionCard';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
 import { useAuth } from '../context/AuthContext';
 import { useUI } from '../context/UIContext';
@@ -472,6 +473,8 @@ export function HomePage() {
 
       {/* Personal transit score — pure-compute, cached per local day */}
       <DailyCosmicScore />
+
+      <DailyMansionCard />
 
       {/* Eyebrow + divider groups the secondary feature shortcuts below
           (pick-a-card, love tree, soulmate, quick reading, tarot

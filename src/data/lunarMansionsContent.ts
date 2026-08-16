@@ -64,6 +64,8 @@
  * signs and has never met the mansions. Honest about the mechanism: the
  * day-mansion is a calendrical count, not a live measurement of the Moon.
  */
+import type { MansionKey } from './lunarMansions';
+
 export const MANSION_INTRO: string =
   'Long before anyone in China drew a twelve-sign zodiac, astronomers there divided the sky into twenty-eight uneven lodges — 二十八宿, the mansions — marking the band of stars the Moon travels through as it circles the Earth roughly every twenty-seven and a third days. The full list is already carved on a lacquer chest from a tomb sealed around 433 BCE, which makes this one of the oldest surviving maps of the sky anywhere, and it grew up entirely independent of the Greek and Babylonian signs; the two systems are not translations of each other and do not line up. Each of the twenty-eight is a stretch of sky with a name and a character — a horn, a heart, a winnowing basket, a wall — and the almanac tradition assigns one mansion to each day in an unbroken rotation, so that people could ask what a given day was fit for before they chose to build, marry, travel or begin. Be clear about how that rotation works: it is a count, one mansion per day cycling through all twenty-eight and starting again, so after a while it no longer tracks where the Moon actually is — it is a calendar rhythm, not an observation. Your birth mansion is read differently again: not a forecast, but a description of temperament — the particular gift you were handed and the particular work it keeps asking of you.';
 
@@ -105,7 +107,7 @@ export const QUADRANT_MEANINGS: Record<
  * 鬼宿 (the eye of heaven, seeing hidden schemes) are deliberately nothing
  * alike, and neither is interchangeable with any other entry.
  */
-export const MANSION_MEANINGS: Record<string, { cn: string; title: string; text: string }> = {
+export const MANSION_MEANINGS: Record<MansionKey, { cn: string; title: string; text: string }> = {
   // ── 東方青龍 — Azure Dragon of the East ──────────────────────────────────
   jiao: {
     cn: '角',
@@ -367,7 +369,7 @@ export const MANSION_MEANINGS: Record<string, { cn: string; title: string; text:
  * [4] read as fitness-of-activity — what the day suits — rather than as a
  * prediction of fortune or misfortune. Nothing here forecasts harm.
  */
-export const MANSION_DAILY_ADVICE: Record<string, string> = {
+export const MANSION_DAILY_ADVICE: Record<MansionKey, string> = {
   // 東方青龍
   jiao: 'A doorway of a day — begin the thing you actually intend to finish, and let the smaller openings wait their turn.',
   kang: 'Hold your line today, but check first that what you are defending is a principle and not simply your position.',

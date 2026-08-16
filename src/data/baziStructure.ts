@@ -311,7 +311,13 @@ export function determineStructure(result: BaziResult): Structure | null {
   // then 中氣, then 餘氣 — exactly the classical priority.
   const formable = hidden.filter((s) => STRUCTURE_BY_TEN_GOD[tenGodOf(dayMaster, s)] !== null);
   const emerged = formable.find(isRevealed);
-  const chosen = emerged ?? formable[0];
+
+  // 3c — nothing emerged: fall back to the 本氣 and ONLY the 本氣. We must
+  // not quietly promote an unrevealed 中氣/餘氣 here; a buried secondary qi
+  // has no claim on the structure, and doing so would make 月劫格
+  // unreachable for exactly the charts 子平真詮 wrote a chapter about.
+  const principalForms = STRUCTURE_BY_TEN_GOD[tenGodOf(dayMaster, principal)] !== null;
+  const chosen = emerged ?? (principalForms ? principal : null);
 
   if (chosen) {
     const tenGod = tenGodOf(dayMaster, chosen);
@@ -319,10 +325,8 @@ export function determineStructure(result: BaziResult): Structure | null {
     if (key) return build(key, chosen, tenGod);
   }
 
-  // Step 4 — every hidden stem is 比肩/劫財 on a seat that is neither
-  // 祿 nor 刃. Unreachable for the standard 藏干 table (no branch is all
-  // one element for a day master that failed steps 1–2), but kept so the
-  // function stays total if the table is ever extended.
+  // Step 4 — the 本氣 is 比肩/劫財 on a seat that is neither 祿 nor 刃, and
+  // no 財官印食煞傷 emerged to take the structure instead → 月劫格.
   return build('MonthPeer', principal, null);
 }
 

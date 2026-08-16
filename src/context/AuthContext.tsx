@@ -121,10 +121,14 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     email: db.email,
     displayName: db.display_name,
     birthDate: db.birth_date,
-    birthTime: db.birth_time,
-    birthPlace: db.birth_place,
-    birthLat: db.birth_lat,
-    birthLon: db.birth_lon,
+    // Optional fields are declared `string | undefined` on UserProfile, but a
+    // NULL column arrives as `null`. Passing it through makes the type a lie
+    // and breaks every `=== undefined` / regex check downstream, so normalise
+    // here — the same thing birthTz/birthUtc already did.
+    birthTime: db.birth_time ?? undefined,
+    birthPlace: db.birth_place ?? undefined,
+    birthLat: db.birth_lat ?? undefined,
+    birthLon: db.birth_lon ?? undefined,
     birthTz: db.birth_tz ?? undefined,
     birthUtc: db.birth_utc ?? undefined,
     timezone: db.timezone,
@@ -137,7 +141,7 @@ function mapDbToProfile(db: DbProfile): UserProfile {
     isAdFree: db.is_ad_free ?? false,
     locale: db.locale,
     streak: db.streak,
-    lastRitualDate: db.last_ritual_date,
+    lastRitualDate: db.last_ritual_date ?? undefined,
     mbtiType: db.mbti_type,
     loveLanguage: db.love_language,
     level: db.level || 1,

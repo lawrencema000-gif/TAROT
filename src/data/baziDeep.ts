@@ -387,6 +387,142 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
     }
   }
 
+  // ── Year-branch stars ────────────────────────────────────────────────
+  // 紅鸞 / 天喜 — the marriage and celebration pair. 紅鸞 starts at 卯 for a 子
+  // year and runs counter-clockwise (「紅鸞起子逆行宮」); 天喜 always sits
+  // opposite it. Together they mark the years and areas where unions,
+  // births and celebrations cluster.
+  const yearBranchIdx = BRANCHES.indexOf(result.year.branch);
+  const hongluanIdx = ((3 - yearBranchIdx) % 12 + 12) % 12;
+  const PAIR: { idx: number; classical: string; name: string; meaning: string }[] = [
+    {
+      idx: hongluanIdx,
+      classical: '紅鸞',
+      name: 'Crimson Phoenix',
+      meaning: 'The marriage star. Attraction that leads somewhere binding — engagement, partnership, the joining of families. Where it sits shows the part of life through which love tends to arrive.',
+    },
+    {
+      idx: (hongluanIdx + 6) % 12,
+      classical: '天喜',
+      name: 'Heavenly Joy',
+      meaning: 'The celebration star: births, reunions, good news that arrives without being chased. Softer than 紅鸞 and less about romance — this is the star of things going right in public.',
+    },
+  ];
+  for (const star of PAIR) {
+    for (const { p, b } of allBranches) {
+      if (BRANCHES.indexOf(b) === star.idx) {
+        stars.push({ classical: star.classical, name: star.name, kind: 'auspicious', pillar: p, meaning: star.meaning });
+        break;
+      }
+    }
+  }
+
+  // 孤辰 / 寡宿 — the solitude pair, taken from the year branch's season.
+  // 亥子丑 → 寅/戌, 寅卯辰 → 巳/丑, 巳午未 → 申/辰, 申酉戌 → 亥/未.
+  const SOLITUDE: Record<string, [EarthlyBranch, EarthlyBranch]> = {
+    Hai: ['Yin', 'Xu'], Zi: ['Yin', 'Xu'], Chou: ['Yin', 'Xu'],
+    Yin: ['Si', 'Chou'], Mao: ['Si', 'Chou'], Chen: ['Si', 'Chou'],
+    Si: ['Shen', 'Chen'], Wu: ['Shen', 'Chen'], Wei: ['Shen', 'Chen'],
+    Shen: ['Hai', 'Wei'], You: ['Hai', 'Wei'], Xu: ['Hai', 'Wei'],
+  };
+  const solitude = SOLITUDE[result.year.branch];
+  if (solitude) {
+    const [guchen, guasu] = solitude;
+    for (const { p, b } of allBranches) {
+      if (b === guchen) {
+        stars.push({
+          classical: '孤辰', name: 'Solitary Star', kind: 'inauspicious', pillar: p,
+          meaning: 'A pull toward standing apart. Independence that reads as self-sufficiency from outside and as distance from inside. Not a sentence to loneliness — but closeness here takes deliberate effort rather than arriving on its own.',
+        });
+        break;
+      }
+    }
+    for (const { p, b } of allBranches) {
+      if (b === guasu) {
+        stars.push({
+          classical: '寡宿', name: 'Widowed Star', kind: 'inauspicious', pillar: p,
+          meaning: 'The quieter twin of 孤辰: a tendency to withdraw inward, especially after loss. Often found in people whose depth is real but slow to show. Ask for company before you need it.',
+        });
+        break;
+      }
+    }
+  }
+
+  // 將星 — the general. The 帝旺 seat of the day branch's 三合 frame, i.e. the
+  // frame's own middle branch: 寅午戌 → 午, 巳酉丑 → 酉, 申子辰 → 子, 亥卯未 → 卯.
+  const GENERAL: Record<EarthlyBranch, EarthlyBranch> = {
+    Yin: 'Wu', Wu: 'Wu', Xu: 'Wu',
+    Si: 'You', You: 'You', Chou: 'You',
+    Shen: 'Zi', Zi: 'Zi', Chen: 'Zi',
+    Hai: 'Mao', Mao: 'Mao', Wei: 'Mao',
+  };
+  for (const { p, b } of allBranches) {
+    if (b === GENERAL[dayBranch]) {
+      stars.push({
+        classical: '將星', name: 'General Star', kind: 'auspicious', pillar: p,
+        meaning: 'Command. People look to you to decide, and you are usually comfortable being looked at that way. Strong in management, the armed and emergency services, anywhere someone has to carry the call.',
+      });
+      break;
+    }
+  }
+
+  // ── Day-stem stars ───────────────────────────────────────────────────
+  // 祿神 — the day master's own seat, where its element sits at full strength.
+  const LU: Record<HeavenlyStem, EarthlyBranch> = {
+    Jia: 'Yin', Yi: 'Mao', Bing: 'Si', Wu: 'Si', Ding: 'Wu',
+    Ji: 'Wu', Geng: 'Shen', Xin: 'You', Ren: 'Hai', Gui: 'Zi',
+  };
+  for (const { p, b } of allBranches) {
+    if (b === LU[dm]) {
+      stars.push({
+        classical: '祿神', name: 'Prosperity Seat', kind: 'auspicious', pillar: p,
+        meaning: 'Your own element at full strength — self-sufficiency, a steady living earned rather than gifted. Where it sits is where your effort reliably converts into support.',
+      });
+      break;
+    }
+  }
+
+  // 金輿 — the carriage, two places past the 祿 seat. Comfort, and a partner
+  // who brings some of it.
+  const luIdx = BRANCHES.indexOf(LU[dm]);
+  const jinyu = BRANCHES[(luIdx + 2) % 12];
+  for (const { p, b } of allBranches) {
+    if (b === jinyu) {
+      stars.push({
+        classical: '金輿', name: 'Golden Carriage', kind: 'auspicious', pillar: p,
+        meaning: 'Ease of circumstance — comfortable surroundings, a supportive marriage, help that arrives in material form. Classically the star of riding rather than walking.',
+      });
+      break;
+    }
+  }
+
+  // ── Month-branch star ────────────────────────────────────────────────
+  // 月德貴人 — the month's virtue. Read from the month branch's 三合 frame and
+  // matched against the chart's STEMS, not its branches:
+  // 寅午戌月見丙, 申子辰月見壬, 巳酉丑月見庚, 亥卯未月見甲.
+  const YUEDE: Record<EarthlyBranch, HeavenlyStem> = {
+    Yin: 'Bing', Wu: 'Bing', Xu: 'Bing',
+    Shen: 'Ren', Zi: 'Ren', Chen: 'Ren',
+    Si: 'Geng', You: 'Geng', Chou: 'Geng',
+    Hai: 'Jia', Mao: 'Jia', Wei: 'Jia',
+  };
+  const yuedeStem = YUEDE[result.month.branch];
+  const allStems: { p: 'year' | 'month' | 'day' | 'hour'; s: HeavenlyStem }[] = [
+    { p: 'year', s: result.year.stem },
+    { p: 'month', s: result.month.stem },
+    { p: 'day', s: result.day.stem },
+    { p: 'hour', s: result.hour.stem },
+  ];
+  for (const { p, s } of allStems) {
+    if (s === yuedeStem) {
+      stars.push({
+        classical: '月德貴人', name: 'Moon Virtue', kind: 'auspicious', pillar: p,
+        meaning: 'A protective star. Trouble tends to resolve before it lands, and people are inclined to give you the benefit of the doubt. Classically said to soften every harsh star it shares a chart with.',
+      });
+      break;
+    }
+  }
+
   // Kong Wang 空亡 — Void (旬空)
   //
   // The 60-pillar cycle runs as six 旬 (decades). Each decade pairs ten stems

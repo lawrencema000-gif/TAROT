@@ -234,6 +234,156 @@ describe('detectSpiritStars — on real computed charts', () => {
   });
 });
 
+describe('紅鸞 / 天喜 — the marriage pair', () => {
+  // 「紅鸞起子逆行宮」 — 子年 紅鸞在卯, then counter-clockwise; 天喜 sits opposite.
+  const HONGLUAN: [string, string][] = [
+    ['子', '卯'], ['丑', '寅'], ['寅', '丑'], ['卯', '子'], ['辰', '亥'], ['巳', '戌'],
+    ['午', '酉'], ['未', '申'], ['申', '未'], ['酉', '午'], ['戌', '巳'], ['亥', '辰'],
+  ];
+  const ALL = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+
+  /**
+   * Year branch drives these. Every branch other than the year is the probe,
+   * so nothing else in the chart can seat the star — parking the day pillar on
+   * a fixed branch would silently fire whenever that branch happened to be the
+   * seat (it does, for a 亥 year).
+   */
+  function withYear(yearCn: string, probeCn: string) {
+    const r = chartWith({ stem: S('甲'), branch: B(probeCn) }, [B(yearCn), B(probeCn), B(probeCn)]);
+    return detectSpiritStars(r);
+  }
+
+  it('seats 紅鸞 where the verse says, for all twelve years', () => {
+    for (const [yearCn, expected] of HONGLUAN) {
+      const hit = withYear(yearCn, expected).find((x) => x.classical === '紅鸞');
+      expect([yearCn, hit !== undefined]).toEqual([yearCn, true]);
+      // And nowhere else.
+      for (const probe of ALL) {
+        if (probe === expected) continue;
+        const fired = withYear(yearCn, probe).some((x) => x.classical === '紅鸞');
+        expect([yearCn, probe, fired]).toEqual([yearCn, probe, false]);
+      }
+    }
+  });
+
+  it('always seats 天喜 opposite 紅鸞', () => {
+    for (const [yearCn, luan] of HONGLUAN) {
+      const opposite = ALL[(ALL.indexOf(luan) + 6) % 12];
+      const hit = withYear(yearCn, opposite).find((x) => x.classical === '天喜');
+      expect([yearCn, opposite, hit !== undefined]).toEqual([yearCn, opposite, true]);
+    }
+  });
+
+  it('matches the published 子年 anchor — 紅鸞卯, 天喜酉', () => {
+    expect(withYear('子', '卯').some((x) => x.classical === '紅鸞')).toBe(true);
+    expect(withYear('子', '酉').some((x) => x.classical === '天喜')).toBe(true);
+  });
+});
+
+describe('孤辰 / 寡宿 — the solitude pair', () => {
+  // By the year branch's season: 亥子丑 → 寅/戌, 寅卯辰 → 巳/丑,
+  // 巳午未 → 申/辰, 申酉戌 → 亥/未.
+  const SEASONS: [string[], string, string][] = [
+    [['亥', '子', '丑'], '寅', '戌'],
+    [['寅', '卯', '辰'], '巳', '丑'],
+    [['巳', '午', '未'], '申', '辰'],
+    [['申', '酉', '戌'], '亥', '未'],
+  ];
+
+  it('seats both stars per season group', () => {
+    for (const [years, guchen, guasu] of SEASONS) {
+      for (const y of years) {
+        const rc = chartWith({ stem: S('甲'), branch: B('午') }, [B(y), B(guchen), B(guasu)]);
+        const found = detectSpiritStars(rc).map((x) => x.classical);
+        expect([y, found.includes('孤辰')]).toEqual([y, true]);
+        expect([y, found.includes('寡宿')]).toEqual([y, true]);
+      }
+    }
+  });
+
+  it('covers all twelve year branches exactly once', () => {
+    expect(new Set(SEASONS.flatMap(([ys]) => ys)).size).toBe(12);
+  });
+});
+
+describe('將星 — the General', () => {
+  it('sits on the 帝旺 of the day branch frame', () => {
+    const FRAMES: [string[], string][] = [
+      [['寅', '午', '戌'], '午'], [['巳', '酉', '丑'], '酉'],
+      [['申', '子', '辰'], '子'], [['亥', '卯', '未'], '卯'],
+    ];
+    for (const [members, general] of FRAMES) {
+      for (const dayCn of members) {
+        const r = chartWith({ stem: S('甲'), branch: B(dayCn) }, [B(general), B(dayCn), B(dayCn)]);
+        expect([dayCn, has(r, '將星')]).toEqual([dayCn, true]);
+      }
+    }
+  });
+});
+
+describe('祿神 / 金輿 — the seat and the carriage', () => {
+  // 祿: 甲寅 乙卯 丙戊巳 丁己午 庚申 辛酉 壬亥 癸子. 金輿 is two places on.
+  const LU: [string, string][] = [
+    ['甲', '寅'], ['乙', '卯'], ['丙', '巳'], ['戊', '巳'], ['丁', '午'],
+    ['己', '午'], ['庚', '申'], ['辛', '酉'], ['壬', '亥'], ['癸', '子'],
+  ];
+  const ALL = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+
+  it('seats 祿神 on the day master own branch', () => {
+    for (const [stem, lu] of LU) {
+      const r = chartWith({ stem: S(stem), branch: B('辰') }, [B(lu), B('辰'), B('辰')]);
+      expect([stem, has(r, '祿神')]).toEqual([stem, true]);
+    }
+  });
+
+  it('seats 金輿 two places past 祿', () => {
+    for (const [stem, lu] of LU) {
+      const carriage = ALL[(ALL.indexOf(lu) + 2) % 12];
+      const r = chartWith({ stem: S(stem), branch: B('午') }, [B(carriage), B('午'), B('午')]);
+      expect([stem, carriage, has(r, '金輿')]).toEqual([stem, carriage, true]);
+    }
+  });
+
+  it('matches the published 甲 anchors — 祿在寅, 金輿在辰', () => {
+    const r = chartWith({ stem: S('甲'), branch: B('午') }, [B('寅'), B('辰'), B('午')]);
+    const found = detectSpiritStars(r).map((x) => x.classical);
+    expect(found).toContain('祿神');
+    expect(found).toContain('金輿');
+  });
+});
+
+describe('月德貴人 — Moon Virtue', () => {
+  // 寅午戌月見丙, 申子辰月見壬, 巳酉丑月見庚, 亥卯未月見甲 — matched on STEMS.
+  const RULE: [string[], string][] = [
+    [['寅', '午', '戌'], '丙'], [['申', '子', '辰'], '壬'],
+    [['巳', '酉', '丑'], '庚'], [['亥', '卯', '未'], '甲'],
+  ];
+
+  it('fires when the virtue stem appears anywhere in the chart', () => {
+    for (const [months, stemCn] of RULE) {
+      for (const monthCn of months) {
+        const base = chartWith({ stem: S('甲'), branch: B('辰') }, [B('辰'), B(monthCn), B('辰')]);
+        // chartWith puts 甲 in the year/month/hour stems, so 甲-months always hit.
+        const withStem = { ...base, year: { ...base.year, stem: S(stemCn) } };
+        expect([monthCn, stemCn, detectSpiritStars(withStem).some((x) => x.classical === '月德貴人')])
+          .toEqual([monthCn, stemCn, true]);
+      }
+    }
+  });
+
+  it('does not fire when no stem matches the month virtue', () => {
+    // 寅 month wants 丙; fill every stem with 癸 instead.
+    const base = chartWith({ stem: S('癸'), branch: B('辰') }, [B('辰'), B('寅'), B('辰')]);
+    const allGui = {
+      ...base,
+      year: { ...base.year, stem: S('癸') },
+      month: { ...base.month, stem: S('癸') },
+      hour: { ...base.hour, stem: S('癸') },
+    };
+    expect(detectSpiritStars(allGui).some((x) => x.classical === '月德貴人')).toBe(false);
+  });
+});
+
 describe('六沖 / 六合 / 三合 — branch relations', () => {
   /** Probe a pair in the year and month pillars; day and hour are the pair itself
    *  repeated, so no third branch can manufacture an extra relation. */

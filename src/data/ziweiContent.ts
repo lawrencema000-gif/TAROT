@@ -81,6 +81,30 @@ export const STAR_MEANINGS: Record<string, { cn: string; title: string; text: st
     title: 'The Pioneer',
     text: 'Pojun tears down what has stopped working, often before a replacement is ready. Its palace is the area of your life that refuses to stay settled — where you keep starting over, sometimes at real cost and sometimes because you were the only one honest enough to say the old form was already dead. Endings here are a function rather than a punishment; the skill worth building is choosing your demolitions deliberately.',
   },
+  // ── 輔弼昌曲 — the four support stars (輔星). Not rulers of a palace the way
+  // the fourteen majors are, but included because four of the ten year stems
+  // send a 四化 to one of them, and because they are the supports every
+  // traditional reading actually leans on.
+  Zuofu: {
+    cn: '左輔',
+    title: 'The Left Support',
+    text: 'Zuofu is help that arrives without being asked for — the mentor, the older colleague, the friend who quietly makes the introduction. Wherever it sits, things tend to go better than you managed alone, and people are inclined to back you. Its work is letting yourself be helped, and remembering to be that person for someone else.',
+  },
+  Youbi: {
+    cn: '右弼',
+    title: 'The Right Support',
+    text: 'Youbi is the same generosity from the other side: allies, timing that works out, doors that happen to be open. It softens whatever it sits with, and in a difficult palace it is often the reason a hard chapter stays survivable. Its work is not mistaking good fortune for a plan.',
+  },
+  Wenchang: {
+    cn: '文昌',
+    title: 'The Scholar',
+    text: 'Wenchang is the written word, the examination passed, the argument set down clearly. It brings a mind that organises well and an instinct for the formal, credentialed route. Its work is keeping the polish honest — Wenchang can make a thin idea sound finished.',
+  },
+  Wenqu: {
+    cn: '文曲',
+    title: 'The Artist',
+    text: 'Wenqu is expression rather than documentation — music, performance, charm, the turn of phrase that lands. Where Wenchang studies, Wenqu feels its way, and it gives an ease with people that opens rooms. Its work is following through after the room is won.',
+  },
 };
 
 /** The 12 palaces (十二宮) — the life areas a Zi Wei chart divides into. */

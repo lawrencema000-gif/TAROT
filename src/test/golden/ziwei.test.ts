@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   BRANCHES12, STEMS10, BUREAU_INFO, NAYIN_BUREAU, nayinKey,
-  ZIWEI_POSITION, ziweiPositionFromRule, placeMajorStars,
+  ZIWEI_POSITION, ziweiPositionFromRule, placeMajorStars, placeSupportStars,
   tianfuFromZiwei, FOUR_TRANSFORMATIONS,
   lifePalaceBranch, bodyPalaceBranch, palaceBranch,
   type Bureau,
 } from '../../data/ziweiTables';
 import { computeZiweiChart, hourBranchIndex } from '../../data/ziwei';
+import { STAR_MEANINGS } from '../../data/ziweiContent';
 
 /**
  * Golden tests for Zi Wei Dou Shu placement.
@@ -270,11 +271,14 @@ describe('computeZiweiChart — end to end', () => {
     expect(c.yearStemCn).toBe('庚');
   });
 
-  it('places every major star in exactly one palace', () => {
+  it('places every star in exactly one palace', () => {
     const c = computeZiweiChart('1990-06-15', '14:30')!;
-    const placed = c.palaces.flatMap((p) => p.stars.map((s) => s.key));
-    expect(placed).toHaveLength(14);
-    expect(new Set(placed).size).toBe(14);
+    const all = c.palaces.flatMap((p) => p.stars);
+    // 14 majors + 輔弼昌曲.
+    expect(all).toHaveLength(18);
+    expect(new Set(all.map((s) => s.key)).size).toBe(18);
+    expect(all.filter((s) => !s.isSupport)).toHaveLength(14);
+    expect(all.filter((s) => s.isSupport)).toHaveLength(4);
   });
 
   it('gives exactly one 命宮 and one 身宮 among twelve distinct seats', () => {
@@ -301,7 +305,7 @@ describe('computeZiweiChart — end to end', () => {
       const t = `${String(h).padStart(2, '0')}:00`;
       const c = computeZiweiChart('2020-06-01', t);
       expect([t, c !== null]).toEqual([t, true]);
-      expect([t, c!.palaces.flatMap((p) => p.stars).length]).toEqual([t, 14]);
+      expect([t, c!.palaces.flatMap((p) => p.stars).length]).toEqual([t, 18]);
     }
   });
 
@@ -321,8 +325,101 @@ describe('computeZiweiChart — end to end', () => {
         expect(c!.lunar.month).toBeGreaterThanOrEqual(1);
         expect(c!.lunar.month).toBeLessThanOrEqual(12);
         expect(new Set(c!.palaces.map((p) => p.branchIdx)).size).toBe(12);
-        expect(c!.palaces.flatMap((p) => p.stars)).toHaveLength(14);
+        expect(c!.palaces.flatMap((p) => p.stars)).toHaveLength(18);
       }
     }
+  });
+});
+
+describe('安輔弼昌曲 — the four support stars', () => {
+  it('places 左輔右弼 from the lunar month', () => {
+    // 「辰上順正尋左輔，戌上逆正右弼當」 — 正月 seats them at 辰 and 戌.
+    expect(BRANCHES12[placeSupportStars(1, 0).Zuofu]).toBe('辰');
+    expect(BRANCHES12[placeSupportStars(1, 0).Youbi]).toBe('戌');
+    // 七月 counts six on and six back, so they swap seats.
+    expect(BRANCHES12[placeSupportStars(7, 0).Zuofu]).toBe('戌');
+    expect(BRANCHES12[placeSupportStars(7, 0).Youbi]).toBe('辰');
+  });
+
+  it('places 文昌文曲 from the hour branch', () => {
+    // 「文昌戌上逆時尋，文曲辰上順時輪」 — 子時 seats them at 戌 and 辰.
+    expect(BRANCHES12[placeSupportStars(1, B('子')).Wenchang]).toBe('戌');
+    expect(BRANCHES12[placeSupportStars(1, B('子')).Wenqu]).toBe('辰');
+    // 午時 swaps them.
+    expect(BRANCHES12[placeSupportStars(1, 6).Wenchang]).toBe('辰');
+    expect(BRANCHES12[placeSupportStars(1, 6).Wenqu]).toBe('戌');
+  });
+
+  it('keeps both pairs symmetric about the 辰-戌 axis', () => {
+    for (let m = 1; m <= 12; m++) {
+      for (let h = 0; h < 12; h++) {
+        const s = placeSupportStars(m, h);
+        // Reflection about 辰-戌 is x → (14 - x) mod 12.
+        expect([m, h, s.Youbi]).toEqual([m, h, ((14 - s.Zuofu) % 12 + 12) % 12]);
+        expect([m, h, s.Wenchang]).toEqual([m, h, ((14 - s.Wenqu) % 12 + 12) % 12]);
+      }
+    }
+  });
+});
+
+describe('四化 recipients are always real, placed, readable stars', () => {
+  it('has interpretation text for every star any stem can transform', () => {
+    // Four stems send a 化 to a support star rather than a major. Missing text
+    // here is what makes a chart print "Wenchang" at a user.
+    for (const m of Object.values(FOUR_TRANSFORMATIONS)) {
+      for (const star of [m.hua_lu, m.hua_quan, m.hua_ke, m.hua_ji]) {
+        expect([star, !!STAR_MEANINGS[star]]).toEqual([star, true]);
+        expect([star, /^[一-鿿]+$/.test(STAR_MEANINGS[star].cn)]).toEqual([star, true]);
+      }
+    }
+  });
+
+  it('seats all four transformations in a palace, for every year stem', () => {
+    // One birth date per stem: 1984 is 甲子, so 1984+n cycles the stems.
+    for (let n = 0; n < 10; n++) {
+      const year = 1984 + n;
+      const c = computeZiweiChart(`${year}-08-20`, '10:00')!;
+      expect([year, c !== null]).toEqual([year, true]);
+      const marked = c.palaces.flatMap((p) => p.stars).filter((s) => s.transformation);
+      expect([year, c.yearStemCn, marked.length]).toEqual([year, c.yearStemCn, 4]);
+      // And each transformation is on the star the table names.
+      for (const t of c.transformations) {
+        const hit = marked.find((s) => s.key === t.star);
+        expect([year, t.star, hit?.transformation]).toEqual([year, t.star, t.kind]);
+      }
+    }
+  });
+});
+
+describe('晚子時 — the 23:00 day boundary', () => {
+  it('reads a 23:xx birth as 子時 of the following lunar day', () => {
+    const late = computeZiweiChart('1990-06-15', '23:30')!;
+    const nextMorning = computeZiweiChart('1990-06-16', '00:30')!;
+    expect(BRANCHES12[late.hourBranchIdx]).toBe('子');
+    // Same 子時, same lunar day → the same chart.
+    expect(late.lunar.day).toBe(nextMorning.lunar.day);
+    expect(late.ziweiBranchIdx).toBe(nextMorning.ziweiBranchIdx);
+    expect(late.lifeBranchIdx).toBe(nextMorning.lifeBranchIdx);
+  });
+
+  it('advances one lunar day past the same evening', () => {
+    const evening = computeZiweiChart('1990-06-15', '21:00')!;  // 亥時, same day
+    const late = computeZiweiChart('1990-06-15', '23:30')!;
+    expect(late.lunar.day).toBe(evening.lunar.day + 1);
+  });
+
+  it('rolls across a month end without breaking the chart', () => {
+    // 1990-06-30 23:30 → 1990-07-01 子時.
+    const c = computeZiweiChart('1990-06-30', '23:30')!;
+    expect(c).not.toBeNull();
+    expect(BRANCHES12[c.hourBranchIdx]).toBe('子');
+    expect(c.palaces.flatMap((p) => p.stars)).toHaveLength(18);
+    expect(new Set(c.palaces.map((p) => p.branchIdx)).size).toBe(12);
+  });
+
+  it('rolls across a year end', () => {
+    const c = computeZiweiChart('1999-12-31', '23:45')!;
+    expect(c).not.toBeNull();
+    expect(c.lunar.day).toBe(computeZiweiChart('2000-01-01', '00:10')!.lunar.day);
   });
 });

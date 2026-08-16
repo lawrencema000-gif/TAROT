@@ -115,6 +115,12 @@ export function ZiweiPage() {
                 </div>
               );
             })}
+            {chart.yearStemCn === '庚' && (
+              <p className="text-[11px] text-mystic-600 pt-1">
+                Schools disagree about 庚 years. We follow the 中州派 reading (陽祿 武權 陰科 同忌),
+                which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.
+              </p>
+            )}
           </Card>
 
           <Card className="p-4 space-y-1">
@@ -131,7 +137,11 @@ export function ZiweiPage() {
                       <span className="text-mystic-500 text-xs"> {meaning?.en ?? p.en}</span>
                       {p.isBody && <span className="text-cosmic-violet text-xs"> · 身宮</span>}
                     </span>
-                    <span className="text-mystic-400 text-xs">{p.stars.map((s) => s.cn).join(' ') || '—'}</span>
+                    <span className="text-mystic-400 text-xs">
+                      {p.stars.length === 0 ? '—' : p.stars.map((s) => (
+                        <span key={s.key} className={s.isSupport ? 'text-mystic-600' : undefined}>{s.cn} </span>
+                      ))}
+                    </span>
                     <ChevronDown className={`w-4 h-4 text-mystic-600 transition-transform ${open ? 'rotate-180' : ''}`} />
                   </button>
                   {open && (

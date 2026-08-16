@@ -481,6 +481,32 @@ export const FOUR_TRANSFORMATIONS: Record<
  * The four 輔星 that appear in {@link FOUR_TRANSFORMATIONS} but are not
  * placed by this module. Exported so an engine can detect and skip them.
  */
+/**
+ * Place the four support stars (輔弼昌曲) that the 四化 can land on.
+ *
+ * 安左輔右弼訣 [A]: 「辰上順正尋左輔，戌上逆正右弼當」
+ *   — from 辰 count FORWARD to the lunar month (正月起辰) for 左輔;
+ *     from 戌 count BACKWARD the same number for 右弼.
+ * 安文昌文曲訣 [A]: 「文昌戌上逆時尋，文曲辰上順時輪」
+ *   — from 戌 count BACKWARD by the hour branch for 文昌;
+ *     from 辰 count FORWARD by the hour branch for 文曲.
+ *
+ * Each pair is symmetric about an axis (輔弼 about 辰–戌 by month, 昌曲 about
+ * the same axis by hour), which is the quickest way to spot a direction bug.
+ *
+ * @param lunarMonth 1-12, leap months already resolved by the calendar module
+ * @param hourBranchIdx 0-11
+ */
+export function placeSupportStars(lunarMonth: number, hourBranchIdx: number): Record<string, number> {
+  const mod = (n: number) => ((n % 12) + 12) % 12;
+  return {
+    Zuofu: mod(4 + (lunarMonth - 1)),
+    Youbi: mod(10 - (lunarMonth - 1)),
+    Wenchang: mod(10 - hourBranchIdx),
+    Wenqu: mod(4 + hourBranchIdx),
+  };
+}
+
 export const SUPPORT_STARS_IN_TRANSFORMATIONS: { star: string; cn: string }[] = [
   { star: 'Wenchang', cn: '文昌' },
   { star: 'Wenqu',    cn: '文曲' },

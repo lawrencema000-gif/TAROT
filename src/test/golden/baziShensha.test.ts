@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { computeBazi, STEMS, BRANCHES, type HeavenlyStem, type EarthlyBranch, type BaziResult } from '../../data/bazi';
-import { detectSpiritStars } from '../../data/baziDeep';
+import { detectSpiritStars, detectBranchRelations } from '../../data/baziDeep';
+import { nayinFor } from '../../data/bazi';
+import { NAYIN_BUREAU, nayinKey, STEMS10_ROMAN, BRANCHES12_ROMAN } from '../../data/ziweiTables';
 
 /**
  * Golden tests for 神煞 (spirit stars) in the BaZi chart.
@@ -228,6 +230,78 @@ describe('detectSpiritStars — on real computed charts', () => {
           }
         }
       }
+    }
+  });
+});
+
+describe('六沖 / 六合 / 三合 — branch relations', () => {
+  /** Probe a pair in the year and month pillars; day and hour are the pair itself
+   *  repeated, so no third branch can manufacture an extra relation. */
+  function relationsBetween(aCn: string, bCn: string) {
+    const a = B(aCn), b = B(bCn);
+    const r = chartWith({ stem: S('甲'), branch: a }, [a, b, b]);
+    return detectBranchRelations(r).filter((rel) => rel.branches.includes(a) && rel.branches.includes(b));
+  }
+
+  it('finds a clash for exactly the six classical pairs', () => {
+    const CLASHES = [['子', '午'], ['丑', '未'], ['寅', '申'], ['卯', '酉'], ['辰', '戌'], ['巳', '亥']];
+    const isClash = (a: string, b: string) => CLASHES.some((p) => p.includes(a) && p.includes(b));
+    const all = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+    for (const a of all) {
+      for (const b of all) {
+        if (a === b) continue;
+        const fired = relationsBetween(a, b).some((r) => r.type === 'clash');
+        expect([a, b, fired]).toEqual([a, b, isClash(a, b)]);
+      }
+    }
+  });
+
+  it('finds a combine for exactly the six classical pairs', () => {
+    const COMBINES = [['子', '丑'], ['寅', '亥'], ['卯', '戌'], ['辰', '酉'], ['巳', '申'], ['午', '未']];
+    const isCombine = (a: string, b: string) => COMBINES.some((p) => p.includes(a) && p.includes(b));
+    const all = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+    for (const a of all) {
+      for (const b of all) {
+        if (a === b) continue;
+        const fired = relationsBetween(a, b).some((r) => r.type === 'combine');
+        expect([a, b, fired]).toEqual([a, b, isCombine(a, b)]);
+      }
+    }
+  });
+
+  it('finds the four 三合 frames and nothing else', () => {
+    const FRAMES = [['申', '子', '辰'], ['寅', '午', '戌'], ['巳', '酉', '丑'], ['亥', '卯', '未']];
+    for (const f of FRAMES) {
+      const r = chartWith({ stem: S('甲'), branch: B(f[0]) }, [B(f[1]), B(f[2]), B(f[0])]);
+      const triples = detectBranchRelations(r).filter((x) => x.type === 'triple-harmony');
+      expect([f.join(''), triples.length]).toEqual([f.join(''), 1]);
+    }
+    // A partial frame must NOT report a triple.
+    const partial = chartWith({ stem: S('甲'), branch: B('申') }, [B('子'), B('卯'), B('卯')]);
+    expect(detectBranchRelations(partial).filter((x) => x.type === 'triple-harmony')).toHaveLength(0);
+  });
+
+  it('covers all twelve branches once across the four frames', () => {
+    const FRAMES = [['申', '子', '辰'], ['寅', '午', '戌'], ['巳', '酉', '丑'], ['亥', '卯', '未']];
+    expect(new Set(FRAMES.flat()).size).toBe(12);
+  });
+});
+
+describe('納音 — two independently built tables must agree', () => {
+  it('assigns the same element to all 60 pillars in bazi.ts and ziweiTables.ts', () => {
+    // src/data/bazi.ts carries the 60 納音 names; src/data/ziweiTables.ts carries
+    // the 五行局 the same pillars map to. They were built separately, so
+    // agreement across all 60 is real evidence rather than a tautology.
+    const BUREAU_ELEMENT: Record<string, string> = {
+      water2: '水', wood3: '木', metal4: '金', earth5: '土', fire6: '火',
+    };
+    for (let n = 0; n < 60; n++) {
+      const s = n % 10, b = n % 12;
+      const fromBazi = nayinFor(STEMS[s], BRANCHES[b]);
+      const fromZiwei = NAYIN_BUREAU[nayinKey(STEMS10_ROMAN[s], BRANCHES12_ROMAN[b])];
+      expect([n, fromBazi !== null, fromZiwei !== undefined]).toEqual([n, true, true]);
+      const baziElement = [...fromBazi!.classical].find((ch) => '金木水火土'.includes(ch));
+      expect([n, baziElement]).toEqual([n, BUREAU_ELEMENT[fromZiwei]]);
     }
   });
 });

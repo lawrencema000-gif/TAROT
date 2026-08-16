@@ -387,15 +387,28 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
     }
   }
 
-  // Kong Wang 空亡 — Void
-  // Calculation: based on day pillar's position in the 60-cycle.
-  const dayCycleOffset = STEMS.indexOf(result.day.stem) * 6 + BRANCHES.indexOf(result.day.branch);
-  const voidGroup = Math.floor(dayCycleOffset / 10);
-  const voidBranches: Record<number, [EarthlyBranch, EarthlyBranch]> = {
-    0: ['Xu', 'Hai'], 1: ['Shen', 'You'], 2: ['Wu', 'Wei'],
-    3: ['Chen', 'Si'], 4: ['Yin', 'Mao'], 5: ['Zi', 'Chou'],
-  };
-  const voids = voidBranches[voidGroup] ?? voidBranches[0];
+  // Kong Wang 空亡 — Void (旬空)
+  //
+  // The 60-pillar cycle runs as six 旬 (decades). Each decade pairs ten stems
+  // with ten of the twelve branches, so exactly two branches are left over —
+  // those two are that decade's voids. Rather than look the pairs up (and get
+  // the index arithmetic wrong, which we did: `stemIdx * 6 + branchIdx` is not
+  // the sexagenary index, and it mislabelled 44 of the 60 day pillars), derive
+  // them. Stepping back `stemIdx` places from the day pillar lands on the 甲
+  // that opens its decade; the decade then covers ten consecutive branches
+  // from there, and the two immediately after it are the voids.
+  //
+  //   甲子旬 → 戌亥   甲戌旬 → 申酉   甲申旬 → 午未
+  //   甲午旬 → 辰巳   甲辰旬 → 寅卯   甲寅旬 → 子丑
+  const decadeStartBranch =
+    ((BRANCHES.indexOf(dayBranch) - STEMS.indexOf(result.day.stem)) % 12 + 12) % 12;
+  const voids: EarthlyBranch[] = [
+    BRANCHES[(decadeStartBranch + 10) % 12],
+    BRANCHES[(decadeStartBranch + 11) % 12],
+  ];
+  // Report every void pillar, not just the first. Which life-area fails to bear
+  // fruit is the entire content of this star — collapsing two voids into one
+  // throws away the half the reader most needs.
   for (const { p, b } of allBranches) {
     if (voids.includes(b)) {
       stars.push({
@@ -405,7 +418,6 @@ export function detectSpiritStars(result: BaziResult): SpiritStar[] {
         pillar: p,
         meaning: 'A pillar that does not produce its expected fruit. Plans here unravel. Effort spent in this life-area returns less than expected. Not a permanent loss — but a sign to redirect rather than push harder.',
       });
-      break;
     }
   }
 

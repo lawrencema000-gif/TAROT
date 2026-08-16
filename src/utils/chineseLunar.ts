@@ -75,7 +75,6 @@ export function winterSolstice(year: number): Date {
  */
 function containsMajorTerm(startDay: number, nextStartDay: number): boolean {
   const from = cstDayToUtc(startDay);
-  const to = cstDayToUtc(nextStartDay);
   // Major terms are 30° apart, so at most one or two fall in a ~29.5-day month.
   // Scan all 12 and test whether any lands inside the window.
   for (let k = 0; k < 12; k++) {

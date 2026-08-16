@@ -128,6 +128,13 @@ export const CHART_TYPES: ChartTypeInfo[] = [
     whenToRead:
       'Glance at it any time you are curious what is happening overhead, or before a reading to feel into the day’s atmosphere.',
   },
+  {
+    key: 'ziwei',
+    name: 'Zi Wei Dou Shu',
+    tagline: 'The Chinese Emperor-star chart',
+    description: 'The great Chinese astrology system: twelve palaces of life, fourteen major stars, and four transformations, all placed from the true lunar calendar rather than planetary positions. Where a Western chart maps the sky, this one maps your life into rooms.',
+    whenToRead: 'Read it when you want a second, very different lens on the same life — especially for family, career, and property questions, which this system treats in unusual depth.',
+  },
 ];
 
 export const FIRDARIA_LORD_MEANINGS: Record<string, string> = {

@@ -17,9 +17,7 @@
       "MBTI",
       "INTJ\nINTP\nENTJ\nENTP\nINFJ\nINFP\nENFJ"
     ],
-    "readings/library": [
-      "gemini -"
-    ]
+    "readings/library": []
   },
   "ko": {
     "_meta": {
@@ -31,21 +29,15 @@
     ],
     "readings": [],
     "horoscope": [],
-    "quizzes": [
-      "Big Five"
-    ],
-    "more": [
-      "Big Five"
-    ],
+    "quizzes": [],
+    "more": [],
     "readings/tarot": [],
     "horoscope/today": [],
     "readings/compatibility": [
       "MBTI",
       "INTJ\nINTP\nENTJ\nENTP\nINFJ\nINFP\nENFJ"
     ],
-    "readings/library": [
-      "gemini -"
-    ]
+    "readings/library": []
   },
   "zh": {
     "_meta": {

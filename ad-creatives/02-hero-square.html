@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Ad: Hero Square 1080x1080</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1080px; overflow: hidden; }
+  .ad {
+    width: 1080px; height: 1080px; position: relative;
+    background: radial-gradient(ellipse at 50% 30%, rgba(212,168,83,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 80%, rgba(139,92,246,0.04) 0%, transparent 50%),
+                #040407;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px; overflow: hidden; font-family: 'Inter', sans-serif;
+  }
+  .noise { position: absolute; inset: 0; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.25); border-radius: 50%; }
+  .star.gold { background: rgba(212,168,83,0.5); box-shadow: 0 0 4px rgba(212,168,83,0.3); }
+
+  .moon { font-size: 48px; color: #d4a853; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(212,168,83,0.3)); }
+
+  /* Card fan */
+  .cards { position: relative; height: 280px; width: 500px; margin-bottom: 40px; }
+  .card {
+    position: absolute; left: 50%; top: 50%;
+    width: 130px; height: 203px; border-radius: 12px;
+    overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .card img { width: 100%; height: 100%; object-fit: cover; }
+  .card:nth-child(1) { transform: translate(-50%,-50%) translateX(-170px) rotate(-15deg); }
+  .card:nth-child(2) { transform: translate(-50%,-50%) translateX(-85px) rotate(-7deg); z-index: 1; }
+  .card:nth-child(3) { transform: translate(-50%,-50%) translateX(0px) rotate(0deg) translateY(-15px); z-index: 2; box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 40px rgba(212,168,83,0.08); }
+  .card:nth-child(4) { transform: translate(-50%,-50%) translateX(85px) rotate(7deg); z-index: 1; }
+  .card:nth-child(5) { transform: translate(-50%,-50%) translateX(170px) rotate(15deg); }
+
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 56px; font-weight: 600; line-height: 1.1; color: #eae6f2;
+    margin-bottom: 16px; letter-spacing: -0.02em; position: relative; z-index: 2;
+  }
+  h1 .gold {
+    background: linear-gradient(120deg, #d4a853, #e8c97a, #fff5d4, #e8c97a, #d4a853);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sub { font-size: 18px; color: #706a82; line-height: 1.6; margin-bottom: 32px; max-width: 500px; position: relative; z-index: 2; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 16px 40px; border-radius: 16px;
+    background: linear-gradient(135deg, #d4a853, #e8c97a);
+    color: #080808; font-weight: 600; font-size: 18px;
+    box-shadow: 0 4px 28px rgba(212,168,83,0.3);
+    position: relative; z-index: 2;
+  }
+  .bottom-text {
+    position: absolute; bottom: 40px;
+    font-size: 13px; color: #3e3a4d; letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="noise"></div>
+  <div class="star" style="left:8%;top:12%"></div><div class="star gold" style="left:20%;top:8%"></div>
+  <div class="star" style="left:35%;top:5%"></div><div class="star" style="left:60%;top:10%"></div>
+  <div class="star gold" style="left:80%;top:6%"></div><div class="star" style="left:90%;top:15%"></div>
+  <div class="star" style="left:5%;top:88%"></div><div class="star gold" style="left:45%;top:92%"></div>
+  <div class="star" style="left:70%;top:90%"></div><div class="star" style="left:92%;top:85%"></div>
+
+  <div class="moon">☽</div>
+  <div class="cards">
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-fool.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-empress.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-star.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-moon.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-world.webp"></div>
+  </div>
+  <h1>Know yourself.<br><span class="gold">One ritual a day.</span></h1>
+  <p class="sub">Daily tarot · Horoscopes · Journal · Personality quizzes</p>
+  <div class="cta">Download Free on Google Play</div>
+  <div class="bottom-text">Free to start · No credit card required</div>
+</div>
+</body></html>

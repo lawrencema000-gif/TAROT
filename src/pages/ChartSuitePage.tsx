@@ -15,6 +15,7 @@ type Interp = typeof import('../data/interpretations');
 
 /** Types living on other surfaces — hub cards link out. */
 const LINKED: Record<string, { route: string; note: string }> = {
+  ziwei: { route: '/ziwei', note: 'Chinese Emperor-star system' },
   transits: { route: '/reports/natal', note: 'In your Natal Report' },
   'solar-return': { route: '/reports/year-ahead', note: 'In your Year-Ahead Report' },
   progressions: { route: '/reports/natal', note: 'In your Natal Report' },

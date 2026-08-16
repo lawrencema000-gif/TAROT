@@ -1,0 +1,313 @@
+{
+  "flowResults": [
+    {
+      "id": "01-signin",
+      "title": "Sign in with email/password + session + home render",
+      "verdict": "pass",
+      "notes": [
+        "sign-in button clicked: true",
+        "auth URL: https://tarotlife.app/?lang=en",
+        "email filled: true, password filled: true",
+        "submit result: true",
+        "URL after sign-in: https://tarotlife.app/?lang=en",
+        "bottom nav present: true"
+      ],
+      "errors": [],
+      "netFailures": [
+        "net::ERR_ABORTED HEAD https://ulzlthhkqjuohzjangcq.supabase.co/rest/v1/daily_rituals?select=id&user_id=eq.7bc78b43-0626-4dae-856b-baa1e22ff315"
+      ],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\01-signin"
+    },
+    {
+      "id": "02a-home",
+      "title": "Bottom-nav: Home",
+      "verdict": "pass",
+      "notes": [
+        "tab \"Home\" clicked: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\02a-home"
+    },
+    {
+      "id": "02b-readings",
+      "title": "Bottom-nav: Readings",
+      "verdict": "pass",
+      "notes": [
+        "tab \"Readings\" clicked: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\02b-readings"
+    },
+    {
+      "id": "02c-horoscope",
+      "title": "Bottom-nav: Horoscope",
+      "verdict": "pass",
+      "notes": [
+        "tab \"Horoscope\" clicked: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\02c-horoscope"
+    },
+    {
+      "id": "02d-quizzes",
+      "title": "Bottom-nav: Quizzes",
+      "verdict": "pass",
+      "notes": [
+        "tab \"Quizzes\" clicked: true"
+      ],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [
+        "HTTP 404 POST https://tarotlife.app/locales/add/en/app"
+      ],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\02d-quizzes"
+    },
+    {
+      "id": "02e-more",
+      "title": "Bottom-nav: More",
+      "verdict": "pass",
+      "notes": [
+        "tab \"More\" clicked: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\02e-more"
+    },
+    {
+      "id": "03-tarot-money",
+      "title": "Tarot: Money topic → 1-Card Daily → Draw → AI interpret",
+      "verdict": "fail",
+      "notes": [
+        "Money topic clicked: false",
+        "1-card daily clicked: false",
+        "Draw clicked: false",
+        "Revealed action tried: DOM click",
+        "AI interpret clicked: false",
+        "AI interpretation appears successful: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\03-tarot-money"
+    },
+    {
+      "id": "04-readings-horoscope",
+      "title": "Readings → Horoscope sub-tab scroll/content",
+      "verdict": "pass",
+      "notes": [],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\04-readings-horoscope"
+    },
+    {
+      "id": "05-compatibility",
+      "title": "Readings → Compatibility → partner sign",
+      "verdict": "warn",
+      "notes": [
+        "partner sign clicked: false"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\05-compatibility"
+    },
+    {
+      "id": "06-library",
+      "title": "Readings → Library → open Tarot Basics",
+      "verdict": "fail",
+      "notes": [
+        "Tarot Basics clicked: false"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\06-library"
+    },
+    {
+      "id": "07a-horoscope-today",
+      "title": "Horoscope → Today",
+      "verdict": "pass",
+      "notes": [
+        "Today sub-tab click: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\07a-horoscope-today"
+    },
+    {
+      "id": "07b-horoscope-chart",
+      "title": "Horoscope → Chart",
+      "verdict": "pass",
+      "notes": [
+        "Chart sub-tab click: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\07b-horoscope-chart"
+    },
+    {
+      "id": "07c-horoscope-forecast",
+      "title": "Horoscope → Forecast",
+      "verdict": "pass",
+      "notes": [
+        "Forecast sub-tab click: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\07c-horoscope-forecast"
+    },
+    {
+      "id": "07d-horoscope-explore",
+      "title": "Horoscope → Explore",
+      "verdict": "pass",
+      "notes": [
+        "Explore sub-tab click: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\07d-horoscope-explore"
+    },
+    {
+      "id": "08-quizzes-mbti",
+      "title": "Quizzes → MBTI → answer 3 questions",
+      "verdict": "warn",
+      "notes": [
+        "MBTI clicked: false",
+        "Q1 answered: false",
+        "Q2 answered: false",
+        "Q3 answered: false"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\08-quizzes-mbti"
+    },
+    {
+      "id": "09-profile",
+      "title": "More → Profile: XP / streak / rank",
+      "verdict": "pass",
+      "notes": [
+        "XP present: true, Streak present: true, Rank/Level present: true"
+      ],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [
+        "HTTP 404 POST https://tarotlife.app/locales/add/en/app"
+      ],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\09-profile"
+    },
+    {
+      "id": "10-language-switch",
+      "title": "Settings → Language → JA → EN",
+      "verdict": "warn",
+      "notes": [
+        "Settings opened: true",
+        "Japanese clicked: false",
+        "html[lang] after JA switch: en",
+        "Japanese chars present on home: false",
+        "Back to English: true"
+      ],
+      "errors": [],
+      "netFailures": [
+        "net::ERR_ABORTED HEAD https://ulzlthhkqjuohzjangcq.supabase.co/rest/v1/daily_rituals?select=id&user_id=eq.7bc78b43-0626-4dae-856b-baa1e22ff315"
+      ],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\10-language-switch"
+    },
+    {
+      "id": "11-signout",
+      "title": "Sign out from Settings → redirect to landing",
+      "verdict": "warn",
+      "notes": [
+        "sign-out clicked: false",
+        "URL after sign-out: https://tarotlife.app/",
+        "On landing (no bottom nav): false, body has content: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\11-signout"
+    },
+    {
+      "id": "12-signin-again",
+      "title": "Sign back in — session resumes cleanly",
+      "verdict": "pass",
+      "notes": [
+        "bottom nav present after re-signin: true"
+      ],
+      "errors": [],
+      "netFailures": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "dir": "C:\\Users\\lmao\\TAROT\\.audit\\ship-readiness\\12-signin-again"
+    }
+  ],
+  "globalEvents": {
+    "consoleErrors": [
+      {
+        "flow": "02d-quizzes",
+        "text": "Failed to load resource: the server responded with a status of 404 ()"
+      },
+      {
+        "flow": "09-profile",
+        "text": "Failed to load resource: the server responded with a status of 404 ()"
+      }
+    ],
+    "pageErrors": [],
+    "netFailures": [
+      {
+        "flow": "01-signin",
+        "text": "net::ERR_ABORTED HEAD https://ulzlthhkqjuohzjangcq.supabase.co/rest/v1/daily_rituals?select=id&user_id=eq.7bc78b43-0626-4dae-856b-baa1e22ff315"
+      },
+      {
+        "flow": "10-language-switch",
+        "text": "net::ERR_ABORTED HEAD https://ulzlthhkqjuohzjangcq.supabase.co/rest/v1/daily_rituals?select=id&user_id=eq.7bc78b43-0626-4dae-856b-baa1e22ff315"
+      }
+    ],
+    "httpErrors": [
+      {
+        "flow": "02d-quizzes",
+        "text": "HTTP 404 POST https://tarotlife.app/locales/add/en/app"
+      },
+      {
+        "flow": "09-profile",
+        "text": "HTTP 404 POST https://tarotlife.app/locales/add/en/app"
+      }
+    ]
+  }
+}

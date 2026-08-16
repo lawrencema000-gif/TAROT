@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Ad: Daily Card Landscape 1200x628</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1200px; height: 628px; overflow: hidden; }
+  .ad {
+    width: 1200px; height: 628px; position: relative;
+    background: radial-gradient(ellipse at 35% 50%, rgba(212,168,83,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 75% 40%, rgba(139,92,246,0.04) 0%, transparent 50%),
+                #040407;
+    display: flex; align-items: center; overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  .noise { position: absolute; inset: 0; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.25); border-radius: 50%; }
+  .star.gold { background: rgba(212,168,83,0.5); box-shadow: 0 0 6px rgba(212,168,83,0.3); }
+
+  /* Left side: card */
+  .card-area {
+    position: relative; z-index: 2;
+    width: 420px; display: flex; align-items: center; justify-content: center;
+    padding-left: 60px;
+  }
+  .card-frame {
+    position: relative;
+  }
+  .card-glow {
+    position: absolute; inset: -30px; border-radius: 20px;
+    background: radial-gradient(ellipse, rgba(212,168,83,0.12) 0%, transparent 70%);
+  }
+  .card-img {
+    width: 240px; height: auto; border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,168,83,0.08);
+    position: relative; z-index: 1;
+  }
+
+  /* Right side: text */
+  .content {
+    position: relative; z-index: 2;
+    flex: 1; padding: 0 60px 0 50px;
+  }
+  .label {
+    font-size: 11px; font-weight: 600; color: #d4a853;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .card-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 52px; font-weight: 600; color: #eae6f2;
+    margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .card-keyword {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px; font-weight: 400; color: #d4a853;
+    font-style: italic; margin-bottom: 20px;
+  }
+  .card-meaning {
+    font-size: 15px; color: #706a82; line-height: 1.65;
+    margin-bottom: 28px; max-width: 420px;
+  }
+  .divider {
+    width: 40px; height: 1px; background: rgba(212,168,83,0.25);
+    margin-bottom: 20px;
+  }
+  .cta-row { display: flex; align-items: center; gap: 16px; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; border-radius: 12px;
+    background: linear-gradient(135deg, #d4a853, #e8c97a);
+    color: #080808; font-weight: 600; font-size: 14px;
+    box-shadow: 0 4px 20px rgba(212,168,83,0.25);
+  }
+  .cta svg { width: 12px; height: 12px; }
+  .cta-sub { font-size: 12px; color: #3e3a4d; }
+  .brand {
+    position: absolute; top: 28px; right: 40px; z-index: 3;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #706a82;
+  }
+  .brand-moon { color: #d4a853; font-size: 20px; filter: drop-shadow(0 0 8px rgba(212,168,83,0.3)); }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="noise"></div>
+  <div class="star" style="left:3%;top:8%"></div><div class="star gold" style="left:12%;top:85%"></div>
+  <div class="star" style="left:30%;top:5%"></div><div class="star gold" style="left:55%;top:10%"></div>
+  <div class="star" style="left:70%;top:88%"></div><div class="star" style="left:85%;top:15%"></div>
+  <div class="star gold" style="left:92%;top:70%"></div><div class="star" style="left:48%;top:92%"></div>
+  <div class="star" style="left:78%;top:50%"></div><div class="star gold" style="left:20%;top:40%"></div>
+
+  <div class="brand"><span class="brand-moon">☽</span> Arcana</div>
+
+  <div class="card-area">
+    <div class="card-frame">
+      <div class="card-glow"></div>
+      <img class="card-img" src="the-sun-original.png" alt="The Sun">
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="label">Your Daily Card</div>
+    <div class="card-name">The Sun</div>
+    <div class="card-keyword">Joy · Success · Vitality</div>
+    <div class="card-meaning">
+      Everything is coming together. The Sun brings warmth, clarity, and the confidence to shine. Today is your day to embrace the light.
+    </div>
+    <div class="divider"></div>
+    <div class="cta-row">
+      <span class="cta">Pull Your Card <svg viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="cta-sub">Free on Google Play</span>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Ad: Pick a Card 1080x1080</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1080px; overflow: hidden; }
+  .ad {
+    width: 1080px; height: 1080px; position: relative;
+    background: radial-gradient(ellipse at 50% 60%, rgba(212,168,83,0.06) 0%, transparent 60%), #040407;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; overflow: hidden; font-family: 'Inter', sans-serif;
+  }
+  .noise { position: absolute; inset: 0; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.2); border-radius: 50%; }
+  .star.gold { background: rgba(212,168,83,0.5); box-shadow: 0 0 4px rgba(212,168,83,0.3); }
+
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 52px; font-weight: 600; color: #eae6f2; margin-bottom: 8px;
+    position: relative; z-index: 2; letter-spacing: -0.02em;
+  }
+  .sub-head {
+    font-size: 20px; color: #d4a853; margin-bottom: 60px;
+    position: relative; z-index: 2; letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .cards { position: relative; z-index: 2; display: flex; gap: 30px; margin-bottom: 60px; }
+  .card-slot { position: relative; }
+  .card-back {
+    width: 200px; height: 312px; border-radius: 14px;
+    background: linear-gradient(135deg, #1a1a2e, #0f0f1f);
+    border: 2px solid rgba(212,168,83,0.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    position: relative; overflow: hidden;
+  }
+  .card-back::before {
+    content: ''; position: absolute; inset: 10px;
+    border: 1px solid rgba(212,168,83,0.12); border-radius: 10px;
+  }
+  .card-back .symbol { font-size: 48px; color: #d4a853; opacity: 0.25; }
+  .card-back .label {
+    position: absolute; bottom: 24px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; letter-spacing: 0.3em; color: #d4a853; opacity: 0.3;
+    text-transform: uppercase;
+  }
+  .card-number {
+    position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+    font-family: 'Cormorant Garamond', serif; font-size: 24px;
+    color: #706a82; font-weight: 600;
+  }
+
+  .instruction {
+    font-size: 22px; color: #706a82; position: relative; z-index: 2;
+    margin-bottom: 16px;
+  }
+  .cta-line { font-size: 14px; color: #3e3a4d; position: relative; z-index: 2; }
+
+  .brand {
+    position: absolute; bottom: 36px; display: flex; align-items: center; gap: 8px;
+    font-family: 'Cormorant Garamond', serif; font-size: 20px; color: #706a82;
+  }
+  .brand-moon { color: #d4a853; font-size: 22px; }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="noise"></div>
+  <div class="star" style="left:8%;top:6%"></div><div class="star gold" style="left:22%;top:12%"></div>
+  <div class="star" style="left:78%;top:8%"></div><div class="star gold" style="left:90%;top:20%"></div>
+  <div class="star" style="left:5%;top:88%"></div><div class="star" style="left:50%;top:4%"></div>
+  <div class="star gold" style="left:85%;top:85%"></div><div class="star" style="left:15%;top:90%"></div>
+
+  <h1>Pick a card.</h1>
+  <div class="sub-head">Left · Middle · Right</div>
+
+  <div class="cards">
+    <div class="card-slot">
+      <div class="card-back"><span class="symbol">✦</span><span class="label">Arcana</span></div>
+      <div class="card-number">1</div>
+    </div>
+    <div class="card-slot">
+      <div class="card-back"><span class="symbol">✦</span><span class="label">Arcana</span></div>
+      <div class="card-number">2</div>
+    </div>
+    <div class="card-slot">
+      <div class="card-back"><span class="symbol">✦</span><span class="label">Arcana</span></div>
+      <div class="card-number">3</div>
+    </div>
+  </div>
+
+  <div class="instruction">Comment your choice — then download to reveal.</div>
+  <div class="cta-line">Free on Google Play</div>
+  <div class="brand"><span class="brand-moon">☽</span> Arcana</div>
+</div>
+</body></html>

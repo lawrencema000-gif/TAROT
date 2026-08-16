@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Ad: Instagram Story 1080x1920</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1920px; overflow: hidden; }
+  .ad {
+    width: 1080px; height: 1920px; position: relative;
+    background: radial-gradient(ellipse at 50% 35%, rgba(212,168,83,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 75%, rgba(139,92,246,0.05) 0%, transparent 50%),
+                #040407;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; overflow: hidden; font-family: 'Inter', sans-serif;
+    padding: 80px 60px;
+  }
+  .noise { position: absolute; inset: 0; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.2); border-radius: 50%; }
+  .star.gold { background: rgba(212,168,83,0.5); box-shadow: 0 0 4px rgba(212,168,83,0.3); }
+
+  .brand {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 80px;
+    font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #eae6f2;
+    position: relative; z-index: 2;
+  }
+  .brand-moon { color: #d4a853; font-size: 30px; filter: drop-shadow(0 0 10px rgba(212,168,83,0.3)); }
+
+  .moon-big {
+    font-size: 80px; color: #d4a853; margin-bottom: 40px;
+    filter: drop-shadow(0 0 40px rgba(212,168,83,0.3));
+    position: relative; z-index: 2;
+  }
+
+  .cards { position: relative; z-index: 2; height: 500px; width: 700px; margin-bottom: 60px; }
+  .card {
+    position: absolute; left: 50%; top: 50%;
+    width: 180px; height: 280px; border-radius: 14px;
+    overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card:nth-child(1) { transform: translate(-50%,-50%) translateX(-200px) rotate(-12deg); }
+  .card:nth-child(2) { transform: translate(-50%,-50%) translateX(-100px) rotate(-5deg); z-index: 1; }
+  .card:nth-child(3) { transform: translate(-50%,-50%) translateY(-20px); z-index: 2; box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,168,83,0.1); }
+  .card:nth-child(4) { transform: translate(-50%,-50%) translateX(100px) rotate(5deg); z-index: 1; }
+  .card:nth-child(5) { transform: translate(-50%,-50%) translateX(200px) rotate(12deg); }
+
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 72px; font-weight: 600; color: #eae6f2; line-height: 1.1;
+    margin-bottom: 24px; position: relative; z-index: 2; letter-spacing: -0.02em;
+  }
+  h1 .gold {
+    background: linear-gradient(120deg, #d4a853, #e8c97a, #fff5d4, #e8c97a, #d4a853);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sub { font-size: 22px; color: #706a82; line-height: 1.6; max-width: 600px; margin-bottom: 60px; position: relative; z-index: 2; }
+  .features {
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    position: relative; z-index: 2; margin-bottom: 60px;
+  }
+  .feat {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 20px; color: #706a82;
+  }
+  .feat-check { color: #d4a853; font-size: 18px; }
+  .cta {
+    padding: 22px 56px; border-radius: 18px;
+    background: linear-gradient(135deg, #d4a853, #e8c97a);
+    color: #080808; font-weight: 600; font-size: 22px;
+    box-shadow: 0 4px 28px rgba(212,168,83,0.3);
+    position: relative; z-index: 2;
+  }
+  .bottom-note {
+    position: absolute; bottom: 60px;
+    font-size: 16px; color: #3e3a4d; letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="noise"></div>
+  <div class="star" style="left:5%;top:3%"></div><div class="star gold" style="left:15%;top:8%"></div>
+  <div class="star" style="left:85%;top:5%"></div><div class="star gold" style="left:92%;top:15%"></div>
+  <div class="star" style="left:8%;top:92%"></div><div class="star gold" style="left:50%;top:97%"></div>
+  <div class="star" style="left:75%;top:93%"></div><div class="star" style="left:30%;top:2%"></div>
+  <div class="star gold" style="left:65%;top:96%"></div><div class="star" style="left:3%;top:50%"></div>
+  <div class="star" style="left:97%;top:45%"></div><div class="star gold" style="left:10%;top:70%"></div>
+
+  <div class="brand"><span class="brand-moon">☽</span> Arcana</div>
+  <div class="moon-big">☽</div>
+
+  <div class="cards">
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-fool.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-high-priestess.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-star.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-sun.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-world.webp"></div>
+  </div>
+
+  <h1>Know yourself.<br><span class="gold">One ritual a day.</span></h1>
+  <p class="sub">Your daily tarot, horoscope, journal, and personality quizzes.</p>
+
+  <div class="features">
+    <div class="feat"><span class="feat-check">✦</span> 78-card tarot deck</div>
+    <div class="feat"><span class="feat-check">✦</span> Daily personalized horoscope</div>
+    <div class="feat"><span class="feat-check">✦</span> 5 personality quizzes</div>
+    <div class="feat"><span class="feat-check">✦</span> Reflective journal</div>
+  </div>
+
+  <div class="cta">Download Free</div>
+  <div class="bottom-note">Free to start · No credit card required</div>
+</div>
+</body></html>

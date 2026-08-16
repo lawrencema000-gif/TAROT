@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Ad: Zodiac Sign Square 1080x1080</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1080px; overflow: hidden; }
+  .ad {
+    width: 1080px; height: 1080px; position: relative;
+    background: radial-gradient(ellipse at 50% 40%, rgba(139,92,246,0.08) 0%, transparent 60%), #040407;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px; overflow: hidden; font-family: 'Inter', sans-serif;
+  }
+  .noise { position: absolute; inset: 0; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.2); border-radius: 50%; }
+  .star.gold { background: rgba(212,168,83,0.4); box-shadow: 0 0 4px rgba(212,168,83,0.3); }
+
+  .sign-symbol { font-size: 120px; font-family: serif; color: #7b68d4; margin-bottom: 8px; filter: drop-shadow(0 0 40px rgba(123,104,212,0.3)); position: relative; z-index: 2; }
+  .sign-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 64px; font-weight: 600; color: #eae6f2; margin-bottom: 8px;
+    position: relative; z-index: 2;
+  }
+  .sign-dates { font-size: 16px; color: #7b68d4; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 500; margin-bottom: 32px; position: relative; z-index: 2; }
+  .sign-desc {
+    font-size: 22px; color: #706a82; line-height: 1.6; max-width: 600px;
+    margin-bottom: 40px; position: relative; z-index: 2;
+    font-style: italic; font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .divider-line { width: 60px; height: 1px; background: rgba(123,104,212,0.3); margin: 0 auto 40px; }
+  .cta-text {
+    font-size: 18px; color: #eae6f2; font-weight: 500; margin-bottom: 8px;
+    position: relative; z-index: 2;
+  }
+  .cta-sub { font-size: 14px; color: #3e3a4d; position: relative; z-index: 2; }
+  .brand {
+    position: absolute; bottom: 40px; display: flex; align-items: center; gap: 8px;
+    font-family: 'Cormorant Garamond', serif; font-size: 20px; color: #706a82;
+  }
+  .brand-moon { color: #d4a853; font-size: 22px; }
+  /* Ring decoration */
+  .ring {
+    position: absolute; width: 500px; height: 500px; border-radius: 50%;
+    border: 1px solid rgba(123,104,212,0.06); top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .ring.r2 { width: 650px; height: 650px; border-color: rgba(123,104,212,0.03); }
+</style>
+</head>
+<body>
+<!--
+  INSTRUCTIONS: Create 12 versions of this ad, one per zodiac sign.
+  Change: sign-symbol, sign-name, sign-dates, sign-desc, and the glow color.
+
+  This template: SCORPIO (Water — purple #7b68d4)
+
+  Colors per element:
+  Fire (Aries, Leo, Sag): #e85d3a
+  Earth (Taurus, Virgo, Cap): #5d9e5a
+  Air (Gemini, Libra, Aquarius): #5b9dd9
+  Water (Cancer, Scorpio, Pisces): #7b68d4
+-->
+<div class="ad">
+  <div class="noise"></div>
+  <div class="ring"></div><div class="ring r2"></div>
+  <div class="star" style="left:10%;top:8%"></div><div class="star gold" style="left:25%;top:15%"></div>
+  <div class="star" style="left:80%;top:10%"></div><div class="star" style="left:90%;top:25%"></div>
+  <div class="star gold" style="left:5%;top:85%"></div><div class="star" style="left:70%;top:90%"></div>
+  <div class="star" style="left:40%;top:5%"></div><div class="star gold" style="left:60%;top:92%"></div>
+
+  <div class="sign-symbol">♏</div>
+  <div class="sign-name">Scorpio</div>
+  <div class="sign-dates">Oct 23 – Nov 21 · Water</div>
+  <div class="divider-line"></div>
+  <div class="sign-desc">"The transformer of the zodiac. Scorpio sees beneath the surface and embraces the shadows."</div>
+  <div class="cta-text">Your daily horoscope just dropped.</div>
+  <div class="cta-sub">Free on Arcana · Google Play</div>
+  <div class="brand"><span class="brand-moon">☽</span> Arcana</div>
+</div>
+</body></html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Ad: Hero Landscape 1200x628</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1200px; height: 628px; overflow: hidden; background: #040407; font-family: 'Inter', sans-serif; }
+  .ad {
+    width: 1200px; height: 628px; position: relative;
+    background: radial-gradient(ellipse at 30% 50%, rgba(212,168,83,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(139,92,246,0.04) 0%, transparent 50%),
+                #040407;
+    display: flex; align-items: center; padding: 0 80px; overflow: hidden;
+  }
+  /* Stars */
+  .stars { position: absolute; inset: 0; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.3); border-radius: 50%; }
+  .star.gold { background: rgba(212,168,83,0.5); width: 2.5px; height: 2.5px; box-shadow: 0 0 4px rgba(212,168,83,0.3); }
+  /* Noise */
+  .noise {
+    position: absolute; inset: 0; opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px;
+  }
+  .content { position: relative; z-index: 2; max-width: 520px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 100px;
+    background: rgba(212,168,83,0.06); border: 1px solid rgba(212,168,83,0.15);
+    font-size: 11px; font-weight: 500; color: #d4a853; letter-spacing: 0.04em;
+    margin-bottom: 20px;
+  }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: #d4a853; }
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 52px; font-weight: 600; line-height: 1.08;
+    color: #eae6f2; margin-bottom: 16px; letter-spacing: -0.02em;
+  }
+  h1 .gold {
+    background: linear-gradient(120deg, #d4a853, #e8c97a, #fff5d4, #e8c97a, #d4a853);
+    background-size: 200% 100%; -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .sub { font-size: 15px; color: #706a82; line-height: 1.6; margin-bottom: 28px; max-width: 400px; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px; border-radius: 14px;
+    background: linear-gradient(135deg, #d4a853, #e8c97a);
+    color: #080808; font-weight: 600; font-size: 15px;
+    box-shadow: 0 4px 24px rgba(212,168,83,0.3);
+  }
+  .cta svg { width: 14px; height: 14px; }
+  .play-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; background: #000; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; margin-left: 14px; vertical-align: middle;
+  }
+  .play-badge .label { font-size: 9px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.03em; line-height: 1; }
+  .play-badge .store { font-size: 14px; color: #fff; font-weight: 600; line-height: 1; }
+  /* Cards */
+  .cards { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); z-index: 2; }
+  .card {
+    position: absolute; width: 140px; height: 218px; border-radius: 12px;
+    overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card:nth-child(1) { transform: rotate(-12deg) translate(-120px, -20px); }
+  .card:nth-child(2) { transform: rotate(-4deg) translate(-40px, -40px); z-index: 2; }
+  .card:nth-child(3) { transform: rotate(4deg) translate(40px, -30px); z-index: 3; box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(212,168,83,0.1); }
+  .card:nth-child(4) { transform: rotate(12deg) translate(120px, -10px); z-index: 2; }
+  .card:nth-child(5) { transform: rotate(20deg) translate(200px, 15px); }
+  /* Gradient line */
+  .divider {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,168,83,0.2), transparent);
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="noise"></div>
+  <div class="stars">
+    <div class="star" style="left:5%;top:10%"></div><div class="star" style="left:15%;top:80%"></div>
+    <div class="star gold" style="left:25%;top:20%"></div><div class="star" style="left:35%;top:60%"></div>
+    <div class="star" style="left:45%;top:15%"></div><div class="star gold" style="left:55%;top:85%"></div>
+    <div class="star" style="left:65%;top:30%"></div><div class="star" style="left:75%;top:70%"></div>
+    <div class="star gold" style="left:85%;top:12%"></div><div class="star" style="left:92%;top:55%"></div>
+    <div class="star" style="left:10%;top:45%"></div><div class="star" style="left:50%;top:90%"></div>
+    <div class="star gold" style="left:80%;top:45%"></div><div class="star" style="left:30%;top:35%"></div>
+  </div>
+  <div class="content">
+    <div class="badge"><span class="badge-dot"></span>Daily Tarot & Astrology</div>
+    <h1>Know yourself.<br><span class="gold">One ritual a day.</span></h1>
+    <p class="sub">Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes.</p>
+    <span class="cta">Get it Free <svg viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="play-badge">
+      <span style="display:flex;flex-direction:column"><span class="label">Get it on</span><span class="store">Google Play</span></span>
+    </span>
+  </div>
+  <div class="cards">
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-fool.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-high-priestess.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-star.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-moon.webp"></div>
+    <div class="card"><img src="../public/bundled-cards/major-arcana/the-world.webp"></div>
+  </div>
+  <div class="divider"></div>
+</div>
+</body></html>

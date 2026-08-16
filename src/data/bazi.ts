@@ -12,9 +12,13 @@
 //   - Dominant element
 //   - Qualities, strengths, challenges
 //
-// For production-accurate results we'd need a solar-calendar → stem/branch
-// ephemeris. Our pragmatic derivation uses the lunar new year offset — good
-// enough for a V1 experience. Users get the same output for the same birth.
+// The year and month pillars are bounded by the SECTIONAL SOLAR TERMS (節氣),
+// computed from the real ephemeris in src/utils/solarTerms.ts rather than from
+// nominal almanac dates. Those dates drift — 立春 falls on Feb 3, 4 or 5 — and
+// a fixed table misplaces about a third of term-years, handing anyone born on
+// a boundary day a completely different chart.
+
+import { sectionalTermsForYear, branchIndexForTermLongitude } from '../utils/solarTerms';
 
 export type HeavenlyStem =
   | 'Jia' | 'Yi' | 'Bing' | 'Ding' | 'Wu' | 'Ji' | 'Geng' | 'Xin' | 'Ren' | 'Gui';
@@ -216,10 +220,54 @@ const SOLAR_TERM_BOUNDARIES: Array<{ m: number; d: number; branchIdx: number }> 
   { m: 12, d: 7,  branchIdx: 0 },  // 大雪 → 子
 ];
 
-/** Year pillar — 立春 (~Feb 4) is the year boundary, not Jan 1. */
-function computeYearPillar(y: number, m: number, d: number): { stem: HeavenlyStem; branch: EarthlyBranch; stemIdx: number } {
-  // Before Feb 4 → previous solar year.
-  const effectiveYear = (m < 2 || (m === 2 && d < 4)) ? y - 1 : y;
+/**
+ * The birth instant, for comparing against solar-term instants.
+ *
+ * Birth input is local civil time; the terms and the Chinese calendar are
+ * defined against China Standard Time, and (as in src/utils/chineseLunar.ts)
+ * we read the given wall time as CST. With no birth time we assume noon —
+ * which only matters for someone born on a term boundary day, where the term's
+ * own clock time decides the month.
+ */
+
+function birthInstant(y: number, m: number, d: number, birthTime?: string): Date {
+  const hhmm = birthTime && /^\d{1,2}:\d{2}/.test(birthTime) ? birthTime.slice(0, 5) : '12:00';
+  const iso = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const t = new Date(`${iso}T${hhmm}:00+08:00`);
+  return Number.isNaN(t.getTime()) ? new Date(Date.UTC(y, m - 1, d, 4) ) : t;
+}
+
+/**
+ * The sectional term governing an instant: the last one at or before it.
+ * Returns null when the ephemeris can't resolve the year, so callers fall back
+ * to the nominal table rather than guessing.
+ */
+function governingTerm(instant: Date, gregorianYear: number): { longitude: number; date: Date } | null {
+  // A January birth sits under the previous year's 小寒/大雪, so look at both.
+  const candidates = [
+    ...sectionalTermsForYear(gregorianYear - 1),
+    ...sectionalTermsForYear(gregorianYear),
+  ].filter((t) => t.date.getTime() <= instant.getTime());
+  if (candidates.length === 0) return null;
+  return candidates.reduce((a, b) => (a.date.getTime() >= b.date.getTime() ? a : b));
+}
+
+/** Year pillar — 立春 is the year boundary, not Jan 1 and not a fixed Feb 4. */
+function computeYearPillar(
+  y: number, m: number, d: number, birthTime?: string,
+): { stem: HeavenlyStem; branch: EarthlyBranch; stemIdx: number } {
+  // 立春 drifts across Feb 3-5, so resolve the actual instant. Someone born on
+  // Feb 4 in a Feb-5 year belongs to the PREVIOUS year pillar; the fixed-date
+  // rule handed them the wrong chart entirely.
+  let effectiveYear: number;
+  const terms = sectionalTermsForYear(y);
+  const lichun = terms.find((t) => t.longitude === 315);
+  if (lichun) {
+    effectiveYear = birthInstant(y, m, d, birthTime).getTime() >= lichun.date.getTime() ? y : y - 1;
+  } else {
+    // Ephemeris unavailable — fall back to the nominal boundary.
+    effectiveYear = (m < 2 || (m === 2 && d < 4)) ? y - 1 : y;
+  }
   // 1984 was the canonical 甲子 year (indices 0/0).
   const offset = effectiveYear - 1984;
   const stemIdx = ((offset % 10) + 10) % 10;
@@ -227,16 +275,24 @@ function computeYearPillar(y: number, m: number, d: number): { stem: HeavenlySte
   return { stem: STEMS[stemIdx], branch: BRANCHES[branchIdx], stemIdx };
 }
 
-/** Month pillar — branch from solar-term bucket, stem from five-tigers formula. */
-function computeMonthPillar(m: number, d: number, yearStemIdx: number): { stem: HeavenlyStem; branch: EarthlyBranch } {
-  // Walk solar terms in calendar order, keep the last one whose start date has passed.
-  // Default starts at 子 (idx 0) — the period from previous-year's 大雪 (~Dec 7)
-  // through current-year's 小寒 (~Jan 6) is the 子 month. Without this, dates
-  // Jan 1-5 incorrectly mapped to 丑 instead of 子.
-  let branchIdx = 0;
-  for (const term of SOLAR_TERM_BOUNDARIES) {
-    if (m > term.m || (m === term.m && d >= term.d)) {
-      branchIdx = term.branchIdx;
+/** Month pillar — branch from the governing solar term, stem from five-tigers. */
+function computeMonthPillar(
+  y: number, m: number, d: number, yearStemIdx: number, birthTime?: string,
+): { stem: HeavenlyStem; branch: EarthlyBranch } {
+  let branchIdx: number;
+  const term = governingTerm(birthInstant(y, m, d, birthTime), y);
+  if (term) {
+    branchIdx = branchIndexForTermLongitude(term.longitude);
+  } else {
+    // Ephemeris unavailable — fall back to the nominal table. Walk it in
+    // calendar order and keep the last term whose nominal date has passed.
+    // Default 子 (idx 0): the stretch from the previous year's 大雪 (~Dec 7)
+    // through 小寒 (~Jan 6) is the 子 month, so Jan 1-5 must not read as 丑.
+    branchIdx = 0;
+    for (const boundary of SOLAR_TERM_BOUNDARIES) {
+      if (m > boundary.m || (m === boundary.m && d >= boundary.d)) {
+        branchIdx = boundary.branchIdx;
+      }
     }
   }
   // "Five tigers" month-stem rule: first-month (寅) stem depends on year stem group.
@@ -299,8 +355,8 @@ export function computeBazi(birthDate: string, birthTime?: string): BaziResult |
   const day = parseInt(dayStr, 10);
   if (!year || !month || !day) return null;
 
-  const yearP  = computeYearPillar(year, month, day);
-  const monthP = computeMonthPillar(month, day, yearP.stemIdx);
+  const yearP  = computeYearPillar(year, month, day, birthTime);
+  const monthP = computeMonthPillar(year, month, day, yearP.stemIdx, birthTime);
   const dayP   = computeDayPillar(year, month, day);
   const hourP  = computeHourPillar(birthTime, dayP.stemIdx);
 

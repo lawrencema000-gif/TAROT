@@ -57,6 +57,47 @@ export function nextSolarTermAt(longitude: number, from: Date): Date | null {
 }
 
 /**
+ * The twelve sectional terms of one Gregorian year, in chronological order,
+ * with the BaZi month branch each one opens.
+ *
+ * The terms are what actually bound a BaZi month — 立春 opens 寅, 驚蟄 opens 卯,
+ * and so on round to 小寒 opening 丑. Their dates drift by a day either side of
+ * the almanac's nominal date (立春 falls on Feb 3, 4 or 5), so a fixed table
+ * misplaces roughly a third of term-years and hands anyone born on a boundary
+ * day a wholly different chart. Computed from the ephemeris instead.
+ *
+ * Memoised per year: a chart needs the whole table, and luck pillars walk many
+ * charts, so recomputing twelve iterative searches each time is wasteful.
+ */
+const termsByYear = new Map<number, SolarTerm[]>();
+
+export function sectionalTermsForYear(year: number): SolarTerm[] {
+  const cached = termsByYear.get(year);
+  if (cached) return cached;
+
+  const found: SolarTerm[] = [];
+  for (const term of SECTIONAL_TERMS) {
+    // Search from a month before the earliest that term could fall, so we pick
+    // up this year's occurrence rather than next year's.
+    const nominalMonth = ((term.longitude - 315 + 360) % 360) / 30; // 0 = Feb
+    const from = new Date(Date.UTC(year, Math.max(0, nominalMonth), 1));
+    const d = nextSolarTermAt(term.longitude, from);
+    if (d) found.push({ ...term, date: d });
+  }
+  found.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Only cache a complete table; a partial one would silently misplace months.
+  if (found.length === SECTIONAL_TERMS.length) termsByYear.set(year, found);
+  return found;
+}
+
+/** The BaZi month branch index (0 = 子) that a sectional term opens. */
+export function branchIndexForTermLongitude(longitude: number): number {
+  // 立春 (315°) opens 寅 (2); every further 30° advances one branch.
+  return ((Math.round((longitude - 315) / 30) + 2) % 12 + 12) % 12;
+}
+
+/**
  * The next sectional term strictly after `from`, and the most recent one at or
  * before `from`. Both are needed for luck pillars: forward-direction charts
  * count to the next term, reverse-direction charts count back from the previous.

@@ -92,7 +92,7 @@ describe('geocentric Moon longitude (catches frozen/opposite-Sun bug)', () => {
     const d2 = new Date('2000-01-02T12:00:00Z');
     const lon1 = geoEclipticLongitude('Moon', d1);
     const lon2 = geoEclipticLongitude('Moon', d2);
-    let delta = ((lon2 - lon1) % 360 + 360) % 360; // forward motion, 0..360
+    const delta = ((lon2 - lon1) % 360 + 360) % 360; // forward motion, 0..360
     expect(delta).toBeGreaterThan(11);
     expect(delta).toBeLessThan(15);
   });

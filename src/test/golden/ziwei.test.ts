@@ -123,7 +123,10 @@ describe('起紫微星 — the crux table', () => {
 
   it('never leaves the branch ring', () => {
     for (const row of Object.values(ZIWEI_POSITION)) {
-      for (const v of row) expect(v).toBeGreaterThanOrEqual(0), expect(v).toBeLessThan(12);
+      for (const v of row) {
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThan(12);
+      }
     }
   });
 });

@@ -4,6 +4,11 @@ import { feature, mesh } from 'topojson-client';
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity, type D3ZoomEvent, type ZoomBehavior, type ZoomTransform } from 'd3-zoom';
 import { easeCubicInOut } from 'd3-ease';
+// Side-effect import: d3-transition is what adds .transition() to Selection,
+// both at runtime (Selection.prototype) and at the type level (module
+// augmentation). We reached it only as a transitive dep of d3-zoom before,
+// which typechecked on a warm node_modules and failed on a clean install.
+import 'd3-transition';
 import worldData from 'world-atlas/countries-110m.json';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { PlanetName, Angle } from '../../utils/astrocartography';

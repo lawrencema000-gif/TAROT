@@ -4667,5 +4667,12 @@
     "recast": "換一個日期",
     "favoured": "宜",
     "avoided": "忌"
+  },
+  "dates": {
+    "title": "擇日",
+    "whatFor": "你要為什麼事選日子？",
+    "best": "近期吉日",
+    "avoid": "宜避開的日子",
+    "export": "加入日曆"
   }
 }

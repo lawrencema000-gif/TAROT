@@ -4517,5 +4517,12 @@
     "recast": "Use a different date",
     "favoured": "宜 · Favoured",
     "avoided": "忌 · Avoided"
+  },
+  "dates": {
+    "title": "Pick a good day",
+    "whatFor": "What are you choosing a day for?",
+    "best": "Best days ahead",
+    "avoid": "Days to avoid",
+    "export": "Calendar"
   }
 }

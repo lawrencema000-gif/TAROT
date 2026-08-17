@@ -9,7 +9,7 @@ import { AppProvider } from './context/AppContext';
 import { useRitual } from './context/RitualContext';
 import { syncDailyReminder, syncStreakNudge } from './services/localNotifications';
 import { GlobalAchievementCelebration } from './components/achievements/GlobalAchievementCelebration';
-import { FeatureFlagProvider } from './context/FeatureFlagContext';
+import { FeatureFlagProvider, useFeatureFlag } from './context/FeatureFlagContext';
 import { useUI, isTabRoot } from './context/UIContext';
 import { useGamification } from './context/GamificationContext';
 import { usePostCheckout } from './hooks/usePostCheckout';
@@ -193,6 +193,13 @@ function DiagnosticsSync() {
 
 function AppContent() {
   const { t } = useT('app');
+  // The advisor marketplace is unfinished and takes real money. Its routes were
+  // registered unconditionally, so /advisors/verify — which uploads a
+  // government ID — was reachable in production with the flag off. Gate the
+  // whole surface on the flag. NOTE: this closes the reachable-by-URL path
+  // only; the RPCs and edge functions still need their own server-side gate
+  // before this marketplace is safe to enable. See docs/advisor-preflight-audit.md.
+  const advisorsEnabled = useFeatureFlag('advisors');
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth, passwordRecoveryMode } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   const location = useLocation();
@@ -578,22 +585,22 @@ function AppContent() {
                   <Route path="/community" element={<CommunityPage mode="normal" />} />
                   <Route path="/whispering-well" element={<CommunityPage mode="whispering-well" />} />
                   <Route path="/companion" element={<AiCompanionPage />} />
-                  <Route path="/advisors" element={<AdvisorsPage />} />
+                  <Route path="/advisors" element={advisorsEnabled ? <AdvisorsPage /> : <Navigate to="/" replace />} />
                   <Route path="/runes" element={<RunesPage />} />
                   <Route path="/dice" element={<DicePage />} />
                   <Route path="/reports/career" element={<CareerReportPage />} />
                   <Route path="/reports/year-ahead" element={<YearAheadReportPage />} />
                   <Route path="/reports/natal-chart" element={<NatalChartReportPage />} />
                   <Route path="/invite/:code" element={<CompatInvitePage />} />
-                  <Route path="/advisors/:slug/book" element={<AdvisorBookingPage />} />
-                  <Route path="/advisors/session/:id" element={<AdvisorSessionPage />} />
+                  <Route path="/advisors/:slug/book" element={advisorsEnabled ? <AdvisorBookingPage /> : <Navigate to="/" replace />} />
+                  <Route path="/advisors/session/:id" element={advisorsEnabled ? <AdvisorSessionPage /> : <Navigate to="/" replace />} />
                   <Route path="/ai/quick" element={<QuickReadingPage />} />
                   <Route path="/ai/tarot" element={<TarotCompanionPage />} />
                   <Route path="/live-rooms" element={<LiveRoomsPage />} />
                   <Route path="/live-rooms/:id" element={<LiveRoomPage />} />
-                  <Route path="/advisors/verify" element={<AdvisorVerifyPage />} />
+                  <Route path="/advisors/verify" element={advisorsEnabled ? <AdvisorVerifyPage /> : <Navigate to="/" replace />} />
                   <Route path="/sandbox" element={<SandboxPage />} />
-                  <Route path="/advisors/dashboard" element={<AdvisorDashboardPage />} />
+                  <Route path="/advisors/dashboard" element={advisorsEnabled ? <AdvisorDashboardPage /> : <Navigate to="/" replace />} />
                   <Route path="/pick-a-card" element={<PickACardPage />} />
                   <Route path="/celestial-map" element={<CelestialMapPage />} />
                   <Route path="/soulmate-score" element={<SoulmateScorePage />} />

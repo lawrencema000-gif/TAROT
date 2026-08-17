@@ -72,5 +72,31 @@ Do not flip the flag. The advisor marketplace has never worked end-to-end, and t
 
 ## Already actioned
 
+- **The advisor money RPCs are now hard-off at the database.** `advisor_book_session`,
+  `advisor_session_start/end/cancel` and `advisor_cashout_request` have EXECUTE revoked
+  from `PUBLIC`, `anon` and `authenticated`. Re-enabling is five GRANT lines, listed in
+  `supabase/migrations/20260817010000_advisor_kill_switch.sql` alongside a launch checklist.
+  A reusable `assert_feature_enabled(key)` guard now exists to enforce a flag server-side;
+  it is deliberately not yet wired into the advisor RPCs, because those functions are being
+  rewritten anyway and re-issuing money code whose behaviour I am not changing is how a
+  subtle defect gets introduced. Wire it in during that rewrite.
+
+  **This took two attempts, and the first one was worse than useless.** Revoking only
+  `FROM authenticated` left the `PUBLIC` grant in place, and PUBLIC was what actually
+  carried the privilege. Probing production afterwards showed `advisor_cashout_request`
+  and `advisor_session_cancel` *executing for an ANONYMOUS caller* — they reached their own
+  internal guards ("Not authenticated", "Session not found") rather than being refused. So
+  the advisor money surface was callable without an account at all, not merely with one.
+  Combined with blocker 4 (the NULL participant check, which an anonymous caller's NULL
+  `auth.uid()` sails straight through) an anonymous stranger holding a session UUID could
+  have cancelled other people's sessions. Fixed in
+  `20260817020000_advisor_kill_switch_public_grant.sql`; re-probed and all five now return
+  `42501 permission denied`.
+
+  The lesson generalises: on Supabase a REVOKE must name `PUBLIC, anon, authenticated` or
+  it is decorative. This is the same trap in reverse as the one that caught the `_srv`
+  moonstone functions earlier.
+
+
 - **Advisor routes are now gated on the flag** (`src/App.tsx`). They were registered unconditionally, so `/advisors/verify` — which uploads a government ID — was reachable in production with the flag off. This closes the reachable-by-URL path only; the RPCs and edge functions still have no server-side gate.
 - **The Moonstone minting hole is closed** (`supabase/migrations/20260817000000_fix_streak_milestone_minting.sql`, applied to production). `moonstone_award_streak_milestone` took the milestone day from the caller and never read the real streak, so any new account could mint 2,875 Moonstones in six calls — roughly 57 free AI actions per throwaway signup, each a real inference bill. It now verifies against the server-maintained `profiles.streak` and fails closed.

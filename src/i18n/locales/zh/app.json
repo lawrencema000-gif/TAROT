@@ -4646,5 +4646,26 @@
     "subtitle": "解锁解读、给直播主播打赏、预约顾问咨询。",
     "success": "{{n}} 月光石正在路上 — 几秒钟就到。",
     "title": "充值月光石"
+  },
+  "ziwei": {
+    "title": "紫微斗數",
+    "birthDate": "出生日期",
+    "birthTime": "出生時間（時辰決定命宮，請盡量填寫）",
+    "cast": "排我的命盤",
+    "bureau": "你的五行局",
+    "transformations": "四化",
+    "palaces": "十二宮",
+    "recast": "重新排盤"
+  },
+  "mansions": {
+    "title": "二十八宿",
+    "today": "今日",
+    "birthHeading": "你的本命宿",
+    "birthDate": "出生日期",
+    "find": "查我的本命宿",
+    "all": "二十八宿一覽",
+    "recast": "換一個日期",
+    "favoured": "宜",
+    "avoided": "忌"
   }
 }

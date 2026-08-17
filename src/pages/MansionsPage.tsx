@@ -11,6 +11,7 @@ import {
   MANSION_MEANINGS, MANSION_DAILY_ADVICE, QUADRANT_MEANINGS, MANSION_INTRO,
 } from '../data/lunarMansionsContent';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../i18n/useT';
 import { setPageMeta } from '../utils/seo';
 
 /**
@@ -22,6 +23,7 @@ import { setPageMeta } from '../utils/seo';
  */
 export function MansionsPage() {
   const navigate = useNavigate();
+  const { t } = useT();
   const { profile } = useAuth();
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   // The 值日 cycle turns at midnight, so only the date matters here. We still
@@ -62,7 +64,7 @@ export function MansionsPage() {
     return (
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-emerald-400/80 mb-1">宜 · Favoured</div>
+          <div className="text-[10px] uppercase tracking-wider text-emerald-400/80 mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
           {acts.favourable.length === 0 ? (
             <p className="text-[13px] text-mystic-500 italic">
               The almanacs record nothing favoured here — a day to keep small rather than start.
@@ -76,7 +78,7 @@ export function MansionsPage() {
           )}
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-rose-400/80 mb-1">忌 · Avoided</div>
+          <div className="text-[10px] uppercase tracking-wider text-rose-400/80 mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
           {acts.unfavourable.length === 0 ? (
             <p className="text-[13px] text-mystic-500 italic">Nothing particular to avoid.</p>
           ) : (
@@ -94,12 +96,12 @@ export function MansionsPage() {
   return (
     <div className="space-y-6 pb-28">
       <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> Back
+        <ArrowLeft className="w-4 h-4" /> {t('common.back', { defaultValue: 'Back' })}
       </button>
 
       <div className="space-y-2">
         <EyebrowLabel>二十八宿</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">The Lunar Mansions</h1>
+        <h1 className="heading-display-xl text-mystic-100">{t('mansions.title', { defaultValue: 'The Lunar Mansions' })}</h1>
         <p className="text-sm text-mystic-400 leading-relaxed">{MANSION_INTRO}</p>
         <SectionDivider tone="gold" />
       </div>
@@ -109,7 +111,7 @@ export function MansionsPage() {
         <Card className="p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Sun className="w-4 h-4 text-gold" />
-            <EyebrowLabel>Today</EyebrowLabel>
+            <EyebrowLabel>{t('mansions.today', { defaultValue: 'Today' })}</EyebrowLabel>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl text-gold" style={{ fontFamily: 'serif' }}>{today.cn}</span>
@@ -126,16 +128,16 @@ export function MansionsPage() {
       {/* Birth mansion */}
       {!birth && (
         <Card className="p-4 space-y-4">
-          <h3 className="heading-display-md text-mystic-100">Your birth mansion</h3>
+          <h3 className="heading-display-md text-mystic-100">{t('mansions.birthHeading', { defaultValue: 'Your birth mansion' })}</h3>
           <Input
             type="date"
-            label="Birth date"
+            label={t('mansions.birthDate', { defaultValue: 'Birth date' })}
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
             max={new Date().toISOString().slice(0, 10)}
           />
           <Button variant="primary" size="md" fullWidth disabled={!birthDate} onClick={() => setSubmitted(true)}>
-            <Sparkles className="w-4 h-4 mr-2" /> Find my mansion
+            <Sparkles className="w-4 h-4 mr-2" /> {t('mansions.find', { defaultValue: 'Find my mansion' })}
           </Button>
           <p className="text-[11px] text-mystic-600">
             The 值日 mansion turns over at midnight, so the date is all this needs — a birth time changes nothing here.
@@ -146,7 +148,7 @@ export function MansionsPage() {
       {birth && (
         <>
           <Card className="p-4 space-y-3">
-            <EyebrowLabel>Your birth mansion</EyebrowLabel>
+            <EyebrowLabel>{t('mansions.birthHeading', { defaultValue: 'Your birth mansion' })}</EyebrowLabel>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl text-gold" style={{ fontFamily: 'serif' }}>{birth.cn}</span>
               <div>
@@ -175,13 +177,13 @@ export function MansionsPage() {
             </Card>
           )}
 
-          <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>Use a different date</Button>
+          <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>{t('mansions.recast', { defaultValue: 'Use a different date' })}</Button>
         </>
       )}
 
       {/* The full sky, by quadrant */}
       <Card className="p-4 space-y-4">
-        <h3 className="heading-display-md text-mystic-100">All twenty-eight</h3>
+        <h3 className="heading-display-md text-mystic-100">{t('mansions.all', { defaultValue: 'All twenty-eight' })}</h3>
         {(Object.keys(byQuadrant) as Quadrant[]).map((q) => (
           <div key={q} className="space-y-1">
             <div className="text-xs text-gold/80">

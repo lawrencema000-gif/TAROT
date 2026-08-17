@@ -4646,5 +4646,26 @@
     "subtitle": "리딩 잠금 해제, 라이브 호스트 팁 보내기, 어드바이저 세션 예약.",
     "success": "{{n}}개의 문스톤이 도착합니다 — 몇 초 안에 계정에 반영됩니다.",
     "title": "문스톤 충전"
+  },
+  "ziwei": {
+    "title": "자미두수",
+    "birthDate": "생년월일",
+    "birthTime": "출생 시각 (시진에 따라 명궁이 정해집니다. 가능하면 입력해 주세요)",
+    "cast": "내 명반 보기",
+    "bureau": "나의 오행국",
+    "transformations": "사화",
+    "palaces": "십이궁",
+    "recast": "다른 명반 보기"
+  },
+  "mansions": {
+    "title": "이십팔수",
+    "today": "오늘",
+    "birthHeading": "나의 본명수",
+    "birthDate": "생년월일",
+    "find": "내 본명수 찾기",
+    "all": "이십팔수 전체",
+    "recast": "다른 날짜로 보기",
+    "favoured": "의(宜) · 길한 일",
+    "avoided": "기(忌) · 피할 일"
   }
 }

@@ -4496,5 +4496,26 @@
       "complex": "Magnetic but friction-heavy. The pull is real; so are the edges. Growth-rich if you can hold the heat.",
       "testing": "The patterns don't flow easily. Possible — but it takes intentionality more than gravity."
     }
+  },
+  "ziwei": {
+    "title": "Zi Wei Dou Shu",
+    "birthDate": "Birth date",
+    "birthTime": "Birth time (the 時辰 sets your Life Palace — please give it if you can)",
+    "cast": "Cast my chart",
+    "bureau": "Your bureau",
+    "transformations": "The four transformations",
+    "palaces": "The twelve palaces",
+    "recast": "Cast a different chart"
+  },
+  "mansions": {
+    "title": "The Lunar Mansions",
+    "today": "Today",
+    "birthHeading": "Your birth mansion",
+    "birthDate": "Birth date",
+    "find": "Find my mansion",
+    "all": "All twenty-eight",
+    "recast": "Use a different date",
+    "favoured": "宜 · Favoured",
+    "avoided": "忌 · Avoided"
   }
 }

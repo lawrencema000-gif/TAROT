@@ -3313,7 +3313,8 @@
     "journalPrompt": "Journal prompt",
     "backToStart": "Cast again",
     "castAgain": "Cast again",
-    "yourQuestion": "Your question"
+    "yourQuestion": "Your question",
+    "readAsLiuYao": "Read this cast as 六爻"
   },
   "humanDesign": {
     "title": "Human Design",

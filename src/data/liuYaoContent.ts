@@ -40,8 +40,17 @@
 //      financial claim appears anywhere in this module, by rule.
 //   3. 妻財 literally reads “wife/wealth” and the classical sources are
 //      explicitly gendered (“占妻子、愛人…僕人”, [B]). The mainstream *function*
-//      — the resource you control, income, and a partner in the
-//      provider role — is what is implemented; the gendering is not.
+//      — what you have command over, income, and a partner or dependant inside
+//      that — is what is implemented; the gendering is not. 官鬼 carries the
+//      symmetric partner sense, ungendered in the same way.
+//   4. 玄武. [F] and [G] lead with 盜竊/欺瞞 (theft, deception). Rendered as
+//      concealment and undisclosed motive, which is the same observation without
+//      accusing a named person of a crime on the strength of a coin toss.
+//   5. 勾陳. [F]’s 牢獄、拘留、官訟 block (imprisonment, detention, litigation) is
+//      NOT reproduced, under the no-legal-claims rule.
+//
+//   That is the complete list, not an illustrative one — five departures, and
+//   the file’s credibility rests on this list being exhaustive.
 //
 // ── SOURCES (cross-checked; per-entry citations appear inline) ───────────────
 //   [A] Guanyitang wiki — “What Is Liu Yao? Coin Casting, Na Jia, the Six
@@ -57,9 +66,13 @@
 //       independent Japanese 断易 line of transmission. Useful precisely
 //       because it is not a copy of the Chinese web material.
 //       http://007.boo.jp/daneki/kiso1/youjin.html
-//   [D] 六爻基础知识：六亲 (知乎) — the derivation rule 生我者父母 … 比和者兄弟
-//       and the domain lists. (Page returns 403 to automated fetch; used via
-//       its indexed text, so it is corroboration, not a primary citation.)
+//   [D] 一卦有六爻，分排六親 (潘廷易經, pixnet) — states the derivation rule
+//       verbatim: 「生我者父母，我生者子孫，剋我者官鬼，我剋着妻財，比和者
+//       兄弟」. This is the page RELATIVE_FROM_PALACE_RULE is sourced to.
+//       https://mink0303.pixnet.net/blog/posts/16067315822
+//       Corroborated by 六爻基础知识：六亲 (知乎), which gives the same formula
+//       plus the domain lists — that page returns 403 to automated fetch and
+//       was read only as indexed search text, so it is backup, not a citation.
 //       https://zhuanlan.zhihu.com/p/550879993
 //   [E] UAYA — Wen Wang Gua / Liu Yao Method, Eight Palaces (八宮). Source for
 //       the palace→element assignment used in PALACE_MEANINGS.
@@ -72,9 +85,12 @@
 //       six spirits. [F] and [G] agree on every element and on the core
 //       symbolism, which is why the spirit entries below are stated plainly.
 //       https://www.yyzfs.ren/a/jichu/20240228/277.html
-//   [H] 六爻占疾病大全 (sina) — consulted only to establish what the classical
-//       material actually claims about 官鬼 and illness, so that the decision
-//       NOT to reproduce it is a documented choice rather than an omission.
+//   [H] 六爻占疾病大全 (sina) — cited only to establish that the classical
+//       material really does assign illness to 官鬼 directly, so that the
+//       decision NOT to reproduce that is a documented choice rather than an
+//       omission. NOTE: this page was never rendered — it is known here only
+//       from indexed search text (「官鬼爻代表疾病本身」, 「官鬼持世…病不離身」).
+//       It supports no positive claim in this file, only a deliberate absence.
 //       https://k.sina.cn/article_3876048085_e707ccd5001001qhl.html
 //   [I] 說卦傳 (ctext) — 「乾，健也；坤，順也；震，動也；巽，入也；坎，陷也；
 //       離，麗也；艮，止也；兌，說也」, the classical one-word character of each
@@ -196,7 +212,7 @@ export const RELATIVE_MEANINGS: Record<
   wealth: {
     cn: '妻財',
     title: 'Resources and Provision',
-    text: 'The wealth line is the resource you have some command over — income, goods, tools, savings, and the practical means a plan actually runs on. It also covers the person in the provider role, which is why the classical name pairs partner and property in a single word; read the role rather than the gender. As the thing you control it is also the thing you can overspend, and it is the first casualty when the sibling line is busy. When it is strong the material side of the question is workable; when it is weak the reading is usually about capacity rather than desire.',
+    text: 'The wealth line is the resource you have some command over — income, goods, tools, savings, and the practical means a plan actually runs on. It also covers a partner or dependant who sits inside what you have command over and are responsible for — 我剋, the same direction as the goods — which is why the classical name pairs partner and property in one word; read the relation rather than the gender. As the thing you control it is also the thing you can overspend, and it is the first casualty when the sibling line is busy. When it is strong the material side of the question is workable; when it is weak the reading is usually about capacity rather than desire.',
     asks: 'Look plainly at what you actually have to work with, and match the size of the plan to it instead of the other way round.',
   },
 
@@ -209,7 +225,7 @@ export const RELATIVE_MEANINGS: Record<
   officer: {
     cn: '官鬼',
     title: 'Pressure and Authority',
-    text: 'The officer line is whatever has power over you in this matter — a boss, an institution, a rule, a deadline, a rival with leverage, or a demand you did not get to negotiate. Its two faces are the same force seen from different sides: it is position, standing and legitimate authority when you hold it, and it is strain and constraint when it holds you. Where it is strong the situation has a gatekeeper, and pretending otherwise costs you time. When it dominates a reading, the useful question is not how to escape the pressure but who or what is actually applying it, because pressure with a name can be answered.',
+    text: 'The officer line is whatever has power over you in this matter — a boss, an institution, a rule, a deadline, a rival with leverage, or a demand you did not get to negotiate. It also carries the partner whose position, commitments or authority you are measured against — the symmetric counterpart to the wealth line’s partner sense, and ungendered in the same way. Its two faces are the same force seen from different sides: it is position, standing and legitimate authority when you hold it, and it is strain and constraint when it holds you. Where it is strong the situation has a gatekeeper, and pretending otherwise costs you time. When it dominates a reading, the useful question is not how to escape the pressure but who or what is actually applying it, because pressure with a name can be answered.',
     asks: 'Name the specific thing with power here and deal with it directly, rather than working around a pressure you have never made explicit.',
   },
 };
@@ -317,11 +333,11 @@ export const SPIRIT_MEANINGS: Record<Spirit, { cn: string; title: string; text: 
     text: 'The White Tiger is force without cushioning — abrupt news, blunt words, hard edges, and the moments that arrive faster than you would have chosen. This is the most difficult of the six and there is no use dressing it up: where it sits, something is likely to be strenuous, unsentimental, or simply harder than the rest of the reading. It is also decisiveness and real courage, and it is weather rather than fate — a tiger is a season you get through, and the line it sits on tells you where to brace and be careful, not what will happen to you.',
   },
 
-  /** 玄武 — 北方水; 主曖昧不明、隱私、暗中、水. [F][G] */
+  /** 玄武 — 北方水; 主曖昧不明、隱私、盜竊等. [F][G] */
   darkWarrior: {
     cn: '玄武',
     title: 'Dark Warrior — Water, North',
-    text: 'The Dark Warrior is what is not in plain view — private motives, unstated intentions, things kept quiet, and information that is technically available but nobody has volunteered. On a line it suggests the matter has a hidden dimension and that what you have been told is not the whole shape of it. Its water is not necessarily dishonest; often it is only discretion, but it does mean you should ask directly rather than assume you already know.',
+    text: 'The Dark Warrior is what is not in plain view — private motives, unstated intentions, things kept quiet, and information that is technically available but nobody has volunteered. On a line it suggests the matter has a hidden dimension and that what you have been told is not the whole shape of it. The classical sources lead with concealment and theft; the honest modern reading is that someone may not be telling you everything — which is often ordinary discretion rather than bad faith, but either way it means ask directly instead of assuming you already know.',
   },
 };
 
@@ -409,7 +425,7 @@ export const PALACE_MEANINGS: Record<Palace, { cn: string; element: string; text
  * palace. The placement rule belongs to liuYao.ts; this is only the meaning.
  */
 export const WORLD_RESPONSE_NOTE: string =
-  'Two of the six lines are marked before anything else is read. 世 (shì), the world line, is you — your position, your standing, your side of the matter as it actually is rather than as you would like it to be. 應 (yìng), the response line, is the other party: a person, an organisation, or simply the external situation you are up against, and it always sits exactly three lines away from 世, directly facing it. A reader looks at this pair first because almost every question is really a question about a relationship — who is stronger here, who is being supported, who is drawing on whom — and the two lines answer that before any of the finer detail is considered. If 世 and 應 support each other the matter has give in it; if they clash, the reading is describing friction you are probably already feeling.';
+  'Before anything else is read, two of the six lines are marked: 世 (shì), the world line, is you — your position, your standing, your side of the matter as it actually is rather than as you would like it to be. 應 (yìng), the response line, is the other party: a person, an organisation, or simply the external situation you are up against, and it always sits exactly three lines away from 世, directly facing it. A reader looks at this pair first because almost every question is really a question about a relationship — who is stronger here, who is being supported, who is drawing on whom — and the two lines answer that before any of the finer detail is considered. If 世 and 應 support each other the matter has give in it; if they clash, the reading is describing friction you are probably already feeling.';
 
 /**
  * Moving lines (動爻) and the changed hexagram (變卦). [A]

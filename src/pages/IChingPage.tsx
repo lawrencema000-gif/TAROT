@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { ArrowLeft, Sparkles, Coins, RotateCcw } from 'lucide-react';
 import { Card, Button, toast, OrnateDivider } from '../components/ui';
 import { useT } from '../i18n/useT';
@@ -13,6 +13,8 @@ import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 
 type Stage = 'intro' | 'casting' | 'result';
 
+const LiuYaoPanel = lazy(() => import('../components/iching/LiuYaoPanel').then(m => ({ default: m.LiuYaoPanel })));
+
 export function IChingPage() {
   const { t } = useT('app');
   const [stage, setStage] = useState<Stage>('intro');
@@ -20,6 +22,7 @@ export function IChingPage() {
   const [cast, setCast] = useState<CastResult | null>(null);
   const [animatingLine, setAnimatingLine] = useState(-1);
   const [tossActive, setTossActive] = useState(false);
+  const [showLiuYao, setShowLiuYao] = useState(false);
   const [tossFaces, setTossFaces] = useState<[CoinFace, CoinFace, CoinFace]>(['heads', 'heads', 'heads']);
 
   const startCast = async () => {
@@ -55,6 +58,7 @@ export function IChingPage() {
     setStage('intro');
     setQuestion('');
     setCast(null);
+    setShowLiuYao(false);
   };
 
   if (stage === 'intro') {
@@ -294,6 +298,19 @@ export function IChingPage() {
           context={`hexagram ${primary.number} — ${primary.name} (${primary.chinese}) — for my situation`}
           label={t('iching.askOracleCta', { defaultValue: 'Read this hexagram for me' }) as string}
         />
+
+        {/* 六爻 — the same cast read as a diagnostic instrument. Opt-in and
+            lazily loaded: most readers want the wisdom text, and the 納甲 tables
+            are a large chunk nobody should pay for unless they ask. */}
+        {showLiuYao ? (
+          <Suspense fallback={null}>
+            <LiuYaoPanel lineValues={cast.lines} />
+          </Suspense>
+        ) : (
+          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={() => setShowLiuYao(true)}>
+            {t('iching.readAsLiuYao', { defaultValue: 'Read this cast as 六爻' })}
+          </Button>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>

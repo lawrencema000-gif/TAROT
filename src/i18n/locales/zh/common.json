@@ -34,7 +34,8 @@
     "charts": "星盘",
     "ziwei": "紫微斗數",
     "mansions": "二十八宿",
-    "goodDays": "擇日"
+    "goodDays": "擇日",
+    "wishingSky": "許願星空"
   },
   "actions": {
     "continue": "继续",

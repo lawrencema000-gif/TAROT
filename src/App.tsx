@@ -49,6 +49,7 @@ const ChartSuitePage = lazy(() => import('./pages/ChartSuitePage').then(m => ({ 
 const ZiweiPage = lazy(() => import('./pages/ZiweiPage').then(m => ({ default: m.ZiweiPage })));
 const MansionsPage = lazy(() => import('./pages/MansionsPage').then(m => ({ default: m.MansionsPage })));
 const AuspiciousDatesPage = lazy(() => import('./pages/AuspiciousDatesPage').then(m => ({ default: m.AuspiciousDatesPage })));
+const WishingSkyPage = lazy(() => import('./pages/WishingSkyPage').then(m => ({ default: m.WishingSkyPage })));
 const QuizzesPage = lazy(() => import('./pages/QuizzesPage').then(m => ({ default: m.QuizzesPage })));
 const HoroscopePage = lazy(() => import('./pages/HoroscopePage').then(m => ({ default: m.HoroscopePage })));
 const AchievementsPage = lazy(() => import('./pages/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
@@ -614,6 +615,7 @@ function AppContent() {
                   <Route path="/ziwei" element={<ZiweiPage />} />
                   <Route path="/mansions" element={<MansionsPage />} />
                   <Route path="/good-days" element={<AuspiciousDatesPage />} />
+                  <Route path="/wishing-sky" element={<WishingSkyPage />} />
                   <Route path="/reading/:token" element={<SharedReadingPage />} />
                   <Route path="/spreads" element={<SpreadsPage />} />
                   <Route path="/spreads/:slug" element={<SpreadDetailPage />} />

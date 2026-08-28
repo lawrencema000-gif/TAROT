@@ -37,3 +37,4 @@ export * as compatInvites from './compatInvites';
 export * as advisorSessions from './advisorSessions';
 
 export type { Result } from './dailyRituals';
+export * as wishes from './wishes';

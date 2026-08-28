@@ -34,7 +34,8 @@
     "charts": "チャート",
     "ziwei": "紫微斗数",
     "mansions": "二十八宿",
-    "goodDays": "吉日を選ぶ"
+    "goodDays": "吉日を選ぶ",
+    "wishingSky": "願いの星空"
   },
   "actions": {
     "continue": "続ける",

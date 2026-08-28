@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ChevronRight } from 'lucide-react';
+import { Flame, ChevronRight } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { haversineKm, ccToFlag, type City } from '../../utils/celestialGeo';
@@ -88,7 +88,7 @@ export function CelestialPowerPlaces({ allLines, isPremium, onPick, onUpgrade }:
       className="space-y-3"
     >
       <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-gold" aria-hidden />
+        <Flame className="w-4 h-4 text-gold" aria-hidden />
         <h2 className="text-sm uppercase tracking-wider text-gold/90 font-medium">
           {t('celestial.power.title', { defaultValue: 'Your power places' })}
         </h2>

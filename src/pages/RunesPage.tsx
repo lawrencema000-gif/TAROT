@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
+import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { castRunes, type RuneCastResult } from '../data/runes';
@@ -32,7 +33,7 @@ export function RunesPage() {
     return (
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-gold" />
+          <MysticalStar className="w-6 h-6 text-gold" />
           <h1 className="heading-display-lg text-mystic-100">
             {t('runes.title', { defaultValue: 'Runes' })}
           </h1>
@@ -59,8 +60,8 @@ export function RunesPage() {
           />
         </Card>
 
-        <Button variant="primary" fullWidth onClick={startCast} className="min-h-[56px]">
-          <Sparkles className="w-5 h-5 mr-2" />
+        <Button variant="primary" size="lg" fullWidth onClick={startCast}>
+          <MysticalStar className="w-5 h-5 mr-2" />
           {t('runes.castButton', { defaultValue: 'Cast the runes' })}
         </Button>
       </div>
@@ -70,7 +71,7 @@ export function RunesPage() {
   if (stage === 'casting') {
     return (
       <div className="space-y-6 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
-        <Sparkles className="w-10 h-10 text-gold animate-pulse" />
+        <MysticalStar size={40} className="text-gold animate-pulse" halo={false} />
         <p className="text-mystic-200 text-lg font-display text-center">
           {t('runes.casting', { defaultValue: 'Casting...' })}
         </p>
@@ -182,11 +183,11 @@ export function RunesPage() {
         />
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quizzes.share.button', { defaultValue: 'Share' })}
           </Button>
-          <Button variant="outline" fullWidth onClick={reset} className="min-h-[48px]">
+          <Button variant="outline" fullWidth onClick={reset}>
             {t('runes.castAgain', { defaultValue: 'Cast again' })}
           </Button>
         </div>

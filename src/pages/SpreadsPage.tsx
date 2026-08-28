@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Layers, ChevronRight, Sparkles } from 'lucide-react';
+import { Layers, ChevronRight } from 'lucide-react';
+import { TarotCardIcon } from '../components/ui/NavIcons';
 import { allSpreads as tarotSpreads, type SpreadCategory } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -63,7 +64,7 @@ export function SpreadsPage() {
           {tarotSpreads.length} spreads — from a single daily card to the 10-card Celtic Cross — with position-by-position meanings, when to use each, and example questions.
         </p>
         <Link to="/spreads/builder" className="inline-flex items-center gap-1.5 mt-3 px-3 py-2 rounded-xl border border-gold/30 bg-gold/10 text-gold text-xs no-underline hover:bg-gold/15">
-          <Sparkles className="w-3.5 h-3.5" />
+          <TarotCardIcon className="w-3.5 h-3.5" />
           Design your own custom spread
         </Link>
       </header>

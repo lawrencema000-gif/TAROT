@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, ChevronDown, Sun } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Sun, Moon } from 'lucide-react';
 import { Card, Button, Input, EyebrowLabel, SectionDivider } from '../components/ui';
 import {
   MANSIONS, MANSION_ACTIVITIES, QUADRANT_INFO, PLANET7_INFO,
@@ -137,7 +137,7 @@ export function MansionsPage() {
             max={new Date().toISOString().slice(0, 10)}
           />
           <Button variant="primary" size="md" fullWidth disabled={!birthDate} onClick={() => setSubmitted(true)}>
-            <Sparkles className="w-4 h-4 mr-2" /> {t('mansions.find', { defaultValue: 'Find my mansion' })}
+            <Moon className="w-4 h-4 mr-2" /> {t('mansions.find', { defaultValue: 'Find my mansion' })}
           </Button>
           <p className="text-[11px] text-mystic-600">
             The 值日 mansion turns over at midnight, so the date is all this needs — a birth time changes nothing here.

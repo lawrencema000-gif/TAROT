@@ -1,8 +1,8 @@
-import { lazy, Suspense, useState, useRef, useEffect, useCallback } from 'react';
+import { lazy, Suspense, useState, useRef, useEffect, useCallback, type ComponentType } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { CustomSpreadInput } from '../components/readings/TarotSection';
-import type { LucideIcon } from 'lucide-react';
-import { Sun, Sparkles, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sun, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TarotCardIcon } from '../components/ui/NavIcons';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   TarotSection,
@@ -30,10 +30,13 @@ const DiceSection = lazy(() => import('./DicePage').then(m => ({ default: m.Dice
 
 type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'runes' | 'dice' | 'celestial' | 'library';
 
+/** Lucide icons and the app's own SVG glyphs both satisfy this. */
+type TabIcon = ComponentType<{ className?: string }>;
+
 interface TabDef {
   id: ReadingTab;
   labelKey: string;
-  icon: LucideIcon;
+  icon: TabIcon;
   premium?: boolean;
 }
 
@@ -289,10 +292,10 @@ export function ReadingsPage() {
   const tabs: {
     id: ReadingTab;
     labelKey: string;
-    icon: typeof Sparkles;
+    icon: TabIcon;
     premium?: boolean;
   }[] = [
-    { id: 'tarot', labelKey: 'readings.tabs.tarot', icon: Sparkles },
+    { id: 'tarot', labelKey: 'readings.tabs.tarot', icon: TarotCardIcon },
     { id: 'horoscope', labelKey: 'readings.tabs.horoscope', icon: Sun },
     { id: 'compatibility', labelKey: 'readings.tabs.compatibility', icon: Heart },
     ...(ichingEnabled ? [{ id: 'iching' as const, labelKey: 'readings.tabs.iching', icon: Coins }] : []),

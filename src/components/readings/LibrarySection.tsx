@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useT } from '../../i18n/useT';
 import {
   Bookmark,
-  Sparkles,
   Star,
   Layers,
   Book,
@@ -11,6 +10,8 @@ import {
   Trash2,
   Brain,
 } from 'lucide-react';
+import { TarotCardIcon } from '../ui/NavIcons';
+import { MysticalStar } from '../ui/MysticalStar';
 import { Card, Button, Chip, Sheet, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
@@ -363,7 +364,7 @@ export function LibrarySection() {
                filteredHighlights.filter(h => h.highlight_type === 'tarot').length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-mystic-400 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
+                    <TarotCardIcon className="w-4 h-4" />
                     {t('library.savedCards', { defaultValue: 'Saved Cards' })}
                   </h3>
                   {filteredHighlights
@@ -388,7 +389,7 @@ export function LibrarySection() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gold/10 flex items-center justify-center">
-                                  <Sparkles className="w-5 h-5 text-gold" />
+                                  <MysticalStar size={20} halo={false} className="text-gold" />
                                 </div>
                               )}
                             </div>
@@ -704,7 +705,7 @@ export function LibrarySection() {
               <div className="flex flex-wrap gap-2">
                 {selectedReading.cards.map((card, i) => (
                   <div key={i} className="flex items-center gap-2 px-3 py-2 bg-mystic-800/50 rounded-lg">
-                    <Sparkles className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                    <TarotCardIcon className="w-3.5 h-3.5 text-gold flex-shrink-0" />
                     <span className="text-sm text-mystic-200">
                       {card.name}
                       {card.reversed && <span className="text-mystic-400 ml-1">(R)</span>}

@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Share2, RotateCcw, Flame } from 'lucide-react';
+import { Share2, RotateCcw, Flame, BookOpen } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
+import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
@@ -284,7 +285,7 @@ export function PickACardPage() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-mystic-700 to-mystic-900 flex flex-col items-center justify-center p-4 text-center">
-                    <Sparkles className="w-8 h-8 text-gold mb-2" />
+                    <TarotCardIcon className="w-8 h-8 text-gold mb-2" />
                     <p className="text-sm text-mystic-200 font-medium">{pickedCard.name}</p>
                   </div>
                 )}
@@ -324,7 +325,7 @@ export function PickACardPage() {
                 onClick={() => navigate(`/tarot-meanings/${pickedCard ? pickedCard.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : ''}`)}
                 className="flex-1"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
+                <BookOpen className="w-4 h-4 mr-2" />
                 {t('pickACard.learnMore', { defaultValue: 'Learn more' })}
               </Button>
             </div>

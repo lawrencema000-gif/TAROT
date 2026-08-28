@@ -1,0 +1,155 @@
+import { HTMLAttributes, ReactNode, forwardRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { Disclosure } from './Disclosure';
+import { EyebrowLabel } from './Ornament';
+
+/**
+ * The answer first, then the working.
+ *
+ * Every result screen in the app has the same defect. A quiz result is
+ * six to eleven stacked cards, and the sentence the user actually asked
+ * for is somewhere in the third one. Bazi, Ziwei, Human Design and the
+ * reports do the same thing: they present the analysis in the order it
+ * was computed rather than in the order anyone reads it.
+ *
+ * This layout fixes the order. One verdict block that leads and can be
+ * screenshotted on its own, the actions that belong to it, then the
+ * detail behind a single disclosure. The detail is not cut; it moves
+ * one tap away. A page keeps stacking whatever it likes inside
+ * `children`, and the cost of that stack drops to nothing because it
+ * starts closed.
+ *
+ * Pass `detailOpen`/`onDetailOpenChange` if the screen wants the full
+ * reading expanded by default for returning users.
+ */
+
+export interface ResultLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  /** Small gold kicker above the verdict. The quiz name, the spread, the date. */
+  eyebrow?: ReactNode;
+  /** The answer. One line, in the display serif. */
+  verdict: ReactNode;
+  /**
+   * Heading level for the verdict. Defaults to h2, NOT h1 — the app shell
+   * already renders an h1 for the page (Header.tsx), so an h1 here would ship
+   * two per screen and break heading navigation for screen readers.
+   */
+  as?: 'h1' | 'h2';
+  /** A short qualifier under the verdict. The archetype, the element, the score. */
+  subtitle?: ReactNode;
+  /** The paragraph that earns the verdict. Two or three sentences, not the whole reading. */
+  summary?: ReactNode;
+  /** Sigil, emoji or type badge, rendered in a medallion above the verdict. */
+  glyph?: ReactNode;
+  /** Back handler, usually "start over" or "back to quizzes". */
+  onBack?: () => void;
+  backLabel?: string;
+  /** Save, share, retake. Sits directly under the verdict block. */
+  actions?: ReactNode;
+  /** Label on the disclosure holding `children`. Default "Read the full reading". */
+  detailLabel?: string;
+  /** Trailing count or hint on the disclosure row. */
+  detailMeta?: ReactNode;
+  detailOpen?: boolean;
+  defaultDetailOpen?: boolean;
+  onDetailOpenChange?: (open: boolean) => void;
+  /** Anything that belongs after the detail. Related readings, a disclaimer. */
+  footer?: ReactNode;
+}
+
+export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
+  (
+    {
+      eyebrow,
+      as: Heading = 'h2',
+      verdict,
+      subtitle,
+      summary,
+      glyph,
+      onBack,
+      backLabel = 'Back',
+      actions,
+      detailLabel = 'Read the full reading',
+      detailMeta,
+      detailOpen,
+      defaultDetailOpen = false,
+      onDetailOpenChange,
+      footer,
+      className = '',
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    return (
+      <div ref={ref} className={`space-y-5 ${className}`} {...props}>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="
+              inline-flex items-center gap-2 -ml-2 px-2 min-h-[44px] rounded-lg
+              text-sm text-mystic-400 transition-colors hover:text-mystic-200
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50
+              focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-950
+            "
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden />
+            {backLabel}
+          </button>
+        )}
+
+        {/* The verdict block is the one place on a result screen that is
+            allowed to be loud: a gold hairline and a black drop-shadow,
+            no halo. Everything below it stays flat so this reads as the
+            top of the hierarchy rather than one card among many. */}
+        <section
+          className="
+            rounded-2xl border border-gold/25 bg-mystic-850
+            shadow-[0_8px_24px_-12px_rgba(0,0,0,0.7)]
+            px-6 py-8 text-center space-y-3
+          "
+        >
+          {glyph && (
+            <div
+              className="
+                w-24 h-24 mx-auto rounded-full flex items-center justify-center
+                bg-gradient-to-br from-gold/25 to-mystic-800 border border-gold/30
+                text-gold font-display text-3xl
+                [&>svg]:w-10 [&>svg]:h-10
+              "
+              aria-hidden
+            >
+              {glyph}
+            </div>
+          )}
+          {eyebrow && <EyebrowLabel align="center" className="block">{eyebrow}</EyebrowLabel>}
+          <Heading className="heading-display-xl text-mystic-100">{verdict}</Heading>
+          {subtitle && <p className="text-sm text-gold/80">{subtitle}</p>}
+          {summary && (
+            <p className="text-mystic-300 leading-relaxed max-w-prose mx-auto">{summary}</p>
+          )}
+        </section>
+
+        {actions && <div className="flex gap-3">{actions}</div>}
+
+        {children != null && (
+          <Disclosure
+            label={detailLabel}
+            meta={detailMeta}
+            open={detailOpen}
+            defaultOpen={defaultDetailOpen}
+            onOpenChange={onDetailOpenChange}
+            lazy
+            contentClassName="space-y-4 pt-1"
+          >
+            {children}
+          </Disclosure>
+        )}
+
+        {footer}
+      </div>
+    );
+  },
+);
+
+ResultLayout.displayName = 'ResultLayout';

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { Card } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -87,7 +88,7 @@ export function DailyCosmicScore() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
+            <HoroscopeWheelIcon className="w-3.5 h-3.5 text-gold" />
             <span className="text-[11px] uppercase tracking-wider text-mystic-500">Today's cosmic weather</span>
           </div>
           <p className="text-sm text-mystic-300 leading-snug mt-1">{frameForDay(data.date)}</p>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Sparkles, Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
+import { MysticalStar } from '../ui/MysticalStar';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage, useCardBackImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
@@ -105,7 +106,7 @@ export function TarotFlipCard({
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center z-10">
                       <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gold/10 flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-gold animate-pulse-slow" />
+                        <MysticalStar size={32} halo={false} className="text-gold animate-pulse-slow" />
                       </div>
                       <p className="text-sm text-gold font-medium">{t('home.ritualCards.tapToReveal')}</p>
                     </div>
@@ -133,7 +134,7 @@ export function TarotFlipCard({
                   />
                   {isCardLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Sparkles className="w-10 h-10 text-gold animate-pulse" />
+                      <MysticalStar size={40} halo={false} className="text-gold animate-pulse" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/90 via-transparent to-transparent" />
@@ -154,7 +155,7 @@ export function TarotFlipCard({
                   <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/80 to-transparent" />
                   <div className="relative h-full flex flex-col items-center justify-center p-4 text-center">
                     <div className="mb-2">
-                      <Sparkles className="w-10 h-10 text-gold mx-auto" />
+                      <MysticalStar size={40} halo={false} className="text-gold mx-auto" />
                     </div>
                     <h4 className="font-display text-lg text-gold mb-1">{card.name}</h4>
                     <p className="text-xs text-mystic-400">

@@ -1,4 +1,4 @@
-import { Trophy, Flame, Sparkles, BookOpen, Brain } from 'lucide-react';
+import { Trophy, Flame, Star, BookOpen, Brain } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 
 interface AchievementStatsProps {
@@ -19,7 +19,7 @@ export function AchievementStats({
   const { t } = useT('app');
   const stats = [
     {
-      icon: Sparkles,
+      icon: Star,
       label: t('achievements.stats.totalXP', { defaultValue: 'Total XP' }),
       value: totalXP.toLocaleString(),
       color: 'text-gold',

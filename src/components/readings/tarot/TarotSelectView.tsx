@@ -6,7 +6,7 @@
  * Selected cards show their pick order; the CTA stays disabled until N
  * are chosen.
  */
-import { Sparkles } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 
@@ -109,10 +109,11 @@ export function TarotSelectView({
           fullWidth
           disabled={needsMore > 0}
           onClick={onReveal}
-          className="min-h-[52px] shadow-xl"
+          size="lg"
+          className="shadow-xl"
         >
           {needsMore > 0 ? t('readings.selectView.selectMore', { count: needsMore }) : t('readings.selectView.revealCards')}
-          <Sparkles className="w-4 h-4" />
+          <Eye className="w-4 h-4" />
         </Button>
       </div>
     </div>

@@ -27,9 +27,9 @@ import {
   Bug,
   ArrowLeftRight,
   Search,
-  Sparkles,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
+import { MysticalStar } from '../ui/MysticalStar';
 import { Button, Input, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase'; // still used for profile read/write + delete_user_account RPC
@@ -1206,7 +1206,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   ))}
                   {/* Label */}
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 py-1.5 bg-gradient-to-t from-mystic-950/80 to-transparent">
-                    <Sparkles className="w-3.5 h-3.5 text-gold" />
+                    <MysticalStar size={14} halo={false} className="text-gold" />
                     <span className="text-xs font-medium text-mystic-100">
                       {tAppSettings('settings.celestialLabel', { defaultValue: 'Celestial' })}
                     </span>

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Sparkles, ChevronRight, Clock } from 'lucide-react';
+import { ArrowLeft, Loader2, ChevronRight, Clock } from 'lucide-react';
 import { Card, Button, EyebrowLabel, SectionDivider } from '../components/ui';
+import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
@@ -189,7 +190,7 @@ export function ChartSuitePage() {
           </Card>
           {resp?.crossAspects && resp.crossAspects.length > 0 && (
             <Card className="p-4 space-y-3">
-              <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-gold" /><h3 className="heading-display-md text-mystic-100">Hits to your natal chart</h3></div>
+              <div className="flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /><h3 className="heading-display-md text-mystic-100">Hits to your natal chart</h3></div>
               {resp.crossAspects.slice(0, 8).map((a, i) => (
                 <div key={i} className="text-sm">
                   <span className="text-mystic-200">

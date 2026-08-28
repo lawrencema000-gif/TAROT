@@ -99,7 +99,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }
           <Button
             variant="gold"
             onClick={onShuffle}
-            className="min-h-[52px]"
+            size="lg"
           >
             <Shuffle className="w-4 h-4" />
             {t('readings.shuffleView.shuffleDeck')}

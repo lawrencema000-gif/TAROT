@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, ChevronRight, Users, Loader2, Sparkles } from 'lucide-react';
+import { UserPlus, ChevronRight, Users, Loader2 } from 'lucide-react';
 import { Card, Button, Sheet, EyebrowLabel, SectionDivider } from '../components/ui';
 import { PersonForm } from '../components/people/PersonForm';
 import { FriendCircleStats } from '../components/people/FriendCircleStats';
@@ -76,7 +76,7 @@ export function PeoplePage() {
               <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
             </button>
           ))}
-          <p className="text-center text-xs text-mystic-600 pt-2"><Sparkles className="w-3 h-3 inline mr-1" />{list.length} / 50 saved</p>
+          <p className="text-center text-xs text-mystic-600 pt-2"><Users className="w-3 h-3 inline mr-1" />{list.length} / 50 saved</p>
         </div>
       )}
 

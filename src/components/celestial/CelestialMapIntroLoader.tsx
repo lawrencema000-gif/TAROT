@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import { PLANETS } from '../../utils/astrocartography';
 
@@ -64,7 +64,7 @@ export function CelestialMapIntroLoader({ open, onDone }: Props) {
               transition={{ duration: 0.5 }}
               className="space-y-2"
             >
-              <Sparkles className="w-6 h-6 text-gold mx-auto" aria-hidden />
+              <HoroscopeWheelIcon className="w-6 h-6 text-gold mx-auto" aria-hidden />
               <h2 className="heading-display-lg text-mystic-100">
                 {t('celestial.intro.title', { defaultValue: 'Drawing your celestial map' })}
               </h2>

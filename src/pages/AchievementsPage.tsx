@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Trophy, Sparkles, ChevronRight, Crown } from 'lucide-react';
+import { Trophy, Award, Zap, ChevronRight, Crown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import {
@@ -204,7 +204,7 @@ export function AchievementsPage() {
                 {t('achievements.achievementsUnlocked')}
               </p>
               <div className="flex items-center gap-1 mt-2">
-                <Sparkles className="w-4 h-4 text-gold" />
+                <Zap className="w-4 h-4 text-gold" />
                 <span className="text-sm text-mystic-300">
                   {t('achievements.xpEarned', { n: (stats?.total_xp_from_achievements ?? 0).toLocaleString() })}
                 </span>
@@ -233,7 +233,7 @@ export function AchievementsPage() {
             <div className="bg-gradient-to-r from-gold/10 to-amber-500/10 rounded-2xl p-4 border border-gold/20">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gold flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                  <Award className="w-4 h-4" />
                   {t('achievements.recentUnlocks')}
                 </h3>
                 <ChevronRight className="w-4 h-4 text-gold/60" />

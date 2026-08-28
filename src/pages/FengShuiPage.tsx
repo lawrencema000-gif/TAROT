@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, ChevronDown, ChevronUp, Wind, Target, Share2 } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -184,8 +184,8 @@ export function FengShuiPage() {
           )}
         </Card>
 
-        <Button variant="primary" fullWidth onClick={compute} className="min-h-[56px]">
-          <Sparkles className="w-5 h-5 mr-2" />
+        <Button variant="primary" size="lg" fullWidth onClick={compute}>
+          <Wind className="w-5 h-5 mr-2" />
           {t('fengshui.reveal', { defaultValue: 'Reveal my Bagua' })}
         </Button>
       </div>
@@ -267,7 +267,7 @@ export function FengShuiPage() {
 
         <Card padding="lg" className="border-pink-400/30">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-pink-400" />
+            <Target className="w-4 h-4 text-pink-400" />
             <h3 className="font-medium text-pink-400">
               {t('fengshui.focusLabel', { defaultValue: 'Area needing attention' })}
             </h3>
@@ -301,7 +301,7 @@ export function FengShuiPage() {
 
         <Card padding="lg" className="border-emerald-400/20">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <Wind className="w-4 h-4 text-emerald-400" />
             <h3 className="font-medium text-emerald-400">
               {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
             </h3>
@@ -532,11 +532,11 @@ export function FengShuiPage() {
         </Card>
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quizzes.share.button', { defaultValue: 'Share' })}
           </Button>
-          <Button variant="outline" fullWidth onClick={() => setStage('rate')} className="min-h-[48px]">
+          <Button variant="outline" fullWidth onClick={() => setStage('rate')}>
             {t('fengshui.reRate', { defaultValue: 'Re-rate' })}
           </Button>
         </div>

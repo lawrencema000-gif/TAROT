@@ -5,7 +5,7 @@
 // pay; showing a cost would be misleading).
 
 import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { moonstones } from '../../dal';
 import { onBalanceChange } from '../../dal/moonstoneSpend';
@@ -39,7 +39,7 @@ export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props)
 
   return (
     <div className={`flex items-center gap-2 text-xs text-mystic-400 ${className}`}>
-      <Sparkles className="h-3.5 w-3.5 flex-none text-gold/70" />
+      <Moon className="h-3.5 w-3.5 flex-none text-gold/70" />
       <span>
         Each reading uses <span className="font-semibold text-gold">{cost} moonstones</span>
         {balance !== null && (

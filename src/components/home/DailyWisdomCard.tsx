@@ -1,4 +1,4 @@
-import { Sparkles, Scroll } from 'lucide-react';
+import { Feather, Scroll } from 'lucide-react';
 import { Card } from '../ui';
 import { useT } from '../../i18n/useT';
 import { getDailyQuote } from '../../data/dailyWisdom';
@@ -30,7 +30,7 @@ export function DailyWisdomCard() {
       </p>
 
       <div className="pt-3 border-t border-mystic-800/50 flex items-start gap-2">
-        <Sparkles className="w-3 h-3 text-gold mt-0.5 flex-shrink-0" />
+        <Feather className="w-3 h-3 text-gold mt-0.5 flex-shrink-0" />
         <p className="text-xs text-mystic-400 leading-relaxed italic">
           {t(`wisdom.quotes.${quote.id}.reflection`, { defaultValue: quote.reflection })}
         </p>

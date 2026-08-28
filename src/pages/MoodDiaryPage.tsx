@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
+import { ArrowLeft, Sparkles, Feather, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -227,7 +227,7 @@ export function MoodDiaryPage() {
         {selectedInfo && (
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
             <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Feather className="w-4 h-4" />
               {t('mood.promptLabel', { defaultValue: 'Journal prompt' })}
             </h3>
             <p className="text-mystic-200 italic text-sm leading-relaxed mb-3">
@@ -240,12 +240,12 @@ export function MoodDiaryPage() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="primary" fullWidth className="min-h-[48px]" onClick={save}>
+          <Button variant="primary" fullWidth onClick={save}>
             {todayEntry
               ? t('mood.updateButton', { defaultValue: 'Update today' })
               : t('mood.saveButton', { defaultValue: 'Save today' })}
           </Button>
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={() => setStage('history')}>
+          <Button variant="outline" fullWidth onClick={() => setStage('history')}>
             {t('mood.viewHistory', { defaultValue: 'View 30-day curve' })}
           </Button>
         </div>
@@ -400,7 +400,6 @@ export function MoodDiaryPage() {
             onClick={handleGenerateLetter}
             disabled={generatingLetter}
             loading={generatingLetter}
-            className="min-h-[48px]"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             {generatingLetter
@@ -440,7 +439,7 @@ export function MoodDiaryPage() {
             variant="outline"
             onClick={() => { setLetter(null); handleGenerateLetter(); }}
             disabled={generatingLetter}
-            className="mt-4 min-h-[40px]"
+            className="mt-4"
             size="sm"
           >
             {t('mood.rewriteLetter', { defaultValue: 'Rewrite' })}

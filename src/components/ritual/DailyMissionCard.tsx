@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, Sparkles, Flame } from 'lucide-react';
+import { CheckCircle2, Circle, Moon, Flame } from 'lucide-react';
 import { Card } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useT } from '../../i18n/useT';
@@ -95,7 +95,7 @@ export function DailyMissionCard({ onDone }: DailyMissionCardProps) {
     >
       <div className="flex items-start justify-between mb-2">
         <p className="text-[10px] uppercase tracking-widest text-mystic-500 flex items-center gap-1.5">
-          <Sparkles className="w-3 h-3" />
+          <Moon className="w-3 h-3" />
           {t('dailyMission.label', { defaultValue: "Today's mission" })}
         </p>
         {streak > 0 && (

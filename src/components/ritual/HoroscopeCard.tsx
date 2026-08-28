@@ -1,4 +1,4 @@
-import { ChevronRight, Heart, Briefcase, Sparkles } from 'lucide-react';
+import { ChevronRight, Heart, Briefcase, Wind } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import type { ZodiacSign } from '../../types';
 import { zodiacData } from '../../utils/zodiac';
@@ -42,7 +42,7 @@ export function HoroscopeCard({ sign, onRead }: HoroscopeCardProps) {
           <span className="text-mystic-400">{t('home.ritualCards.work')}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-gold" />
+          <Wind className="w-4 h-4 text-gold" />
           <span className="text-mystic-400">{t('home.ritualCards.mood')}</span>
         </div>
       </div>

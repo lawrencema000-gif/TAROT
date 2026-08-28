@@ -1,4 +1,4 @@
-import { X, Heart, Briefcase, Compass, Sparkles, Zap, Users } from 'lucide-react';
+import { X, Heart, Briefcase, Compass, Flame, Zap, Users } from 'lucide-react';
 
 type InsightCategory = 'love' | 'career' | 'clarity' | 'confidence' | 'growth' | 'connection';
 
@@ -24,7 +24,7 @@ const insightConfig: Record<InsightCategory, { label: string; icon: typeof Heart
   love: { label: 'Love', icon: Heart, color: 'text-coral', bgColor: 'bg-coral/10', borderColor: 'border-coral/30' },
   career: { label: 'Career', icon: Briefcase, color: 'text-cosmic-blue', bgColor: 'bg-cosmic-blue/10', borderColor: 'border-cosmic-blue/30' },
   clarity: { label: 'Clarity', icon: Compass, color: 'text-teal', bgColor: 'bg-teal/10', borderColor: 'border-teal/30' },
-  confidence: { label: 'Confidence', icon: Sparkles, color: 'text-gold', bgColor: 'bg-gold/10', borderColor: 'border-gold/30' },
+  confidence: { label: 'Confidence', icon: Flame, color: 'text-gold', bgColor: 'bg-gold/10', borderColor: 'border-gold/30' },
   growth: { label: 'Growth', icon: Zap, color: 'text-teal-light', bgColor: 'bg-teal-light/10', borderColor: 'border-teal-light/30' },
   connection: { label: 'Connection', icon: Users, color: 'text-cosmic-rose', bgColor: 'bg-cosmic-rose/10', borderColor: 'border-cosmic-rose/30' },
 };

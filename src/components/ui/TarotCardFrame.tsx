@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { MysticalStar } from './MysticalStar';
 import { useImageLoader } from '../../hooks/useImageLoader';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
@@ -15,9 +15,9 @@ interface TarotCardFrameProps {
 }
 
 const sizeConfig = {
-  sm: { width: 'w-24', height: 'h-36', iconSize: 'w-6 h-6', textSize: 'text-xs' },
-  md: { width: 'w-32', height: 'h-48', iconSize: 'w-8 h-8', textSize: 'text-sm' },
-  lg: { width: 'w-40', height: 'h-60', iconSize: 'w-10 h-10', textSize: 'text-base' },
+  sm: { width: 'w-24', height: 'h-36', iconPx: 24, textSize: 'text-xs' },
+  md: { width: 'w-32', height: 'h-48', iconPx: 32, textSize: 'text-sm' },
+  lg: { width: 'w-40', height: 'h-60', iconPx: 40, textSize: 'text-base' },
 };
 
 export function TarotCardFrame({
@@ -90,14 +90,14 @@ export function TarotCardFrame({
                   />
                   {isLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Sparkles className={`${config.iconSize} text-gold animate-pulse`} />
+                      <MysticalStar size={config.iconPx} halo={false} className="text-gold animate-pulse" />
                     </div>
                   )}
                 </>
               ) : (
                 <>
                   <div className="flex-1 flex items-center justify-center">
-                    <Sparkles className={`${config.iconSize} text-gold`} />
+                    <MysticalStar size={config.iconPx} halo={false} className="text-gold" />
                   </div>
                   <div className="absolute bottom-3 left-3 right-3 text-center">
                     <p className={`${config.textSize} font-display text-gold line-clamp-2`}>
@@ -111,7 +111,7 @@ export function TarotCardFrame({
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-full h-full bg-gradient-to-br from-mystic-700 to-mystic-900 flex items-center justify-center">
                 <div className="relative">
-                  <Sparkles className={`${config.iconSize} text-gold animate-pulse-slow`} />
+                  <MysticalStar size={config.iconPx} halo={false} className="text-gold animate-pulse-slow" />
                   <div className="absolute inset-0 animate-spin-slow">
                     <div className="w-full h-full border-t border-gold/30 rounded-full" />
                   </div>
@@ -137,7 +137,7 @@ export function TarotCardFrame({
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-3/4 h-3/4 border border-gold/30 rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <Sparkles className="w-8 h-8 text-gold/60 mx-auto mb-2" />
+                <MysticalStar size={32} className="text-gold/60 mx-auto mb-2" />
                 <p className="text-xs text-gold/40 font-display">Arcana</p>
               </div>
             </div>

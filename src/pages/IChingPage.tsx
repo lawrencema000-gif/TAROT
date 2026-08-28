@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { ArrowLeft, Sparkles, Coins, RotateCcw } from 'lucide-react';
+import { ArrowLeft, BookOpen, Coins, RotateCcw, Feather, Share2 } from 'lucide-react';
 import { Card, Button, toast, OrnateDivider } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
@@ -65,7 +65,7 @@ export function IChingPage() {
     return (
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-gold" />
+          <BookOpen className="w-6 h-6 text-gold" />
           <h1 className="heading-display-lg text-mystic-100">
             {t('iching.title', { defaultValue: 'I-Ching Oracle' })}
           </h1>
@@ -92,7 +92,7 @@ export function IChingPage() {
           />
         </Card>
 
-        <Button variant="primary" fullWidth onClick={startCast} className="min-h-[56px]">
+        <Button variant="primary" size="lg" fullWidth onClick={startCast}>
           <Coins className="w-5 h-5 mr-2" />
           {t('iching.castButton', { defaultValue: 'Cast the coins' })}
         </Button>
@@ -287,7 +287,7 @@ export function IChingPage() {
 
         <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
           <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
+            <Feather className="w-4 h-4" />
             {t('iching.journalPrompt', { defaultValue: 'Journal prompt' })}
           </h3>
           <p className="text-mystic-200 italic leading-relaxed">"{localizedJournal}"</p>
@@ -307,17 +307,17 @@ export function IChingPage() {
             <LiuYaoPanel lineValues={cast.lines} />
           </Suspense>
         ) : (
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={() => setShowLiuYao(true)}>
+          <Button variant="outline" fullWidth onClick={() => setShowLiuYao(true)}>
             {t('iching.readAsLiuYao', { defaultValue: 'Read this cast as 六爻' })}
           </Button>
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quizzes.share.button', { defaultValue: 'Share' })}
           </Button>
-          <Button variant="outline" fullWidth onClick={reset} className="min-h-[48px]">
+          <Button variant="outline" fullWidth onClick={reset}>
             {t('iching.castAgain', { defaultValue: 'Cast again' })}
           </Button>
         </div>

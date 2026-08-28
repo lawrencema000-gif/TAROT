@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeft, Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen } from 'lucide-react';
+import { ArrowLeft, Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -161,11 +161,11 @@ export function DreamInterpreterPage() {
         <MoonstoneCostLine />
         <Button
           variant="primary"
+          size="lg"
           fullWidth
           onClick={interpret}
           disabled={stage === 'loading'}
           loading={stage === 'loading'}
-          className="min-h-[56px]"
         >
           <Sparkles className="w-5 h-5 mr-2" />
           {stage === 'loading'
@@ -311,7 +311,7 @@ function AiResultView({
       {/* Integration suggestion */}
       <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
         <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
-          <Sparkles className="w-4 h-4" />
+          <Feather className="w-4 h-4" />
           {t('dream.integrationLabel', { defaultValue: 'Integration practice' })}
         </h3>
         <p className="text-mystic-200 text-sm leading-relaxed">{reading.integrationSuggestion}</p>
@@ -344,11 +344,11 @@ function AiResultView({
       <DreamResources t={t} />
 
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-          <Sparkles className="w-4 h-4 mr-2" />
+        <Button variant="outline" fullWidth onClick={handleShare}>
+          <Share2 className="w-4 h-4 mr-2" />
           {t('quizzes.share.button', { defaultValue: 'Share' })}
         </Button>
-        <Button variant="outline" fullWidth onClick={onReset} className="min-h-[48px]">
+        <Button variant="outline" fullWidth onClick={onReset}>
           {t('dream.another', { defaultValue: 'Another dream' })}
         </Button>
       </div>
@@ -619,11 +619,11 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-          <Sparkles className="w-4 h-4 mr-2" />
+        <Button variant="outline" fullWidth onClick={handleShare}>
+          <Share2 className="w-4 h-4 mr-2" />
           {t('quizzes.share.button', { defaultValue: 'Share' })}
         </Button>
-        <Button variant="outline" fullWidth onClick={onReset} className="min-h-[48px]">
+        <Button variant="outline" fullWidth onClick={onReset}>
           {t('dream.another', { defaultValue: 'Another dream' })}
         </Button>
       </div>

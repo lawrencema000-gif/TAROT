@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Star, Sparkles, BookOpen, Brain, Filter } from 'lucide-react';
+import { Star, BookOpen, Brain, Filter } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
+import { TarotCardIcon } from '../ui/NavIcons';
 import { Chip } from '../ui/Chip';
 import { useT } from '../../i18n/useT';
 
@@ -31,7 +32,7 @@ export function SavedSheet({ open, onClose }: SavedSheetProps) {
       title: t('savedSheet.threeCardSpread'),
       subtitle: t('readings.spreads.threeCard.name'),
       date: 'Dec 28, 2025',
-      icon: Sparkles,
+      icon: TarotCardIcon,
     },
     {
       id: '2',

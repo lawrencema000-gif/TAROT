@@ -548,7 +548,12 @@ function AppContent() {
         ) : (
           <div className="fixed inset-0 z-0 opacity-60" />
         )}
-        <main className="relative z-10 max-w-lg mx-auto px-4 pt-4 safe-top" aria-label={currentPage.title}>
+        {/* Content column. Phone width up to `lg`, then a real desktop
+            measure — tarotlife.app was rendering a 512px strip in the middle
+            of a 1920px screen, which reads as a phone emulator rather than a
+            web product. Native is unaffected: a Capacitor webview never
+            clears 1024px on a phone, so the `lg:` rules simply never fire. */}
+        <main className="relative z-10 max-w-lg lg:max-w-4xl mx-auto px-4 lg:px-8 pt-4 safe-top" aria-label={currentPage.title}>
           <Header
             title={currentPage.title}
             subtitle={currentPage.subtitle}
@@ -632,6 +637,17 @@ function AppContent() {
           </Suspense>
           </ErrorBoundary>
         </main>
+        {/* The phone tab bar is hidden on desktop web — a full-bleed bar with
+            five icons huddled in the middle is the loudest emulator tell left
+            on the page. It stays at every width on native, because an Android
+            tablet in landscape clears `lg` and would otherwise be left with no
+            navigation at all.
+            BottomNav is NOT hidden on desktop, deliberately. It is the app's
+            only tab navigation — every route is driven by `activeTab`, and
+            nothing else sets it — so hiding it at lg removed all navigation
+            from the web product. The wider container ships now; the bar can
+            move to the side or the top the day a desktop nav actually
+            exists. */}
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
 
         <UpdateAvailableBanner />

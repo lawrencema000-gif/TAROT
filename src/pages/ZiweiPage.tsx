@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { Card, Button, Input, EyebrowLabel, SectionDivider } from '../components/ui';
+import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { ZiweiChart } from '../components/charts/ZiweiChart';
 import { computeZiweiChart } from '../data/ziwei';
 import {
@@ -67,7 +68,7 @@ export function ZiweiPage() {
             onChange={(e) => setBirthTime(e.target.value)}
           />
           <Button variant="primary" size="md" fullWidth disabled={!birthDate} onClick={() => setSubmitted(true)}>
-            <Sparkles className="w-4 h-4 mr-2" /> {t('ziwei.cast', { defaultValue: 'Cast my chart' })}
+            <HoroscopeWheelIcon className="w-4 h-4 mr-2" /> {t('ziwei.cast', { defaultValue: 'Cast my chart' })}
           </Button>
           {!birthTime && (
             <p className="text-[11px] text-mystic-600">

@@ -5,7 +5,8 @@ import {
   Briefcase,
   ChevronRight,
   Lock,
-  Sparkles,
+  Moon,
+  Flame,
   AlertCircle,
   Info,
   Brain,
@@ -319,7 +320,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-teal" />
+                  <Moon className="w-4 h-4 text-teal" />
                   <span className="text-sm text-mystic-300">{t('compatibility.dimensions.spiritual')}</span>
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.spiritual}%</span>
@@ -336,7 +337,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
 
         <Card padding="md">
           <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
+            <Flame className="w-4 h-4" />
             {t('compatibility.strengths')}
           </h3>
           <ul className="space-y-2">
@@ -521,7 +522,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         fullWidth
         disabled={!partnerBirthDate}
         onClick={handleCalculate}
-        className="min-h-[52px]"
+        size="lg"
       >
         {t('compatibility.calculate')}
         <ChevronRight className="w-4 h-4" />

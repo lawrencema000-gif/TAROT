@@ -26,7 +26,7 @@ export function PromptCard({ prompt, onWrite }: PromptCardProps) {
       </p>
 
       <div className="flex items-center justify-between">
-        <Button variant="gold" onClick={onWrite} className="min-h-[44px]">
+        <Button variant="gold" onClick={onWrite}>
           <PenLine className="w-4 h-4" />
           {t('home.ritualCards.write')}
           <span className="flex items-center gap-1 text-xs opacity-80 ml-1">

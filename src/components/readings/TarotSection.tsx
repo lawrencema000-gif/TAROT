@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  Sparkles,
+  Compass,
+  Eye,
+  Feather,
   ChevronRight,
   Lock,
   Bookmark,
@@ -18,6 +20,7 @@ import {
   ArrowDown,
   Share2,
 } from 'lucide-react';
+import { MysticalStar } from '../ui/MysticalStar';
 import { Card, Button, Sheet, Chip, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
@@ -649,7 +652,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         </button>
 
         <div className="text-center space-y-3">
-          <Sparkles className="w-12 h-12 text-gold mx-auto animate-pulse" />
+          <Compass className="w-12 h-12 text-gold mx-auto animate-pulse" />
           <h2 className="font-display text-2xl text-mystic-100">{t('readings.focusView.title')}</h2>
           <p className="text-mystic-400">{t('readings.focusView.subtitle')}</p>
         </div>
@@ -670,7 +673,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           fullWidth
           disabled={!selectedFocus}
           onClick={handleDraw}
-          className="min-h-[52px]"
+          size="lg"
         >
           {t('readings.focusView.continue')}
           <ChevronRight className="w-4 h-4" />
@@ -753,7 +756,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
             <Button
               variant="gold"
               onClick={handleShuffleComplete}
-              className="min-h-[52px]"
+              size="lg"
             >
               <Shuffle className="w-4 h-4" />
               {t('readings.shuffleView.shuffleDeck')}
@@ -833,7 +836,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                           {selectionOrder}
                         </div>
                       ) : (
-                        <Sparkles className="w-5 h-5 text-gold/30 group-hover:text-gold/60 transition-colors" />
+                        <MysticalStar size={20} halo={false} className="text-gold/30 group-hover:text-gold/60 transition-colors" />
                       )}
                     </div>
                   </div>
@@ -849,10 +852,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
             fullWidth
             disabled={needsMore > 0}
             onClick={handleRevealSelected}
-            className="min-h-[52px] shadow-xl"
+            size="lg"
+            className="shadow-xl"
           >
             {needsMore > 0 ? t('readings.selectView.selectMore', { count: needsMore }) : t('readings.selectView.revealCards')}
-            <Sparkles className="w-4 h-4" />
+            <Eye className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -971,7 +975,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                         />
                       ) : (
                         <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                          <Sparkles className="w-5 h-5 text-gold mx-auto mb-1" />
+                          <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
                           <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
                         </div>
                       )
@@ -982,7 +986,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                         ) : (
                           <div className="text-center">
                             <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                              <Sparkles className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
+                              <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
                             </div>
                             <p className="text-xs text-mystic-500 mt-2">{t('readings.revealView.tapToReveal')}</p>
                           </div>
@@ -1009,7 +1013,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         )}
 
         {!allRevealed && (
-          <Button variant="ghost" fullWidth onClick={revealAll} className="min-h-[44px]">
+          <Button variant="ghost" fullWidth onClick={revealAll}>
             {t('readings.revealView.revealAll')}
           </Button>
         )}
@@ -1172,7 +1176,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                         {drawn.card.reflectionPrompt && showFocusContent && (
                           <div className="mt-3 p-2 bg-gold/5 border border-gold/20 rounded-lg">
                             <p className="text-xs text-gold flex items-start gap-2">
-                              <Sparkles className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                              <Feather className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                               <span className="italic">{drawn.card.reflectionPrompt}</span>
                             </p>
                           </div>
@@ -1191,11 +1195,11 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
             </Card>
 
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" onClick={handleSaveReading} className="min-h-[44px]">
+              <Button variant="outline" onClick={handleSaveReading}>
                 {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                 {isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
               </Button>
-              <Button variant="gold" onClick={() => setView('home')} className="min-h-[44px]">
+              <Button variant="gold" onClick={() => setView('home')}>
                 {t('readings.revealView.newReading')}
               </Button>
             </div>
@@ -1233,7 +1237,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
               {profile?.card_back_url ? (
                 <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
               ) : (
-                <Sparkles className="w-10 h-10 text-gold animate-pulse" />
+                <MysticalStar size={40} halo={false} className="text-gold animate-pulse" />
               )}
             </div>
             <h2 className="font-display text-xl text-mystic-100 mb-1">{t('readings.dailyDraw.title')}</h2>
@@ -1351,7 +1355,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                   </>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-mystic-700 to-mystic-900 flex flex-col items-center justify-center p-2">
-                    <Sparkles className="w-6 h-6 text-gold/50 mb-2 group-hover:text-gold transition-colors" />
+                    <MysticalStar size={24} halo={false} className="text-gold/50 mb-2 group-hover:text-gold transition-colors" />
                     <p className="text-xs text-center text-mystic-300 line-clamp-2">{card.name}</p>
                   </div>
                 )}

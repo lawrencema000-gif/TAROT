@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Quote, RefreshCw, X } from 'lucide-react';
+import { Sparkles, Quote, RefreshCw, Share2, X } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Card, toast } from '../ui';
 import { useT } from '../../i18n/useT';
@@ -187,7 +187,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
               </Card>
               <div className="flex gap-2">
                 <Button variant="outline" fullWidth onClick={handleShare}>
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Share2 className="w-4 h-4 mr-2" />
                   {t('askOracle.share', { defaultValue: 'Share' })}
                 </Button>
                 <Button variant="primary" fullWidth onClick={fetch}>

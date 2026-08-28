@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Heart, Briefcase, Sparkles, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
+import { Heart, Briefcase, Feather, Compass, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
+import { MysticalStar } from '../ui/MysticalStar';
 import { Card } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
@@ -27,7 +28,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
     { id: 'meaning', label: t('tarot.detail.tabs.meaning'), icon: BookOpen },
     { id: 'love', label: t('tarot.detail.tabs.love'), icon: Heart },
     { id: 'career', label: t('tarot.detail.tabs.career'), icon: Briefcase },
-    { id: 'reflect', label: t('tarot.detail.tabs.reflect'), icon: Sparkles },
+    { id: 'reflect', label: t('tarot.detail.tabs.reflect'), icon: Feather },
   ];
 
   const suitLabel = card.suit
@@ -59,7 +60,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               />
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl">
-                  <Sparkles className="w-12 h-12 text-gold animate-pulse" />
+                  <MysticalStar size={48} halo={false} className="text-gold animate-pulse" />
                 </div>
               )}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-mystic-900/40 to-transparent pointer-events-none" />
@@ -74,7 +75,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
           </div>
         ) : (
           <div className={`w-48 h-72 mx-auto bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl border-2 border-gold/30 shadow-glow flex items-center justify-center ${reversed ? 'rotate-180' : ''}`}>
-            <Sparkles className="w-16 h-16 text-gold" />
+            <MysticalStar size={64} className="text-gold" />
           </div>
         )}
       </div>
@@ -208,7 +209,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 rounded-xl bg-gold/20">
-                <Sparkles className="w-6 h-6 text-gold" />
+                <Feather className="w-6 h-6 text-gold" />
               </div>
               <div>
                 <h4 className="font-medium text-gold">{t('tarot.detail.reflectionTitle')}</h4>
@@ -243,7 +244,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
 
       <Card padding="md" className="bg-gradient-to-r from-gold/10 to-mystic-800/50 border-gold/20">
         <h4 className="text-sm font-medium text-gold mb-2 flex items-center gap-2">
-          <Sparkles className="w-4 h-4" />
+          <Compass className="w-4 h-4" />
           {t('tarot.detail.todaysAction')}
         </h4>
         <p className="text-sm text-mystic-300">

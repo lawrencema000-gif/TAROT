@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Share2, AlertCircle } from 'lucide-react';
+import { Heart, Share2, AlertCircle } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
@@ -323,9 +323,8 @@ export function SoulmateScorePage() {
                   onClick={handleCompute}
                   disabled={!canSubmit || loading}
                   loading={loading}
-                  className="min-h-[52px]"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Heart className="w-4 h-4 mr-2" />
                   {t('soulmate.calculateCta', { defaultValue: 'Reveal the score' })}
                 </Button>
                 <MoonstoneCostLine className="justify-center" />

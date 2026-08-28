@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ScrollText, Lock, Printer, Sparkles, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
+import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -345,9 +345,9 @@ export function NatalChartReportPage() {
           */}
           <Button
             variant="gold"
+            size="lg"
             fullWidth
             onClick={() => setShowSubscription(true)}
-            className="min-h-[52px]"
           >
             <Crown className="w-4 h-4 mr-2" />
             {t('natalReport.upgradeToPremium', {
@@ -364,9 +364,9 @@ export function NatalChartReportPage() {
               onClick={handleUnlock}
               disabled={unlocking}
               loading={unlocking}
-              className="min-h-[48px] mt-3"
+              className="mt-3"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Moon className="w-4 h-4 mr-2" />
               {t('natalReport.unlockCta', {
                 defaultValue: 'Unlock with {{n}} Moonstones',
                 n: NATAL_COST,
@@ -392,9 +392,8 @@ export function NatalChartReportPage() {
                 fullWidth
                 size="sm"
                 onClick={() => setShowWatchAd(true)}
-                className="min-h-[40px]"
               >
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                <Moon className="w-3.5 h-3.5 mr-1.5" />
                 {t('natalReport.earnNow', {
                   defaultValue: 'Earn 50 Moonstones — watch ad',
                 })}
@@ -447,7 +446,7 @@ export function NatalChartReportPage() {
             {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
           </h1>
         </div>
-        <Button variant="outline" onClick={handlePrint} className="min-h-[40px]">
+        <Button variant="outline" size="sm" onClick={handlePrint}>
           <Printer className="w-4 h-4 mr-2" />
           {t('natalReport.printCta', { defaultValue: 'Save as PDF' })}
         </Button>

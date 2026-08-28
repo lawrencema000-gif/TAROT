@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Calendar, Clock, Lock, Crown, Compass, Palette } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Lock, Crown, Compass, Palette, Feather, Share2 } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
+import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -95,7 +96,7 @@ export function BaziPage() {
     return (
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-gold" />
+          <HoroscopeWheelIcon className="w-6 h-6 text-gold" />
           <h1 className="heading-display-lg text-mystic-100">
             {t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
           </h1>
@@ -141,8 +142,7 @@ export function BaziPage() {
           </div>
         </Card>
 
-        <Button variant="primary" fullWidth onClick={runCalc} className="min-h-[56px]">
-          <Sparkles className="w-5 h-5 mr-2" />
+        <Button variant="primary" size="lg" fullWidth onClick={runCalc}>
           {t('bazi.calculate', { defaultValue: 'Cast the four pillars' })}
         </Button>
       </div>
@@ -321,7 +321,7 @@ export function BaziPage() {
                 {/* Inner Forces (Ten Gods) table */}
                 <Card padding="lg">
                   <h3 className="font-medium text-gold mb-1 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
+                    <HoroscopeWheelIcon className="w-4 h-4" />
                     {t('bazi.innerForcesLabel', { defaultValue: 'Inner Forces' })}
                   </h3>
                   <p className="text-xs text-mystic-500 mb-3">
@@ -456,7 +456,7 @@ export function BaziPage() {
                       "Unlock your Inner Forces (classical Ten-Gods), Hidden Influences, Soul Sound, your Supporting Element with lucky color + direction + numbers, and Today's Lucky Color widget.",
                   })}
                 </p>
-                <Button variant="gold" onClick={() => navigate('/profile')} className="min-h-[44px]">
+                <Button variant="gold" onClick={() => navigate('/profile')}>
                   <Crown className="w-4 h-4 mr-2" />
                   {t('bazi.premiumTeaserCta', { defaultValue: 'See Premium' })}
                 </Button>
@@ -497,7 +497,7 @@ export function BaziPage() {
 
         <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
           <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
+            <Feather className="w-4 h-4" />
             {t('bazi.affirmationLabel', { defaultValue: 'Your affirmation' })}
           </h3>
           <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
@@ -760,11 +760,11 @@ export function BaziPage() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quizzes.share.button', { defaultValue: 'Share' })}
           </Button>
-          <Button variant="outline" fullWidth onClick={reset} className="min-h-[48px]">
+          <Button variant="outline" fullWidth onClick={reset}>
             {t('bazi.recalculate', { defaultValue: 'Recalculate' })}
           </Button>
         </div>

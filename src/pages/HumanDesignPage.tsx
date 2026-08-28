@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Calendar, Clock, Compass, Target } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
+import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -117,7 +118,7 @@ export function HumanDesignPage() {
     return (
       <div className="space-y-6 pb-6">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-gold" />
+          <HoroscopeWheelIcon className="w-6 h-6 text-gold" />
           <h1 className="heading-display-lg text-mystic-100">
             {t('humanDesign.title', { defaultValue: 'Human Design' })}
           </h1>
@@ -158,13 +159,12 @@ export function HumanDesignPage() {
 
         <Button
           variant="primary"
+          size="lg"
           fullWidth
           onClick={runCalc}
           disabled={stage === 'loading'}
           loading={stage === 'loading'}
-          className="min-h-[56px]"
         >
-          <Sparkles className="w-5 h-5 mr-2" />
           {stage === 'loading'
             ? t('humanDesign.computing', { defaultValue: 'Computing your bodygraph…' })
             : t('humanDesign.calculate', { defaultValue: 'Reveal my design' })}
@@ -365,7 +365,7 @@ export function HumanDesignPage() {
         {typeContent.affirmation && (
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
             <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Feather className="w-4 h-4" />
               {t('humanDesign.affirmationLabel', { defaultValue: 'Your affirmation' })}
             </h3>
             <p className="text-mystic-200 italic leading-relaxed mb-3">"{typeContent.affirmation}"</p>
@@ -459,11 +459,11 @@ export function HumanDesignPage() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quizzes.share.button', { defaultValue: 'Share' })}
           </Button>
-          <Button variant="outline" fullWidth onClick={reset} className="min-h-[48px]">
+          <Button variant="outline" fullWidth onClick={reset}>
             {t('humanDesign.recalculate', { defaultValue: 'Recalculate' })}
           </Button>
         </div>

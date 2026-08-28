@@ -1,5 +1,6 @@
-import { Sparkles } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 import { Card, Button, toast } from '../ui';
+import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import { getZodiacSign, zodiacData } from '../../utils/zodiac';
 import { getChineseZodiacInfo } from '../../utils/chineseZodiac';
@@ -62,7 +63,7 @@ export function CosmicProfileSection({
   return (
     <Card padding="md" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900 border-gold/20">
       <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-4 h-4 text-gold" />
+        <HoroscopeWheelIcon className="w-4 h-4 text-gold" />
         <h3 className="text-sm font-medium text-gold tracking-wide">
           {t('profile.cosmic.title', { defaultValue: 'Cosmic Profile' })}
         </h3>
@@ -163,8 +164,8 @@ export function CosmicProfileSection({
         </div>
       )}
 
-      <Button variant="outline" fullWidth onClick={handleShare} className="min-h-[44px]">
-        <Sparkles className="w-4 h-4 mr-2" />
+      <Button variant="outline" fullWidth onClick={handleShare}>
+        <Share2 className="w-4 h-4 mr-2" />
         {t('profile.cosmic.shareButton', { defaultValue: 'Share Cosmic Profile' })}
       </Button>
     </Card>

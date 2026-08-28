@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Heart, Users } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Users } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -254,11 +254,11 @@ export function PartnerCompatPage() {
 
         <Button
           variant="primary"
+          size="lg"
           fullWidth
           onClick={run}
           disabled={stage === 'loading'}
           loading={stage === 'loading'}
-          className="min-h-[56px]"
         >
           <Heart className="w-5 h-5 mr-2" />
           {stage === 'loading'
@@ -448,11 +448,11 @@ export function PartnerCompatPage() {
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth className="min-h-[48px]" onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quizzes.share.button', { defaultValue: 'Share' })}
           </Button>
-          <Button variant="outline" fullWidth onClick={reset} className="min-h-[48px]">
+          <Button variant="outline" fullWidth onClick={reset}>
             {t('compat.another', { defaultValue: 'Check another' })}
           </Button>
         </div>

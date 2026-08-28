@@ -1,4 +1,4 @@
-import { Lock, Crown, Sparkles } from 'lucide-react';
+import { Lock, Crown, Star } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import {
@@ -84,7 +84,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
 
           {isUnlocked && (
             <div className="absolute -top-1 -right-1">
-              <Sparkles className={`w-4 h-4 ${rarityColor}`} />
+              <Star className={`w-4 h-4 fill-current ${rarityColor}`} />
             </div>
           )}
         </div>

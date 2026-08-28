@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dice6, Sparkles, Zap } from 'lucide-react';
+import { Dice6, Feather, Zap } from 'lucide-react';
 import { Card, Button } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
@@ -155,7 +155,7 @@ export function DicePage() {
           </Card>
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
             <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Feather className="w-4 h-4" />
               {t('dice.promptLabel', { defaultValue: 'Hold this question' })}
             </h3>
             <p className="text-mystic-200 italic leading-relaxed">"{reading.prompt}"</p>
@@ -163,7 +163,7 @@ export function DicePage() {
         </>
       )}
 
-      <Button variant="primary" fullWidth onClick={roll} disabled={rolling} className="min-h-[56px]">
+      <Button variant="primary" size="lg" fullWidth onClick={roll} disabled={rolling}>
         <Dice6 className="w-5 h-5 mr-2" />
         {rolling
           ? t('dice.rolling', { defaultValue: 'Rolling...' })

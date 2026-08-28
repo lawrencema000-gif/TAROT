@@ -1,4 +1,4 @@
-import { Star, Sparkles, Crown, Sun, Eye } from 'lucide-react';
+import { Star, Moon, Crown, Sun, Eye } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 
 interface RankProgressBarProps {
@@ -10,7 +10,7 @@ interface RankProgressBarProps {
 // (and the achievements.ranks table); `key` is the i18n path for display.
 const RANKS = [
   { name: 'Novice Seeker', key: 'novice', minXP: 0, icon: Star },
-  { name: 'Apprentice Seeker', key: 'apprentice', minXP: 2930, icon: Sparkles },
+  { name: 'Apprentice Seeker', key: 'apprentice', minXP: 2930, icon: Moon },
   { name: 'Adept Seeker', key: 'adept', minXP: 10700, icon: Eye },
   { name: 'Master Seeker', key: 'master', minXP: 47350, icon: Crown },
   { name: 'Oracle Seeker', key: 'oracle', minXP: 182790, icon: Sun },

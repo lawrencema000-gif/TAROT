@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Sparkles } from 'lucide-react';
+import { X, Star, Trophy } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { getRarityColor } from '../../services/achievements';
@@ -109,9 +109,9 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
             {achievement.rarity === 'legendary' && (
               <div className="absolute inset-0 animate-spin-slow">
                 {[...Array(8)].map((_, i) => (
-                  <Sparkles
+                  <Star
                     key={i}
-                    className="absolute w-4 h-4 text-amber-400/60"
+                    className="absolute w-4 h-4 text-amber-400/60 fill-amber-400/40"
                     style={{
                       top: '50%',
                       left: '50%',
@@ -172,7 +172,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
               border border-white/10
             `}
           >
-            <Sparkles className={`w-5 h-5 ${rarityColor}`} />
+            <Trophy className={`w-5 h-5 ${rarityColor}`} />
             <span className={`text-2xl font-bold ${rarityColor}`}>
               +{xpCount}
             </span>

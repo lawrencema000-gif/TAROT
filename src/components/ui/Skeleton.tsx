@@ -6,6 +6,28 @@ interface SkeletonProps {
   animate?: boolean;
 }
 
+/**
+ * The placeholder block every other skeleton in this file is built from.
+ *
+ * It used to be `bg-mystic-800/20 animate-pulse`. At 20% alpha the block
+ * computed to 1.03:1 against the card behind it, so the pulse was fading an
+ * invisible rectangle in and out of an invisible rectangle: a loading screen
+ * and an empty screen looked exactly the same.
+ *
+ * Now the block is opaque `mystic-800` (surface-2, the same token inputs and
+ * chips use) and the movement is a left-to-right sweep of `mystic-700` — the
+ * `shimmer` keyframe that has been sitting unused in tailwind.config.js.
+ * A sweep reads as "content is coming" in a way a pulse does not, because a
+ * pulse is also what a disabled control does.
+ *
+ * The `skeleton` class is a styling hook, not decoration: src/index.css uses
+ * it to swap the sweep for a flat, higher-contrast fill under
+ * prefers-reduced-motion, so those users still get a resting state they can
+ * see once the animation is taken away.
+ *
+ * `aria-hidden` because the shapes carry no information — the region that
+ * swaps in a skeleton is what should own `aria-busy`/`role="status"`.
+ */
 export function Skeleton({
   className = '',
   variant = 'rectangular',
@@ -13,8 +35,10 @@ export function Skeleton({
   height,
   animate = true,
 }: SkeletonProps) {
-  const baseClasses = 'bg-mystic-800/20';
-  const animateClasses = animate ? 'animate-pulse' : '';
+  const baseClasses = 'skeleton bg-mystic-800';
+  const animateClasses = animate
+    ? 'animate-shimmer bg-gradient-to-r from-mystic-800 via-mystic-700 to-mystic-800 bg-[length:200%_100%]'
+    : '';
   const variantClasses = {
     text: 'rounded',
     circular: 'rounded-full',
@@ -27,6 +51,7 @@ export function Skeleton({
 
   return (
     <div
+      aria-hidden="true"
       className={`${baseClasses} ${animateClasses} ${variantClasses[variant]} ${className}`}
       style={style}
     />
@@ -35,7 +60,7 @@ export function Skeleton({
 
 export function CardSkeleton() {
   return (
-    <div className="bg-mystic-900/50 rounded-2xl p-5 border border-mystic-700/20">
+    <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
       <div className="flex items-center gap-3 mb-4">
         <Skeleton variant="circular" width={40} height={40} />
         <div className="flex-1">
@@ -68,7 +93,7 @@ export function TarotCardSkeleton() {
 
 export function HoroscopeSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-2xl p-6 border border-mystic-700/20">
+    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Skeleton variant="circular" width={48} height={48} />
@@ -84,7 +109,7 @@ export function HoroscopeSkeleton() {
         <Skeleton height={16} width="95%" />
         <Skeleton height={16} width="80%" />
       </div>
-      <div className="mt-4 pt-4 border-t border-mystic-700/10">
+      <div className="mt-4 pt-4 border-t border-mystic-700">
         <div className="flex justify-between">
           <Skeleton height={14} width={80} />
           <Skeleton height={14} width={80} />
@@ -97,7 +122,7 @@ export function HoroscopeSkeleton() {
 
 export function JournalEntrySkeleton() {
   return (
-    <div className="bg-mystic-900/40 rounded-xl p-4 border border-mystic-700/10">
+    <div className="bg-mystic-850 rounded-xl p-4 border border-mystic-700">
       <div className="flex justify-between items-start mb-3">
         <Skeleton height={16} width={100} />
         <Skeleton height={14} width={60} />
@@ -117,7 +142,7 @@ export function JournalEntrySkeleton() {
 
 export function QuizCardSkeleton() {
   return (
-    <div className="bg-mystic-900/50 rounded-2xl p-5 border border-mystic-700/20">
+    <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
       <Skeleton height={120} className="rounded-xl mb-4" />
       <Skeleton height={20} width="70%" className="mb-2" />
       <Skeleton height={14} width="90%" className="mb-1" />
@@ -137,7 +162,7 @@ export function ProfileSkeleton() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-mystic-900/40 rounded-xl p-4 text-center">
+          <div key={i} className="bg-mystic-850 rounded-xl p-4 text-center">
             <Skeleton height={28} width={40} className="mx-auto mb-2" />
             <Skeleton height={12} width={60} className="mx-auto" />
           </div>
@@ -166,7 +191,7 @@ export function HomePageSkeleton() {
   return (
     <div className="space-y-4">
       {/* Streak / greeting area */}
-      <div className="bg-mystic-900/50 rounded-2xl p-5 border border-mystic-700/20">
+      <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton variant="circular" width={48} height={48} />
           <div className="flex-1">
@@ -182,7 +207,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Tarot card area */}
-      <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-3xl p-6 border border-mystic-700/30">
+      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-3xl p-6 border border-mystic-700">
         <Skeleton height={16} width={80} className="mb-2" />
         <Skeleton height={20} width={140} className="mb-6" />
         <div className="flex justify-center">
@@ -191,7 +216,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Horoscope card */}
-      <div className="bg-mystic-900/50 rounded-2xl p-5 border border-mystic-700/20">
+      <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
         <div className="flex items-center gap-3 mb-3">
           <Skeleton variant="circular" width={40} height={40} />
           <Skeleton height={18} width={120} />
@@ -202,7 +227,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Prompt card */}
-      <div className="bg-mystic-900/50 rounded-2xl p-5 border border-mystic-700/20">
+      <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
         <Skeleton height={14} width={100} className="mb-3" />
         <Skeleton height={16} width="90%" className="mb-2" />
         <Skeleton height={16} width="75%" />
@@ -239,7 +264,7 @@ export function HoroscopePageSkeleton() {
         <Skeleton height={36} width={80} className="rounded-full" />
         <Skeleton height={36} width={100} className="rounded-full" />
       </div>
-      <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-2xl p-6 border border-mystic-700/20">
+      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton variant="circular" width={48} height={48} />
           <div>
@@ -253,7 +278,7 @@ export function HoroscopePageSkeleton() {
           <Skeleton height={16} width="80%" />
           <Skeleton height={16} width="90%" />
         </div>
-        <div className="mt-4 pt-4 border-t border-mystic-700/10 grid grid-cols-3 gap-4">
+        <div className="mt-4 pt-4 border-t border-mystic-700 grid grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
             <div key={i} className="text-center">
               <Skeleton height={28} width={40} className="mx-auto mb-2" />
@@ -268,7 +293,7 @@ export function HoroscopePageSkeleton() {
 
 export function RitualCardSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-900 to-mystic-950 rounded-3xl p-6 border border-mystic-700/30 min-h-[400px]">
+    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-3xl p-6 border border-mystic-700 min-h-[400px]">
       <div className="flex items-center justify-between mb-6">
         <Skeleton height={24} width={120} />
         <Skeleton variant="circular" width={32} height={32} />

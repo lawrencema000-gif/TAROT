@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Layers, Clock, Sparkles, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Layers, Clock, ChevronRight } from 'lucide-react';
+import { TarotCardIcon } from '../components/ui/NavIcons';
 import { getSpreadBySlug, allSpreads as tarotSpreads } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -89,7 +90,7 @@ export function SpreadDetailPage() {
       </header>
 
       <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
-        <h2 className="text-sm font-medium text-mystic-300 mb-3"><Sparkles className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
+        <h2 className="text-sm font-medium text-mystic-300 mb-3"><TarotCardIcon className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
         <ul className="space-y-1.5">
           {spread.bestFor.map((b, i) => (
             <li key={i} className="text-sm text-mystic-300 flex items-start gap-2">

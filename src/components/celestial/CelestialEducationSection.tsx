@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Home as HomeIcon, Heart, Briefcase, Plane, Sparkles, Sprout, Compass, Sun, Moon, Telescope } from 'lucide-react';
+import { Home as HomeIcon, Heart, Briefcase, Plane, Wind, Sprout, Compass, Sun, Moon, Telescope } from 'lucide-react';
 import { Card } from '../ui';
 import { useT } from '../../i18n/useT';
 
@@ -69,7 +69,7 @@ const USE_CASES: Array<{
   },
   {
     id: 'healing',
-    icon: Sparkles,
+    icon: Wind,
     titleKey: 'celestial.use.healing.title',
     titleDefault: 'Where to heal',
     bodyKey: 'celestial.use.healing.body',

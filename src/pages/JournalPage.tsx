@@ -24,6 +24,7 @@ import {
   Heart,
   Users,
   Moon,
+  Feather,
 } from 'lucide-react';
 import { Card, Button, Sheet, Input, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -569,7 +570,7 @@ export function JournalPage() {
             <Card variant="glow" padding="lg" interactive onClick={openNewEntry}>
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gold/20 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-gold" />
+                  <Feather className="w-6 h-6 text-gold" />
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{t('journal.todaysPrompt')}</p>
@@ -701,7 +702,7 @@ export function JournalPage() {
           {recommendedTemplates.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-gold mb-3 flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
+                <Star className="w-4 h-4" />
                 Recommended for You
               </h3>
               <div className="space-y-3">

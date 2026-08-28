@@ -8,7 +8,8 @@
  * parent — this component is pure presentation.
  */
 import {
-  Sparkles,
+  Eye,
+  Feather,
   Bookmark,
   BookmarkCheck,
   Share2,
@@ -20,6 +21,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
+import { MysticalStar } from '../../ui/MysticalStar';
 import { Card, Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
@@ -153,7 +155,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       />
                     ) : (
                       <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                        <Sparkles className="w-5 h-5 text-gold mx-auto mb-1" />
+                        <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
                         <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
                       </div>
                     )
@@ -164,7 +166,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       ) : (
                         <div className="text-center">
                           <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                            <Sparkles className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
+                            <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
                           </div>
                           <p className="text-xs text-mystic-500 mt-2">{t('readings.revealView.tapToReveal')}</p>
                         </div>
@@ -191,7 +193,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
       )}
 
       {!allRevealed && (
-        <Button variant="ghost" fullWidth onClick={onRevealAll} className="min-h-[44px]">
+        <Button variant="ghost" fullWidth onClick={onRevealAll}>
           {t('readings.revealView.revealAll')}
         </Button>
       )}
@@ -350,7 +352,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       {drawn.card.reflectionPrompt && showFocusContent && (
                         <div className="mt-3 p-2 bg-gold/5 border border-gold/20 rounded-lg">
                           <p className="text-xs text-gold flex items-start gap-2">
-                            <Sparkles className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                            <Feather className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                             <span className="italic">{drawn.card.reflectionPrompt}</span>
                           </p>
                         </div>
@@ -369,19 +371,18 @@ export function TarotRevealView(props: TarotRevealViewProps) {
           </Card>
 
           <div className="grid grid-cols-3 gap-2">
-            <Button variant="outline" onClick={onSave} className="min-h-[44px]">
+            <Button variant="outline" onClick={onSave}>
               {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
               <span className="text-xs">{isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}</span>
             </Button>
             <Button
               variant="outline"
               onClick={onShare}
-              className="min-h-[44px]"
             >
               <Share2 className="w-4 h-4" />
               <span className="text-xs">{t('readings.revealView.share', { defaultValue: 'Share' })}</span>
             </Button>
-            <Button variant="gold" onClick={onNewReading} className="min-h-[44px]">
+            <Button variant="gold" onClick={onNewReading}>
               <span className="text-xs">{t('readings.revealView.newReading')}</span>
             </Button>
           </div>

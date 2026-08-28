@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Gift, Crown, Clock } from 'lucide-react';
+import { Moon, CalendarCheck, Gift, Crown, Clock } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
@@ -126,7 +126,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
           </div>
         ) : isBrowse ? (
           <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
-            <Sparkles className="mt-0.5 h-5 w-5 flex-none text-gold" />
+            <Moon className="mt-0.5 h-5 w-5 flex-none text-gold" />
             <div className="text-sm leading-relaxed text-mystic-100">
               Each AI reading costs <span className="font-semibold text-gold">{ACTION_COST} moonstones</span>.
               {balance !== null && (
@@ -137,7 +137,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
           </div>
         ) : (
           <div className="flex items-start gap-3 rounded-lg bg-mystic-800/50 p-4">
-            <Sparkles className="mt-0.5 h-5 w-5 flex-none text-gold" />
+            <Moon className="mt-0.5 h-5 w-5 flex-none text-gold" />
             <div className="text-sm leading-relaxed text-mystic-100">
               You need <span className="font-semibold text-gold">{ACTION_COST} moonstones</span> for this reading.
               {balance !== null && (
@@ -183,7 +183,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
                 className="flex w-full items-center justify-between rounded-xl border border-mystic-700/50 bg-mystic-800/60 p-4 text-left transition hover:border-gold/40 disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
-                  <Sparkles className="h-5 w-5 text-mystic-200" />
+                  <CalendarCheck className="h-5 w-5 text-mystic-200" />
                   <div>
                     <div className="text-sm font-medium text-mystic-50">Daily check-in</div>
                     <div className="text-xs text-mystic-300">5–50 moonstones based on streak</div>

@@ -3,7 +3,9 @@ import {
   Star,
   Heart,
   Briefcase,
-  Sparkles,
+  Sun,
+  Wind,
+  Feather,
   Moon,
   Lock,
   Bookmark,
@@ -18,6 +20,7 @@ import {
   Flame,
   AlertTriangle,
 } from 'lucide-react';
+import { TarotCardIcon } from '../ui/NavIcons';
 import { Card, Button, Chip, toast } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
@@ -247,7 +250,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
 
               <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-xl">
-                <Sparkles className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <Sun className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-medium text-mystic-200 mb-1">{t('horoscope.mood')}</h4>
                   <p className="text-sm text-mystic-400 leading-relaxed">
@@ -279,7 +282,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
 
               <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
-                <Sparkles className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <Wind className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-mystic-200 mb-1">{t('horoscope.todaysMood')}</h4>
                   <p className="text-sm text-mystic-400">{dailyReading.mood}</p>
@@ -311,7 +314,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
 
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-cosmic-rose/10 to-gold/10 border border-cosmic-rose/20 rounded-xl">
-                <Sparkles className="w-5 h-5 text-cosmic-rose flex-shrink-0 mt-0.5" />
+                <Feather className="w-5 h-5 text-cosmic-rose flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-mystic-200 mb-1">{t('horoscope.dailyAffirmation')}</h4>
                   <p className="text-sm text-mystic-300 italic">&ldquo;{affirmation}&rdquo;</p>
@@ -319,7 +322,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
 
               <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
-                <Sparkles className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <TarotCardIcon className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-mystic-200 mb-2">{t('horoscope.cardOfTheDay')}</h4>
                   <div className="flex items-center gap-3">
@@ -453,14 +456,14 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
       </Card>
 
       <div className="grid grid-cols-3 gap-2">
-        <Button variant="outline" onClick={handleSave} className="min-h-[44px]">
+        <Button variant="outline" onClick={handleSave}>
           {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
         </Button>
-        <Button variant="gold" onClick={handleJournalPrompt} className="min-h-[44px]">
+        <Button variant="gold" onClick={handleJournalPrompt}>
           <PenLine className="w-4 h-4" />
           {t('horoscope.journalButton')}
         </Button>
-        <Button variant="outline" onClick={handleShare} className="min-h-[44px]">
+        <Button variant="outline" onClick={handleShare}>
           <Share2 className="w-4 h-4" />
         </Button>
       </div>

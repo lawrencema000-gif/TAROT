@@ -1,4 +1,5 @@
-import { Info, Sparkles } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { MysticalStar } from '../ui/MysticalStar';
 import type { TarotCard } from '../../types';
 import { getBundledCardPath } from '../../config/bundledImages';
 
@@ -51,7 +52,7 @@ export function CelticCrossLayout({
               />
             ) : (
               <div className={`text-center p-1 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                <Sparkles className="w-4 h-4 text-gold mx-auto mb-1" />
+                <MysticalStar size={16} halo={false} className="text-gold mx-auto mb-1" />
                 <p className="text-[0.6rem] text-mystic-300 line-clamp-2 px-1">{drawn.card.name}</p>
               </div>
             )

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, Sparkles, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
+import { Card, Button, SparkleFourPoint, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
@@ -49,7 +49,7 @@ const SIGN_ZONE_GLYPH: Record<string, string> = {
 
 const REACTION_ICONS: Record<ReactionType, React.ComponentType<{ className?: string }>> = {
   heart: Heart,
-  sparkle: Sparkles,
+  sparkle: SparkleFourPoint,
   moon: MoonIcon,
   eye: Eye,
   flame: Flame,
@@ -236,8 +236,9 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         {user && (
           <Button
             variant="primary"
+            size="sm"
             onClick={() => setView('composer')}
-            className="min-h-[40px] text-sm"
+            className="text-sm"
           >
             <Send className="w-4 h-4 mr-1" />
             {isWhisperingWell
@@ -603,7 +604,7 @@ function Composer({
         )}
       </Card>
 
-      <Button variant="primary" fullWidth onClick={submit} disabled={submitting} className="min-h-[56px]">
+      <Button variant="primary" size="lg" fullWidth onClick={submit} disabled={submitting}>
         <Send className="w-5 h-5 mr-2" />
         {submitting
           ? t('community.posting', { defaultValue: 'Posting...' })

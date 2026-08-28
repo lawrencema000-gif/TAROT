@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Sparkles, Gift, Plus } from 'lucide-react';
+import { Moon, Gift, Plus } from 'lucide-react';
 import { Card, Button, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
@@ -75,7 +75,7 @@ export function MoonstoneWidget() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-gold" />
+              <Moon className="w-5 h-5 text-gold" />
             </div>
             <div>
               <p className="text-xs text-mystic-500">
@@ -91,7 +91,7 @@ export function MoonstoneWidget() {
 
           <div className="flex items-center gap-2">
             {!isPremium && canClaim && (
-              <Button variant="primary" onClick={claim} disabled={claiming} className="text-sm min-h-[40px]">
+              <Button variant="primary" size="sm" onClick={claim} disabled={claiming}>
                 <Gift className="w-4 h-4 mr-1" />
                 {claiming
                   ? t('moonstones.claiming', { defaultValue: 'Claiming...' })

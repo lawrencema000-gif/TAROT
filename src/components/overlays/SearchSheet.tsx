@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Search, Sparkles, BookOpen, Brain, Clock } from 'lucide-react';
+import { Search, BookOpen, Brain, Clock } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
+import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { Input } from '../ui/Input';
 import { useT } from '../../i18n/useT';
 
@@ -10,7 +11,7 @@ interface SearchSheetProps {
 }
 
 const quickLinks = [
-  { icon: Sparkles, labelKey: 'search.quickLink.horoscope', category: 'readings' },
+  { icon: HoroscopeWheelIcon, labelKey: 'search.quickLink.horoscope', category: 'readings' },
   { icon: BookOpen, labelKey: 'search.quickLink.journalPrompts', category: 'journal' },
   { icon: Brain, labelKey: 'search.quickLink.personalityQuiz', category: 'quizzes' },
 ];

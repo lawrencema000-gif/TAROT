@@ -4,12 +4,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Shared colour tokens ─────────────────────────────────────────────
+ *
+ * One source of truth for every colour that is referenced outside a
+ * Tailwind class. Values are space-free RGB triplets so they compose with
+ * both `rgb(var(--x))` and `rgba(var(--x), 0.4)`.
+ *
+ * These exist because the product had drifted into two palettes. The app
+ * is built on gold #d4af37 over canvas #07070f; src/styles/landing.css
+ * declares its own `--g: #d4a853` over `--bg: #040407`, so the first
+ * screen a new user sees is made of slightly different material than the
+ * app they sign into afterwards. Nobody names the difference, but the two
+ * screens do not look like the same product. landing.css is not owned by
+ * this pass — see the integration note for the four lines to repoint at
+ * these tokens.
+ *
+ * The surface values mirror the mystic scale in tailwind.config.js. Keep
+ * them in step: if the ladder moves there, move it here.
+ */
 :root {
   --font-scale: 1;
-  --gold-primary: 212, 175, 55;
+
+  /* brand */
+  --gold-primary: 212, 175, 55;    /* gold.DEFAULT  #d4af37 */
+  --gold-light: 244, 214, 104;     /* gold.light    #f4d668 */
+  --gold-dark: 184, 150, 15;       /* gold.dark     #b8960f */
   --coral-primary: 224, 122, 95;
   --teal-primary: 78, 205, 196;
-  --mystic-bg: 8, 8, 18;
+
+  /* surfaces — the same ladder as `mystic` in tailwind.config.js */
+  --canvas: 7, 7, 15;              /* mystic.950 #07070f — page */
+  --surface-sunken: 16, 16, 36;    /* mystic.900 #101024 — nav */
+  --surface-card: 22, 22, 46;      /* mystic.850 #16162e — Card */
+  --surface-raised: 31, 31, 58;    /* mystic.800 #1f1f3a — input, chip */
+  --hairline: 44, 44, 76;          /* mystic.700 #2c2c4c — border */
+
+  /* Keyboard focus ring. gold-light rather than gold: 14.0:1 on the canvas
+     and 12.4:1 on a Card, and it stays visible when the ring lands beside
+     a gold-filled button, which plain gold does not. */
+  --focus-ring: var(--gold-light);
+
+  /* `--mystic-bg` predates the surface ladder and is still read by
+     .mystic-gradient. Aliased rather than deleted so the two cannot drift;
+     it was 8,8,18 against a canvas that is now 7,7,15. */
+  --mystic-bg: var(--canvas);
 }
 
 @layer base {
@@ -79,14 +117,6 @@
 
     .text-mystic-400, .text-mystic-500 {
       @apply text-white/80;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
     }
   }
 }
@@ -1161,4 +1191,143 @@ body.keyboard-open nav[aria-label="Main navigation"],
 body.sheet-open nav[aria-label="Main navigation"],
 body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-label="Main navigation"] {
   display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCESSIBILITY FLOOR
+   Everything below is deliberately unlayered and sits at the end of the
+   file. Tailwind v3 emits `@tailwind utilities` as plain, unlayered CSS,
+   so a rule written inside `@layer base` loses to any utility class at
+   equal specificity no matter what it says. Placing these rules last,
+   outside a layer, is what makes them apply at all.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Keyboard focus ─────────────────────────────────────────────────
+ *
+ * There was no `:focus-visible` rule anywhere in the codebase, and 29
+ * elements across 22 files carry a bare `focus:outline-none` that strips
+ * the browser default. Keyboard and switch users had nothing to follow.
+ *
+ * Two rules, on purpose:
+ *
+ *   1. The bare `:focus-visible` catch-all, at (0,1,0), covers anything
+ *      focusable the enumeration misses.
+ *   2. The enumerated rule reaches (0,3,0): `:is()` takes the specificity
+ *      of its heaviest argument, here `[tabindex]:not([tabindex^="-"])`
+ *      at (0,2,0), plus `:focus-visible`. Tailwind's
+ *      `.focus\:outline-none:focus` is (0,2,0), so this wins on
+ *      specificity without `!important`, and a component that genuinely
+ *      wants its own ring can still take it back with one more class.
+ *
+ * `:focus-visible` and not `:focus`, so a mouse click on a button does
+ * not leave a ring behind it. Text fields are the exception the browser
+ * already makes for us — they match on click too, because someone who
+ * clicked into a field is about to type.
+ *
+ * `outline` and not `box-shadow`: outline follows border-radius on its own
+ * and survives `overflow: hidden`. It also cannot be clobbered by the many
+ * shadow utilities in this file. The 2px offset lands the ring on the
+ * parent's surface rather than the element's, which is what keeps it
+ * legible around a gold-filled button.
+ */
+:focus-visible {
+  outline: 2px solid rgb(var(--focus-ring));
+  outline-offset: 2px;
+}
+
+:is(
+  a[href],
+  area[href],
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [contenteditable="true"],
+  [tabindex]:not([tabindex^="-"]),
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="switch"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="slider"],
+  [role="textbox"]
+):focus-visible {
+  outline: 2px solid rgb(var(--focus-ring));
+  outline-offset: 2px;
+}
+
+/* Pointer focus stays quiet. Without this, elements that keep a UA
+   default outline flash a ring on every tap. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────
+ *
+ * The app carries a lot of ambient motion: shimmer, gold-sweep,
+ * breathe-glow, aurora-drift, twinkle, floating particles, the 60-second
+ * chart rim, and on the landing page rising particles and word reveals.
+ * For a user with a vestibular disorder that is not atmosphere.
+ *
+ * This collapses duration rather than setting `animation: none`. `none`
+ * strands every `forwards` animation on its 0% frame, and several of
+ * those frames are `opacity: 0` — landing.css's `.lp-word` reveal is one,
+ * so killing animation outright would hide the headline. Collapsing the
+ * duration lands each animation on its final frame immediately instead.
+ *
+ * Delays are zeroed as well. A 2s-delayed animation with a 0.01ms
+ * duration still makes the page move two seconds after it looked
+ * settled, which is the exact surprise the preference asks us to avoid.
+ *
+ * What is exempted, and why:
+ *
+ *   - `scroll-behavior` is forced back to `auto`, because smooth
+ *     scrolling IS the motion. `html` sets it near the top of this file.
+ *
+ *   - `[data-motion="fade"]` keeps a 150ms transition, forced down to
+ *     `opacity` alone. A cross-fade has no direction and no displacement,
+ *     so it does not provoke vestibular symptoms; WCAG 2.3.3 is about
+ *     movement, not brightness. Pinning `transition-property` means an
+ *     element that also transitions `transform` still gets the fade and
+ *     snaps the movement. Nothing carries the attribute yet — it is here
+ *     so route and sheet transitions can opt in rather than each
+ *     inventing an escape hatch.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-motion="fade"],
+  [data-motion="fade"]::before,
+  [data-motion="fade"]::after {
+    transition-property: opacity !important;
+    transition-duration: 150ms !important;
+  }
+
+  /* A skeleton's only "content is coming" signal is the shimmer sweep, and
+     the rule above has just taken it away. Swap it for a flat fill at the
+     value the sweep peaks at for everyone else: mystic-700, which is
+     1.35:1 against a Card and 1.52:1 against the canvas, versus 1.13 and
+     1.27 for the mystic-800 resting fill. That is the top of the current
+     ladder. If it still tests too faint on a real device, the fix is a
+     new surface token around #3a3a5e in tailwind.config.js, not an
+     off-ladder hex here. */
+  .skeleton {
+    background-image: none !important;
+    background-color: rgb(var(--hairline)) !important;
+  }
 }

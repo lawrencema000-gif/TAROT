@@ -24,6 +24,19 @@ export interface MysticalStarProps {
   halo?: boolean;
   /** Animate a very slow rotation on mount. Good for a hero glyph. */
   spinning?: boolean;
+  /**
+   * Accessible name. WITHOUT it the star is aria-hidden, which is the right
+   * default: it is nearly always decorative, sitting beside a heading that
+   * already says what the thing is.
+   *
+   * It used to hardcode role="img" aria-label="Ritual star" with no way out.
+   * That was harmless while the component was rare, but the de-Sparkle sweep
+   * substituted it into 17 decorative slots that lucide had been rendering
+   * aria-hidden — so a screen reader started announcing "Ritual star" 17 times
+   * where it previously said nothing. Pass a label only when the glyph carries
+   * meaning no adjacent text does.
+   */
+  label?: string;
 }
 
 export const MysticalStar = memo(function MysticalStar({
@@ -32,6 +45,7 @@ export const MysticalStar = memo(function MysticalStar({
   color,
   halo = true,
   spinning = false,
+  label,
 }: MysticalStarProps) {
   return (
     <svg
@@ -41,8 +55,9 @@ export const MysticalStar = memo(function MysticalStar({
       fill="none"
       className={`${className ?? ''} ${spinning ? 'animate-spin-slow' : ''}`}
       style={color ? { color } : undefined}
-      role="img"
-      aria-label="Ritual star"
+      {...(label
+        ? { role: 'img', 'aria-label': label }
+        : { 'aria-hidden': true, focusable: false })}
     >
       <defs>
         {/* Gold gradient for the primary star petals */}

@@ -254,7 +254,6 @@ export function WatchAdSheet({
                 onClick={handleWatchAd}
                 loading={adLoading}
                 disabled={adLoading}
-                className="min-h-[48px]"
               >
                 <Play className="w-4 h-4" />
                 {t('premium.watchAd.watchAdCta', {

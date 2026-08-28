@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MapPin, Crown, Sparkles, Coins, Loader2, AlertCircle } from 'lucide-react';
 import { Sheet, Button } from '../ui';
-import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
 import {
@@ -316,7 +315,7 @@ export function CityInsightPanel({
         {(visibleHits.length > 0 || allHits.length > 0) && !reading && (
           <div className="rounded-2xl bg-mystic-900/60 hairline-gold-soft p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <HoroscopeWheelIcon className="w-4 h-4 text-gold" />
+              <Sparkles className="w-4 h-4 text-gold" />
               <h3 className="text-sm font-medium text-mystic-100">
                 {t('celestial.city.aiReading.title', {
                   defaultValue: 'Personal travel reading',

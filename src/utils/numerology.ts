@@ -179,7 +179,35 @@ const LETTER_VALUES: Record<string, number> = {
   i: 9, r: 9,
 };
 
+/**
+ * Y is treated as a CONSONANT throughout.
+ *
+ * Pythagorean practice is genuinely split: Y is read as a vowel when it does
+ * the work of one (Lynn, Yvonne) and as a consonant otherwise (Yolanda).
+ * Deciding that per-name needs phonology we do not have, so we take the common
+ * simplification and always count Y as a consonant. Stated here because it is a
+ * choice, not a fact — a reader comparing against another calculator that
+ * splits Y will see a different Soul Urge for a name like Lynn.
+ */
 const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
+
+/**
+ * Fold accents to their base letter before scoring.
+ *
+ * The letter scan matches /[a-z]/, so without this an accented character is
+ * silently DROPPED rather than folded — which made José score differently from
+ * Jose, cost Renée the master number 11 that Renee gets, and gave Björn no Soul
+ * Urge at all, because the only vowel in the name was the one being discarded.
+ * NFD splits a letter from its combining mark; stripping U+0300-U+036F leaves
+ * the base letter behind.
+ *
+ * Names in non-Latin scripts still yield no letters and therefore no number.
+ * That is the honest outcome — this system is defined over the Latin alphabet —
+ * and the callers render nothing rather than a misleading zero.
+ */
+function foldAccents(name: string): string {
+  return name.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
 
 function reducePreservingMasters(n: number): number {
   while (n > 9 && ![11, 22, 33].includes(n)) {
@@ -190,7 +218,7 @@ function reducePreservingMasters(n: number): number {
 
 function sumLetters(name: string, filter: (c: string) => boolean): number {
   let total = 0;
-  for (const raw of name.toLowerCase()) {
+  for (const raw of foldAccents(name).toLowerCase()) {
     if (!/[a-z]/.test(raw)) continue;
     if (!filter(raw)) continue;
     total += LETTER_VALUES[raw] ?? 0;

@@ -4,7 +4,8 @@ import { Button, Input, toast } from '../ui';
 import { CelestialCitySearch } from '../celestial/CelestialCitySearch';
 import { deriveBirthTz } from '../../utils/birthTz';
 import { people } from '../../dal';
-import type { Person, PersonInput, Relationship } from '../../dal/people';
+import type { Person, PersonInput, Relationship, Species } from '../../dal/people';
+import { SPECIES_INFO } from '../../data/petAstrology';
 import { useAuth } from '../../context/AuthContext';
 import type { City } from '../../utils/celestialGeo';
 
@@ -13,7 +14,10 @@ const RELATIONSHIPS: { key: Relationship; label: string }[] = [
   { key: 'family', label: 'Family' },
   { key: 'friend', label: 'Friend' },
   { key: 'other', label: 'Other' },
+  { key: 'pet', label: 'Pet' },
 ];
+
+const SPECIES_KEYS = Object.keys(SPECIES_INFO) as Species[];
 
 interface Props {
   existing?: Person;
@@ -27,6 +31,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
   const { user } = useAuth();
   const [name, setName] = useState(existing?.name ?? '');
   const [relationship, setRelationship] = useState<Relationship>(existing?.relationship ?? 'friend');
+  const [species, setSpecies] = useState<Species>(existing?.species ?? 'dog');
   const [birthDate, setBirthDate] = useState(existing?.birthDate ?? '');
   const [birthTime, setBirthTime] = useState(existing?.birthTime ?? '');
   const [place, setPlace] = useState<{ name: string; lat: number; lon: number } | null>(
@@ -53,6 +58,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
     const input: PersonInput = {
       name: name.trim(),
       relationship,
+      species: relationship === 'pet' ? species : null,
       birthDate,
       birthTime: birthTime || null,
       birthTz,
@@ -88,8 +94,22 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
         </div>
       </div>
 
+      {relationship === 'pet' && (
+        <div>
+          <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">Species</label>
+          <div className="flex flex-wrap gap-2">
+            {SPECIES_KEYS.map((k) => (
+              <button key={k} type="button" onClick={() => setSpecies(k)}
+                className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${species === k ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'}`}>
+                {SPECIES_INFO[k].label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Input type="date" label="Birth date" icon={<Calendar className="w-4 h-4" />} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().slice(0, 10)} />
-      <Input type="time" label="Birth time (optional — sharpens the chart)" icon={<Clock className="w-4 h-4" />} value={birthTime} onChange={(e) => setBirthTime(e.target.value)} placeholder="--:--" />
+      <Input type="time" label={relationship === 'pet' ? 'Time (optional — most adopted animals have none)' : 'Birth time (optional — sharpens the chart)'} icon={<Clock className="w-4 h-4" />} value={birthTime} onChange={(e) => setBirthTime(e.target.value)} placeholder="--:--" />
 
       <div>
         <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Birth place (optional)</label>

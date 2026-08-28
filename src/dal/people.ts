@@ -6,13 +6,18 @@ import { supabase } from '../lib/supabase';
 import { captureException } from '../utils/telemetry';
 import type { Result } from './dailyRituals';
 
-export type Relationship = 'self' | 'partner' | 'family' | 'friend' | 'other';
+export type Relationship = 'self' | 'partner' | 'family' | 'friend' | 'other' | 'pet';
+
+/** Set only when relationship is 'pet'. Null reads as an unspecified companion. */
+export type Species =
+  | 'dog' | 'cat' | 'bird' | 'rabbit' | 'horse' | 'reptile' | 'fish' | 'smallPet' | 'other';
 
 export interface Person {
   id: string;
   userId: string;
   name: string;
   relationship: Relationship;
+  species: Species | null;
   birthDate: string;
   birthTime: string | null;
   birthTz: string | null;
@@ -26,6 +31,7 @@ export interface Person {
 export interface PersonInput {
   name: string;
   relationship: Relationship;
+  species?: Species | null;
   birthDate: string;
   birthTime?: string | null;
   birthTz?: string | null;
@@ -41,6 +47,7 @@ function mapRow(r: Record<string, unknown>): Person {
     userId: r.user_id as string,
     name: r.name as string,
     relationship: (r.relationship as Relationship) ?? 'friend',
+    species: (r.species as Species) ?? null,
     birthDate: r.birth_date as string,
     birthTime: (r.birth_time as string) ?? null,
     birthTz: (r.birth_tz as string) ?? null,
@@ -81,6 +88,9 @@ function toRow(userId: string, input: PersonInput): Record<string, unknown> {
     user_id: userId,
     name: input.name.trim(),
     relationship: input.relationship,
+    // Only pets carry a species; sending one for a person would fail the
+    // column CHECK for no benefit.
+    species: input.relationship === 'pet' ? (input.species ?? null) : null,
     birth_date: input.birthDate,
     birth_time: input.birthTime || null,
     birth_tz: input.birthTz || null,

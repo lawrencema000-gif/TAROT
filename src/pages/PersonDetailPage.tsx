@@ -11,10 +11,11 @@ import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
 import { supabase } from '../lib/supabase';
 import { type NatalChart, PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
+import { readPet, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
 
 type Interp = typeof import('../data/interpretations');
 
-const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other' };
+const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other', pet: 'Pet' };
 
 export function PersonDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +35,12 @@ export function PersonDetailPage() {
     const pRes = await peopleDal.getById(id);
     if (!pRes.ok || !pRes.data) { setErr('Person not found.'); setLoading(false); return; }
     setPerson(pRes.data);
+    if (pRes.data.relationship === 'pet') {
+      // A pet gets a temperament reading, not a natal wheel — no houses, no
+      // ascendant, and no reason to spend an edge-function call on either.
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase.functions.invoke('astrology-person-chart', { body: { personId: id } });
     if (error) { setErr('Could not compute the chart.'); setLoading(false); return; }
     setChart((data?.data?.chart ?? data?.chart) as NatalChart);
@@ -58,6 +65,8 @@ export function PersonDetailPage() {
     </div>
   );
 
+  const isPet = person.relationship === 'pet';
+  const petReading = isPet ? readPet(person.birthDate, person.species) : null;
   const sun = chart?.planets.find((p) => p.planet === 'Sun');
   const moon = chart?.planets.find((p) => p.planet === 'Moon');
 
@@ -70,24 +79,55 @@ export function PersonDetailPage() {
       <div className="text-center space-y-1">
         <EyebrowLabel>{REL_LABEL[person.relationship]}</EyebrowLabel>
         <h1 className="heading-display-xl text-mystic-100">{person.name}</h1>
-        {chart && (
+        {!isPet && chart && (
           <p className="text-sm text-mystic-400">
             {sun && <>Sun in {sun.sign} {SIGN_GLYPH[sun.sign]}</>}
             {moon && <> · Moon in {moon.sign} {SIGN_GLYPH[moon.sign]}</>}
             {chart.ascendantSign && <> · {chart.ascendantSign} Rising</>}
           </p>
         )}
-        {!person.birthTime && <p className="text-xs text-mystic-600">Birth time unknown — houses &amp; rising sign are approximate.</p>}
+        {!person.birthTime && !isPet && <p className="text-xs text-mystic-600">Birth time unknown — houses &amp; rising sign are approximate.</p>}
       </div>
 
-      {chart && (
+      {isPet && petReading && (
+        <>
+          <Card className="p-4 space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl">{SIGN_GLYPH[petReading.sign.charAt(0).toUpperCase() + petReading.sign.slice(1)] ?? ''}</span>
+              <div>
+                <div className="text-mystic-100">{petReading.reading.headline}</div>
+                <div className="text-xs text-mystic-500">
+                  {person.species ? SPECIES_INFO[person.species].label : 'Companion'}
+                  {petReading.animal && <> · Year of the {petReading.animal.en} {petReading.animal.cn}</>}
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-mystic-300 leading-relaxed">{petReading.reading.temperament}</p>
+            {petReading.speciesLens && (
+              <p className="text-[13px] text-mystic-400 leading-relaxed">{petReading.speciesLens}</p>
+            )}
+          </Card>
+
+          <Card className="p-4 space-y-2">
+            <h3 className="heading-display-md text-mystic-100">What they need from you</h3>
+            <p className="text-sm text-mystic-300 leading-relaxed">{petReading.reading.needs}</p>
+            <p className="text-[13px] text-mystic-400 leading-relaxed border-t border-mystic-800/40 pt-2">
+              <span className="text-gold/80">The quirk:</span> {petReading.reading.quirk}
+            </p>
+          </Card>
+
+          <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">{PET_DISCLAIMER}</p>
+        </>
+      )}
+
+      {!isPet && chart && (
         <Card className="p-4 flex justify-center">
           <div className="w-full max-w-[360px]"><NatalWheel chart={chart} /></div>
         </Card>
       )}
 
       {/* Big Three */}
-      {chart && (
+      {!isPet && chart && (
         <div className="grid grid-cols-3 gap-2">
           {[
             sun && { g: PLANET_GLYPH.Sun, t: 'Sun', s: sun.sign },
@@ -107,7 +147,7 @@ export function PersonDetailPage() {
       {chart && <PersonAIReading personId={person.id} personName={person.name} />}
 
       {/* Placements with interpretations */}
-      {chart && (
+      {!isPet && chart && (
         <Card className="p-4 space-y-1">
           <h3 className="heading-display-md text-mystic-100 mb-2">Placements</h3>
           {chart.planets.map((p) => {
@@ -139,7 +179,7 @@ export function PersonDetailPage() {
       )}
 
       {/* Element / modality balance */}
-      {chart && (
+      {!isPet && chart && (
         <Card className="p-4 space-y-3">
           <h3 className="heading-display-md text-mystic-100">Balance</h3>
           <ElementBalance elements={chart.elements} modalities={chart.modalities} />

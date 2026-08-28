@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Heart, Flag, HandHeart, X } from 'lucide-react';
-import { Card, Button, Input, EyebrowLabel, Sheet, toast } from '../components/ui';
+import { Sparkles, Heart, Flag, HandHeart, X } from 'lucide-react';
+import { Card, Button, Input, Sheet, toast, PageHeader, EmptyState } from '../components/ui';
 import { WishSky } from '../components/wishes/WishSky';
 import { wishes as wishesDal } from '../dal';
 import {
@@ -122,18 +122,15 @@ export function WishingSkyPage() {
 
   return (
     <div className="space-y-5 pb-28">
-      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
-
-      <div className="space-y-1">
-        <EyebrowLabel>The Wishing Sky</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">Everyone’s wishes, in one sky</h1>
-        <p className="text-sm text-mystic-400 leading-relaxed">
+      <PageHeader
+        onBack={() => navigate(-1)}
+        eyebrow="The Wishing Sky"
+        title="Everyone’s wishes, in one sky"
+        subtitle={<>
           Every star here is someone’s wish. Make one and yours joins them. When you echo a wish —
           say you want it for them too — a line is drawn between your star and theirs.
-        </p>
-      </div>
+        </>}
+      />
 
       {/* The sky itself. Deliberately tall: it is the point of the page. */}
       <div className="relative rounded-2xl overflow-hidden border border-mystic-800/60 bg-[#070912]"
@@ -143,11 +140,14 @@ export function WishingSkyPage() {
             Lighting the sky…
           </div>
         ) : sky.length === 0 ? (
-          <div className="absolute inset-0 grid place-items-center text-center px-8">
-            <div>
-              <p className="text-mystic-300 text-sm">The sky is empty tonight.</p>
-              <p className="text-mystic-500 text-xs mt-1">Make the first wish and light it.</p>
-            </div>
+          <div className="absolute inset-0 grid place-items-center px-8">
+            <EmptyState
+              variant="inline"
+              size="sm"
+              icon={<Sparkles />}
+              title="The sky is empty tonight."
+              description="Make the first wish and light it."
+            />
           </div>
         ) : (
           <WishSky
@@ -198,7 +198,7 @@ export function WishingSkyPage() {
           </button>
         ))}
         {sky.length === 0 && !loading && (
-          <p className="text-sm text-mystic-500">No wishes yet.</p>
+          <EmptyState variant="inline" size="sm" icon={<Sparkles />} title="No wishes yet." />
         )}
       </Card>
 

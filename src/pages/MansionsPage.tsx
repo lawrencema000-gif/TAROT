@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, Sun, Moon } from 'lucide-react';
-import { Card, Button, Input, EyebrowLabel, SectionDivider } from '../components/ui';
+import { Sun, Moon } from 'lucide-react';
+import { Card, Button, Input, EyebrowLabel, PageHeader, Section, Disclosure } from '../components/ui';
 import {
   MANSIONS, MANSION_ACTIVITIES, QUADRANT_INFO, PLANET7_INFO,
   mansionForDate, mansionForBirth, sukuyoMansionForBirth,
@@ -95,16 +95,14 @@ export function MansionsPage() {
 
   return (
     <div className="space-y-6 pb-28">
-      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> {t('common.back', { defaultValue: 'Back' })}
-      </button>
-
-      <div className="space-y-2">
-        <EyebrowLabel>二十八宿</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">{t('mansions.title', { defaultValue: 'The Lunar Mansions' })}</h1>
-        <p className="text-sm text-mystic-400 leading-relaxed">{MANSION_INTRO}</p>
-        <SectionDivider tone="gold" />
-      </div>
+      <PageHeader
+        eyebrow="二十八宿"
+        title={t('mansions.title', { defaultValue: 'The Lunar Mansions' })}
+        subtitle={MANSION_INTRO}
+        onBack={() => navigate(-1)}
+        backLabel={t('common.back', { defaultValue: 'Back' }) as string}
+        divider
+      />
 
       {/* Today's governing mansion */}
       {today && (
@@ -165,8 +163,7 @@ export function MansionsPage() {
           </Card>
 
           {sukuyo && sukuyo.key !== birth.key && (
-            <Card className="p-4 space-y-2">
-              <EyebrowLabel>宿曜 · the Japanese reading</EyebrowLabel>
+            <Section eyebrow="宿曜 · the Japanese reading" spacing="sm">
               <p className="text-sm text-mystic-300 leading-relaxed">
                 The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than
                 the running day cycle — and puts you in{' '}
@@ -174,7 +171,7 @@ export function MansionsPage() {
                 Both are genuine; they answer slightly different questions, so we show them separately
                 rather than pick one for you.
               </p>
-            </Card>
+            </Section>
           )}
 
           <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>{t('mansions.recast', { defaultValue: 'Use a different date' })}</Button>
@@ -182,8 +179,11 @@ export function MansionsPage() {
       )}
 
       {/* The full sky, by quadrant */}
-      <Card className="p-4 space-y-4">
-        <h3 className="heading-display-md text-mystic-100">{t('mansions.all', { defaultValue: 'All twenty-eight' })}</h3>
+      <Section
+        title={t('mansions.all', { defaultValue: 'All twenty-eight' })}
+        headingLevel="h3"
+        contentClassName="space-y-4"
+      >
         {(Object.keys(byQuadrant) as Quadrant[]).map((q) => (
           <div key={q} className="space-y-1">
             <div className="text-xs text-gold/80">
@@ -193,30 +193,35 @@ export function MansionsPage() {
             {byQuadrant[q].map((m) => {
               const open = openKey === m.key;
               return (
-                <div key={m.key} className="border-b border-mystic-800/40 last:border-0">
-                  <button onClick={() => setOpenKey(open ? null : m.key)} className="w-full flex items-center gap-2 py-2 text-left">
-                    <span className="w-6 text-center text-gold" style={{ fontFamily: 'serif' }}>{m.cn}</span>
-                    <span className="flex-1">
+                <Disclosure
+                  key={m.key}
+                  variant="row"
+                  open={open}
+                  onOpenChange={(next) => setOpenKey(next ? m.key : null)}
+                  icon={
+                    <span className="block w-6 text-center text-gold" style={{ fontFamily: 'serif' }}>{m.cn}</span>
+                  }
+                  label={
+                    <>
                       <span className="text-mystic-100 text-sm">{MANSION_MEANINGS[m.key]?.title}</span>
                       <span className="text-mystic-600 text-xs"> · {m.animal}</span>
-                    </span>
-                    <span className={`text-[10px] uppercase tracking-wider ${m.fortune === 'auspicious' ? 'text-emerald-400/70' : 'text-rose-400/70'}`}>
+                    </>
+                  }
+                  meta={
+                    <span className={`uppercase tracking-wider ${m.fortune === 'auspicious' ? 'text-emerald-400/70' : 'text-rose-400/70'}`}>
                       {m.fortune === 'auspicious' ? '吉' : '凶'}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-mystic-600 transition-transform ${open ? 'rotate-180' : ''}`} />
-                  </button>
-                  {open && (
-                    <div className="pb-3 pl-8 space-y-2">
-                      <p className="text-[13px] text-mystic-300 leading-relaxed">{MANSION_MEANINGS[m.key]?.text}</p>
-                      {renderActivities(m)}
-                    </div>
-                  )}
-                </div>
+                  }
+                  contentClassName="pl-8 space-y-2"
+                >
+                  <p className="text-[13px] text-mystic-300 leading-relaxed">{MANSION_MEANINGS[m.key]?.text}</p>
+                  {renderActivities(m)}
+                </Disclosure>
               );
             })}
           </div>
         ))}
-      </Card>
+      </Section>
 
       <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">
         The 值日 cycle is a calendrical count that has run unbroken for centuries — not a live measurement of

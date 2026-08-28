@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { RefreshCw, Moon, Zap, Heart, Briefcase, DollarSign, Flame, Check, X, Sparkles, BookOpen } from 'lucide-react';
+import { RefreshCw, Moon, Zap, Heart, Briefcase, DollarSign, Flame, Check, X, BookOpen } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Card, Skeleton } from '../ui';
+import { Card, Skeleton, MysticalStar } from '../ui';
 import { useDailyHoroscope } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { adsService } from '../../services/ads';
@@ -81,7 +81,7 @@ export function TodayForYou() {
       <Card variant="glow" padding="lg">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-gold" />
+            <MysticalStar size={16} className="text-gold" />
             <span className="text-sm font-medium text-gold">{content.theme}</span>
           </div>
           <p className="text-mystic-200 leading-relaxed">{content.summary}</p>
@@ -189,7 +189,7 @@ export function TodayForYou() {
         <Card padding="md">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-mystic-800/60 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-mystic-300" />
+              <Flame className="w-4 h-4 text-mystic-300" />
             </div>
             <div>
               <div className="text-xs font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.miniRitual')}</div>

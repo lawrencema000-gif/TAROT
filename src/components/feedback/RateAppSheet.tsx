@@ -67,9 +67,9 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
           <div className="space-y-3">
             <Button
               variant="gold"
+              size="lg"
               fullWidth
               onClick={handleRate}
-              className="min-h-[52px]"
             >
               <Star className="w-5 h-5" />
               Rate the App
@@ -79,7 +79,6 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
               variant="outline"
               fullWidth
               onClick={handleFeedback}
-              className="min-h-[48px]"
             >
               <MessageCircle className="w-5 h-5" />
               Report an Issue

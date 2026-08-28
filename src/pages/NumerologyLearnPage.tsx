@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Hash, ChevronRight } from 'lucide-react';
+import { PageHeader, Section } from '../components/ui';
 import { numerologyEntries, getNumerologyByCategory, type NumerologyCategory } from '../data/numerologyLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -47,25 +48,18 @@ export function NumerologyLearnPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
-            <Hash className="w-5 h-5 text-gold" />
-          </div>
-          <h1 className="heading-display-xl text-mystic-100">Numerology</h1>
-        </div>
-        <p className="text-sm text-mystic-400 max-w-xl">
-          {numerologyEntries.length} entries — every life-path number with personality, strengths, challenges, tarot correspondence, and FAQ. Pythagorean tradition.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-8"
+        icon={<Hash />}
+        title="Numerology"
+        subtitle={`${numerologyEntries.length} entries — every life-path number with personality, strengths, challenges, tarot correspondence, and FAQ. Pythagorean tradition.`}
+      />
 
       {SECTIONS.map(({ id, label, description }) => {
         const entries = getNumerologyByCategory(id);
         if (!entries.length) return null;
         return (
-          <section key={id} className="mb-8">
-            <h2 className="font-display text-xl text-mystic-100 mb-1">{label}</h2>
-            <p className="text-xs text-mystic-500 mb-3">{description}</p>
+          <Section key={id} title={label} description={description} spacing="sm" className="mb-8">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {entries.map((entry) => (
                 <Link
@@ -84,7 +78,7 @@ export function NumerologyLearnPage() {
                 </Link>
               ))}
             </div>
-          </section>
+          </Section>
         );
       })}
     </div>

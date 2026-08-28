@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
+import { Card, Button, Input, toast, PageHeader, Section, Disclosure } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -117,12 +117,10 @@ export function HumanDesignPage() {
   if (stage === 'input' || stage === 'loading') {
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <HoroscopeWheelIcon className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('humanDesign.title', { defaultValue: 'Human Design' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<HoroscopeWheelIcon />}
+          title={t('humanDesign.title', { defaultValue: 'Human Design' })}
+        />
 
         <Card variant="glow" padding="lg">
           <p className="text-mystic-300 text-sm leading-relaxed mb-4">
@@ -209,13 +207,12 @@ export function HumanDesignPage() {
 
     return (
       <div className="space-y-4 pb-6">
-        <button
-          onClick={reset}
-          className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('humanDesign.backToInput', { defaultValue: 'Recalculate' })}
-        </button>
+        <PageHeader
+          icon={<HoroscopeWheelIcon />}
+          title={t('humanDesign.title', { defaultValue: 'Human Design' })}
+          onBack={reset}
+          backLabel={t('humanDesign.backToInput', { defaultValue: 'Recalculate' }) as string}
+        />
 
         {/* Hero — Type + Profile */}
         <Card variant="glow" padding="lg" className="text-center">
@@ -258,12 +255,13 @@ export function HumanDesignPage() {
         </div>
 
         {/* Authority */}
-        <Card padding="lg">
-          <h3 className="font-medium text-cosmic-blue mb-2">
-            {t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority' })}: {chart.authority}
-          </h3>
+        <Section
+          title={<>{t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority' })}: {chart.authority}</>}
+          headingLevel="h3"
+          spacing="sm"
+        >
           <p className="text-mystic-300 text-sm leading-relaxed">{chart.authorityExplanation}</p>
-        </Card>
+        </Section>
 
         {/* Bodygraph SVG */}
         <Card padding="lg">
@@ -286,10 +284,10 @@ export function HumanDesignPage() {
 
         {/* Channels */}
         {chart.channels.length > 0 && (
-          <Card padding="lg">
-            <h3 className="font-medium text-cosmic-violetLight mb-3">
-              {t('humanDesign.channelsHeading', { defaultValue: 'Your defined channels' })}
-            </h3>
+          <Section
+            title={t('humanDesign.channelsHeading', { defaultValue: 'Your defined channels' })}
+            headingLevel="h3"
+          >
             <div className="flex flex-wrap gap-2">
               {chart.channels.map((c) => (
                 <span
@@ -306,7 +304,7 @@ export function HumanDesignPage() {
                   'Each channel connects two centres and defines a consistent life-force flow between them. These are fixed parts of who you are — always available to you.',
               })}
             </p>
-          </Card>
+          </Section>
         )}
 
         {/* Strengths / Challenges */}
@@ -336,31 +334,24 @@ export function HumanDesignPage() {
         )}
 
         {/* All activations — foldout */}
-        <Card padding="md">
-          <button
-            className="w-full flex items-center justify-between"
-            onClick={() => setShowActivations((v) => !v)}
-          >
-            <span className="text-sm font-medium text-mystic-200">
-              {t('humanDesign.activationsLabel', { defaultValue: 'All 26 activations' })}
-            </span>
-            <span className="text-xs text-gold">{showActivations ? '−' : '+'}</span>
-          </button>
-          {showActivations && (
-            <div className="mt-4 space-y-4">
-              <ActivationList
-                title={t('humanDesign.personalityLabel', { defaultValue: 'Personality (conscious) — at birth' })}
-                activations={chart.personality}
-                tint="text-gold"
-              />
-              <ActivationList
-                title={t('humanDesign.designLabel', { defaultValue: 'Design (unconscious) — 88° of solar arc before birth' })}
-                activations={chart.design}
-                tint="text-cosmic-blue"
-              />
-            </div>
-          )}
-        </Card>
+        <Disclosure
+          label={t('humanDesign.activationsLabel', { defaultValue: 'All 26 activations' })}
+          open={showActivations}
+          onOpenChange={setShowActivations}
+          lazy
+          contentClassName="space-y-4"
+        >
+          <ActivationList
+            title={t('humanDesign.personalityLabel', { defaultValue: 'Personality (conscious) — at birth' }) as string}
+            activations={chart.personality}
+            tint="text-gold"
+          />
+          <ActivationList
+            title={t('humanDesign.designLabel', { defaultValue: 'Design (unconscious) — 88° of solar arc before birth' }) as string}
+            activations={chart.design}
+            tint="text-cosmic-blue"
+          />
+        </Disclosure>
 
         {typeContent.affirmation && (
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">

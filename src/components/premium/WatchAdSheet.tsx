@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Play, X, Coins, Crown, Sparkles } from 'lucide-react';
+import { Play, X, Coins, Crown } from 'lucide-react';
 import { Button, toast, FourCornerFlourishes, OrnateDivider } from '../ui';
 import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAds';
 import { spendForAction, ACTION_COST } from '../../dal/moonstoneSpend';
@@ -237,9 +237,8 @@ export function WatchAdSheet({
               onClick={handleSpend}
               loading={spendLoading}
               disabled={!canSpend || spendLoading}
-              className="min-h-[52px]"
             >
-              <Sparkles className="w-5 h-5" />
+              <Coins className="w-5 h-5" />
               {t('premium.watchAd.spendCta', {
                 defaultValue: 'Spend {{n}} Moonstones to unlock',
                 n: cost,
@@ -265,9 +264,9 @@ export function WatchAdSheet({
 
             <Button
               variant="ghost"
+              size="sm"
               fullWidth
               onClick={handleUpgrade}
-              className="min-h-[40px]"
             >
               <Crown className="w-4 h-4" />
               {t('premium.watchAd.getUnlimited', {

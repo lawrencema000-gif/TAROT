@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Lock, Crown, Compass, Palette, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Calendar, Clock, Lock, Crown, Compass, Palette, Feather, Share2 } from 'lucide-react';
+import { Card, Button, Input, toast, PageHeader, Section } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -95,12 +95,10 @@ export function BaziPage() {
   if (stage === 'input') {
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <HoroscopeWheelIcon className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<HoroscopeWheelIcon />}
+          title={t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
+        />
 
         <Card variant="glow" padding="lg">
           <p className="text-mystic-300 text-sm leading-relaxed mb-4">
@@ -195,13 +193,12 @@ export function BaziPage() {
 
     return (
       <div className="space-y-4 pb-6">
-        <button
-          onClick={reset}
-          className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('bazi.back', { defaultValue: 'Recalculate' })}
-        </button>
+        <PageHeader
+          icon={<HoroscopeWheelIcon />}
+          title={t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
+          onBack={reset}
+          backLabel={t('bazi.back', { defaultValue: 'Recalculate' }) as string}
+        />
 
         <Card variant="glow" padding="lg" className="text-center">
           <div className={`text-6xl mb-3 ${ELEMENT_COLOR[result.dayMasterElement]}`}>
@@ -236,10 +233,10 @@ export function BaziPage() {
           </div>
         </Card>
 
-        <Card padding="lg">
-          <h3 className="font-medium text-gold mb-3">
-            {t('bazi.elementBalanceLabel', { defaultValue: 'Element Balance' })}
-          </h3>
+        <Section
+          title={t('bazi.elementBalanceLabel', { defaultValue: 'Element Balance' })}
+          headingLevel="h3"
+        >
           <div className="space-y-2">
             {(['wood', 'fire', 'earth', 'metal', 'water'] as FiveElement[]).map((el) => (
               <div key={el} className="flex items-center gap-3">
@@ -257,12 +254,12 @@ export function BaziPage() {
               </div>
             ))}
           </div>
-        </Card>
+        </Section>
 
-        <Card padding="lg" className="border-cosmic-blue/20">
-          <h3 className="font-medium text-cosmic-blue mb-3">
-            {t('bazi.guidanceLabel', { defaultValue: 'Element Guidance' })}
-          </h3>
+        <Section
+          title={t('bazi.guidanceLabel', { defaultValue: 'Element Guidance' })}
+          headingLevel="h3"
+        >
           <p className="text-mystic-300 text-sm leading-relaxed mb-3">
             {t('bazi.dominantNote', {
               defaultValue: 'Your dominant element is {{el}} — it shapes how you are most naturally yourself.',
@@ -289,7 +286,7 @@ export function BaziPage() {
               })}
             </p>
           )}
-        </Card>
+        </Section>
 
         {/* Phase-1 classical deepening — premium-gated when flag on */}
         {showDepth && deepening && (
@@ -520,10 +517,10 @@ export function BaziPage() {
         {deepResult && (
           <>
             {/* Pillar narratives — what each of the 4 represents */}
-            <Card padding="lg">
-              <h3 className="font-medium text-gold mb-3">
-                {t('bazi.pillarsHeading', { defaultValue: 'What each pillar represents' })}
-              </h3>
+            <Section
+              title={t('bazi.pillarsHeading', { defaultValue: 'What each pillar represents' })}
+              headingLevel="h3"
+            >
               <div className="space-y-3 text-xs text-mystic-300 leading-relaxed">
                 <div>
                   <p className="text-emerald-400 font-medium mb-0.5">{t('bazi.yearPillarLabel', { defaultValue: 'Year' })} · {result.year.stem} {result.year.branch}</p>
@@ -542,7 +539,7 @@ export function BaziPage() {
                   <p>{deepResult.pillarNarratives.hour}</p>
                 </div>
               </div>
-            </Card>
+            </Section>
 
             {/* This year's annual luck */}
             <Card padding="lg" className="border-gold/30 bg-gradient-to-br from-gold/5 to-mystic-900">
@@ -618,11 +615,11 @@ export function BaziPage() {
 
             {/* 格局 — formal structure */}
             {structure && STRUCTURE_MEANINGS[structure.key] && (
-              <Card padding="lg">
-                <h3 className="font-medium text-cosmic-violetLight mb-1">
-                  {t('bazi.structureHeading', { defaultValue: 'Your chart structure' })}
-                </h3>
-                <p className="text-xs text-mystic-500 mb-3">{STRUCTURE_INTRO}</p>
+              <Section
+                title={t('bazi.structureHeading', { defaultValue: 'Your chart structure' })}
+                headingLevel="h3"
+                description={STRUCTURE_INTRO}
+              >
                 <div className="flex items-baseline gap-2 mb-2">
                   <span className="text-2xl text-gold" style={{ fontFamily: 'serif' }}>
                     {STRUCTURE_MEANINGS[structure.key].cn}
@@ -641,7 +638,7 @@ export function BaziPage() {
                     ? ', whose hidden stem is revealed in the chart above.'
                     : '. Nothing in your stems reveals it, so it is read from the branch’s principal hidden stem.'}
                 </p>
-              </Card>
+              </Section>
             )}
 
             {/* Spirit stars */}
@@ -708,10 +705,10 @@ export function BaziPage() {
             </Card>
 
             {/* Career affinity */}
-            <Card padding="lg">
-              <h3 className="font-medium text-emerald-400 mb-3">
-                {t('bazi.careerHeading', { defaultValue: 'Career affinity for your day master' })}
-              </h3>
+            <Section
+              title={t('bazi.careerHeading', { defaultValue: 'Career affinity for your day master' })}
+              headingLevel="h3"
+            >
               <ul className="space-y-1.5 text-xs text-mystic-300">
                 {deepResult.lifeAreas.careerAffinity.map((c, i) => (
                   <li key={i} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
@@ -719,13 +716,13 @@ export function BaziPage() {
                   </li>
                 ))}
               </ul>
-            </Card>
+            </Section>
 
             {/* Wealth, Spouse, Health */}
-            <Card padding="lg">
-              <h3 className="font-medium text-gold mb-3">
-                {t('bazi.lifeAreasHeading', { defaultValue: 'Wealth · Partnership · Health' })}
-              </h3>
+            <Section
+              title={t('bazi.lifeAreasHeading', { defaultValue: 'Wealth · Partnership · Health' })}
+              headingLevel="h3"
+            >
               <div className="space-y-3 text-xs text-mystic-300 leading-relaxed">
                 <div>
                   <p className="text-gold font-medium mb-1">{t('bazi.wealthLabel', { defaultValue: 'Wealth' })}</p>
@@ -740,7 +737,7 @@ export function BaziPage() {
                   <p>{deepResult.lifeAreas.healthFocus}</p>
                 </div>
               </div>
-            </Card>
+            </Section>
           </>
         )}
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Sparkles, Download, RefreshCw } from 'lucide-react';
+import { Loader2, Sparkles, Download, RefreshCw, Heart } from 'lucide-react';
 import { Card, Button, toast } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
@@ -58,7 +58,7 @@ export function SoulmatePortrait() {
   return (
     <Card padding="lg" className="space-y-3">
       <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-gold" />
+        <Heart className="w-4 h-4 text-gold" />
         <h3 className="heading-display-md text-mystic-100">Portrait of the beloved</h3>
       </div>
 
@@ -76,7 +76,7 @@ export function SoulmatePortrait() {
               </button>
             ))}
           </div>
-          <Button variant="gold" fullWidth onClick={paint} disabled={loading} className="min-h-[48px]">
+          <Button variant="gold" fullWidth onClick={paint} disabled={loading}>
             {loading
               ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Painting your portrait…</>
               : <><Sparkles className="w-4 h-4 mr-2" /> Paint the portrait</>}

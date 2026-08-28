@@ -21,7 +21,7 @@ import {
   getUnnotifiedAchievements,
   getCategoryDisplayName,
 } from '../services/achievements';
-import { Skeleton } from '../components/ui';
+import { Skeleton, EmptyState } from '../components/ui';
 import { quizResults } from '../dal';
 import { useT } from '../i18n/useT';
 
@@ -325,10 +325,11 @@ export function AchievementsPage() {
           </div>
 
           {filteredAchievements.length === 0 && (
-            <div className="text-center py-12">
-              <Trophy className="w-12 h-12 text-mystic-600 mx-auto mb-4" />
-              <p className="text-mystic-400">{t('achievements.noInCategory')}</p>
-            </div>
+            <EmptyState
+              variant="inline"
+              icon={<Trophy />}
+              title={t('achievements.noInCategory')}
+            />
           )}
         </div>
       </div>

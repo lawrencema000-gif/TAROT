@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Sparkles, Feather, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Sparkles, Feather, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
+import { Card, Button, toast, PageHeader, EmptyState } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -143,12 +143,10 @@ export function MoodDiaryPage() {
     const selectedInfo = selected ? MOOD_CATEGORIES[selected] : null;
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <Heart className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('mood.title', { defaultValue: 'Daily Mood' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<Heart />}
+          title={t('mood.title', { defaultValue: 'Daily Mood' })}
+        />
 
         {/* Insight card — surfaces a real pattern derived from the
             last 14 entries. Appears only when we have ≥3 logged days
@@ -292,26 +290,20 @@ export function MoodDiaryPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <button
-        onClick={() => setStage('log')}
-        className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('mood.backToLog', { defaultValue: 'Back to log' })}
-      </button>
+      <PageHeader
+        onBack={() => setStage('log')}
+        backLabel={t('mood.backToLog', { defaultValue: 'Back to log' })}
+        title={t('mood.historyTitle', { defaultValue: '30-day curve' })}
+        subtitle={t('mood.entriesCount', { defaultValue: '{{n}} of 30 days logged', n: entryCount })}
+      />
 
       <Card variant="glow" padding="lg">
-        <h2 className="font-display text-xl text-mystic-100 mb-1">
-          {t('mood.historyTitle', { defaultValue: '30-day curve' })}
-        </h2>
-        <p className="text-xs text-mystic-500 mb-4">
-          {t('mood.entriesCount', { defaultValue: '{{n}} of 30 days logged', n: entryCount })}
-        </p>
-
         {entryCount === 0 ? (
-          <p className="text-mystic-400 text-sm text-center py-8 italic">
-            {t('mood.noEntriesYet', { defaultValue: 'Log today\'s mood to start your curve.' })}
-          </p>
+          <EmptyState
+            variant="inline"
+            size="sm"
+            title={t('mood.noEntriesYet', { defaultValue: 'Log today\'s mood to start your curve.' })}
+          />
         ) : (
           <svg width="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="max-w-full">
             {/* Baseline grid — 3 horizontal lines */}

@@ -5,7 +5,7 @@ import {
   CreditCard,
   ExternalLink,
   RotateCcw,
-  Sparkles,
+  Compass,
   CheckCircle2,
   X,
   Layers,
@@ -22,7 +22,7 @@ import {
   Mail,
   Sun,
 } from 'lucide-react';
-import { Button, toast, OrnateDivider } from '../ui';
+import { Button, toast, OrnateDivider, MysticalStar } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService } from '../../services/billing';
 import { isNative, isAndroid } from '../../utils/platform';
@@ -43,7 +43,7 @@ const premiumFeatures = [
   { icon: Star, key: 'guidedPrompts' },
   { icon: Moon, key: 'birthChart' },
   { icon: Sun, key: 'horoscopeFull' },
-  { icon: Sparkles, key: 'humanDesign' },
+  { icon: Compass, key: 'humanDesign' },
   { icon: Mountain, key: 'bazi' },
   { icon: Cloud, key: 'dreamAi' },
   { icon: Smile, key: 'moodLetter' },
@@ -111,11 +111,11 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
           </div>
 
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-5 h-5 text-gold" />
+            <MysticalStar size={20} className="text-gold" />
             <h1 className="font-display-hero text-4xl text-gold-foil text-center">
               {t('premium.subscription.heading')}
             </h1>
-            <Sparkles className="w-5 h-5 text-gold" />
+            <MysticalStar size={20} className="text-gold" />
           </div>
           <div className="mb-3 text-gold/60">
             <OrnateDivider width={160} />
@@ -186,7 +186,6 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
               fullWidth
               size="lg"
               onClick={handleManageSubscription}
-              className="min-h-[52px]"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
               {t('premium.subscription.manageOnGooglePlay')}

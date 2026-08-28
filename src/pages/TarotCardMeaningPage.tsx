@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
+import { Disclosure, EmptyState } from '../components/ui';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
 import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
@@ -194,9 +195,13 @@ export function TarotCardMeaningPage() {
 
   if (!card) {
     return (
-      <div className="tm-page" style={{ textAlign: 'center', padding: '120px 20px' }}>
-        <p style={{ color: '#706a82', marginBottom: 16 }}>{t('tarot.cardNotFound')}</p>
-        <button onClick={() => navigate('/tarot-meanings')} className="tm-bottom-btn">{t('tarot.backToAllCards')}</button>
+      <div className="tm-page" style={{ padding: '120px 20px' }}>
+        <EmptyState
+          title={t('tarot.cardNotFound')}
+          action={
+            <button onClick={() => navigate('/tarot-meanings')} className="tm-bottom-btn">{t('tarot.backToAllCards')}</button>
+          }
+        />
       </div>
     );
   }
@@ -397,36 +402,33 @@ export function TarotCardMeaningPage() {
             {/* Visible FAQ — mirrors FAQPage JSON-LD so users see the same Q&A Google does */}
             <div className="tm-context-card" style={{ marginTop: 16 }}>
               <h3 className="tm-context-title"><span className="tm-context-icon">?</span> {t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}</h3>
-              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What does the {enCard.name} tarot card mean?</summary>
-                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>{enCard.meaningUpright}</p>
-              </details>
-              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What does the {enCard.name} mean reversed?</summary>
-                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>{enCard.meaningReversed}</p>
-              </details>
-              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>Is the {enCard.name} a yes or no card?</summary>
-                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>
-                  <strong>{enrichment.yesNo}.</strong> {enrichment.yesNoReason}
-                </p>
-              </details>
-              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What is the astrological correspondence of the {enCard.name}?</summary>
-                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>
-                  {enCard.name} corresponds to the element of {enrichment.element}
-                  {enrichment.planet ? `, the planet ${enrichment.planet}` : ''}
-                  {enrichment.zodiac ? `, and the sign of ${enrichment.zodiac}` : ''}
-                  {enrichment.decan ? ` (decan: ${enrichment.decan})` : ''}
-                  {enrichment.hebrewLetter ? `. The Hebrew letter is ${enrichment.hebrewLetter}.` : '.'}
-                </p>
-              </details>
-              <details style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <summary style={{ cursor: 'pointer', color: '#e6dfff', fontWeight: 500, padding: '4px 0' }}>What cards reinforce or oppose the {enCard.name}?</summary>
-                <p style={{ color: '#cfc8dc', marginTop: 8, lineHeight: 1.7 }}>
-                  Reinforcing: {enrichment.reinforcingCards.join(', ')}. Opposing: {enrichment.opposingCards.join(', ')}.
-                </p>
-              </details>
+              <div style={{ marginTop: 8 }}>
+                <Disclosure variant="row" label={`What does the ${enCard.name} tarot card mean?`}>
+                  <p style={{ color: '#cfc8dc', lineHeight: 1.7 }}>{enCard.meaningUpright}</p>
+                </Disclosure>
+                <Disclosure variant="row" label={`What does the ${enCard.name} mean reversed?`}>
+                  <p style={{ color: '#cfc8dc', lineHeight: 1.7 }}>{enCard.meaningReversed}</p>
+                </Disclosure>
+                <Disclosure variant="row" label={`Is the ${enCard.name} a yes or no card?`}>
+                  <p style={{ color: '#cfc8dc', lineHeight: 1.7 }}>
+                    <strong>{enrichment.yesNo}.</strong> {enrichment.yesNoReason}
+                  </p>
+                </Disclosure>
+                <Disclosure variant="row" label={`What is the astrological correspondence of the ${enCard.name}?`}>
+                  <p style={{ color: '#cfc8dc', lineHeight: 1.7 }}>
+                    {enCard.name} corresponds to the element of {enrichment.element}
+                    {enrichment.planet ? `, the planet ${enrichment.planet}` : ''}
+                    {enrichment.zodiac ? `, and the sign of ${enrichment.zodiac}` : ''}
+                    {enrichment.decan ? ` (decan: ${enrichment.decan})` : ''}
+                    {enrichment.hebrewLetter ? `. The Hebrew letter is ${enrichment.hebrewLetter}.` : '.'}
+                  </p>
+                </Disclosure>
+                <Disclosure variant="row" label={`What cards reinforce or oppose the ${enCard.name}?`}>
+                  <p style={{ color: '#cfc8dc', lineHeight: 1.7 }}>
+                    Reinforcing: {enrichment.reinforcingCards.join(', ')}. Opposing: {enrichment.opposingCards.join(', ')}.
+                  </p>
+                </Disclosure>
+              </div>
             </div>
           </>
         );

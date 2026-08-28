@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, ChevronRight, Clock } from 'lucide-react';
-import { Card, Button, EyebrowLabel, SectionDivider } from '../components/ui';
+import { Loader2, ChevronRight, Clock } from 'lucide-react';
+import { Card, Button, PageHeader, Section, EmptyState } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
@@ -91,12 +91,12 @@ export function ChartSuitePage() {
   if (!selected) {
     return (
       <div className="space-y-6 pb-28">
-        <div className="space-y-2">
-          <EyebrowLabel>Chart Library</EyebrowLabel>
-          <h1 className="heading-display-xl text-mystic-100">Every sky, every angle</h1>
-          <p className="text-sm text-mystic-400">Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.</p>
-          <SectionDivider tone="gold" />
-        </div>
+        <PageHeader
+          eyebrow="Chart Library"
+          title="Every sky, every angle"
+          subtitle="Thirteen ways to read a moment — from the chart you were born with to the sky above you right now."
+          divider
+        />
         <div className="grid gap-3">
           {CHART_TYPES.map((c) => {
             const linked = LINKED[c.key];
@@ -125,21 +125,20 @@ export function ChartSuitePage() {
   const chart = resp?.chart ?? null;
   return (
     <div className="space-y-6 pb-28">
-      <button onClick={() => setParams({})} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> Chart Library
-      </button>
-
-      <div className="text-center space-y-1">
-        <EyebrowLabel>{selected.tagline}</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">{selected.name}</h1>
-        <p className="text-sm text-mystic-400 max-w-md mx-auto">{selected.description}</p>
-      </div>
+      <PageHeader
+        eyebrow={selected.tagline}
+        title={selected.name}
+        subtitle={selected.description}
+        onBack={() => setParams({})}
+        backLabel="Chart Library"
+        align="center"
+      />
 
       {!hasBirth && selected.key !== 'sky-now' ? (
-        <Card className="p-6 text-center space-y-3">
-          <p className="text-sm text-mystic-300">Add your birth date in your profile to cast this chart.</p>
-          <Button variant="primary" onClick={() => navigate('/profile')}>Go to profile</Button>
-        </Card>
+        <EmptyState
+          title="Add your birth date in your profile to cast this chart."
+          action={<Button variant="primary" onClick={() => navigate('/profile')}>Go to profile</Button>}
+        />
       ) : loading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 text-gold animate-spin" /></div>
       ) : err ? (
@@ -160,13 +159,12 @@ export function ChartSuitePage() {
             {profile?.birthDate && <FirdariaTimeline data={resp.firdaria} birthDate={profile.birthDate} />}
           </Card>
           {resp.firdaria.current && (
-            <Card className="p-4 space-y-3">
-              <h3 className="heading-display-md text-mystic-100">This chapter</h3>
+            <Section title="This chapter" headingLevel="h3" contentClassName="space-y-3">
               <p className="text-sm text-mystic-300 leading-relaxed">{FIRDARIA_LORD_MEANINGS[resp.firdaria.current.major]}</p>
               {resp.firdaria.current.sub && resp.firdaria.current.sub !== resp.firdaria.current.major && (
                 <p className="text-sm text-mystic-400 leading-relaxed">Flavored by {resp.firdaria.current.sub}: {FIRDARIA_LORD_MEANINGS[resp.firdaria.current.sub]}</p>
               )}
-            </Card>
+            </Section>
           )}
         </>
       ) : chart ? (
@@ -184,13 +182,20 @@ export function ChartSuitePage() {
           <Card className="p-4 flex justify-center">
             <div className="w-full max-w-[360px]"><NatalWheel chart={chart} /></div>
           </Card>
-          <Card className="p-4 space-y-3">
-            <h3 className="heading-display-md text-mystic-100">Balance</h3>
+          <Section title="Balance" headingLevel="h3">
             <ElementBalance elements={chart.elements} modalities={chart.modalities} />
-          </Card>
+          </Section>
           {resp?.crossAspects && resp.crossAspects.length > 0 && (
-            <Card className="p-4 space-y-3">
-              <div className="flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /><h3 className="heading-display-md text-mystic-100">Hits to your natal chart</h3></div>
+            <Section
+              title={
+                <span className="flex items-center gap-2">
+                  <HoroscopeWheelIcon className="w-4 h-4 text-gold" />
+                  Hits to your natal chart
+                </span>
+              }
+              headingLevel="h3"
+              contentClassName="space-y-3"
+            >
               {resp.crossAspects.slice(0, 8).map((a, i) => (
                 <div key={i} className="text-sm">
                   <span className="text-mystic-200">
@@ -202,17 +207,15 @@ export function ChartSuitePage() {
                   {interp && <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
                 </div>
               ))}
-            </Card>
+            </Section>
           )}
           {chart.aspects.length > 0 && (
-            <Card className="p-4 space-y-3">
-              <h3 className="heading-display-md text-mystic-100">Aspects within this chart</h3>
+            <Section title="Aspects within this chart" headingLevel="h3">
               <AspectGrid aspects={chart.aspects} />
-            </Card>
+            </Section>
           )}
           {chart.planets.length > 0 && (
-            <Card className="p-4">
-              <h3 className="heading-display-md text-mystic-100 mb-2">Placements</h3>
+            <Section title="Placements" headingLevel="h3" spacing="sm">
               {chart.planets.map((p) => (
                 <div key={p.planet} className="flex items-center gap-2 py-1.5 border-b border-mystic-800/40 last:border-0 text-sm">
                   <span className="w-6 text-center" style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[p.planet]}</span>
@@ -221,7 +224,7 @@ export function ChartSuitePage() {
                   <span className="text-mystic-600 text-xs ml-auto">{p.degree.toFixed(1)}°{p.retrograde ? ' ℞' : ''}</span>
                 </div>
               ))}
-            </Card>
+            </Section>
           )}
         </>
       ) : null}

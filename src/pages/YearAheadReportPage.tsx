@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, PageHeader, EmptyState, Disclosure } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -143,28 +143,19 @@ export function YearAheadReportPage() {
   if (!hasNatalChart) {
     return (
       <div className="space-y-4 pb-6">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('yearAhead.title', { defaultValue: 'Year Ahead' })}
-          </h1>
-        </div>
-        <Card padding="lg" variant="glow">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-display text-lg text-mystic-100 mb-1">
-                {t('yearAhead.needsBirthData', { defaultValue: 'Add your full birth data first' })}
-              </h3>
-              <p className="text-sm text-mystic-400 leading-relaxed">
-                {t('yearAhead.needsBirthDataBody', {
-                  defaultValue:
-                    'Year-ahead forecasts need date, time, and place of birth to compute transits to your natal chart. Add them in Profile → Edit profile.',
-                })}
-              </p>
-            </div>
-          </div>
-        </Card>
+        <PageHeader
+          as="h2"
+          icon={<Calendar />}
+          title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
+        />
+        <EmptyState
+          icon={<AlertCircle />}
+          title={t('yearAhead.needsBirthData', { defaultValue: 'Add your full birth data first' })}
+          description={t('yearAhead.needsBirthDataBody', {
+            defaultValue:
+              'Year-ahead forecasts need date, time, and place of birth to compute transits to your natal chart. Add them in Profile → Edit profile.',
+          })}
+        />
       </div>
     );
   }
@@ -180,12 +171,11 @@ export function YearAheadReportPage() {
   if (!unlocked) {
     return (
       <div className="space-y-4 pb-6">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('yearAhead.title', { defaultValue: 'Year Ahead' })}
-          </h1>
-        </div>
+        <PageHeader
+          as="h2"
+          icon={<Calendar />}
+          title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
+        />
 
         <Card padding="lg" variant="ornate" className="text-center nebula-veil">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
@@ -337,12 +327,11 @@ export function YearAheadReportPage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex items-center gap-3">
-        <Calendar className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {t('yearAhead.title', { defaultValue: 'Year Ahead' })}
-        </h1>
-      </div>
+      <PageHeader
+        as="h2"
+        icon={<Calendar />}
+        title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
+      />
 
       <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
         <div className="flex items-center gap-2 mb-2">
@@ -354,22 +343,38 @@ export function YearAheadReportPage() {
         <p className="text-sm text-mystic-200 leading-relaxed">{data.summary}</p>
       </Card>
 
-      {data.months.map((month) => (
-        <Card key={month.monthIso} padding="lg">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-display text-lg text-mystic-100">{month.monthLabel}</h3>
-            <TrendingUp className="w-4 h-4 text-mystic-500" />
-          </div>
-          <p className="text-xs text-mystic-400 italic mb-4">{month.theme}</p>
-          {month.events.length === 0 ? (
-            <p className="text-xs text-mystic-500">
-              {t('yearAhead.emptyMonth', {
-                defaultValue: 'A quiet month, astrologically. Use it to rest.',
-              })}
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {month.events.map((event, i) => (
+      {/* Twelve months used to be twelve identical cards, which is roughly
+          six screens of scroll before the second half of the year. Each
+          month is now a row that opens; the current month starts open. */}
+      <div className="space-y-3">
+        {data.months.map((month) => (
+          <Disclosure
+            key={month.monthIso}
+            // Every month stays open. The Disclosure is here for the
+            // affordance and the semantics, not to hide eleven twelfths of a
+            // report the user already paid attention to — collapsing them was
+            // a content decision wearing a refactor's clothes.
+            defaultOpen
+            icon={<TrendingUp />}
+            label={month.monthLabel}
+            description={month.theme}
+            meta={
+              month.events.length > 0
+                ? t('yearAhead.eventCount', { defaultValue: '{{n}} transits', n: month.events.length })
+                : undefined
+            }
+            contentClassName="space-y-3"
+          >
+            {month.events.length === 0 ? (
+              <EmptyState
+                variant="inline"
+                size="sm"
+                title={t('yearAhead.emptyMonth', {
+                  defaultValue: 'A quiet month, astrologically. Use it to rest.',
+                })}
+              />
+            ) : (
+              month.events.map((event, i) => (
                 <div
                   key={`${event.transitPlanet}-${event.natalPlanet}-${event.aspectType}-${i}`}
                   className={`p-3 rounded-xl border ${INTENSITY_COLORS[event.intensity]}`}
@@ -389,11 +394,11 @@ export function YearAheadReportPage() {
                     {event.interpretation}
                   </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      ))}
+              ))
+            )}
+          </Disclosure>
+        ))}
+      </div>
 
       <p className="text-[10px] text-center text-mystic-600 italic">
         {t('yearAhead.disclaimer', {

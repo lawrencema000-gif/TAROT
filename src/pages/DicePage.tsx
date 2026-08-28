@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dice6, Feather, Zap } from 'lucide-react';
-import { Card, Button } from '../components/ui';
+import { Card, Button, Section } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
@@ -80,32 +80,36 @@ export function DicePage() {
 
   return (
     <div className="space-y-6 pb-6">
-      <div className="flex items-center gap-3">
-        <Dice6 className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {t('dice.title', { defaultValue: 'Dice Oracle' })}
-        </h1>
-      </div>
+      <Section
+        spacing="lg"
+        title={
+          <span className="flex items-center gap-3">
+            <Dice6 className="w-6 h-6 text-gold" />
+            {t('dice.title', { defaultValue: 'Dice Oracle' })}
+          </span>
+        }
+        contentClassName="space-y-6"
+      >
+        {/* mode toggle */}
+        <div className="flex gap-1.5">
+          <button onClick={() => { setMode('astro'); setReading(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mode === 'astro' ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400'}`}>
+            Astro dice
+          </button>
+          <button onClick={() => { setMode('classic'); setAstro(null); }}
+            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mode === 'classic' ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400'}`}>
+            Classic
+          </button>
+        </div>
 
-      {/* mode toggle */}
-      <div className="flex gap-1.5">
-        <button onClick={() => { setMode('astro'); setReading(null); }}
-          className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mode === 'astro' ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400'}`}>
-          Astro dice
-        </button>
-        <button onClick={() => { setMode('classic'); setAstro(null); }}
-          className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mode === 'classic' ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400'}`}>
-          Classic
-        </button>
-      </div>
-
-      <Card variant="glow" padding="lg">
-        <p className="text-mystic-300 text-sm leading-relaxed">
-          {mode === 'astro'
-            ? t('dice.astroIntro', { defaultValue: "The astrologer's dice — three fall at once: a planet for WHAT, a sign for HOW, a house for WHERE in your life. Hold a question, then roll." })
-            : t('dice.intro', { defaultValue: 'The simplest divination — three dice fall, their sum speaks. Hold a question, then roll. Sixteen possible readings from 3 to 18.' })}
-        </p>
-      </Card>
+        <Card variant="glow" padding="lg">
+          <p className="text-mystic-300 text-sm leading-relaxed">
+            {mode === 'astro'
+              ? t('dice.astroIntro', { defaultValue: "The astrologer's dice — three fall at once: a planet for WHAT, a sign for HOW, a house for WHERE in your life. Hold a question, then roll." })
+              : t('dice.intro', { defaultValue: 'The simplest divination — three dice fall, their sum speaks. Hold a question, then roll. Sixteen possible readings from 3 to 18.' })}
+          </p>
+        </Card>
+      </Section>
 
       {/* astro result */}
       {mode === 'astro' && astro && (
@@ -118,7 +122,7 @@ export function DicePage() {
             </div>
             <h2 className="heading-display-md text-mystic-100">{astro.planet} in {astro.sign}, House {astro.house}</h2>
           </Card>
-          <Card padding="lg" className="space-y-3">
+          <Section contentClassName="space-y-3">
             {interp && (
               <>
                 <p className="text-mystic-300 text-sm leading-relaxed">{interp.planetInSignText(astro.planet, astro.sign)}</p>
@@ -130,7 +134,7 @@ export function DicePage() {
                 )}
               </>
             )}
-          </Card>
+          </Section>
           <Button variant="outline" fullWidth onClick={() => navigate('/quick-reading')}>
             <Zap className="w-4 h-4 mr-2" />
             {t('dice.askOracle', { defaultValue: 'Ask the Oracle about this' })}
@@ -150,9 +154,9 @@ export function DicePage() {
             </p>
             <h2 className="heading-display-lg text-mystic-100 mt-2">{reading.title}</h2>
           </Card>
-          <Card padding="lg">
+          <Section>
             <p className="text-mystic-300 text-sm leading-relaxed">{reading.reading}</p>
-          </Card>
+          </Section>
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
             <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
               <Feather className="w-4 h-4" />

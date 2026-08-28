@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, ChevronDown, ChevronUp, Wind, Target, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, Wind, Target, Share2 } from 'lucide-react';
+import { Card, Button, Input, toast, PageHeader, Section, Disclosure } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -80,12 +80,10 @@ export function FengShuiPage() {
   if (stage === 'rate') {
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <Home className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<Home />}
+          title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
+        />
 
         <Card variant="glow" padding="lg">
           <p className="text-mystic-300 text-sm leading-relaxed mb-4">
@@ -221,10 +219,12 @@ export function FengShuiPage() {
 
     return (
       <div className="space-y-4 pb-6">
-        <button onClick={() => setStage('rate')} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          {t('fengshui.backToRate', { defaultValue: 'Re-rate' })}
-        </button>
+        <PageHeader
+          icon={<Home />}
+          title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
+          onBack={() => setStage('rate')}
+          backLabel={t('fengshui.backToRate', { defaultValue: 'Re-rate' }) as string}
+        />
 
         {/* 3x3 Bagua grid */}
         <Card padding="lg">
@@ -409,127 +409,122 @@ export function FengShuiPage() {
         </Card>
 
         {/* ─── Room-specific guidance ─── */}
-        <Card padding="lg" className="border-cosmic-blue/30">
-          <h3 className="font-medium text-cosmic-blue mb-3 flex items-center gap-2">
-            <Bed className="w-4 h-4" />
-            {t('fengshui.roomsHeading', { defaultValue: 'Room-specific guidance' })}
-          </h3>
-          <div className="space-y-2">
-            {(Object.keys(ROOM_GUIDANCE) as Room[]).map((room) => {
-              const g = ROOM_GUIDANCE[room];
-              const isOpen = openRoom === room;
-              const Icon =
-                room === 'bedroom' ? Bed
-                : room === 'office' ? Briefcase
-                : room === 'kitchen' ? ChefHat
-                : room === 'front-door' ? DoorOpen
-                : room === 'living-room' ? Sofa
-                : Bath;
-              return (
-                <div key={room} className="rounded-xl bg-mystic-800/40 border border-mystic-700/30 overflow-hidden">
-                  <button
-                    onClick={() => setOpenRoom(isOpen ? null : room)}
-                    className="w-full flex items-center justify-between p-3 text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon className="w-3.5 h-3.5 text-cosmic-blue" />
-                      <span className="text-sm font-medium text-mystic-200">{g.name}</span>
+        <Section
+          title={
+            <span className="flex items-center gap-2">
+              <Bed className="w-4 h-4 text-cosmic-blue" />
+              {t('fengshui.roomsHeading', { defaultValue: 'Room-specific guidance' })}
+            </span>
+          }
+          headingLevel="h3"
+          contentClassName="space-y-2"
+        >
+          {(Object.keys(ROOM_GUIDANCE) as Room[]).map((room) => {
+            const g = ROOM_GUIDANCE[room];
+            const isOpen = openRoom === room;
+            const Icon =
+              room === 'bedroom' ? Bed
+              : room === 'office' ? Briefcase
+              : room === 'kitchen' ? ChefHat
+              : room === 'front-door' ? DoorOpen
+              : room === 'living-room' ? Sofa
+              : Bath;
+            return (
+              <Disclosure
+                key={room}
+                open={isOpen}
+                onOpenChange={(next) => setOpenRoom(next ? room : null)}
+                icon={<Icon className="text-cosmic-blue" />}
+                label={g.name}
+                contentClassName="space-y-3 animate-fade-in"
+              >
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1.5">
+                    {t('fengshui.rules', { defaultValue: 'Rules' })}
+                  </p>
+                  {g.rules.map((r, i) => (
+                    <div key={i} className="mb-2">
+                      <p className="text-xs font-medium text-mystic-100 mb-0.5">{r.rule}</p>
+                      <p className="text-xs text-mystic-400 leading-relaxed">{r.why}</p>
                     </div>
-                    {isOpen ? <ChevronUp className="w-4 h-4 text-mystic-500" /> : <ChevronDown className="w-4 h-4 text-mystic-500" />}
-                  </button>
-                  {isOpen && (
-                    <div className="px-3 pb-3 space-y-3 animate-fade-in">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1.5">
-                          {t('fengshui.rules', { defaultValue: 'Rules' })}
-                        </p>
-                        {g.rules.map((r, i) => (
-                          <div key={i} className="mb-2">
-                            <p className="text-xs font-medium text-mystic-100 mb-0.5">{r.rule}</p>
-                            <p className="text-xs text-mystic-400 leading-relaxed">{r.why}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1.5">
-                          {t('fengshui.avoid', { defaultValue: 'Avoid' })}
-                        </p>
-                        <ul className="space-y-1">
-                          {g.avoid.map((a, i) => (
-                            <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">
-                              {a}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        </Card>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1.5">
+                    {t('fengshui.avoid', { defaultValue: 'Avoid' })}
+                  </p>
+                  <ul className="space-y-1">
+                    {g.avoid.map((a, i) => (
+                      <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">
+                        {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Disclosure>
+            );
+          })}
+        </Section>
 
         {/* ─── Common problems diagnostic ─── */}
-        <Card padding="lg" className="border-pink-400/20">
-          <h3 className="font-medium text-pink-400 mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" />
-            {t('fengshui.problemsHeading', { defaultValue: 'Common problems checklist' })}
-          </h3>
-          <p className="text-xs text-mystic-400 mb-4 leading-relaxed">
-            {t('fengshui.problemsIntro', {
-              defaultValue:
-                'Tap any that apply to your home. Each one comes with a concrete fix. Most people find 3-5 that hit, and fixing the high-severity ones first delivers visible results within weeks.',
-            })}
-          </p>
-          <div className="space-y-2">
-            {FENG_SHUI_PROBLEMS.map((p) => {
-              const isOpen = openProblems.has(p.id);
-              const sevTint =
-                p.severity === 'high' ? 'text-pink-400'
-                : p.severity === 'medium' ? 'text-gold'
-                : 'text-mystic-500';
-              return (
-                <div key={p.id} className="rounded-xl bg-mystic-800/40 border border-mystic-700/30 overflow-hidden">
-                  <button
-                    onClick={() => {
-                      const next = new Set(openProblems);
-                      if (next.has(p.id)) next.delete(p.id);
-                      else next.add(p.id);
-                      setOpenProblems(next);
-                    }}
-                    className="w-full flex items-start gap-3 p-3 text-left"
-                  >
-                    <span className={`text-[10px] uppercase font-medium tracking-wider ${sevTint} flex-shrink-0 pt-0.5`}>
-                      {p.severity}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-mystic-100 leading-snug">{p.problem}</p>
-                      <p className="text-[10px] text-mystic-500 mt-0.5">{p.location}</p>
-                    </div>
-                    {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-mystic-500 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-mystic-500 flex-shrink-0" />}
-                  </button>
-                  {isOpen && (
-                    <div className="px-3 pb-3 space-y-2 animate-fade-in">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-0.5">
-                          {t('fengshui.why', { defaultValue: 'Why it matters' })}
-                        </p>
-                        <p className="text-xs text-mystic-300 leading-relaxed">{p.why}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-0.5">
-                          {t('fengshui.fix', { defaultValue: 'Remedy' })}
-                        </p>
-                        <p className="text-xs text-mystic-200 leading-relaxed">{p.remedy}</p>
-                      </div>
-                    </div>
-                  )}
+        <Section
+          title={
+            <span className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-pink-400" />
+              {t('fengshui.problemsHeading', { defaultValue: 'Common problems checklist' })}
+            </span>
+          }
+          headingLevel="h3"
+          description={t('fengshui.problemsIntro', {
+            defaultValue:
+              'Tap any that apply to your home. Each one comes with a concrete fix. Most people find 3-5 that hit, and fixing the high-severity ones first delivers visible results within weeks.',
+          })}
+          contentClassName="space-y-2"
+        >
+          {FENG_SHUI_PROBLEMS.map((p) => {
+            const isOpen = openProblems.has(p.id);
+            const sevTint =
+              p.severity === 'high' ? 'text-pink-400'
+              : p.severity === 'medium' ? 'text-gold'
+              : 'text-mystic-500';
+            return (
+              <Disclosure
+                key={p.id}
+                open={isOpen}
+                onOpenChange={(next) => {
+                  const nextSet = new Set(openProblems);
+                  if (next) nextSet.add(p.id);
+                  else nextSet.delete(p.id);
+                  setOpenProblems(nextSet);
+                }}
+                // Severity goes in `meta`, not `icon`: the icon slot is
+                // aria-hidden (correct for a glyph), and putting the severity
+                // word there made it inaudible to screen readers.
+                meta={
+                  <span className={`text-[10px] uppercase font-medium tracking-wider ${sevTint}`}>
+                    {p.severity}
+                  </span>
+                }
+                label={<span className="text-xs leading-snug">{p.problem}</span>}
+                description={p.location}
+                contentClassName="space-y-2 animate-fade-in"
+              >
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-0.5">
+                    {t('fengshui.why', { defaultValue: 'Why it matters' })}
+                  </p>
+                  <p className="text-xs text-mystic-300 leading-relaxed">{p.why}</p>
                 </div>
-              );
-            })}
-          </div>
-        </Card>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-0.5">
+                    {t('fengshui.fix', { defaultValue: 'Remedy' })}
+                  </p>
+                  <p className="text-xs text-mystic-200 leading-relaxed">{p.remedy}</p>
+                </div>
+              </Disclosure>
+            );
+          })}
+        </Section>
 
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth onClick={handleShare}>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Pencil, Trash2, GitCompareArrows, ChevronDown } from 'lucide-react';
-import { Card, Button, Sheet, toast, EyebrowLabel } from '../components/ui';
+import { Loader2, Pencil, Trash2, GitCompareArrows } from 'lucide-react';
+import { Card, Button, Sheet, toast, PageHeader, Section, Disclosure } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
@@ -72,22 +72,23 @@ export function PersonDetailPage() {
 
   return (
     <div className="space-y-6 pb-28">
-      <button onClick={() => navigate('/people')} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> People
-      </button>
-
-      <div className="text-center space-y-1">
-        <EyebrowLabel>{REL_LABEL[person.relationship]}</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">{person.name}</h1>
-        {!isPet && chart && (
-          <p className="text-sm text-mystic-400">
+      <PageHeader
+        align="center"
+        onBack={() => navigate('/people')}
+        backLabel="People"
+        eyebrow={REL_LABEL[person.relationship]}
+        title={person.name}
+        subtitle={!isPet && chart ? (
+          <>
             {sun && <>Sun in {sun.sign} {SIGN_GLYPH[sun.sign]}</>}
             {moon && <> · Moon in {moon.sign} {SIGN_GLYPH[moon.sign]}</>}
             {chart.ascendantSign && <> · {chart.ascendantSign} Rising</>}
-          </p>
-        )}
-        {!person.birthTime && !isPet && <p className="text-xs text-mystic-600">Birth time unknown — houses &amp; rising sign are approximate.</p>}
-      </div>
+          </>
+        ) : undefined}
+      />
+      {!person.birthTime && !isPet && (
+        <p className="text-center text-xs text-mystic-600 -mt-3">Birth time unknown — houses &amp; rising sign are approximate.</p>
+      )}
 
       {isPet && petReading && (
         <>
@@ -108,13 +109,12 @@ export function PersonDetailPage() {
             )}
           </Card>
 
-          <Card className="p-4 space-y-2">
-            <h3 className="heading-display-md text-mystic-100">What they need from you</h3>
+          <Section title="What they need from you" headingLevel="h3" spacing="sm" contentClassName="space-y-2">
             <p className="text-sm text-mystic-300 leading-relaxed">{petReading.reading.needs}</p>
             <p className="text-[13px] text-mystic-400 leading-relaxed border-t border-mystic-800/40 pt-2">
               <span className="text-gold/80">The quirk:</span> {petReading.reading.quirk}
             </p>
-          </Card>
+          </Section>
 
           <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">{PET_DISCLAIMER}</p>
         </>
@@ -155,24 +155,25 @@ export function PersonDetailPage() {
             const sText = interp?.planetInSignText(p.planet, p.sign);
             const hText = interp?.planetInHouseText(p.planet, p.house);
             return (
-              <div key={p.planet} className="border-b border-mystic-800/40 last:border-0">
-                <button onClick={() => setOpenPlanet(open ? null : p.planet)} className="w-full flex items-center gap-3 py-3 text-left">
-                  <span className="text-lg w-6 text-center" style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[p.planet]}</span>
-                  <span className="flex-1">
+              <Disclosure
+                key={p.planet}
+                variant="row"
+                open={open}
+                onOpenChange={(next) => setOpenPlanet(next ? p.planet : null)}
+                icon={<span className="text-lg w-6 text-center block text-mystic-200" style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[p.planet]}</span>}
+                label={
+                  <>
                     <span className="text-mystic-100">{p.planet}</span>
                     <span className="text-mystic-400"> in {p.sign} {SIGN_GLYPH[p.sign]}</span>
                     {p.house && <span className="text-mystic-600 text-xs"> · House {p.house}</span>}
                     {p.retrograde && <span className="text-red-400 text-xs"> ℞</span>}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-mystic-500 transition-transform ${open ? 'rotate-180' : ''}`} />
-                </button>
-                {open && (
-                  <div className="pb-3 pl-9 space-y-2 text-sm text-mystic-300 leading-relaxed">
-                    {sText ? <p>{sText}</p> : <p className="text-mystic-500">Loading…</p>}
-                    {hText && <p className="text-mystic-400">{hText}</p>}
-                  </div>
-                )}
-              </div>
+                  </>
+                }
+                contentClassName="pl-9 space-y-2 text-sm text-mystic-300 leading-relaxed"
+              >
+                {sText ? <p>{sText}</p> : <p className="text-mystic-500">Loading…</p>}
+                {hText && <p className="text-mystic-400">{hText}</p>}
+              </Disclosure>
             );
           })}
         </Card>
@@ -180,16 +181,14 @@ export function PersonDetailPage() {
 
       {/* Element / modality balance */}
       {!isPet && chart && (
-        <Card className="p-4 space-y-3">
-          <h3 className="heading-display-md text-mystic-100">Balance</h3>
+        <Section title="Balance" headingLevel="h3">
           <ElementBalance elements={chart.elements} modalities={chart.modalities} />
-        </Card>
+        </Section>
       )}
 
       {/* Aspects */}
       {chart && chart.aspects.length > 0 && (
-        <Card className="p-4 space-y-3">
-          <h3 className="heading-display-md text-mystic-100">Aspects</h3>
+        <Section title="Aspects" headingLevel="h3" contentClassName="space-y-3">
           <AspectGrid aspects={chart.aspects} />
           <div className="space-y-2 pt-1">
             {chart.aspects.slice(0, 6).map((a, i) => (
@@ -200,7 +199,7 @@ export function PersonDetailPage() {
               </div>
             ))}
           </div>
-        </Card>
+        </Section>
       )}
 
       {/* Actions */}

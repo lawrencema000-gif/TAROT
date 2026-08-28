@@ -108,7 +108,7 @@ export function StreakCelebration({ streak, open, onClose }: StreakCelebrationPr
             )}
           </div>
 
-          <Button variant="gold" fullWidth onClick={onClose} className="min-h-[52px]">
+          <Button variant="gold" size="lg" fullWidth onClick={onClose}>
             Continue
           </Button>
         </div>

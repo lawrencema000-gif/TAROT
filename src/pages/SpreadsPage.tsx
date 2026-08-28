@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Layers, ChevronRight } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
+import { PageHeader, Section } from '../components/ui';
 import { allSpreads as tarotSpreads, type SpreadCategory } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -53,29 +54,23 @@ export function SpreadsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
-            <Layers className="w-5 h-5 text-gold" />
-          </div>
-          <h1 className="heading-display-xl text-mystic-100">Tarot Spreads</h1>
-        </div>
-        <p className="text-sm text-mystic-400 max-w-xl">
-          {tarotSpreads.length} spreads — from a single daily card to the 10-card Celtic Cross — with position-by-position meanings, when to use each, and example questions.
-        </p>
+      <div className="mb-8">
+        <PageHeader
+          icon={<Layers />}
+          title="Tarot Spreads"
+          subtitle={`${tarotSpreads.length} spreads — from a single daily card to the 10-card Celtic Cross — with position-by-position meanings, when to use each, and example questions.`}
+        />
         <Link to="/spreads/builder" className="inline-flex items-center gap-1.5 mt-3 px-3 py-2 rounded-xl border border-gold/30 bg-gold/10 text-gold text-xs no-underline hover:bg-gold/15">
           <TarotCardIcon className="w-3.5 h-3.5" />
           Design your own custom spread
         </Link>
-      </header>
+      </div>
 
       {CATEGORY_ORDER.map(({ id, label, description }) => {
         const inCat = tarotSpreads.filter((s) => s.category === id);
         if (!inCat.length) return null;
         return (
-          <section key={id} className="mb-8">
-            <h2 className="font-display text-xl text-mystic-100 mb-1">{label}</h2>
-            <p className="text-xs text-mystic-500 mb-3">{description}</p>
+          <Section key={id} className="mb-8" title={label} description={description} spacing="sm">
             <div className="grid sm:grid-cols-2 gap-3">
               {inCat.map((spread) => (
                 <Link
@@ -98,7 +93,7 @@ export function SpreadsPage() {
                 </Link>
               ))}
             </div>
-          </section>
+          </Section>
         );
       })}
     </div>

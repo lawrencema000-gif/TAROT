@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Search } from 'lucide-react';
+import { PageHeader, Section, EmptyState } from '../components/ui';
 import { glossaryEntries, getGlossaryByCategory, type GlossaryCategory } from '../data/glossaryLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -61,17 +62,12 @@ export function GlossaryPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <header className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-gold" />
-          </div>
-          <h1 className="heading-display-xl text-mystic-100">Glossary</h1>
-        </div>
-        <p className="text-sm text-mystic-400 max-w-xl">
-          {glossaryEntries.length} terms across tarot, astrology, numerology, spirituality, and divination — with origins, examples, and cross-references.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-6"
+        icon={<BookOpen />}
+        title="Glossary"
+        subtitle={`${glossaryEntries.length} terms across tarot, astrology, numerology, spirituality, and divination — with origins, examples, and cross-references.`}
+      />
 
       <div className="relative mb-6">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-mystic-500" />
@@ -85,29 +81,33 @@ export function GlossaryPage() {
       </div>
 
       {filtered ? (
-        <section>
-          <h2 className="text-xs uppercase tracking-wider text-mystic-500 mb-3">
-            {filtered.length} match{filtered.length === 1 ? '' : 'es'}
-          </h2>
-          <div className="space-y-2">
+        filtered.length === 0 ? (
+          <EmptyState
+            icon={<Search />}
+            title="No terms match"
+            description={`Nothing in the glossary matches “${query.trim()}”. Try a shorter word.`}
+          />
+        ) : (
+          <Section
+            eyebrow={`${filtered.length} match${filtered.length === 1 ? '' : 'es'}`}
+            spacing="sm"
+            contentClassName="space-y-2"
+          >
             {filtered.map((entry) => (
               <GlossaryRow key={entry.slug} entry={entry} />
             ))}
-          </div>
-        </section>
+          </Section>
+        )
       ) : (
         SECTIONS.map(({ id, label }) => {
           const entries = getGlossaryByCategory(id);
           if (!entries.length) return null;
           return (
-            <section key={id} className="mb-8">
-              <h2 className="font-display text-xl text-mystic-100 mb-3">{label}</h2>
-              <div className="space-y-2">
-                {entries.map((entry) => (
-                  <GlossaryRow key={entry.slug} entry={entry} />
-                ))}
-              </div>
-            </section>
+            <Section key={id} title={label} className="mb-8" spacing="sm" contentClassName="space-y-2">
+              {entries.map((entry) => (
+                <GlossaryRow key={entry.slug} entry={entry} />
+              ))}
+            </Section>
           );
         })
       )}

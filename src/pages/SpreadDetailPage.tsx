@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Layers, Clock, ChevronRight } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
+import { Button, Disclosure, EmptyState, PageHeader, Section } from '../components/ui';
 import { getSpreadBySlug, allSpreads as tarotSpreads } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -58,11 +59,16 @@ export function SpreadDetailPage() {
 
   if (!spread) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="heading-display-lg text-mystic-100 mb-2">Spread not found</h1>
-        <button onClick={() => navigate('/spreads')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300 hover:text-mystic-100">
-          <ArrowLeft className="w-4 h-4 inline mr-2" />Back to all spreads
-        </button>
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <EmptyState
+          icon={<Layers />}
+          title="Spread not found"
+          action={
+            <Button variant="outline" onClick={() => navigate('/spreads')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />Back to all spreads
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -73,21 +79,19 @@ export function SpreadDetailPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <Link to="/spreads" className="inline-flex items-center gap-1 text-xs text-mystic-500 hover:text-mystic-300 mb-3 no-underline">
-        <ArrowLeft className="w-3 h-3" /> All spreads
-      </Link>
-
-      <header className="mb-6">
-        <h1 className="heading-display-xl text-mystic-100 mb-2">{spread.name}</h1>
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-mystic-500 mb-3">
-          <span className="text-gold">{spread.cardCount} cards</span>
-          <span>·</span>
-          <span>{spread.difficulty}</span>
-          <span>·</span>
-          <span><Clock className="w-3 h-3 inline" /> ~{spread.durationMin} min</span>
-        </div>
-        <p className="text-mystic-300 leading-relaxed">{spread.longDescription}</p>
-      </header>
+      <PageHeader
+        className="mb-6"
+        backHref="/spreads"
+        backLabel="All spreads"
+        eyebrow={
+          <>
+            {spread.cardCount} cards · {spread.difficulty} ·{' '}
+            <Clock className="w-3 h-3 inline" /> ~{spread.durationMin} min
+          </>
+        }
+        title={spread.name}
+        subtitle={spread.longDescription}
+      />
 
       <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
         <h2 className="text-sm font-medium text-mystic-300 mb-3"><TarotCardIcon className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
@@ -101,9 +105,12 @@ export function SpreadDetailPage() {
         </ul>
       </section>
 
-      <section className="mb-6">
-        <h2 className="font-display text-xl text-mystic-100 mb-1"><Layers className="w-5 h-5 inline mr-2 text-gold" />Position-by-position meaning</h2>
-        <p className="text-xs text-mystic-500 mb-3">Each card placed in this spread answers a specific question. Read in order.</p>
+      <Section
+        className="mb-6"
+        spacing="sm"
+        title={<><Layers className="w-5 h-5 inline mr-2 text-gold" />Position-by-position meaning</>}
+        description="Each card placed in this spread answers a specific question. Read in order."
+      >
         <ol className="space-y-3">
           {spread.positions.map((p) => (
             <li key={p.position} className="rounded-xl border border-mystic-800/60 bg-mystic-900/40 p-4">
@@ -119,15 +126,14 @@ export function SpreadDetailPage() {
             </li>
           ))}
         </ol>
-      </section>
+      </Section>
 
       <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
         <h2 className="text-sm font-medium text-mystic-300 mb-2">When to use</h2>
         <p className="text-sm text-mystic-300 leading-relaxed">{spread.whenToUse}</p>
       </section>
 
-      <section className="mb-6">
-        <h2 className="font-display text-lg text-mystic-100 mb-3">Example questions</h2>
+      <Section className="mb-6" spacing="sm" title="Example questions">
         <ul className="space-y-2">
           {spread.exampleQuestions.map((q, i) => (
             <li key={i} className="text-sm italic text-mystic-300 px-3 py-2 rounded-lg bg-mystic-900/30 border-l-2 border-gold/40">
@@ -135,7 +141,7 @@ export function SpreadDetailPage() {
             </li>
           ))}
         </ul>
-      </section>
+      </Section>
 
       {spread.history && (
         <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
@@ -144,21 +150,18 @@ export function SpreadDetailPage() {
         </section>
       )}
 
-      <section className="mb-6">
-        <h2 className="font-display text-lg text-mystic-100 mb-3">Frequently asked questions</h2>
-        <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-1 divide-y divide-mystic-800/60">
+      <Section className="mb-6" spacing="sm" title="Frequently asked questions">
+        <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 px-4">
           {spread.faqs.map((f, i) => (
-            <details key={i} className="px-4 py-3">
-              <summary className="cursor-pointer text-sm font-medium text-mystic-100">{f.q}</summary>
-              <p className="mt-2 text-sm text-mystic-400 leading-relaxed">{f.a}</p>
-            </details>
+            <Disclosure key={i} variant="row" label={f.q}>
+              <p className="text-sm text-mystic-400 leading-relaxed">{f.a}</p>
+            </Disclosure>
           ))}
         </div>
-      </section>
+      </Section>
 
       {related.length > 0 && (
-        <section className="mb-6">
-          <h2 className="font-display text-lg text-mystic-100 mb-3">Related spreads</h2>
+        <Section className="mb-6" spacing="sm" title="Related spreads">
           <div className="grid sm:grid-cols-2 gap-2">
             {related.map((r) => (
               <Link key={r.slug} to={`/spreads/${r.slug}`} className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
@@ -167,7 +170,7 @@ export function SpreadDetailPage() {
               </Link>
             ))}
           </div>
-        </section>
+        </Section>
       )}
     </div>
   );

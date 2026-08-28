@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeft, Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
+import { Card, Button, toast, PageHeader, Section, Disclosure } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -121,12 +121,11 @@ export function DreamInterpreterPage() {
   if (stage === 'input' || stage === 'loading') {
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <Moon className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('dream.title', { defaultValue: 'Dream Interpreter' })}
-          </h1>
-        </div>
+        <PageHeader
+          as="h2"
+          icon={<Moon />}
+          title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
+        />
 
         <Card variant="glow" padding="lg">
           <p className="text-mystic-300 text-sm leading-relaxed mb-4">
@@ -224,13 +223,13 @@ function AiResultView({
 
   return (
     <div className="space-y-4 pb-6">
-      <button
-        onClick={onReset}
-        className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('dream.back', { defaultValue: 'Interpret another dream' })}
-      </button>
+      <PageHeader
+        as="h2"
+        icon={<Moon />}
+        title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
+        onBack={onReset}
+        backLabel={t('dream.back', { defaultValue: 'Interpret another dream' })}
+      />
 
       {/* Dream quote — shows users the text we read */}
       <Card padding="md" className="bg-mystic-800/40">
@@ -278,10 +277,12 @@ function AiResultView({
 
       {/* Symbols */}
       {reading.symbols.length > 0 && (
-        <>
-          <h3 className="font-display text-lg text-mystic-200 mt-6">
-            {t('dream.symbolsLabel', { defaultValue: 'Key symbols' })}
-          </h3>
+        <Section
+          className="pt-2"
+          headingLevel="h3"
+          title={t('dream.symbolsLabel', { defaultValue: 'Key symbols' })}
+          contentClassName="space-y-4"
+        >
           {reading.symbols.map((sym, i) => (
             <Card key={i} padding="lg">
               <h4 className="font-medium text-gold mb-2">{sym.text}</h4>
@@ -294,7 +295,7 @@ function AiResultView({
               </div>
             </Card>
           ))}
-        </>
+        </Section>
       )}
 
       {/* Shadow prompt */}
@@ -363,11 +364,12 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
   if (!hasAny) return null;
 
   return (
-    <div className="space-y-3">
-      <h3 className="font-display text-lg text-mystic-200 mt-2">
-        {t('dream.symbolicLayersLabel', { defaultValue: 'Symbolic layers' }) as string}
-      </h3>
-
+    <Section
+      headingLevel="h3"
+      spacing="sm"
+      title={t('dream.symbolicLayersLabel', { defaultValue: 'Symbolic layers' }) as string}
+      contentClassName="space-y-3"
+    >
       {matches.colors.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
@@ -425,7 +427,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
           </div>
         </Card>
       )}
-    </div>
+    </Section>
   );
 }
 
@@ -433,92 +435,66 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
 function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => unknown }) {
   const [openSection, setOpenSection] = useState<'cultures' | 'lucid' | 'nightmares' | null>(null);
   return (
-    <div className="space-y-3">
-      <h3 className="font-display text-lg text-mystic-200 mt-2">
-        {t('dream.resourcesLabel', { defaultValue: 'Going deeper' }) as string}
-      </h3>
+    <Section
+      headingLevel="h3"
+      spacing="sm"
+      title={t('dream.resourcesLabel', { defaultValue: 'Going deeper' }) as string}
+      contentClassName="space-y-3"
+    >
+      <Disclosure
+        icon={<Globe />}
+        label={t('dream.culturesLabel', { defaultValue: 'How different traditions read dreams' }) as string}
+        open={openSection === 'cultures'}
+        onOpenChange={(o) => setOpenSection(o ? 'cultures' : null)}
+      >
+        <div className="space-y-3">
+          {CULTURAL_DREAM_LORE.map((c, i) => (
+            <div key={i} className="text-xs">
+              <p className="font-medium text-gold mb-0.5">{c.culture}</p>
+              <p className="text-mystic-300 leading-relaxed">{c.flavour}</p>
+            </div>
+          ))}
+        </div>
+      </Disclosure>
 
-      <Card padding="md">
-        <button
-          onClick={() => setOpenSection(openSection === 'cultures' ? null : 'cultures')}
-          className="w-full flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2">
-            <Globe className="w-3.5 h-3.5 text-mystic-300" />
-            <span className="text-sm font-medium text-mystic-100">
-              {t('dream.culturesLabel', { defaultValue: 'How different traditions read dreams' }) as string}
-            </span>
-          </div>
-          <span className="text-gold">{openSection === 'cultures' ? '−' : '+'}</span>
-        </button>
-        {openSection === 'cultures' && (
-          <div className="mt-3 space-y-3 animate-fade-in">
-            {CULTURAL_DREAM_LORE.map((c, i) => (
-              <div key={i} className="text-xs">
-                <p className="font-medium text-gold mb-0.5">{c.culture}</p>
-                <p className="text-mystic-300 leading-relaxed">{c.flavour}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+      <Disclosure
+        icon={<BookOpen />}
+        label={t('dream.lucidLabel', { defaultValue: 'Lucid dreaming techniques' }) as string}
+        open={openSection === 'lucid'}
+        onOpenChange={(o) => setOpenSection(o ? 'lucid' : null)}
+      >
+        <div className="space-y-3">
+          {LUCID_TECHNIQUES.map((tech, i) => (
+            <div key={i} className="text-xs">
+              <p className="font-medium text-cosmic-blue mb-0.5">{tech.name} ({tech.acronym})</p>
+              <p className="text-mystic-300 leading-relaxed mb-1.5">{tech.description}</p>
+              <ol className="list-decimal list-inside text-mystic-400 leading-relaxed space-y-0.5">
+                {tech.steps.map((s, j) => (
+                  <li key={j}>{s}</li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </div>
+      </Disclosure>
 
-      <Card padding="md">
-        <button
-          onClick={() => setOpenSection(openSection === 'lucid' ? null : 'lucid')}
-          className="w-full flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-3.5 h-3.5 text-mystic-300" />
-            <span className="text-sm font-medium text-mystic-100">
-              {t('dream.lucidLabel', { defaultValue: 'Lucid dreaming techniques' }) as string}
-            </span>
-          </div>
-          <span className="text-gold">{openSection === 'lucid' ? '−' : '+'}</span>
-        </button>
-        {openSection === 'lucid' && (
-          <div className="mt-3 space-y-3 animate-fade-in">
-            {LUCID_TECHNIQUES.map((tech, i) => (
-              <div key={i} className="text-xs">
-                <p className="font-medium text-cosmic-blue mb-0.5">{tech.name} ({tech.acronym})</p>
-                <p className="text-mystic-300 leading-relaxed mb-1.5">{tech.description}</p>
-                <ol className="list-decimal list-inside text-mystic-400 leading-relaxed space-y-0.5">
-                  {tech.steps.map((s, j) => (
-                    <li key={j}>{s}</li>
-                  ))}
-                </ol>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      <Card padding="md">
-        <button
-          onClick={() => setOpenSection(openSection === 'nightmares' ? null : 'nightmares')}
-          className="w-full flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-pink-400" />
-            <span className="text-sm font-medium text-mystic-100">
-              {t('dream.nightmaresLabel', { defaultValue: 'Working with nightmares' }) as string}
-            </span>
-          </div>
-          <span className="text-gold">{openSection === 'nightmares' ? '−' : '+'}</span>
-        </button>
-        {openSection === 'nightmares' && (
-          <div className="mt-3 space-y-3 animate-fade-in">
-            {NIGHTMARE_CATEGORIES.map((n, i) => (
-              <div key={i} className="text-xs">
-                <p className="font-medium text-pink-400 mb-0.5">{n.category}</p>
-                <p className="text-mystic-300 leading-relaxed mb-1.5">{n.description}</p>
-                <p className="text-mystic-200 italic leading-relaxed">{n.approach}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-    </div>
+      <Disclosure
+        icon={<AlertTriangle />}
+        label={t('dream.nightmaresLabel', { defaultValue: 'Working with nightmares' }) as string}
+        open={openSection === 'nightmares'}
+        onOpenChange={(o) => setOpenSection(o ? 'nightmares' : null)}
+      >
+        <div className="space-y-3">
+          {NIGHTMARE_CATEGORIES.map((n, i) => (
+            <div key={i} className="text-xs">
+              <p className="font-medium text-pink-400 mb-0.5">{n.category}</p>
+              <p className="text-mystic-300 leading-relaxed mb-1.5">{n.description}</p>
+              <p className="text-mystic-200 italic leading-relaxed">{n.approach}</p>
+            </div>
+          ))}
+        </div>
+      </Disclosure>
+    </Section>
   );
 }
 
@@ -554,13 +530,13 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
 
   return (
     <div className="space-y-4 pb-6">
-      <button
-        onClick={onReset}
-        className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('dream.back', { defaultValue: 'Interpret another dream' })}
-      </button>
+      <PageHeader
+        as="h2"
+        icon={<Moon />}
+        title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
+        onBack={onReset}
+        backLabel={t('dream.back', { defaultValue: 'Interpret another dream' })}
+      />
 
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-2 mb-3">
@@ -587,10 +563,12 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
       </Card>
 
       {reading.matchedSymbols.length > 0 && (
-        <>
-          <h3 className="font-display text-lg text-mystic-200 mt-6">
-            {t('dream.symbolsLabel', { defaultValue: 'The symbols' })}
-          </h3>
+        <Section
+          className="pt-2"
+          headingLevel="h3"
+          title={t('dream.symbolsLabel', { defaultValue: 'The symbols' })}
+          contentClassName="space-y-4"
+        >
           {reading.matchedSymbols.map((match, i) => (
             <Card key={i} padding="lg">
               <h4 className="font-medium text-gold mb-2 capitalize">{match.keyword}</h4>
@@ -603,7 +581,7 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
               </div>
             </Card>
           ))}
-        </>
+        </Section>
       )}
 
       <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">

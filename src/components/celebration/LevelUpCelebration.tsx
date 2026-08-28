@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Sparkles, X } from 'lucide-react';
-import { Button, Sheet } from '../ui';
+import { Trophy, Compass, X } from 'lucide-react';
+import { Button, Sheet, MysticalStar } from '../ui';
 import { useT } from '../../i18n/useT';
 import { localizeSeekerRank } from '../../i18n/localizeRank';
 
@@ -48,15 +48,17 @@ export function LevelUpCelebration({
             {showConfetti && (
               <div className="absolute inset-0 pointer-events-none">
                 {[...Array(12)].map((_, i) => (
-                  <Sparkles
+                  <span
                     key={i}
-                    className="absolute w-4 h-4 text-gold animate-float-away"
+                    className="absolute text-gold animate-float-away"
                     style={{
                       left: `${50 + Math.cos((i * Math.PI) / 6) * 50}%`,
                       top: `${50 + Math.sin((i * Math.PI) / 6) * 50}%`,
                       animationDelay: `${i * 0.1}s`,
                     }}
-                  />
+                  >
+                    <MysticalStar size={16} />
+                  </span>
                 ))}
               </div>
             )}
@@ -83,7 +85,7 @@ export function LevelUpCelebration({
             </div>
 
             <div className="flex items-center justify-center gap-2 text-sm text-gold">
-              <Sparkles className="w-4 h-4" />
+              <MysticalStar size={16} />
               <span>+{xpEarned} XP earned</span>
             </div>
           </div>
@@ -99,7 +101,7 @@ export function LevelUpCelebration({
 
           <Button variant="gold" onClick={onClose} className="w-full">
             Continue Journey
-            <Sparkles className="w-4 h-4" />
+            <Compass className="w-4 h-4" />
           </Button>
         </div>
       </div>

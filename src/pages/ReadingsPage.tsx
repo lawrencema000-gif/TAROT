@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
-import { SectionDivider } from '../components/ui';
+import { PageHeader } from '../components/ui';
 
 // Lazy-load the eastern-systems pages — keeps ~40-60 KB of static data out
 // of the main ReadingsPage bundle. Chunks only download when a user with
@@ -327,10 +327,7 @@ export function ReadingsPage() {
 
   return (
     <div className="space-y-6 pb-32">
-      <div className="space-y-2">
-        <h1 className="heading-display-xl text-mystic-100">{t('readings.title')}</h1>
-        <SectionDivider tone="gold" />
-      </div>
+      <PageHeader title={t('readings.title')} divider />
 
       <ReadingsTabStrip
         tabs={tabs}

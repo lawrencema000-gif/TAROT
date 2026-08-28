@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Globe2, Heart, Briefcase, Plane, Sparkles, Home as HomeIcon, Sprout, Crown } from 'lucide-react';
-import { Card, Button, EyebrowLabel, SectionDivider } from '../components/ui';
+import { Card, Button, EyebrowLabel, PageHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { CelestialMapView } from '../components/celestial/CelestialMapView';
@@ -246,13 +246,12 @@ export function CelestialMapPage() {
       : 'Your celestial map is drawn from your birth chart. Enter your birth date — and time + place if you know them — and your map will be ready.';
     return (
       <div className="space-y-6 pb-32">
-        <header className="space-y-2">
-          <EyebrowLabel rules>{t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}</EyebrowLabel>
-          <h1 className="heading-display-xl text-mystic-100 text-center">
-            {t(headlineKey, { defaultValue: headlineDefault })}
-          </h1>
-          <SectionDivider />
-        </header>
+        <PageHeader
+          eyebrow={t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}
+          title={t(headlineKey, { defaultValue: headlineDefault })}
+          align="center"
+          divider
+        />
         <Card variant="ritual" padding="lg">
           <p className="text-mystic-300 text-sm leading-relaxed mb-5">
             {t(bodyKey, { defaultValue: bodyDefault })}
@@ -274,19 +273,16 @@ export function CelestialMapPage() {
 
   return (
     <div className="space-y-8 pb-32">
-      <header className="space-y-2">
-        <EyebrowLabel rules>{t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100 text-center">
-          {t('celestial.title', { defaultValue: 'Where your stars align' })}
-        </h1>
-        <p className="text-sm text-mystic-300 text-center max-w-md mx-auto leading-relaxed">
-          {t('celestial.hero.subtitle', {
-            defaultValue:
-              'Divine your best living, loving, working, and healing locations — drawn from the exact moment of your birth.',
-          })}
-        </p>
-        <SectionDivider />
-      </header>
+      <PageHeader
+        eyebrow={t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}
+        title={t('celestial.title', { defaultValue: 'Where your stars align' })}
+        subtitle={t('celestial.hero.subtitle', {
+          defaultValue:
+            'Divine your best living, loving, working, and healing locations — drawn from the exact moment of your birth.',
+        })}
+        align="center"
+        divider
+      />
 
       {!isPremium && (
         <motion.div
@@ -327,11 +323,16 @@ export function CelestialMapPage() {
 
       {/* ── Interactive map section ──────────────────────────── */}
       <div ref={mapSectionRef} className="space-y-3 scroll-mt-4">
+        {/* Heading for the whole map region. Deliberately NOT a <Section>:
+            the content it heads is the map, the filters and the search, which
+            are siblings with their own spacing rhythm. Wrapping all of that
+            would restructure the page, and self-closing a Section renders an
+            empty <section> with its content orphaned outside it. */}
         <div className="space-y-1">
-          <h2 className="text-sm uppercase tracking-wider text-gold/90 font-medium">
+          <h2 className="heading-display-md text-mystic-100">
             {t('celestial.mapSection.title', { defaultValue: 'Your map' })}
           </h2>
-          <p className="text-xs text-mystic-400 leading-relaxed">
+          <p className="text-sm text-mystic-400">
             {t('celestial.mapSection.subtitle', {
               defaultValue:
                 'Tap any spot to see what lines run through it. Or search a specific city below.',

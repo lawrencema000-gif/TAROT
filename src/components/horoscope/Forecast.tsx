@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Star, Moon as MoonIcon, Sun, ArrowRight, Sparkles } from 'lucide-react';
+import { Calendar, Star, Moon as MoonIcon, Sun, ArrowRight, Compass } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { Card, Skeleton } from '../ui';
 import { useWeeklyForecast, useMonthlyForecast } from '../../hooks/useAstrology';
@@ -201,7 +201,7 @@ function MonthlyView() {
         <Card variant="glow" padding="md">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-gold" />
+              <Compass className="w-4 h-4 text-gold" />
             </div>
             <div>
               <div className="text-xs font-medium text-gold mb-1">{t('horoscope.forecastView.oneThingThisMonth')}</div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, Section, toast } from '../components/ui';
 import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
@@ -32,33 +32,36 @@ export function RunesPage() {
   if (stage === 'intro') {
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <MysticalStar className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('runes.title', { defaultValue: 'Runes' })}
-          </h1>
-        </div>
-
-        <Card variant="glow" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
-            {t('runes.intro', {
-              defaultValue:
-                'The Elder Futhark — 24 staves carved with the oldest written wisdom of Northern Europe. Hold a question in mind. Three runes fall: past, present, future. Some may appear reversed (merkstave), softening or turning their meaning.',
-            })}
-          </p>
-          <label className="block text-sm text-mystic-400 mb-2">
-            {t('runes.questionLabel', { defaultValue: 'Your question (optional)' })}
-          </label>
-          <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            rows={3}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
-            placeholder={t('runes.questionPlaceholder', {
-              defaultValue: 'What do I most need to understand right now?',
-            }) as string}
-          />
-        </Card>
+        <Section
+          spacing="lg"
+          title={
+            <span className="flex items-center gap-3">
+              <MysticalStar className="w-6 h-6 text-gold" />
+              {t('runes.title', { defaultValue: 'Runes' })}
+            </span>
+          }
+        >
+          <Card variant="glow" padding="lg">
+            <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+              {t('runes.intro', {
+                defaultValue:
+                  'The Elder Futhark — 24 staves carved with the oldest written wisdom of Northern Europe. Hold a question in mind. Three runes fall: past, present, future. Some may appear reversed (merkstave), softening or turning their meaning.',
+              })}
+            </p>
+            <label className="block text-sm text-mystic-400 mb-2">
+              {t('runes.questionLabel', { defaultValue: 'Your question (optional)' })}
+            </label>
+            <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              rows={3}
+              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+              placeholder={t('runes.questionPlaceholder', {
+                defaultValue: 'What do I most need to understand right now?',
+              }) as string}
+            />
+          </Card>
+        </Section>
 
         <Button variant="primary" size="lg" fullWidth onClick={startCast}>
           <MysticalStar className="w-5 h-5 mr-2" />

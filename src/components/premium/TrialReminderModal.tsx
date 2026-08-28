@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Sparkles, X, Crown, Check } from 'lucide-react';
+import { X, Crown, Check, Gift } from 'lucide-react';
+import { MysticalStar } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useT } from '../../i18n/useT';
 import { PaywallSheet } from './PaywallSheet';
@@ -75,12 +76,12 @@ export function TrialReminderModal() {
               <Crown className="w-8 h-8 text-mystic-950" />
             </div>
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-cosmic-blue rounded-full flex items-center justify-center animate-pulse">
-              <Sparkles className="w-3 h-3 text-white" />
+              <MysticalStar size={12} className="text-white" />
             </div>
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
+            <Gift className="w-3.5 h-3.5 text-gold" />
             <span className="text-xs font-semibold text-gold uppercase tracking-wider">
               {t('premium.trialReminder.badge', { defaultValue: '3 days free' })}
             </span>

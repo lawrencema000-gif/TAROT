@@ -26,7 +26,7 @@ import {
   Moon,
   Feather,
 } from 'lucide-react';
-import { Card, Button, Sheet, Input, toast } from '../components/ui';
+import { Card, Button, Sheet, Input, toast, PageHeader, Section, EmptyState } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -493,13 +493,15 @@ export function JournalPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <div className="flex items-center justify-between">
-        <h1 className="heading-display-lg text-mystic-100">{t('journal.title')}</h1>
-        <Button variant="primary" size="sm" onClick={openNewEntry}>
-          <Plus className="w-4 h-4" />
-          New
-        </Button>
-      </div>
+      <PageHeader
+        title={t('journal.title')}
+        action={
+          <Button variant="primary" size="sm" onClick={openNewEntry}>
+            <Plus className="w-4 h-4" />
+            New
+          </Button>
+        }
+      />
 
       <div className="flex gap-2">
         {tabs.map(tab => {
@@ -626,10 +628,11 @@ export function JournalPage() {
               ))}
             </div>
           ) : filteredEntries.length === 0 ? (
-            <Card padding="lg" className="text-center">
-              <p className="text-mystic-400">{t('journal.emptyState')}</p>
-              <p className="text-sm text-mystic-500 mt-1">{t('journal.emptyStateSub')}</p>
-            </Card>
+            <EmptyState
+              icon={<BookOpen />}
+              title={t('journal.emptyState')}
+              description={t('journal.emptyStateSub')}
+            />
           ) : (
             <div className="space-y-3">
               {filteredEntries.map(entry => (
@@ -700,11 +703,11 @@ export function JournalPage() {
       {activeTab === 'templates' && (
         <div className="space-y-4">
           {recommendedTemplates.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-gold mb-3 flex items-center gap-2">
-                <Star className="w-4 h-4" />
-                Recommended for You
-              </h3>
+            <Section
+              headingLevel="h3"
+              spacing="sm"
+              title={<span className="inline-flex items-center gap-2"><Star className="w-4 h-4 text-gold" /> Recommended for You</span>}
+            >
               <div className="space-y-3">
                 {recommendedTemplates.slice(0, 3).map(template => {
                   const CategoryIcon = categoryIcons[template.category] || FileText;
@@ -731,7 +734,7 @@ export function JournalPage() {
                   );
                 })}
               </div>
-            </div>
+            </Section>
           )}
 
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -814,8 +817,7 @@ export function JournalPage() {
             </Card>
           </div>
 
-          <Card padding="lg">
-            <h3 className="font-medium text-mystic-200 mb-4">{t('journal.moodTrend')}</h3>
+          <Section title={t('journal.moodTrend')} headingLevel="h3">
             <div className="flex justify-between gap-1">
               {insights.last7DaysMoods.map((day, i) => {
                 const date = new Date(day.date);
@@ -837,14 +839,13 @@ export function JournalPage() {
                 );
               })}
             </div>
-          </Card>
+          </Section>
 
           {insights.topTags.length > 0 && (
-            <Card padding="lg">
-              <div className="flex items-center gap-2 mb-4">
-                <Tag className="w-4 h-4 text-mystic-500" />
-                <h3 className="font-medium text-mystic-200">{t('journal.mostCommonTags')}</h3>
-              </div>
+            <Section
+              headingLevel="h3"
+              title={<span className="inline-flex items-center gap-2"><Tag className="w-4 h-4 text-mystic-500" /> {t('journal.mostCommonTags')}</span>}
+            >
               <div className="space-y-3">
                 {insights.topTags.map(([tagValue, count]) => {
                   const tagInfo = categoryTags.find(t => t.value === tagValue);
@@ -865,15 +866,14 @@ export function JournalPage() {
                   );
                 })}
               </div>
-            </Card>
+            </Section>
           )}
 
           {insights.moodDistribution.length > 0 && (
-            <Card padding="lg">
-              <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-4 h-4 text-mystic-500" />
-                <h3 className="font-medium text-mystic-200">{t('journal.moodDistribution')}</h3>
-              </div>
+            <Section
+              headingLevel="h3"
+              title={<span className="inline-flex items-center gap-2"><BarChart3 className="w-4 h-4 text-mystic-500" /> {t('journal.moodDistribution')}</span>}
+            >
               <div className="space-y-3">
                 {insights.moodDistribution.map(({ mood, percentage }) => {
                   const moodInfo = moodEmojis.find(m => m.value === mood);
@@ -896,7 +896,7 @@ export function JournalPage() {
                   );
                 })}
               </div>
-            </Card>
+            </Section>
           )}
 
           {insights.generatedInsight && (
@@ -911,11 +911,10 @@ export function JournalPage() {
             </Card>
           )}
 
-          <Card padding="lg">
-            <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-4 h-4 text-mystic-500" />
-              <h3 className="font-medium text-mystic-200">{t('journal.thisWeek')}</h3>
-            </div>
+          <Section
+            headingLevel="h3"
+            title={<span className="inline-flex items-center gap-2"><Calendar className="w-4 h-4 text-mystic-500" /> {t('journal.thisWeek')}</span>}
+          >
             <div className="flex justify-between gap-2">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                 <div key={i} className="flex flex-col items-center gap-2">
@@ -936,10 +935,9 @@ export function JournalPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </Section>
 
-          <Card padding="lg">
-            <h3 className="font-medium text-mystic-200 mb-4">{t('journal.writingStats')}</h3>
+          <Section title={t('journal.writingStats')} headingLevel="h3">
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-xl font-display text-gold">{insights.averageWordsPerEntry}</p>
@@ -954,15 +952,18 @@ export function JournalPage() {
                 <p className="text-xs text-mystic-400">{t('journal.totalWords')}</p>
               </div>
             </div>
-          </Card>
+          </Section>
 
           {entries.length === 0 && (
-            <Card padding="lg" className="text-center">
-              <p className="text-mystic-400">{t('journal.insightsEmpty')}</p>
-              <Button variant="primary" className="mt-4" onClick={openNewEntry}>
-                Start Writing
-              </Button>
-            </Card>
+            <EmptyState
+              icon={<Lightbulb />}
+              title={t('journal.insightsEmpty')}
+              action={
+                <Button variant="primary" onClick={openNewEntry}>
+                  Start Writing
+                </Button>
+              }
+            />
           )}
         </div>
       )}

@@ -21,7 +21,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel } from '../components/ui';
+import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
@@ -279,8 +279,7 @@ export function ProfilePage() {
       </Card>
 
       {(profile?.mbtiType || profile?.loveLanguage) && (
-        <Card padding="md">
-          <h3 className="text-sm font-medium text-mystic-400 mb-3">{t('profile.personalityBadges')}</h3>
+        <Section title={t('profile.personalityBadges')} headingLevel="h3" spacing="sm">
           <div className="flex flex-wrap gap-2">
             {profile?.mbtiType && (
               <div className="flex items-center gap-2 px-3 py-2 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
@@ -297,12 +296,11 @@ export function ProfilePage() {
               </div>
             )}
           </div>
-        </Card>
+        </Section>
       )}
 
       {formatBirthProfile() && (
-        <Card padding="md">
-          <h3 className="text-sm font-medium text-mystic-400 mb-2">{t('profile.birthProfile')}</h3>
+        <Section title={t('profile.birthProfile')} headingLevel="h3" spacing="sm">
           <div className="flex items-start gap-3">
             {zodiacInfo && (
               <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center text-xl">
@@ -314,7 +312,7 @@ export function ProfilePage() {
               <p className="text-sm text-mystic-500 mt-1">{t('profile.elementSign', { element: zodiacInfo?.element })}</p>
             </div>
           </div>
-        </Card>
+        </Section>
       )}
 
       {profile?.birthDate && (
@@ -325,11 +323,11 @@ export function ProfilePage() {
       )}
 
       {profile?.goals && profile.goals.length > 0 && (
-        <Card padding="md">
-          <div className="flex items-center gap-2 mb-3">
-            <Target className="w-4 h-4 text-mystic-500" />
-            <h3 className="text-sm font-medium text-mystic-400">{t('profile.yourGoals')}</h3>
-          </div>
+        <Section
+          headingLevel="h3"
+          spacing="sm"
+          title={<span className="inline-flex items-center gap-2"><Target className="w-4 h-4 text-mystic-500" /> {t('profile.yourGoals')}</span>}
+        >
           <div className="flex flex-wrap gap-2">
             {profile.goals.map(goal => (
               <span key={goal} className="px-3 py-1.5 bg-gold/10 border border-gold/20 rounded-full text-sm text-gold">
@@ -337,7 +335,7 @@ export function ProfilePage() {
               </span>
             ))}
           </div>
-        </Card>
+        </Section>
       )}
 
       <Card padding="none">
@@ -571,11 +569,12 @@ export function ProfilePage() {
               ))}
             </div>
           ) : savedHighlights.length === 0 ? (
-            <div className="text-center py-12">
-              <Bookmark className="w-12 h-12 text-mystic-700 mx-auto mb-3" />
-              <p className="text-mystic-400">{t('profile.noSaved')}</p>
-              <p className="text-sm text-mystic-500 mt-1">{t('profile.noSavedSub')}</p>
-            </div>
+            <EmptyState
+              variant="inline"
+              icon={<Bookmark />}
+              title={t('profile.noSaved')}
+              description={t('profile.noSavedSub')}
+            />
           ) : (
             savedHighlights.map(highlight => (
               <Card key={highlight.id} padding="md">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Gift, Copy, Share2, Check, Sparkles } from 'lucide-react';
+import { Gift, Copy, Share2, Check } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast } from '../ui';
 import { useT } from '../../i18n/useT';
@@ -162,18 +162,18 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
             <p className="text-sm text-mystic-400">—</p>
           )}
           <div className="flex gap-2">
-            <Button variant="outline" fullWidth onClick={handleCopy} disabled={!myCode} className="min-h-[44px]">
+            <Button variant="outline" fullWidth onClick={handleCopy} disabled={!myCode}>
               {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
               {t('referral.copy', { defaultValue: 'Copy link' })}
             </Button>
-            <Button variant="primary" fullWidth onClick={handleShare} disabled={!myCode} className="min-h-[44px]">
+            <Button variant="primary" fullWidth onClick={handleShare} disabled={!myCode}>
               <Share2 className="w-4 h-4 mr-2" />
               {t('referral.share', { defaultValue: 'Share' })}
             </Button>
           </div>
           {invitesCount !== null && invitesCount > 0 && (
             <p className="text-xs text-mystic-400 mt-3 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-gold" />
+              <Gift className="w-3 h-3 text-gold" />
               {t('referral.invitesCount', {
                 defaultValue: '{{n}} friends joined with your code',
                 n: invitesCount,
@@ -204,7 +204,7 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
                 variant="gold"
                 onClick={handleRedeem}
                 disabled={redeeming || inviteInput.trim().length < 6}
-                className="min-h-[44px] px-5"
+                className="px-5"
               >
                 {redeeming
                   ? t('referral.redeeming', { defaultValue: 'Redeeming…' })

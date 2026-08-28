@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Gem, ChevronRight } from 'lucide-react';
+import { PageHeader, Section } from '../components/ui';
 import { crystalEntries, getCrystalsByCategory, type CrystalCategory } from '../data/crystalsLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -51,25 +52,18 @@ export function CrystalsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
-            <Gem className="w-5 h-5 text-gold" />
-          </div>
-          <h1 className="heading-display-xl text-mystic-100">Crystals</h1>
-        </div>
-        <p className="text-sm text-mystic-400 max-w-xl">
-          {crystalEntries.length} stones with metaphysical properties, chakra associations, Mohs hardness, cleansing methods, and tarot connections.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-8"
+        icon={<Gem />}
+        title="Crystals"
+        subtitle={`${crystalEntries.length} stones with metaphysical properties, chakra associations, Mohs hardness, cleansing methods, and tarot connections.`}
+      />
 
       {SECTIONS.map(({ id, label, description }) => {
         const entries = getCrystalsByCategory(id);
         if (!entries.length) return null;
         return (
-          <section key={id} className="mb-8">
-            <h2 className="font-display text-xl text-mystic-100 mb-1">{label}</h2>
-            <p className="text-xs text-mystic-500 mb-3">{description}</p>
+          <Section key={id} title={label} description={description} spacing="sm" className="mb-8">
             <div className="grid sm:grid-cols-2 gap-2">
               {entries.map((entry) => (
                 <Link
@@ -88,7 +82,7 @@ export function CrystalsPage() {
                 </Link>
               ))}
             </div>
-          </section>
+          </Section>
         );
       })}
     </div>

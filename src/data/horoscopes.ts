@@ -638,12 +638,22 @@ const signTemplates: Record<ZodiacSign, HoroscopeTemplate> = {
 // English colors used as the base set; localized colors swap in at render time.
 const baseColors = ['Gold', 'Silver', 'Crimson', 'Azure', 'Emerald', 'Violet', 'Rose', 'Amber', 'Ivory', 'Obsidian'];
 
+/**
+ * A localised pool. Either a flat array shared by all twelve signs (the
+ * original shape) or, preferably, one pool per sign.
+ *
+ * Both are supported on purpose: a locale can be migrated to per-sign content
+ * one field at a time without the others breaking, and a half-translated
+ * bundle keeps working rather than falling off a cliff.
+ */
+type LocalizedPool = string[] | Partial<Record<ZodiacSign, string[]>>;
+
 interface HoroscopeBundle {
-  general: string[];
-  love: string[];
-  career: string[];
-  mood: string[];
-  actionSteps: string[];
+  general: LocalizedPool;
+  love: LocalizedPool;
+  career: LocalizedPool;
+  mood: LocalizedPool;
+  actionSteps: LocalizedPool;
   colors: string[];
 }
 
@@ -664,10 +674,30 @@ const HOROSCOPE_BUNDLES: Partial<Record<SupportedLocale, HoroscopeBundle>> = {
  * index-for-index across locales, so a localized reading is no longer a
  * translation of the English one for the same seed.
  */
+/**
+ * The pool a reading is drawn from, for this field, sign and locale.
+ *
+ * This used to take `sign` and then discard it whenever a locale bundle
+ * existed, which meant every non-English user read one sign-agnostic pool —
+ * so the per-sign English rewrite reached nobody outside English, and adjacent
+ * signs kept landing on the same line. It now prefers, in order:
+ *
+ *   1. the locale's pool FOR THIS SIGN, when the bundle is per-sign,
+ *   2. the locale's flat pool, for a locale not yet migrated,
+ *   3. the English per-sign pool, so a missing translation degrades to real
+ *      sign-specific content rather than to nothing.
+ */
 function localizedTemplates(field: keyof HoroscopeTemplate, sign: ZodiacSign): string[] {
   const bundle = HOROSCOPE_BUNDLES[getLocale()];
   const localized = bundle?.[field];
-  if (localized && localized.length > 0) return localized;
+
+  if (Array.isArray(localized)) {
+    if (localized.length > 0) return localized;
+  } else if (localized) {
+    const perSign = localized[sign];
+    if (perSign && perSign.length > 0) return perSign;
+  }
+
   return signTemplates[sign][field];
 }
 

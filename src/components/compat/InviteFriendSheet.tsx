@@ -150,7 +150,6 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
               fullWidth
               onClick={generate}
               disabled={generating || (!hasMbti && !hasBirthDate)}
-              className="min-h-[48px]"
             >
               <LinkIcon className="w-4 h-4 mr-2" />
               {generating
@@ -167,11 +166,11 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
             </p>
             <p className="font-mono text-xs text-gold break-all mb-3">{inviteUrl}</p>
             <div className="flex gap-2">
-              <Button variant="outline" fullWidth onClick={handleCopy} className="min-h-[44px]">
+              <Button variant="outline" fullWidth onClick={handleCopy}>
                 {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
                 {t('referral.copy', { defaultValue: 'Copy link' })}
               </Button>
-              <Button variant="primary" fullWidth onClick={handleShare} className="min-h-[44px]">
+              <Button variant="primary" fullWidth onClick={handleShare}>
                 <Share2 className="w-4 h-4 mr-2" />
                 {t('referral.share', { defaultValue: 'Share' })}
               </Button>

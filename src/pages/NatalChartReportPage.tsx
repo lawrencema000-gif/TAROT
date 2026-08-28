@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, PageHeader, Section, EmptyState } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -257,28 +257,19 @@ export function NatalChartReportPage() {
   if (!hasBirthData) {
     return (
       <div className="space-y-4 pb-6">
-        <div className="flex items-center gap-3">
-          <ScrollText className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
-          </h1>
-        </div>
-        <Card padding="lg" variant="glow">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-display text-lg text-mystic-100 mb-1">
-                {t('natalReport.needsBirthData', { defaultValue: 'Add your birth data first' })}
-              </h3>
-              <p className="text-sm text-mystic-400 leading-relaxed">
-                {t('natalReport.needsBirthDataBody', {
-                  defaultValue:
-                    'The full natal chart needs date, time, and place of birth. Add them in Profile → Edit profile.',
-                })}
-              </p>
-            </div>
-          </div>
-        </Card>
+        <PageHeader
+          as="h2"
+          icon={<ScrollText />}
+          title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
+        />
+        <EmptyState
+          icon={<AlertCircle />}
+          title={t('natalReport.needsBirthData', { defaultValue: 'Add your birth data first' })}
+          description={t('natalReport.needsBirthDataBody', {
+            defaultValue:
+              'The full natal chart needs date, time, and place of birth. Add them in Profile → Edit profile.',
+          })}
+        />
       </div>
     );
   }
@@ -294,12 +285,11 @@ export function NatalChartReportPage() {
   if (!unlocked) {
     return (
       <div className="space-y-4 pb-6">
-        <div className="flex items-center gap-3">
-          <ScrollText className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
-          </h1>
-        </div>
+        <PageHeader
+          as="h2"
+          icon={<ScrollText />}
+          title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
+        />
 
         <Card padding="lg" variant="ornate" className="text-center nebula-veil">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
@@ -439,18 +429,18 @@ export function NatalChartReportPage() {
         }
       `}</style>
 
-      <div className="flex items-center justify-between no-print">
-        <div className="flex items-center gap-3">
-          <ScrollText className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
-          </h1>
-        </div>
-        <Button variant="outline" size="sm" onClick={handlePrint}>
-          <Printer className="w-4 h-4 mr-2" />
-          {t('natalReport.printCta', { defaultValue: 'Save as PDF' })}
-        </Button>
-      </div>
+      <PageHeader
+        as="h2"
+        className="no-print"
+        icon={<ScrollText />}
+        title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
+        action={
+          <Button variant="outline" size="sm" onClick={handlePrint}>
+            <Printer className="w-4 h-4 mr-2" />
+            {t('natalReport.printCta', { defaultValue: 'Save as PDF' })}
+          </Button>
+        }
+      />
 
       <Card padding="lg" className="card-print">
         <p className="text-[10px] uppercase tracking-widest text-gold mb-3 text-center">
@@ -613,10 +603,16 @@ export function NatalChartReportPage() {
         </div>
       </Card>
 
-      <Card padding="lg" className="card-print">
-        <h2 className="text-sm font-medium text-gold tracking-wide mb-3">
-          {t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
-        </h2>
+      <Section
+        className="card-print"
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="text-sm font-medium text-gold tracking-wide">
+            {t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
+          </span>
+        }
+      >
         <div className="space-y-3">
           {natal.planets.map((p) => {
             const meta = PLANET_ONE_LINERS[p.planet];
@@ -650,12 +646,18 @@ export function NatalChartReportPage() {
             );
           })}
         </div>
-      </Card>
+      </Section>
 
-      <Card padding="lg" className="card-print">
-        <h2 className="text-sm font-medium text-gold tracking-wide mb-3">
-          {t('natalReport.elementsHeading', { defaultValue: 'Elemental & modal balance' })}
-        </h2>
+      <Section
+        className="card-print"
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="text-sm font-medium text-gold tracking-wide">
+            {t('natalReport.elementsHeading', { defaultValue: 'Elemental & modal balance' })}
+          </span>
+        }
+      >
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-[10px] uppercase text-mystic-500 mb-2">Elements</p>
@@ -703,14 +705,20 @@ export function NatalChartReportPage() {
             <span className="text-mystic-500">Chart ruler: </span>{natal.dominants.chartRuler}
           </p>
         )}
-      </Card>
+      </Section>
 
-      <Card padding="lg" className="card-print">
-        <h2 className="text-sm font-medium text-gold tracking-wide mb-3">
-          {t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
-        </h2>
+      <Section
+        className="card-print"
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="text-sm font-medium text-gold tracking-wide">
+            {t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
+          </span>
+        }
+      >
         {natal.aspects.length === 0 ? (
-          <p className="text-xs text-mystic-500">No aspects computed.</p>
+          <EmptyState variant="inline" size="sm" title="No aspects computed." />
         ) : (
           <div className="space-y-1.5">
             {natal.aspects.map((a, i) => {
@@ -737,7 +745,7 @@ export function NatalChartReportPage() {
             })}
           </div>
         )}
-      </Card>
+      </Section>
 
       <p className="text-[10px] text-center text-mystic-600 italic">
         {t('natalReport.disclaimer', {

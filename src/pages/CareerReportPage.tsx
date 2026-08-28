@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Briefcase, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Users, Eye, Calendar, Quote, Crown } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, PageHeader, Section, EmptyState, ResultLayout } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -105,28 +105,19 @@ export function CareerReportPage() {
   if (!mbti || !archetype) {
     return (
       <div className="space-y-4 pb-6">
-        <div className="flex items-center gap-3">
-          <Briefcase className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('careerReport.title', { defaultValue: 'Career Archetype' })}
-          </h1>
-        </div>
-        <Card padding="lg" variant="glow">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-display text-lg text-mystic-100 mb-1">
-                {t('careerReport.needsMbti', { defaultValue: 'Take the personality quiz first' })}
-              </h3>
-              <p className="text-sm text-mystic-400 leading-relaxed">
-                {t('careerReport.needsMbtiBody', {
-                  defaultValue:
-                    'This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.',
-                })}
-              </p>
-            </div>
-          </div>
-        </Card>
+        <PageHeader
+          as="h2"
+          icon={<Briefcase />}
+          title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
+        />
+        <EmptyState
+          icon={<AlertCircle />}
+          title={t('careerReport.needsMbti', { defaultValue: 'Take the personality quiz first' })}
+          description={t('careerReport.needsMbtiBody', {
+            defaultValue:
+              'This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.',
+          })}
+        />
       </div>
     );
   }
@@ -142,12 +133,11 @@ export function CareerReportPage() {
   if (!unlocked) {
     return (
       <div className="space-y-4 pb-6">
-        <div className="flex items-center gap-3">
-          <Briefcase className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('careerReport.title', { defaultValue: 'Career Archetype' })}
-          </h1>
-        </div>
+        <PageHeader
+          as="h2"
+          icon={<Briefcase />}
+          title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
+        />
 
         <Card padding="lg" variant="ornate" className="text-center nebula-veil">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
@@ -268,33 +258,32 @@ export function CareerReportPage() {
 
   // Unlocked — render the full report.
   return (
-    <div className="space-y-5 pb-6">
-      <div className="flex items-center gap-3">
-        <Briefcase className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {archetype.name}
-        </h1>
-      </div>
-
-      <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
-        <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
-          {archetype.mbti} · {t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}
-        </p>
-        <p className="font-display text-lg text-mystic-100 italic mb-3">
-          "{archetype.tagline}"
-        </p>
-        <p className="text-sm text-mystic-300 leading-relaxed">
-          {archetype.summary}
-        </p>
-      </Card>
-
-      <Card padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="w-4 h-4 text-gold" />
-          <h3 className="text-sm font-medium text-gold tracking-wide">
+    <ResultLayout
+      className="pb-6"
+      eyebrow={`${archetype.mbti} · ${t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}`}
+      verdict={archetype.name}
+      subtitle={`"${archetype.tagline}"`}
+      summary={archetype.summary}
+      glyph={<Briefcase />}
+      actions={
+        <Button variant="outline" fullWidth onClick={handleShare} className="min-h-[44px]">
+          <Sparkles className="w-4 h-4 mr-2" />
+          {t('careerReport.share', { defaultValue: 'Share my archetype' })}
+        </Button>
+      }
+      detailLabel={t('careerReport.fullReport', { defaultValue: 'The full report' })}
+      defaultDetailOpen
+    >
+      <Section
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="flex items-center gap-2 text-sm font-medium text-gold tracking-wide">
+            <TrendingUp className="w-4 h-4" />
             {t('careerReport.bestFit', { defaultValue: 'Best-fit roles' })}
-          </h3>
-        </div>
+          </span>
+        }
+      >
         <div className="grid grid-cols-2 gap-2">
           {archetype.bestFitRoles.map((role, i) => (
             <div key={i} className="text-xs text-mystic-200 bg-mystic-800/40 rounded-lg px-3 py-2">
@@ -302,15 +291,18 @@ export function CareerReportPage() {
             </div>
           ))}
         </div>
-      </Card>
+      </Section>
 
-      <Card padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <AlertCircle className="w-4 h-4 text-pink-400" />
-          <h3 className="text-sm font-medium text-pink-400 tracking-wide">
+      <Section
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="flex items-center gap-2 text-sm font-medium text-pink-400 tracking-wide">
+            <AlertCircle className="w-4 h-4" />
             {t('careerReport.drains', { defaultValue: 'Environments that drain you' })}
-          </h3>
-        </div>
+          </span>
+        }
+      >
         <ul className="space-y-2">
           {archetype.environmentsThatDrain.map((item, i) => (
             <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">
@@ -318,27 +310,33 @@ export function CareerReportPage() {
             </li>
           ))}
         </ul>
-      </Card>
+      </Section>
 
-      <Card padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Users className="w-4 h-4 text-cosmic-blue" />
-          <h3 className="text-sm font-medium text-cosmic-blue tracking-wide">
+      <Section
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="flex items-center gap-2 text-sm font-medium text-cosmic-blue tracking-wide">
+            <Users className="w-4 h-4" />
             {t('careerReport.collaboration', { defaultValue: 'Collaboration pattern' })}
-          </h3>
-        </div>
+          </span>
+        }
+      >
         <p className="text-sm text-mystic-300 leading-relaxed">
           {archetype.collaborationPattern}
         </p>
-      </Card>
+      </Section>
 
-      <Card padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Eye className="w-4 h-4 text-cosmic-violetLight" />
-          <h3 className="text-sm font-medium text-cosmic-violetLight tracking-wide">
+      <Section
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="flex items-center gap-2 text-sm font-medium text-cosmic-violetLight tracking-wide">
+            <Eye className="w-4 h-4" />
             {t('careerReport.blindSpots', { defaultValue: 'Blind spots' })}
-          </h3>
-        </div>
+          </span>
+        }
+      >
         <ul className="space-y-2">
           {archetype.blindSpots.map((item, i) => (
             <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-cosmic-violetLight">
@@ -346,7 +344,7 @@ export function CareerReportPage() {
             </li>
           ))}
         </ul>
-      </Card>
+      </Section>
 
       <Card padding="lg" className="bg-gradient-to-br from-cosmic-blue/5 to-mystic-900/80 border-cosmic-blue/20">
         <div className="flex items-center gap-2 mb-3">
@@ -374,13 +372,16 @@ export function CareerReportPage() {
         </div>
       </Card>
 
-      <Card padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Quote className="w-4 h-4 text-gold" />
-          <h3 className="text-sm font-medium text-gold tracking-wide">
+      <Section
+        headingLevel="h3"
+        spacing="sm"
+        title={
+          <span className="flex items-center gap-2 text-sm font-medium text-gold tracking-wide">
+            <Quote className="w-4 h-4" />
             {t('careerReport.reflection', { defaultValue: 'Sit with these questions' })}
-          </h3>
-        </div>
+          </span>
+        }
+      >
         <ul className="space-y-3">
           {archetype.reflectionQuestions.map((q, i) => (
             <li key={i} className="text-sm text-mystic-300 italic leading-relaxed">
@@ -388,7 +389,7 @@ export function CareerReportPage() {
             </li>
           ))}
         </ul>
-      </Card>
+      </Section>
 
       <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30 text-center">
         <Sparkles className="w-5 h-5 text-gold mx-auto mb-2" />
@@ -396,12 +397,7 @@ export function CareerReportPage() {
           "{archetype.affirmation}"
         </p>
       </Card>
-
-      <Button variant="outline" fullWidth onClick={handleShare} className="min-h-[44px]">
-        <Sparkles className="w-4 h-4 mr-2" />
-        {t('careerReport.share', { defaultValue: 'Share my archetype' })}
-      </Button>
-    </div>
+    </ResultLayout>
   );
 }
 

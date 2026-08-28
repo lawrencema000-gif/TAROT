@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
-import { Card, Button, Input, EyebrowLabel, SectionDivider } from '../components/ui';
+import { Card, Button, Input, PageHeader, Section, Disclosure } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { ZiweiChart } from '../components/charts/ZiweiChart';
 import { computeZiweiChart } from '../data/ziwei';
@@ -41,16 +40,14 @@ export function ZiweiPage() {
 
   return (
     <div className="space-y-6 pb-28">
-      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> {t('common.back', { defaultValue: 'Back' })}
-      </button>
-
-      <div className="space-y-2">
-        <EyebrowLabel>紫微斗数</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">{t('ziwei.title', { defaultValue: 'Zi Wei Dou Shu' })}</h1>
-        <p className="text-sm text-mystic-400 leading-relaxed">{ZIWEI_INTRO}</p>
-        <SectionDivider tone="gold" />
-      </div>
+      <PageHeader
+        eyebrow="紫微斗数"
+        title={t('ziwei.title', { defaultValue: 'Zi Wei Dou Shu' })}
+        subtitle={ZIWEI_INTRO}
+        onBack={() => navigate(-1)}
+        backLabel={t('common.back', { defaultValue: 'Back' }) as string}
+        divider
+      />
 
       {!chart && (
         <Card className="p-4 space-y-4">
@@ -98,15 +95,17 @@ export function ZiweiPage() {
             />
           </Card>
 
-          <Card className="p-4 space-y-2">
-            <h3 className="heading-display-md text-mystic-100">{t('ziwei.bureau', { defaultValue: 'Your bureau' })}</h3>
+          <Section title={t('ziwei.bureau', { defaultValue: 'Your bureau' })} headingLevel="h3" spacing="sm">
             <p className="text-sm text-mystic-300 leading-relaxed">
               <span className="text-gold">{chart.bureauCn}</span> — {BUREAU_MEANINGS[chart.bureau]}
             </p>
-          </Card>
+          </Section>
 
-          <Card className="p-4 space-y-3">
-            <h3 className="heading-display-md text-mystic-100">{t('ziwei.transformations', { defaultValue: 'The four transformations' })}</h3>
+          <Section
+            title={t('ziwei.transformations', { defaultValue: 'The four transformations' })}
+            headingLevel="h3"
+            contentClassName="space-y-3"
+          >
             {chart.transformations.map((t) => {
               const meta = TRANSFORMATION_MEANINGS[t.kind];
               const star = STAR_MEANINGS[t.star];
@@ -124,52 +123,52 @@ export function ZiweiPage() {
                 which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.
               </p>
             )}
-          </Card>
+          </Section>
 
-          <Card className="p-4 space-y-1">
-            <h3 className="heading-display-md text-mystic-100 mb-2">{t('ziwei.palaces', { defaultValue: 'The twelve palaces' })}</h3>
+          <Section title={t('ziwei.palaces', { defaultValue: 'The twelve palaces' })} headingLevel="h3">
             {chart.palaces.map((p) => {
               const open = openPalace === p.key;
               const meaning = PALACE_MEANINGS[p.key];
               return (
-                <div key={p.key} className="border-b border-mystic-800/40 last:border-0">
-                  <button onClick={() => setOpenPalace(open ? null : p.key)} className="w-full flex items-center gap-2 py-2.5 text-left">
-                    <span className="text-mystic-500 w-5">{p.branchCn}</span>
-                    <span className="flex-1">
+                <Disclosure
+                  key={p.key}
+                  variant="row"
+                  open={open}
+                  onOpenChange={(next) => setOpenPalace(next ? p.key : null)}
+                  icon={<span className="block w-5 text-mystic-500">{p.branchCn}</span>}
+                  label={
+                    <>
                       <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
                       <span className="text-mystic-500 text-xs"> {meaning?.en ?? p.en}</span>
                       {p.isBody && <span className="text-cosmic-violetLight text-xs"> · 身宮</span>}
-                    </span>
-                    <span className="text-mystic-400 text-xs">
-                      {p.stars.length === 0 ? '—' : p.stars.map((s) => (
-                        <span key={s.key} className={s.isSupport ? 'text-mystic-600' : undefined}>{s.cn} </span>
-                      ))}
-                    </span>
-                    <ChevronDown className={`w-4 h-4 text-mystic-600 transition-transform ${open ? 'rotate-180' : ''}`} />
-                  </button>
-                  {open && (
-                    <div className="pb-3 pl-7 space-y-2">
-                      {meaning && <p className="text-sm text-mystic-300 leading-relaxed">{meaning.text}</p>}
-                      {p.stars.map((s) => {
-                        const sm = STAR_MEANINGS[s.key];
-                        if (!sm) return null;
-                        return (
-                          <p key={s.key} className="text-[13px] text-mystic-400 leading-relaxed">
-                            <span className="text-gold">{sm.cn} · {sm.title}</span> — {sm.text}
-                          </p>
-                        );
-                      })}
-                      {p.stars.length === 0 && (
-                        <p className="text-[13px] text-mystic-500 italic">
-                          An empty palace isn't a lack — it borrows from the palace opposite, and asks you to bring your own emphasis here.
-                        </p>
-                      )}
-                    </div>
+                    </>
+                  }
+                  meta={
+                    p.stars.length === 0 ? '—' : p.stars.map((s) => (
+                      <span key={s.key} className={s.isSupport ? 'text-mystic-600' : undefined}>{s.cn} </span>
+                    ))
+                  }
+                  contentClassName="pl-7 space-y-2"
+                >
+                  {meaning && <p className="text-sm text-mystic-300 leading-relaxed">{meaning.text}</p>}
+                  {p.stars.map((s) => {
+                    const sm = STAR_MEANINGS[s.key];
+                    if (!sm) return null;
+                    return (
+                      <p key={s.key} className="text-[13px] text-mystic-400 leading-relaxed">
+                        <span className="text-gold">{sm.cn} · {sm.title}</span> — {sm.text}
+                      </p>
+                    );
+                  })}
+                  {p.stars.length === 0 && (
+                    <p className="text-[13px] text-mystic-500 italic">
+                      An empty palace isn't a lack — it borrows from the palace opposite, and asks you to bring your own emphasis here.
+                    </p>
                   )}
-                </div>
+                </Disclosure>
               );
             })}
-          </Card>
+          </Section>
 
           <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>{t('ziwei.recast', { defaultValue: 'Cast a different chart' })}</Button>
           <p className="text-center text-xs text-mystic-600">

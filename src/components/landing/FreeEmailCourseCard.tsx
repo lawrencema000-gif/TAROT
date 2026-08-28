@@ -8,7 +8,7 @@
 // cron once Resend API key is set; for now we just capture the lead.
 
 import { useState } from 'react';
-import { Mail, Check, Sparkles } from 'lucide-react';
+import { Mail, Check, Gift } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useT } from '../../i18n/useT';
 
@@ -64,7 +64,7 @@ export function FreeEmailCourseCard() {
       <div className="rounded-3xl border border-gold/30 bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 p-6 sm:p-10 shadow-2xl shadow-gold/10 max-w-2xl mx-auto">
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
+            <Gift className="w-3.5 h-3.5 text-gold" />
             <span className="text-xs uppercase tracking-wider text-gold">{t('freeCourse.badge', { defaultValue: 'Free 3-part email course' })}</span>
           </div>
           <h2 className="font-display text-2xl sm:text-3xl text-mystic-100 mb-2">

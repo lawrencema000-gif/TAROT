@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Crown,
-  Sparkles,
+  Compass,
   Heart,
   Star,
   X,
@@ -21,7 +21,7 @@ import {
   Mail,
   Sun,
 } from 'lucide-react';
-import { Button, toast } from '../ui';
+import { Button, toast, MysticalStar } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService, PRODUCT_IDS, Product } from '../../services/billing';
 import { isNative } from '../../utils/platform';
@@ -43,7 +43,7 @@ const unlocks = [
   { icon: Star, key: 'guidedPrompts' },
   { icon: Moon, key: 'birthChart' },
   { icon: Sun, key: 'horoscopeFull' },
-  { icon: Sparkles, key: 'humanDesign' },
+  { icon: Compass, key: 'humanDesign' },
   { icon: Mountain, key: 'bazi' },
   { icon: Cloud, key: 'dreamAi' },
   { icon: Smile, key: 'moodLetter' },
@@ -350,7 +350,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               <Crown className="w-12 h-12 text-mystic-950" />
             </div>
             <div className="absolute -top-1 -right-1 w-8 h-8 bg-cosmic-blue rounded-full flex items-center justify-center animate-pulse">
-              <Sparkles className="w-4 h-4 text-white" />
+              <MysticalStar size={16} className="text-white" />
             </div>
           </div>
 
@@ -488,7 +488,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               onClick={handlePurchase}
               loading={purchasing}
               disabled={loadingProducts || !hasRealProducts}
-              className="min-h-[56px] text-base font-semibold shadow-xl shadow-gold/20"
+              className="text-base font-semibold shadow-xl shadow-gold/20"
             >
               {(() => {
                 if (!hasRealProducts && !loadingProducts) {

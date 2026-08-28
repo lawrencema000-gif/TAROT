@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Heart, Sparkles } from 'lucide-react';
-import { Card, Button, EyebrowLabel } from '../components/ui';
+import { Loader2, Heart, Sparkles } from 'lucide-react';
+import { Card, Button, PageHeader, Section } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { useAuth } from '../context/AuthContext';
@@ -91,18 +91,18 @@ export function PersonComparePage() {
 
   return (
     <div className="space-y-6 pb-28">
-      <button onClick={() => navigate(`/people/${id}`)} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> {name}
-      </button>
+      <PageHeader
+        align="center"
+        onBack={() => navigate(`/people/${id}`)}
+        backLabel={name}
+        eyebrow="Synastry"
+        title={<>You &amp; {name}</>}
+      />
 
-      <div className="text-center space-y-2">
-        <EyebrowLabel>Synastry</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">You &amp; {name}</h1>
-        <div className="flex items-center justify-center gap-3 text-mystic-300">
-          <span>{mySun && `${SIGN_GLYPH[mySun]} ${mySun}`}</span>
-          <Heart className="w-4 h-4 text-pink-400" />
-          <span>{theirSun && `${SIGN_GLYPH[theirSun]} ${theirSun}`}</span>
-        </div>
+      <div className="flex items-center justify-center gap-3 text-mystic-300 -mt-3">
+        <span>{mySun && `${SIGN_GLYPH[mySun]} ${mySun}`}</span>
+        <Heart className="w-4 h-4 text-pink-400" />
+        <span>{theirSun && `${SIGN_GLYPH[theirSun]} ${theirSun}`}</span>
       </div>
 
       {/* Chart-type tabs */}
@@ -125,8 +125,7 @@ export function PersonComparePage() {
               <div className="w-full max-w-[360px]"><NatalWheel chart={relCharts[tab]!} /></div>
             </Card>
             {relCharts[tab]!.aspects.length > 0 && (
-              <Card className="p-4 space-y-3">
-                <h3 className="heading-display-md text-mystic-100">Aspects in this chart</h3>
+              <Section title="Aspects in this chart" headingLevel="h3" contentClassName="space-y-3">
                 <AspectGrid aspects={relCharts[tab]!.aspects} />
                 <div className="space-y-2 pt-1">
                   {relCharts[tab]!.aspects.slice(0, 5).map((a, i) => (
@@ -137,7 +136,7 @@ export function PersonComparePage() {
                     </div>
                   ))}
                 </div>
-              </Card>
+              </Section>
             )}
           </>
         ) : (
@@ -153,19 +152,20 @@ export function PersonComparePage() {
 
       {/* Sun-sign compatibility */}
       {compat && (
-        <Card className="p-4 space-y-3">
-          <h3 className="heading-display-md text-mystic-100">{mySun} &amp; {theirSun}</h3>
+        <Section title={<>{mySun} &amp; {theirSun}</>} headingLevel="h3">
           <div className="space-y-2 text-sm">
             <p><span className="text-pink-300 font-medium">Love · </span><span className="text-mystic-300">{compat.love}</span></p>
             <p><span className="text-sky-300 font-medium">Friendship · </span><span className="text-mystic-300">{compat.friendship}</span></p>
             <p><span className="text-emerald-300 font-medium">Work · </span><span className="text-mystic-300">{compat.work}</span></p>
           </div>
-        </Card>
+        </Section>
       )}
 
       {/* Top cross-aspects */}
-      <Card className="p-4 space-y-3">
-        <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-gold" /><h3 className="heading-display-md text-mystic-100">Your strongest connections</h3></div>
+      <Section
+        headingLevel="h3"
+        title={<span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-gold" /> Your strongest connections</span>}
+      >
         <div className="space-y-3">
           {aspects.slice(0, 8).map((a, i) => (
             <div key={i} className="text-sm">
@@ -179,7 +179,7 @@ export function PersonComparePage() {
             </div>
           ))}
         </div>
-      </Card>
+      </Section>
       </>
       )}
 

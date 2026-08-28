@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { PageHeader, Section, EmptyState, Button } from '../components/ui';
 import { getGlossaryEntry, glossaryEntries } from '../data/glossaryLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -43,11 +44,16 @@ export function GlossaryEntryPage() {
 
   if (!entry) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="heading-display-lg text-mystic-100 mb-2">Term not found</h1>
-        <button onClick={() => navigate('/glossary')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300">
-          <ArrowLeft className="w-4 h-4 inline mr-2" />Back to glossary
-        </button>
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <EmptyState
+          title="Term not found"
+          action={
+            <Button variant="secondary" onClick={() => navigate('/glossary')}>
+              <ArrowLeft className="w-4 h-4" />
+              Back to glossary
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -58,32 +64,34 @@ export function GlossaryEntryPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <Link to="/glossary" className="inline-flex items-center gap-1 text-xs text-mystic-500 hover:text-mystic-300 mb-3 no-underline">
-        <ArrowLeft className="w-3 h-3" /> All terms
-      </Link>
-
-      <header className="mb-6">
-        <span className="text-xs uppercase tracking-wider text-mystic-500">{entry.category}</span>
-        <div className="flex items-baseline gap-3 mt-1">
-          <h1 className="heading-display-xl text-mystic-100">{entry.term}</h1>
-          {entry.pronunciation && (
-            <span className="text-sm text-mystic-400 italic">/{entry.pronunciation}/</span>
-          )}
-        </div>
-        {entry.alsoKnownAs && entry.alsoKnownAs.length > 0 && (
-          <p className="text-xs text-mystic-500 mt-1">
-            Also known as: {entry.alsoKnownAs.join(', ')}
-          </p>
-        )}
-      </header>
+      <PageHeader
+        className="mb-6"
+        backHref="/glossary"
+        backLabel="All terms"
+        eyebrow={entry.category}
+        title={
+          <>
+            {entry.term}
+            {entry.pronunciation && (
+              <span className="ml-3 text-sm font-normal text-mystic-400 italic">
+                /{entry.pronunciation}/
+              </span>
+            )}
+          </>
+        }
+        subtitle={
+          entry.alsoKnownAs && entry.alsoKnownAs.length > 0
+            ? `Also known as: ${entry.alsoKnownAs.join(', ')}`
+            : undefined
+        }
+      />
 
       <p className="text-mystic-300 leading-relaxed mb-6">{entry.longDefinition}</p>
 
       {entry.origin && (
-        <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-4">
-          <h2 className="text-xs uppercase tracking-wider text-gold mb-2">Origin</h2>
+        <Section eyebrow="Origin" spacing="sm" className="mb-6">
           <p className="text-sm text-mystic-300 leading-relaxed">{entry.origin}</p>
-        </section>
+        </Section>
       )}
 
       {entry.example && (
@@ -94,8 +102,7 @@ export function GlossaryEntryPage() {
       )}
 
       {related.length > 0 && (
-        <section>
-          <h2 className="font-display text-lg text-mystic-100 mb-3">Related terms</h2>
+        <Section title="Related terms" headingLevel="h3" spacing="sm">
           <div className="grid sm:grid-cols-2 gap-2">
             {related.map((r) => (
               <Link key={r.slug} to={`/glossary/${r.slug}`} className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
@@ -104,7 +111,7 @@ export function GlossaryEntryPage() {
               </Link>
             ))}
           </div>
-        </section>
+        </Section>
       )}
     </div>
   );

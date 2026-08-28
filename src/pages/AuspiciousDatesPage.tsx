@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Download, AlertTriangle } from 'lucide-react';
-import { Card, Button, EyebrowLabel, SectionDivider } from '../components/ui';
+import { CalendarDays, Download, AlertTriangle } from 'lucide-react';
+import { Card, Button, PageHeader, Section, Disclosure } from '../components/ui';
 import {
   INTENTIONS, scoreWindow, bestDays, daysToAvoid, toICS,
   type Intention, type DayScore,
@@ -69,58 +69,58 @@ export function AuspiciousDatesPage() {
   const DayRow = ({ d, tone }: { d: DayScore; tone: 'good' | 'bad' }) => {
     const open = expanded === d.date;
     return (
-      <div className="border-b border-mystic-800/40 last:border-0">
-        <button onClick={() => setExpanded(open ? null : d.date)} className="w-full flex items-center gap-3 py-2.5 text-left">
-          <span className={`text-2xl flex-shrink-0 ${tone === 'good' ? 'text-gold' : 'text-rose-400/70'}`} style={{ fontFamily: 'serif' }}>
+      <Disclosure
+        variant="row"
+        open={open}
+        onOpenChange={(next) => setExpanded(next ? d.date : null)}
+        icon={
+          <span className={`block text-2xl ${tone === 'good' ? 'text-gold' : 'text-rose-400/70'}`} style={{ fontFamily: 'serif' }}>
             {d.mansion.cn}
           </span>
-          <span className="flex-1 min-w-0">
+        }
+        label={
+          <>
             <span className="text-mystic-100 text-sm">{fmt(d.date)}</span>
             <span className="text-mystic-600 text-xs"> · {MANSION_MEANINGS[d.mansion.key]?.title}</span>
-            <span className="block text-xs text-mystic-500 truncate">{d.reasons[0]?.text}</span>
-          </span>
-          {d.personalClash && <AlertTriangle className="w-4 h-4 text-rose-400/80 flex-shrink-0" />}
-        </button>
-        {open && (
-          <ul className="pb-3 pl-11 space-y-1">
-            {d.reasons.map((r, i) => (
-              <li key={i} className="text-[13px] leading-relaxed">
-                <span className={r.weight > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}>
-                  {r.weight > 0 ? '+' : ''}{r.weight}
-                </span>{' '}
-                <span className="text-mystic-300">{r.text}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          </>
+        }
+        description={<span className="block truncate text-mystic-500">{d.reasons[0]?.text}</span>}
+        meta={d.personalClash ? <AlertTriangle className="w-4 h-4 text-rose-400/80" /> : undefined}
+        contentClassName="pl-11"
+      >
+        <ul className="space-y-1">
+          {d.reasons.map((r, i) => (
+            <li key={i} className="text-[13px] leading-relaxed">
+              <span className={r.weight > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}>
+                {r.weight > 0 ? '+' : ''}{r.weight}
+              </span>{' '}
+              <span className="text-mystic-300">{r.text}</span>
+            </li>
+          ))}
+        </ul>
+      </Disclosure>
     );
   };
 
   return (
     <div className="space-y-6 pb-28">
-      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" /> {t('common.back', { defaultValue: 'Back' })}
-      </button>
+      <PageHeader
+        eyebrow="擇日"
+        title={t('dates.title', { defaultValue: 'Pick a good day' })}
+        subtitle={t('dates.intro', {
+          defaultValue:
+            'Chinese date selection asks a different question from a birth chart: not what you are like, but when to do a particular thing. Each day is read from the lunar mansion that governs it — and, once we know your birth date, from how the day sits against your own pillars.',
+        })}
+        onBack={() => navigate(-1)}
+        backLabel={t('common.back', { defaultValue: 'Back' }) as string}
+        divider
+      />
 
-      <div className="space-y-2">
-        <EyebrowLabel>擇日</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">
-          {t('dates.title', { defaultValue: 'Pick a good day' })}
-        </h1>
-        <p className="text-sm text-mystic-400 leading-relaxed">
-          {t('dates.intro', {
-            defaultValue:
-              'Chinese date selection asks a different question from a birth chart: not what you are like, but when to do a particular thing. Each day is read from the lunar mansion that governs it — and, once we know your birth date, from how the day sits against your own pillars.',
-          })}
-        </p>
-        <SectionDivider tone="gold" />
-      </div>
-
-      <Card className="p-4 space-y-3">
-        <h3 className="heading-display-md text-mystic-100">
-          {t('dates.whatFor', { defaultValue: 'What are you choosing a day for?' })}
-        </h3>
+      <Section
+        title={t('dates.whatFor', { defaultValue: 'What are you choosing a day for?' })}
+        headingLevel="h3"
+        contentClassName="space-y-3"
+      >
         <div className="flex flex-wrap gap-2">
           {(Object.keys(INTENTIONS) as Intention[]).map((k) => (
             <button
@@ -137,7 +137,7 @@ export function AuspiciousDatesPage() {
           ))}
         </div>
         <p className="text-xs text-mystic-500">{INTENTIONS[intention].blurb}</p>
-      </Card>
+      </Section>
 
       {!birth && (
         <Card className="p-4">
@@ -150,30 +150,27 @@ export function AuspiciousDatesPage() {
         </Card>
       )}
 
-      <Card className="p-4 space-y-1">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="heading-display-md text-mystic-100">
-            {t('dates.best', { defaultValue: 'Best days ahead' })}
-          </h3>
+      <Section
+        title={t('dates.best', { defaultValue: 'Best days ahead' })}
+        headingLevel="h3"
+        action={
           <Button variant="ghost" size="sm" onClick={download}>
             <Download className="w-3.5 h-3.5 mr-1.5" />
             {t('dates.export', { defaultValue: 'Calendar' })}
           </Button>
-        </div>
+        }
+      >
         {best.map((d) => <DayRow key={d.date} d={d} tone="good" />)}
         <p className="text-[11px] text-mystic-600 pt-2">
           <CalendarDays className="w-3 h-3 inline mr-1" />
           {t('dates.windowNote', { defaultValue: `Looking at the next ${WINDOW_DAYS} days. Tap a day to see exactly why it scored the way it did.` })}
         </p>
-      </Card>
+      </Section>
 
       {avoid.length > 0 && (
-        <Card className="p-4 space-y-1">
-          <h3 className="heading-display-md text-mystic-100 mb-2">
-            {t('dates.avoid', { defaultValue: 'Days to avoid' })}
-          </h3>
+        <Section title={t('dates.avoid', { defaultValue: 'Days to avoid' })} headingLevel="h3">
           {avoid.map((d) => <DayRow key={d.date} d={d} tone="bad" />)}
-        </Card>
+        </Section>
       )}
 
       <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, ChevronRight, Users, Loader2 } from 'lucide-react';
-import { Card, Button, Sheet, EyebrowLabel, SectionDivider } from '../components/ui';
+import { Button, Sheet, PageHeader, EmptyState } from '../components/ui';
 import { PersonForm } from '../components/people/PersonForm';
 import { FriendCircleStats } from '../components/people/FriendCircleStats';
 import { useAuth } from '../context/AuthContext';
@@ -38,12 +38,12 @@ export function PeoplePage() {
 
   return (
     <div className="space-y-6 pb-28">
-      <div className="space-y-2">
-        <EyebrowLabel>Your circle</EyebrowLabel>
-        <h1 className="heading-display-xl text-mystic-100">People</h1>
-        <p className="text-sm text-mystic-400">Save the birth details of people you care about to explore their charts and your compatibility.</p>
-        <SectionDivider tone="gold" />
-      </div>
+      <PageHeader
+        eyebrow="Your circle"
+        title="People"
+        subtitle="Save the birth details of people you care about to explore their charts and your compatibility."
+        divider
+      />
 
       <Button variant="primary" size="md" fullWidth onClick={() => setShowForm(true)}>
         <UserPlus className="w-4 h-4 mr-2" /> Add a person
@@ -52,11 +52,11 @@ export function PeoplePage() {
       {list === null ? (
         <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-gold animate-spin" /></div>
       ) : list.length === 0 ? (
-        <Card className="p-8 text-center space-y-3">
-          <Users className="w-10 h-10 text-mystic-600 mx-auto" />
-          <h3 className="heading-display-md text-mystic-200">No one here yet</h3>
-          <p className="text-sm text-mystic-400">Add your partner, a parent, or a friend to reveal their natal chart and see how your stars align.</p>
-        </Card>
+        <EmptyState
+          icon={<Users />}
+          title="No one here yet"
+          description="Add your partner, a parent, or a friend to reveal their natal chart and see how your stars align."
+        />
       ) : (
         <div className="space-y-3">
           <FriendCircleStats people={list} />

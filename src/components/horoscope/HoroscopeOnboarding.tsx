@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MapPin, ChevronRight, Search, Check, Loader2, Sparkles, RefreshCw, AlertCircle, Globe, Home, Triangle, Star } from 'lucide-react';
+import { MapPin, ChevronRight, Search, Check, Loader2, RefreshCw, AlertCircle, Globe, Home, Triangle, Star } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Button, Card, Input } from '../ui';
+import { Button, Card, Input, HoroscopeWheelIcon } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { ZodiacGlyph } from '../icons';
@@ -320,7 +320,7 @@ function ChartComputeProgress() {
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-8">
       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-pulse">
-        <Sparkles className="w-8 h-8 text-gold" />
+        <HoroscopeWheelIcon className="w-8 h-8 text-gold" />
       </div>
 
       <div className="w-full max-w-xs space-y-3">

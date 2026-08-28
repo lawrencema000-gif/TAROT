@@ -1075,8 +1075,8 @@ export function JournalPage() {
               {coachResult && (
                 <div className="mt-3 p-3 bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/30 rounded-xl">
                   <div className="flex items-center gap-1.5 mb-2">
-                    <Sparkles className="w-3 h-3 text-cosmic-violet" />
-                    <p className="text-[10px] uppercase tracking-widest text-cosmic-violet">
+                    <Sparkles className="w-3 h-3 text-cosmic-violetLight" />
+                    <p className="text-[10px] uppercase tracking-widest text-cosmic-violetLight">
                       {t('journalCoach.observationLabel', { defaultValue: 'An observation' })}
                     </p>
                   </div>
@@ -1088,7 +1088,7 @@ export function JournalPage() {
                   </p>
                   <ul className="space-y-1.5">
                     {coachResult.prompts.map((p, i) => (
-                      <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violet">
+                      <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violetLight">
                         {p}
                       </li>
                     ))}

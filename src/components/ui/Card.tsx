@@ -13,17 +13,26 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   flourished?: boolean;
 }
 
+// Elevation is a black drop-shadow, never a coloured bloom.
+//
+// Every variant used to carry a gold halo because the surfaces underneath it
+// were invisible — a default card computed to 1.03:1 against the page, so the
+// glow was the only thing separating card from background. Now that the mystic
+// scale is a real lightness ladder (canvas→card is ΔL* 6.4), the halo has no
+// job left, and 75 glowing cards was the single loudest dated signal in the
+// product. A gold halo is now reserved for one element per screen: the primary
+// call to action.
 const variantStyles = {
-  default: 'bg-mystic-900/80 border-mystic-700/50',
-  glow: 'bg-mystic-900/80 border-gold/20 shadow-glow',
-  elevated: 'bg-mystic-850/90 border-mystic-600/30 shadow-xl',
+  default: 'bg-mystic-850 border-mystic-700',
+  glow: 'bg-mystic-850 border-gold/25',
+  elevated: 'bg-mystic-800 border-mystic-700 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.7)]',
   // Ornate: two layered borders (outer gold gradient, inner hairline),
   // a subtle parchment-like tint, and an inner stroke ring produced by
   // an inset box-shadow. Paired with corner flourishes for the full
   // manuscript-page feel.
   ornate:
     'relative bg-gradient-to-br from-mystic-900/95 via-mystic-900/90 to-mystic-950/95 ' +
-    'border-gold/40 shadow-glow-md ' +
+    'border-gold/40 ' +
     '[background-image:radial-gradient(ellipse_at_top,rgba(212,175,55,0.06),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(142,110,181,0.05),transparent_60%)] ' +
     'before:content-[""] before:absolute before:inset-[3px] before:rounded-[calc(1rem-3px)] ' +
     'before:border before:border-gold/20 before:pointer-events-none',

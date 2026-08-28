@@ -91,7 +91,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-xl hover:border-mystic-700 transition-colors"
           >
-            <Globe className="w-4 h-4 text-cosmic-violet flex-shrink-0" />
+            <Globe className="w-4 h-4 text-cosmic-violetLight flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
                 {t('crisis.international.title', { defaultValue: 'International helplines' })}

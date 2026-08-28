@@ -383,7 +383,7 @@ export function MoodDiaryPage() {
 
       {allEntries.length >= 3 && !letter && (
         <Card variant="glow" padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
-          <h3 className="font-medium text-cosmic-violet mb-2 flex items-center gap-2">
+          <h3 className="font-medium text-cosmic-violetLight mb-2 flex items-center gap-2">
             <Mail className="w-4 h-4" />
             {t('mood.letterHeading', { defaultValue: 'A letter for this week' })}
           </h3>
@@ -420,7 +420,7 @@ export function MoodDiaryPage() {
             </h3>
           </div>
           <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30">
-            <span className="text-[10px] uppercase tracking-widest text-cosmic-violet">
+            <span className="text-[10px] uppercase tracking-widest text-cosmic-violetLight">
               {t('mood.themeLabel', { defaultValue: 'Theme' })}
             </span>
             <span className="text-xs text-mystic-200">{letter.dominantTheme}</span>

@@ -414,7 +414,7 @@ export function ProfilePage() {
             className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cosmic-violet/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
-              <ScrollText className="w-6 h-6 text-cosmic-violet" />
+              <ScrollText className="w-6 h-6 text-cosmic-violetLight" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-mystic-100">

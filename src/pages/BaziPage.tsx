@@ -353,7 +353,7 @@ export function BaziPage() {
 
                 {/* Hidden Influences + Nayin */}
                 <Card padding="lg">
-                  <h3 className="font-medium text-cosmic-violet mb-1">
+                  <h3 className="font-medium text-cosmic-violetLight mb-1">
                     {t('bazi.hiddenInfluencesLabel', { defaultValue: 'Hidden Influences' })}
                   </h3>
                   <p className="text-xs text-mystic-500 mb-3">
@@ -427,7 +427,7 @@ export function BaziPage() {
                 {/* Today's Lucky Color widget */}
                 {luckyColor && (
                   <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border-cosmic-violet/20">
-                    <h3 className="font-medium text-cosmic-violet mb-1 flex items-center gap-2">
+                    <h3 className="font-medium text-cosmic-violetLight mb-1 flex items-center gap-2">
                       <Palette className="w-4 h-4" />
                       {t('bazi.luckyColorTodayLabel', { defaultValue: "Today's Lucky Color" })}
                     </h3>
@@ -538,7 +538,7 @@ export function BaziPage() {
                   <p>{deepResult.pillarNarratives.day}</p>
                 </div>
                 <div>
-                  <p className="text-cosmic-violet font-medium mb-0.5">{t('bazi.hourPillarLabel', { defaultValue: 'Hour' })} · {result.hour.stem} {result.hour.branch}</p>
+                  <p className="text-cosmic-violetLight font-medium mb-0.5">{t('bazi.hourPillarLabel', { defaultValue: 'Hour' })} · {result.hour.stem} {result.hour.branch}</p>
                   <p>{deepResult.pillarNarratives.hour}</p>
                 </div>
               </div>
@@ -619,7 +619,7 @@ export function BaziPage() {
             {/* 格局 — formal structure */}
             {structure && STRUCTURE_MEANINGS[structure.key] && (
               <Card padding="lg">
-                <h3 className="font-medium text-cosmic-violet mb-1">
+                <h3 className="font-medium text-cosmic-violetLight mb-1">
                   {t('bazi.structureHeading', { defaultValue: 'Your chart structure' })}
                 </h3>
                 <p className="text-xs text-mystic-500 mb-3">{STRUCTURE_INTRO}</p>
@@ -647,7 +647,7 @@ export function BaziPage() {
             {/* Spirit stars */}
             {deepResult.spiritStars.length > 0 && (
               <Card padding="lg">
-                <h3 className="font-medium text-cosmic-violet mb-3">
+                <h3 className="font-medium text-cosmic-violetLight mb-3">
                   {t('bazi.spiritStarsHeading', { defaultValue: 'Spirit stars in your chart' })}
                 </h3>
                 <div className="space-y-2">

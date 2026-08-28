@@ -107,7 +107,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
             aria-label={resolvedLabel}
           >
             <div className="w-10 h-10 rounded-lg bg-cosmic-violet/20 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-cosmic-violet" />
+              <Sparkles className="w-5 h-5 text-cosmic-violetLight" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-mystic-100">{resolvedLabel}</p>
@@ -122,7 +122,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
       ) : (
         <button
           onClick={handleOpen}
-          className="inline-flex items-center gap-1.5 text-xs text-cosmic-violet hover:text-cosmic-violet/80 underline underline-offset-2"
+          className="inline-flex items-center gap-1.5 text-xs text-cosmic-violetLight hover:text-cosmic-violetLight/80 underline underline-offset-2"
         >
           <Sparkles className="w-3 h-3" />
           {resolvedLabel}
@@ -137,7 +137,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
       >
         <div className="space-y-4 pb-4">
           <Card padding="md" className="bg-mystic-900/60 border-cosmic-violet/20">
-            <p className="text-[10px] uppercase tracking-widest text-cosmic-violet mb-1">
+            <p className="text-[10px] uppercase tracking-widest text-cosmic-violetLight mb-1">
               {t('askOracle.contextLabel', { defaultValue: 'Your question' })}
             </p>
             <p className="text-sm text-mystic-200 italic leading-relaxed">"{context}"</p>
@@ -179,7 +179,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
               )}
               <Card padding="lg">
                 <div className="flex items-start gap-2 mb-2">
-                  <Quote className="w-4 h-4 text-cosmic-violet flex-shrink-0 mt-0.5" />
+                  <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">
                     {reading.reading}
                   </p>

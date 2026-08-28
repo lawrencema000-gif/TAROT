@@ -287,14 +287,14 @@ export function HumanDesignPage() {
         {/* Channels */}
         {chart.channels.length > 0 && (
           <Card padding="lg">
-            <h3 className="font-medium text-cosmic-violet mb-3">
+            <h3 className="font-medium text-cosmic-violetLight mb-3">
               {t('humanDesign.channelsHeading', { defaultValue: 'Your defined channels' })}
             </h3>
             <div className="flex flex-wrap gap-2">
               {chart.channels.map((c) => (
                 <span
                   key={c}
-                  className="px-2.5 py-1 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30 text-xs text-cosmic-violet font-medium"
+                  className="px-2.5 py-1 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30 text-xs text-cosmic-violetLight font-medium"
                 >
                   {c}
                 </span>

@@ -653,7 +653,7 @@ export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
               transition={{ duration: 0.2 }}
               className="bg-mystic-900/60 border border-cosmic-violet/30 rounded-xl p-3"
             >
-              <p className="text-[10px] uppercase tracking-widest text-cosmic-violet mb-1">
+              <p className="text-[10px] uppercase tracking-widest text-cosmic-violetLight mb-1">
                 {t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: selection.index })}
               </p>
               <p className="text-sm text-mystic-100">

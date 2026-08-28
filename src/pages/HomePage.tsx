@@ -593,7 +593,7 @@ export function HomePage() {
               onClick={() => navigate('/ai/tarot')}
               className="bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/25 rounded-xl p-4 text-left hover:border-cosmic-violet/50 active:scale-[0.98] transition-all"
             >
-              <MessageCircle className="w-5 h-5 text-cosmic-violet mb-2" />
+              <MessageCircle className="w-5 h-5 text-cosmic-violetLight mb-2" />
               <p className="text-sm font-medium text-mystic-100">
                 {t('home.tarotCompanion', { defaultValue: 'Tarot companion' })}
               </p>

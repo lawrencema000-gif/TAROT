@@ -226,7 +226,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     <div className={`space-y-4 pb-6 ${isWhisperingWell ? 'text-mystic-200' : ''}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <HeaderIcon className={`w-6 h-6 ${isWhisperingWell ? 'text-cosmic-violet' : 'text-gold'}`} />
+          <HeaderIcon className={`w-6 h-6 ${isWhisperingWell ? 'text-cosmic-violetLight' : 'text-gold'}`} />
           <h1 className="heading-display-lg text-mystic-100">
             {isWhisperingWell
               ? t('community.whisperingWell.title', { defaultValue: 'Whispering Well' })

@@ -24,7 +24,7 @@ const PERSONAS: Array<{
   accent: string;
 }> = [
   { id: 'sage',      icon: Sparkles,      accent: 'text-gold' },
-  { id: 'oracle',    icon: Feather,       accent: 'text-cosmic-violet' },
+  { id: 'oracle',    icon: Feather,       accent: 'text-cosmic-violetLight' },
   { id: 'mystic',    icon: Moon,          accent: 'text-cosmic-blue' },
   { id: 'priestess', icon: Flower,        accent: 'text-pink-400' },
 ];

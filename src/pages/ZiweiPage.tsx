@@ -137,7 +137,7 @@ export function ZiweiPage() {
                     <span className="flex-1">
                       <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
                       <span className="text-mystic-500 text-xs"> {meaning?.en ?? p.en}</span>
-                      {p.isBody && <span className="text-cosmic-violet text-xs"> · 身宮</span>}
+                      {p.isBody && <span className="text-cosmic-violetLight text-xs"> · 身宮</span>}
                     </span>
                     <span className="text-mystic-400 text-xs">
                       {p.stars.length === 0 ? '—' : p.stars.map((s) => (

@@ -39,7 +39,7 @@ const ASPECT_META: Record<AspectType, { label: string; color: string; icon: Reac
   trine:       { label: 'Trine',        color: 'text-emerald-400',  icon: Triangle },
   sextile:     { label: 'Sextile',      color: 'text-cosmic-blue',  icon: Triangle },
   square:      { label: 'Square',       color: 'text-pink-400',     icon: Square },
-  opposition:  { label: 'Opposition',   color: 'text-cosmic-violet',icon: Minus },
+  opposition:  { label: 'Opposition',   color: 'text-cosmic-violetLight',icon: Minus },
 };
 
 const PLANET_ONE_LINERS: Record<Planet, { sign: string; inSign: (s: ZodiacSign) => string }> = {
@@ -473,7 +473,7 @@ export function NatalChartReportPage() {
                     variant === v
                       ? v === 'natal'         ? 'bg-gold/20 text-gold border-gold/40'
                       : v === 'transits'      ? 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/40'
-                      : v === 'progressions'  ? 'bg-cosmic-violet/20 text-cosmic-violet border-cosmic-violet/40'
+                      : v === 'progressions'  ? 'bg-cosmic-violet/20 text-cosmic-violetLight border-cosmic-violet/40'
                       : v === 'solar-return'  ? 'bg-gold/20 text-gold border-gold/40'
                       : 'bg-pink-400/20 text-pink-400 border-pink-400/40'
                       : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'

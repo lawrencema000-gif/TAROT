@@ -132,7 +132,7 @@ export function CosmicProfileSection({
             )}
             {soulUrge && (
               <div className="text-center">
-                <div className="text-lg font-display text-cosmic-violet">{soulUrge}</div>
+                <div className="text-lg font-display text-cosmic-violetLight">{soulUrge}</div>
                 <div className="text-[9px] uppercase tracking-wider text-mystic-500 mt-0.5">
                   {t('profile.cosmic.soulUrge', { defaultValue: 'Soul Urge' })}
                 </div>

@@ -55,7 +55,7 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
             {SPIRIT_INFO[l.spirit].cn}
           </span>
           {l.moving && <span className="text-gold text-[10px] uppercase tracking-wider">動</span>}
-          {l.isWorld && <span className="text-cosmic-violet text-xs" style={{ fontFamily: 'serif' }}>世</span>}
+          {l.isWorld && <span className="text-cosmic-violetLight text-xs" style={{ fontFamily: 'serif' }}>世</span>}
           {l.isResponse && <span className="text-mystic-400 text-xs" style={{ fontFamily: 'serif' }}>應</span>}
           <ChevronDown className={`w-4 h-4 text-mystic-600 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
@@ -69,7 +69,7 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
             {rel && <p className="text-[13px] text-mystic-400 leading-relaxed">{rel.asks}</p>}
             {spirit && (
               <p className="text-[13px] text-mystic-400 leading-relaxed">
-                <span className="text-cosmic-violet">{spirit.cn}</span> — {spirit.text}
+                <span className="text-cosmic-violetLight">{spirit.cn}</span> — {spirit.text}
               </p>
             )}
           </div>

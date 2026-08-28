@@ -250,7 +250,7 @@ function AiResultView({
         </div>
         <p className="text-mystic-300 text-sm leading-relaxed mb-3">{reading.coreTheme}</p>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30">
-          <span className="text-[10px] uppercase tracking-widest text-cosmic-violet">
+          <span className="text-[10px] uppercase tracking-widest text-cosmic-violetLight">
             {t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}
           </span>
           <span className="text-xs text-mystic-200">{reading.emotionalTone}</span>
@@ -321,7 +321,7 @@ function AiResultView({
           the waking attitude is missing. */}
       {reading.compensatoryMove && (
         <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
-          <h3 className="font-medium text-cosmic-violet mb-2 flex items-center gap-2">
+          <h3 className="font-medium text-cosmic-violetLight mb-2 flex items-center gap-2">
             <Eye className="w-4 h-4" />
             {t('dream.compensatoryLabel', { defaultValue: 'What your waking self is missing' })}
           </h3>
@@ -371,8 +371,8 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.colors.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Palette className="w-3.5 h-3.5 text-cosmic-violet" />
-            <h4 className="text-xs uppercase tracking-widest text-cosmic-violet">
+            <Palette className="w-3.5 h-3.5 text-cosmic-violetLight" />
+            <h4 className="text-xs uppercase tracking-widest text-cosmic-violetLight">
               {t('dream.colorsLabel', { defaultValue: 'Colours present' }) as string}
             </h4>
           </div>

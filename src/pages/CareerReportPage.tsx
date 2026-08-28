@@ -334,14 +334,14 @@ export function CareerReportPage() {
 
       <Card padding="lg">
         <div className="flex items-center gap-2 mb-3">
-          <Eye className="w-4 h-4 text-cosmic-violet" />
-          <h3 className="text-sm font-medium text-cosmic-violet tracking-wide">
+          <Eye className="w-4 h-4 text-cosmic-violetLight" />
+          <h3 className="text-sm font-medium text-cosmic-violetLight tracking-wide">
             {t('careerReport.blindSpots', { defaultValue: 'Blind spots' })}
           </h3>
         </div>
         <ul className="space-y-2">
           {archetype.blindSpots.map((item, i) => (
-            <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-cosmic-violet">
+            <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-cosmic-violetLight">
               {item}
             </li>
           ))}

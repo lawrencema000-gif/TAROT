@@ -15,8 +15,8 @@ export function DailyWisdomCard() {
   return (
     <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 via-mystic-900 to-mystic-900 border-cosmic-violet/20">
       <div className="flex items-center gap-2 mb-3">
-        <Scroll className="w-4 h-4 text-cosmic-violet" />
-        <h3 className="text-sm font-medium text-cosmic-violet tracking-wide">
+        <Scroll className="w-4 h-4 text-cosmic-violetLight" />
+        <h3 className="text-sm font-medium text-cosmic-violetLight tracking-wide">
           {t('wisdom.title', { defaultValue: 'Daily Wisdom' })}
         </h3>
       </div>

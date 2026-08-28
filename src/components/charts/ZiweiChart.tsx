@@ -107,7 +107,7 @@ export function ZiweiChart({
               <div className="flex items-end justify-between mt-1 pt-1 border-t border-mystic-800/40">
                 <span className={`leading-none ${p?.isLife ? 'text-gold' : 'text-mystic-400'}`}>
                   {p?.cn}
-                  {p?.isBody && <span className="text-cosmic-violet ml-0.5">身</span>}
+                  {p?.isBody && <span className="text-cosmic-violetLight ml-0.5">身</span>}
                 </span>
                 <span className="text-mystic-600 leading-none">{p?.branchCn}</span>
               </div>

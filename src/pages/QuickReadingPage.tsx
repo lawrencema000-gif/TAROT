@@ -147,7 +147,7 @@ export function QuickReadingPage() {
 
         <Card padding="lg">
           <div className="flex items-start gap-2 mb-2">
-            <Quote className="w-4 h-4 text-cosmic-violet flex-shrink-0 mt-0.5" />
+            <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-0.5" />
             <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">{result.reading}</p>
           </div>
           {result.memoryUsed && (

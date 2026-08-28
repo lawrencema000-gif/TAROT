@@ -4,18 +4,34 @@ export default {
   theme: {
     extend: {
       colors: {
+        // A real lightness ladder, split into a SURFACE tier and an INK tier.
+        //
+        // The old scale had neither. A default Card (bg-mystic-900/80 over
+        // mystic-950) computed to 1.03:1 against the page and its border to
+        // 1.13:1 — literally invisible — which is why 75 cards ended up
+        // carrying variant="glow". The amber bloom was not decoration, it was
+        // the only thing separating a card from the background. Fix the
+        // surfaces and the glow becomes deletable instead of load-bearing.
+        //
+        // The ink tier was failing WCAG AA everywhere at body sizes:
+        // 400 was 3.76:1 (652 uses), 500 was 2.24:1 (607), 600 was 1.65:1 (90).
+        // Retinting in place fixes ~1,300 text nodes across all 69 pages with
+        // no markup churn, because 300-500 are 98% text usages and 700-950 are
+        // ~99% surface usages (counted, not assumed).
         mystic: {
-          950: '#080812',
-          900: '#0d0d1a',
-          850: '#131320',
-          800: '#1a1a2e',
-          700: '#252542',
-          600: '#353556',
-          500: '#484870',
-          400: '#6b6b8a',
-          300: '#9494ab',
-          200: '#bdbdcc',
-          100: '#e6e6ed',
+          // ── surfaces ──
+          950: '#07070f',  // canvas
+          900: '#101024',  // sunken / nav
+          850: '#16162e',  // surface-1 — Card
+          800: '#1f1f3a',  // surface-2 — input, chip
+          700: '#2c2c4c',  // hairline / border
+          // ── ink ──
+          600: '#7e7e9e',  // faintest legible text
+          500: '#8f8fae',
+          400: '#a3a3bd',  // default muted body text
+          300: '#c6c6d8',
+          200: '#dcdce6',
+          100: '#f2f2f7',
         },
         gold: {
           DEFAULT: '#d4af37',
@@ -36,6 +52,19 @@ export default {
         cosmic: {
           blue: '#4a7eb8',
           rose: '#d4848c',
+          // VERIFIED MISSING: `cosmic-violet` is used 84 times across 27 files
+          // and was never defined here, so `.text-cosmic-violet` was never
+          // generated and every violet accent in the product rendered as
+          // inherited colour — on Home, Profile, Oracle, ChartWheel, Ziwei and
+          // DailyWisdom. The palette was designed as three hues and users have
+          // only ever seen two.
+          //
+          // The value is recovered, not invented: HomeRow.tsx already hardcodes
+          // bg-[#8e6eb5]/20 and index.css's nebula-veil uses rgba(142,110,181).
+          // violetLight exists because bare #8e6eb5 is 4.10:1 on a card and
+          // fails AA as text.
+          violet: '#8e6eb5',
+          violetLight: '#a98fd0',
         },
       },
       fontFamily: {

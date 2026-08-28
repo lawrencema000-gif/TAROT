@@ -317,7 +317,7 @@ export function PartnerCompatPage() {
         {/* Synastry summary — the real astro heart of the reading */}
         {result.synastry && (
           <Card padding="lg">
-            <h3 className="font-medium text-cosmic-violet mb-3">
+            <h3 className="font-medium text-cosmic-violetLight mb-3">
               {t('compat.synastryLabel', { defaultValue: 'Astrology Synastry' })}
             </h3>
             <div className="grid grid-cols-3 gap-2 mb-4">

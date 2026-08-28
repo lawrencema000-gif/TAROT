@@ -133,7 +133,7 @@ export function FengShuiPage() {
 
         {/* Personal Kua inputs — optional, but unlock 8-directions section. */}
         <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
-          <h3 className="font-medium text-cosmic-violet mb-2 flex items-center gap-2">
+          <h3 className="font-medium text-cosmic-violetLight mb-2 flex items-center gap-2">
             <Compass className="w-4 h-4" />
             {t('fengshui.kuaHeading', { defaultValue: 'Your personal Kua (optional)' })}
           </h3>
@@ -316,8 +316,8 @@ export function FengShuiPage() {
         {kua && (
           <Card padding="lg" className="border-cosmic-violet/30">
             <div className="flex items-center gap-2 mb-3">
-              <Compass className="w-4 h-4 text-cosmic-violet" />
-              <h3 className="font-medium text-cosmic-violet">
+              <Compass className="w-4 h-4 text-cosmic-violetLight" />
+              <h3 className="font-medium text-cosmic-violetLight">
                 {t('fengshui.kuaResultHeading', {
                   defaultValue: 'Your 8 personal directions (Kua {{n}})',
                   n: kua.kua,

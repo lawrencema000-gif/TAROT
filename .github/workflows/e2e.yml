@@ -41,7 +41,10 @@ jobs:
       - run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        # webkit is required by the mobile-safari project — see
+        # playwright.config.ts. Installing only chromium made every
+        # scheduled run fail at browser launch.
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Resolve target URL
         id: target

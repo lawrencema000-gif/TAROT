@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { InputHTMLAttributes, forwardRef, useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -35,10 +35,16 @@ const FIELD_HOVER = '[@media(hover:hover)]:hover:border-mystic-500/70';
  * transition has no "from" to run from. `useReducedMotion` because the global
  * CSS block in index.css cannot reach framer's inline styles.
  */
-function FieldError({ children }: { children: React.ReactNode }) {
+function FieldError({ id, children }: { id: string; children: React.ReactNode }) {
   const reduce = !!useReducedMotion();
   return (
     <motion.p
+      id={id}
+      // Announced when it appears, so the error reaches someone who cannot
+      // see the border turn red. `polite` rather than `assertive`: it should
+      // wait for a pause in speech, not interrupt mid-word.
+      role="status"
+      aria-live="polite"
       initial={reduce ? false : { opacity: 0, y: -2 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.16, ease: [0.22, 0.8, 0.25, 1] }}
@@ -50,11 +56,20 @@ function FieldError({ children }: { children: React.ReactNode }) {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon, className = '', ...props }, ref) => {
+  ({ label, error, icon, className = '', id, ...props }, ref) => {
+    // The label used to be a bare <label> with no htmlFor beside an <input>
+    // with no id, so it was decorative: nothing associated the two. Screen
+    // readers fell back to the placeholder for the accessible name — and a
+    // placeholder vanishes the moment you start typing, which is when you
+    // most need to know which field you are in. A caller-supplied id still
+    // wins, so existing markup keeps its own anchors.
+    const autoId = useId();
+    const inputId = id ?? autoId;
+    const errorId = `${inputId}-error`;
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-mystic-300 mb-2">
+          <label htmlFor={inputId} className="block text-sm font-medium text-mystic-300 mb-2">
             {label}
           </label>
         )}
@@ -66,6 +81,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
+            id={inputId}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
             className={`
               w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl
               px-4 py-3 text-mystic-100 placeholder-mystic-500
@@ -79,7 +97,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
         </div>
-        {error && <FieldError>{error}</FieldError>}
+        {error && <FieldError id={errorId}>{error}</FieldError>}
       </div>
     );
   }
@@ -93,16 +111,22 @@ interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ label, error, className = '', ...props }, ref) => {
+  ({ label, error, className = '', id, ...props }, ref) => {
+    const autoId = useId();
+    const fieldId = id ?? autoId;
+    const errorId = `${fieldId}-error`;
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-mystic-300 mb-2">
+          <label htmlFor={fieldId} className="block text-sm font-medium text-mystic-300 mb-2">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
+          id={fieldId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           className={`
             w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl
             px-4 py-3 text-mystic-100 placeholder-mystic-500
@@ -115,7 +139,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           `}
           {...props}
         />
-        {error && <FieldError>{error}</FieldError>}
+        {error && <FieldError id={errorId}>{error}</FieldError>}
       </div>
     );
   }

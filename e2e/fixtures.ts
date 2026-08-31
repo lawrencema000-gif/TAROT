@@ -14,18 +14,22 @@ type Fixtures = {
 };
 
 export const test = base.extend<Fixtures>({
-  authedPage: async ({ page }, use) => {
+  authedPage: async ({ page }, use, testInfo) => {
     const email = process.env.E2E_EMAIL;
     const password = process.env.E2E_PASSWORD;
-    if (!email || !password) {
-      throw new Error(
-        'E2E_EMAIL + E2E_PASSWORD env vars are required. Set them via GitHub secrets or .env.e2e for local runs.',
-      );
-    }
+    // Skip, not throw. The locale spec already skips on missing credentials,
+    // so a developer without an .env.e2e saw six red failures and two honest
+    // skips for the same cause — and red that means "you have no password"
+    // trains people to ignore red that means "the app is broken". CI has the
+    // secrets, so nothing is quietly lost there.
+    testInfo.skip(
+      !email || !password,
+      'E2E_EMAIL + E2E_PASSWORD not set — see e2e/README.md for .env.e2e',
+    );
     await page.goto('/?lang=en');
     await page.getByRole('button', { name: /sign in/i }).first().click();
-    await page.getByLabel(/email/i).fill(email);
-    await page.getByLabel(/password/i).fill(password);
+    await page.getByLabel(/email/i).fill(email!);
+    await page.getByLabel(/password/i).fill(password!);
     await page.getByRole('button', { name: /^sign in$/i }).click();
     // Signed-in landmark: the bottom nav with `Home` + `Readings` tabs.
     await expect(page.getByRole('tab', { name: /home/i })).toBeVisible({ timeout: 15_000 });

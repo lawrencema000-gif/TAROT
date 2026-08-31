@@ -58,7 +58,7 @@ export function FeaturePill({
   const baseClass =
     'flex flex-col items-center justify-center gap-2 py-4 px-3 ' +
     'hairline-gold-soft rounded-2xl bg-mystic-900/55 backdrop-blur-sm ' +
-    'transition-all duration-300 ease-out ' +
+    'transition-all duration-slow ease-out ' +
     'hover:border-gold/35 hover:bg-mystic-900/75 hover:-translate-y-0.5 ' +
     'active:translate-y-0 active:scale-[0.98]';
   if (href) {
@@ -154,7 +154,7 @@ export const RitualRow = forwardRef<HTMLButtonElement, RitualRowProps>(
         className={`
           w-full flex items-center gap-4 px-4 py-3.5
           hairline-gold-soft rounded-2xl bg-mystic-900/55 backdrop-blur-sm
-          transition-all duration-300 ease-out
+          transition-all duration-slow ease-out
           hover:border-gold/35 hover:bg-mystic-900/75
           active:scale-[0.99]
           ${className}

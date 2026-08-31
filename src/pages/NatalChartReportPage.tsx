@@ -530,7 +530,7 @@ export function NatalChartReportPage() {
           />
           {loadingVariant && (
             <div
-              className="absolute inset-0 flex flex-col items-center justify-center bg-mystic-950/60 backdrop-blur-sm rounded-xl animate-in fade-in duration-200"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-mystic-950/60 backdrop-blur-sm rounded-xl animate-in fade-in duration-base"
               role="status"
               aria-live="polite"
             >

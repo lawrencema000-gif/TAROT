@@ -51,7 +51,7 @@ export function TarotSelectView({
 
       <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-40">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-          {deckCards.map((cardId) => {
+          {deckCards.map((cardId, index) => {
             const isSelected = selectedIndices.includes(cardId);
             const selectionOrder = selectedIndices.indexOf(cardId) + 1;
 
@@ -59,13 +59,19 @@ export function TarotSelectView({
               <button
                 key={cardId}
                 onClick={() => onCardSelect(cardId)}
-                className="relative group"
+                className="relative group animate-fade-in"
+                style={{
+                  animationDuration: '260ms',
+                  animationDelay: `${Math.min(index, 20) * 16}ms`,
+                  animationFillMode: 'both',
+                }}
               >
                 <div
                   className={`
-                    aspect-[2/3] rounded-lg border-2 transition-all duration-300 overflow-hidden
+                    aspect-[2/3] rounded-lg border-2 overflow-hidden
+                    transition-[transform,border-color,box-shadow] duration-base ease-out
                     ${isSelected
-                      ? 'border-gold bg-gradient-to-br from-gold/20 to-mystic-800 shadow-gold scale-105'
+                      ? 'border-gold bg-gradient-to-br from-gold/20 to-mystic-800 shadow-gold scale-[1.06] -translate-y-1'
                       : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
                     }
                     flex items-center justify-center
@@ -81,11 +87,26 @@ export function TarotSelectView({
                     />
                   )}
                   <div className="relative z-10">
-                    {isSelected && (
-                      <div className="w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm shadow-lg">
-                        {selectionOrder}
-                      </div>
-                    )}
+                    {/*
+                      Always mounted, scaled to nothing when unpicked. A
+                      badge that mounts on selection can only appear; one
+                      that scales can also *leave*, so un-picking a card
+                      reads as an undo rather than as a disappearance.
+                      The back-out curve gives the pick a bit of weight.
+                    */}
+                    <div
+                      className={`w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm shadow-lg transition-transform duration-base ${
+                        isSelected ? 'scale-100' : 'scale-0'
+                      }`}
+                      style={{
+                        transitionTimingFunction: isSelected
+                          ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+                          : 'cubic-bezier(0.4, 0, 1, 1)',
+                      }}
+                      aria-hidden={!isSelected}
+                    >
+                      {selectionOrder > 0 ? selectionOrder : ''}
+                    </div>
                   </div>
                 </div>
               </button>

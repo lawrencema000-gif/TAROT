@@ -503,7 +503,7 @@ export function HomePage() {
               {[-12, 0, 12].map((rot, i) => (
                 <div
                   key={rot}
-                  className="absolute inset-0 rounded-md border border-gold/40 overflow-hidden shadow-glow origin-bottom transition-transform duration-300 group-hover:scale-105"
+                  className="absolute inset-0 rounded-md border border-gold/40 overflow-hidden shadow-glow origin-bottom transition-transform duration-slow group-hover:scale-105"
                   style={{ transform: `rotate(${rot}deg)`, zIndex: i }}
                 >
                   <img
@@ -620,7 +620,7 @@ export function HomePage() {
           </div>
           <div className="relative h-2 bg-mystic-800 rounded-full overflow-hidden">
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold via-gold-light to-gold rounded-full transition-all duration-500"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold via-gold-light to-gold rounded-full transition-all duration-deliberate"
               style={{ width: `${xpProgress.percentage}%` }}
             />
           </div>

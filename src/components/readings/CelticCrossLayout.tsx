@@ -32,7 +32,7 @@ export function CelticCrossLayout({
         <div
           className={`
             w-full h-full
-            rounded-lg border transition-all duration-700 overflow-hidden
+            rounded-lg border transition-all duration-ambient overflow-hidden
             ${drawn.revealed
               ? 'border-gold/40 shadow-glow animate-flip-in'
               : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
@@ -66,7 +66,7 @@ export function CelticCrossLayout({
           )}
 
           {!drawn.revealed && (
-            <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-lg transition-all duration-300" />
+            <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-lg transition-all duration-slow" />
           )}
         </div>
         {drawn.revealed && (

@@ -56,7 +56,7 @@ export function TrialReminderModal() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-md bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 border border-gold/30 rounded-3xl shadow-2xl shadow-gold/10 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
+        className="relative w-full max-w-md bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 border border-gold/30 rounded-3xl shadow-2xl shadow-gold/10 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-slow"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0px)' }}
         onClick={(e) => e.stopPropagation()}
       >

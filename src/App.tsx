@@ -539,7 +539,7 @@ function AppContent() {
         ) : profile?.background_url ? (
           <div className="fixed inset-0 z-0">
             <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-700"
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-ambient"
               style={{ backgroundImage: `url(${profile.background_url})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />

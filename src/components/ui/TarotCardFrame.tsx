@@ -61,7 +61,7 @@ export function TarotCardFrame({
     >
       <div
         className={`
-          relative w-full h-full preserve-3d transition-transform duration-500 ease-out
+          relative w-full h-full preserve-3d transition-transform duration-deliberate ease-out
           ${isFlipping ? 'rotate-y-180' : ''}
           ${reversed && revealed ? 'rotate-180' : ''}
         `}
@@ -71,7 +71,7 @@ export function TarotCardFrame({
             absolute inset-0 rounded-xl overflow-hidden backface-hidden
             bg-gradient-to-br from-mystic-800 via-mystic-850 to-mystic-900
             border-2 border-gold/30 shadow-card
-            ${glowOnHover ? 'hover:shadow-card-hover hover:border-gold/50 transition-all duration-300' : ''}
+            ${glowOnHover ? 'hover:shadow-card-hover hover:border-gold/50 transition-all duration-slow' : ''}
           `}
         >
           <div className="absolute inset-1 rounded-lg border border-gold/20" />
@@ -84,7 +84,7 @@ export function TarotCardFrame({
                   <img
                     src={imageUrl}
                     alt={name}
-                    className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+                    className={`w-full h-full object-cover rounded-lg transition-opacity duration-slow ${
                       isLoading ? 'opacity-0' : 'opacity-100'
                     }`}
                   />
@@ -121,7 +121,7 @@ export function TarotCardFrame({
           )}
 
           {glowOnHover && (
-            <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-slow pointer-events-none">
               <div className="absolute inset-0 bg-gradient-to-t from-gold/5 to-transparent" />
             </div>
           )}

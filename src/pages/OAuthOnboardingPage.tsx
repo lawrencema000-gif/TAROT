@@ -222,7 +222,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
       <div className="h-1 bg-mystic-800/50">
         <div
-          className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-500 ease-out"
+          className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-deliberate ease-out"
           style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
         />
       </div>

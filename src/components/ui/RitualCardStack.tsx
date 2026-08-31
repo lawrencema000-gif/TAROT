@@ -98,7 +98,7 @@ export function RitualCardStack({
               key={card.id}
               className={`
                 absolute inset-0 transition-all
-                ${isDragging ? 'duration-0' : 'duration-300 ease-out'}
+                ${isDragging ? 'duration-0' : 'duration-slow ease-out'}
               `}
               style={{
                 transform: `translateX(${translateX}%) scale(${scale})`,
@@ -124,7 +124,7 @@ export function RitualCardStack({
               if (index > currentIndex) onCardViewed?.(index);
             }}
             className={`
-              h-2 rounded-full transition-all duration-300
+              h-2 rounded-full transition-all duration-slow
               ${index === currentIndex ? 'w-6 bg-gold' : 'w-2 bg-mystic-600 hover:bg-mystic-500'}
             `}
             aria-label={`Go to card ${index + 1}`}

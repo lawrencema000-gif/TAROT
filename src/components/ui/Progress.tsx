@@ -26,7 +26,7 @@ export function Progress({ value, max = 100, size = 'md', showLabel, variant = '
     <div className={`w-full ${className}`}>
       <div className={`w-full bg-mystic-800 rounded-full overflow-hidden ${sizeStyles[size]}`}>
         <div
-          className={`${sizeStyles[size]} rounded-full transition-all duration-500 ease-out ${trackColors[variant]}`}
+          className={`${sizeStyles[size]} rounded-full transition-all duration-deliberate ease-out ${trackColors[variant]}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -66,7 +66,7 @@ export function ProgressRing({ value, max = 100, size = 80, strokeWidth = 6, chi
           cy={size / 2}
         />
         <circle
-          className="text-gold transition-all duration-500 ease-out"
+          className="text-gold transition-all duration-deliberate ease-out"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}

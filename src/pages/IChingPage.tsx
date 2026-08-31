@@ -131,7 +131,7 @@ export function IChingPage() {
           {[0, 1, 2, 3, 4, 5].map((index) => (
             <div
               key={index}
-              className={`w-28 h-2 rounded-full transition-all duration-500 ${
+              className={`w-28 h-2 rounded-full transition-all duration-deliberate ${
                 animatingLine >= index
                   ? 'bg-gradient-to-r from-gold-dark via-gold to-gold-light shadow-[0_0_8px_rgba(212,175,55,0.6)]'
                   : 'bg-mystic-800'

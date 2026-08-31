@@ -67,13 +67,13 @@ export function BlogPage() {
             onClick={() => navigate(`/blog/${post.slug}`)}
             className="text-left w-full"
           >
-            <Card className="overflow-hidden hover:border-gold/30 transition-all duration-300 group">
+            <Card className="overflow-hidden hover:border-gold/30 transition-all duration-slow group">
               {post.cover_image && (
                 <div className="h-40 overflow-hidden">
                   <img
                     src={post.cover_image}
                     alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-deliberate"
                     loading="lazy"
                   />
                 </div>

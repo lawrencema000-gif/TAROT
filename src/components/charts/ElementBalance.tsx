@@ -14,7 +14,7 @@ function Bars({ data, total, colors, label }: { data: Record<string, number>; to
           <div key={key} className="flex items-center gap-2">
             <span className="w-16 text-xs text-mystic-300">{key}</span>
             <div className="flex-1 h-2 rounded-full bg-mystic-800/60 overflow-hidden">
-              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: colors[key] }} />
+              <div className="h-full rounded-full transition-all duration-deliberate" style={{ width: `${pct}%`, background: colors[key] }} />
             </div>
             <span className="w-8 text-right text-xs text-mystic-400 tabular-nums">{val}</span>
           </div>

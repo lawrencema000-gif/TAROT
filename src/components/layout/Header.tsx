@@ -25,7 +25,7 @@ export function Header({
   // pre-redesign 36×36; we want 40×40 minimum for thumb comfort.
   const iconBtn =
     'p-2.5 rounded-xl hairline-gold-soft text-mystic-300 ' +
-    'transition-all duration-200 active:scale-95 backdrop-blur-sm ' +
+    'transition-all duration-base active:scale-95 backdrop-blur-sm ' +
     'hover:text-mystic-100 hover:border-gold/30 hover:bg-mystic-900/50';
 
   return (

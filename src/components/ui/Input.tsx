@@ -1,9 +1,52 @@
 import { InputHTMLAttributes, forwardRef } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   icon?: React.ReactNode;
+}
+
+/**
+ * Motion literals pending the theme tokens — see the note in Button.tsx.
+ *
+ * A field has no press state, so the only motion it owes the user is the
+ * border and ring answering focus, and that has to be fast enough to feel
+ * like a consequence of the tap rather than an event of its own: 120ms.
+ *
+ * The transition names its properties instead of using `transition-all`. The
+ * ring is a box-shadow, and `all` would have swept in anything else the field
+ * might animate later — including layout properties when an error message
+ * changes the block's height.
+ */
+const FIELD_MOTION =
+  'transition-[border-color,box-shadow,background-color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]';
+
+// Web-only, because `:hover` sticks to the last-tapped element on Android.
+const FIELD_HOVER = '[@media(hover:hover)]:hover:border-mystic-500/70';
+
+/**
+ * The error message is the one genuinely new piece of state on this component,
+ * and it used to appear between two frames. It now enters on 160ms — the
+ * shortest thing in the primitives that is still an entrance — so the eye is
+ * pulled to it without the text feeling like it teleported in.
+ *
+ * framer rather than a keyframe because the element mounts fresh and a CSS
+ * transition has no "from" to run from. `useReducedMotion` because the global
+ * CSS block in index.css cannot reach framer's inline styles.
+ */
+function FieldError({ children }: { children: React.ReactNode }) {
+  const reduce = !!useReducedMotion();
+  return (
+    <motion.p
+      initial={reduce ? false : { opacity: 0, y: -2 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.16, ease: [0.22, 0.8, 0.25, 1] }}
+      className="mt-2 text-sm text-red-400"
+    >
+      {children}
+    </motion.p>
+  );
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -26,7 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={`
               w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl
               px-4 py-3 text-mystic-100 placeholder-mystic-500
-              transition-all duration-200
+              ${FIELD_MOTION} ${FIELD_HOVER}
               focus:outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20
               disabled:opacity-50 disabled:cursor-not-allowed
               ${icon ? 'pl-12' : ''}
@@ -36,9 +79,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
         </div>
-        {error && (
-          <p className="mt-2 text-sm text-red-400">{error}</p>
-        )}
+        {error && <FieldError>{error}</FieldError>}
       </div>
     );
   }
@@ -65,7 +106,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           className={`
             w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl
             px-4 py-3 text-mystic-100 placeholder-mystic-500
-            transition-all duration-200 resize-none
+            resize-none
+            ${FIELD_MOTION} ${FIELD_HOVER}
             focus:outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20
             disabled:opacity-50 disabled:cursor-not-allowed
             ${error ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20' : ''}
@@ -73,9 +115,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           `}
           {...props}
         />
-        {error && (
-          <p className="mt-2 text-sm text-red-400">{error}</p>
-        )}
+        {error && <FieldError>{error}</FieldError>}
       </div>
     );
   }

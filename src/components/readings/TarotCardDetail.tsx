@@ -50,11 +50,11 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
       <div className="relative">
         {imageUrl ? (
           <div className="relative mx-auto w-56 sm:w-64">
-            <div className={`relative transition-transform duration-500 ${reversed ? 'rotate-180' : ''}`}>
+            <div className={`relative transition-transform duration-deliberate ${reversed ? 'rotate-180' : ''}`}>
               <img
                 src={imageUrl}
                 alt={card.name}
-                className={`w-full h-auto rounded-2xl shadow-2xl border-2 border-gold/30 transition-opacity duration-300 ${
+                className={`w-full h-auto rounded-2xl shadow-2xl border-2 border-gold/30 transition-opacity duration-slow ${
                   isLoading ? 'opacity-0' : 'opacity-100'
                 }`}
               />

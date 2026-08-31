@@ -709,7 +709,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           <div className="relative mx-auto flex items-center justify-center"
                style={{ width: 220, height: 200 }}>
             <div
-              className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-500 ${
+              className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-deliberate ${
                 isShuffling ? 'opacity-100 animate-pulse-slow' : 'opacity-60'
               }`}
             />
@@ -818,7 +818,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                 >
                   <div
                     className={`
-                      aspect-[2/3] rounded-lg border-2 transition-all duration-300 overflow-hidden
+                      aspect-[2/3] rounded-lg border-2 transition-all duration-slow overflow-hidden
                       ${isSelected
                         ? 'border-gold bg-gradient-to-br from-gold/20 to-mystic-800 shadow-gold scale-105'
                         : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
@@ -955,7 +955,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                   <div
                     className={`
                       w-24 h-36
-                      rounded-xl border transition-all duration-700 overflow-hidden
+                      rounded-xl border transition-all duration-ambient overflow-hidden
                       ${drawn.revealed
                         ? 'border-gold/40 shadow-glow animate-flip-in'
                         : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
@@ -995,7 +995,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                     )}
 
                     {!drawn.revealed && (
-                      <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-all duration-300" />
+                      <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-all duration-slow" />
                     )}
                   </div>
                   {drawn.revealed && (

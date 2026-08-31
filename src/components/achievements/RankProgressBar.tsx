@@ -44,7 +44,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
               <div
                 className={`
                   relative w-10 h-10 rounded-full flex items-center justify-center
-                  transition-all duration-500
+                  transition-all duration-deliberate
                   ${isCurrent
                     ? 'bg-gradient-to-br from-gold/30 to-amber-600/30 border-2 border-gold shadow-lg shadow-gold/30'
                     : isActive
@@ -55,7 +55,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
               >
                 <Icon
                   className={`
-                    w-5 h-5 transition-all duration-500
+                    w-5 h-5 transition-all duration-deliberate
                     ${isCurrent
                       ? 'text-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]'
                       : isActive
@@ -91,7 +91,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
           ))}
         </div>
         <div
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-gold/80 to-amber-500/80 rounded-full transition-all duration-700"
+          className="absolute left-0 top-0 h-full bg-gradient-to-r from-gold/80 to-amber-500/80 rounded-full transition-all duration-ambient"
           style={{
             width: `${((activeIndex + progressToNext / 100) / (RANKS.length - 1)) * 100}%`,
           }}

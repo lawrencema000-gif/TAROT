@@ -7,6 +7,7 @@
  * new-reading actions. All state and handlers are passed in from the
  * parent — this component is pure presentation.
  */
+import { useRef, type CSSProperties } from 'react';
 import {
   Eye,
   Feather,
@@ -27,6 +28,33 @@ import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import type { TarotCard } from '../../../types';
 import type { FocusArea } from './types';
+
+/*
+ * The flip.
+ *
+ * This is the moment the whole product is built around, so it is a real
+ * card turning over — two faces on one `preserve-3d` plane, rotated on Y
+ * — not a fade between two states. 520ms is above the UI-feedback budget
+ * on purpose: the user is watching this one, deliberately.
+ *
+ * Only `transform` and `opacity` move. The easing is a plain ease-out
+ * with a long tail so the card decelerates into place instead of
+ * arriving and stopping dead; no overshoot, because a card that
+ * bounces past 180° reads as a glitch rather than as weight.
+ *
+ * Reduced motion needs nothing here: the global block in index.css
+ * pins transition-duration/-delay with `!important`, which beats these
+ * inline declarations, so the card snaps to its revealed face.
+ */
+const FLIP_MS = 520;
+const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
+/** Multi-card reveals land in sequence rather than as one slab. */
+const FLIP_STAGGER_MS = 80;
+
+const BACKFACE: CSSProperties = {
+  backfaceVisibility: 'hidden',
+  WebkitBackfaceVisibility: 'hidden',
+};
 
 interface RevealCard { card: TarotCard; reversed: boolean; revealed: boolean; }
 interface FocusInterp { content: string; icon: typeof Heart; label: string; color: string; }
@@ -91,6 +119,32 @@ export function TarotRevealView(props: TarotRevealViewProps) {
     onNewReading,
   } = props;
 
+  /*
+   * Stagger is assigned per *reveal event*, not per card index. Tapping
+   * the third card alone must flip it immediately — inheriting a 160ms
+   * index-based delay would read as lag. So only the cards that turned
+   * over in this render get a delay, ranked among themselves, which
+   * means "reveal all" cascades and a single tap does not.
+   *
+   * A ref rather than state: these values must be on the element in the
+   * same commit that flips it, and re-rendering to apply a delay would
+   * be a frame too late. Re-running this block (StrictMode) is a no-op —
+   * by then nothing is newly revealed, so no delay is rewritten.
+   */
+  const prevRevealed = useRef<boolean[]>([]);
+  const flipDelays = useRef<number[]>([]);
+  {
+    const newly: number[] = [];
+    drawnCards.forEach((d, i) => {
+      if (!d.revealed) flipDelays.current[i] = 0;
+      else if (!prevRevealed.current[i]) newly.push(i);
+    });
+    newly.forEach((idx, rank) => {
+      flipDelays.current[idx] = newly.length > 1 ? rank * FLIP_STAGGER_MS : 0;
+    });
+    prevRevealed.current = drawnCards.map((d) => d.revealed);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -128,67 +182,101 @@ export function TarotRevealView(props: TarotRevealViewProps) {
         />
       ) : (
         <div className="flex flex-wrap justify-center gap-4">
-          {drawnCards.map((drawn, i) => (
+          {drawnCards.map((drawn, i) => {
+            const delay = flipDelays.current[i] ?? 0;
+            const face = getCardImage(drawn.card);
+            return (
             <div key={i} className="relative group">
               <button
                 onClick={() => drawn.revealed ? onCardClick(drawn.card, drawn.reversed) : onRevealCard(i)}
-                className="relative perspective-1000"
+                className="relative"
               >
+                {/*
+                  Perspective and press feedback live on this wrapper; the
+                  flip lives on the child. Two transforms on one element
+                  would fight — the scale would overwrite the rotation.
+                */}
                 <div
-                  className={`
-                    w-24 h-36
-                    rounded-xl border transition-all duration-700 overflow-hidden
-                    ${drawn.revealed
-                      ? 'border-gold/40 shadow-glow animate-flip-in'
-                      : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
-                    }
-                    flex items-center justify-center relative
-                  `}
-                  style={{ transformStyle: 'preserve-3d' }}
+                  className={`w-24 h-36 transition-transform duration-base ease-out ${
+                    drawn.revealed ? '' : 'cursor-pointer hover:scale-105 active:scale-95'
+                  }`}
+                  style={{ perspective: '1000px' }}
                 >
-                  {drawn.revealed ? (
-                    getCardImage(drawn.card) ? (
-                      <img
-                        src={getCardImage(drawn.card)}
-                        alt={drawn.card.name}
-                        className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
-                      />
-                    ) : (
-                      <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                        <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
-                        <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
-                      </div>
-                    )
-                  ) : (
-                    <>
+                  <div
+                    className="relative w-full h-full"
+                    style={{
+                      transformStyle: 'preserve-3d',
+                      transform: drawn.revealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                      transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
+                      transitionDelay: `${delay}ms`,
+                    }}
+                  >
+                    {/* Back — what you see before the turn. */}
+                    <div
+                      className="absolute inset-0 rounded-xl overflow-hidden border border-mystic-600 group-hover:border-gold/30 bg-gradient-to-br from-mystic-800 to-mystic-900 flex items-center justify-center transition-colors duration-base"
+                      style={BACKFACE}
+                    >
                       {cardBackUrl ? (
                         <img src={cardBackUrl} alt="Card Back" className="w-full h-full object-cover" />
                       ) : (
                         <div className="text-center">
-                          <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                            <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
+                          <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors duration-base">
+                            <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors duration-base" />
                           </div>
                           <p className="text-xs text-mystic-500 mt-2">{t('readings.revealView.tapToReveal')}</p>
                         </div>
                       )}
-                    </>
-                  )}
+                      <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-colors duration-base" />
+                    </div>
 
-                  {!drawn.revealed && (
-                    <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-all duration-300" />
-                  )}
-                </div>
-                {drawn.revealed && (
-                  <div className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg">
-                    <Info className="w-3.5 h-3.5 text-gold" />
+                    {/*
+                      Face — mounted from the start, pre-turned 180° and
+                      hidden by backface-visibility. Rendering it only on
+                      reveal would mean decoding the image mid-flip, which
+                      is exactly when a mid-range phone can least afford it.
+                    */}
+                    <div
+                      className="absolute inset-0 rounded-xl overflow-hidden border border-gold/40 shadow-glow flex items-center justify-center"
+                      style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
+                      aria-hidden={!drawn.revealed}
+                    >
+                      {face ? (
+                        <img
+                          src={face}
+                          alt={drawn.card.name}
+                          className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
+                        />
+                      ) : (
+                        <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
+                          <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
+                          <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
+                {/*
+                  The "there is more here" badge arrives as the card
+                  settles, not with it — causality: the card turned, so
+                  now it has an affordance.
+                */}
+                <div
+                  className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg pointer-events-none transition-opacity duration-base ease-out"
+                  style={{
+                    opacity: drawn.revealed ? 1 : 0,
+                    transitionDelay: `${delay + FLIP_MS - 140}ms`,
+                  }}
+                  aria-hidden={!drawn.revealed}
+                >
+                  <Info className="w-3.5 h-3.5 text-gold" />
+                </div>
               </button>
               <p className="text-xs text-mystic-400 mt-1 text-center">
                 {getPositionLabel(i)}
               </p>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -198,8 +286,17 @@ export function TarotRevealView(props: TarotRevealViewProps) {
         </Button>
       )}
 
+      {/*
+        The interpretation arrives *after* the last card has turned, so the
+        sequence reads as cause and effect rather than as two things
+        happening at once. `both` fill keeps it invisible during the delay;
+        without it the block would flash in at full opacity first.
+      */}
       {allRevealed && (
-        <div className="space-y-6 animate-fade-in">
+        <div
+          className="space-y-6 animate-fade-in"
+          style={{ animationDuration: '320ms', animationDelay: '260ms', animationFillMode: 'both' }}
+        >
           <div className="border-t border-mystic-700 pt-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-lg text-gold">{t('readings.interpretation')}</h3>

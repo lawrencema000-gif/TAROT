@@ -19,6 +19,7 @@ import { computeCelestialLines, type PlanetName } from '../utils/astrocartograph
 import { getZodiacSign } from '../utils/zodiac';
 import type { City } from '../utils/celestialGeo';
 import type { DestinedPlace } from '../types';
+import { scrollBehavior } from '../utils/motion';
 
 const INTRO_SEEN_KEY = 'arcana_celestial_intro_seen';
 
@@ -105,14 +106,14 @@ export function CelestialMapPage() {
     setShowInsightPanel(true);
     mapEngineRef.current?.flyTo([city.lon, city.lat]);
     requestAnimationFrame(() => {
-      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      mapSectionRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     });
   }
 
   function handleLifeAreaCardPick(area: 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth') {
     setActiveFilter(area);
     requestAnimationFrame(() => {
-      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      mapSectionRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     });
   }
 

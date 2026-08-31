@@ -9,6 +9,7 @@ import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { localDateStr } from '../utils/localDate';
+import { scrollBehavior } from '../utils/motion';
 
 type Persona = 'sage' | 'oracle' | 'mystic' | 'priestess';
 
@@ -82,7 +83,7 @@ export function AiCompanionPage() {
 
   // Auto-scroll on new message
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: scrollBehavior() });
   }, [history, sending]);
 
   const incDailyUsed = useCallback(() => {
@@ -195,7 +196,7 @@ export function AiCompanionPage() {
               onClick={() => setPersona(p.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all border ${
                 isActive
-                  ? `${p.accent} bg-mystic-800/70 border-current/40`
+                  ? `${p.accent} bg-mystic-800/70 border-current`
                   : 'text-mystic-400 bg-mystic-800/30 border-mystic-700/30'
               }`}
             >

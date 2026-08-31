@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useCelestialMapEngine, type MapMode } from './useCelestialMapEngine';
 import { CelestialMapControls } from './CelestialMapControls';
 import { CelestialDestinedBeacon } from './CelestialDestinedBeacon';
@@ -105,6 +105,7 @@ export function CelestialMapView({
   destinedAnimateEntrance = false,
   birthLocation,
 }: Props) {
+  const reduceMotion = !!useReducedMotion();
   const engine = useCelestialMapEngine({ lines, initialMode });
   const svgRef = useRef<SVGSVGElement | null>(null);
   const groupRef = useRef<SVGGElement | null>(null);
@@ -376,13 +377,19 @@ export function CelestialMapView({
                   transition: 'cx 0.6s ease-out, cy 0.6s ease-out',
                 }}
               >
-                <animate
-                  attributeName="opacity"
-                  values={`${s.opacity};${s.opacity * 0.4};${s.opacity}`}
-                  dur={`${s.twinkleDur}s`}
-                  begin={`${s.twinkleDelay}s`}
-                  repeatCount="indefinite"
-                />
+                {/* SMIL, not CSS: <animate> has its own timing model, so the
+                    global prefers-reduced-motion block in index.css cannot
+                    collapse it. 80 stars pulsing forever is exactly what that
+                    setting is asking to stop, so don't render the element. */}
+                {!reduceMotion && (
+                  <animate
+                    attributeName="opacity"
+                    values={`${s.opacity};${s.opacity * 0.4};${s.opacity}`}
+                    dur={`${s.twinkleDur}s`}
+                    begin={`${s.twinkleDelay}s`}
+                    repeatCount="indefinite"
+                  />
+                )}
               </circle>
             );
           })}

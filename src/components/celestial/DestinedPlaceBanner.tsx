@@ -27,7 +27,7 @@ export function DestinedPlaceBanner({ place, onRevisit, onDismiss }: Props) {
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
-      className="relative rounded-2xl bg-gradient-to-r from-gold/12 via-mystic-900/60 to-mystic-900/60 hairline-gold border border-gold/30 overflow-hidden"
+      className="relative rounded-2xl bg-gradient-to-r from-gold/[0.12] via-mystic-900/60 to-mystic-900/60 hairline-gold border border-gold/30 overflow-hidden"
     >
       {/* Subtle inner glow */}
       <div

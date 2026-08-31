@@ -409,7 +409,8 @@ export function HomePage() {
           so the first thing a returning user sees is the call to start
           their daily practice. */}
       {!ritualStarted ? (
-        <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil floating-particles">
+        <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil">
+          <span className="floating-particles-overlay floating-particles" aria-hidden />
           <div className="relative z-[1] py-2">
             <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block animate-float-gentle">
               <MysticalStar size={72} />

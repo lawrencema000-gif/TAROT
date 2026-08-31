@@ -198,5 +198,19 @@ export default {
       },
     },
   },
+  // Classes built at runtime rather than written literally, so Tailwind's
+  // scanner cannot see them. QuizzesPage composes `text-${metadata.color}`
+  // and `text-${color}` from data. Every value happens to be emitted today
+  // only because unrelated files use the same literals — change a quiz colour
+  // to anything not used elsewhere and the icon silently renders colourless,
+  // with nothing failing. Naming them here makes that dependency real.
+  safelist: [
+    'text-cosmic-blue',
+    'text-cosmic-rose',
+    'text-emerald-400',
+    'text-gold',
+    'text-mystic-300',
+  ],
+
   plugins: [],
 };

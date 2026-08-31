@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { PageHeader, CardSkeleton } from '../components/ui';
+import { scrollBehavior } from '../utils/motion';
 
 // Lazy-load the eastern-systems pages — keeps ~40-60 KB of static data out
 // of the main ReadingsPage bundle. Chunks only download when a user with
@@ -113,7 +114,7 @@ function ReadingsTabStrip({
     if (!el) return;
     const activeBtn = el.querySelector<HTMLButtonElement>(`[data-tab-id="${activeTab}"]`);
     if (activeBtn) {
-      activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      activeBtn.scrollIntoView({ behavior: scrollBehavior(), inline: 'nearest', block: 'nearest' });
     }
   }, [activeTab]);
 
@@ -122,7 +123,7 @@ function ReadingsTabStrip({
     if (!el) return;
     // Scroll one "card cluster" worth — about 70% of the visible width.
     const delta = Math.max(160, Math.floor(el.clientWidth * 0.7)) * (dir === 'right' ? 1 : -1);
-    el.scrollBy({ left: delta, behavior: 'smooth' });
+    el.scrollBy({ left: delta, behavior: scrollBehavior() });
   };
 
   // Mouse drag-to-pan. Only enables on actual mousedown (not touchstart),

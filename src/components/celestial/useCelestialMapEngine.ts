@@ -12,6 +12,7 @@ import 'd3-transition';
 import worldData from 'world-atlas/countries-110m.json';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
+import { motionDuration } from '../../utils/motion';
 
 /**
  * Interactive engine for the Celestial Map v2.
@@ -309,7 +310,7 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
     // Reset zoom on mode toggle — a zoom level that was nice on flat
     // is nonsense on the globe and vice versa.
     if (svgRef.current && zoomBehaviorRef.current) {
-      select(svgRef.current).transition().duration(MODE_TRANSITION_MS / 2).call(
+      select(svgRef.current).transition().duration(motionDuration(MODE_TRANSITION_MS / 2)).call(
         zoomBehaviorRef.current.transform,
         zoomIdentity,
       );
@@ -321,21 +322,21 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
     const svgEl = svgRef.current;
     const z = zoomBehaviorRef.current;
     if (!svgEl || !z) return;
-    select(svgEl).transition().duration(300).call(z.scaleBy, 1.5);
+    select(svgEl).transition().duration(motionDuration(300)).call(z.scaleBy, 1.5);
   }, []);
 
   const zoomOut = useCallback(() => {
     const svgEl = svgRef.current;
     const z = zoomBehaviorRef.current;
     if (!svgEl || !z) return;
-    select(svgEl).transition().duration(300).call(z.scaleBy, 1 / 1.5);
+    select(svgEl).transition().duration(motionDuration(300)).call(z.scaleBy, 1 / 1.5);
   }, []);
 
   const reset = useCallback(() => {
     const svgEl = svgRef.current;
     const z = zoomBehaviorRef.current;
     if (svgEl && z) {
-      select(svgEl).transition().duration(500).call(z.transform, zoomIdentity);
+      select(svgEl).transition().duration(motionDuration(500)).call(z.transform, zoomIdentity);
     }
     setRotation([0, -10, 0]);
     setTapPin(null);
@@ -353,7 +354,16 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
           [-start[0], -start[1]] as [number, number],
           lonLat,
         );
-        const duration = 700;
+        // A hand-rolled rAF interpolation is invisible to the CSS
+        // reduced-motion block. Duration 0 lands on the destination in one
+        // frame — the user still gets taken to the place they picked, they
+        // just do not get flown there.
+        const duration = motionDuration(700);
+        if (duration === 0) {
+          const [lon, lat] = interpRot(1);
+          setRotation([-lon, -lat, 0]);
+          return;
+        }
         const t0 = performance.now();
         const step = (now: number) => {
           const t = Math.min(1, (now - t0) / duration);
@@ -376,7 +386,7 @@ export function useCelestialMapEngine({ lines, initialMode = 'flat' }: EngineOpt
         const y = VIEW_HEIGHT / 2 - projected[1] * k;
         select(svgEl)
           .transition()
-          .duration(700)
+          .duration(motionDuration(700))
           .call(z.transform, zoomIdentity.translate(x, y).scale(k));
       }
     },

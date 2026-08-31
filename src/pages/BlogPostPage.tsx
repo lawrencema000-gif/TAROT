@@ -83,7 +83,7 @@ export function BlogPostPage() {
         )}
 
         <Card className="p-5 space-y-4">
-          <h1 className="text-2xl font-bold text-mystic-50 leading-tight">
+          <h1 className="heading-display-lg text-mystic-100 leading-tight">
             {post.title}
           </h1>
 

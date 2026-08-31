@@ -955,7 +955,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                   <div
                     className={`
                       w-24 h-36
-                      rounded-xl border transition-all duration-ambient overflow-hidden
+                      rounded-xl border transition-all duration-base overflow-hidden
                       ${drawn.revealed
                         ? 'border-gold/40 shadow-glow animate-flip-in'
                         : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'

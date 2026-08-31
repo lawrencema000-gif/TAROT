@@ -105,7 +105,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
           />
 
           {/* Slide-up menu panel */}
-          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-in slide-in-from-bottom duration-base">
+          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
             <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-mystic-700/30">
@@ -198,7 +198,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
             mystic-700 border for a more refined brand-line treatment.
             Fades at the edges for a softer attachment to the page. */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/25 to-transparent" aria-hidden />
-        <div className="bg-gradient-to-t from-mystic-950 via-mystic-900/98 to-mystic-900/92 backdrop-blur-xl">
+        <div className="bg-gradient-to-t from-mystic-950 via-mystic-900/[0.98] to-mystic-900/[0.92] backdrop-blur-xl">
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
             {visibleTabs.map(tab => {
               const Icon = tab.icon;

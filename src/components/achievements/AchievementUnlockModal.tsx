@@ -3,6 +3,7 @@ import { X, Star, Trophy } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { getRarityColor } from '../../services/achievements';
+import { prefersReducedMotion } from '../../utils/motion';
 
 interface AchievementUnlockModalProps {
   achievement: AchievementWithProgress | null;
@@ -50,6 +51,10 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
       setTimeout(() => setShowContent(true), 100);
 
       const targetXP = achievement.xp_reward;
+      // Same reasoning as the landing figures: the XP total is the payload,
+      // the count-up is decoration, and setInterval is out of reach of the
+      // CSS block that freezes this modal's own scale/opacity around it.
+      if (prefersReducedMotion()) { setXpCount(targetXP); return; }
       const duration = 1000;
       const steps = 30;
       const increment = targetXP / steps;

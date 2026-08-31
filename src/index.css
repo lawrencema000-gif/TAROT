@@ -1075,6 +1075,26 @@
 .floating-particles::before { left: 18%; animation: float-particle-a 7s linear infinite; }
 .floating-particles::after  { left: 68%; animation: float-particle-b 9s linear infinite 2s; }
 
+/* An element has exactly ONE ::before and ONE ::after. `.nebula-veil` claims
+   the ::before and `.aurora-veil` the ::after, so a host wearing all three
+   classes gave the sparks nowhere to live — and because these rules are later
+   in the file at equal specificity, the sparks WON, replacing the nebula's
+   radial gradients and the aurora's 18s drift with two 3px dots. The Home
+   hero card was the only element wearing all three, and it was also the only
+   `.aurora-veil` in the app, which left `@keyframes aurora-drift` with no
+   live consumer at all.
+
+   The fix is an element of its own rather than a fourth claimant on the same
+   two slots. Declared after `.floating-particles` so `position: absolute`
+   wins over its `position: relative`. */
+.floating-particles-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
 @keyframes flip-in {
   0% {
     transform: rotateY(90deg);

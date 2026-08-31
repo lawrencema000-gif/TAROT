@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { WISH_THEMES, type Wish } from '../../dal/wishes';
 
 /**
@@ -107,6 +107,24 @@ export function WishSky({ wishes, links, myWishIds, selectedId, onSelect }: Wish
     [],
   );
 
+  /** Deep-field specks, rebuilt only when the canvas size changes. */
+  const deepFieldRef = useRef<{
+    w: number;
+    h: number;
+    specks: { x: number; y: number; r: number; fill: string }[];
+  }>({ w: -1, h: -1, specks: [] });
+
+  /** Wishes grouped by theme — an input to the frame, not part of it. */
+  const byTheme = useMemo(() => {
+    const m = new Map<string, Wish[]>();
+    for (const w of wishes) {
+      const list = m.get(w.theme) ?? [];
+      list.push(w);
+      m.set(w.theme, list);
+    }
+    return m;
+  }, [wishes]);
+
   const draw = useCallback(
     (time: number) => {
       const canvas = canvasRef.current;
@@ -129,26 +147,33 @@ export function WishSky({ wishes, links, myWishIds, selectedId, onSelect }: Wish
       // ── 1. deep field ──────────────────────────────────────────────────
       // Not wishes. Depth, so a sky with three wishes in it still looks like a
       // sky rather than three dots on a rectangle.
-      for (let i = 0; i < 220; i++) {
-        const x = noise(i, 1) * width;
-        const y = noise(i, 2) * height;
-        const r = 0.3 + noise(i, 3) * 0.7;
-        const a = 0.06 + noise(i, 4) * 0.16;
+      // These 220 specks are a pure function of (i, width, height): the same
+      // 880 noise() calls and 220 rgba template strings were being redone 60
+      // times a second to draw an identical result. Computed once and reused
+      // until the canvas actually changes size.
+      const field = deepFieldRef.current;
+      if (field.w !== width || field.h !== height) {
+        field.w = width;
+        field.h = height;
+        field.specks = Array.from({ length: 220 }, (_, i) => ({
+          x: noise(i, 1) * width,
+          y: noise(i, 2) * height,
+          r: 0.3 + noise(i, 3) * 0.7,
+          fill: `rgba(220,225,255,${0.06 + noise(i, 4) * 0.16})`,
+        }));
+      }
+      for (const sp of field.specks) {
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(220,225,255,${a})`;
+        ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
+        ctx.fillStyle = sp.fill;
         ctx.fill();
       }
 
       // ── 2. constellation lines ─────────────────────────────────────────
       // Soft threads between near neighbours that wished for the same thing.
       // Capped by distance so the sky never turns into a mesh.
-      const byTheme = new Map<string, Wish[]>();
-      for (const w of wishes) {
-        const list = byTheme.get(w.theme) ?? [];
-        list.push(w);
-        byTheme.set(w.theme, list);
-      }
+      // Grouping depends only on `wishes`, so it is memoised outside the
+      // frame (see `byTheme` above) rather than rebuilt 60 times a second.
       const maxDist = Math.min(width, height) * 0.22;
       for (const [theme, group] of byTheme) {
         const hue = HUE_BY_THEME.get(theme as never) ?? 220;
@@ -279,7 +304,7 @@ export function WishSky({ wishes, links, myWishIds, selectedId, onSelect }: Wish
 
       if (!reducedMotion) frameRef.current = requestAnimationFrame(draw);
     },
-    [wishes, links, myWishIds, selectedId, reducedMotion, project],
+    [wishes, byTheme, links, myWishIds, selectedId, reducedMotion, project],
   );
 
   useEffect(() => {

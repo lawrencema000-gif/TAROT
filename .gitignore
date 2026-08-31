@@ -41,3 +41,7 @@ android/app/gemini_*.json
 # Local Netlify folder
 .netlify
 .vercel
+
+# Playwright artifacts — screenshots, videos, traces, last-run state
+test-results/
+playwright-report/

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
+import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
 import { Card, Button, toast, PageHeader, EmptyState, Disclosure } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -222,7 +222,7 @@ export function YearAheadReportPage() {
             variant="gold"
             fullWidth
             onClick={() => setShowSubscription(true)}
-            className="min-h-[52px]"
+            size="lg"
           >
             <Crown className="w-4 h-4 mr-2" />
             {t('yearAhead.upgradeToPremium', {
@@ -237,9 +237,9 @@ export function YearAheadReportPage() {
               onClick={handleUnlock}
               disabled={unlocking}
               loading={unlocking}
-              className="min-h-[48px] mt-3"
+              className="mt-3"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Moon className="w-4 h-4 mr-2" />
               {t('yearAhead.unlockCta', {
                 defaultValue: 'Unlock with {{n}} Moonstones',
                 n: YEAR_AHEAD_COST,
@@ -265,9 +265,8 @@ export function YearAheadReportPage() {
                 fullWidth
                 size="sm"
                 onClick={() => setShowWatchAd(true)}
-                className="min-h-[40px]"
               >
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                <Gift className="w-3.5 h-3.5 mr-1.5" />
                 {t('yearAhead.earnNow', {
                   defaultValue: 'Earn 50 Moonstones — watch ad',
                 })}

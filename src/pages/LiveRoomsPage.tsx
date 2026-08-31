@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mic, Clock, Users, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Mic, Clock, Users, CalendarPlus, CheckCircle2 } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -154,7 +154,7 @@ export function LiveRoomsPage() {
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-3 h-3 mr-1" />
+                        <CalendarPlus className="w-3 h-3 mr-1" />
                         {t('liveRooms.rsvp', { defaultValue: 'RSVP' })}
                       </>
                     )}

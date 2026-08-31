@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Star, Clock, Globe, Users, Send, Calendar } from 'lucide-react';
+import { ArrowLeft, User, Star, Clock, Globe, Users, Send, Calendar } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -64,7 +64,7 @@ export function AdvisorsPage() {
         <Card variant="glow" padding="lg">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center border border-gold/30">
-              <Sparkles className="w-6 h-6 text-gold" />
+              <User className="w-6 h-6 text-gold" />
             </div>
             <div>
               <h2 className="heading-display-lg text-mystic-100">{selected.displayName}</h2>
@@ -129,8 +129,8 @@ export function AdvisorsPage() {
           <Button
             variant="gold"
             fullWidth
+            size="lg"
             onClick={() => navigate(`/advisors/${selected.slug}/book`)}
-            className="min-h-[52px]"
           >
             <Calendar className="w-4 h-4 mr-2" />
             {t('advisors.bookCta', { defaultValue: 'Book a session' })}
@@ -158,7 +158,7 @@ export function AdvisorsPage() {
               }) as string}
               className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
             />
-            <Button variant="primary" fullWidth onClick={submitInterest} disabled={submitting} className="min-h-[48px]">
+            <Button variant="primary" fullWidth onClick={submitInterest} disabled={submitting}>
               <Send className="w-4 h-4 mr-2" />
               {submitting
                 ? t('advisors.submitting', { defaultValue: 'Submitting...' })
@@ -217,7 +217,7 @@ export function AdvisorsPage() {
           <Card padding="md" className="hover:border-gold/30 transition-all">
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center border border-gold/20 flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-gold" />
+                <User className="w-5 h-5 text-gold" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">

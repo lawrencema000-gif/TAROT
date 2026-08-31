@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Share2, ArrowLeft } from 'lucide-react';
+import { Heart, Sprout, Share2, ArrowLeft } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { LOVE_TREE_QUIZ, ATTACHMENT_INFO, scoreLoveTree } from '../data/loveTree';
@@ -157,8 +157,8 @@ export function LoveTreePage() {
           </ul>
         </Card>
 
-        <Button variant="gold" fullWidth onClick={() => setStage('quiz')} className="min-h-[52px]">
-          <Sparkles className="w-4 h-4 mr-2" />
+        <Button variant="gold" size="lg" fullWidth onClick={() => setStage('quiz')}>
+          <Sprout className="w-4 h-4 mr-2" />
           {t('loveTree.startCta', { defaultValue: 'Begin' })}
         </Button>
 
@@ -317,7 +317,7 @@ export function LoveTreePage() {
           </p>
         </Card>
 
-        <Button variant="gold" fullWidth onClick={handleShare} className="min-h-[52px]">
+        <Button variant="gold" size="lg" fullWidth onClick={handleShare}>
           <Share2 className="w-4 h-4 mr-2" />
           {t('loveTree.share', { defaultValue: 'Share my tree' })}
         </Button>

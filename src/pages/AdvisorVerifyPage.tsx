@@ -256,12 +256,12 @@ export function AdvisorVerifyPage() {
             </Button>
           </Card>
 
-          <Button
+          <Button size="lg"
             variant="gold"
             fullWidth
             onClick={submit}
             disabled={submitting || !legalName || country.length !== 2 || !idFile || !selfieFile}
-            className="min-h-[52px]"
+            
           >
             {submitting
               ? t('advisorVerify.submitting', { defaultValue: 'Submitting…' })

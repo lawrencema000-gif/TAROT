@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Link2, ArrowLeft, Sparkles } from 'lucide-react';
+import { Link2, ArrowLeft, Share2 } from 'lucide-react';
 import { decodeReading } from '../services/shareableReadings';
 import { fullDeck } from '../data/tarotDeck';
 import { setPageMeta } from '../utils/seo';
@@ -58,7 +58,7 @@ export function SharedReadingPage() {
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
       <header className="mb-6 text-center">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-gold" />
+          <Share2 className="w-3.5 h-3.5 text-gold" />
           <span className="text-xs uppercase tracking-wider text-gold">Shared reading</span>
         </div>
         <h1 className="heading-display-xl text-mystic-100 mb-2">

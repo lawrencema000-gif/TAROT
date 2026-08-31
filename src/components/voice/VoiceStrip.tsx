@@ -63,7 +63,7 @@ export function VoiceStrip({ roomName, enabled }: VoiceStripProps) {
               size="sm"
               onClick={connect}
               disabled={isConnecting || state === 'unavailable' || !roomName}
-              className="min-h-[36px]"
+             
             >
               <Phone className="w-3 h-3 mr-1" />
               {isConnecting
@@ -71,7 +71,7 @@ export function VoiceStrip({ roomName, enabled }: VoiceStripProps) {
                 : t('voice.join', { defaultValue: 'Join voice' })}
             </Button>
           ) : (
-            <Button variant="outline" size="sm" onClick={disconnect} className="min-h-[36px]">
+            <Button variant="outline" size="sm" onClick={disconnect} >
               <PhoneOff className="w-3 h-3 mr-1" />
               {t('voice.leave', { defaultValue: 'Leave' })}
             </Button>

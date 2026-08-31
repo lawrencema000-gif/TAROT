@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Heart, Flag, HandHeart, X } from 'lucide-react';
-import { Card, Button, Input, Sheet, toast, PageHeader, EmptyState } from '../components/ui';
+import { Moon, Heart, Flag, HandHeart, X } from 'lucide-react';
+import { Card, Button, Input, Sheet, toast, PageHeader, EmptyState, MysticalStar } from '../components/ui';
 import { WishSky } from '../components/wishes/WishSky';
 import { wishes as wishesDal } from '../dal';
 import {
@@ -144,7 +144,7 @@ export function WishingSkyPage() {
             <EmptyState
               variant="inline"
               size="sm"
-              icon={<Sparkles />}
+              icon={<Moon />}
               title="The sky is empty tonight."
               description="Make the first wish and light it."
             />
@@ -164,7 +164,7 @@ export function WishingSkyPage() {
           {user && (
             <Button variant="primary" size="sm" className="pointer-events-auto"
                     onClick={() => setComposing(true)}>
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Make a wish
+              <MysticalStar size={14} halo={false} className="mr-1.5" /> Make a wish
             </Button>
           )}
         </div>
@@ -198,7 +198,7 @@ export function WishingSkyPage() {
           </button>
         ))}
         {sky.length === 0 && !loading && (
-          <EmptyState variant="inline" size="sm" icon={<Sparkles />} title="No wishes yet." />
+          <EmptyState variant="inline" size="sm" icon={<Moon />} title="No wishes yet." />
         )}
       </Card>
 
@@ -266,7 +266,7 @@ export function WishingSkyPage() {
 
           <Button variant="primary" fullWidth disabled={!text.trim() || !!contactWarning || saving}
                   onClick={submitWish}>
-            <Sparkles className="w-4 h-4 mr-2" />
+            <MysticalStar size={16} halo={false} className="mr-2" />
             {saving ? 'Lighting…' : 'Light my star'}
           </Button>
         </div>

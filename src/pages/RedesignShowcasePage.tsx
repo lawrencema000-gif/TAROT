@@ -1,4 +1,4 @@
-import { Sparkles, Feather, Sun, BookOpen, Flower } from 'lucide-react';
+import { Heart, Feather, Sun, BookOpen, Flower } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -24,6 +24,7 @@ import {
   FeaturePillGroup,
   RitualRow,
   AvailableNowLabel,
+  TarotCardIcon,
 } from '../components/ui';
 
 /**
@@ -96,7 +97,7 @@ export function RedesignShowcasePage() {
           <p className="text-mystic-400 text-sm">FeaturePillGroup — 3-up feature shortcuts</p>
           <FeaturePillGroup>
             <FeaturePill icon={<Sun />} label="Astrology" />
-            <FeaturePill icon={<Sparkles />} label="Tarot" />
+            <FeaturePill icon={<TarotCardIcon />} label="Tarot" />
             <FeaturePill icon={<BookOpen />} label="Journal" />
           </FeaturePillGroup>
         </div>
@@ -104,7 +105,7 @@ export function RedesignShowcasePage() {
         <div className="space-y-2">
           <p className="text-mystic-400 text-sm">RitualRow — daily-ritual horizontal pill (gold accent)</p>
           <RitualRow
-            icon={<Sparkles />}
+            icon={<TarotCardIcon />}
             label="Today's reading"
             meta="Tap to draw your card"
             accent="gold"
@@ -124,7 +125,7 @@ export function RedesignShowcasePage() {
         <div className="space-y-2">
           <p className="text-mystic-400 text-sm">RitualRow — teal &amp; coral variants</p>
           <RitualRow icon={<Feather />} label="Reflection" meta="2 entries this week" accent="teal" />
-          <RitualRow icon={<Sparkles />} label="Compatibility" meta="New invite from Maya" accent="coral" />
+          <RitualRow icon={<Heart />} label="Compatibility" meta="New invite from Maya" accent="coral" />
         </div>
 
         <div className="space-y-2">
@@ -240,7 +241,7 @@ export function RedesignShowcasePage() {
               <h4 className="heading-display-md text-mystic-100">Daily Tarot</h4>
               <p className="text-sm text-mystic-300">Draw your card and receive guidance</p>
             </div>
-            <Sparkles className="w-7 h-7 text-gold" />
+            <TarotCardIcon className="w-7 h-7 text-gold" />
           </div>
         </Card>
 

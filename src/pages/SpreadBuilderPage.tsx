@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, Sparkles, Play } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Play } from 'lucide-react';
+import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { toast } from '../components/ui';
@@ -135,7 +136,7 @@ export function SpreadBuilderPage() {
 
       <header className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="w-5 h-5 text-gold" />
+          <TarotCardIcon className="w-5 h-5 text-gold" />
           <h1 className="heading-display-xl text-mystic-100">Custom spread builder</h1>
         </div>
         <p className="text-sm text-mystic-400">

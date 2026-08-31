@@ -210,11 +210,11 @@ export function AdvisorSessionPage() {
               : t('advisorSession.readyToStart', { defaultValue: 'Ready when you are.' })}
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" fullWidth onClick={handleCancel} className="min-h-[44px]">
+            <Button variant="outline" fullWidth onClick={handleCancel} >
               <X className="w-4 h-4 mr-1" />
               {t('advisorSession.cancel', { defaultValue: 'Cancel' })}
             </Button>
-            <Button variant="gold" fullWidth onClick={handleStart} className="min-h-[44px]">
+            <Button variant="gold" fullWidth onClick={handleStart} >
               <Play className="w-4 h-4 mr-1" />
               {t('advisorSession.start', { defaultValue: 'Start session' })}
             </Button>
@@ -279,7 +279,7 @@ export function AdvisorSessionPage() {
                   maxLength={3000}
                   className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-xl px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
                 />
-                <Button variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className="min-h-[40px] px-4">
+                <Button size="sm" variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className=" px-4">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

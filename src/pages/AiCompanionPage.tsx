@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Send, MessageCircle, Feather, Moon, Flower } from 'lucide-react';
+import { BookOpen, Feather, Flower, MessageCircle, Moon, Send } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -23,7 +23,7 @@ const PERSONAS: Array<{
   icon: React.ComponentType<{ className?: string }>;
   accent: string;
 }> = [
-  { id: 'sage',      icon: Sparkles,      accent: 'text-gold' },
+  { id: 'sage',      icon: BookOpen,      accent: 'text-gold' },
   { id: 'oracle',    icon: Feather,       accent: 'text-cosmic-violetLight' },
   { id: 'mystic',    icon: Moon,          accent: 'text-cosmic-blue' },
   { id: 'priestess', icon: Flower,        accent: 'text-pink-400' },

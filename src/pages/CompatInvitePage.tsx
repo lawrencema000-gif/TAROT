@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, Sparkles, AlertCircle, UserPlus } from 'lucide-react';
+import { Heart, ArrowRight, AlertCircle, UserPlus } from 'lucide-react';
+import { MysticalStar } from '../components/ui/MysticalStar';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -181,7 +182,7 @@ export function CompatInvitePage() {
               defaultValue: 'Your existing profile already has what this reading needs. Tap below to reveal the joint result.',
             })}
           </p>
-          <Button variant="gold" fullWidth onClick={handleRespond} disabled={responding} className="min-h-[48px]">
+          <Button variant="gold" fullWidth onClick={handleRespond} disabled={responding}>
             {responding
               ? t('compatInvite.revealing', { defaultValue: 'Revealing…' })
               : t('compatInvite.reveal', { defaultValue: 'Reveal our compatibility' })}
@@ -195,7 +196,7 @@ export function CompatInvitePage() {
               ? t('compatInvite.needMbti', { defaultValue: 'You need to take the personality quiz first.' })
               : t('compatInvite.needBirthDate', { defaultValue: 'Add your birth date in Profile first.' })}
           </p>
-          <Button variant="gold" fullWidth onClick={handleRespond} className="min-h-[48px]">
+          <Button variant="gold" fullWidth onClick={handleRespond}>
             {invite.kind === 'mbti'
               ? t('compatInvite.goToQuiz', { defaultValue: 'Take the quiz' })
               : t('compatInvite.goToProfile', { defaultValue: 'Open Profile' })}
@@ -286,7 +287,7 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
           </Card>
           <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-gold" />
+              <MysticalStar size={16} halo={false} className="text-gold" />
               <h3 className="text-sm font-medium text-gold tracking-wide">
                 {t('compatInvite.advice', { defaultValue: 'For you two' })}
               </h3>

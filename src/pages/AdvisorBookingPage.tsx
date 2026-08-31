@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ArrowLeft, Sparkles, AlertCircle, Users } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Moon, AlertCircle, Users } from 'lucide-react';
 import { Card, Button, Input, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -199,7 +199,7 @@ export function AdvisorBookingPage() {
           ))}
         </div>
         <p className="text-[11px] text-mystic-500 mt-3 flex items-center gap-1.5">
-          <Sparkles className="w-3 h-3 text-gold" />
+          <Moon className="w-3 h-3 text-gold" />
           {t('advisorBooking.costPreview', {
             defaultValue: '{{n}} Moonstones',
             n: cost,
@@ -273,8 +273,8 @@ export function AdvisorBookingPage() {
         variant="gold"
         fullWidth
         onClick={handleBook}
+        size="lg"
         disabled={booking || !selectedSlot || (balance !== null && balance < cost)}
-        className="min-h-[52px]"
       >
         <Users className="w-4 h-4 mr-2" />
         {booking

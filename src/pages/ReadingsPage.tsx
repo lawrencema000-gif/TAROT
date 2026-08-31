@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
-import { PageHeader } from '../components/ui';
+import { PageHeader, CardSkeleton } from '../components/ui';
 
 // Lazy-load the eastern-systems pages — keeps ~40-60 KB of static data out
 // of the main ReadingsPage bundle. Chunks only download when a user with
@@ -350,55 +350,55 @@ export function ReadingsPage() {
       )}
 
       {activeTab === 'iching' && ichingEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <IChingSection />
         </Suspense>
       )}
 
       {activeTab === 'human-design' && humanDesignEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <HumanDesignSection />
         </Suspense>
       )}
 
       {activeTab === 'bazi' && baziEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <BaziSection />
         </Suspense>
       )}
 
       {activeTab === 'dream' && dreamEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <DreamInterpreterSection />
         </Suspense>
       )}
 
       {activeTab === 'mood' && moodDiaryEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <MoodDiarySection />
         </Suspense>
       )}
 
       {activeTab === 'partner' && partnerCompatEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <PartnerCompatSection />
         </Suspense>
       )}
 
       {activeTab === 'fengshui' && fengShuiEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <FengShuiSection />
         </Suspense>
       )}
 
       {activeTab === 'runes' && runesEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <RunesSection />
         </Suspense>
       )}
 
       {activeTab === 'dice' && diceEnabled && (
-        <Suspense fallback={<div className="py-12 text-center text-mystic-500">Loading…</div>}>
+        <Suspense fallback={<CardSkeleton />}>
           <DiceSection />
         </Suspense>
       )}

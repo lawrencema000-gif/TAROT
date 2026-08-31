@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Sparkles, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Lock, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { FOOLS_JOURNEY, getCurrentJourney } from '../data/foolsJourney';
 import { fullDeck } from '../data/tarotDeck';
@@ -40,7 +41,7 @@ export function FoolsJourneyPage() {
 
       <header className="mb-6 text-center">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-gold" />
+          <TarotCardIcon className="w-3.5 h-3.5 text-gold" />
           <span className="text-xs uppercase tracking-wider text-gold">The Fool\'s Journey</span>
         </div>
         <h1 className="heading-display-xl text-mystic-100 mb-1">{current.title}</h1>

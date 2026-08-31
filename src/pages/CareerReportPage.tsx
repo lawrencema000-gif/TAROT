@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Lock, Sparkles, CheckCircle2, AlertCircle, TrendingUp, Users, Eye, Calendar, Quote, Crown } from 'lucide-react';
+import { Briefcase, Lock, Moon, Gift, Share2, CheckCircle2, AlertCircle, TrendingUp, Users, Eye, Calendar, Quote, Crown } from 'lucide-react';
 import { Card, Button, toast, PageHeader, Section, EmptyState, ResultLayout } from '../components/ui';
+import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -189,7 +190,7 @@ export function CareerReportPage() {
             variant="gold"
             fullWidth
             onClick={() => setShowSubscription(true)}
-            className="min-h-[52px]"
+            size="lg"
           >
             <Crown className="w-4 h-4 mr-2" />
             {t('careerReport.upgradeToPremium', {
@@ -204,9 +205,9 @@ export function CareerReportPage() {
               onClick={handleUnlockMoonstones}
               disabled={unlocking}
               loading={unlocking}
-              className="min-h-[48px] mt-3"
+              className="mt-3"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Moon className="w-4 h-4 mr-2" />
               {t('careerReport.unlockCta', {
                 defaultValue: 'Unlock with {{n}} Moonstones',
                 n: CAREER_REPORT_COST_MOONSTONES,
@@ -232,9 +233,8 @@ export function CareerReportPage() {
                 fullWidth
                 size="sm"
                 onClick={() => setShowWatchAd(true)}
-                className="min-h-[40px]"
               >
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                <Gift className="w-3.5 h-3.5 mr-1.5" />
                 {t('careerReport.earnNow', {
                   defaultValue: 'Earn 50 Moonstones — watch ad',
                 })}
@@ -266,8 +266,8 @@ export function CareerReportPage() {
       summary={archetype.summary}
       glyph={<Briefcase />}
       actions={
-        <Button variant="outline" fullWidth onClick={handleShare} className="min-h-[44px]">
-          <Sparkles className="w-4 h-4 mr-2" />
+        <Button variant="outline" fullWidth onClick={handleShare}>
+          <Share2 className="w-4 h-4 mr-2" />
           {t('careerReport.share', { defaultValue: 'Share my archetype' })}
         </Button>
       }
@@ -392,7 +392,7 @@ export function CareerReportPage() {
       </Section>
 
       <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30 text-center">
-        <Sparkles className="w-5 h-5 text-gold mx-auto mb-2" />
+        <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-2" />
         <p className="text-sm text-mystic-200 italic leading-relaxed">
           "{archetype.affirmation}"
         </p>

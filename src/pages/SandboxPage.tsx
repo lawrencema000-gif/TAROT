@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Plus, Trash2, Sparkles, RotateCcw } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, MysticalStar, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
@@ -370,12 +370,12 @@ export function SandboxPage() {
 
       <Button
         variant="gold"
+        size="lg"
         fullWidth
         onClick={interpret}
         disabled={placed.length < 2 || loadingInterpretation}
-        className="min-h-[52px]"
       >
-        <Sparkles className="w-4 h-4 mr-2" />
+        <MysticalStar size={16} className="mr-2" />
         {loadingInterpretation
           ? t('sandbox.reading', { defaultValue: 'Reading the arrangement…' })
           : t('sandbox.interpretCta', { defaultValue: 'Read the arrangement' })}

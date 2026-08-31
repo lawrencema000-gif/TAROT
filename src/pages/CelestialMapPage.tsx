@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Globe2, Heart, Briefcase, Plane, Sparkles, Home as HomeIcon, Sprout, Crown } from 'lucide-react';
+import { Globe2, Heart, Briefcase, Plane, Home as HomeIcon, Sprout, Crown } from 'lucide-react';
 import { Card, Button, EyebrowLabel, PageHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
@@ -64,7 +64,7 @@ const LIFE_AREA_LABELS: { id: LifeArea; icon: typeof Heart; key: string; default
   { id: 'love',    icon: Heart,     key: 'celestial.filter.love',    defaultLabel: 'Love' },
   { id: 'career',  icon: Briefcase, key: 'celestial.filter.career',  defaultLabel: 'Career' },
   { id: 'travel',  icon: Plane,     key: 'celestial.filter.travel',  defaultLabel: 'Travel' },
-  { id: 'healing', icon: Sparkles,  key: 'celestial.filter.healing', defaultLabel: 'Healing' },
+  { id: 'healing', icon: Sprout,  key: 'celestial.filter.healing', defaultLabel: 'Healing' },
   { id: 'home',    icon: HomeIcon,  key: 'celestial.filter.home',    defaultLabel: 'Home' },
   { id: 'growth',  icon: Sprout,    key: 'celestial.filter.growth',  defaultLabel: 'Growth' },
 ];

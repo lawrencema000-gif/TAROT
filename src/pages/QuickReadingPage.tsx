@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Sparkles, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
+import { Share2, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -159,7 +159,7 @@ export function QuickReadingPage() {
 
         <div className="flex gap-2">
           <Button variant="outline" fullWidth onClick={handleShare}>
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Share2 className="w-4 h-4 mr-2" />
             {t('quickReading.share', { defaultValue: 'Share' })}
           </Button>
           <Button variant="primary" fullWidth onClick={reset}>
@@ -250,10 +250,10 @@ export function QuickReadingPage() {
       <MoonstoneCostLine />
       <Button
         variant="gold"
+        size="lg"
         fullWidth
         onClick={submit}
         disabled={loading || question.trim().length < 3}
-        className="min-h-[52px]"
       >
         {loading ? (
           <>

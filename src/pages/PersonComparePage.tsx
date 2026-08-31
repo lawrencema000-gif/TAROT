@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, Heart, Sparkles } from 'lucide-react';
-import { Card, Button, PageHeader, Section } from '../components/ui';
+import { Loader2, Heart } from 'lucide-react';
+import { Card, Button, PageHeader, Section, HoroscopeWheelIcon } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { useAuth } from '../context/AuthContext';
@@ -164,7 +164,7 @@ export function PersonComparePage() {
       {/* Top cross-aspects */}
       <Section
         headingLevel="h3"
-        title={<span className="inline-flex items-center gap-2"><Sparkles className="w-4 h-4 text-gold" /> Your strongest connections</span>}
+        title={<span className="inline-flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /> Your strongest connections</span>}
       >
         <div className="space-y-3">
           {aspects.slice(0, 8).map((a, i) => (

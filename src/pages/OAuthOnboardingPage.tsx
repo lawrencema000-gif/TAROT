@@ -455,18 +455,18 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
       <div className="p-6 flex gap-3 safe-bottom">
         {step > 0 && (
-          <Button variant="ghost" onClick={prevStep} className="min-h-[52px]">
+          <Button size="lg" variant="ghost" onClick={prevStep} >
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
         )}
-        <Button
+        <Button size="lg"
           variant="gold"
           fullWidth
           onClick={step === totalSteps - 1 ? handleComplete : nextStep}
           disabled={!canProceed() || loading}
           loading={loading}
-          className="min-h-[52px]"
+          
         >
           {step === totalSteps - 1 ? t('oauth.beginJourney') : t('oauth.next')}
           <ChevronRight className="w-4 h-4" />

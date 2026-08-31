@@ -271,7 +271,7 @@ export function AdvisorDashboardPage() {
                 defaultValue: 'Complete Stripe Connect onboarding to cash out your Moonstones as real money.',
               })}
             </p>
-            <Button variant="gold" onClick={startOnboarding} disabled={onboardingLoading} className="min-h-[44px]">
+            <Button variant="gold" onClick={startOnboarding} disabled={onboardingLoading} >
               <CreditCard className="w-4 h-4 mr-2" />
               {onboardingLoading
                 ? t('advisorDashboard.opening', { defaultValue: 'Opening…' })
@@ -303,11 +303,11 @@ export function AdvisorDashboardPage() {
                 max={cashable}
                 className="flex-1"
               />
-              <Button
+              <Button size="sm"
                 variant="gold"
                 onClick={requestCashout}
                 disabled={cashingOut || cashable < 100}
-                className="min-h-[40px] px-4"
+                className=" px-4"
               >
                 {cashingOut
                   ? t('advisorDashboard.cashingOut', { defaultValue: 'Sending…' })
@@ -387,7 +387,7 @@ export function AdvisorDashboardPage() {
           fullWidth
           onClick={handleSave}
           disabled={saving}
-          className="min-h-[44px] mt-4"
+          className=" mt-4"
         >
           <Save className="w-4 h-4 mr-2" />
           {saving

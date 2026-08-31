@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mic, Clock, Users, Heart, Play, Lock, Sparkles } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, Heart, Play, Lock, Unlock } from 'lucide-react';
 import { Card, Button, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -237,7 +237,7 @@ export function LiveRoomPage() {
               </p>
               {user ? (
                 <Button variant="gold" onClick={unlockReplay} disabled={unlockingReplay} className="w-full">
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Unlock className="w-4 h-4 mr-2" />
                   {unlockingReplay
                     ? t('liveRoom.unlocking', { defaultValue: 'Unlocking…' })
                     : t('liveRoom.unlockReplay', {

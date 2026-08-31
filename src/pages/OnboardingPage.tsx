@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  Sparkles,
+  Globe,
+  UserPlus,
   ChevronRight,
   Mail,
   Lock,
@@ -10,6 +11,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { Button, Input, toast } from '../components/ui';
+import { MysticalStar } from '../components/ui/MysticalStar';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
@@ -202,7 +204,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
             <div className="text-center space-y-8 animate-fade-in">
               <div className="relative">
                 <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-gold/20 via-mystic-800 to-mystic-900 flex items-center justify-center border border-gold/20">
-                  <Sparkles className="w-14 h-14 text-gold" />
+                  <Globe className="w-14 h-14 text-gold" />
                 </div>
               </div>
               <div className="space-y-3">
@@ -226,7 +228,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     });
                     setStep(1);
                   }}
-                  className="min-h-[52px]"
+                  size="lg"
                 >
                   {t('common:actions.continue')}
                   <ChevronRight className="w-4 h-4" />
@@ -239,7 +241,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
             <div className="text-center space-y-8 animate-fade-in">
               <div className="relative">
                 <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-gold/20 via-mystic-800 to-mystic-900 flex items-center justify-center border border-gold/20">
-                  <Sparkles className="w-14 h-14 text-gold" />
+                  <MysticalStar size={56} className="text-gold" />
                 </div>
                 <div className="absolute inset-0 animate-pulse-slow">
                   <div className="w-28 h-28 mx-auto rounded-full border border-gold/10" />
@@ -267,7 +269,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     });
                     setStep(2);
                   }}
-                  className="min-h-[52px]"
+                  size="lg"
                 >
                   {t('welcome.cta')}
                   <ChevronRight className="w-4 h-4" />
@@ -287,7 +289,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-gold" />
+                  <UserPlus className="w-8 h-8 text-gold" />
                 </div>
                 <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('createAccount.heading')}
@@ -304,7 +306,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   onClick={handleGoogleSignIn}
                   disabled={googleLoading || loading || appleLoading}
                   loading={googleLoading}
-                  className="min-h-[52px] bg-white hover:bg-gray-50 border-gray-300 text-gray-800"
+                  size="lg"
+                  className="bg-white hover:bg-gray-50 border-gray-300 text-gray-800"
                 >
                   <GoogleIcon className="w-5 h-5" />
                   {t('createAccount.googleCta')}
@@ -317,7 +320,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     onClick={handleAppleSignIn}
                     disabled={googleLoading || loading || appleLoading}
                     loading={appleLoading}
-                    className="min-h-[52px] bg-black hover:bg-gray-900 border-black text-white"
+                    size="lg"
+                    className="bg-black hover:bg-gray-900 border-black text-white"
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
@@ -401,7 +405,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     onClick={handleEmailSignup}
                     disabled={loading || !email || password.length < 8 || !ageConfirmed}
                     loading={loading}
-                    className="min-h-[48px]"
                   >
                     {t('createAccount.submit')}
                   </Button>
@@ -421,7 +424,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
       {step >= 1 && (
         <div className="p-6 safe-bottom">
-          <Button variant="ghost" onClick={() => setStep(step - 1)} className="min-h-[52px] w-full">
+          <Button variant="ghost" size="lg" onClick={() => setStep(step - 1)} className="w-full">
             <ArrowLeft className="w-4 h-4" />
             {t('createAccount.back')}
           </Button>

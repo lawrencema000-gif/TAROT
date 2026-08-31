@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Pencil, Trash2, GitCompareArrows } from 'lucide-react';
-import { Card, Button, Sheet, toast, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Sheet, toast, PageHeader, Section, Disclosure, Skeleton } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
@@ -171,7 +171,7 @@ export function PersonDetailPage() {
                 }
                 contentClassName="pl-9 space-y-2 text-sm text-mystic-300 leading-relaxed"
               >
-                {sText ? <p>{sText}</p> : <p className="text-mystic-500">Loading…</p>}
+                {sText ? <p>{sText}</p> : <Skeleton height={14} width="80%" />}
                 {hText && <p className="text-mystic-400">{hText}</p>}
               </Disclosure>
             );

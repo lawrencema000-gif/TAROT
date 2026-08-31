@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, Sparkles, Loader2, AlertCircle, X, RefreshCw, Bookmark, Crown } from 'lucide-react';
+import { AlertCircle, Bookmark, Compass, Crown, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
@@ -242,7 +242,7 @@ export function FindYourPlace({
               })}
             </p>
           </div>
-          <Sparkles className="w-5 h-5 text-gold flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" aria-hidden />
+          <Sparkles className="w-5 h-5 text-gold flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
         </div>
       </motion.button>
 

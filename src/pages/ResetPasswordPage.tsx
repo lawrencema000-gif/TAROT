@@ -251,12 +251,12 @@ export function ResetPasswordPage() {
               required
             />
           </div>
-          <Button
+          <Button size="lg"
             type="submit"
             variant="gold"
             fullWidth
             loading={submitting}
-            className="min-h-[52px]"
+            
           >
             {t('auth.updatePassword', { defaultValue: 'Update password' })}
           </Button>

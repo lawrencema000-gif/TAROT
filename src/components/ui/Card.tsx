@@ -69,11 +69,36 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     // the .card-ritual utility (border lift + soft shadow swell). We only
     // add the cursor + tap feedback here; the visual transitions handled
     // by the variant CSS prevent layering conflicts.
+    //
+    // For every other variant the interactive state is now transform-first:
+    //
+    //   hover  a 2px lift, web only. It replaces `hover:shadow-glow`, which
+    //          re-introduced on hover exactly the gold bloom this redesign
+    //          took off cards, and which is a box-shadow — the most expensive
+    //          thing you can put on a transition. A lift says "liftable"
+    //          without repainting the card's shadow every frame.
+    //   press  0.98 and the lift drops back to zero, so pushing down reads as
+    //          the inverse of hovering rather than a second, unrelated event.
+    //
+    // Both are compositor-only. `motion-safe:` on the press because the global
+    // reduce-motion block only zeroes the duration; the scale itself has to be
+    // gated or it snaps.
     const interactiveClass =
       interactive
         ? variant === 'ritual'
-          ? 'cursor-pointer'
-          : 'cursor-pointer transition-all duration-300 hover:border-gold/30 hover:shadow-glow active:scale-[0.98]'
+          ? 'cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]'
+          : 'cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ' +
+            // Named properties rather than `transition-all`, but background and
+            // colour stay in the list: call sites add their own `hover:bg-*` on
+            // top of `interactive`, and those used to transition under `all`.
+            'transition-[transform,border-color,box-shadow,background-color,color] ' +
+            'duration-base ease-[cubic-bezier(0.22,0.8,0.25,1)] ' +
+            // `:not(:active)` so the lift drops when pressed. Without it the
+            // hover rule wins on desktop — Tailwind emits arbitrary variants
+            // after the built-in `active:` bucket. See the note in Button.tsx.
+            '[@media(hover:hover)]:[&:hover:not(:active)]:border-gold/30 ' +
+            '[@media(hover:hover)]:[&:hover:not(:active)]:-translate-y-0.5 ' +
+            'motion-safe:active:scale-[0.98]'
         : '';
     return (
       <div

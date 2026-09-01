@@ -36,7 +36,7 @@ export function CategoryProgress({
     <button
       onClick={onSelect}
       className={`
-        flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-300
+        flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-slow
         ${isSelected
           ? 'bg-gold/10 border border-gold/30'
           : 'bg-mystic-800/30 border border-transparent hover:bg-mystic-700/30'
@@ -65,14 +65,14 @@ export function CategoryProgress({
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             className={`
-              transition-all duration-700 ease-out
+              transition-all duration-ambient ease-out
               ${isSelected ? 'text-gold' : 'text-mystic-400'}
             `}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <Icon className={`
-            w-5 h-5 transition-colors duration-300
+            w-5 h-5 transition-colors duration-slow
             ${isSelected ? 'text-gold' : 'text-mystic-400'}
           `} />
         </div>
@@ -80,7 +80,7 @@ export function CategoryProgress({
 
       <div className="text-center">
         <p className={`
-          text-[10px] font-medium transition-colors duration-300
+          text-[10px] font-medium transition-colors duration-slow
           ${isSelected ? 'text-gold' : 'text-mystic-400'}
         `}>
           {getCategoryDisplayName(category)}

@@ -3,6 +3,7 @@ import { X, Star, Trophy } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { getRarityColor } from '../../services/achievements';
+import { prefersReducedMotion } from '../../utils/motion';
 
 interface AchievementUnlockModalProps {
   achievement: AchievementWithProgress | null;
@@ -50,6 +51,10 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
       setTimeout(() => setShowContent(true), 100);
 
       const targetXP = achievement.xp_reward;
+      // Same reasoning as the landing figures: the XP total is the payload,
+      // the count-up is decoration, and setInterval is out of reach of the
+      // CSS block that freezes this modal's own scale/opacity around it.
+      if (prefersReducedMotion()) { setXpCount(targetXP); return; }
       const duration = 1000;
       const steps = 30;
       const increment = targetXP / steps;
@@ -82,7 +87,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
     <div
       className={`
         fixed inset-0 z-50 flex items-center justify-center p-4
-        transition-all duration-300
+        transition-all duration-slow
         ${showContent ? 'bg-black/80 backdrop-blur-sm' : 'bg-transparent'}
       `}
       onClick={onClose}
@@ -91,7 +96,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
         className={`
           relative max-w-sm w-full bg-gradient-to-b from-mystic-800 to-mystic-900
           rounded-3xl border border-mystic-700/50 p-8
-          transition-all duration-500
+          transition-all duration-deliberate
           ${showContent ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}
         `}
         onClick={e => e.stopPropagation()}

@@ -26,7 +26,17 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium-mobile',
+      // Named `chromium-mobile` until 2026-08-31, which was a lie with
+      // consequences: devices['iPhone 13'] sets defaultBrowserType 'webkit',
+      // so this project has always launched WebKit while CI installed only
+      // Chromium. Every scheduled run since the suite landed failed at
+      // browser launch, and the PR-triggered runs were all skipped — so
+      // these critical paths have never once been checked.
+      //
+      // Keeping WebKit (the app is used on iPhones; that coverage is the
+      // point) and installing it in CI, rather than downgrading the project
+      // to Chromium to match a name that was simply wrong.
+      name: 'mobile-safari',
       use: { ...devices['iPhone 13'] },
     },
     {

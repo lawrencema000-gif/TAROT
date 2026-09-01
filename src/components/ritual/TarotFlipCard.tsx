@@ -1,10 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
 import { MysticalStar } from '../ui/MysticalStar';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage, useCardBackImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+/*
+ * Kept deliberately in step with the flip in
+ * `readings/tarot/TarotRevealView.tsx` — the same gesture in two places
+ * must feel like the same gesture. 520ms with a long ease-out tail: a
+ * moment the user is watching on purpose, so it may run past the
+ * UI-feedback budget, but 700ms (what this was) reads as sluggish.
+ *
+ * The global reduced-motion block in index.css pins transition-duration
+ * with `!important`, which outranks these inline values, so the card
+ * simply arrives face-up.
+ */
+const FLIP_MS = 520;
+const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
+
+/** Inline rather than a utility class: the 3D chain is load-bearing here,
+ *  and a card that loses `backface-visibility` shows both faces at once. */
+const BACKFACE: CSSProperties = {
+  backfaceVisibility: 'hidden',
+  WebkitBackfaceVisibility: 'hidden',
+};
 
 interface TarotFlipCardProps {
   card: TarotCard;
@@ -38,14 +60,27 @@ export function TarotFlipCard({
 
   const { src: backImageUrl } = useCardBackImage(cardBackUrl);
 
+  const reduceMotion = !!useReducedMotion();
+  // Held so an unmount mid-flip cannot buzz a phone whose card is gone.
+  const edgeHaptic = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(edgeHaptic.current), []);
+
   const handleFlip = () => {
-    if (!isFlipped) {
-      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
-      setIsFlipped(true);
-      setTimeout(() => {
-        Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
-      }, 350);
-    }
+    if (isFlipped) return;
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+    setIsFlipped(true);
+    // Second tap of haptic lands as the card passes edge-on, so the thump
+    // coincides with the turn rather than trailing it.
+    //
+    // Only if there IS a turn. Under reduced motion the CSS pins the
+    // duration and the card arrives face-up immediately, so this fired a
+    // second buzz a quarter-second after a card that had already stopped
+    // moving — the exact disembodied twitch the setting exists to remove.
+    if (reduceMotion) return;
+    window.clearTimeout(edgeHaptic.current);
+    edgeHaptic.current = window.setTimeout(() => {
+      Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+    }, FLIP_MS / 2);
   };
 
   const toggleReversed = () => {
@@ -80,7 +115,10 @@ export function TarotFlipCard({
       </div>
 
       <div
-        className="relative w-full aspect-[2.5/4] max-w-[180px] mx-auto perspective-1000 cursor-pointer"
+        className={`relative w-full aspect-[2.5/4] max-w-[180px] mx-auto cursor-pointer transition-transform duration-base ease-out ${
+          isFlipped ? '' : 'active:scale-[0.97]'
+        }`}
+        style={{ perspective: '1000px' }}
         onClick={handleFlip}
         role="button"
         tabIndex={0}
@@ -89,11 +127,14 @@ export function TarotFlipCard({
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleFlip(); } }}
       >
         <div
-          className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${
-            isFlipped ? 'rotate-y-180' : ''
-          }`}
+          className="relative w-full h-full"
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
+          }}
         >
-          <div className="absolute inset-0 backface-hidden">
+          <div className="absolute inset-0" style={BACKFACE}>
             <div className="relative w-full h-full bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/30 shadow-glow overflow-hidden">
               {cardBackUrl || backImageUrl ? (
                 <img src={backImageUrl} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
@@ -121,14 +162,19 @@ export function TarotFlipCard({
             </div>
           </div>
 
-          <div className="absolute inset-0 backface-hidden rotate-y-180">
-            <div className={`w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden ${showReversed ? 'rotate-180' : ''}`}>
+          <div className="absolute inset-0" style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}>
+            {/*
+              Upright ⇄ reversed used to snap. It is a change of meaning,
+              not a repaint, so the card now turns to get there — 300ms,
+              ease-out, transform only.
+            */}
+            <div className={`w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden transition-transform duration-slow ease-out ${showReversed ? 'rotate-180' : ''}`}>
               {cardImageUrl ? (
                 <>
                   <img
                     src={cardImageUrl}
                     alt={card.name}
-                    className={`w-full h-full object-cover transition-opacity duration-500 ${
+                    className={`w-full h-full object-cover transition-opacity duration-deliberate ${
                       isCardLoading || isPlaceholder ? 'opacity-60' : 'opacity-100'
                     }`}
                   />
@@ -180,7 +226,10 @@ export function TarotFlipCard({
       </div>
 
       {isFlipped && (
-        <div className="space-y-4 animate-fade-in">
+        <div
+          className="space-y-4 animate-fade-in"
+          style={{ animationDuration: '280ms', animationDelay: `${FLIP_MS - 160}ms`, animationFillMode: 'both' }}
+        >
           <div className="text-center">
             <p className="text-mystic-300 text-sm leading-relaxed">
               {showReversed ? card.meaningReversed : card.meaningUpright}

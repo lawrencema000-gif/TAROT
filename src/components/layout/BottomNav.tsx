@@ -105,7 +105,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
           />
 
           {/* Slide-up menu panel */}
-          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-in slide-in-from-bottom duration-200">
+          <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
             <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-mystic-700/30">
@@ -128,20 +128,20 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   const isActive = !external && !routed && activeTab === item.id;
                   const baseClass = `
                         flex flex-col items-center gap-2 py-4 px-2 rounded-xl
-                        transition-all duration-200 touch-manipulation active:scale-95
+                        transition-all duration-base touch-manipulation active:scale-95
                         ${isActive
                           ? 'bg-gold/10 text-gold'
                           : 'text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/30'
                         }
                       `;
                   const iconWrap = `
-                        p-2.5 rounded-xl transition-all duration-200
+                        p-2.5 rounded-xl transition-all duration-base
                         ${isActive ? 'bg-gold/15 shadow-[0_0_12px_rgba(212,175,55,0.2)]' : 'bg-mystic-700/30'}
                       `;
                   const inner = (
                     <>
                       <div className={iconWrap}>
-                        <Icon className={`w-5 h-5 transition-all duration-200 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
+                        <Icon className={`w-5 h-5 transition-all duration-base ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
                       </div>
                       <span className={`text-xs font-medium ${isActive ? 'text-gold' : ''}`}>
                         {t(item.labelKey)}
@@ -198,7 +198,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
             mystic-700 border for a more refined brand-line treatment.
             Fades at the edges for a softer attachment to the page. */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/25 to-transparent" aria-hidden />
-        <div className="bg-gradient-to-t from-mystic-950 via-mystic-900/98 to-mystic-900/92 backdrop-blur-xl">
+        <div className="bg-gradient-to-t from-mystic-950 via-mystic-900/[0.98] to-mystic-900/[0.92] backdrop-blur-xl">
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
             {visibleTabs.map(tab => {
               const Icon = tab.icon;
@@ -216,18 +216,18 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   aria-label={t(tab.labelKey)}
                   className={`
                     relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
-                    transition-all duration-300 touch-manipulation
+                    transition-all duration-slow touch-manipulation
                     active:scale-90
                     ${isActive ? 'text-gold' : 'text-gold/55 hover:text-gold/85'}
                   `}
                 >
                   <div className={`
-                    relative p-1.5 rounded-xl transition-all duration-300
+                    relative p-1.5 rounded-xl transition-all duration-slow
                     ${isActive ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
                   `}>
-                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
+                    <Icon className={`w-5 h-5 transition-all duration-slow ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
                   </div>
-                  <span className={`text-[10px] font-medium tracking-wide transition-all duration-300 ${isActive ? 'text-gold' : ''}`}>
+                  <span className={`text-[10px] font-medium tracking-wide transition-all duration-slow ${isActive ? 'text-gold' : ''}`}>
                     {t(tab.labelKey)}
                   </span>
                   {/* Active dot — small gold sparkle below the label,
@@ -252,18 +252,18 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               aria-label={t('nav.more')}
               className={`
                 relative flex flex-col items-center gap-1 py-3 px-2 min-w-[48px] min-h-[60px]
-                transition-all duration-300 touch-manipulation
+                transition-all duration-slow touch-manipulation
                 active:scale-90
                 ${isMoreActive || moreOpen ? 'text-gold' : 'text-gold/55 hover:text-gold/85'}
               `}
             >
               <div className={`
-                relative p-1.5 rounded-xl transition-all duration-300
+                relative p-1.5 rounded-xl transition-all duration-slow
                 ${isMoreActive || moreOpen ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
               `}>
-                <MoreHorizontal className={`w-5 h-5 transition-all duration-300 ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
+                <MoreHorizontal className={`w-5 h-5 transition-all duration-slow ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
               </div>
-              <span className={`text-[10px] font-medium tracking-wide transition-all duration-300 ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
+              <span className={`text-[10px] font-medium tracking-wide transition-all duration-slow ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
                 {t('nav.more')}
               </span>
               {(isMoreActive || moreOpen) && (

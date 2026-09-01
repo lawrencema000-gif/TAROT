@@ -83,7 +83,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
               onClick={() => handleTabChange(tab.id)}
               className={`
                 flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3
-                rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer
+                rounded-xl text-xs font-medium transition-all duration-base cursor-pointer
                 ${isActive
                   ? 'bg-gold/15 text-gold border border-gold/25'
                   : 'text-mystic-400 hover:text-mystic-200 border border-transparent'

@@ -478,7 +478,7 @@ function ReadingBody({
         </div>
       )}
 
-      <div className="rounded-2xl bg-gold/8 border border-gold/20 p-4 space-y-1">
+      <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 space-y-1">
         <p className="text-[10px] uppercase tracking-wider text-gold/80 font-medium">
           {t('celestial.findPlace.reading.practiceLabel', { defaultValue: 'Your first month' })}
         </p>

@@ -47,7 +47,7 @@ export function UpdateAvailableBanner() {
   };
 
   return (
-    <div className="fixed bottom-20 left-2 right-2 z-40 mx-auto max-w-md rounded-2xl border border-gold/40 bg-gradient-to-r from-mystic-900/95 to-mystic-800/95 p-3 shadow-glow-sm backdrop-blur">
+    <div className="fixed bottom-20 left-2 right-2 z-40 mx-auto max-w-md rounded-2xl border border-gold/40 bg-gradient-to-r from-mystic-900/95 to-mystic-800/95 p-3 shadow-glow backdrop-blur">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gold/20">
           <Download className="h-4 w-4 text-gold" />

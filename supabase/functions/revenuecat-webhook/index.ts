@@ -78,6 +78,31 @@ Deno.serve(
         throw new AppError("IDEMPOTENCY_WRITE_FAILED", "Could not record webhook event", 500);
       }
 
+      // The row above is a CLAIM on this event id, and it has to be given
+      // back if the work fails — otherwise RevenueCat's retry hits the
+      // `duplicate` branch, returns 200 without doing anything, and the
+      // entitlement the customer paid for is lost for good.
+      //
+      // The Moonstone-pack branch below already did this inline. The
+      // SUBSCRIPTION branch — the actual recurring revenue channel — did
+      // not, so a transient profiles-update failure silently dropped a
+      // paid subscription. Same fix, named once so the two paths cannot
+      // drift apart again.
+      const releaseClaim = async (reason: string) => {
+        const { error: relErr } = await ctx.supabase
+          .from("webhook_events")
+          .delete()
+          .eq("source", "revenuecat")
+          .eq("event_id", eventId);
+        if (relErr) {
+          ctx.log.error("revenuecat_webhook.idempotency_release_failed", {
+            err: relErr, eventId, reason,
+          });
+        } else {
+          ctx.log.warn("revenuecat_webhook.idempotency_released", { eventId, reason });
+        }
+      };
+
       if (!inserted) {
         ctx.log.info("revenuecat_webhook.duplicate", { eventId, type: eventType });
         return new Response(
@@ -123,11 +148,7 @@ Deno.serve(
             // them, then signal failure (RC retries on 5xx). Without
             // this, the eventId stayed claimed, the retry no-op'd as a
             // duplicate, and the paid credit was permanently lost.
-            await ctx.supabase
-              .from("webhook_events")
-              .delete()
-              .eq("source", "revenuecat")
-              .eq("event_id", eventId);
+            await releaseClaim("moonstone_ledger_failed");
             throw new AppError(
               "MOONSTONE_CREDIT_FAILED",
               "Ledger insert failed — retry will re-credit",
@@ -179,6 +200,9 @@ Deno.serve(
 
         if (error) {
           ctx.log.error("revenuecat_webhook.profile_update_failed", { err: error, userId });
+          // The customer's subscription is real and paid. Give the claim back
+          // so RC's retry can grant it.
+          await releaseClaim("profile_update_failed");
           throw new AppError("PROFILE_UPDATE_FAILED", "Failed to update profile", 500);
         }
 

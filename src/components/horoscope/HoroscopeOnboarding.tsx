@@ -332,7 +332,7 @@ function ChartComputeProgress() {
           return (
             <div
               key={i}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-deliberate ${
                 isActive
                   ? 'bg-gold/10 border border-gold/25'
                   : isDone
@@ -340,7 +340,7 @@ function ChartComputeProgress() {
                   : 'border border-transparent opacity-40'
               }`}
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-deliberate ${
                 isActive
                   ? 'bg-gold/20'
                   : isDone
@@ -355,7 +355,7 @@ function ChartComputeProgress() {
                   <StepIcon className="w-3.5 h-3.5 text-mystic-500" />
                 )}
               </div>
-              <span className={`text-sm transition-all duration-500 ${
+              <span className={`text-sm transition-all duration-deliberate ${
                 isActive
                   ? 'text-gold font-medium'
                   : isDone
@@ -373,7 +373,7 @@ function ChartComputeProgress() {
       <div className="w-full max-w-xs">
         <div className="h-1 bg-mystic-800/40 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-gold to-teal rounded-full transition-all duration-1000 ease-out"
+            className="h-full bg-gradient-to-r from-gold to-teal rounded-full transition-all duration-ambient ease-out"
             style={{ width: `${((step + 1) / COMPUTE_STEPS.length) * 100}%` }}
           />
         </div>

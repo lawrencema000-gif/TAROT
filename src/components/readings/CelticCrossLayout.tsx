@@ -1,7 +1,24 @@
+import { type CSSProperties } from 'react';
 import { Info } from 'lucide-react';
 import { MysticalStar } from '../ui/MysticalStar';
 import type { TarotCard } from '../../types';
 import { getBundledCardPath } from '../../config/bundledImages';
+
+/*
+ * Kept deliberately in step with `tarot/TarotRevealView.tsx`, which renders
+ * THIS component for the Celtic Cross while drawing every other spread with
+ * its own grid. Until now the two used different reveals — a 500ms
+ * `animate-flip-in` face-swap here versus a real two-faced rotateY turn there
+ * — so a user in the `tarot-section-split` rollout got one gesture for the
+ * Celtic Cross and a different one for every other spread, on the same
+ * screen. Same numbers as the reveal view, on purpose.
+ */
+const FLIP_MS = 520;
+const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
+const BACKFACE: CSSProperties = {
+  backfaceVisibility: 'hidden',
+  WebkitBackfaceVisibility: 'hidden',
+};
 
 interface CelticCrossLayoutProps {
   drawnCards: { card: TarotCard; reversed: boolean; revealed: boolean }[];
@@ -27,47 +44,59 @@ export function CelticCrossLayout({
     <div key={index} className="relative group">
       <button
         onClick={() => drawn.revealed ? onCardClick(drawn.card, drawn.reversed) : onRevealCard(index)}
-        className="relative perspective-1000 w-full h-full"
+        className="relative w-full h-full"
+        style={{ perspective: '1000px' }}
       >
+        {/* Press feedback on the wrapper, the turn on the child: two
+            transforms on one element fight, and the scale wins. */}
         <div
-          className={`
-            w-full h-full
-            rounded-lg border transition-all duration-700 overflow-hidden
-            ${drawn.revealed
-              ? 'border-gold/40 shadow-glow animate-flip-in'
-              : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
-            }
-            flex items-center justify-center relative
-          `}
-          style={{
-            transformStyle: 'preserve-3d',
-          }}
+          className={`w-full h-full transition-transform duration-base ease-out ${
+            drawn.revealed ? '' : 'cursor-pointer hover:scale-105 active:scale-95'
+          }`}
         >
-          {drawn.revealed ? (
-            getCardImage(drawn.card) ? (
+          <div
+            className="relative w-full h-full"
+            style={{
+              transformStyle: 'preserve-3d',
+              transform: drawn.revealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
+            }}
+          >
+            {/* Back */}
+            <div
+              className="absolute inset-0 rounded-lg overflow-hidden border border-mystic-600 group-hover:border-gold/30"
+              style={BACKFACE}
+            >
               <img
-                src={getCardImage(drawn.card)}
-                alt={drawn.card.name}
-                className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
+                src={cardBackUrl || '/card-backs/default.svg'}
+                alt=""
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
               />
-            ) : (
-              <div className={`text-center p-1 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                <MysticalStar size={16} halo={false} className="text-gold mx-auto mb-1" />
-                <p className="text-[0.6rem] text-mystic-300 line-clamp-2 px-1">{drawn.card.name}</p>
-              </div>
-            )
-          ) : (
-            <img
-              src={cardBackUrl || '/card-backs/default.svg'}
-              alt=""
-              className="w-full h-full object-cover pointer-events-none select-none"
-              draggable={false}
-            />
-          )}
+              <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-lg transition-colors duration-base" />
+            </div>
 
-          {!drawn.revealed && (
-            <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-lg transition-all duration-300" />
-          )}
+            {/* Face — mounted from the start and pre-turned, so the image is
+                already decoded when the turn begins. */}
+            <div
+              className="absolute inset-0 rounded-lg overflow-hidden border border-gold/40 shadow-glow flex items-center justify-center"
+              style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
+              aria-hidden={!drawn.revealed}
+            >
+              {getCardImage(drawn.card) ? (
+                <img
+                  src={getCardImage(drawn.card)}
+                  alt={drawn.card.name}
+                  className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
+                />
+              ) : (
+                <div className={`text-center p-1 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
+                  <MysticalStar size={16} halo={false} className="text-gold mx-auto mb-1" />
+                  <p className="text-[0.6rem] text-mystic-300 line-clamp-2 px-1">{drawn.card.name}</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         {drawn.revealed && (
           <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg">

@@ -48,6 +48,70 @@
      .mystic-gradient. Aliased rather than deleted so the two cannot drift;
      it was 8,8,18 against a canvas that is now 7,7,15. */
   --mystic-bg: var(--canvas);
+
+  /* ── Motion tokens ──────────────────────────────────────────────
+   *
+   * The whole app moves on four durations and five curves. Before this
+   * pass there was no scale at all: tailwind.config.js declared neither
+   * `transitionDuration` nor `transitionTimingFunction`, so ~300 of the
+   * 378 transition utilities in src/ ran on Tailwind's unstated 150ms /
+   * cubic-bezier(0.4,0,0.2,1) defaults, and the 75 that did name a
+   * duration picked from six ad-hoc values (0/200/300/500/700/1000ms).
+   * Four hand-rolled cubic-beziers were pasted around the file and never
+   * named. These tokens are those numbers, decided once.
+   *
+   * `duration-fast` / `ease-out` / etc. in tailwind.config.js resolve
+   * straight to these variables, so the Tailwind utilities and the
+   * hand-written animations below are the same numbers rather than two
+   * drifting copies. The one place that cannot use var() is the
+   * `animation` shorthand in tailwind.config.js — see the note there.
+   *
+   * Duration bands, and what belongs in each:
+   *   fast       — UI feedback the finger is still on: press, hover,
+   *                colour, focus ring. Below ~120ms reads as a glitch.
+   *   base       — a small state change the user caused: selected,
+   *                expanded, toggled.
+   *   slow       — an element arriving or leaving: card, row, sheet,
+   *                toast, route.
+   *   deliberate — a "moment" the user is watching on purpose: a card
+   *                reveal, a celebration. Nothing that is not
+   *                once-per-interaction belongs up here.
+   * Anything above --dur-deliberate is ambient, not UI, and must be
+   * transform/opacity only.
+   *
+   * Curves, and what they mean:
+   *   out        — ARRIVING. Fast off the mark, settles gently. The
+   *                default for entrances and for anything the user just
+   *                asked for; it makes the app feel like it answered.
+   *   in         — LEAVING. Eases away and accelerates out. Use only on
+   *                exits; on an entrance it reads as lag.
+   *   standard   — symmetric, for a property that is neither arriving
+   *                nor leaving (a colour, a border, a hover tint).
+   *                Identical to Tailwind's default, now named.
+   *   spring     — overshoots past the target and settles back. For
+   *                things that should feel physical: a card landing, a
+   *                confirmation. Never on more than one thing at once.
+   *   emphasized — expo-out. For long travel (a full-height sheet, a
+   *                sweep across a hero) where `out` still looks linear.
+   * Linear is for spinners and for nothing else.
+   */
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 300ms;
+  --dur-deliberate: 500ms;
+  --dur-ambient: 700ms;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.22, 0.8, 0.25, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Step between consecutive children of a `[data-stagger]` list. Small
+     on purpose: 12 rows at 40ms finish 480ms after the first, which is
+     still inside a single glance. Raise it and the last row of a long
+     list arrives after the user has already started reading. */
+  --stagger-step: 40ms;
 }
 
 @layer base {
@@ -146,17 +210,6 @@
                 0 0 20px rgba(var(--gold-primary), 0.04);
   }
 
-  .shimmer-effect {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(var(--gold-primary), 0.1) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-  }
-
   .constellation-bg {
     position: relative;
   }
@@ -175,7 +228,13 @@
       radial-gradient(circle at 70% 90%, rgba(var(--gold-primary), 0.35) 1px, transparent 1px),
       radial-gradient(circle at 30% 60%, rgba(var(--gold-primary), 0.15) 1px, transparent 1px);
     pointer-events: none;
-    animation: twinkle 4s ease-in-out infinite;
+    /* This layer is on the app shell (App.tsx), so it is behind EVERY
+       route. It used to run `twinkle 4s infinite` — a permanent opacity
+       loop on a min-h-screen surface, for the entire session, signalling
+       nothing. Eight static pinpoints do the same decorative job; the
+       opacity is pinned at the value the loop spent most of its time at
+       so the field looks unchanged at rest. */
+    opacity: 0.8;
   }
 
   .constellation-lines {
@@ -213,28 +272,6 @@
       rgba(18, 18, 26, 1) 50%,
       rgba(var(--mystic-bg), 1) 100%
     );
-  }
-
-  .gold-shine {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .gold-shine::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      45deg,
-      transparent 40%,
-      rgba(var(--gold-primary), 0.1) 50%,
-      transparent 60%
-    );
-    animation: shine 3s ease-in-out infinite;
-    pointer-events: none;
   }
 
   .safe-bottom {
@@ -307,7 +344,15 @@
     inset: 0;
     border: 2px solid transparent;
     border-top-color: rgb(var(--gold-primary));
-    animation: spin 1s linear infinite;
+    /* Own keyframe rather than the bare name `spin`, which this file used
+       to redefine on top of Tailwind's core one. Eight files depend on
+       this loader; it should not be hostage to whether `animate-spin`
+       happens to be in the build. Linear is correct here — a spinner is
+       the one place it is. */
+    animation: constellation-spin 1s linear infinite;
+  }
+  @keyframes constellation-spin {
+    to { transform: rotate(360deg); }
   }
 
   /* ── Celestial animated background ────────────────────────────
@@ -340,7 +385,11 @@
     background: #ffffff;
     opacity: 0.06;
     animation: celestial-twinkle ease-in-out infinite alternate;
-    will-change: opacity, transform;
+    /* `will-change: opacity, transform` used to sit here. CelestialBackground
+       renders 80 of these, and will-change asks the browser to give each one
+       its own compositor layer — 80 layers held for the whole session, which
+       on a mid-range Android is the memory cost of a small image per star for
+       no gain. opacity and transform composite fine without the hint. */
   }
   .celestial-star-bright {
     background: rgb(var(--gold-primary));
@@ -509,12 +558,21 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: gold-foil-shift 6s ease-in-out infinite;
+    /* Rests here. Declaring the end state means the heading is correct
+       even before the animation runs, and correct forever after it. */
+    background-position: 100% 50%;
+    /* Was `gold-foil-shift 6s ease-in-out infinite` on all 19 call sites.
+       background-position is a repaint, not a composite, so that was 19
+       text nodes re-rasterising for the life of the session — and a
+       heading that shimmers forever is decoration that says nothing. Now
+       the foil catches the light once as the heading arrives and then
+       holds. `both` so it is right during the delay and after the end. */
+    animation: gold-foil-sweep var(--dur-deliberate) var(--ease-emphasized) both;
   }
 
-  @keyframes gold-foil-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
+  @keyframes gold-foil-sweep {
+    from { background-position: 0% 50%; }
+    to   { background-position: 100% 50%; }
   }
 
   /* Inline-glyph helper — keeps a small SVG icon optically
@@ -592,10 +650,15 @@
     border: 1px solid rgba(var(--gold-primary), 0.18);
     border-radius: 1rem;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    /* 0.35s with a pasted cubic-bezier, replaced by the tokens. Hover
+       feedback at 350ms feels like the card is thinking about it;
+       --dur-base lands it while the pointer is still moving. box-shadow
+       is a repaint, but this is a one-shot on hover rather than a loop,
+       which is the line that matters. */
     transition:
-      transform 0.35s cubic-bezier(0.22, 0.8, 0.25, 1),
-      border-color 0.35s ease-out,
-      box-shadow 0.35s ease-out;
+      transform var(--dur-fast) var(--ease-out),
+      border-color var(--dur-base) var(--ease-standard),
+      box-shadow var(--dur-base) var(--ease-standard);
   }
   .card-ritual:hover {
     transform: translateY(-2px);
@@ -605,8 +668,12 @@
       0 0 30px rgba(var(--gold-primary), 0.10),
       inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   }
+  /* scale(0.997) — the previous value — is 1px of travel on a 360px card,
+     i.e. below the threshold at which a finger reads it as a response at
+     all. On Android there is no hover state, so this press IS the only
+     feedback a ritual card gives. */
   .card-ritual:active {
-    transform: translateY(-1px) scale(0.997);
+    transform: translateY(0) scale(0.985);
   }
 
   /* ── Redesign 2026 — bullet-rule kicker ───────────────────────
@@ -781,76 +848,37 @@
   }
 }
 
-@keyframes twinkle {
-  0%, 100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) rotate(45deg);
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes tarot-reveal {
-  0% {
-    transform: rotateY(0deg) scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: rotateY(90deg) scale(1);
-  }
-  100% {
-    transform: rotateY(0deg) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(var(--gold-primary), 0.15);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(var(--gold-primary), 0.25), 0 0 60px rgba(var(--gold-primary), 0.1);
-  }
-}
-
-@keyframes float-gentle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes shuffle-card {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-20px) rotate(-5deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(5deg);
-  }
-  75% {
-    transform: translateY(-15px) rotate(-3deg);
-  }
-}
+/* ── Deleted from this position ───────────────────────────────────────
+ *
+ * Eight keyframe blocks and their classes were removed here. Every one
+ * was verified against `*.tsx`, `*.ts`, `*.css` under src/ and against
+ * index.html before deletion:
+ *
+ *   twinkle        — sole consumer was .constellation-bg::before, whose
+ *                    permanent opacity loop is now a static opacity.
+ *   shine          — sole consumer .gold-shine had no call sites.
+ *   spin           — a byte-identical redefinition of Tailwind's core
+ *                    `spin`, sitting after `@tailwind utilities` and so
+ *                    quietly winning. Its one real consumer,
+ *                    .loading-constellation, now owns
+ *                    `constellation-spin` above.
+ *   tarot-reveal   — no call sites. Also duplicated in tailwind.config.js.
+ *   glow-pulse     — no call sites, and a box-shadow loop besides.
+ *   float-gentle   — orphan. `animate-float-gentle` is served by the
+ *                    Tailwind `float-gentle` keyframe, not this one.
+ *   (shuffle-card was removed here for the same reason and that was WRONG —
+ *    its real consumer references the keyframe by NAME from an inline
+ *    style. It is restored at the bottom of this file.)
+ *   twinkle-kf     — all four .twinkle* classes had no call sites.
+ *
+ * fade-in, scale-in, shimmer and spin-slow left too, for a different
+ * reason: they were shadowing same-named definitions in
+ * tailwind.config.js, which is now the single source of truth for every
+ * `animate-*` utility. The behaviour that was winning (the 10px rise on
+ * fade-in, `forwards` on scale-in, the 8s spin-slow period) was folded
+ * into the config, so nothing changed on screen except the durations
+ * that were deliberately retimed.
+ */
 
 /* ── I-Ching 3-coin toss — arc + spin ─────────────────────────────
    Three gold coins launch upward, spin on the Y axis (3D flip),
@@ -884,13 +912,27 @@
 }
 
 /* ── Ambient animation utilities ──────────────────────────────────
-   A small catalog of reusable motion treatments that add life
-   without being gimmicky. All respect `prefers-reduced-motion` via
-   the global block near the top of this file.                    */
+ *
+ * A small catalog of reusable motion treatments. All of them respect
+ * `prefers-reduced-motion` via the global block at the very BOTTOM of
+ * this file, under "ACCESSIBILITY FLOOR" — an older version of this
+ * comment said "near the top of this file", which was wrong and sent
+ * anyone checking to the wrong end of a 1,300-line stylesheet.
+ *
+ * Four of these five used to be on the same Home hero card at once
+ * (src/pages/HomePage.tsx:412 and its CTA at :422), each looping for
+ * ever: an 18s blurred aurora, a 4.5s blended sweep, a 3.4s box-shadow
+ * pulse and two drifting particles, plus float-gentle and gold-foil on
+ * top. Six permanent animations on one card, none of them reporting
+ * state. The two that were only there to draw the eye now fire ONCE, as
+ * the card arrives, which is when drawing the eye is worth something;
+ * the ones that stayed are transform/opacity only, so they run on the
+ * compositor and cost the main thread nothing.
+ */
 
-/* Slow aurora sweep — a very gradual translating gradient glow.
-   Drop onto a container with `position: relative; overflow: hidden`
-   to give hero cards a breathing background shimmer. */
+/* Slow aurora drift — a gradual translating gradient glow. Drop onto a
+   container with `position: relative; overflow: hidden` to give hero
+   cards a living background. */
 @keyframes aurora-drift {
   0%   { transform: translate3d(-18%, -8%, 0) rotate(0deg); }
   50%  { transform: translate3d( 18%,  8%, 0) rotate(180deg); }
@@ -903,35 +945,32 @@
   pointer-events: none;
   background: radial-gradient(
     circle at 30% 40%,
-    rgba(212, 175, 55, 0.12) 0%,
-    transparent 40%
+    rgba(212, 175, 55, 0.13) 0%,
+    transparent 45%
   ),
   radial-gradient(
     circle at 70% 60%,
-    rgba(142, 110, 181, 0.12) 0%,
-    transparent 40%
+    rgba(142, 110, 181, 0.13) 0%,
+    transparent 45%
   );
-  filter: blur(14px);
+  /* `filter: blur(14px)` was here and was the single most expensive
+     declaration in this file: a blur forces a render surface, and this
+     layer is inset -30% (160% of the hero card) and transforms on a
+     permanent 18s loop, so the blur was being recomputed for the life
+     of the page. The gradients already fade to transparent by 45%, so
+     the softness was redundant with them. Without the filter this is a
+     pure composited transform — effectively free. */
   animation: aurora-drift 18s ease-in-out infinite;
   z-index: 0;
 }
 
-/* Twinkle — very subtle opacity flicker for decorative dots/stars. */
-@keyframes twinkle-kf {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.3; }
-}
-.twinkle     { animation: twinkle-kf 2.4s ease-in-out infinite; }
-.twinkle-2s  { animation: twinkle-kf 2s  ease-in-out infinite; }
-.twinkle-3s  { animation: twinkle-kf 3s  ease-in-out infinite; }
-.twinkle-slow{ animation: twinkle-kf 4.5s ease-in-out infinite; }
-
-/* Gold shimmer sweep — a thin highlight band that slides across.
-   Use on pills, badges, or buttons for a premium-gold foil sheen. */
+/* Gold sweep — a thin highlight band that crosses once, as the element
+   arrives. Use on a primary CTA or a newly-unlocked badge: it says
+   "this is the thing", and then stops saying it. */
 @keyframes gold-sweep {
   0%   { transform: translateX(-120%); opacity: 0; }
-  40%  { opacity: 0.8; }
-  60%  { opacity: 0.8; }
+  30%  { opacity: 0.85; }
+  70%  { opacity: 0.85; }
   100% { transform: translateX(120%); opacity: 0; }
 }
 .gold-sweep {
@@ -952,57 +991,65 @@
     transparent 80%
   );
   transform: translateX(-120%);
-  animation: gold-sweep 4.5s ease-in-out infinite;
+  /* Was `4.5s ease-in-out infinite`. A highlight that sweeps a button
+     for ever is the exact texture that dates an interface — and
+     mix-blend-mode forces a render surface, so it was paying for a
+     compositing layer permanently. Once, 700ms after mount so it lands
+     just behind the card's own entrance, then `forwards` parks it
+     off-screen at opacity 0. */
+  animation: gold-sweep 750ms var(--ease-emphasized) 700ms 1 forwards;
   pointer-events: none;
   mix-blend-mode: overlay;
 }
 
-/* Gentle breathing glow — a soft pulsing halo. Good on primary CTA
-   buttons to draw attention without the harsh default pulse. */
+/* A single breath of light on arrival, then a steady halo. Good on a
+   primary CTA. */
 @keyframes breathe-glow {
-  0%, 100% { box-shadow: 0 0 14px rgba(212, 175, 55, 0.22), 0 0 30px rgba(212, 175, 55, 0.10); }
-  50%      { box-shadow: 0 0 22px rgba(212, 175, 55, 0.38), 0 0 48px rgba(212, 175, 55, 0.18); }
+  from { box-shadow: 0 0 16px rgba(212, 175, 55, 0.24), 0 0 34px rgba(212, 175, 55, 0.11); }
+  to   { box-shadow: 0 0 24px rgba(212, 175, 55, 0.42), 0 0 52px rgba(212, 175, 55, 0.20); }
 }
-.breathe-glow { animation: breathe-glow 3.4s ease-in-out infinite; }
+.breathe-glow {
+  /* The resting halo, declared as a real property rather than as a
+     keyframe the element has to be mid-animation to show. */
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.24), 0 0 34px rgba(212, 175, 55, 0.11);
+  /* Was `3.4s ease-in-out infinite` — a box-shadow loop, on the app's
+     primary CTA, for ever. box-shadow cannot be composited: every frame
+     of that was a repaint of the button and its surroundings, on the
+     main thread, on the mid-range Androids this ships to. Two
+     alternating iterations = one breath in and out, then it rests on
+     the box-shadow above and stops costing anything. */
+  animation: breathe-glow var(--dur-deliberate) var(--ease-standard) 2 alternate;
+}
 
-/* Tarot-card flip — adds depth + easing over the old flat flip. */
-@keyframes card-flip-3d {
-  0%   { transform: rotateY(0) scale(1); }
-  40%  { transform: rotateY(90deg) scale(1.03); }
-  60%  { transform: rotateY(90deg) scale(1.03); }
-  100% { transform: rotateY(180deg) scale(1); }
-}
-.animate-card-flip-3d {
-  animation: card-flip-3d 0.9s cubic-bezier(0.22, 0.8, 0.25, 1) forwards;
-  transform-style: preserve-3d;
-}
-
-/* Interactive hover lift — drop into .group containers with a child
-   `.hover-lift` to get a subtle rise + glow on hover. Useful on card
-   links. */
+/* Interactive hover lift — put `.hover-lift` on a child of a `.group`
+   container to get a rise plus glow on hover. Kept although it has no
+   call sites yet: it is the counterpart to `.card-ritual` for rows that
+   are not cards, and it is where a hover treatment should be added
+   rather than pasting another cubic-bezier. */
 .hover-lift {
   transition:
-    transform 0.35s cubic-bezier(0.22, 0.8, 0.25, 1),
-    box-shadow 0.35s ease-out,
-    border-color 0.3s ease-out;
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard);
 }
 .group:hover .hover-lift {
   transform: translateY(-3px);
   box-shadow: 0 12px 28px -12px rgba(212, 175, 55, 0.35);
 }
 
-/* Floating particles — place inside any relative container to drift
-   a few sparkle dots upward. Dots are pseudo-elements so no extra
-   DOM required. */
+/* Floating particles — place inside any relative container to drift a
+   couple of sparks upward. Pseudo-elements, so no extra DOM. */
 @keyframes float-particle-a {
-  0%   { transform: translate(10%, 110%); opacity: 0; }
-  10%  { opacity: 0.9; }
-  100% { transform: translate(22%, -20%); opacity: 0; }
+  0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+  12%  { opacity: 0.9; }
+  80%  { opacity: 0.55; }
+  100% { transform: translate3d(14px, -220px, 0); opacity: 0; }
 }
 @keyframes float-particle-b {
-  0%   { transform: translate(70%, 110%); opacity: 0; }
-  10%  { opacity: 0.7; }
-  100% { transform: translate(60%, -20%); opacity: 0; }
+  0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+  12%  { opacity: 0.7; }
+  80%  { opacity: 0.4; }
+  100% { transform: translate3d(-12px, -220px, 0); opacity: 0; }
 }
 .floating-particles {
   position: relative;
@@ -1012,83 +1059,93 @@
 .floating-particles::after {
   content: '';
   position: absolute;
+  /* These had no `top`/`left` and travelled by `translate(10%, 110%)`.
+     Transform percentages resolve against the element's OWN box, and
+     the box is 3px — so the sparks were moving three pixels and sitting
+     in the container's top-left corner. The effect has never actually
+     rendered. Anchored to the bottom edge and moved in px, it does. */
+  bottom: -4px;
   width: 3px;
   height: 3px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(244, 214, 104, 0.95), rgba(244, 214, 104, 0));
   pointer-events: none;
+  opacity: 0;
 }
-.floating-particles::before { animation: float-particle-a 7s linear infinite; }
-.floating-particles::after  { animation: float-particle-b 9s linear infinite 2s; }
+.floating-particles::before { left: 18%; animation: float-particle-a 7s linear infinite; }
+.floating-particles::after  { left: 68%; animation: float-particle-b 9s linear infinite 2s; }
 
-/* Slow spin (used by MysticalStar spinning prop). Longer cycle so
-   the motion reads as orbital, not a loading spinner. */
-@keyframes spin-very-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.animate-spin-very-slow { animation: spin-very-slow 40s linear infinite; }
+/* An element has exactly ONE ::before and ONE ::after. `.nebula-veil` claims
+   the ::before and `.aurora-veil` the ::after, so a host wearing all three
+   classes gave the sparks nowhere to live — and because these rules are later
+   in the file at equal specificity, the sparks WON, replacing the nebula's
+   radial gradients and the aurora's 18s drift with two 3px dots. The Home
+   hero card was the only element wearing all three, and it was also the only
+   `.aurora-veil` in the app, which left `@keyframes aurora-drift` with no
+   live consumer at all.
 
-@keyframes flip-in {
-  0% {
-    transform: rotateY(90deg);
-    opacity: 0;
-  }
-  50% {
-    transform: rotateY(-10deg);
-  }
-  100% {
-    transform: rotateY(0deg);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+   The fix is an element of its own rather than a fourth claimant on the same
+   two slots. Declared after `.floating-particles` so `position: absolute`
+   wins over its `position: relative`. */
+.floating-particles-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
+/* `flip-in` lived here: a 500ms face-swap with a spring overshoot and no
+   back face, used by the two legacy tarot reveal grids while the split
+   rollout turned a real two-faced card — the same gesture in two feels,
+   both shipping at once. All three grids now share the two-faced turn
+   (FLIP_MS / FLIP_EASE in TarotSection, CelticCrossLayout and
+   TarotRevealView), so this is gone rather than left lying around for
+   someone to reach for and reintroduce the split.
 
-@keyframes scale-in {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
+   Checked the way the shuffle-card mistake taught us to check: grepped
+   for the NAME `flip-in` across src/ and tailwind.config.js, not for the
+   `.animate-flip-in` class, and confirmed no inline `animation:` and no
+   dynamically-built class string reaches it. src/test/golden/keyframes.test.ts
+   fails if that judgement is wrong. */
 
-.animate-shuffle {
-  animation: shuffle-card 0.6s ease-in-out infinite;
-}
+/* `fade-in`, `scale-in`, `shimmer` and `spin-slow` were defined here as
+   well as in tailwind.config.js. Because Tailwind v3 emits
+   `@tailwind utilities` (line 5) as plain unlayered CSS, and everything
+   below line ~700 of this file is also unlayered, these copies won on
+   source order at equal specificity — so tailwind.config.js was a decoy
+   for anyone tuning them, and `.animate-spin-slow` ran at 8s while the
+   config said 20s. The config is now the single source of truth for
+   every `animate-*` utility and these copies are gone. */
 
-.animate-flip-in {
-  animation: flip-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.3s ease-out forwards;
-}
+/* ── List stagger ─────────────────────────────────────────────────────
+ *
+ * Put `data-stagger` on a list/grid whose children already carry an
+ * entrance animation (`animate-fade-in`, `animate-scale-in`, …) and the
+ * children arrive in sequence instead of all at once. That sequence is
+ * what tells the eye where the list starts and which way it reads;
+ * without it, twelve cards appearing simultaneously is one event, not a
+ * list. There was no stagger anywhere in the app before this.
+ *
+ * Ten steps, then it stops: past ten rows the delay is longer than the
+ * user's patience, so everything from the eleventh on arrives with the
+ * tenth. Override the rhythm per-list with `--stagger-step`.
+ *
+ * Nothing is needed for reduced motion — the global block at the bottom
+ * of this file zeroes `animation-delay` outright, so the whole list
+ * lands at once, which is the correct behaviour rather than a
+ * compromise.
+ */
+[data-stagger] > * { animation-delay: calc(var(--stagger-step, 40ms) * 0); }
+[data-stagger] > *:nth-child(2)  { animation-delay: calc(var(--stagger-step, 40ms) * 1); }
+[data-stagger] > *:nth-child(3)  { animation-delay: calc(var(--stagger-step, 40ms) * 2); }
+[data-stagger] > *:nth-child(4)  { animation-delay: calc(var(--stagger-step, 40ms) * 3); }
+[data-stagger] > *:nth-child(5)  { animation-delay: calc(var(--stagger-step, 40ms) * 4); }
+[data-stagger] > *:nth-child(6)  { animation-delay: calc(var(--stagger-step, 40ms) * 5); }
+[data-stagger] > *:nth-child(7)  { animation-delay: calc(var(--stagger-step, 40ms) * 6); }
+[data-stagger] > *:nth-child(8)  { animation-delay: calc(var(--stagger-step, 40ms) * 7); }
+[data-stagger] > *:nth-child(9)  { animation-delay: calc(var(--stagger-step, 40ms) * 8); }
+[data-stagger] > *:nth-child(n + 10) { animation-delay: calc(var(--stagger-step, 40ms) * 9); }
 
 .shadow-gold {
   box-shadow: 0 0 20px rgba(var(--gold-primary), 0.3), 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -1100,19 +1157,6 @@
 
 .hover\:scale-102:hover {
   transform: scale(1.02);
-}
-
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 8s linear infinite;
 }
 
 /* ── Language picker ────────────────────────────────────────────── */
@@ -1135,7 +1179,9 @@
   color: #e0dcd4;
   font-size: 16px;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
   min-height: 56px;
   text-align: left;
 }
@@ -1270,10 +1316,19 @@ body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-l
 
 /* ── Reduced motion ─────────────────────────────────────────────────
  *
- * The app carries a lot of ambient motion: shimmer, gold-sweep,
- * breathe-glow, aurora-drift, twinkle, floating particles, the 60-second
- * chart rim, and on the landing page rising particles and word reveals.
- * For a user with a vestibular disorder that is not atmosphere.
+ * The app carries a lot of ambient motion: the skeleton shimmer, the gold
+ * sweep, the CTA's breath, aurora-drift, the celestial starfield, floating
+ * particles, the 60-second chart rim, and on the landing page rising
+ * particles and word reveals. For a user with a vestibular disorder that
+ * is not atmosphere.
+ *
+ * This block is the ONLY thing standing between that catalogue and a user
+ * who has asked for less, so it lives at the very end of the file where
+ * nothing can outrank it. Anything added above must be reachable from
+ * here — which means CSS. It cannot touch framer-motion, whose transforms
+ * are written to inline style by rAF: those need `useReducedMotion()` or a
+ * `<MotionConfig reducedMotion="user">` at the framer call site, not a
+ * rule here.
  *
  * This collapses duration rather than setting `animation: none`. `none`
  * strands every `forwards` animation on its 0% frame, and several of
@@ -1295,9 +1350,10 @@ body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-l
  *     so it does not provoke vestibular symptoms; WCAG 2.3.3 is about
  *     movement, not brightness. Pinning `transition-property` means an
  *     element that also transitions `transform` still gets the fade and
- *     snaps the movement. Nothing carries the attribute yet — it is here
- *     so route and sheet transitions can opt in rather than each
- *     inventing an escape hatch.
+ *     snaps the movement. It is here so route and sheet transitions can
+ *     opt in rather than each inventing an escape hatch — put
+ *     `data-motion="fade"` on the element that carries the transition,
+ *     not on its parent.
  */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1329,5 +1385,33 @@ body:has(input:focus, textarea:focus, [contenteditable="true"]:focus) nav[aria-l
   .skeleton {
     background-image: none !important;
     background-color: rgb(var(--hairline)) !important;
+  }
+}
+
+/* ── Keyframes referenced by NAME from an inline style ────────────────
+   These cannot live in tailwind.config.js: Tailwind only emits a @keyframes
+   block when some `animate-*` utility references it, and these are consumed
+   through a raw `animation:` shorthand in JSX, so the config would define them
+   and the build would drop them on the floor.
+
+   DO NOT DELETE one because "the class has no call sites". A class-based sweep
+   removed shuffle-card for exactly that reason and silently turned the tarot
+   shuffle into no animation at all — invisible to typecheck, lint and tests.
+   Grep the keyframe NAME before removing anything here.
+
+   shuffle-card — src/components/readings/TarotSection.tsx (the shuffling deck)
+*/
+@keyframes shuffle-card {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20px) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+  75% {
+    transform: translateY(-15px) rotate(-3deg);
   }
 }

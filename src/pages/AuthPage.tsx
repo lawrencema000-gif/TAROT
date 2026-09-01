@@ -225,6 +225,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
                 value={resetEmail}
                 onChange={e => setResetEmail(e.target.value)}
                 placeholder={t('onboarding:createAccount.emailPlaceholder')}
+                aria-label={t('common:labels.email')}
                 icon={<Mail className="w-5 h-5" />}
                 required
               />
@@ -314,6 +315,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder={t('onboarding:createAccount.emailPlaceholder')}
+            aria-label={t('common:labels.email')}
             icon={<Mail className="w-5 h-5" />}
             required
           />
@@ -324,6 +326,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder={t('common:labels.password')}
+              aria-label={t('common:labels.password')}
               icon={<Lock className="w-5 h-5" />}
               required
               minLength={6}

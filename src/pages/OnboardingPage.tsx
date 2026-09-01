@@ -194,7 +194,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
       {step === 2 && (
         <div className="h-1 bg-mystic-800/50">
-          <div className="h-full bg-gradient-to-r from-gold/80 to-gold w-full transition-all duration-500 ease-out" />
+          <div className="h-full bg-gradient-to-r from-gold/80 to-gold w-full transition-all duration-deliberate ease-out" />
         </div>
       )}
 

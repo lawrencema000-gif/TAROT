@@ -149,109 +149,159 @@ Deno.serve(
         }
       }
 
-      switch (event.type) {
-        case "checkout.session.completed": {
-          const session = event.data.object as Stripe.Checkout.Session;
-          const userId = session.client_reference_id || session.metadata?.user_id;
-          const productId = session.metadata?.product_id;
-          const purchaseType = session.metadata?.purchase_type;
+      // The idempotency row above is a CLAIM, and it was never released.
+      // If anything below threw — a transient profiles update failure, a
+      // blip talking to the DB — the claim survived, so Stripe's retry of
+      // that same event id hit the `duplicate` branch and returned 200
+      // without doing any work. The customer had paid, would never be
+      // granted premium, and nothing would ever retry again.
+      //
+      // On failure, drop the claim before rethrowing: Stripe then retries
+      // into a clean slate. On success the claim stands, so genuine
+      // duplicates are still no-ops.
+      try {
+        switch (event.type) {
+          case "checkout.session.completed": {
+            const session = event.data.object as Stripe.Checkout.Session;
+            const userId = session.client_reference_id || session.metadata?.user_id;
+            const productId = session.metadata?.product_id;
+            const purchaseType = session.metadata?.purchase_type;
 
-          if (!userId) {
-            ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
-            break;
-          }
-
-          // Moonstone pack branch: credit ledger.
-          if (purchaseType === "moonstones") {
-            const packId = session.metadata?.product_id || "";
-            const amountRaw = session.metadata?.moonstones;
-            const amount = amountRaw ? parseInt(amountRaw, 10) : 0;
-            if (!Number.isFinite(amount) || amount <= 0 || amount > 100_000) {
-              ctx.log.warn("stripe_webhook.moonstone_bad_amount", { packId, amountRaw });
+            if (!userId) {
+              ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
               break;
             }
-            const { error: ledgerErr } = await ctx.supabase
-              .from("moonstone_transactions")
-              .insert({
-                user_id: userId,
-                amount,
-                kind: "purchase",
-                reference: session.payment_intent as string,
-                note: `Pack: ${packId}`,
-              });
-            if (ledgerErr) {
-              ctx.log.error("stripe_webhook.moonstone_ledger_failed", { err: ledgerErr.message });
-            } else {
-              ctx.log.info("stripe_webhook.moonstones_credited", { userId, packId, amount });
-            }
-            break;
-          }
 
-          // Pay-per-report branch: insert report_unlocks + optional affiliate accrual.
-          if (purchaseType === "report") {
-            const reportKey = session.metadata?.report_key;
-            const reference = session.metadata?.reference;
-            const amountCents = session.amount_total ?? 0;
-            if (!reportKey || !reference || amountCents <= 0) {
-              ctx.log.warn("stripe_webhook.report_missing_metadata", { sessionId: session.id });
-              break;
-            }
-            const { error: unlockErr } = await ctx.supabase
-              .from("report_unlocks")
-              .upsert(
-                {
+            // Moonstone pack branch: credit ledger.
+            if (purchaseType === "moonstones") {
+              const packId = session.metadata?.product_id || "";
+              const amountRaw = session.metadata?.moonstones;
+              const amount = amountRaw ? parseInt(amountRaw, 10) : 0;
+              if (!Number.isFinite(amount) || amount <= 0 || amount > 100_000) {
+                ctx.log.warn("stripe_webhook.moonstone_bad_amount", { packId, amountRaw });
+                break;
+              }
+              const { error: ledgerErr } = await ctx.supabase
+                .from("moonstone_transactions")
+                .insert({
                   user_id: userId,
-                  report_key: reportKey,
-                  reference,
-                  cost_currency: "usd",
-                  cost_amount: amountCents,
-                },
-                { onConflict: "user_id,report_key,reference" },
-              );
-            if (unlockErr) {
-              ctx.log.error("stripe_webhook.report_unlock_failed", { err: unlockErr.message });
-            } else {
-              ctx.log.info("stripe_webhook.report_unlocked", { userId, reportKey });
+                  amount,
+                  kind: "purchase",
+                  reference: session.payment_intent as string,
+                  note: `Pack: ${packId}`,
+                });
+              if (ledgerErr) {
+                ctx.log.error("stripe_webhook.moonstone_ledger_failed", { err: ledgerErr.message });
+              } else {
+                ctx.log.info("stripe_webhook.moonstones_credited", { userId, packId, amount });
+              }
+              break;
             }
 
-            const affiliateReferrerId = session.metadata?.affiliate_referrer_id;
-            if (affiliateReferrerId) {
-              const affiliateShare = Math.floor(amountCents * 0.1);
-              if (affiliateShare > 0) {
-                const { error: accrueErr } = await ctx.supabase
-                  .from("affiliate_earnings")
-                  .insert({
-                    referrer_id: affiliateReferrerId,
-                    invitee_id: userId,
-                    source: "pay-per-report",
-                    source_ref: session.id,
-                    invitee_revenue_cents: amountCents,
-                    affiliate_share_cents: affiliateShare,
-                    share_percent: 10.00,
-                    currency: "usd",
-                  });
-                if (accrueErr) {
-                  ctx.log.error("stripe_webhook.affiliate_accrual_failed", { err: accrueErr.message });
-                } else {
-                  ctx.log.info("stripe_webhook.affiliate_accrued", {
-                    affiliateReferrerId,
-                    affiliateShare,
-                  });
+            // Pay-per-report branch: insert report_unlocks + optional affiliate accrual.
+            if (purchaseType === "report") {
+              const reportKey = session.metadata?.report_key;
+              const reference = session.metadata?.reference;
+              const amountCents = session.amount_total ?? 0;
+              if (!reportKey || !reference || amountCents <= 0) {
+                ctx.log.warn("stripe_webhook.report_missing_metadata", { sessionId: session.id });
+                break;
+              }
+              const { error: unlockErr } = await ctx.supabase
+                .from("report_unlocks")
+                .upsert(
+                  {
+                    user_id: userId,
+                    report_key: reportKey,
+                    reference,
+                    cost_currency: "usd",
+                    cost_amount: amountCents,
+                  },
+                  { onConflict: "user_id,report_key,reference" },
+                );
+              if (unlockErr) {
+                ctx.log.error("stripe_webhook.report_unlock_failed", { err: unlockErr.message });
+              } else {
+                ctx.log.info("stripe_webhook.report_unlocked", { userId, reportKey });
+              }
+
+              const affiliateReferrerId = session.metadata?.affiliate_referrer_id;
+              if (affiliateReferrerId) {
+                const affiliateShare = Math.floor(amountCents * 0.1);
+                if (affiliateShare > 0) {
+                  const { error: accrueErr } = await ctx.supabase
+                    .from("affiliate_earnings")
+                    .insert({
+                      referrer_id: affiliateReferrerId,
+                      invitee_id: userId,
+                      source: "pay-per-report",
+                      source_ref: session.id,
+                      invitee_revenue_cents: amountCents,
+                      affiliate_share_cents: affiliateShare,
+                      share_percent: 10.00,
+                      currency: "usd",
+                    });
+                  if (accrueErr) {
+                    ctx.log.error("stripe_webhook.affiliate_accrual_failed", { err: accrueErr.message });
+                  } else {
+                    ctx.log.info("stripe_webhook.affiliate_accrued", {
+                      affiliateReferrerId,
+                      affiliateShare,
+                    });
+                  }
                 }
               }
+              break;
+            }
+
+            if (session.mode === "subscription") {
+              const subscription = await stripe.subscriptions.retrieve(
+                session.subscription as string,
+              );
+
+              await updateUserPremiumStatus(userId, true, {
+                provider: "stripe",
+                productId: productId || subscription.items.data[0].price.id,
+                status: subscription.status === "trialing" ? "trial" : "active",
+                period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
+                transactionId: subscription.id,
+                startedAt: new Date(subscription.created * 1000).toISOString(),
+                expiresAt: subscription.current_period_end
+                  ? new Date(subscription.current_period_end * 1000).toISOString()
+                  : undefined,
+              });
+
+              ctx.log.info("stripe_webhook.user_subscribed", { userId });
+            } else if (session.mode === "payment") {
+              await updateUserPremiumStatus(userId, true, {
+                provider: "stripe",
+                productId: productId || "lifetime",
+                status: "active",
+                period: "lifetime",
+                transactionId: session.payment_intent as string,
+                startedAt: new Date().toISOString(),
+              });
+
+              ctx.log.info("stripe_webhook.user_lifetime", { userId });
             }
             break;
           }
 
-          if (session.mode === "subscription") {
-            const subscription = await stripe.subscriptions.retrieve(
-              session.subscription as string,
-            );
+          case "customer.subscription.updated": {
+            const subscription = event.data.object as Stripe.Subscription;
+            const userId = subscription.metadata?.user_id;
 
-            await updateUserPremiumStatus(userId, true, {
+            if (!userId) {
+              ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+              break;
+            }
+
+            const isActive = ["active", "trialing"].includes(subscription.status);
+
+            await updateUserPremiumStatus(userId, isActive, {
               provider: "stripe",
-              productId: productId || subscription.items.data[0].price.id,
-              status: subscription.status === "trialing" ? "trial" : "active",
+              productId: subscription.items.data[0].price.id,
+              status: subscription.status === "trialing" ? "trial" : subscription.status,
               period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
               transactionId: subscription.id,
               startedAt: new Date(subscription.created * 1000).toISOString(),
@@ -260,124 +310,102 @@ Deno.serve(
                 : undefined,
             });
 
-            ctx.log.info("stripe_webhook.user_subscribed", { userId });
-          } else if (session.mode === "payment") {
-            await updateUserPremiumStatus(userId, true, {
-              provider: "stripe",
-              productId: productId || "lifetime",
-              status: "active",
-              period: "lifetime",
-              transactionId: session.payment_intent as string,
-              startedAt: new Date().toISOString(),
-            });
-
-            ctx.log.info("stripe_webhook.user_lifetime", { userId });
-          }
-          break;
-        }
-
-        case "customer.subscription.updated": {
-          const subscription = event.data.object as Stripe.Subscription;
-          const userId = subscription.metadata?.user_id;
-
-          if (!userId) {
-            ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+            ctx.log.info("stripe_webhook.subscription_updated", { subscriptionId: subscription.id, status: subscription.status });
             break;
           }
 
-          const isActive = ["active", "trialing"].includes(subscription.status);
+          case "customer.subscription.deleted": {
+            const subscription = event.data.object as Stripe.Subscription;
+            const userId = subscription.metadata?.user_id;
 
-          await updateUserPremiumStatus(userId, isActive, {
-            provider: "stripe",
-            productId: subscription.items.data[0].price.id,
-            status: subscription.status === "trialing" ? "trial" : subscription.status,
-            period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
-            transactionId: subscription.id,
-            startedAt: new Date(subscription.created * 1000).toISOString(),
-            expiresAt: subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000).toISOString()
-              : undefined,
-          });
-
-          ctx.log.info("stripe_webhook.subscription_updated", { subscriptionId: subscription.id, status: subscription.status });
-          break;
-        }
-
-        case "customer.subscription.deleted": {
-          const subscription = event.data.object as Stripe.Subscription;
-          const userId = subscription.metadata?.user_id;
-
-          if (!userId) {
-            ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
-            break;
-          }
-
-          await updateUserPremiumStatus(userId, false, {
-            provider: "stripe",
-            productId: subscription.items.data[0].price.id,
-            status: "cancelled",
-            period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
-            transactionId: subscription.id,
-            startedAt: new Date(subscription.created * 1000).toISOString(),
-            expiresAt: subscription.ended_at
-              ? new Date(subscription.ended_at * 1000).toISOString()
-              : undefined,
-          });
-
-          ctx.log.info("stripe_webhook.subscription_cancelled", { subscriptionId: subscription.id });
-          break;
-        }
-
-        case "invoice.payment_failed": {
-          const invoice = event.data.object as Stripe.Invoice;
-          const subscriptionId = invoice.subscription;
-
-          if (subscriptionId) {
-            const sub = await stripe.subscriptions.retrieve(subscriptionId as string);
-            const userId = sub.metadata?.user_id;
-
-            if (userId) {
-              const { error } = await ctx.supabase
-                .from("subscriptions")
-                .update({ status: "grace_period" })
-                .eq("transaction_id", subscriptionId as string);
-
-              if (error) {
-                ctx.log.error("stripe_webhook.grace_period_update_failed", { err: error, userId });
-              }
-
-              ctx.log.info("stripe_webhook.payment_failed_grace", { userId });
+            if (!userId) {
+              ctx.log.warn("stripe_webhook.missing_user_id", { eventType: event.type });
+              break;
             }
-          }
-          break;
-        }
 
-        case "account.updated": {
-          const account = event.data.object as Stripe.Account;
-          const onboardingComplete = !!account.details_submitted;
-          const payoutsEnabled = !!account.payouts_enabled;
-          const { error } = await ctx.supabase
-            .from("advisor_payout_accounts")
-            .update({
-              onboarding_complete: onboardingComplete,
-              payouts_enabled: payoutsEnabled,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("stripe_account_id", account.id);
-          if (error) {
-            ctx.log.error("stripe_webhook.account_updated_failed", { err: error.message });
-          } else {
-            ctx.log.info("stripe_webhook.account_updated", {
-              accountId: account.id,
-              onboardingComplete,
-              payoutsEnabled,
+            await updateUserPremiumStatus(userId, false, {
+              provider: "stripe",
+              productId: subscription.items.data[0].price.id,
+              status: "cancelled",
+              period: getPeriodFromInterval(subscription.items.data[0].price.recurring?.interval || "month"),
+              transactionId: subscription.id,
+              startedAt: new Date(subscription.created * 1000).toISOString(),
+              expiresAt: subscription.ended_at
+                ? new Date(subscription.ended_at * 1000).toISOString()
+                : undefined,
             });
-          }
-          break;
-        }
 
-        default:
-          ctx.log.info("stripe_webhook.unhandled_event", { type: event.type });
+            ctx.log.info("stripe_webhook.subscription_cancelled", { subscriptionId: subscription.id });
+            break;
+          }
+
+          case "invoice.payment_failed": {
+            const invoice = event.data.object as Stripe.Invoice;
+            const subscriptionId = invoice.subscription;
+
+            if (subscriptionId) {
+              const sub = await stripe.subscriptions.retrieve(subscriptionId as string);
+              const userId = sub.metadata?.user_id;
+
+              if (userId) {
+                const { error } = await ctx.supabase
+                  .from("subscriptions")
+                  .update({ status: "grace_period" })
+                  .eq("transaction_id", subscriptionId as string);
+
+                if (error) {
+                  ctx.log.error("stripe_webhook.grace_period_update_failed", { err: error, userId });
+                }
+
+                ctx.log.info("stripe_webhook.payment_failed_grace", { userId });
+              }
+            }
+            break;
+          }
+
+          case "account.updated": {
+            const account = event.data.object as Stripe.Account;
+            const onboardingComplete = !!account.details_submitted;
+            const payoutsEnabled = !!account.payouts_enabled;
+            const { error } = await ctx.supabase
+              .from("advisor_payout_accounts")
+              .update({
+                onboarding_complete: onboardingComplete,
+                payouts_enabled: payoutsEnabled,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("stripe_account_id", account.id);
+            if (error) {
+              ctx.log.error("stripe_webhook.account_updated_failed", { err: error.message });
+            } else {
+              ctx.log.info("stripe_webhook.account_updated", {
+                accountId: account.id,
+                onboardingComplete,
+                payoutsEnabled,
+              });
+            }
+            break;
+          }
+
+          default:
+            ctx.log.info("stripe_webhook.unhandled_event", { type: event.type });
+        }
+      } catch (err) {
+        const { error: releaseErr } = await ctx.supabase
+          .from("webhook_events")
+          .delete()
+          .eq("source", "stripe")
+          .eq("event_id", event.id);
+        if (releaseErr) {
+          // Worth shouting about: the claim is stuck, so Stripe's remaining
+          // retries for this event will be swallowed as duplicates.
+          ctx.log.error("stripe_webhook.idempotency_release_failed", {
+            err: releaseErr, eventId: event.id,
+          });
+        } else {
+          ctx.log.warn("stripe_webhook.idempotency_released", { eventId: event.id });
+        }
+        throw err;
       }
 
       return new Response(

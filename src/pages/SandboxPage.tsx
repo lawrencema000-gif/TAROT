@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { ARCHETYPAL_OBJECTS, type ArchetypalObject } from '../data/archetypalObjects';
+import { prefersReducedMotion } from '../utils/motion';
 
 /**
  * Archetypal sandbox — a 3D Three.js scene where the user places small
@@ -118,14 +119,21 @@ export function SandboxPage() {
         meshes,
       };
 
-      // Slow auto-rotate camera for a little life
+      // Slow auto-rotate camera for a little life — unless the user has
+      // asked for less of it. A three.js rAF loop is outside anything CSS
+      // can reach, and an endlessly orbiting camera is the strongest form
+      // of the motion this setting exists to stop. Draw the scene once so
+      // it is still there, then hold still.
       let angle = 0;
       let frame = 0;
+      const still = prefersReducedMotion();
       const render = () => {
-        frame = requestAnimationFrame(render);
-        angle += 0.002;
-        camera.position.x = Math.sin(angle) * 3.8;
-        camera.position.z = Math.cos(angle) * 3.8;
+        if (!still) {
+          frame = requestAnimationFrame(render);
+          angle += 0.002;
+          camera.position.x = Math.sin(angle) * 3.8;
+          camera.position.z = Math.cos(angle) * 3.8;
+        }
         camera.lookAt(0, 0, 0);
         renderer.render(scene, camera);
       };

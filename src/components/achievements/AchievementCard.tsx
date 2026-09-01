@@ -44,7 +44,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
     <button
       onClick={onPress}
       className={`
-        relative w-full p-4 rounded-2xl border transition-all duration-300
+        relative w-full p-4 rounded-2xl border transition-all duration-slow
         ${isUnlocked
           ? `bg-gradient-to-br ${rarityBg} ${rarityBorder} shadow-lg ${rarityGlow}`
           : 'bg-mystic-800/40 border-mystic-700/30'
@@ -66,7 +66,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
       <div className="flex gap-3">
         <div className={`
           relative flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center
-          transition-all duration-300
+          transition-all duration-slow
           ${isUnlocked
             ? `bg-gradient-to-br ${rarityBg} shadow-inner`
             : 'bg-mystic-700/30'
@@ -76,7 +76,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
             <Lock className="w-6 h-6 text-mystic-500" />
           ) : (
             <Icon className={`
-              w-7 h-7 transition-all duration-300
+              w-7 h-7 transition-all duration-slow
               ${isUnlocked ? rarityColor : 'text-mystic-500'}
               ${isUnlocked && achievement.rarity === 'legendary' ? 'animate-pulse' : ''}
             `} />
@@ -132,7 +132,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
               </div>
               <div className="h-1.5 bg-mystic-700/50 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
+                  className={`h-full rounded-full transition-all duration-deliberate ${
                     achievement.rarity === 'legendary' ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
                     achievement.rarity === 'epic' ? 'bg-gradient-to-r from-fuchsia-500 to-fuchsia-400' :
                     achievement.rarity === 'rare' ? 'bg-gradient-to-r from-blue-500 to-blue-400' :

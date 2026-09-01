@@ -85,72 +85,132 @@ export default {
         'card': '0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(212, 175, 55, 0.08)',
         'card-hover': '0 8px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(212, 175, 55, 0.12)',
       },
+      // ── Motion scale ───────────────────────────────────────────────
+      //
+      // There was no `transitionDuration` and no `transitionTimingFunction`
+      // here at all, which is why 378 transition utilities across src/ ran
+      // on values nobody chose: ~300 of them on Tailwind's unstated 150ms
+      // and ~355 on its unstated cubic-bezier(0.4,0,0.2,1), with the
+      // remainder split over six ad-hoc durations.
+      //
+      // These resolve to the --dur-* / --ease-* tokens defined in
+      // src/index.css :root, so `duration-slow` in a class list and
+      // `var(--dur-slow)` in a stylesheet are the same number by
+      // construction. The literal fallbacks are only there in case a
+      // consumer loads the compiled CSS without index.css.
+      //
+      // Numeric durations (duration-300 etc.) still work — `extend` adds
+      // to the defaults rather than replacing them — but named ones say
+      // what the motion is FOR, which is the point. `out` and `in` are
+      // deliberately redefined over Tailwind's defaults so that every
+      // `ease-out` in the app means the same arriving curve.
+      transitionDuration: {
+        fast: 'var(--dur-fast, 150ms)',              // press, hover, colour
+        base: 'var(--dur-base, 220ms)',              // a state change
+        slow: 'var(--dur-slow, 300ms)',              // arriving / leaving
+        deliberate: 'var(--dur-deliberate, 500ms)',  // a watched moment
+        // Not interaction feedback: a bar filling, a backdrop crossfading.
+        // These are watched for their own sake and read as sluggish only if
+        // you are waiting on them, which you are not.
+        ambient: 'var(--dur-ambient, 700ms)',        // a quantity moving
+      },
+      transitionTimingFunction: {
+        DEFAULT: 'var(--ease-standard, cubic-bezier(0.4, 0, 0.2, 1))',
+        'in-out': 'var(--ease-standard, cubic-bezier(0.4, 0, 0.2, 1))',
+        out: 'var(--ease-out, cubic-bezier(0.22, 0.8, 0.25, 1))',
+        in: 'var(--ease-in, cubic-bezier(0.55, 0, 1, 0.45))',
+        spring: 'var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1))',
+        emphasized: 'var(--ease-emphasized, cubic-bezier(0.16, 1, 0.3, 1))',
+      },
+
+      // Five entries were deleted here because nothing in src/ or
+      // index.html referenced them: `float`, `card-flip`, `tarot-reveal`,
+      // `bounce-in` and `glow-pulse` (the last two never had a single call
+      // site in the app's history). Three more — fade-in, scale-in,
+      // spin-slow — were being silently overridden by same-named rules in
+      // src/index.css, which is emitted after `@tailwind utilities` and so
+      // won at equal specificity. That made this file a decoy: editing
+      // `fade-in` here changed nothing on screen. The winning behaviour has
+      // been folded in below and the index.css copies deleted, so this is
+      // now the only definition of every `animate-*` utility.
+      //
+      // Values are literal rather than var(). Tailwind parses this
+      // shorthand to work out which @keyframes block to emit, and a var()
+      // carrying a cubic-bezier() — commas and all — is what breaks that
+      // parser. Keep them in step with --dur-*/--ease-* in src/index.css.
       animation: {
-        'shimmer': 'shimmer 2s linear infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'float-gentle': 'floatGentle 4s ease-in-out infinite',
+        // ── state: something is happening ──
+        'shimmer': 'shimmer 1.6s linear infinite',   // "content is loading"
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'spin-slow': 'spin 20s linear infinite',
-        'fade-in': 'fadeIn 0.5s ease-out',
-        'slide-up': 'slideUp 0.4s ease-out',
-        'card-flip': 'cardFlip 0.6s ease-in-out',
-        'tarot-reveal': 'tarotReveal 0.8s ease-out',
-        'scale-in': 'scaleIn 0.3s ease-out',
+        'spin-slow': 'spin-slow 8s linear infinite',
+
+        // ── entrance: something arrived (--dur-slow / --ease-out) ──
+        'fade-in': 'fade-in 300ms cubic-bezier(0.22, 0.8, 0.25, 1) forwards',
+        'scale-in': 'scale-in 300ms cubic-bezier(0.22, 0.8, 0.25, 1) forwards',
+        'slide-up': 'slide-up 300ms cubic-bezier(0.22, 0.8, 0.25, 1) forwards',
+
+        // ── ambient: transform-only, so it stays on the compositor ──
+        'float-gentle': 'float-gentle 4s ease-in-out infinite',
+
+        // ── a moment, once per interaction ──
         'confetti': 'confetti 3s ease-out forwards',
-        'bounce-in': 'bounceIn 0.5s ease-out',
-        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
       },
       keyframes: {
+        // Skeleton sweep. background-position is a repaint rather than a
+        // composite, but it is confined to small placeholder blocks and is
+        // the only signal a skeleton has. Turning it into a translated
+        // overlay needs a markup change in src/components/ui/Skeleton.tsx,
+        // which builds the gradient from Tailwind classes.
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
-        float: {
+        // Owns its own keyframe instead of borrowing core `spin`, so the
+        // 8s period is stated where the 8s is read.
+        'spin-slow': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
+        // The 10px rise came from the index.css override and is what all
+        // 24 call sites have actually been rendering. Kept: a fade with a
+        // small displacement reads as "this arrived", a bare opacity fade
+        // reads as a repaint.
+        'fade-in': {
+          from: { opacity: '0', transform: 'translateY(10px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.9)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-up': {
+          from: { opacity: '0', transform: 'translateY(20px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'float-gentle': {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        cardFlip: {
-          '0%': { transform: 'rotateY(0deg)' },
-          '50%': { transform: 'rotateY(90deg)' },
-          '100%': { transform: 'rotateY(0deg)' },
-        },
-        scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.9)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { transform: 'translateY(-6px)' },
         },
         confetti: {
           '0%': { transform: 'translateY(-100vh) rotate(0deg)', opacity: '1' },
           '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
         },
-        bounceIn: {
-          '0%': { transform: 'scale(0.3)', opacity: '0' },
-          '50%': { transform: 'scale(1.05)' },
-          '70%': { transform: 'scale(0.9)' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
-        floatGentle: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-6px)' },
-        },
-        tarotReveal: {
-          '0%': { transform: 'rotateY(0deg) scale(0.95)', opacity: '0.8' },
-          '50%': { transform: 'rotateY(90deg) scale(1)' },
-          '100%': { transform: 'rotateY(0deg) scale(1)', opacity: '1' },
-        },
-        glowPulse: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(212, 175, 55, 0.15)' },
-          '50%': { boxShadow: '0 0 30px rgba(212, 175, 55, 0.25), 0 0 60px rgba(212, 175, 55, 0.1)' },
-        },
       },
     },
   },
+  // Classes built at runtime rather than written literally, so Tailwind's
+  // scanner cannot see them. QuizzesPage composes `text-${metadata.color}`
+  // and `text-${color}` from data. Every value happens to be emitted today
+  // only because unrelated files use the same literals — change a quiz colour
+  // to anything not used elsewhere and the icon silently renders colourless,
+  // with nothing failing. Naming them here makes that dependency real.
+  safelist: [
+    'text-cosmic-blue',
+    'text-cosmic-rose',
+    'text-emerald-400',
+    'text-gold',
+    'text-mystic-300',
+  ],
+
   plugins: [],
 };

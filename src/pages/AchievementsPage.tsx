@@ -173,7 +173,7 @@ export function AchievementsPage() {
                   strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
-                  className="transition-all duration-1000 ease-out"
+                  className="transition-all duration-ambient ease-out"
                 />
                 <defs>
                   <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">

@@ -5,6 +5,7 @@ import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
 import { BrandWordmark, BrandMark } from '../components/ui';
+import { prefersReducedMotion } from '../utils/motion';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -162,6 +163,10 @@ function AnimNum({ to }: { to: number }) {
     const o = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !ran.current) {
         ran.current = true;
+        // The figure is the information; counting up to it is decoration.
+        // A setInterval is invisible to the CSS reduced-motion block, so it
+        // has to check for itself.
+        if (prefersReducedMotion()) { setN(to); return; }
         let c = 0; const step = to / 30;
         setN(0);
         const iv = setInterval(() => { c += step; if (c >= to) { setN(to); clearInterval(iv); } else setN(Math.floor(c)); }, 40);

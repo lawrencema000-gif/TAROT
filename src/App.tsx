@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import i18n from './i18n/config';
 import { useT } from './i18n/useT';
@@ -202,6 +202,11 @@ function AppContent() {
   // only; the RPCs and edge functions still need their own server-side gate
   // before this marketplace is safe to enable. See docs/advisor-preflight-audit.md.
   const advisorsEnabled = useFeatureFlag('advisors');
+  // SandboxPage's own header says it "ships as a preview behind the `sandbox`
+  // flag (default OFF)". The flag exists and reads enabled=false in
+  // production — but the route was never gated on it, so the preview has been
+  // reachable by URL the whole time. Same shape as the advisors gap above.
+  const sandboxEnabled = useFeatureFlag('sandbox');
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth, passwordRecoveryMode } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   const location = useLocation();
@@ -539,7 +544,7 @@ function AppContent() {
         ) : profile?.background_url ? (
           <div className="fixed inset-0 z-0">
             <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-700"
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-ambient"
               style={{ backgroundImage: `url(${profile.background_url})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />
@@ -606,7 +611,7 @@ function AppContent() {
                   <Route path="/live-rooms" element={<LiveRoomsPage />} />
                   <Route path="/live-rooms/:id" element={<LiveRoomPage />} />
                   <Route path="/advisors/verify" element={advisorsEnabled ? <AdvisorVerifyPage /> : <Navigate to="/" replace />} />
-                  <Route path="/sandbox" element={<SandboxPage />} />
+                  <Route path="/sandbox" element={sandboxEnabled ? <SandboxPage /> : <Navigate to="/" replace />} />
                   <Route path="/advisors/dashboard" element={advisorsEnabled ? <AdvisorDashboardPage /> : <Navigate to="/" replace />} />
                   <Route path="/pick-a-card" element={<PickACardPage />} />
                   <Route path="/celestial-map" element={<CelestialMapPage />} />
@@ -694,6 +699,18 @@ function GlobalDiagnosticsSheet() {
 
 function AppWithProviders() {
   return (
+    // framer-motion's own default is `reducedMotion: "never"` — it ignores the
+    // OS setting unless told otherwise. Without this wrapper every ungated
+    // `motion.*` transform in the app played at full amplitude for a user who
+    // had asked motion to stop, and the global CSS block in index.css cannot
+    // reach any of it: framer writes transforms to inline style from its own
+    // rAF driver, so there is no CSS animation or transition to collapse.
+    //
+    // "user" makes framer follow prefers-reduced-motion and snap positional
+    // keys (x, y, scale, rotate, width, height...) to their end state, while
+    // still allowing opacity and colour to cross-fade — which is the intent of
+    // the setting, not "no feedback at all".
+    <MotionConfig reducedMotion="user">
     <BrowserRouter>
       <DiagnosticsProvider>
         <AuthProvider>
@@ -708,6 +725,7 @@ function AppWithProviders() {
         </AuthProvider>
       </DiagnosticsProvider>
     </BrowserRouter>
+    </MotionConfig>
   );
 }
 

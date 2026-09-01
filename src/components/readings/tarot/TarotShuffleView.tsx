@@ -9,7 +9,21 @@
  * by splitting positioning onto an outer wrapper and animation onto
  * an inner card, so the animation's rotate/translate is layered on
  * top of the centering instead of replacing it.
+ *
+ * Motion pass 2026-08: the deck now deals itself out on arrival and
+ * riffles while shuffling. Both keyframe sets live in this file rather
+ * than index.css — they are used by exactly one component, and a
+ * globally-defined keyframe with a single inline consumer is invisible
+ * to any grep for class names, which is how the previous one ended up
+ * on a dead-code list while it was still driving the deck.
+ *
+ * Reduced motion is handled by the global block in index.css, which
+ * pins animation-duration/-delay and iteration-count with `!important`
+ * — beating these inline declarations. The deal ends at `both` fill and
+ * the riffle's last keyframe is the resting transform, so under reduced
+ * motion the deck simply *is* there, fanned and still.
  */
+import type { CSSProperties } from 'react';
 import { Shuffle } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
@@ -23,12 +37,42 @@ interface TarotShuffleViewProps {
 
 const DECK_SIZE = 10;
 
+/*
+ * `arcana-deal` collapses each card back onto the centre of the stack and
+ * lets it travel out to its place in the fan — the offsets come in as
+ * custom properties so one keyframe serves all ten cards.
+ *
+ * `arcana-riffle` is a loop, deliberately: it runs only while the deck is
+ * actually being shuffled, so it is a progress indicator, not decoration.
+ * It stops when the state does. Transform only — no shadow, no filter.
+ */
+const DECK_KEYFRAMES = `
+@keyframes arcana-deal {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--deal-x, 0px), var(--deal-y, 0px), 0) rotate(var(--deal-r, 0deg)) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+@keyframes arcana-riffle {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  28%  { transform: translate3d(-13px, -17px, 0) rotate(-7deg); }
+  56%  { transform: translate3d(9px, -9px, 0) rotate(5deg); }
+  80%  { transform: translate3d(-3px, -3px, 0) rotate(-2deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+`;
+
 export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }: TarotShuffleViewProps) {
   const { t } = useT('app');
   const backSrc = cardBackUrl || '/card-backs/default.svg';
 
   return (
     <div className="space-y-6">
+      <style>{DECK_KEYFRAMES}</style>
       <button
         onClick={onBack}
         className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
@@ -42,7 +86,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }
              style={{ width: 220, height: 200 }}>
           {/* Soft golden aura behind the deck during shuffle */}
           <div
-            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-500 ${
+            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-deliberate ${
               isShuffling ? 'opacity-100 animate-pulse-slow' : 'opacity-60'
             }`}
           />
@@ -68,11 +112,16 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }
                 <div
                   className="w-20 h-28 rounded-xl border-2 border-gold/30 shadow-glow overflow-hidden bg-mystic-900"
                   style={{
+                    // Cards nearest the top of the stack lead the riffle;
+                    // the small per-card duration spread stops ten cards
+                    // moving as one rigid block.
                     animation: isShuffling
-                      ? `shuffle-card ${0.55 + i * 0.04}s ease-in-out infinite`
-                      : 'none',
-                    animationDelay: isShuffling ? `${i * 0.04}s` : undefined,
-                  }}
+                      ? `arcana-riffle ${0.58 + i * 0.02}s ease-in-out ${i * 0.045}s infinite`
+                      : `arcana-deal 320ms cubic-bezier(0.16, 1, 0.3, 1) ${i * 26}ms both`,
+                    '--deal-x': `${-offsetX}px`,
+                    '--deal-y': `${-offsetY}px`,
+                    '--deal-r': `${-baseRotate}deg`,
+                  } as CSSProperties}
                 >
                   <img
                     src={backSrc}

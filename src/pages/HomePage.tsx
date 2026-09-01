@@ -409,7 +409,8 @@ export function HomePage() {
           so the first thing a returning user sees is the call to start
           their daily practice. */}
       {!ritualStarted ? (
-        <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil floating-particles">
+        <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil">
+          <span className="floating-particles-overlay floating-particles" aria-hidden />
           <div className="relative z-[1] py-2">
             <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block animate-float-gentle">
               <MysticalStar size={72} />
@@ -503,7 +504,7 @@ export function HomePage() {
               {[-12, 0, 12].map((rot, i) => (
                 <div
                   key={rot}
-                  className="absolute inset-0 rounded-md border border-gold/40 overflow-hidden shadow-glow origin-bottom transition-transform duration-300 group-hover:scale-105"
+                  className="absolute inset-0 rounded-md border border-gold/40 overflow-hidden shadow-glow origin-bottom transition-transform duration-slow group-hover:scale-105"
                   style={{ transform: `rotate(${rot}deg)`, zIndex: i }}
                 >
                   <img
@@ -620,7 +621,7 @@ export function HomePage() {
           </div>
           <div className="relative h-2 bg-mystic-800 rounded-full overflow-hidden">
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold via-gold-light to-gold rounded-full transition-all duration-500"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold via-gold-light to-gold rounded-full transition-all duration-deliberate"
               style={{ width: `${xpProgress.percentage}%` }}
             />
           </div>

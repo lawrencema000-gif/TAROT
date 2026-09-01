@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import {
   Compass,
   Eye,
@@ -32,6 +32,19 @@ import { shareOrDownloadCard } from '../../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
 import { TarotCardDetail } from './TarotCardDetail';
 import { CelticCrossLayout } from './CelticCrossLayout';
+
+/*
+ * The same numbers as `tarot/TarotRevealView.tsx` and `CelticCrossLayout.tsx`.
+ * This grid used a 500ms `animate-flip-in` face-swap with a spring overshoot
+ * and no back face, while the split-rollout path turned a real two-faced card
+ * — the same gesture, in two feels, both shipping at once.
+ */
+const FLIP_MS = 520;
+const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
+const BACKFACE: CSSProperties = {
+  backfaceVisibility: 'hidden',
+  WebkitBackfaceVisibility: 'hidden',
+};
 import { generatePremiumReading, tarotCardToReadingCard, getSpreadPositions } from '../../services/readingInterpretation';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
@@ -709,7 +722,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           <div className="relative mx-auto flex items-center justify-center"
                style={{ width: 220, height: 200 }}>
             <div
-              className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-500 ${
+              className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-deliberate ${
                 isShuffling ? 'opacity-100 animate-pulse-slow' : 'opacity-60'
               }`}
             />
@@ -818,7 +831,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                 >
                   <div
                     className={`
-                      aspect-[2/3] rounded-lg border-2 transition-all duration-300 overflow-hidden
+                      aspect-[2/3] rounded-lg border-2 transition-all duration-slow overflow-hidden
                       ${isSelected
                         ? 'border-gold bg-gradient-to-br from-gold/20 to-mystic-800 shadow-gold scale-105'
                         : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
@@ -950,53 +963,63 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
               <div key={i} className="relative group">
                 <button
                   onClick={() => drawn.revealed ? setSelectedCard({ card: drawn.card, reversed: drawn.reversed }) : handleRevealCard(i)}
-                  className="relative perspective-1000"
+                  className="relative"
+                  style={{ perspective: '1000px' }}
                 >
+                  {/* Press feedback on the wrapper, the turn on the child:
+                      two transforms on one element fight and the scale wins. */}
                   <div
-                    className={`
-                      w-24 h-36
-                      rounded-xl border transition-all duration-700 overflow-hidden
-                      ${drawn.revealed
-                        ? 'border-gold/40 shadow-glow animate-flip-in'
-                        : 'bg-gradient-to-br from-mystic-800 to-mystic-900 border-mystic-600 hover:border-gold/30 cursor-pointer hover:scale-105'
-                      }
-                      flex items-center justify-center relative
-                    `}
-                    style={{
-                      transformStyle: 'preserve-3d',
-                    }}
+                    className={`w-24 h-36 transition-transform duration-base ease-out ${
+                      drawn.revealed ? '' : 'cursor-pointer hover:scale-105 active:scale-95'
+                    }`}
                   >
-                    {drawn.revealed ? (
-                      getCardImage(drawn.card) ? (
-                        <img
-                          src={getCardImage(drawn.card)}
-                          alt={drawn.card.name}
-                          className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
-                        />
-                      ) : (
-                        <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                          <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
-                          <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
-                        </div>
-                      )
-                    ) : (
-                      <>
+                    <div
+                      className="relative w-full h-full"
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        transform: drawn.revealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                        transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
+                      }}
+                    >
+                      {/* Back */}
+                      <div
+                        className="absolute inset-0 rounded-xl overflow-hidden border border-mystic-600 group-hover:border-gold/30 bg-gradient-to-br from-mystic-800 to-mystic-900 flex items-center justify-center"
+                        style={BACKFACE}
+                      >
                         {profile?.card_back_url ? (
                           <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
                         ) : (
                           <div className="text-center">
-                            <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                              <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors" />
+                            <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors duration-base">
+                              <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors duration-base" />
                             </div>
                             <p className="text-xs text-mystic-500 mt-2">{t('readings.revealView.tapToReveal')}</p>
                           </div>
                         )}
-                      </>
-                    )}
+                        <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-colors duration-base" />
+                      </div>
 
-                    {!drawn.revealed && (
-                      <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-all duration-300" />
-                    )}
+                      {/* Face — mounted from the start and pre-turned, so the
+                          image is already decoded when the turn begins. */}
+                      <div
+                        className="absolute inset-0 rounded-xl overflow-hidden border border-gold/40 shadow-glow flex items-center justify-center"
+                        style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
+                        aria-hidden={!drawn.revealed}
+                      >
+                        {getCardImage(drawn.card) ? (
+                          <img
+                            src={getCardImage(drawn.card)}
+                            alt={drawn.card.name}
+                            className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
+                          />
+                        ) : (
+                          <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
+                            <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
+                            <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   {drawn.revealed && (
                     <div className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg">

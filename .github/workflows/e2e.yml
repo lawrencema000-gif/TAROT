@@ -50,8 +50,14 @@ jobs:
         id: target
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # PR previews use Netlify's deploy-preview URL pattern.
-            echo "url=https://deploy-preview-${{ github.event.pull_request.number }}--arcana-ritual-app.netlify.app" >> $GITHUB_OUTPUT
+            # `deploy-preview-N` is the hostname Netlify's GIT INTEGRATION
+            # gives a PR preview. This site has no Git integration at all
+            # (build_settings.repo_url is empty; every production deploy is a
+            # manual upload), so that hostname has never resolved. The preview
+            # this repo actually publishes comes from preview.yml, which uploads
+            # dist with `alias: pr-N` — so the host is `pr-N`. Fixing the
+            # NETLIFY_AUTH_TOKEN alone would not have made this job pass.
+            echo "url=https://pr-${{ github.event.pull_request.number }}--arcana-ritual-app.netlify.app" >> $GITHUB_OUTPUT
           else
             echo "url=https://tarotlife.app" >> $GITHUB_OUTPUT
           fi

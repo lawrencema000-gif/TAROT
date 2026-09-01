@@ -1095,19 +1095,19 @@
   border-radius: inherit;
 }
 
-@keyframes flip-in {
-  0% {
-    transform: rotateY(90deg);
-    opacity: 0;
-  }
-  50% {
-    transform: rotateY(-10deg);
-  }
-  100% {
-    transform: rotateY(0deg);
-    opacity: 1;
-  }
-}
+/* `flip-in` lived here: a 500ms face-swap with a spring overshoot and no
+   back face, used by the two legacy tarot reveal grids while the split
+   rollout turned a real two-faced card — the same gesture in two feels,
+   both shipping at once. All three grids now share the two-faced turn
+   (FLIP_MS / FLIP_EASE in TarotSection, CelticCrossLayout and
+   TarotRevealView), so this is gone rather than left lying around for
+   someone to reach for and reintroduce the split.
+
+   Checked the way the shuffle-card mistake taught us to check: grepped
+   for the NAME `flip-in` across src/ and tailwind.config.js, not for the
+   `.animate-flip-in` class, and confirmed no inline `animation:` and no
+   dynamically-built class string reaches it. src/test/golden/keyframes.test.ts
+   fails if that judgement is wrong. */
 
 /* `fade-in`, `scale-in`, `shimmer` and `spin-slow` were defined here as
    well as in tailwind.config.js. Because Tailwind v3 emits
@@ -1117,13 +1117,6 @@
    for anyone tuning them, and `.animate-spin-slow` ran at 8s while the
    config said 20s. The config is now the single source of truth for
    every `animate-*` utility and these copies are gone. */
-
-/* A tarot card landing face-up. The overshoot is the point: it is the
-   one place in the app where something should feel like an object with
-   weight, so it gets --ease-spring and the deliberate band. */
-.animate-flip-in {
-  animation: flip-in var(--dur-deliberate) var(--ease-spring) forwards;
-}
 
 /* ── List stagger ─────────────────────────────────────────────────────
  *

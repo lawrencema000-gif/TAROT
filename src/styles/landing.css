@@ -358,7 +358,12 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 
 /* ── Trust ── */
 .lp-trust { padding: 50px 0 !important; }
-.lp-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 32px 0; }
+/* minmax(0, 1fr) rather than 1fr throughout: `1fr` means `minmax(auto, 1fr)`,
+   and `auto` floors at min-content, so a track cannot shrink below its widest
+   unbreakable content and the grid pushes the page sideways. These measured
+   clean at 360px in all four locales — this is hardening, not a repair; the
+   same shape DID overflow on /tarot-meanings. */
+.lp-trust-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; padding: 32px 0; }
 .lp-trust-item { text-align: center; }
 .lp-trust-num {
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
@@ -370,7 +375,7 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 
 /* ── Bento Grid ── */
 .lp-bento {
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: auto auto; gap: 14px;
 }
 .lp-bento-card {
@@ -570,13 +575,13 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
   .lp-hero-ctas { justify-content: center; }
   .lp-orbit { width: 300px; height: 300px; }
   .lp-orbit-card { width: 80px; height: 125px; transform: translate(-50%, -50%) rotate(var(--angle)) translateX(115px) rotate(calc(-1 * var(--angle))); }
-  .lp-bento { grid-template-columns: repeat(2, 1fr); }
+  .lp-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lp-bento-card.large { grid-column: span 2; }
 }
 @media (max-width: 768px) {
   .lp-bento { grid-template-columns: 1fr; }
   .lp-bento-card.large, .lp-bento-card.small { grid-column: span 1; }
-  .lp-trust-grid { grid-template-columns: repeat(2, 1fr); }
+  .lp-trust-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lp-chart-wrap { width: 360px; }
   .lp-timeline-item { width: 85%; padding-left: 30px !important; padding-right: 0 !important; margin-left: 15% !important; text-align: left !important; }
   .lp-timeline-line { left: 15%; }

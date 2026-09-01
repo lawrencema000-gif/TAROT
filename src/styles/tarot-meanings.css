@@ -786,7 +786,13 @@
 
 @media (max-width: 480px) {
   .tm-grid {
-    grid-template-columns: repeat(3, 1fr);
+    /* `1fr` is `minmax(auto, 1fr)`, and `auto` floors at min-content — so a
+       track cannot shrink below its widest unbreakable content and the grid
+       pushes past the viewport. At 360px (a very common Android width) this
+       overflowed by 14px and the whole page scrolled sideways; at 390px it
+       happened to fit, which is why it went unnoticed. `minmax(0, 1fr)` lets
+       the track shrink and the content wrap instead. */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
   }
   .tm-card {

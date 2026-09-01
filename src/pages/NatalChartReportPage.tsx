@@ -410,6 +410,7 @@ export function NatalChartReportPage() {
             onClose={() => setShowWatchAd(false)}
             onCredited={(newBalance) => setBalance(newBalance)}
             onShowPaywall={() => setShowSubscription(true)}
+            earnOnly
           />
         )}
       </div>

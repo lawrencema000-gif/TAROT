@@ -37,6 +37,19 @@ interface WatchAdSheetProps {
   spreadType?: string;
   /** Legacy — fired for backward compat with callers that still listen. */
   onUnlocked?: () => void;
+  /**
+   * Hide the "spend Moonstones" action and offer earning only.
+   *
+   * The three report pages open this sheet from an "Earn 50 Moonstones —
+   * watch ad" CTA and do their own unlocking through
+   * reportUnlocks.unlockWithMoonstones, which charges the real price
+   * (150/200/300) against the real report key. They passed no actionKey,
+   * cost, onSpent or onUnlocked — so this sheet's spend button fell back to
+   * its generic defaults and debited 50 Moonstones for 'feature-unlock',
+   * then had no callback to unlock anything with. The user paid and got
+   * nothing. Earning is the only thing that makes sense in that context.
+   */
+  earnOnly?: boolean;
   /** Fires after a successful spend — parent grants the feature access. */
   onSpent?: () => void;
   /** Fires after a successful ad credit. Sheet stays open for follow-up. */
@@ -51,6 +64,7 @@ export function WatchAdSheet({
   actionKey = 'feature-unlock',
   cost = ACTION_COST,
   onUnlocked,
+  earnOnly = false,
   onSpent,
   onCredited,
   onShowPaywall,
@@ -230,20 +244,22 @@ export function WatchAdSheet({
 
           <div className="space-y-3">
             {/* Primary action: spend if affordable, otherwise watch ad. */}
-            <Button
-              variant="gold"
-              fullWidth
-              size="lg"
-              onClick={handleSpend}
-              loading={spendLoading}
-              disabled={!canSpend || spendLoading}
-            >
-              <Coins className="w-5 h-5" />
-              {t('premium.watchAd.spendCta', {
-                defaultValue: 'Spend {{n}} Moonstones to unlock',
-                n: cost,
-              })}
-            </Button>
+            {!earnOnly && (
+              <Button
+                variant="gold"
+                fullWidth
+                size="lg"
+                onClick={handleSpend}
+                loading={spendLoading}
+                disabled={!canSpend || spendLoading}
+              >
+                <Coins className="w-5 h-5" />
+                {t('premium.watchAd.spendCta', {
+                  defaultValue: 'Spend {{n}} Moonstones to unlock',
+                  n: cost,
+                })}
+              </Button>
+            )}
 
             {adAvailable && (
               <Button

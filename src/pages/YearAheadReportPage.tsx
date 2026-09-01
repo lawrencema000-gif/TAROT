@@ -293,6 +293,7 @@ export function YearAheadReportPage() {
             onClose={() => setShowWatchAd(false)}
             onCredited={(newBalance) => setBalance(newBalance)}
             onShowPaywall={() => setShowSubscription(true)}
+            earnOnly
           />
         )}
       </div>

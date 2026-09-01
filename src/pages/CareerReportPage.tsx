@@ -261,6 +261,7 @@ export function CareerReportPage() {
             onClose={() => setShowWatchAd(false)}
             onCredited={(newBalance) => setBalance(newBalance)}
             onShowPaywall={() => setShowSubscription(true)}
+            earnOnly
           />
         )}
       </div>

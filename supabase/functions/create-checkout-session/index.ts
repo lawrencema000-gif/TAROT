@@ -67,9 +67,44 @@ Deno.serve(
       // Lifetime is one-time payment — no subscription, no trial.
       // Monthly plan stays no-trial because trial-monthly is a known
       // abuse vector (cancel before charge, no real commitment).
-      const isYearly = productId.includes("yearly");
-      const isLifetime = productId.includes("lifetime");
+      // `priceId` and `productId` both arrive in the request body, and
+      // nothing used to check them against each other. That let a caller
+      // pair a cheap price with productId "…lifetime" (one-time charge,
+      // permanent entitlement) or with "…yearly" to attach the 3-day trial
+      // to a plan that is deliberately trial-free — the client chose both
+      // what Stripe charges AND which rules applied to it.
+      //
+      // The real fix is an allowlist of price ids in this function's env.
+      // That needs secrets only the owner can set, so short of it: ask
+      // Stripe what the price actually is and derive the rules from the
+      // answer instead of from a client-supplied string. This closes the
+      // mismatch attacks with no new configuration. It does NOT stop a
+      // caller substituting a different *legitimate* price from the same
+      // account — add STRIPE_PRICE_MONTHLY/YEARLY/LIFETIME and compare
+      // against them to close that too.
+      let price: Stripe.Price;
+      try {
+        price = await stripe.prices.retrieve(priceId);
+      } catch {
+        throw new AppError("INVALID_PRICE", "Unknown price", 400);
+      }
+      if (!price.active) {
+        throw new AppError("INACTIVE_PRICE", "That plan is no longer available", 400);
+      }
+
+      // One-time price => lifetime. Recurring => subscription. The trial is
+      // granted only on a genuinely yearly recurring price.
+      const isLifetime = price.type === "one_time";
+      const isYearly = price.type === "recurring" && price.recurring?.interval === "year";
       const trialDays = isYearly ? 3 : undefined;
+
+      // The ledger records what Stripe says was bought, not what the client
+      // claimed. Keeps the webhook's product_id honest.
+      const resolvedProductId = isLifetime
+        ? "premium_lifetime"
+        : isYearly
+          ? "premium_yearly"
+          : "premium_monthly";
 
       const session = await stripe.checkout.sessions.create({
         customer_email: profile?.email || ctx.user?.email,
@@ -80,14 +115,15 @@ Deno.serve(
         cancel_url: cancelUrl,
         metadata: {
           user_id: ctx.userId!,
-          product_id: productId,
+          product_id: resolvedProductId,
+          client_product_id: productId,
         },
         subscription_data: isLifetime
           ? undefined
           : {
               metadata: {
                 user_id: ctx.userId!,
-                product_id: productId,
+                product_id: resolvedProductId,
               },
               ...(trialDays ? { trial_period_days: trialDays } : {}),
             },

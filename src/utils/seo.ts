@@ -53,7 +53,11 @@ const ORG_SCHEMA = {
   name: SITE_NAME,
   alternateName: ['Arcana Tarot', 'TarotLife', 'Arcana by TarotLife'],
   url: SITE_URL,
-  logo: { '@type': 'ImageObject', url: DEFAULT_IMAGE, width: 512, height: 512 },
+  // A schema.org Organization logo should be the square mark, not the wide
+  // social card. This declared 512x512 while pointing at DEFAULT_IMAGE, which
+  // is 1200x630 — so the dimensions were a fiction Google could check. Point
+  // it at the real square asset and state its real size.
+  logo: { '@type': 'ImageObject', url: `${SITE_URL}/apple-touch-icon.png`, width: 180, height: 180 },
   description: DEFAULT_DESC,
   foundingDate: '2026-01',
   areaServed: 'Worldwide',

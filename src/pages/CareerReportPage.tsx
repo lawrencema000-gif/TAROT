@@ -6,7 +6,7 @@ import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
-import { SubscriptionSheet, WatchAdSheet } from '../components/premium';
+import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { OrnateDivider } from '../components/ui';
 import {
   getCareerArchetype,
@@ -243,7 +243,18 @@ export function CareerReportPage() {
           ))}
         </Card>
 
-        <SubscriptionSheet open={showSubscription} onClose={() => setShowSubscription(false)} />
+        {/* PaywallSheet, not SubscriptionSheet. SubscriptionSheet is the
+            already-subscribed MANAGEMENT screen: it hardcodes
+            Status = "Active", offers "Manage on Google Play", and never
+            calls billing.purchase() at all. Pointing the upgrade CTA at
+            it told a non-paying user they were already premium and gave
+            them no way to buy — which is the likeliest reason the
+            subscriptions table is empty. */}
+        <PaywallSheet
+          open={showSubscription}
+          onClose={() => setShowSubscription(false)}
+          feature="career-report"
+        />
         {moonstonesEnabled && (
           <WatchAdSheet
             open={showWatchAd}

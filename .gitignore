@@ -45,3 +45,10 @@ android/app/gemini_*.json
 # Playwright artifacts — screenshots, videos, traces, last-run state
 test-results/
 playwright-report/
+
+# Android build output (Gradle / Android Studio)
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties

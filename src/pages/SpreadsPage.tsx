@@ -79,16 +79,16 @@ export function SpreadsPage() {
                   className="block rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/40 hover:bg-mystic-900/60 transition-colors no-underline"
                 >
                   <div className="flex items-start justify-between gap-3 mb-1">
-                    <h3 className="font-medium text-mystic-100">{spread.name}</h3>
+                    <h3 className="heading-display-md text-mystic-100">{spread.name}</h3>
                     <ChevronRight className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
                   </div>
-                  <p className="text-xs text-mystic-400 mb-2 leading-relaxed">{spread.shortDescription}</p>
-                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
+                  <p className="reading-copy mb-2">{spread.shortDescription}</p>
+                  <div className="flex items-center gap-2 text-meta uppercase tracking-wider">
                     <span className="text-gold">{spread.cardCount} cards</span>
                     <span className="text-mystic-600">·</span>
-                    <span className="text-mystic-500">{spread.difficulty}</span>
+                    <span className="text-mystic-400">{spread.difficulty}</span>
                     <span className="text-mystic-600">·</span>
-                    <span className="text-mystic-500">~{spread.durationMin} min</span>
+                    <span className="text-mystic-400">~{spread.durationMin} min</span>
                   </div>
                 </Link>
               ))}

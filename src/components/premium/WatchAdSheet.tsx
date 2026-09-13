@@ -218,7 +218,7 @@ export function WatchAdSheet({
             </div>
           </div>
 
-          <h2 className="font-display-hero text-2xl text-gold-foil text-center mb-2">
+          <h2 className="font-display-hero text-2xl text-mystic-100 text-center mb-2">
             {t('premium.watchAd.unlockTitle', { defaultValue: 'Unlock this reading' })}
           </h2>
           <div className="flex justify-center mb-3 text-gold/60">

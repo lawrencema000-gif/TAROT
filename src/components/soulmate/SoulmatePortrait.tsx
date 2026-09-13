@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Loader2, Sparkles, Download, RefreshCw, Heart } from 'lucide-react';
-import { Card, Button, toast } from '../ui';
+import { Card, Button, toast, ReadingProse } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
 import { supabase } from '../../lib/supabase';
@@ -64,7 +64,7 @@ export function SoulmatePortrait() {
 
       {!data && (
         <>
-          <p className="text-sm text-mystic-400 leading-relaxed">
+          <p className="text-ui text-mystic-300">
             An illustrated portrait of the qualities your chart reaches for in love — painted from your
             Descendant, Venus, Mars, and Moon. Symbolic art, not a photo of a real person.
           </p>
@@ -92,16 +92,17 @@ export function SoulmatePortrait() {
             alt="Symbolic illustrated portrait generated from your chart's relationship symbolism"
             className="w-full rounded-2xl border border-gold/20 shadow-lg"
           />
-          <p className="text-sm text-mystic-300 leading-relaxed">{data.caption}</p>
+          <ReadingProse text={data.caption} lede={false} />
 
-          <div className="space-y-1.5 pt-1 border-t border-mystic-800/40">
-            <p className="text-[10px] uppercase tracking-widest text-mystic-500 pt-2">Why it looks like this</p>
-            {data.symbolism.map((s) => (
-              <div key={s.label} className="text-[13px]">
-                <span className="text-gold">{s.label} in {s.value}</span>
-                <span className="text-mystic-400"> — {s.meaning}</span>
-              </div>
-            ))}
+          <div className="space-y-2 pt-1 border-t border-mystic-800/40">
+            <p className="font-display-eyebrow pt-2">Why it looks like this</p>
+            <div className="reading-copy">
+              {data.symbolism.map((s) => (
+                <p key={s.label}>
+                  <span className="text-gold">{s.label} in {s.value}</span> — {s.meaning}
+                </p>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -113,7 +114,7 @@ export function SoulmatePortrait() {
             </Button>
           </div>
 
-          <p className="text-[11px] text-mystic-600 italic text-center">
+          <p className="text-caption text-mystic-500 italic">
             An artistic interpretation of your chart's symbolism — not a depiction of a real person.
           </p>
         </div>

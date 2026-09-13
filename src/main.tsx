@@ -49,6 +49,11 @@ import { captureAttributionFromUrl } from './utils/attribution';
 import { initWebVitals } from './utils/webVitals';
 import './i18n/config'; // must load before any component that calls useT()
 import './index.css';
+import { applyPersistedReadingScale } from './utils/readingScale';
+
+// Before the first render: a reader who chose a larger text size must not
+// see a flash of the default size on every launch.
+applyPersistedReadingScale();
 import './styles/landing.css';
 import './styles/tarot-meanings.css';
 

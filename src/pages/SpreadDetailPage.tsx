@@ -94,10 +94,10 @@ export function SpreadDetailPage() {
       />
 
       <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
-        <h2 className="text-sm font-medium text-mystic-300 mb-3"><TarotCardIcon className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
-        <ul className="space-y-1.5">
+        <h2 className="heading-display-md text-mystic-100 mb-3"><TarotCardIcon className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
+        <ul className="reading-copy space-y-1.5">
           {spread.bestFor.map((b, i) => (
-            <li key={i} className="text-sm text-mystic-300 flex items-start gap-2">
+            <li key={i} className="flex items-start gap-2">
               <span className="text-gold mt-1">•</span>
               <span>{b}</span>
             </li>
@@ -119,8 +119,8 @@ export function SpreadDetailPage() {
                   {p.position}
                 </span>
                 <div className="flex-1">
-                  <h3 className="font-medium text-mystic-100 mb-1">{p.name}</h3>
-                  <p className="text-sm text-mystic-400 leading-relaxed">{p.meaning}</p>
+                  <h3 className="text-ui font-medium text-mystic-100 mb-1">{p.name}</h3>
+                  <p className="reading-copy">{p.meaning}</p>
                 </div>
               </div>
             </li>
@@ -129,14 +129,14 @@ export function SpreadDetailPage() {
       </Section>
 
       <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
-        <h2 className="text-sm font-medium text-mystic-300 mb-2">When to use</h2>
-        <p className="text-sm text-mystic-300 leading-relaxed">{spread.whenToUse}</p>
+        <h2 className="heading-display-md text-mystic-100 mb-2">When to use</h2>
+        <p className="reading-copy">{spread.whenToUse}</p>
       </section>
 
       <Section className="mb-6" spacing="sm" title="Example questions">
         <ul className="space-y-2">
           {spread.exampleQuestions.map((q, i) => (
-            <li key={i} className="text-sm italic text-mystic-300 px-3 py-2 rounded-lg bg-mystic-900/30 border-l-2 border-gold/40">
+            <li key={i} className="reading-copy italic px-3 py-2 rounded-lg bg-mystic-900/30 border-l-2 border-gold/40">
               "{q}"
             </li>
           ))}
@@ -145,8 +145,8 @@ export function SpreadDetailPage() {
 
       {spread.history && (
         <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
-          <h2 className="text-sm font-medium text-mystic-300 mb-2">Origin & tradition</h2>
-          <p className="text-sm text-mystic-400 leading-relaxed">{spread.history}</p>
+          <h2 className="heading-display-md text-mystic-100 mb-2">Origin & tradition</h2>
+          <p className="reading-copy">{spread.history}</p>
         </section>
       )}
 
@@ -154,7 +154,7 @@ export function SpreadDetailPage() {
         <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 px-4">
           {spread.faqs.map((f, i) => (
             <Disclosure key={i} variant="row" label={f.q}>
-              <p className="text-sm text-mystic-400 leading-relaxed">{f.a}</p>
+              <p className="reading-copy">{f.a}</p>
             </Disclosure>
           ))}
         </div>

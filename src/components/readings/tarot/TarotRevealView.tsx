@@ -23,7 +23,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { MysticalStar } from '../../ui/MysticalStar';
-import { Card, Button } from '../../ui';
+import { Card, Button, ReadingProse } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import type { TarotCard } from '../../../types';
@@ -168,7 +168,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
       </div>
 
       <div className="text-center">
-        <p className="text-xs text-mystic-500 uppercase tracking-wider">{focusReadingLabel}</p>
+        <p className="font-display-eyebrow text-mystic-400">{focusReadingLabel}</p>
         <h2 className="font-display text-xl text-mystic-100">{spreadTitle}</h2>
       </div>
 
@@ -271,7 +271,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                   <Info className="w-3.5 h-3.5 text-gold" />
                 </div>
               </button>
-              <p className="text-xs text-mystic-400 mt-1 text-center">
+              <p className="text-meta text-mystic-400 mt-1 text-center">
                 {getPositionLabel(i)}
               </p>
             </div>
@@ -299,7 +299,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
         >
           <div className="border-t border-mystic-700 pt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg text-gold">{t('readings.interpretation')}</h3>
+              <h3 className="heading-display-md text-mystic-100">{t('readings.interpretation')}</h3>
               {!showAIInterpretation && (
                 <button
                   onClick={onGetAIInterpretation}
@@ -330,12 +330,10 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium text-mystic-100 mb-1">{t('readings.revealView.aiInterpretation')}</h4>
-                      <p className="text-xs text-mystic-400">{t('readings.revealView.aiSubtitle')}</p>
+                      <p className="text-meta text-mystic-400">{t('readings.revealView.aiSubtitle')}</p>
                     </div>
                   </div>
-                  <div className="text-sm text-mystic-200 leading-relaxed whitespace-pre-line">
-                    {aiInterpretation}
-                  </div>
+                  <ReadingProse text={aiInterpretation} />
                 </Card>
                 <button
                   onClick={onHideAIInterpretation}
@@ -385,13 +383,13 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                   return (
                     <div key={i} className="mb-6 last:mb-0">
                       <div className="flex items-start gap-3 mb-2">
-                        <span className="px-2 py-0.5 bg-mystic-800 rounded text-xs text-mystic-400">
+                        <span className="px-2 py-0.5 bg-mystic-800 rounded text-meta text-mystic-400">
                           {getPositionLabel(i)}
                         </span>
                         <div className="flex-1">
                           <h4 className="font-medium text-mystic-100">
                             {drawn.card.name}
-                            {drawn.reversed && <span className="text-mystic-400 text-sm ml-2">{t('readings.revealView.reversedParen')}</span>}
+                            {drawn.reversed && <span className="text-meta text-mystic-400 ml-2">{t('readings.revealView.reversedParen')}</span>}
                           </h4>
                         </div>
                       </div>
@@ -404,11 +402,11 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                         }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <focusInterp.icon className={`w-4 h-4 ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`} />
-                            <span className={`text-xs font-medium ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`}>
+                            <span className={`text-meta font-medium ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`}>
                               {focusInterp.label}
                             </span>
                           </div>
-                          <p className="text-sm text-mystic-200 leading-relaxed">
+                          <p className="reading-copy">
                             {focusInterp.content}
                           </p>
                         </div>
@@ -420,12 +418,13 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                             ) : (
                               <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
                             )}
-                            <span className={`text-xs font-medium ${drawn.reversed ? 'text-amber-400' : 'text-emerald-400'}`}>
+                            <span className={`text-meta font-medium ${drawn.reversed ? 'text-amber-400' : 'text-emerald-400'}`}>
                               {drawn.reversed ? t('readings.revealView.reversed') : t('readings.revealView.upright')}
                             </span>
                           </div>
-                          <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">
-                            {(() => {
+                          <ReadingProse
+                            lede={false}
+                            text={(() => {
                               const focus = selectedFocus;
                               const focusMeaning =
                                 focus === 'Love'
@@ -442,15 +441,15 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                                   : '';
                               return `${mainText}${reversalAddon}`;
                             })()}
-                          </p>
+                          />
                         </div>
                       )}
 
                       {drawn.card.reflectionPrompt && showFocusContent && (
-                        <div className="mt-3 p-2 bg-gold/5 border border-gold/20 rounded-lg">
-                          <p className="text-xs text-gold flex items-start gap-2">
-                            <Feather className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                            <span className="italic">{drawn.card.reflectionPrompt}</span>
+                        <div className="mt-3 p-3 bg-gold/5 border border-gold/20 rounded-lg">
+                          <p className="reading-copy text-mystic-100 flex items-start gap-2">
+                            <Feather className="w-4 h-4 mt-1.5 flex-shrink-0 text-gold" />
+                            <span>{drawn.card.reflectionPrompt}</span>
                           </p>
                         </div>
                       )}
@@ -462,7 +461,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
           </div>
 
           <Card padding="md" className="bg-gold/5 border-gold/20">
-            <p className="text-sm text-mystic-300 italic">
+            <p className="reading-copy">
               {t('readings.revealView.cardsSpoken')}
             </p>
           </Card>

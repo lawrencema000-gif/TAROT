@@ -112,7 +112,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
           <div className="flex items-center gap-2 mb-2">
             <MysticalStar size={20} className="text-gold" />
-            <h1 className="font-display-hero text-4xl text-gold-foil text-center">
+            <h1 className="font-display-hero text-4xl text-mystic-100 text-center">
               {t('premium.subscription.heading')}
             </h1>
             <MysticalStar size={20} className="text-gold" />

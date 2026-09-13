@@ -67,7 +67,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
             </div>
             {reversed && (
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-mystic-800 border border-mystic-600 rounded-full">
-                <span className="text-xs text-mystic-300 flex items-center gap-1">
+                <span className="text-meta text-mystic-300 flex items-center gap-1">
                   <ArrowDown className="w-3 h-3" /> {t('tarot.detail.reversed')}
                 </span>
               </div>
@@ -81,12 +81,12 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
       </div>
 
       <div className="text-center space-y-2">
-        <p className="text-xs text-gold/70 uppercase tracking-widest font-medium">
+        <p className="font-display-eyebrow text-gold/70">
           {card.arcana === 'major' ? t('tarot.detail.majorArcanaLabel') : suitLabel}
         </p>
         <h2 className="font-display text-3xl text-mystic-100">{card.name}</h2>
         {card.arcana === 'major' && (
-          <p className="text-mystic-400 text-sm">{t('tarot.detail.cardNumber', { id: card.id })}</p>
+          <p className="text-meta text-mystic-400">{t('tarot.detail.cardNumber', { id: card.id })}</p>
         )}
       </div>
 
@@ -121,11 +121,9 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
       <div className="min-h-[200px]">
         {activeTab === 'meaning' && (
           <div className="space-y-6 animate-fade-in">
-            <Card padding="md" className="bg-mystic-800/30 border-mystic-700">
-              <p className="text-mystic-300 text-sm leading-relaxed italic">
-                "{card.description}"
-              </p>
-            </Card>
+            <blockquote className="reading-quote">
+              {card.description}
+            </blockquote>
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -133,9 +131,9 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
                   <div className="p-1.5 rounded-lg bg-emerald-500/20">
                     <ArrowUp className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <h4 className="font-medium text-emerald-400 uppercase tracking-wide text-sm">{t('tarot.upright')}</h4>
+                  <h4 className="text-meta font-medium text-emerald-400 uppercase tracking-wide">{t('tarot.upright')}</h4>
                 </div>
-                <p className="text-mystic-200 text-sm leading-relaxed pl-8">
+                <p className="reading-copy pl-8">
                   {card.meaningUpright}
                 </p>
               </div>
@@ -145,9 +143,9 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
                   <div className="p-1.5 rounded-lg bg-amber-500/20">
                     <ArrowDown className="w-4 h-4 text-amber-400" />
                   </div>
-                  <h4 className="font-medium text-amber-400 uppercase tracking-wide text-sm">{t('tarot.reversed')}</h4>
+                  <h4 className="text-meta font-medium text-amber-400 uppercase tracking-wide">{t('tarot.reversed')}</h4>
                 </div>
-                <p className="text-mystic-300 text-sm leading-relaxed pl-8">
+                <p className="reading-copy pl-8">
                   {card.meaningReversed}
                 </p>
               </div>
@@ -163,14 +161,14 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               </div>
               <div>
                 <h4 className="font-medium text-pink-400">{t('tarot.detail.loveTitle')}</h4>
-                <p className="text-xs text-mystic-500">{t('tarot.detail.loveSubtitle')}</p>
+                <p className="text-meta text-mystic-400">{t('tarot.detail.loveSubtitle')}</p>
               </div>
             </div>
-            <p className="text-mystic-200 leading-relaxed">
+            <p className="reading-copy">
               {card.loveMeaning || t('tarot.detail.loveFallback')}
             </p>
             <Card padding="sm" className="bg-pink-500/10 border-pink-500/20">
-              <p className="text-sm text-pink-300">
+              <p className="reading-copy">
                 <Star className="w-4 h-4 inline mr-2" />
                 {reversed
                   ? t('tarot.detail.loveInsightReversed')
@@ -188,14 +186,14 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               </div>
               <div>
                 <h4 className="font-medium text-blue-400">{t('tarot.detail.careerTitle')}</h4>
-                <p className="text-xs text-mystic-500">{t('tarot.detail.careerSubtitle')}</p>
+                <p className="text-meta text-mystic-400">{t('tarot.detail.careerSubtitle')}</p>
               </div>
             </div>
-            <p className="text-mystic-200 leading-relaxed">
+            <p className="reading-copy">
               {card.careerMeaning || t('tarot.detail.careerFallback')}
             </p>
             <Card padding="sm" className="bg-blue-500/10 border-blue-500/20">
-              <p className="text-sm text-blue-300">
+              <p className="reading-copy">
                 <Star className="w-4 h-4 inline mr-2" />
                 {reversed
                   ? t('tarot.detail.careerInsightReversed')
@@ -213,17 +211,15 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               </div>
               <div>
                 <h4 className="font-medium text-gold">{t('tarot.detail.reflectionTitle')}</h4>
-                <p className="text-xs text-mystic-500">{t('tarot.detail.reflectionSubtitle')}</p>
+                <p className="text-meta text-mystic-400">{t('tarot.detail.reflectionSubtitle')}</p>
               </div>
             </div>
-            <Card padding="md" className="bg-gold/5 border-gold/20">
-              <p className="text-mystic-200 leading-relaxed italic">
-                "{card.reflectionPrompt || t('tarot.detail.reflectionFallback')}"
-              </p>
-            </Card>
+            <blockquote className="reading-quote">
+              {card.reflectionPrompt || t('tarot.detail.reflectionFallback')}
+            </blockquote>
             <div className="space-y-3 pt-2">
-              <p className="text-sm text-mystic-400">{t('tarot.detail.journalPromptsLabel')}</p>
-              <ul className="space-y-2 text-sm text-mystic-300">
+              <p className="text-meta text-mystic-400">{t('tarot.detail.journalPromptsLabel')}</p>
+              <ul className="reading-copy space-y-2">
                 <li className="flex items-start gap-2">
                   <span className="text-gold mt-1">1.</span>
                   {t('tarot.detail.journalPrompt1')}
@@ -247,7 +243,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
           <Compass className="w-4 h-4" />
           {t('tarot.detail.todaysAction')}
         </h4>
-        <p className="text-sm text-mystic-300">
+        <p className="reading-copy">
           {t('tarot.detail.todaysActionText', { name: card.name })}
         </p>
       </Card>

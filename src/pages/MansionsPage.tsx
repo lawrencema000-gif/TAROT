@@ -64,27 +64,27 @@ export function MansionsPage() {
     return (
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-emerald-400/80 mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
+          <div className="font-display-eyebrow text-emerald-400/80 mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
           {acts.favourable.length === 0 ? (
-            <p className="text-[13px] text-mystic-500 italic">
+            <p className="text-ui text-mystic-300 italic">
               The almanacs record nothing favoured here — a day to keep small rather than start.
             </p>
           ) : (
             <ul className="space-y-0.5">
               {acts.favourable.map((a) => (
-                <li key={a} className="text-[13px] text-mystic-300">{a}</li>
+                <li key={a} className="text-ui text-mystic-200">{a}</li>
               ))}
             </ul>
           )}
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-rose-400/80 mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
+          <div className="font-display-eyebrow text-rose-400/80 mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
           {acts.unfavourable.length === 0 ? (
-            <p className="text-[13px] text-mystic-500 italic">Nothing particular to avoid.</p>
+            <p className="text-ui text-mystic-300 italic">Nothing particular to avoid.</p>
           ) : (
             <ul className="space-y-0.5">
               {acts.unfavourable.map((a) => (
-                <li key={a} className="text-[13px] text-mystic-300">{a}</li>
+                <li key={a} className="text-ui text-mystic-200">{a}</li>
               ))}
             </ul>
           )}
@@ -114,11 +114,11 @@ export function MansionsPage() {
           <div className="flex items-baseline gap-2">
             <span className="text-3xl text-gold" style={{ fontFamily: 'serif' }}>{today.cn}</span>
             <span className="text-mystic-100">{MANSION_MEANINGS[today.key]?.title}</span>
-            <span className="text-xs text-mystic-500">
+            <span className="text-meta text-mystic-400">
               {today.cn}{PLANET7_INFO[today.planet].cn}{today.animalCn}
             </span>
           </div>
-          <p className="text-sm text-mystic-300 leading-relaxed">{MANSION_DAILY_ADVICE[today.key]}</p>
+          <p className="reading-copy">{MANSION_DAILY_ADVICE[today.key]}</p>
           {renderActivities(today)}
         </Card>
       )}
@@ -137,7 +137,7 @@ export function MansionsPage() {
           <Button variant="primary" size="md" fullWidth disabled={!birthDate} onClick={() => setSubmitted(true)}>
             <Moon className="w-4 h-4 mr-2" /> {t('mansions.find', { defaultValue: 'Find my mansion' })}
           </Button>
-          <p className="text-[11px] text-mystic-600">
+          <p className="text-ui text-mystic-400">
             The 值日 mansion turns over at midnight, so the date is all this needs — a birth time changes nothing here.
           </p>
         </Card>
@@ -151,20 +151,20 @@ export function MansionsPage() {
               <span className="text-4xl text-gold" style={{ fontFamily: 'serif' }}>{birth.cn}</span>
               <div>
                 <div className="text-mystic-100">{MANSION_MEANINGS[birth.key]?.title}</div>
-                <div className="text-xs text-mystic-500">
+                <div className="text-meta text-mystic-400">
                   {birth.cn}{PLANET7_INFO[birth.planet].cn}{birth.animalCn} · {QUADRANT_INFO[birth.quadrant].cn}
                 </div>
               </div>
             </div>
-            <p className="text-sm text-mystic-300 leading-relaxed">{MANSION_MEANINGS[birth.key]?.text}</p>
-            <p className="text-[13px] text-mystic-400 leading-relaxed border-t border-mystic-800/40 pt-3">
+            <p className="reading-copy">{MANSION_MEANINGS[birth.key]?.text}</p>
+            <p className="reading-copy border-t border-mystic-800/40 pt-3">
               <span className="text-gold/80">{QUADRANT_INFO[birth.quadrant].en}</span> — {QUADRANT_MEANINGS[birth.quadrant]?.text}
             </p>
           </Card>
 
           {sukuyo && sukuyo.key !== birth.key && (
             <Section eyebrow="宿曜 · the Japanese reading" spacing="sm">
-              <p className="text-sm text-mystic-300 leading-relaxed">
+              <p className="reading-copy">
                 The Japanese 宿曜道 tradition counts differently — from your lunar month and day rather than
                 the running day cycle — and puts you in{' '}
                 <span className="text-gold">{sukuyo.cn} {MANSION_MEANINGS[sukuyo.key]?.title}</span>.
@@ -186,9 +186,9 @@ export function MansionsPage() {
       >
         {(Object.keys(byQuadrant) as Quadrant[]).map((q) => (
           <div key={q} className="space-y-1">
-            <div className="text-xs text-gold/80">
-              {QUADRANT_INFO[q].cn} · {QUADRANT_INFO[q].en}
-              <span className="text-mystic-600"> — {QUADRANT_INFO[q].season}, {QUADRANT_INFO[q].element}</span>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="font-display-eyebrow">{QUADRANT_INFO[q].cn} · {QUADRANT_INFO[q].en}</span>
+              <span className="text-meta text-mystic-400">— {QUADRANT_INFO[q].season}, {QUADRANT_INFO[q].element}</span>
             </div>
             {byQuadrant[q].map((m) => {
               const open = openKey === m.key;
@@ -204,7 +204,7 @@ export function MansionsPage() {
                   label={
                     <>
                       <span className="text-mystic-100 text-sm">{MANSION_MEANINGS[m.key]?.title}</span>
-                      <span className="text-mystic-600 text-xs"> · {m.animal}</span>
+                      <span className="text-meta text-mystic-400"> · {m.animal}</span>
                     </>
                   }
                   meta={
@@ -214,7 +214,7 @@ export function MansionsPage() {
                   }
                   contentClassName="pl-8 space-y-2"
                 >
-                  <p className="text-[13px] text-mystic-300 leading-relaxed">{MANSION_MEANINGS[m.key]?.text}</p>
+                  <p className="reading-copy">{MANSION_MEANINGS[m.key]?.text}</p>
                   {renderActivities(m)}
                 </Disclosure>
               );
@@ -223,7 +223,7 @@ export function MansionsPage() {
         ))}
       </Section>
 
-      <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">
+      <p className="reading-caption max-w-prose">
         The 值日 cycle is a calendrical count that has run unbroken for centuries — not a live measurement of
         where the Moon is tonight. For reflection, not prediction.
       </p>

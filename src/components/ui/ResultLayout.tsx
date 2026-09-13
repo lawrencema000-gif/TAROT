@@ -106,7 +106,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
           className="
             rounded-2xl border border-gold/25 bg-mystic-850
             shadow-[0_8px_24px_-12px_rgba(0,0,0,0.7)]
-            px-6 py-8 text-center space-y-3
+            px-6 py-8 space-y-3
           "
         >
           {glyph && (
@@ -122,11 +122,17 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
               {glyph}
             </div>
           )}
-          {eyebrow && <EyebrowLabel align="center" className="block">{eyebrow}</EyebrowLabel>}
-          <Heading className="heading-display-xl text-mystic-100">{verdict}</Heading>
-          {subtitle && <p className="text-sm text-gold/80">{subtitle}</p>}
+          {eyebrow && <EyebrowLabel align="center" className="block text-center">{eyebrow}</EyebrowLabel>}
+          <Heading className="heading-display-xl text-mystic-100 text-center">{verdict}</Heading>
+          {subtitle && <p className="text-ui text-gold/80 text-center">{subtitle}</p>}
+          {/* Centring stops at the single-line material above. The summary
+              is prose and can wrap to three lines, so it is set as a
+              left-aligned lede on the body tier; the measure sits centred
+              under the verdict but the text inside it is ragged-right. */}
           {summary && (
-            <p className="text-mystic-300 leading-relaxed max-w-prose mx-auto">{summary}</p>
+            <div className="reading-copy text-left mx-auto pt-2">
+              <p className="reading-lede">{summary}</p>
+            </div>
           )}
         </section>
 

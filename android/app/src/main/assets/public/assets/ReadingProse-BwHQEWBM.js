@@ -1,0 +1,2 @@
+import{j as n}from"./vendor-react-CXiGmbzU.js";function o({text:r,lede:s=!0,className:p="",children:l}){let a=r.split(/\n{2,}/).map(e=>e.trim()).filter(Boolean);return a.length<=1&&r.includes(`
+`)&&(a=r.split(/\n+/).map(e=>e.trim()).filter(Boolean)),n.jsxs("div",{className:`reading-copy ${p}`.trim(),children:[a.map((e,i)=>n.jsx("p",{className:`whitespace-pre-line${i===0&&s?" reading-lede drop-cap":""}`,children:e},i)),l]})}export{o as R};

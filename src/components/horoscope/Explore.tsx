@@ -125,7 +125,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
   }
 
   if (error) {
-    return <p className="text-mystic-400 text-sm text-center py-8">{error}</p>;
+    return <p className="text-ui text-mystic-400 text-center py-8">{error}</p>;
   }
 
   return (
@@ -152,7 +152,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
       </div>
 
       {events.length === 0 ? (
-        <p className="text-mystic-400 text-sm text-center py-8">{t('settings.noTransits')}</p>
+        <p className="text-ui text-mystic-400 text-center py-8">{t('settings.noTransits')}</p>
       ) : (
         events.map((ev, i) => {
           const isOpen = expanded === i;
@@ -162,16 +162,16 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
           return (
             <Card key={i} padding="sm" interactive onClick={() => setExpanded(isOpen ? null : i)}>
               <div className="flex items-center gap-3">
-                <div className="text-center flex-shrink-0 w-10">
-                  <div className="text-[10px] text-mystic-500">{ev.date}</div>
+                <div className="text-center flex-shrink-0 w-12">
+                  <div className="text-meta text-mystic-400">{ev.date}</div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                   <PlanetGlyph planet={ev.transitPlanet} size={18} className="text-gold" />
-                  <span className={`text-xs ${ASPECT_COLORS[ev.aspectType]}`}>
+                  <span className={`text-meta ${ASPECT_COLORS[ev.aspectType]}`}>
                     {localizeAspectName(ev.aspectType)}
                   </span>
                   <PlanetGlyph planet={ev.natalPlanet} size={18} className="text-gold" />
-                  <span className="text-xs text-mystic-400 truncate">
+                  <span className="text-meta text-mystic-400 truncate">
                     {t('horoscope.exploreView.transitArrow', { from: localizePlanetName(ev.transitPlanet), to: localizePlanetName(ev.natalPlanet) })}
                   </span>
                 </div>
@@ -179,10 +179,10 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
               </div>
               {isOpen && interp && (
                 <div className="mt-3 pt-3 border-t border-mystic-800/30 space-y-2 animate-fade-in">
-                  <div className="text-xs font-medium text-gold">{interp.theme}</div>
-                  <p className="text-xs text-mystic-300 leading-relaxed">{interp.feeling}</p>
-                  <p className="text-xs text-teal">{interp.advice}</p>
-                  <div className="text-[10px] text-mystic-500">{interp.duration}</div>
+                  <div className="text-ui font-medium text-mystic-100">{interp.theme}</div>
+                  <p className="reading-copy">{interp.feeling}</p>
+                  <p className="reading-copy text-teal">{interp.advice}</p>
+                  <div className="text-meta text-mystic-400">{interp.duration}</div>
                 </div>
               )}
             </Card>
@@ -232,7 +232,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
   }
 
   if (!chart) {
-    return <p className="text-mystic-400 text-sm text-center py-8">{t('settings.chartUnavailable')}</p>;
+    return <p className="text-ui text-mystic-400 text-center py-8">{t('settings.chartUnavailable')}</p>;
   }
 
   return (
@@ -246,27 +246,27 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
                 <span className="text-xs font-bold text-gold">{house}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium text-mystic-200">{HOUSE_THEMES[house - 1]}</div>
+                <div className="text-ui font-medium text-mystic-100">{HOUSE_THEMES[house - 1]}</div>
                 {residents.length > 0 ? (
                   <div className="mt-1.5 space-y-1">
                     {residents.map((p) => {
                       const interp = houseInterps[`${p.planet}-${house}`];
                       return (
-                        <div key={p.planet} className="text-xs flex flex-wrap items-center gap-1">
+                        <div key={p.planet} className="text-meta flex flex-wrap items-center gap-1">
                           <PlanetGlyph planet={p.planet as Planet} size={16} className="text-gold" />
                           <span className="text-mystic-300">
                             {t('horoscope.exploreView.planetInSign', { planet: localizePlanetName(p.planet as Planet), sign: localizeSignName(p.sign) })}
                           </span>
                           <ZodiacGlyph sign={p.sign} size={14} className="text-mystic-300" />
                           {interp && (
-                            <p className="w-full text-mystic-400 mt-0.5 pl-4">{interp.expression}</p>
+                            <p className="reading-copy w-full mt-0.5 pl-4">{interp.expression}</p>
                           )}
                         </div>
                       );
                     })}
                   </div>
                 ) : (
-                  <div className="text-[10px] text-mystic-600 mt-0.5">{t('horoscope.exploreView.noPlanetsHere')}</div>
+                  <div className="text-meta text-mystic-400 mt-0.5">{t('horoscope.exploreView.noPlanetsHere')}</div>
                 )}
               </div>
             </div>
@@ -294,7 +294,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
   }
 
   if (!chart) {
-    return <p className="text-mystic-400 text-sm text-center py-8">{t('settings.chartUnavailable')}</p>;
+    return <p className="text-ui text-mystic-400 text-center py-8">{t('settings.chartUnavailable')}</p>;
   }
 
   const { natalChart } = chart;
@@ -321,7 +321,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-mystic-400 text-sm text-center py-8">{t('horoscope.exploreView.noAspectsMatch')}</p>
+        <p className="text-ui text-mystic-400 text-center py-8">{t('horoscope.exploreView.noAspectsMatch')}</p>
       ) : (
         filtered.map((a: Aspect, i: number) => {
           const isOpen = expanded === i;
@@ -332,20 +332,20 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
             <Card key={i} padding="sm" interactive onClick={() => setExpanded(isOpen ? null : i)}>
               <div className="flex items-center gap-3">
                 <PlanetGlyph planet={a.planet1 as Planet} size={18} className="text-gold" />
-                <span className={`text-xs font-medium ${ASPECT_COLORS[a.type]}`}>
+                <span className={`text-meta font-medium ${ASPECT_COLORS[a.type]}`}>
                   {localizeAspectName(a.type)}
                 </span>
                 <PlanetGlyph planet={a.planet2 as Planet} size={18} className="text-gold" />
-                <span className="flex-1 text-xs text-mystic-400">
+                <span className="flex-1 text-meta text-mystic-400">
                   {t('horoscope.exploreView.aspectPair', { a: localizePlanetName(a.planet1 as Planet), b: localizePlanetName(a.planet2 as Planet) })}
                 </span>
-                <span className="text-xs text-mystic-500">{a.orb.toFixed(1)}&deg;</span>
+                <span className="text-meta text-mystic-400">{a.orb.toFixed(1)}&deg;</span>
                 {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-mystic-500" /> : <ChevronDown className="w-3.5 h-3.5 text-mystic-500" />}
               </div>
               {isOpen && interp && (
-                <div className="mt-3 pt-3 border-t border-mystic-800/30 space-y-2 animate-fade-in">
-                  <p className="text-xs text-mystic-200 leading-relaxed">{interp.meaning}</p>
-                  <p className="text-xs text-mystic-400 italic">{interp.howItFeels}</p>
+                <div className="reading-copy mt-3 pt-3 border-t border-mystic-800/30 animate-fade-in">
+                  <p>{interp.meaning}</p>
+                  <p className="italic">{interp.howItFeels}</p>
                 </div>
               )}
             </Card>

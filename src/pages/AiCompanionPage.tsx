@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BookOpen, Feather, Flower, MessageCircle, Moon, Send } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
@@ -173,7 +173,7 @@ export function AiCompanionPage() {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-gold" />
-          <h1 className="font-display text-xl text-mystic-100">
+          <h1 className="heading-display-lg text-mystic-100">
             {t('companion.title', { defaultValue: 'Companion' })}
           </h1>
         </div>
@@ -212,10 +212,10 @@ export function AiCompanionPage() {
         <div className="flex items-start gap-3">
           <Icon className={`w-5 h-5 ${currentPersonaInfo.accent} mt-0.5`} />
           <div className="flex-1">
-            <p className={`text-sm font-medium ${currentPersonaInfo.accent} mb-1`}>
+            <p className={`text-ui font-medium ${currentPersonaInfo.accent} mb-1`}>
               {t(`companion.personas.${persona}.name`, { defaultValue: persona })}
             </p>
-            <p className="text-xs text-mystic-400 italic leading-relaxed">
+            <p className="text-ui text-mystic-300 italic">
               {t(`companion.personas.${persona}.intro`, { defaultValue: currentPersonaInfo.id })}
             </p>
           </div>
@@ -225,7 +225,7 @@ export function AiCompanionPage() {
       {/* Message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-2">
         {history.length === 0 && (
-          <div className="text-center py-12 text-mystic-500 text-sm italic">
+          <div className="text-center py-12 text-ui text-mystic-400 italic">
             {t('companion.emptyState', { defaultValue: 'Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.' })}
           </div>
         )}
@@ -234,15 +234,15 @@ export function AiCompanionPage() {
             key={i}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div
-              className={`max-w-[85%] rounded-xl p-3 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-gold/15 text-mystic-100 rounded-br-sm'
-                  : 'bg-mystic-800/60 text-mystic-200 rounded-bl-sm whitespace-pre-wrap'
-              }`}
-            >
-              {msg.content}
-            </div>
+            {msg.role === 'user' ? (
+              <div className="max-w-[85%] rounded-xl p-3 text-ui bg-gold/15 text-mystic-100 rounded-br-sm">
+                {msg.content}
+              </div>
+            ) : (
+              <div className="max-w-[85%] rounded-xl p-3 bg-mystic-800/60 rounded-bl-sm">
+                <ReadingProse text={msg.content} lede={false} className="whitespace-pre-line" />
+              </div>
+            )}
           </div>
         ))}
         {sending && (
@@ -282,7 +282,7 @@ export function AiCompanionPage() {
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        <p className="text-[10px] text-mystic-600 text-right">
+        <p className="text-meta text-mystic-400 text-right">
           {t('companion.dailyRemaining', {
             defaultValue: '{{remaining}} messages left today',
             remaining: Math.max(0, DAILY_LIMIT - dailyUsed),

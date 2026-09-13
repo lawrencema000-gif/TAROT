@@ -86,3 +86,4 @@ export { Disclosure, type DisclosureProps } from './Disclosure';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { PageGrid, type PageGridProps } from './PageGrid';
 export { ResultLayout, type ResultLayoutProps } from './ResultLayout';
+export { ReadingProse } from './ReadingProse';

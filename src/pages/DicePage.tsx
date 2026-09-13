@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dice6, Feather, Zap } from 'lucide-react';
-import { Card, Button, Section } from '../components/ui';
+import { Card, Button, ReadingProse, Section } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
@@ -74,7 +74,7 @@ export function DicePage() {
       <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl text-gold shadow-inner-glow" style={{ fontFamily: 'serif' }}>
         {glyph}
       </div>
-      <span className="text-[10px] uppercase tracking-wider text-mystic-500">{label}</span>
+      <span className="text-meta uppercase tracking-wider text-mystic-400">{label}</span>
     </div>
   );
 
@@ -103,7 +103,7 @@ export function DicePage() {
         </div>
 
         <Card variant="glow" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed">
+          <p className="reading-copy">
             {mode === 'astro'
               ? t('dice.astroIntro', { defaultValue: "The astrologer's dice — three fall at once: a planet for WHAT, a sign for HOW, a house for WHERE in your life. Hold a question, then roll." })
               : t('dice.intro', { defaultValue: 'The simplest divination — three dice fall, their sum speaks. Hold a question, then roll. Sixteen possible readings from 3 to 18.' })}
@@ -125,10 +125,12 @@ export function DicePage() {
           <Section contentClassName="space-y-3">
             {interp && (
               <>
-                <p className="text-mystic-300 text-sm leading-relaxed">{interp.planetInSignText(astro.planet, astro.sign)}</p>
-                <p className="text-mystic-400 text-sm leading-relaxed">{interp.planetInHouseText(astro.planet, astro.house)}</p>
+                <div className="reading-copy">
+                  <p className="reading-lede drop-cap">{interp.planetInSignText(astro.planet, astro.sign)}</p>
+                  <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
+                </div>
                 {interp.houseMeaning(astro.house) && (
-                  <p className="text-[13px] text-mystic-500 leading-relaxed">
+                  <p className="text-meta text-mystic-400">
                     House {astro.house} — {interp.houseMeaning(astro.house)!.title}: {interp.houseMeaning(astro.house)!.keywords.join(', ')}.
                   </p>
                 )}
@@ -149,20 +151,20 @@ export function DicePage() {
             <div className="flex justify-center gap-3 mb-4">
               {reading.rolls.map((v, i) => renderDie(v, i))}
             </div>
-            <p className="text-xs text-mystic-500 tracking-widest uppercase">
+            <p className="text-meta text-mystic-400 tracking-widest uppercase">
               {t('dice.sumLabel', { defaultValue: 'Sum' })} {reading.sum}
             </p>
             <h2 className="heading-display-lg text-mystic-100 mt-2">{reading.title}</h2>
           </Card>
           <Section>
-            <p className="text-mystic-300 text-sm leading-relaxed">{reading.reading}</p>
+            <ReadingProse text={reading.reading} />
           </Section>
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-              <Feather className="w-4 h-4" />
+            <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
+              <Feather className="w-4 h-4 text-gold" />
               {t('dice.promptLabel', { defaultValue: 'Hold this question' })}
             </h3>
-            <p className="text-mystic-200 italic leading-relaxed">"{reading.prompt}"</p>
+            <p className="reading-quote my-0">{reading.prompt}</p>
           </Card>
         </>
       )}

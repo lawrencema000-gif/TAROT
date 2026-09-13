@@ -42,16 +42,16 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
                 </span>
               )}
           </span>
-          <span className="text-mystic-400 text-xs w-10 flex-shrink-0" style={{ fontFamily: 'serif' }}>
+          <span className="text-meta text-mystic-400 w-10 flex-shrink-0" style={{ fontFamily: 'serif' }}>
             {l.branchCn}
           </span>
           <span className="flex-1 min-w-0">
-            <span className="text-mystic-100 text-sm" style={{ fontFamily: 'serif' }}>
+            <span className="text-ui text-mystic-100" style={{ fontFamily: 'serif' }}>
               {RELATIVE_INFO[l.relative].cn}
             </span>
-            <span className="text-mystic-500 text-xs"> {RELATIVE_INFO[l.relative].en}</span>
+            <span className="text-meta text-mystic-400"> {RELATIVE_INFO[l.relative].en}</span>
           </span>
-          <span className="text-mystic-500 text-xs" style={{ fontFamily: 'serif' }}>
+          <span className="text-meta text-mystic-400" style={{ fontFamily: 'serif' }}>
             {SPIRIT_INFO[l.spirit].cn}
           </span>
           {l.moving && <span className="text-gold text-[10px] uppercase tracking-wider">動</span>}
@@ -60,15 +60,15 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
           <ChevronDown className={`w-4 h-4 text-mystic-600 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
         {open && (
-          <div className="pb-3 pl-11 space-y-2">
+          <div className="reading-copy pb-3 pl-11">
             {rel && (
-              <p className="text-[13px] text-mystic-300 leading-relaxed">
+              <p>
                 <span className="text-gold">{rel.cn} · {rel.title}</span> — {rel.text}
               </p>
             )}
-            {rel && <p className="text-[13px] text-mystic-400 leading-relaxed">{rel.asks}</p>}
+            {rel && <p>{rel.asks}</p>}
             {spirit && (
-              <p className="text-[13px] text-mystic-400 leading-relaxed">
+              <p>
                 <span className="text-cosmic-violetLight">{spirit.cn}</span> — {spirit.text}
               </p>
             )}
@@ -84,37 +84,37 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
     <Card className="p-4 space-y-4">
       <div className="space-y-2">
         <EyebrowLabel>六爻 · 納甲筮法</EyebrowLabel>
-        <p className="text-xs text-mystic-500 leading-relaxed">{LIUYAO_INTRO}</p>
+        <p className="reading-copy">{LIUYAO_INTRO}</p>
       </div>
 
-      <div className="text-sm text-mystic-300">
+      <div className="text-ui text-mystic-300">
         <span style={{ fontFamily: 'serif' }} className="text-gold">
           {reading.palaceCn}
         </span>
-        <span className="text-mystic-500"> · {PALACE_INFO[reading.palace].element}</span>
-        <span className="text-mystic-500"> · {reading.rankCn}</span>
-        <span className="text-mystic-600 text-xs">
+        <span> · {PALACE_INFO[reading.palace].element}</span>
+        <span> · {reading.rankCn}</span>
+        <span className="text-mystic-400">
           {' '}— 日辰 {reading.dayPillar.cn}
         </span>
       </div>
-      {palace && <p className="text-[13px] text-mystic-400 leading-relaxed">{palace.text}</p>}
+      {palace && <p className="reading-copy">{palace.text}</p>}
 
       {/* Lines run bottom-to-top, as a hexagram is drawn. */}
       <div>
         {[...reading.lines].reverse().map((l) => <LineRow key={l.position} l={l} />)}
       </div>
 
-      <p className="text-[13px] text-mystic-400 leading-relaxed border-t border-mystic-800/40 pt-3">
+      <p className="reading-copy border-t border-mystic-800/40 pt-3">
         {WORLD_RESPONSE_NOTE}
       </p>
       {reading.movingLines.length > 0 && (
-        <p className="text-[13px] text-mystic-400 leading-relaxed">{MOVING_LINE_NOTE}</p>
+        <p className="reading-copy">{MOVING_LINE_NOTE}</p>
       )}
 
       {reading.hidden.length > 0 && (
         <div className="border-t border-mystic-800/40 pt-3 space-y-1">
-          <div className="text-xs text-gold/80">伏神 · Hidden</div>
-          <p className="text-[13px] text-mystic-400 leading-relaxed">
+          <EyebrowLabel className="block">伏神 · Hidden</EyebrowLabel>
+          <p className="reading-copy">
             {reading.hidden.map((h) => `${RELATIVE_INFO[h.relative].cn} (${RELATIVE_INFO[h.relative].en}) under line ${h.position}`).join(' · ')}
             {' '}— roles absent from the cast, read from the palace’s parent hexagram. A missing
             role often matters as much as a present one.

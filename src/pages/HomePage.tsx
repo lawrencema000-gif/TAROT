@@ -363,7 +363,7 @@ export function HomePage() {
           <MysticalStar size={96} spinning />
         </div>
 
-        <h1 className="heading-display-xl text-gold-foil mb-2">
+        <h1 className="heading-display-xl text-mystic-100 mb-2">
           {t('home.ritualReady.title')}
         </h1>
         <div className="mb-4 text-gold/60">
@@ -415,7 +415,7 @@ export function HomePage() {
             <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block animate-float-gentle">
               <MysticalStar size={72} />
             </div>
-            <h2 className="heading-display-lg text-gold-foil mb-2">{t('home.todaysRitual')}</h2>
+            <h2 className="heading-display-lg text-mystic-100 mb-2">{t('home.todaysRitual')}</h2>
             <div className="flex justify-center mb-3 text-gold/60">
               <OrnateDivider width={120} />
             </div>
@@ -429,7 +429,7 @@ export function HomePage() {
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="heading-display-lg text-gold-foil">{t('home.todaysRitual')}</h2>
+            <h2 className="heading-display-lg text-mystic-100">{t('home.todaysRitual')}</h2>
             <div className="flex items-center gap-2 shrink-0">
               <SparkleFourPoint
                 size={12}

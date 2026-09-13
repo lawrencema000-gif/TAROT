@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, Quote, RefreshCw, Share2, X } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
-import { Button, Card, toast } from '../ui';
+import { Button, Card, ReadingProse, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -137,10 +137,10 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
       >
         <div className="space-y-4 pb-4">
           <Card padding="md" className="bg-mystic-900/60 border-cosmic-violet/20">
-            <p className="text-[10px] uppercase tracking-widest text-cosmic-violetLight mb-1">
+            <p className="font-display-eyebrow text-cosmic-violetLight mb-1">
               {t('askOracle.contextLabel', { defaultValue: 'Your question' })}
             </p>
-            <p className="text-sm text-mystic-200 italic leading-relaxed">"{context}"</p>
+            <p className="text-ui text-mystic-200 italic">"{context}"</p>
           </Card>
 
           {loading && (
@@ -170,19 +170,17 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
             <>
               {reading.card && (
                 <Card padding="md" className="text-center bg-mystic-900/60 border-gold/20">
-                  <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+                  <p className="font-display-eyebrow mb-1">
                     {t('askOracle.cardLabel', { defaultValue: 'Card drawn' })}
                   </p>
                   <p className="font-display text-lg text-mystic-100">{reading.card.name}</p>
-                  <p className="text-[11px] text-mystic-400 italic mt-1">{reading.card.meaning}</p>
+                  <p className="text-ui text-mystic-300 italic mt-1">{reading.card.meaning}</p>
                 </Card>
               )}
               <Card padding="lg">
                 <div className="flex items-start gap-2 mb-2">
-                  <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">
-                    {reading.reading}
-                  </p>
+                  <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-1.5" />
+                  <ReadingProse text={reading.reading} className="flex-1 min-w-0" />
                 </div>
               </Card>
               <div className="flex gap-2">

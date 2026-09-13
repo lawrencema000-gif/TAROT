@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MapPin, Crown, Sparkles, Coins, Loader2, AlertCircle } from 'lucide-react';
-import { Sheet, Button } from '../ui';
+import { Sheet, Button, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
 import {
@@ -187,14 +187,14 @@ export function CityInsightPanel({
             <h2 className="heading-display-md text-mystic-100 truncate">
               {cityInfo && !isFarFromCity ? cityInfo.city.name : t('celestial.city.unknown', { defaultValue: 'Open ocean / remote' })}
             </h2>
-            <p className="text-xs text-mystic-400 mt-0.5">
+            <p className="text-meta text-mystic-400 mt-0.5">
               {cityInfo && !isFarFromCity
                 ? cityInfo.city.country
                 : point
                   ? `${point.lat.toFixed(2)}°, ${point.lon.toFixed(2)}°`
                   : ''}
               {cityInfo && !isFarFromCity && (
-                <span className="text-mystic-500 ml-2">
+                <span className="ml-2">
                   · {Math.round(cityInfo.distanceKm)} km from tap
                 </span>
               )}
@@ -204,8 +204,8 @@ export function CityInsightPanel({
 
         {/* ── No lines nearby ───────────────────────────────────── */}
         {visibleHits.length === 0 && allHits.length === 0 && (
-          <div className="rounded-2xl bg-mystic-800/40 hairline-gold-soft p-5 text-center">
-            <p className="text-sm text-mystic-300 leading-relaxed">
+          <div className="rounded-2xl bg-mystic-800/40 hairline-gold-soft p-5">
+            <p className="reading-copy">
               {t('celestial.city.noLines', {
                 defaultValue: 'No planetary lines run within 700 km of here. This place is celestially quiet for your chart — neither helping nor hindering.',
               })}
@@ -216,7 +216,7 @@ export function CityInsightPanel({
         {/* ── Active lines list ─────────────────────────────────── */}
         {visibleHits.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-xs uppercase tracking-wider text-gold/80 font-medium">
+            <h3 className="font-display-eyebrow text-gold/80">
               {t('celestial.city.activeLines', { defaultValue: 'Active lines here' })}
             </h3>
             <div className="space-y-2">
@@ -247,14 +247,14 @@ export function CityInsightPanel({
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-mystic-100">
+                          <span className="text-ui font-medium text-mystic-100">
                             {hit.planet} {hit.angle}
                           </span>
-                          <span className="text-xs text-mystic-500">
+                          <span className="text-meta text-mystic-400">
                             · {Math.round(hit.distanceKm)} km
                           </span>
                         </div>
-                        <p className="text-xs text-mystic-300 mt-0.5">{interp.headline}</p>
+                        <p className="text-ui text-mystic-200 mt-0.5">{interp.headline}</p>
                       </div>
                       <ChevronDown
                         className={`w-4 h-4 text-mystic-400 flex-shrink-0 transition-transform mt-1.5 ${isExpanded ? 'rotate-180' : ''}`}
@@ -272,7 +272,7 @@ export function CityInsightPanel({
                           className="overflow-hidden"
                         >
                           <div className="px-4 pb-4 pt-1 border-t border-mystic-800/60">
-                            <p className="text-sm text-mystic-300 leading-relaxed">
+                            <p className="reading-copy">
                               {interp.body}
                             </p>
                           </div>
@@ -316,13 +316,13 @@ export function CityInsightPanel({
           <div className="rounded-2xl bg-mystic-900/60 hairline-gold-soft p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gold" />
-              <h3 className="text-sm font-medium text-mystic-100">
+              <h3 className="heading-display-md text-mystic-100">
                 {t('celestial.city.aiReading.title', {
                   defaultValue: 'Personal travel reading',
                 })}
               </h3>
             </div>
-            <p className="text-xs text-mystic-400 leading-relaxed">
+            <p className="text-ui text-mystic-300">
               {t('celestial.city.aiReading.body', {
                 defaultValue: 'Get a tailored interpretation weaving these lines together with your birth chart and what you\'re seeking — written specifically for you.',
               })}
@@ -330,7 +330,7 @@ export function CityInsightPanel({
             {readingError && (
               <div className="flex items-start gap-2 rounded-xl bg-red-900/30 border border-red-700/40 p-3">
                 <AlertCircle className="w-4 h-4 text-red-300 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-red-200 leading-relaxed">
+                <p className="text-ui text-red-200">
                   {t('celestial.city.aiReading.error', {
                     defaultValue: 'Could not generate the reading just now. Please try again in a moment.',
                   })}
@@ -374,26 +374,24 @@ export function CityInsightPanel({
           >
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gold" />
-              <span className="text-xs uppercase tracking-wider text-gold/90 font-medium">
+              <span className="font-display-eyebrow text-gold/90">
                 {t('celestial.city.aiReading.label', { defaultValue: 'Your reading' })}
               </span>
             </div>
-            <p className="text-base font-medium text-mystic-100 leading-snug italic">
-              "{reading.verdict}"
+            <p className="reading-quote">
+              {reading.verdict}
             </p>
-            <p className="text-sm text-mystic-200 leading-relaxed">
-              {reading.body}
-            </p>
+            <ReadingProse text={reading.body} />
             {reading.lineNotes.length > 0 && (
               <div className="space-y-2 pt-1">
                 {reading.lineNotes.map((note, i) => (
                   <div key={`${note.planet}-${note.angle}-${i}`} className="flex items-start gap-2.5">
                     <div
-                      className="flex-shrink-0 w-2 h-2 rounded-full mt-1.5"
+                      className="flex-shrink-0 w-2 h-2 rounded-full mt-2.5"
                       style={{ backgroundColor: PLANET_DOT_COLOR[note.planet as PlanetName] ?? '#d4af37' }}
                       aria-hidden
                     />
-                    <p className="text-xs text-mystic-300 leading-relaxed flex-1">
+                    <p className="reading-copy flex-1">
                       <span className="text-mystic-100 font-medium">{note.planet} {note.angle}</span>
                       {' — '}{note.note}
                     </p>
@@ -402,16 +400,16 @@ export function CityInsightPanel({
               </div>
             )}
             <div className="rounded-xl bg-mystic-900/40 p-3 space-y-1">
-              <p className="text-[10px] uppercase tracking-wider text-mystic-500 font-medium">
+              <p className="font-display-eyebrow text-mystic-500">
                 {t('celestial.city.aiReading.cautionsLabel', { defaultValue: 'Watch for' })}
               </p>
-              <p className="text-xs text-mystic-300 leading-relaxed">{reading.cautionsNote}</p>
+              <p className="reading-copy">{reading.cautionsNote}</p>
             </div>
             <div className="rounded-xl bg-gold/10 border border-gold/20 p-3 space-y-1">
-              <p className="text-[10px] uppercase tracking-wider text-gold/80 font-medium">
+              <p className="font-display-eyebrow text-gold/80">
                 {t('celestial.city.aiReading.practiceLabel', { defaultValue: 'First three days here' })}
               </p>
-              <p className="text-xs text-mystic-200 leading-relaxed">{reading.practice}</p>
+              <p className="reading-copy">{reading.practice}</p>
             </div>
           </motion.div>
         )}

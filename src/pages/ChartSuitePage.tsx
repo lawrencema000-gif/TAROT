@@ -107,9 +107,9 @@ export function ChartSuitePage() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-medium text-mystic-100">{c.name}</div>
-                    <div className="text-xs text-gold/80 mt-0.5">{c.tagline}</div>
-                    <div className="text-xs text-mystic-500 mt-1 line-clamp-2">{c.description}</div>
-                    {linked && <div className="text-[10px] uppercase tracking-wider text-mystic-600 mt-1.5">{linked.note} →</div>}
+                    <div className="text-meta text-gold/80 mt-0.5">{c.tagline}</div>
+                    <div className="text-ui text-mystic-400 mt-1 line-clamp-2">{c.description}</div>
+                    {linked && <div className="font-display-eyebrow text-mystic-500 mt-1.5">{linked.note} →</div>}
                   </div>
                   <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
                 </div>
@@ -143,14 +143,14 @@ export function ChartSuitePage() {
         <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 text-gold animate-spin" /></div>
       ) : err ? (
         <Card className="p-6 text-center space-y-3">
-          <p className="text-sm text-mystic-300">{err}</p>
+          <p className="text-ui text-mystic-300">{err}</p>
           <Button variant="ghost" onClick={() => load(selected.key)}>Retry</Button>
         </Card>
       ) : selected.key === 'firdaria' && resp?.firdaria ? (
         <>
           <Card className="p-4 space-y-3">
             {resp.firdaria.current && (
-              <p className="text-sm text-mystic-200 text-center">
+              <p className="text-ui text-mystic-200">
                 You are in your <span className="text-gold font-medium">{resp.firdaria.current.major}</span> period
                 {resp.firdaria.current.sub && <> · <span className="text-gold/80">{resp.firdaria.current.sub}</span> sub-period</>}
                 <span className="text-mystic-500"> ({resp.firdaria.sect} birth)</span>
@@ -159,10 +159,10 @@ export function ChartSuitePage() {
             {profile?.birthDate && <FirdariaTimeline data={resp.firdaria} birthDate={profile.birthDate} />}
           </Card>
           {resp.firdaria.current && (
-            <Section title="This chapter" headingLevel="h3" contentClassName="space-y-3">
-              <p className="text-sm text-mystic-300 leading-relaxed">{FIRDARIA_LORD_MEANINGS[resp.firdaria.current.major]}</p>
+            <Section title="This chapter" headingLevel="h3" contentClassName="reading-copy">
+              <p>{FIRDARIA_LORD_MEANINGS[resp.firdaria.current.major]}</p>
               {resp.firdaria.current.sub && resp.firdaria.current.sub !== resp.firdaria.current.major && (
-                <p className="text-sm text-mystic-400 leading-relaxed">Flavored by {resp.firdaria.current.sub}: {FIRDARIA_LORD_MEANINGS[resp.firdaria.current.sub]}</p>
+                <p>Flavored by {resp.firdaria.current.sub}: {FIRDARIA_LORD_MEANINGS[resp.firdaria.current.sub]}</p>
               )}
             </Section>
           )}
@@ -170,14 +170,14 @@ export function ChartSuitePage() {
       ) : chart ? (
         <>
           {resp?.moment && (
-            <p className="text-center text-xs text-mystic-500 flex items-center justify-center gap-1">
+            <p className="text-center text-meta text-mystic-400 flex items-center justify-center gap-1">
               <Clock className="w-3.5 h-3.5" />
               {selected.key === 'lunar-return' ? 'Return moment: ' : selected.key === 'sky-now' ? 'Cast: ' : 'Progressed to: '}
               {new Date(resp.moment).toLocaleString()}
             </p>
           )}
           {typeof resp?.arc === 'number' && (
-            <p className="text-center text-xs text-mystic-500">Solar arc: {resp.arc.toFixed(2)}° from birth</p>
+            <p className="text-center text-meta text-mystic-400">Solar arc: {resp.arc.toFixed(2)}° from birth</p>
           )}
           <Card className="p-4 flex justify-center">
             <div className="w-full max-w-[360px]"><NatalWheel chart={chart} /></div>
@@ -197,14 +197,14 @@ export function ChartSuitePage() {
               contentClassName="space-y-3"
             >
               {resp.crossAspects.slice(0, 8).map((a, i) => (
-                <div key={i} className="text-sm">
+                <div key={i} className="text-ui">
                   <span className="text-mystic-200">
                     <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet1]}</span> {a.planet1}
                     <span className="text-mystic-500"> {a.type} </span>
                     natal <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet2]}</span> {a.planet2}
                   </span>
-                  <span className="text-mystic-600 text-xs"> · orb {a.orb}°</span>
-                  {interp && <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
+                  <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+                  {interp && <p className="reading-copy mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
                 </div>
               ))}
             </Section>
@@ -217,11 +217,11 @@ export function ChartSuitePage() {
           {chart.planets.length > 0 && (
             <Section title="Placements" headingLevel="h3" spacing="sm">
               {chart.planets.map((p) => (
-                <div key={p.planet} className="flex items-center gap-2 py-1.5 border-b border-mystic-800/40 last:border-0 text-sm">
+                <div key={p.planet} className="flex items-center gap-2 py-1.5 border-b border-mystic-800/40 last:border-0 text-ui">
                   <span className="w-6 text-center" style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[p.planet]}</span>
                   <span className="text-mystic-100">{p.planet}</span>
                   <span className="text-mystic-400">in {p.sign} {SIGN_GLYPH[p.sign]}</span>
-                  <span className="text-mystic-600 text-xs ml-auto">{p.degree.toFixed(1)}°{p.retrograde ? ' ℞' : ''}</span>
+                  <span className="text-meta text-mystic-400 ml-auto">{p.degree.toFixed(1)}°{p.retrograde ? ' ℞' : ''}</span>
                 </div>
               ))}
             </Section>
@@ -229,7 +229,7 @@ export function ChartSuitePage() {
         </>
       ) : null}
 
-      <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">{selected.whenToRead}</p>
+      <p className="text-ui text-mystic-400 max-w-prose">{selected.whenToRead}</p>
     </div>
   );
 }

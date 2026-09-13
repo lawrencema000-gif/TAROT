@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Heart, Users } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Card, Button, Input, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -178,14 +178,14 @@ export function PartnerCompatPage() {
         </div>
 
         <Card variant="glow" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+          <p className="text-ui text-mystic-300 mb-4">
             {t('compat.intro', {
               defaultValue:
                 "For the fullest reading, enter both birth dates — we'll compute real cross-aspect synastry between your charts (Sun↔Venus, Moon↔Mars, and every other meaningful pair). MBTI is an optional supporting layer. At minimum, give us a matching data point from each side.",
             })}
           </p>
 
-          <h3 className="text-xs uppercase tracking-wider text-gold/70 mb-3">
+          <h3 className="font-display-eyebrow mb-3">
             {t('compat.yourSide', { defaultValue: 'You' })}
           </h3>
           <div className="space-y-3 mb-5">
@@ -218,7 +218,7 @@ export function PartnerCompatPage() {
             </div>
           </div>
 
-          <h3 className="text-xs uppercase tracking-wider text-pink-400/70 mb-3">
+          <h3 className="font-display-eyebrow mb-3">
             {t('compat.partnerSide', { defaultValue: 'Partner' })}
           </h3>
           <div className="space-y-3">
@@ -303,11 +303,11 @@ export function PartnerCompatPage() {
 
         {/* Overall score hero */}
         <Card variant="glow" padding="lg" className="text-center">
-          <p className="text-xs tracking-widest uppercase text-mystic-500 mb-2">
+          <p className="font-display-eyebrow mb-2">
             {t('compat.compatibilityLabel', { defaultValue: 'Compatibility' })}
           </p>
           <div className={`font-display text-7xl ${scoreColor} mb-3`}>{result.overallScore}%</div>
-          <div className="flex justify-center items-center gap-3 text-sm text-mystic-400">
+          <div className="flex justify-center items-center gap-3 text-meta text-mystic-400">
             {myMbti && <span>{myMbti}</span>}
             <Heart className="w-4 h-4 text-pink-400" />
             {partnerMbti && <span>{partnerMbti}</span>}
@@ -317,30 +317,30 @@ export function PartnerCompatPage() {
         {/* Synastry summary — the real astro heart of the reading */}
         {result.synastry && (
           <Card padding="lg">
-            <h3 className="font-medium text-cosmic-violetLight mb-3">
+            <h3 className="heading-display-md text-mystic-100 mb-3">
               {t('compat.synastryLabel', { defaultValue: 'Astrology Synastry' })}
             </h3>
             <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="text-center p-2 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
+              <div className="text-center px-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
                 <p className="text-2xl font-display text-emerald-400">{result.synastry.harmoniousCount}</p>
-                <p className="text-[10px] text-mystic-500 mt-1">
+                <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.harmoniousLabel', { defaultValue: 'Harmonious' })}
                 </p>
               </div>
-              <div className="text-center p-2 rounded-xl bg-gold/10 border border-gold/20">
+              <div className="text-center px-1 py-2 rounded-xl bg-gold/10 border border-gold/20">
                 <p className="text-2xl font-display text-gold">{result.synastry.intenseCount}</p>
-                <p className="text-[10px] text-mystic-500 mt-1">
+                <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.intenseLabel', { defaultValue: 'Intense' })}
                 </p>
               </div>
-              <div className="text-center p-2 rounded-xl bg-pink-500/10 border border-pink-400/20">
+              <div className="text-center px-1 py-2 rounded-xl bg-pink-500/10 border border-pink-400/20">
                 <p className="text-2xl font-display text-pink-400">{result.synastry.challengingCount}</p>
-                <p className="text-[10px] text-mystic-500 mt-1">
+                <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.challengingLabel', { defaultValue: 'Challenging' })}
                 </p>
               </div>
             </div>
-            <p className="text-xs text-mystic-500 leading-relaxed">
+            <p className="reading-copy">
               {t('compat.synastryExplainer', {
                 defaultValue:
                   'Each aspect is a real geometric relationship between your planets and your partner\'s. Harmonious aspects flow easily; intense ones amplify; challenging ones ask for growth work.',
@@ -352,7 +352,7 @@ export function PartnerCompatPage() {
         {/* Top cross-aspects */}
         {result.synastry?.crossAspects?.length ? (
           <div className="space-y-3">
-            <h3 className="font-display text-lg text-mystic-200 mt-2">
+            <h3 className="heading-display-md text-mystic-100 mt-2">
               {t('compat.topAspectsLabel', { defaultValue: 'Your most telling aspects' })}
             </h3>
             {result.synastry.crossAspects.slice(0, 8).map((a, i) => {
@@ -363,18 +363,18 @@ export function PartnerCompatPage() {
               return (
                 <Card key={i} padding="md">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="text-xs font-medium text-mystic-200">
+                    <span className="text-ui font-medium text-mystic-200">
                       {t('compat.myPlanet', { defaultValue: 'Your' })} {a.myPlanet}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full border text-[10px] font-medium capitalize ${flavourColor}`}>
                       {a.type}
                     </span>
-                    <span className="text-xs font-medium text-mystic-200">
+                    <span className="text-ui font-medium text-mystic-200">
                       {t('compat.partnerPlanet', { defaultValue: "Partner's" })} {a.partnerPlanet}
                     </span>
-                    <span className="text-[10px] text-mystic-500 ml-auto">orb {a.orb.toFixed(1)}°</span>
+                    <span className="text-meta text-mystic-400 ml-auto">orb {a.orb.toFixed(1)}°</span>
                   </div>
-                  <p className="text-sm text-mystic-300 leading-relaxed">{a.interpretation}</p>
+                  <ReadingProse text={a.interpretation} lede={false} />
                 </Card>
               );
             })}
@@ -384,7 +384,7 @@ export function PartnerCompatPage() {
         {/* Elemental blend */}
         {result.synastry && (
           <Card padding="lg">
-            <h3 className="font-medium text-cosmic-blue mb-3">
+            <h3 className="heading-display-md text-mystic-100 mb-3">
               {t('compat.elementalLabel', { defaultValue: 'Elemental blend' })}
             </h3>
             <div className="space-y-2">
@@ -393,11 +393,11 @@ export function PartnerCompatPage() {
                 const col = el === 'fire' ? 'bg-coral' : el === 'earth' ? 'bg-teal' : el === 'air' ? 'bg-cosmic-blue' : 'bg-cosmic-violet';
                 return (
                   <div key={el} className="flex items-center gap-3">
-                    <span className="text-xs capitalize text-mystic-400 w-14">{el}</span>
+                    <span className="text-meta capitalize text-mystic-400 w-14">{el}</span>
                     <div className="flex-1 h-2 bg-mystic-800 rounded-full overflow-hidden">
                       <div className={`h-full ${col}`} style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="text-xs text-mystic-400 w-10 text-right">{pct}%</span>
+                    <span className="text-meta text-mystic-400 w-10 text-right">{pct}%</span>
                   </div>
                 );
               })}
@@ -413,10 +413,10 @@ export function PartnerCompatPage() {
           if (insights.length === 0) return null;
           return (
             <Card padding="lg" className="border-pink-400/20">
-              <h3 className="font-medium text-pink-400 mb-3">
+              <h3 className="heading-display-md text-mystic-100 mb-3">
                 {t('compat.compositeLabel', { defaultValue: 'Your relationship as a third entity' })}
               </h3>
-              <p className="text-xs text-mystic-400 mb-3 italic">
+              <p className="reading-copy mb-3">
                 {t('compat.compositeIntro', {
                   defaultValue:
                     'A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.',
@@ -424,9 +424,9 @@ export function PartnerCompatPage() {
               </p>
               <div className="space-y-3">
                 {insights.map((ins, i) => (
-                  <div key={i} className="text-xs">
-                    <p className="text-pink-400 font-medium mb-0.5">{ins.pairing}</p>
-                    <p className="text-mystic-300 leading-relaxed">{ins.reading}</p>
+                  <div key={i}>
+                    <p className="text-ui text-pink-400 font-medium mb-0.5">{ins.pairing}</p>
+                    <ReadingProse text={ins.reading} lede={false} />
                   </div>
                 ))}
               </div>
@@ -438,12 +438,12 @@ export function PartnerCompatPage() {
         {result.mbti && (
           <Card padding="lg">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-cosmic-blue">
+              <h3 className="heading-display-md text-mystic-100">
                 {t('compat.mbtiLabel', { defaultValue: 'MBTI Fit' })}
               </h3>
               <span className="text-lg font-display text-gold">{result.mbti.score}%</span>
             </div>
-            <p className="text-mystic-300 text-sm leading-relaxed">{result.mbti.note}</p>
+            <ReadingProse text={result.mbti.note} lede={false} />
           </Card>
         )}
 

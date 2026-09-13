@@ -103,21 +103,23 @@ export function CelestialEducationSection({ onPickLifeArea }: Props) {
           <div className="flex items-start gap-3">
             <Compass className="w-5 h-5 text-gold flex-shrink-0 mt-1" aria-hidden />
             <div className="space-y-2">
-              <h2 className="text-sm uppercase tracking-wider text-gold/90 font-medium">
+              <h2 className="font-display-eyebrow text-gold/90">
                 {t('celestial.about.eyebrow', { defaultValue: 'Astrocartography' })}
               </h2>
-              <p className="text-sm text-mystic-200 leading-relaxed">
-                {t('celestial.about.body', {
+              <div className="reading-copy">
+                <p>
+                  {t('celestial.about.body', {
                   defaultValue:
                     'Astrocartography maps where every planet was rising, setting, or at its highest point at the exact moment you were born — and projects those positions across the world. The result: a personal atlas of places that resonate with different parts of you. Some cities make your career line bright. Others fall on your love line, your healing line, your spotlight line. Move there and the energy follows.',
                 })}
-              </p>
-              <p className="text-xs text-mystic-400 leading-relaxed pt-1">
-                {t('celestial.about.tradition', {
-                  defaultValue:
-                    'Developed in the 1970s by astrologer Jim Lewis, astrocartography is now used by relocation consultants, traveler-astrologers, and curious humans planning their next chapter.',
-                })}
-              </p>
+                </p>
+                <p>
+                  {t('celestial.about.tradition', {
+                    defaultValue:
+                      'Developed in the 1970s by astrologer Jim Lewis, astrocartography is now used by relocation consultants, traveler-astrologers, and curious humans planning their next chapter.',
+                  })}
+                </p>
+              </div>
             </div>
           </div>
         </Card>
@@ -131,10 +133,10 @@ export function CelestialEducationSection({ onPickLifeArea }: Props) {
         className="space-y-3"
       >
         <div className="space-y-1">
-          <h2 className="text-sm uppercase tracking-wider text-gold/90 font-medium">
+          <h2 className="heading-display-md text-mystic-100">
             {t('celestial.use.eyebrow', { defaultValue: 'What you can divine' })}
           </h2>
-          <p className="text-xs text-mystic-400 leading-relaxed">
+          <p className="text-ui text-mystic-400">
             {t('celestial.use.subtitle', {
               defaultValue: 'Tap a theme to filter the map for that intent.',
             })}
@@ -157,10 +159,10 @@ export function CelestialEducationSection({ onPickLifeArea }: Props) {
                   <useCase.icon className="w-4 h-4 text-gold" aria-hidden />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-mystic-100 mb-1">
+                  <h3 className="heading-display-md text-mystic-100 mb-1">
                     {t(useCase.titleKey, { defaultValue: useCase.titleDefault })}
                   </h3>
-                  <p className="text-xs text-mystic-300 leading-relaxed">
+                  <p className="reading-copy">
                     {t(useCase.bodyKey, { defaultValue: useCase.bodyDefault })}
                   </p>
                 </div>
@@ -222,7 +224,7 @@ export function CelestialAnglesSection() {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="space-y-3"
     >
-      <h2 className="text-sm uppercase tracking-wider text-gold/90 font-medium text-center">
+      <h2 className="heading-display-md text-mystic-100">
         {t('celestial.angles.title', { defaultValue: 'How to read the lines' })}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -234,10 +236,10 @@ export function CelestialAnglesSection() {
             <div className="flex items-start gap-3">
               <angle.icon className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" aria-hidden />
               <div>
-                <p className="text-xs uppercase tracking-wider text-gold/80 font-medium mb-1">
+                <p className="font-display-eyebrow text-gold/80 mb-1">
                   {t(angle.labelKey, { defaultValue: angle.labelDefault })}
                 </p>
-                <p className="text-xs text-mystic-300 leading-relaxed">
+                <p className="reading-copy">
                   {t(angle.bodyKey, { defaultValue: angle.bodyDefault })}
                 </p>
               </div>

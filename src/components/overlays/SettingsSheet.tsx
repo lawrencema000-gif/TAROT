@@ -43,6 +43,7 @@ import { useGeocode } from '../../hooks/useAstrology';
 import { LanguagePicker } from '../i18n/LanguagePicker';
 import { useT } from '../../i18n/useT';
 import { getLocale, type SupportedLocale } from '../../i18n/config';
+import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId } from '../../utils/readingScale';
 
 type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'language' | 'help' | 'terms' | 'privacy' | 'deleteConfirm';
 
@@ -121,6 +122,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const [savingBackground, setSavingBackground] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
+  const [readingScale, setReadingScaleState] = useState<ReadingScaleId>(() => getReadingScale());
   const [isSaving, setIsSaving] = useState(false);
   const [versionTapCount, setVersionTapCount] = useState(0);
 
@@ -678,6 +680,46 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Reading size. `--font-scale` had been plumbed through the CSS since
+            the design-system pass and nothing ever set it — in an app whose
+            core activity is reading, there was no way to make the text
+            bigger. Three steps a thumb can hit; the sample line below the
+            control shows the effect live, because a preference you cannot
+            see change is a preference nobody trusts. */}
+        <div className="mt-8">
+          <p className="font-display-eyebrow mb-3">
+            {tAppSettings('settings.readingSize.label', { defaultValue: 'Reading size' })}
+          </p>
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={tAppSettings('settings.readingSize.label', { defaultValue: 'Reading size' })}>
+            {READING_SCALES.map((scale) => {
+              const selected = readingScale === scale.id;
+              return (
+                <button
+                  key={scale.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => { setReadingScale(scale.id); setReadingScaleState(scale.id); }}
+                  className={`px-3 py-3 rounded-xl border-2 text-ui font-medium transition-colors duration-fast ${
+                    selected
+                      ? 'border-gold bg-gold/10 text-gold'
+                      : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'
+                  }`}
+                >
+                  {tAppSettings(`settings.readingSize.${scale.id}`, {
+                    defaultValue: scale.id === 'smaller' ? 'Smaller' : scale.id === 'larger' ? 'Larger' : 'Default',
+                  })}
+                </button>
+              );
+            })}
+          </div>
+          <p className="reading-copy mt-4">
+            {tAppSettings('settings.readingSize.sample', {
+              defaultValue: 'The Tower, reversed. Not the collapse itself — the moment after, when the dust settles and you can see what was load-bearing.',
+            })}
+          </p>
         </div>
       </Sheet>
     );

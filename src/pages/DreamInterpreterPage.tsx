@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, toast, PageHeader, Section, Disclosure, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -128,14 +128,14 @@ export function DreamInterpreterPage() {
         />
 
         <Card variant="glow" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+          <p className="reading-copy mb-4">
             {t('dream.intro', {
               defaultValue:
                 "Describe your dream in as much detail as you remember. Don't worry about order or clarity — the mind works in symbols. We'll read it through a Jungian lens and offer you the core theme, the key symbols, and questions to sit with. Dreams don't have single meanings; they have invitations.",
             })}
           </p>
 
-          <label className="block text-sm text-mystic-400 mb-2">
+          <label className="block text-ui font-medium text-mystic-300 mb-2">
             {t('dream.label', { defaultValue: 'Tell me about your dream' })}
           </label>
           <textarea
@@ -143,13 +143,13 @@ export function DreamInterpreterPage() {
             onChange={(e) => setDreamText(e.target.value)}
             rows={8}
             disabled={stage === 'loading'}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 disabled:opacity-50"
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 disabled:opacity-50"
             placeholder={t('dream.placeholder', {
               defaultValue:
                 "I was standing by a dark ocean and couldn't find my way home. A bird flew overhead carrying something in its beak...",
             }) as string}
           />
-          <p className="text-xs text-mystic-500 mt-2 italic">
+          <p className="reading-caption mt-2 italic">
             {t('dream.privacy', {
               defaultValue:
                 'Your dream text is sent to the interpretation service and is not stored server-side. If offline, we fall back to a local symbol dictionary.',
@@ -233,40 +233,40 @@ function AiResultView({
 
       {/* Dream quote — shows users the text we read */}
       <Card padding="md" className="bg-mystic-800/40">
-        <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1">
+        <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">
           {t('dream.yourDreamLabel', { defaultValue: 'Your dream' })}
         </p>
-        <p className="text-xs text-mystic-400 italic leading-relaxed">"{dreamPreview}"</p>
+        <p className="text-ui text-mystic-300 italic">"{dreamPreview}"</p>
       </Card>
 
       {/* Core theme */}
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-2 mb-3">
           <Moon className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-xl text-mystic-100">
+          <h2 className="heading-display-lg text-mystic-100">
             {t('dream.coreThemeLabel', { defaultValue: 'Core theme' })}
           </h2>
         </div>
-        <p className="text-mystic-300 text-sm leading-relaxed mb-3">{reading.coreTheme}</p>
+        <ReadingProse text={reading.coreTheme} className="mb-3" />
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30">
-          <span className="text-[10px] uppercase tracking-widest text-cosmic-violetLight">
+          <span className="text-meta uppercase tracking-widest text-cosmic-violetLight">
             {t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}
           </span>
-          <span className="text-xs text-mystic-200">{reading.emotionalTone}</span>
+          <span className="text-ui text-mystic-200">{reading.emotionalTone}</span>
         </div>
       </Card>
 
       {/* Archetypes */}
       {reading.archetypes.length > 0 && (
         <Card padding="lg">
-          <h3 className="font-medium text-cosmic-blue mb-3">
+          <h3 className="heading-display-md text-mystic-100 mb-3">
             {t('dream.archetypesLabel', { defaultValue: 'Archetypes at work' })}
           </h3>
           <div className="flex flex-wrap gap-2">
             {reading.archetypes.map((arc) => (
               <span
                 key={arc}
-                className="px-3 py-1.5 rounded-full bg-cosmic-blue/10 border border-cosmic-blue/30 text-xs text-cosmic-blue font-medium"
+                className="px-3 py-1.5 rounded-full bg-cosmic-blue/10 border border-cosmic-blue/30 text-ui text-cosmic-blue font-medium"
               >
                 {arc}
               </span>
@@ -285,13 +285,13 @@ function AiResultView({
         >
           {reading.symbols.map((sym, i) => (
             <Card key={i} padding="lg">
-              <h4 className="font-medium text-gold mb-2">{sym.text}</h4>
-              <p className="text-mystic-300 text-sm leading-relaxed mb-3">{sym.meaning}</p>
+              <h4 className="heading-display-md text-mystic-100 mb-2">{sym.text}</h4>
+              <p className="reading-copy mb-3">{sym.meaning}</p>
               <div className="pt-3 border-t border-mystic-800/50">
-                <p className="text-xs text-mystic-500 mb-1 uppercase tracking-wider">
+                <p className="text-meta text-mystic-400 mb-1 uppercase tracking-wider">
                   {t('dream.reflectionLabel', { defaultValue: 'Hold this question' })}
                 </p>
-                <p className="text-mystic-200 italic text-sm">"{sym.reflection}"</p>
+                <p className="reading-quote my-0">{sym.reflection}</p>
               </div>
             </Card>
           ))}
@@ -302,36 +302,36 @@ function AiResultView({
       <Card padding="lg" className="bg-gradient-to-br from-pink-500/5 to-mystic-900 border-pink-500/20">
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle className="w-4 h-4 text-pink-400" />
-          <h3 className="font-medium text-pink-400">
+          <h3 className="heading-display-md text-mystic-100">
             {t('dream.shadowPromptLabel', { defaultValue: 'Shadow question' })}
           </h3>
         </div>
-        <p className="text-mystic-200 italic leading-relaxed">"{reading.shadowPrompt}"</p>
+        <p className="reading-quote my-0">{reading.shadowPrompt}</p>
       </Card>
 
       {/* Integration suggestion */}
       <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-        <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
+        <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
           <Feather className="w-4 h-4" />
           {t('dream.integrationLabel', { defaultValue: 'Integration practice' })}
         </h3>
-        <p className="text-mystic-200 text-sm leading-relaxed">{reading.integrationSuggestion}</p>
+        <p className="reading-copy">{reading.integrationSuggestion}</p>
       </Card>
 
       {/* Compensatory move — Jung's principle: dreams compensate for what
           the waking attitude is missing. */}
       {reading.compensatoryMove && (
         <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
-          <h3 className="font-medium text-cosmic-violetLight mb-2 flex items-center gap-2">
+          <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
             <Eye className="w-4 h-4" />
             {t('dream.compensatoryLabel', { defaultValue: 'What your waking self is missing' })}
           </h3>
-          <p className="text-xs text-mystic-500 mb-2 italic">
+          <p className="text-meta text-mystic-400 mb-2 italic">
             {t('dream.compensatoryHint', {
               defaultValue: 'Jung: dreams compensate for the conscious attitude. This is what the dream offers that you don\'t already have.',
             })}
           </p>
-          <p className="text-mystic-200 text-sm leading-relaxed">{reading.compensatoryMove}</p>
+          <p className="reading-copy">{reading.compensatoryMove}</p>
         </Card>
       )}
 
@@ -373,17 +373,19 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.colors.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Palette className="w-3.5 h-3.5 text-cosmic-violetLight" />
-            <h4 className="text-xs uppercase tracking-widest text-cosmic-violetLight">
+            <Palette className="w-4 h-4 text-cosmic-violetLight" />
+            <h4 className="heading-display-md text-mystic-200">
               {t('dream.colorsLabel', { defaultValue: 'Colours present' }) as string}
             </h4>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {matches.colors.map((c, i) => (
-              <div key={i} className="text-xs">
-                <p className="font-medium text-mystic-100 mb-0.5">{c.color.color}</p>
-                <p className="text-mystic-300 leading-relaxed">{c.color.meaning}</p>
-                <p className="text-pink-400 italic mt-1">Shadow: {c.color.shadow}</p>
+              <div key={i}>
+                <p className="text-ui font-medium text-mystic-100 mb-0.5">{c.color.color}</p>
+                <div className="reading-copy">
+                  <p>{c.color.meaning}</p>
+                  <p><span className="text-pink-400 font-medium">Shadow:</span> {c.color.shadow}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -393,16 +395,16 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.numbers.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Hash className="w-3.5 h-3.5 text-gold" />
-            <h4 className="text-xs uppercase tracking-widest text-gold">
+            <Hash className="w-4 h-4 text-gold" />
+            <h4 className="heading-display-md text-mystic-200">
               {t('dream.numbersLabel', { defaultValue: 'Numbers present' }) as string}
             </h4>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {matches.numbers.map((n, i) => (
-              <div key={i} className="text-xs">
-                <p className="font-medium text-mystic-100 mb-0.5">{n.number}</p>
-                <p className="text-mystic-300 leading-relaxed">{n.meaning}</p>
+              <div key={i}>
+                <p className="text-ui font-medium text-mystic-100 mb-0.5">{n.number}</p>
+                <p className="reading-copy">{n.meaning}</p>
               </div>
             ))}
           </div>
@@ -412,16 +414,16 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.directions.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Compass className="w-3.5 h-3.5 text-cosmic-blue" />
-            <h4 className="text-xs uppercase tracking-widest text-cosmic-blue">
+            <Compass className="w-4 h-4 text-cosmic-blue" />
+            <h4 className="heading-display-md text-mystic-200">
               {t('dream.directionsLabel', { defaultValue: 'Directions of motion' }) as string}
             </h4>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {matches.directions.map((d, i) => (
-              <div key={i} className="text-xs">
-                <p className="font-medium text-mystic-100 mb-0.5">{d.entry.direction}</p>
-                <p className="text-mystic-300 leading-relaxed">{d.entry.meaning}</p>
+              <div key={i}>
+                <p className="text-ui font-medium text-mystic-100 mb-0.5">{d.entry.direction}</p>
+                <p className="reading-copy">{d.entry.meaning}</p>
               </div>
             ))}
           </div>
@@ -447,11 +449,11 @@ function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => 
         open={openSection === 'cultures'}
         onOpenChange={(o) => setOpenSection(o ? 'cultures' : null)}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {CULTURAL_DREAM_LORE.map((c, i) => (
-            <div key={i} className="text-xs">
-              <p className="font-medium text-gold mb-0.5">{c.culture}</p>
-              <p className="text-mystic-300 leading-relaxed">{c.flavour}</p>
+            <div key={i}>
+              <p className="text-ui font-medium text-mystic-100 mb-0.5">{c.culture}</p>
+              <p className="reading-copy">{c.flavour}</p>
             </div>
           ))}
         </div>
@@ -463,16 +465,18 @@ function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => 
         open={openSection === 'lucid'}
         onOpenChange={(o) => setOpenSection(o ? 'lucid' : null)}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {LUCID_TECHNIQUES.map((tech, i) => (
-            <div key={i} className="text-xs">
-              <p className="font-medium text-cosmic-blue mb-0.5">{tech.name} ({tech.acronym})</p>
-              <p className="text-mystic-300 leading-relaxed mb-1.5">{tech.description}</p>
-              <ol className="list-decimal list-inside text-mystic-400 leading-relaxed space-y-0.5">
-                {tech.steps.map((s, j) => (
-                  <li key={j}>{s}</li>
-                ))}
-              </ol>
+            <div key={i}>
+              <p className="text-ui font-medium text-mystic-100 mb-0.5">{tech.name} ({tech.acronym})</p>
+              <div className="reading-copy">
+                <p>{tech.description}</p>
+                <ol className="list-decimal list-inside space-y-1 mt-4">
+                  {tech.steps.map((s, j) => (
+                    <li key={j}>{s}</li>
+                  ))}
+                </ol>
+              </div>
             </div>
           ))}
         </div>
@@ -484,12 +488,14 @@ function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => 
         open={openSection === 'nightmares'}
         onOpenChange={(o) => setOpenSection(o ? 'nightmares' : null)}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {NIGHTMARE_CATEGORIES.map((n, i) => (
-            <div key={i} className="text-xs">
-              <p className="font-medium text-pink-400 mb-0.5">{n.category}</p>
-              <p className="text-mystic-300 leading-relaxed mb-1.5">{n.description}</p>
-              <p className="text-mystic-200 italic leading-relaxed">{n.approach}</p>
+            <div key={i}>
+              <p className="text-ui font-medium text-mystic-100 mb-0.5">{n.category}</p>
+              <div className="reading-copy">
+                <p>{n.description}</p>
+                <p className="italic">{n.approach}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -541,19 +547,19 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-2 mb-3">
           <Moon className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-xl text-mystic-100">
+          <h2 className="heading-display-lg text-mystic-100">
             {t('dream.yourDream', { defaultValue: 'What the symbols say' })}
           </h2>
         </div>
         {reading.hasMatch ? (
           <p
-            className="text-mystic-300 text-sm leading-relaxed"
+            className="reading-lede drop-cap"
             dangerouslySetInnerHTML={{
               __html: reading.coreTheme.replace(/\*\*(.+?)\*\*/g, '<span class="text-gold font-medium">$1</span>'),
             }}
           />
         ) : (
-          <p className="text-mystic-300 text-sm leading-relaxed italic">
+          <p className="reading-copy italic">
             {t('dream.noMatch', {
               defaultValue:
                 'No immediately common archetypes surfaced in this dream text — but that does not mean it is silent. Often the most personal dreams use symbols unique to your life. Sit with the strongest image from the dream. Ask: what is it the opposite of? What in my life does it rhyme with?',
@@ -571,13 +577,13 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
         >
           {reading.matchedSymbols.map((match, i) => (
             <Card key={i} padding="lg">
-              <h4 className="font-medium text-gold mb-2 capitalize">{match.keyword}</h4>
-              <p className="text-mystic-300 text-sm leading-relaxed mb-3">{match.symbol.meaning}</p>
+              <h4 className="heading-display-md text-mystic-100 mb-2 capitalize">{match.keyword}</h4>
+              <p className="reading-copy mb-3">{match.symbol.meaning}</p>
               <div className="pt-3 border-t border-mystic-800/50">
-                <p className="text-xs text-mystic-500 mb-1 uppercase tracking-wider">
+                <p className="text-meta text-mystic-400 mb-1 uppercase tracking-wider">
                   {t('dream.reflectionLabel', { defaultValue: 'Hold this question' })}
                 </p>
-                <p className="text-mystic-200 italic text-sm">"{match.symbol.reflection}"</p>
+                <p className="reading-quote my-0">{match.symbol.reflection}</p>
               </div>
             </Card>
           ))}
@@ -585,10 +591,10 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
       )}
 
       <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-        <h3 className="font-medium text-gold mb-3">
+        <h3 className="heading-display-md text-mystic-100 mb-3">
           {t('dream.practiceLabel', { defaultValue: 'Dream practice' })}
         </h3>
-        <p className="text-mystic-300 text-sm leading-relaxed">
+        <p className="reading-copy">
           {t('dream.practiceBody', {
             defaultValue:
               'Keep a notebook by your bed. Record dreams the moment you wake, before they fade. Over time, recurring symbols reveal the language your unconscious uses with you.',

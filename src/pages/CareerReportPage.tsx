@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Lock, Moon, Gift, Share2, CheckCircle2, AlertCircle, TrendingUp, Users, Eye, Calendar, Quote, Crown } from 'lucide-react';
-import { Card, Button, toast, PageHeader, Section, EmptyState, ResultLayout } from '../components/ui';
+import { Briefcase, Lock, Moon, Gift, Share2, CheckCircle2, AlertCircle, Crown } from 'lucide-react';
+import { Card, Button, toast, PageHeader, Section, EmptyState, ResultLayout, ReadingProse } from '../components/ui';
 import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -144,23 +144,23 @@ export function CareerReportPage() {
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
             <Lock className="w-6 h-6 text-gold" />
           </div>
-          <h2 className="heading-display-lg text-gold-foil mb-2">
+          <h2 className="heading-display-lg text-mystic-100 mb-2">
             {archetype.name}
           </h2>
           <div className="flex justify-center mb-3 text-gold/60">
             <OrnateDivider width={120} />
           </div>
-          <p className="text-sm text-mystic-300 italic mb-4">
+          <p className="text-ui text-mystic-200 italic mb-4">
             {archetype.tagline}
           </p>
-          <p className="text-xs text-mystic-500 leading-relaxed max-w-xs mx-auto mb-5">
+          <p className="text-ui text-mystic-300 text-left max-w-xs mx-auto mb-5">
             {t('careerReport.locked.body', {
               defaultValue:
                 'A ~900-word coaching-grade report tailored to your type — best-fit roles, drains, collaboration patterns, blind spots, and a first-90-days plan.',
             })}
           </p>
 
-          <ul className="text-xs text-mystic-400 text-left space-y-2 mb-5 max-w-[260px] mx-auto">
+          <ul className="text-ui text-mystic-300 text-left space-y-2 mb-5 max-w-[260px] mx-auto">
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-gold mt-0.5 flex-shrink-0" />
               {t('careerReport.locked.feat1', { defaultValue: '10 best-fit roles across industries' })}
@@ -215,13 +215,13 @@ export function CareerReportPage() {
             </Button>
           ) : (
             <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-xs text-mystic-300 mb-2">
+              <p className="text-ui text-mystic-200 mb-2">
                 {t('careerReport.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
                   n: CAREER_REPORT_COST_MOONSTONES,
                 })}
               </p>
-              <p className="text-[11px] text-mystic-500 mb-3">
+              <p className="text-meta text-mystic-400 mb-3">
                 {t('careerReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
                 {' · '}
                 {t('careerReport.earnHint', {
@@ -289,16 +289,11 @@ export function CareerReportPage() {
       <Section
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="flex items-center gap-2 text-sm font-medium text-gold tracking-wide">
-            <TrendingUp className="w-4 h-4" />
-            {t('careerReport.bestFit', { defaultValue: 'Best-fit roles' })}
-          </span>
-        }
+        title={t('careerReport.bestFit', { defaultValue: 'Best-fit roles' })}
       >
         <div className="grid grid-cols-2 gap-2">
           {archetype.bestFitRoles.map((role, i) => (
-            <div key={i} className="text-xs text-mystic-200 bg-mystic-800/40 rounded-lg px-3 py-2">
+            <div key={i} className="text-ui text-mystic-100 bg-mystic-800/40 rounded-lg px-3 py-2">
               {role}
             </div>
           ))}
@@ -308,16 +303,11 @@ export function CareerReportPage() {
       <Section
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="flex items-center gap-2 text-sm font-medium text-pink-400 tracking-wide">
-            <AlertCircle className="w-4 h-4" />
-            {t('careerReport.drains', { defaultValue: 'Environments that drain you' })}
-          </span>
-        }
+        title={t('careerReport.drains', { defaultValue: 'Environments that drain you' })}
       >
-        <ul className="space-y-2">
+        <ul className="reading-copy space-y-2">
           {archetype.environmentsThatDrain.map((item, i) => (
-            <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">
+            <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-mystic-400">
               {item}
             </li>
           ))}
@@ -327,31 +317,19 @@ export function CareerReportPage() {
       <Section
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="flex items-center gap-2 text-sm font-medium text-cosmic-blue tracking-wide">
-            <Users className="w-4 h-4" />
-            {t('careerReport.collaboration', { defaultValue: 'Collaboration pattern' })}
-          </span>
-        }
+        title={t('careerReport.collaboration', { defaultValue: 'Collaboration pattern' })}
       >
-        <p className="text-sm text-mystic-300 leading-relaxed">
-          {archetype.collaborationPattern}
-        </p>
+        <ReadingProse text={archetype.collaborationPattern} lede={false} />
       </Section>
 
       <Section
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="flex items-center gap-2 text-sm font-medium text-cosmic-violetLight tracking-wide">
-            <Eye className="w-4 h-4" />
-            {t('careerReport.blindSpots', { defaultValue: 'Blind spots' })}
-          </span>
-        }
+        title={t('careerReport.blindSpots', { defaultValue: 'Blind spots' })}
       >
-        <ul className="space-y-2">
+        <ul className="reading-copy space-y-2">
           {archetype.blindSpots.map((item, i) => (
-            <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-cosmic-violetLight">
+            <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-mystic-400">
               {item}
             </li>
           ))}
@@ -359,22 +337,19 @@ export function CareerReportPage() {
       </Section>
 
       <Card padding="lg" className="bg-gradient-to-br from-cosmic-blue/5 to-mystic-900/80 border-cosmic-blue/20">
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="w-4 h-4 text-cosmic-blue" />
-          <h3 className="text-sm font-medium text-cosmic-blue tracking-wide">
-            {t('careerReport.ninetyDays', { defaultValue: 'First 90 days' })}
-          </h3>
-        </div>
+        <h3 className="heading-display-md text-mystic-100 mb-3">
+          {t('careerReport.ninetyDays', { defaultValue: 'First 90 days' })}
+        </h3>
         <div className="space-y-4">
           {archetype.firstNinetyDays.map((phase) => (
             <div key={phase.month} className="pl-4 border-l-2 border-cosmic-blue/30">
-              <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1">
+              <p className="font-display-eyebrow mb-1">
                 {t('careerReport.monthLabel', { defaultValue: 'Month {{n}}', n: phase.month })}
               </p>
-              <p className="text-sm font-medium text-mystic-100 mb-2">{phase.focus}</p>
-              <ul className="space-y-1.5">
+              <p className="text-body font-medium text-mystic-100 mb-2">{phase.focus}</p>
+              <ul className="reading-copy space-y-1.5">
                 {phase.actions.map((action, i) => (
-                  <li key={i} className="text-xs text-mystic-400 leading-relaxed">
+                  <li key={i}>
                     {action}
                   </li>
                 ))}
@@ -387,26 +362,25 @@ export function CareerReportPage() {
       <Section
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="flex items-center gap-2 text-sm font-medium text-gold tracking-wide">
-            <Quote className="w-4 h-4" />
-            {t('careerReport.reflection', { defaultValue: 'Sit with these questions' })}
-          </span>
-        }
+        title={t('careerReport.reflection', { defaultValue: 'Sit with these questions' })}
       >
-        <ul className="space-y-3">
+        <ul className="reading-copy space-y-3">
           {archetype.reflectionQuestions.map((q, i) => (
-            <li key={i} className="text-sm text-mystic-300 italic leading-relaxed">
+            <li key={i} className="italic">
               {i + 1}. {q}
             </li>
           ))}
         </ul>
       </Section>
 
-      <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30 text-center">
-        <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-2" />
-        <p className="text-sm text-mystic-200 italic leading-relaxed">
-          "{archetype.affirmation}"
+      {/* The affirmation is the report's one pull-quote. It used to be a
+          14px italic line centred in a card, which wraps to three lines on
+          a phone; .reading-quote gives it the serif, the gold rule and a
+          left edge instead of quote marks. */}
+      <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30">
+        <MysticalStar size={20} halo={false} className="block text-gold mb-2" />
+        <p className="reading-quote my-0">
+          {archetype.affirmation}
         </p>
       </Card>
     </ResultLayout>

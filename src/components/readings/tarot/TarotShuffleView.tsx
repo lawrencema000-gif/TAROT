@@ -136,7 +136,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }
         </div>
 
         <div className="space-y-2">
-          <h2 className="font-display-hero text-2xl text-gold-foil">
+          <h2 className="font-display-hero text-2xl text-mystic-100">
             {isShuffling ? t('readings.shuffleView.inProgress') : t('readings.shuffleView.clearMind')}
           </h2>
           <p className="text-mystic-300 text-sm">

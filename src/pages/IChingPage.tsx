@@ -106,7 +106,7 @@ export function IChingPage() {
   if (stage === 'casting') {
     return (
       <div className="space-y-8 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="heading-display-lg text-gold-foil text-center">
+        <h2 className="heading-display-lg text-mystic-100 text-center">
           {t('iching.casting', { defaultValue: 'Casting the coins…' })}
         </h2>
         <div className="text-gold/60">

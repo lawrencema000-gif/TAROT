@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
-import { Card, Button, toast, PageHeader, EmptyState, Disclosure } from '../components/ui';
+import { Card, Button, toast, PageHeader, EmptyState, Disclosure, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -181,18 +181,18 @@ export function YearAheadReportPage() {
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
             <Lock className="w-6 h-6 text-gold" />
           </div>
-          <h2 className="heading-display-lg text-gold-foil mb-2">
+          <h2 className="heading-display-lg text-mystic-100 mb-2">
             {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
           </h2>
           <div className="flex justify-center mb-3 text-gold/60">
             <OrnateDivider width={120} />
           </div>
-          <p className="text-sm text-mystic-300 italic mb-4">
+          <p className="text-ui text-mystic-200 italic mb-4">
             {t('yearAhead.cardSub', {
               defaultValue: 'A month-by-month map of the biggest transits to your natal chart.',
             })}
           </p>
-          <ul className="text-xs text-mystic-400 text-left space-y-2 mb-5 max-w-[280px] mx-auto">
+          <ul className="text-ui text-mystic-300 text-left space-y-2 mb-5 max-w-[280px] mx-auto">
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-gold mt-0.5 flex-shrink-0" />
               {t('yearAhead.locked.feat1', { defaultValue: '12 monthly theme briefings' })}
@@ -247,13 +247,13 @@ export function YearAheadReportPage() {
             </Button>
           ) : (
             <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-xs text-mystic-300 mb-2">
+              <p className="text-ui text-mystic-200 mb-2">
                 {t('yearAhead.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
                   n: YEAR_AHEAD_COST,
                 })}
               </p>
-              <p className="text-[11px] text-mystic-500 mb-3">
+              <p className="text-meta text-mystic-400 mb-3">
                 {t('yearAhead.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
                 {' · '}
                 {t('yearAhead.earnHint', {
@@ -304,7 +304,7 @@ export function YearAheadReportPage() {
     return (
       <div className="py-12 text-center">
         <div className="loading-constellation mx-auto mb-3" />
-        <p className="text-mystic-400 text-sm">
+        <p className="text-ui text-mystic-300">
           {t('yearAhead.computing', { defaultValue: 'Mapping your year…' })}
         </p>
       </div>
@@ -314,7 +314,7 @@ export function YearAheadReportPage() {
   if (error === 'natal-missing') {
     return (
       <Card padding="lg" variant="glow">
-        <p className="text-sm text-mystic-400">
+        <p className="text-ui text-mystic-300">
           {t('yearAhead.errorNatalMissing', {
             defaultValue: 'We could not find your computed natal chart. Please re-enter your birth data in Profile.',
           })}
@@ -325,7 +325,7 @@ export function YearAheadReportPage() {
   if (error) {
     return (
       <Card padding="lg">
-        <p className="text-sm text-mystic-400">
+        <p className="text-ui text-mystic-300">
           {t('yearAhead.errorGeneric', { defaultValue: 'Could not load forecast. Try again in a moment.' })}
         </p>
         <Button variant="primary" onClick={loadData} className="mt-3">
@@ -345,13 +345,14 @@ export function YearAheadReportPage() {
       />
 
       <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-3">
           <Star className="w-4 h-4 text-gold" />
-          <p className="text-[10px] uppercase tracking-widest text-gold">
+          <p className="font-display-eyebrow">
             {t('yearAhead.overall', { defaultValue: 'Overall arc' })}
           </p>
         </div>
-        <p className="text-sm text-mystic-200 leading-relaxed">{data.summary}</p>
+        {/* The year's narrative is the opening of the report: lede + drop cap. */}
+        <ReadingProse text={data.summary} />
       </Card>
 
       {/* Twelve months used to be twelve identical cards, which is roughly
@@ -390,20 +391,18 @@ export function YearAheadReportPage() {
                   key={`${event.transitPlanet}-${event.natalPlanet}-${event.aspectType}-${i}`}
                   className={`p-3 rounded-xl border ${INTENSITY_COLORS[event.intensity]}`}
                 >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs font-medium tracking-wide">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 mb-2">
+                    <p className="text-ui font-medium tracking-wide">
                       {event.transitPlanet} {event.aspectType} {event.natalPlanet}
                     </p>
-                    <div className="flex items-center gap-1 text-[10px] text-mystic-500">
+                    <div className="flex items-center gap-1 text-meta text-mystic-400 shrink-0">
                       <Clock className="w-3 h-3" />
                       {event.startDate === event.endDate
                         ? event.startDate
                         : `${event.startDate} → ${event.endDate}`}
                     </div>
                   </div>
-                  <p className="text-xs text-mystic-300 leading-relaxed">
-                    {event.interpretation}
-                  </p>
+                  <ReadingProse text={event.interpretation} lede={false} />
                 </div>
               ))
             )}
@@ -411,7 +410,7 @@ export function YearAheadReportPage() {
         ))}
       </div>
 
-      <p className="text-[10px] text-center text-mystic-600 italic">
+      <p className="text-caption text-mystic-500 italic">
         {t('yearAhead.disclaimer', {
           defaultValue:
             'Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.',

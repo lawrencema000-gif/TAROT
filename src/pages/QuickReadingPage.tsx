@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Share2, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -129,29 +129,29 @@ export function QuickReadingPage() {
         </div>
 
         <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-cosmic-violet/5">
-          <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-2">
+          <p className="font-display-eyebrow text-mystic-500 mb-2">
             {t('quickReading.yourQuestion', { defaultValue: 'Your question' })}
           </p>
-          <p className="text-sm text-mystic-200 italic leading-relaxed">"{question}"</p>
+          <p className="text-ui text-mystic-200 italic">"{question}"</p>
         </Card>
 
         {result.card && (
           <Card padding="lg" className="text-center bg-mystic-900/60 border-gold/20">
-            <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+            <p className="font-display-eyebrow mb-1">
               {t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}
             </p>
             <h2 className="font-display text-xl text-mystic-100 mb-2">{result.card.name}</h2>
-            <p className="text-xs text-mystic-400 italic leading-relaxed">{result.card.meaning}</p>
+            <p className="text-ui text-mystic-300 italic">{result.card.meaning}</p>
           </Card>
         )}
 
         <Card padding="lg">
           <div className="flex items-start gap-2 mb-2">
-            <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">{result.reading}</p>
+            <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-1.5" />
+            <ReadingProse text={result.reading} className="flex-1 min-w-0" />
           </div>
           {result.memoryUsed && (
-            <p className="text-[10px] text-mystic-500 mt-3 italic">
+            <p className="text-meta text-mystic-400 mt-3 italic">
               {t('quickReading.memoryUsed', { defaultValue: 'Drawing on what we\'ve talked about before.' })}
             </p>
           )}
@@ -168,7 +168,7 @@ export function QuickReadingPage() {
           </Button>
         </div>
 
-        <p className="text-[10px] text-center text-mystic-600 italic">
+        <p className="text-caption text-mystic-500 italic">
           {t('quickReading.disclaimer', {
             defaultValue: 'Readings are for self-reflection, not prediction or professional advice.',
           })}

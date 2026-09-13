@@ -100,7 +100,7 @@ export function BirthChart() {
     <div className="p-4 space-y-5">
       <Card variant="ornate" padding="md" interactive className="nebula-veil" onClick={() => setExpandedBigThree(!expandedBigThree)}>
         <div className="flex items-center justify-between">
-          <h3 className="font-display-hero text-xl text-gold-foil">{t('horoscope.birthChartView.yourBigThree')}</h3>
+          <h3 className="font-display-hero text-xl text-mystic-100">{t('horoscope.birthChartView.yourBigThree')}</h3>
           {expandedBigThree ? <ChevronUp className="w-4 h-4 text-mystic-400" /> : <ChevronDown className="w-4 h-4 text-mystic-400" />}
         </div>
         <div className="flex gap-3 mt-3">

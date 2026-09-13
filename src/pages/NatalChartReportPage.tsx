@@ -295,19 +295,19 @@ export function NatalChartReportPage() {
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
             <Lock className="w-6 h-6 text-gold" />
           </div>
-          <h2 className="heading-display-lg text-gold-foil mb-2">
+          <h2 className="heading-display-lg text-mystic-100 mb-2">
             {t('natalReport.cardTitle', { defaultValue: 'Your complete birth chart — printable' })}
           </h2>
           <div className="flex justify-center mb-3 text-gold/60">
             <OrnateDivider width={120} />
           </div>
-          <p className="text-sm text-mystic-300 italic mb-4">
+          <p className="text-ui text-mystic-200 italic mb-4">
             {t('natalReport.cardSub', {
               defaultValue: 'Every planet in its sign and house, every aspect, with interpretations.',
             })}
           </p>
 
-          <ul className="text-xs text-mystic-400 text-left space-y-2 mb-5 max-w-[280px] mx-auto">
+          <ul className="text-ui text-mystic-300 text-left space-y-2 mb-5 max-w-[280px] mx-auto">
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-gold mt-0.5 flex-shrink-0" />
               {t('natalReport.locked.feat1', { defaultValue: 'Big Three with deeper readings' })}
@@ -364,13 +364,13 @@ export function NatalChartReportPage() {
             </Button>
           ) : (
             <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-xs text-mystic-300 mb-2">
+              <p className="text-ui text-mystic-200 mb-2">
                 {t('natalReport.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
                   n: NATAL_COST,
                 })}
               </p>
-              <p className="text-[11px] text-mystic-500 mb-3">
+              <p className="text-meta text-mystic-400 mb-3">
                 {t('natalReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
                 {' · '}
                 {t('natalReport.earnHint', {
@@ -420,7 +420,7 @@ export function NatalChartReportPage() {
   if (!natal) {
     return (
       <Card padding="lg">
-        <p className="text-sm text-mystic-400">
+        <p className="text-ui text-mystic-300">
           {t('natalReport.errorChartMissing', {
             defaultValue: 'We could not find your computed natal chart. Please re-enter your birth data in Profile.',
           })}
@@ -455,7 +455,7 @@ export function NatalChartReportPage() {
       />
 
       <Card padding="lg" className="card-print">
-        <p className="text-[10px] uppercase tracking-widest text-gold mb-3 text-center">
+        <p className="font-display-eyebrow mb-3 text-center">
           {t('natalReport.wheelHeading', { defaultValue: 'Your chart wheel' })}
         </p>
         {(transitOverlayEnabled || chartVariantsEnabled) && (
@@ -470,7 +470,7 @@ export function NatalChartReportPage() {
                 <button
                   key={v}
                   onClick={() => setVariant(v)}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-all ${
+                  className={`px-3 py-1.5 text-meta rounded-full border transition-all ${
                     variant === v
                       ? v === 'natal'         ? 'bg-gold/20 text-gold border-gold/40'
                       : v === 'transits'      ? 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/40'
@@ -495,7 +495,7 @@ export function NatalChartReportPage() {
 
         {variant === 'synastry' && !partnerPlanets && (
           <div className="bg-mystic-800/40 rounded-xl p-3 mb-3 space-y-2">
-            <p className="text-[10px] uppercase tracking-widest text-pink-400">
+            <p className="font-display-eyebrow">
               {t('natalReport.synastryPrompt', { defaultValue: 'Partner birth data' })}
             </p>
             <input
@@ -504,21 +504,21 @@ export function NatalChartReportPage() {
               onChange={(e) => setPartnerName(e.target.value)}
               placeholder={t('natalReport.partnerNamePlaceholder', { defaultValue: 'Partner name (optional)' })}
               maxLength={80}
-              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-sm text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-pink-400/40"
+              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-pink-400/40"
             />
             <div className="flex gap-2">
               <input
                 type="date"
                 value={partnerBirthDate}
                 onChange={(e) => setPartnerBirthDate(e.target.value)}
-                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-sm text-mystic-100"
+                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-ui text-mystic-100"
               />
               <input
                 type="time"
                 value={partnerBirthTime}
                 onChange={(e) => setPartnerBirthTime(e.target.value)}
                 placeholder="optional"
-                className="bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-sm text-mystic-100"
+                className="bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-ui text-mystic-100"
               />
             </div>
             <Button
@@ -547,7 +547,7 @@ export function NatalChartReportPage() {
               aria-live="polite"
             >
               <div className="w-10 h-10 rounded-full border-2 border-gold/30 border-t-gold animate-spin mb-3" />
-              <p className="text-xs text-mystic-300 tracking-wide">
+              <p className="text-ui text-mystic-200 tracking-wide">
                 {t('natalReport.computing', { defaultValue: 'Computing your chart…' })}
               </p>
             </div>
@@ -556,17 +556,17 @@ export function NatalChartReportPage() {
 
         {variant === 'synastry' && partnerAspects.length > 0 && (
           <div className="mt-4 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1.5">
+            <p className="font-display-eyebrow mb-1.5">
               {t('natalReport.crossAspects', { defaultValue: 'Top cross-aspects' })}
             </p>
             {partnerAspects.slice(0, 8).map((a, i) => (
-              <div key={i} className="text-xs text-mystic-300 flex items-center justify-between">
+              <div key={i} className="text-ui text-mystic-200 flex items-center justify-between">
                 <span>
                   <span className="text-pink-400">{a.partnerPlanet}</span>
                   {' '}{a.type}{' '}
                   <span className="text-gold">{a.natalPlanet}</span>
                 </span>
-                <span className="text-[10px] text-mystic-500">orb {a.orb.toFixed(1)}°</span>
+                <span className="text-meta text-mystic-400">orb {a.orb.toFixed(1)}°</span>
               </div>
             ))}
           </div>
@@ -583,32 +583,32 @@ export function NatalChartReportPage() {
         <div className="grid grid-cols-3 gap-3 relative">
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.sun.sign} size={36} className="text-gold mb-1.5" framed />
-            <p className="text-[10px] uppercase text-mystic-500">Sun</p>
-            <p className="text-sm text-mystic-100 font-medium">{natal.bigThree.sun.sign}</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400">Sun</p>
+            <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.sun.sign}</p>
             {natal.bigThree.sun.house && (
-              <p className="text-[10px] text-mystic-500 mt-0.5">House {natal.bigThree.sun.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5">House {natal.bigThree.sun.house}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.moon.sign} size={36} className="text-cosmic-blue mb-1.5" framed />
-            <p className="text-[10px] uppercase text-mystic-500">Moon</p>
-            <p className="text-sm text-mystic-100 font-medium">{natal.bigThree.moon.sign}</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400">Moon</p>
+            <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.moon.sign}</p>
             {natal.bigThree.moon.house && (
-              <p className="text-[10px] text-mystic-500 mt-0.5">House {natal.bigThree.moon.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5">House {natal.bigThree.moon.house}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
             {natal.bigThree.rising ? (
               <>
                 <ZodiacGlyph sign={natal.bigThree.rising.sign} size={36} className="text-cosmic-rose mb-1.5" framed />
-                <p className="text-[10px] uppercase text-mystic-500">Rising</p>
-                <p className="text-sm text-mystic-100 font-medium">{natal.bigThree.rising.sign}</p>
+                <p className="text-meta uppercase tracking-wider text-mystic-400">Rising</p>
+                <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.rising.sign}</p>
               </>
             ) : (
               <>
                 <div className="text-3xl mb-1 text-mystic-600">—</div>
-                <p className="text-[10px] uppercase text-mystic-500">Rising</p>
-                <p className="text-[10px] text-mystic-500">needs birth time</p>
+                <p className="text-meta uppercase tracking-wider text-mystic-400">Rising</p>
+                <p className="text-meta text-mystic-400">needs birth time</p>
               </>
             )}
           </div>
@@ -619,40 +619,37 @@ export function NatalChartReportPage() {
         className="card-print"
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="text-sm font-medium text-gold tracking-wide">
-            {t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
-          </span>
-        }
+        title={t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {natal.planets.map((p) => {
             const meta = PLANET_ONE_LINERS[p.planet];
+            const houseTheme = p.house ? HOUSE_THEMES[p.house - 1] : undefined;
             return (
-              <div key={p.planet} className="border-b border-mystic-800/60 pb-3 last:border-b-0 last:pb-0">
-                <div className="flex items-center gap-2 mb-1.5">
+              <div key={p.planet} className="border-b border-mystic-800/60 pb-4 last:border-b-0 last:pb-0">
+                {/* One line: the planet as a heading, its position as meta.
+                    The reading below used to be three tiers of dimmer grey
+                    (11px italic blurb / 12px in-sign line / 11px house line);
+                    it is one paragraph on the body tier now. */}
+                <div className="flex items-center gap-2 mb-2">
                   <PlanetGlyph planet={p.planet} size={20} className="text-gold" />
-                  <span className="text-sm font-medium text-mystic-100">
+                  <span className="text-ui font-medium text-mystic-100">
                     {p.planet} in {p.sign}
                   </span>
                   <ZodiacGlyph sign={p.sign} size={18} className="text-mystic-300" />
-                  <span className="text-xs text-mystic-500">
+                  <span className="text-meta text-mystic-400">
                     {p.degree.toFixed(1)}°
                     {p.house ? ` · House ${p.house}` : ''}
                   </span>
                 </div>
-                {meta && (
-                  <>
-                    <p className="text-[11px] text-mystic-500 italic mb-1">{meta.sign}</p>
-                    <p className="text-xs text-mystic-300 leading-relaxed">
-                      {meta.inSign(p.sign)}
+                {(meta || houseTheme) && (
+                  <div className="reading-copy">
+                    <p>
+                      {meta && `${meta.sign} ${meta.inSign(p.sign)}`}
+                      {meta && houseTheme ? ' ' : ''}
+                      {houseTheme && `In your house of ${houseTheme}.`}
                     </p>
-                  </>
-                )}
-                {p.house && HOUSE_THEMES[p.house - 1] && (
-                  <p className="text-[11px] text-mystic-500 mt-1">
-                    In your house of {HOUSE_THEMES[p.house - 1]}.
-                  </p>
+                  </div>
                 )}
               </div>
             );
@@ -664,21 +661,17 @@ export function NatalChartReportPage() {
         className="card-print"
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="text-sm font-medium text-gold tracking-wide">
-            {t('natalReport.elementsHeading', { defaultValue: 'Elemental & modal balance' })}
-          </span>
-        }
+        title={t('natalReport.elementsHeading', { defaultValue: 'Elemental & modal balance' })}
       >
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-[10px] uppercase text-mystic-500 mb-2">Elements</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">Elements</p>
             {(['Fire', 'Earth', 'Air', 'Water'] as const).map((el) => {
               const total = (Object.values(natal.dominants.elements) as number[]).reduce((a, b) => a + b, 0) || 1;
               const pct = Math.round(((natal.dominants.elements[el] ?? 0) / total) * 100);
               return (
                 <div key={el} className="mb-1.5">
-                  <div className="flex justify-between text-xs text-mystic-300">
+                  <div className="flex justify-between text-ui text-mystic-200">
                     <span>{el}</span><span>{pct}%</span>
                   </div>
                   <div className="h-1 bg-mystic-800 rounded-full overflow-hidden">
@@ -689,13 +682,13 @@ export function NatalChartReportPage() {
             })}
           </div>
           <div>
-            <p className="text-[10px] uppercase text-mystic-500 mb-2">Modalities</p>
+            <p className="text-meta uppercase tracking-wider text-mystic-400 mb-2">Modalities</p>
             {(['Cardinal', 'Fixed', 'Mutable'] as const).map((m) => {
               const total = (Object.values(natal.dominants.modalities) as number[]).reduce((a, b) => a + b, 0) || 1;
               const pct = Math.round(((natal.dominants.modalities[m] ?? 0) / total) * 100);
               return (
                 <div key={m} className="mb-1.5">
-                  <div className="flex justify-between text-xs text-mystic-300">
+                  <div className="flex justify-between text-ui text-mystic-200">
                     <span>{m}</span><span>{pct}%</span>
                   </div>
                   <div className="h-1 bg-mystic-800 rounded-full overflow-hidden">
@@ -707,14 +700,14 @@ export function NatalChartReportPage() {
           </div>
         </div>
         {natal.dominants.dominantPlanets.length > 0 && (
-          <p className="text-xs text-mystic-400 mt-4">
-            <span className="text-mystic-500">Dominant planets: </span>
+          <p className="text-ui text-mystic-100 mt-4">
+            <span className="text-mystic-400">Dominant planets: </span>
             {natal.dominants.dominantPlanets.join(', ')}
           </p>
         )}
         {natal.dominants.chartRuler && (
-          <p className="text-xs text-mystic-400 mt-1">
-            <span className="text-mystic-500">Chart ruler: </span>{natal.dominants.chartRuler}
+          <p className="text-ui text-mystic-100 mt-1">
+            <span className="text-mystic-400">Chart ruler: </span>{natal.dominants.chartRuler}
           </p>
         )}
       </Section>
@@ -723,11 +716,7 @@ export function NatalChartReportPage() {
         className="card-print"
         headingLevel="h3"
         spacing="sm"
-        title={
-          <span className="text-sm font-medium text-gold tracking-wide">
-            {t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
-          </span>
-        }
+        title={t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
       >
         {natal.aspects.length === 0 ? (
           <EmptyState variant="inline" size="sm" title="No aspects computed." />
@@ -739,17 +728,17 @@ export function NatalChartReportPage() {
               return (
                 <div
                   key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
-                  className="flex items-center justify-between py-1.5 border-b border-mystic-800/50 last:border-b-0"
+                  className="flex items-center justify-between gap-3 py-1.5 border-b border-mystic-800/50 last:border-b-0"
                 >
-                  <div className="flex items-center gap-2 text-xs text-mystic-200">
+                  <div className="flex items-center gap-2 text-ui text-mystic-200">
                     <PlanetGlyph planet={a.planet1} size={18} className="text-gold" />
                     <Icon className={`w-3 h-3 ${meta.color}`} />
                     <PlanetGlyph planet={a.planet2} size={18} className="text-gold" />
-                    <span className="text-mystic-400 ml-2">
+                    <span className="ml-2">
                       {a.planet1} {meta.label.toLowerCase()} {a.planet2}
                     </span>
                   </div>
-                  <div className="text-[10px] text-mystic-500">
+                  <div className="text-meta text-mystic-400 shrink-0">
                     orb {a.orb.toFixed(1)}°{a.applying ? ' · applying' : ''}
                   </div>
                 </div>
@@ -759,7 +748,7 @@ export function NatalChartReportPage() {
         )}
       </Section>
 
-      <p className="text-[10px] text-center text-mystic-600 italic">
+      <p className="text-caption text-mystic-500 italic">
         {t('natalReport.disclaimer', {
           defaultValue:
             'Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.',

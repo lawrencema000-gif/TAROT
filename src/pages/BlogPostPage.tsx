@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Tag, User } from 'lucide-react';
-import { Card } from '../components/ui';
+import { ArrowLeft, Calendar, Clock, Tag, User } from 'lucide-react';
 import { useBlogPost } from '../hooks/useBlogPosts';
 import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
@@ -15,6 +14,23 @@ const DATE_LOCALES: Record<string, string> = {
   ko: 'ko-KR',
   zh: 'zh-CN',
 };
+
+/** Kana and CJK ideographs: written without spaces, so a whitespace word
+ *  count reads every Japanese or Chinese article as "1 min". */
+const CJK_CHARS = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/g;
+
+/** ~220 words per minute for space-delimited text, ~500 characters per
+ *  minute for kana/ideographs. Tags are stripped first so markup is not
+ *  counted as words. */
+function estimateReadingMinutes(html: string): number {
+  const text = html.replace(/<[^>]+>/g, ' ');
+  const cjkChars = (text.match(CJK_CHARS) ?? []).length;
+  const words = text
+    .replace(CJK_CHARS, ' ')
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220 + cjkChars / 500));
+}
 
 export function BlogPostPage() {
   const { t } = useT(['app', 'common']);
@@ -60,6 +76,7 @@ export function BlogPostPage() {
   }
 
   const dateLocale = DATE_LOCALES[getLocale()] || DATE_LOCALES.en;
+  const readingMinutes = estimateReadingMinutes(post.content);
 
   return (
     <div className="space-y-4 pt-2 pb-8">
@@ -72,29 +89,31 @@ export function BlogPostPage() {
       </button>
 
       <article>
+        {/* Full-bleed to the shell's column edge (main is px-4 lg:px-8).
+            Square on mobile, where the edges meet the viewport. */}
         {post.cover_image && (
-          <div className="rounded-xl overflow-hidden mb-4">
+          <div className="-mx-4 lg:-mx-8 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
             <img
               src={post.cover_image}
               alt={post.title}
-              className="w-full h-48 sm:h-64 object-cover"
+              className="w-full h-56 sm:h-72 object-cover"
             />
           </div>
         )}
 
-        <Card className="p-5 space-y-4">
-          <h1 className="heading-display-lg text-mystic-100 leading-tight">
+        <header className="space-y-4 mb-8">
+          <h1 className="heading-display-xl text-mystic-100">
             {post.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs text-mystic-500">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-meta text-mystic-400">
             <span className="flex items-center gap-1">
-              <User className="w-3 h-3" />
+              <User className="w-3.5 h-3.5" aria-hidden />
               {post.author}
             </span>
             {post.published_at && (
               <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
+                <Calendar className="w-3.5 h-3.5" aria-hidden />
                 {new Date(post.published_at).toLocaleDateString(dateLocale, {
                   month: 'long',
                   day: 'numeric',
@@ -102,6 +121,10 @@ export function BlogPostPage() {
                 })}
               </span>
             )}
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" aria-hidden />
+              {t('blog.readingTime', { n: readingMinutes })}
+            </span>
           </div>
 
           {post.tags.length > 0 && (
@@ -109,30 +132,23 @@ export function BlogPostPage() {
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="flex items-center gap-1 px-2 py-1 rounded-full bg-mystic-800/50 text-mystic-400 text-xs"
+                  className="flex items-center gap-1 px-2 py-1 rounded-full bg-mystic-800/50 text-meta text-mystic-400"
                 >
-                  <Tag className="w-3 h-3" />
+                  <Tag className="w-3 h-3" aria-hidden />
                   {tag}
                 </span>
               ))}
             </div>
           )}
+        </header>
 
-          <div
-            className="prose prose-invert prose-sm max-w-none
-              prose-headings:text-mystic-100 prose-headings:font-semibold
-              prose-p:text-mystic-300 prose-p:leading-relaxed
-              prose-a:text-gold prose-a:no-underline hover:prose-a:underline
-              prose-strong:text-mystic-200
-              prose-ul:text-mystic-300 prose-ol:text-mystic-300
-              prose-blockquote:border-gold/30 prose-blockquote:text-mystic-400
-              prose-img:rounded-lg"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, {
-              ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'a', 'img', 'blockquote', 'ul', 'ol', 'li', 'br', 'article', 'section', 'span', 'table', 'thead', 'tbody', 'tr', 'td', 'th'],
-              ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
-            }) }}
-          />
-        </Card>
+        <div
+          className="prose-reading"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, {
+            ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'a', 'img', 'blockquote', 'ul', 'ol', 'li', 'br', 'article', 'section', 'span', 'table', 'thead', 'tbody', 'tr', 'td', 'th'],
+            ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
+          }) }}
+        />
       </article>
     </div>
   );

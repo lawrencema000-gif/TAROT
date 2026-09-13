@@ -10,7 +10,7 @@ import { Sparkles, Loader2, RefreshCw, Crown } from 'lucide-react';
 import type { BaziResult, BaziPhase1Deepening } from '../../data/bazi';
 import type { BaziDeepResult, Gender } from '../../data/baziDeep';
 import { generateBaziReading, type BaziAIReading } from '../../services/baziInterpret';
-import { Button, toast } from '../ui';
+import { Button, toast, ReadingProse } from '../ui';
 
 interface Props {
   result: BaziResult;
@@ -95,10 +95,10 @@ export function BaziAIReadingPanel({
     return (
       <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-6 sm:p-8 text-center">
         <Crown className="w-10 h-10 mx-auto mb-3 text-gold" />
-        <h3 className="font-display text-xl text-mystic-100 mb-2">
+        <h3 className="heading-display-md text-mystic-100 mb-2">
           Get your full personalised Bazi reading
         </h3>
-        <p className="text-sm text-mystic-300 max-w-md mx-auto mb-5">
+        <p className="text-ui text-mystic-300 text-left max-w-md mx-auto mb-5">
           A 14-section deep reading written specifically for your chart — covering personality, career, wealth, relationships, current luck pillar, year ahead, and a strategy designed around your strengths and clashes.
         </p>
         <Button onClick={onUpgradeClick} className="px-6">
@@ -113,8 +113,8 @@ export function BaziAIReadingPanel({
     return (
       <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-8 text-center">
         <Loader2 className="w-8 h-8 mx-auto mb-3 text-gold animate-spin" />
-        <p className="text-sm text-mystic-300 mb-1">Reading your chart…</p>
-        <p className="text-xs text-mystic-500">This takes about 10 seconds the first time. Cached after that.</p>
+        <p className="text-ui text-mystic-300 mb-1">Reading your chart…</p>
+        <p className="text-meta text-mystic-400">This takes about 10 seconds the first time. Cached after that.</p>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export function BaziAIReadingPanel({
   if (error) {
     return (
       <div className="rounded-2xl border border-red-900/40 bg-red-950/20 p-5">
-        <p className="text-sm text-red-300 mb-3">Couldn't generate reading: {error}</p>
+        <p className="text-ui text-red-300 mb-3">Couldn't generate reading: {error}</p>
         <Button onClick={() => doFetch(false)} variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" /> Try again
         </Button>
@@ -137,12 +137,12 @@ export function BaziAIReadingPanel({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-xl text-mystic-100">Your personalised reading</h2>
+          <h2 className="heading-display-lg text-mystic-100">Your personalised reading</h2>
         </div>
         <button
           onClick={() => doFetch(true)}
           disabled={loading}
-          className="text-xs text-mystic-400 hover:text-mystic-200 inline-flex items-center gap-1 disabled:opacity-50"
+          className="text-meta text-mystic-400 hover:text-mystic-200 inline-flex items-center gap-1 disabled:opacity-50"
           title="Regenerate (uses one Gemini call)"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
@@ -158,17 +158,13 @@ export function BaziAIReadingPanel({
             key={key}
             className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-5"
           >
-            <h3 className="text-xs uppercase tracking-wider text-gold mb-2">{title}</h3>
-            <div className="text-sm text-mystic-200 leading-relaxed space-y-3 whitespace-pre-line">
-              {text.split(/\n\n+/).filter(Boolean).map((para, i) => (
-                <p key={i}>{para.trim()}</p>
-              ))}
-            </div>
+            <h3 className="heading-display-md text-mystic-100 mb-3">{title}</h3>
+            <ReadingProse text={text} lede={key === 'core_summary'} />
           </section>
         );
       })}
 
-      <p className="text-[11px] text-mystic-600 text-center pt-2">
+      <p className="reading-caption pt-2">
         Reading generated with Gemini using authentic BaZi tradition (子平真诠 / 滴天髓). Refreshes annually.
       </p>
     </div>

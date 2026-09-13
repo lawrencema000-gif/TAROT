@@ -201,7 +201,7 @@ export const Disclosure = forwardRef<HTMLDivElement, DisclosureProps>(
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-medium text-mystic-200">{label}</span>
             {description && (
-              <span className="block text-xs text-mystic-400 mt-0.5">{description}</span>
+              <span className="block text-meta text-mystic-400 mt-0.5">{description}</span>
             )}
           </span>
           {meta && <span className="shrink-0 text-xs text-mystic-400">{meta}</span>}

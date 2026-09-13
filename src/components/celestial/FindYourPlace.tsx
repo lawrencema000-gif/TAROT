@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Bookmark, Compass, Crown, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
-import { Button } from '../ui';
+import { Button, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { scorePlaces, type PlaceScore, type LifeIntent } from '../../utils/celestialScoring';
@@ -378,7 +378,7 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
         <h2 className="text-3xl font-display text-mystic-100 leading-tight">
           {result.city.name}
         </h2>
-        <p className="text-xs text-mystic-400">{result.city.country}</p>
+        <p className="text-meta text-mystic-400">{result.city.country}</p>
       </motion.div>
 
       {/* Contributing planets row — visual constellation */}
@@ -400,10 +400,10 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
             >
               {line.angle}
             </div>
-            <span className="text-[10px] uppercase tracking-wider text-mystic-400">
+            <span className="text-meta uppercase tracking-wider text-mystic-400">
               {line.planet}
             </span>
-            <span className="text-[10px] text-mystic-500">
+            <span className="text-meta text-mystic-400">
               {Math.round(line.distanceKm)} km
             </span>
           </div>
@@ -448,28 +448,26 @@ function ReadingBody({
       transition={{ duration: 0.5 }}
       className="space-y-5"
     >
-      <p className="text-lg sm:text-xl font-medium text-mystic-100 italic leading-snug text-center px-2">
+      <p className="reading-quote italic">
         "{reading.verdict}"
       </p>
 
       <div className="rounded-2xl bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5">
-        <p className="text-sm text-mystic-200 leading-relaxed whitespace-pre-line">
-          {reading.body}
-        </p>
+        <ReadingProse text={reading.body} />
       </div>
 
       {reading.lineNotes.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[10px] uppercase tracking-wider text-gold/80 font-medium">
+          <p className="font-display-eyebrow text-gold/80">
             {t('celestial.findPlace.reading.linesLabel', { defaultValue: 'Why this place' })}
           </p>
           {reading.lineNotes.map((note, i) => (
             <div key={`${note.planet}-${note.angle}-${i}`} className="flex items-start gap-2.5">
               <div
-                className="flex-shrink-0 w-2 h-2 rounded-full mt-1.5"
+                className="flex-shrink-0 w-2 h-2 rounded-full mt-2.5"
                 style={{ backgroundColor: PLANET_COLOR[note.planet as PlanetName] ?? '#d4af37' }}
               />
-              <p className="text-xs text-mystic-300 leading-relaxed flex-1">
+              <p className="reading-copy flex-1">
                 <span className="text-mystic-100 font-medium">{note.planet} {note.angle}</span>
                 {' — '}{note.note}
               </p>
@@ -479,21 +477,21 @@ function ReadingBody({
       )}
 
       <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 space-y-1">
-        <p className="text-[10px] uppercase tracking-wider text-gold/80 font-medium">
+        <p className="font-display-eyebrow text-gold/80">
           {t('celestial.findPlace.reading.practiceLabel', { defaultValue: 'Your first month' })}
         </p>
-        <p className="text-xs text-mystic-200 leading-relaxed">{reading.practice}</p>
+        <p className="reading-copy">{reading.practice}</p>
       </div>
 
       <div className="rounded-2xl bg-mystic-900/40 p-4 space-y-1">
-        <p className="text-[10px] uppercase tracking-wider text-mystic-500 font-medium">
+        <p className="font-display-eyebrow text-mystic-500">
           {t('celestial.findPlace.reading.cautionsLabel', { defaultValue: 'Honestly' })}
         </p>
-        <p className="text-xs text-mystic-300 leading-relaxed">{reading.cautionsNote}</p>
+        <p className="reading-copy">{reading.cautionsNote}</p>
       </div>
 
       {reading.closingBlessing && (
-        <p className="text-center text-base font-display italic text-gold/90 px-4 py-2 leading-relaxed">
+        <p className="text-lede font-display italic text-mystic-200 px-1 pt-2">
           {reading.closingBlessing}
         </p>
       )}

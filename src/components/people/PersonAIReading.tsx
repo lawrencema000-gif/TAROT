@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
-import { Card, Button, toast } from '../ui';
+import { Card, Button, ReadingProse, toast } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
 import { supabase } from '../../lib/supabase';
@@ -61,7 +61,7 @@ export function PersonAIReading({ personId, personName }: { personId: string; pe
 
       {reading && (
         <div className="space-y-3">
-          <p className="text-[15px] text-mystic-200 leading-relaxed whitespace-pre-line">{reading}</p>
+          <ReadingProse text={reading} />
           <button onClick={() => setReading(null)} className="text-xs text-gold hover:text-gold-light">Read another focus →</button>
         </div>
       )}

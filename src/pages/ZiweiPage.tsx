@@ -68,7 +68,7 @@ export function ZiweiPage() {
             <HoroscopeWheelIcon className="w-4 h-4 mr-2" /> {t('ziwei.cast', { defaultValue: 'Cast my chart' })}
           </Button>
           {!birthTime && (
-            <p className="text-[11px] text-mystic-600">
+            <p className="text-meta text-mystic-400">
               Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.
             </p>
           )}
@@ -82,13 +82,13 @@ export function ZiweiPage() {
               palaces={chart.palaces}
               centre={
                 <div className="space-y-0.5">
-                  <div className="text-gold text-[11px]">{chart.bureauCn}</div>
-                  <div className="text-mystic-300 text-[10px]">
+                  <div className="text-gold text-meta">{chart.bureauCn}</div>
+                  <div className="text-mystic-200 text-meta">
                     農曆 {chart.lunar.isLeapMonth ? '閏' : ''}{chart.lunar.month}/{chart.lunar.day}
                   </div>
-                  <div className="text-mystic-500 text-[10px]">{chart.yearStemCn}年 · {chart.hourBranchCn}時</div>
+                  <div className="text-mystic-400 text-meta">{chart.yearStemCn}年 · {chart.hourBranchCn}時</div>
                   {lifePalace && (
-                    <div className="text-mystic-400 text-[10px] pt-1">命宮 in {lifePalace.branchCn}</div>
+                    <div className="text-mystic-400 text-meta pt-1">命宮 in {lifePalace.branchCn}</div>
                   )}
                 </div>
               }
@@ -96,7 +96,7 @@ export function ZiweiPage() {
           </Card>
 
           <Section title={t('ziwei.bureau', { defaultValue: 'Your bureau' })} headingLevel="h3" spacing="sm">
-            <p className="text-sm text-mystic-300 leading-relaxed">
+            <p className="reading-copy">
               <span className="text-gold">{chart.bureauCn}</span> — {BUREAU_MEANINGS[chart.bureau]}
             </p>
           </Section>
@@ -110,15 +110,15 @@ export function ZiweiPage() {
               const meta = TRANSFORMATION_MEANINGS[t.kind];
               const star = STAR_MEANINGS[t.star];
               return (
-                <div key={t.kind} className="text-sm">
+                <div key={t.kind} className="text-ui">
                   <span className="text-gold">{star?.cn ?? t.star} {meta.cn}</span>
-                  <span className="text-mystic-500"> · {meta.en}</span>
-                  <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{meta.text}</p>
+                  <span className="text-mystic-400"> · {meta.en}</span>
+                  <p className="reading-copy mt-1">{meta.text}</p>
                 </div>
               );
             })}
             {chart.yearStemCn === '庚' && (
-              <p className="text-[11px] text-mystic-600 pt-1">
+              <p className="text-meta text-mystic-400 pt-1">
                 Schools disagree about 庚 years. We follow the 中州派 reading (陽祿 武權 陰科 同忌),
                 which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.
               </p>
@@ -139,8 +139,8 @@ export function ZiweiPage() {
                   label={
                     <>
                       <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
-                      <span className="text-mystic-500 text-xs"> {meaning?.en ?? p.en}</span>
-                      {p.isBody && <span className="text-cosmic-violetLight text-xs"> · 身宮</span>}
+                      <span className="text-mystic-400 text-meta"> {meaning?.en ?? p.en}</span>
+                      {p.isBody && <span className="text-cosmic-violetLight text-meta"> · 身宮</span>}
                     </>
                   }
                   meta={
@@ -148,20 +148,20 @@ export function ZiweiPage() {
                       <span key={s.key} className={s.isSupport ? 'text-mystic-600' : undefined}>{s.cn} </span>
                     ))
                   }
-                  contentClassName="pl-7 space-y-2"
+                  contentClassName="pl-7 space-y-3"
                 >
-                  {meaning && <p className="text-sm text-mystic-300 leading-relaxed">{meaning.text}</p>}
+                  {meaning && <p className="reading-copy">{meaning.text}</p>}
                   {p.stars.map((s) => {
                     const sm = STAR_MEANINGS[s.key];
                     if (!sm) return null;
                     return (
-                      <p key={s.key} className="text-[13px] text-mystic-400 leading-relaxed">
+                      <p key={s.key} className="reading-copy">
                         <span className="text-gold">{sm.cn} · {sm.title}</span> — {sm.text}
                       </p>
                     );
                   })}
                   {p.stars.length === 0 && (
-                    <p className="text-[13px] text-mystic-500 italic">
+                    <p className="reading-copy italic">
                       An empty palace isn't a lack — it borrows from the palace opposite, and asks you to bring your own emphasis here.
                     </p>
                   )}
@@ -171,7 +171,7 @@ export function ZiweiPage() {
           </Section>
 
           <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>{t('ziwei.recast', { defaultValue: 'Cast a different chart' })}</Button>
-          <p className="text-center text-xs text-mystic-600">
+          <p className="reading-caption">
             For reflection and self-understanding — a symbolic system, not a prediction.
           </p>
         </>

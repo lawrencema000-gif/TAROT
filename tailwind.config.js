@@ -71,6 +71,26 @@ export default {
         display: ['Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],
         body: ['Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
+      // ── Type scale ──────────────────────────────────────────────
+      // There was no fontSize key at all, so four uncoordinated ramps
+      // ran at once: Tailwind's untouched defaults, 199 `text-[10px]`
+      // escapes, the two orphan stylesheets, and the heading-display-*
+      // clamps. Reading copy landed at 14px or smaller 1,852 times and at
+      // 16px fourteen times — by accident, not decision.
+      //
+      // Named for ROLE so a call site has to state intent, and paired with
+      // the line-height that role needs. rem-based, so every step honours
+      // --font-scale (the reader control in Settings).
+      fontSize: {
+        caption: ['0.75rem',   { lineHeight: '1.45' }], // 12px — legal, footnotes
+        meta:    ['0.8125rem', { lineHeight: '1.5'  }], // 13px — degrees, dates, counts
+        ui:      ['0.9375rem', { lineHeight: '1.5'  }], // 15px — controls, list rows
+        body:    ['1.0625rem', { lineHeight: '1.65' }], // 17px — anything read for meaning
+        lede:    ['1.1875rem', { lineHeight: '1.55' }], // 19px — the opening line of a reading
+        title:   ['1.375rem',  { lineHeight: '1.3'  }], // 22px — section titles set in the sans
+        display: ['1.75rem',   { lineHeight: '1.15' }], // 28px
+        hero:    ['2.25rem',   { lineHeight: '1.05' }], // 36px
+      },
       backgroundImage: {
         'constellation': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

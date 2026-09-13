@@ -146,7 +146,7 @@ export function PersonComparePage() {
       <>
       {/* Harmony score ring */}
       <Card className="p-6 text-center space-y-2">
-        <div className="text-5xl font-display text-gold-foil">{score}<span className="text-2xl text-mystic-500">/100</span></div>
+        <div className="text-5xl font-display text-gold">{score}<span className="text-2xl text-mystic-500">/100</span></div>
         <p className="text-sm text-mystic-400">Overall resonance from {aspects.length} cross-chart connections</p>
       </Card>
 

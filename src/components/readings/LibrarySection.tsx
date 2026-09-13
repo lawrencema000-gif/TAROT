@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { TarotCardIcon } from '../ui/NavIcons';
 import { MysticalStar } from '../ui/MysticalStar';
-import { Card, Button, Chip, Sheet, toast } from '../ui';
+import { Card, Button, Chip, Sheet, toast, ReadingProse } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
 import { localizeCardNameSync, prefetchCardNameIndex } from '../../i18n/localizeCard';
@@ -323,22 +323,22 @@ export function LibrarySection() {
                               })()}
                             </h4>
                             {reading.focus_area && (
-                              <span className="px-2 py-0.5 bg-mystic-800 rounded text-xs text-mystic-400">
+                              <span className="px-2 py-0.5 bg-mystic-800 rounded text-meta text-mystic-400">
                                 {t(`readings.focusAreas.${reading.focus_area.toLowerCase()}`, { defaultValue: reading.focus_area })}
                               </span>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-1 mb-2">
                             {reading.cards.slice(0, 3).map((card, i) => (
-                              <span key={i} className="text-xs text-mystic-400">
+                              <span key={i} className="text-meta text-mystic-400">
                                 {localizeCardNameSync(card.cardName)}{card.reversed ? ' (R)' : ''}{i < Math.min(reading.cards.length - 1, 2) ? ',' : ''}
                               </span>
                             ))}
                             {reading.cards.length > 3 && (
-                              <span className="text-xs text-mystic-500">+{reading.cards.length - 3} more</span>
+                              <span className="text-meta text-mystic-400">+{reading.cards.length - 3} more</span>
                             )}
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-mystic-500">
+                          <div className="flex items-center gap-1 text-meta text-mystic-400">
                             <Calendar className="w-3 h-3" />
                             {formatDate(reading.date)}
                           </div>
@@ -398,7 +398,7 @@ export function LibrarySection() {
                                 {content.card?.name}
                                 {content.reversed && <span className="text-mystic-400 ml-1">(Reversed)</span>}
                               </h4>
-                              <div className="flex items-center gap-1 text-xs text-mystic-500">
+                              <div className="flex items-center gap-1 text-meta text-mystic-400">
                                 <Calendar className="w-3 h-3" />
                                 {formatDate(item.date)}
                               </div>
@@ -452,7 +452,7 @@ export function LibrarySection() {
                                   return p;
                                 })()}
                               </h4>
-                              <div className="flex items-center gap-1 text-xs text-mystic-500">
+                              <div className="flex items-center gap-1 text-meta text-mystic-400">
                                 <Calendar className="w-3 h-3" />
                                 {formatDate(item.date)}
                               </div>
@@ -546,25 +546,25 @@ export function LibrarySection() {
                             </span>
                           )}
                           {reading.context.focusArea && (
-                            <span className="px-2 py-0.5 bg-mystic-800 rounded text-xs text-mystic-400 capitalize">
+                            <span className="px-2 py-0.5 bg-mystic-800 rounded text-meta text-mystic-400 capitalize">
                               {reading.context.focusArea}
                             </span>
                           )}
                         </div>
                         <div className="flex flex-wrap gap-1 mb-2">
                           {reading.cards.slice(0, 3).map((card, i) => (
-                            <span key={i} className="text-xs text-mystic-400">
+                            <span key={i} className="text-meta text-mystic-400">
                               {card.name}{card.reversed ? ' (R)' : ''}{i < Math.min(reading.cards.length - 1, 2) ? ',' : ''}
                             </span>
                           ))}
                           {reading.cards.length > 3 && (
-                            <span className="text-xs text-mystic-500">+{reading.cards.length - 3} more</span>
+                            <span className="text-meta text-mystic-400">+{reading.cards.length - 3} more</span>
                           )}
                         </div>
-                        <p className="text-xs text-mystic-500 mb-2">
+                        <p className="text-meta text-mystic-400 mb-2">
                           {reading.content.slice(0, 150)}...
                         </p>
-                        <div className="flex items-center gap-1 text-xs text-mystic-500">
+                        <div className="flex items-center gap-1 text-meta text-mystic-400">
                           <Calendar className="w-3 h-3" />
                           {formatDate(reading.created_at)}
                         </div>
@@ -611,7 +611,7 @@ export function LibrarySection() {
                 </div>
                 <div>
                   <h4 className="font-medium text-mystic-100 text-sm">{guide.title}</h4>
-                  <p className="text-xs text-mystic-400">{guide.description}</p>
+                  <p className="text-meta text-mystic-400">{guide.description}</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-mystic-500" />
@@ -627,7 +627,7 @@ export function LibrarySection() {
       >
         {selectedGuide && (
           <div className="space-y-6">
-            <p className="text-mystic-400">{selectedGuide.description}</p>
+            <p className="reading-lede">{selectedGuide.description}</p>
 
             <div className="space-y-4">
               {selectedGuide.sections.map((section, i) => (
@@ -641,15 +641,17 @@ export function LibrarySection() {
                     </span>
                     <h4 className="font-medium text-mystic-100">{section.title}</h4>
                   </div>
-                  <p className="text-sm text-mystic-300 leading-relaxed pl-10">
-                    {section.content || t('library.contentComingSoon')}
-                  </p>
+                  <ReadingProse
+                    lede={false}
+                    className="pl-10"
+                    text={section.content || t('library.contentComingSoon')}
+                  />
                 </div>
               ))}
             </div>
 
             <Card padding="md" className="bg-gradient-to-r from-gold/5 to-cosmic-blue/5 border-gold/20">
-              <p className="text-xs text-mystic-400 text-center">
+              <p className="text-meta text-mystic-400">
                 {t('library.continueExploring')}
               </p>
             </Card>
@@ -680,7 +682,7 @@ export function LibrarySection() {
                     return k ? t(`readings.spreads.${k}.name`) : selectedReading.reading_type;
                   })()}
                 </h3>
-                <p className="text-xs text-mystic-400">
+                <p className="text-meta text-mystic-400">
                   {(() => {
                     const localeToBcp47: Record<string, string> = { en: 'en-US', ja: 'ja-JP', ko: 'ko-KR', zh: 'zh-CN' };
                     return new Date(selectedReading.created_at).toLocaleDateString(localeToBcp47[getLocale()] ?? 'en-US', {
@@ -695,13 +697,13 @@ export function LibrarySection() {
 
             {selectedReading.context.question && (
               <Card padding="md" className="bg-mystic-800/50">
-                <h4 className="text-xs font-medium text-mystic-400 uppercase tracking-wider mb-2">{t('library.reading.yourQuestion')}</h4>
-                <p className="text-sm text-mystic-200">{selectedReading.context.question}</p>
+                <h4 className="font-display-eyebrow text-mystic-400 mb-2">{t('library.reading.yourQuestion')}</h4>
+                <p className="reading-copy">{selectedReading.context.question}</p>
               </Card>
             )}
 
             <div>
-              <h4 className="text-xs font-medium text-mystic-400 uppercase tracking-wider mb-3">{t('library.reading.cardsDrawn')}</h4>
+              <h4 className="font-display-eyebrow text-mystic-400 mb-3">{t('library.reading.cardsDrawn')}</h4>
               <div className="flex flex-wrap gap-2">
                 {selectedReading.cards.map((card, i) => (
                   <div key={i} className="flex items-center gap-2 px-3 py-2 bg-mystic-800/50 rounded-lg">
@@ -716,17 +718,15 @@ export function LibrarySection() {
             </div>
 
             <div>
-              <h4 className="text-xs font-medium text-mystic-400 uppercase tracking-wider mb-3">{t('library.reading.interpretation')}</h4>
+              <h4 className="font-display-eyebrow text-mystic-400 mb-3">{t('library.reading.interpretation')}</h4>
               <Card padding="lg" className="bg-gradient-to-br from-gold/5 via-cosmic-blue/5 to-gold/5 border-gold/20">
-                <div className="text-sm text-mystic-200 leading-relaxed whitespace-pre-line">
-                  {selectedReading.content}
-                </div>
+                <ReadingProse text={selectedReading.content} />
               </Card>
             </div>
 
             {selectedReading.context.usedLlm && (
               <Card padding="sm" className="bg-mystic-800/30 border-mystic-700">
-                <p className="text-xs text-mystic-500 text-center">
+                <p className="reading-caption text-center">
                   Generated with AI • Personalized to your profile
                 </p>
               </Card>

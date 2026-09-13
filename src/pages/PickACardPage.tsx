@@ -212,7 +212,7 @@ export function PickACardPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="text-sm text-mystic-400 max-w-md mx-auto"
+          className="text-ui text-mystic-400 max-w-md mx-auto"
         >
           {picked
             ? t('pickACard.subtitlePicked', { defaultValue: "You've drawn your card for today." })
@@ -294,13 +294,13 @@ export function PickACardPage() {
 
             {pickedCard && (
               <Card variant="glow" padding="lg" className="w-full max-w-md text-center">
-                <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+                <p className="font-display-eyebrow mb-1">
                   {picked.reversed
                     ? t('pickACard.reversed', { defaultValue: 'Reversed' })
                     : t('pickACard.upright', { defaultValue: 'Upright' })}
                 </p>
-                <h2 className="font-display text-xl text-mystic-100 mb-2">{pickedCard.name}</h2>
-                <p className="text-sm text-mystic-300 leading-relaxed">
+                <h2 className="heading-display-lg text-mystic-100 mb-2">{pickedCard.name}</h2>
+                <p className="reading-copy text-left">
                   {picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright}
                 </p>
                 {pickedCard.keywords?.length > 0 && (
@@ -330,7 +330,7 @@ export function PickACardPage() {
               </Button>
             </div>
 
-            <p className="text-xs text-mystic-500 flex items-center gap-1.5">
+            <p className="text-ui text-mystic-400 flex items-center gap-1.5">
               <RotateCcw className="w-3 h-3" />
               {t('pickACard.comeBack', { defaultValue: 'New cards arrive at midnight.' })}
             </p>

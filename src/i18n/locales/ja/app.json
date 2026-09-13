@@ -2098,6 +2098,13 @@
     }
   },
   "settings": {
+    "readingSize": {
+      "label": "文字の大きさ",
+      "smaller": "小さめ",
+      "default": "標準",
+      "larger": "大きめ",
+      "sample": "逆位置の塔。崩壊そのものではなく、その直後——砂埃が収まり、何が支えだったのかが見える瞬間。"
+    },
     "title": "設定",
     "sections": {
       "account": "アカウント",

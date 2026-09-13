@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ArrowRight, AlertCircle, UserPlus } from 'lucide-react';
 import { MysticalStar } from '../components/ui/MysticalStar';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { compatInvites } from '../dal';
@@ -110,7 +110,7 @@ export function CompatInvitePage() {
             <h3 className="font-display text-lg text-mystic-100 mb-1">
               {t('compatInvite.signInTitle', { defaultValue: 'Sign in to see your match' })}
             </h3>
-            <p className="text-sm text-mystic-400 leading-relaxed mb-3">
+            <p className="text-ui text-mystic-400 mb-3">
               {t('compatInvite.signInBody', {
                 defaultValue: 'Create a free account or sign in to take your side of the compatibility reading.',
               })}
@@ -133,7 +133,7 @@ export function CompatInvitePage() {
       <Card padding="lg">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-mystic-400">
+          <p className="text-ui text-mystic-400">
             {t('compatInvite.notFound', { defaultValue: 'This invite could not be found or has expired.' })}
           </p>
         </div>
@@ -144,7 +144,7 @@ export function CompatInvitePage() {
   if (invite.inviter_user_id === user.id) {
     return (
       <Card padding="lg" variant="glow">
-        <p className="text-sm text-mystic-400">
+        <p className="text-ui text-mystic-400">
           {t('compatInvite.ownInvite', {
             defaultValue: 'This is your own invite. Share the link with a friend or partner — they need to respond.',
           })}
@@ -165,19 +165,19 @@ export function CompatInvitePage() {
         <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-pink-400/25 flex items-center justify-center mx-auto mb-3">
           <Heart className="w-6 h-6 text-pink-400" />
         </div>
-        <h1 className="font-display text-xl text-mystic-100 mb-1">
+        <h1 className="heading-display-lg text-mystic-100 mb-1">
           {invite.inviter_name
             ? t('compatInvite.fromNamed', { defaultValue: '{{name}} wants to see how you vibe', name: invite.inviter_name })
             : t('compatInvite.fromAnon', { defaultValue: 'Someone wants to see how you vibe' })}
         </h1>
-        <p className="text-sm text-mystic-400 italic">
+        <p className="text-meta text-mystic-400 italic">
           {t(`compatInvite.kinds.${invite.kind}`, { defaultValue: invite.kind })}
         </p>
       </Card>
 
       {mineResult ? (
         <Card padding="lg">
-          <p className="text-sm text-mystic-300 mb-4">
+          <p className="text-ui text-mystic-300 mb-4">
             {t('compatInvite.readyBody', {
               defaultValue: 'Your existing profile already has what this reading needs. Tap below to reveal the joint result.',
             })}
@@ -191,7 +191,7 @@ export function CompatInvitePage() {
         </Card>
       ) : (
         <Card padding="lg">
-          <p className="text-sm text-mystic-300 mb-3">
+          <p className="text-ui text-mystic-300 mb-3">
             {invite.kind === 'mbti'
               ? t('compatInvite.needMbti', { defaultValue: 'You need to take the personality quiz first.' })
               : t('compatInvite.needBirthDate', { defaultValue: 'Add your birth date in Profile first.' })}
@@ -233,7 +233,7 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
       <Card padding="lg" variant="glow" className="text-center bg-gradient-to-br from-pink-400/10 via-mystic-900 to-gold/5">
         <div className="flex items-center justify-center gap-3 mb-3">
           <Heart className="w-5 h-5 text-pink-400" />
-          <p className="text-[10px] uppercase tracking-widest text-pink-400">
+          <p className="font-display-eyebrow">
             {t('compatInvite.resultLabel', { defaultValue: 'Compatibility' })}
           </p>
         </div>
@@ -251,55 +251,55 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
         <>
           {compat.mbtiNote && (
             <Card padding="lg">
-              <h3 className="text-sm font-medium text-cosmic-blue tracking-wide mb-2">
+              <h3 className="heading-display-md text-mystic-100 mb-2">
                 {t('compatInvite.mbtiSection', { defaultValue: 'Personality compatibility' })}
               </h3>
-              <p className="text-sm text-mystic-300 leading-relaxed">{compat.mbtiNote}</p>
+              <ReadingProse text={compat.mbtiNote} lede={false} />
             </Card>
           )}
           {compat.astroNote && (
             <Card padding="lg">
-              <h3 className="text-sm font-medium text-gold tracking-wide mb-2">
+              <h3 className="heading-display-md text-mystic-100 mb-2">
                 {t('compatInvite.astroSection', { defaultValue: 'Astrological compatibility' })}
               </h3>
-              <p className="text-sm text-mystic-300 leading-relaxed">{compat.astroNote}</p>
+              <ReadingProse text={compat.astroNote} lede={false} />
             </Card>
           )}
           <Card padding="lg">
-            <h3 className="text-sm font-medium text-emerald-400 tracking-wide mb-3">
+            <h3 className="heading-display-md text-mystic-100 mb-3">
               {t('compatInvite.strengths', { defaultValue: 'Strengths' })}
             </h3>
-            <ul className="space-y-2">
+            <ul className="reading-copy space-y-2">
               {compat.strengths.map((s, i) => (
-                <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['✦'] before:absolute before:left-0 before:text-emerald-400">{s}</li>
+                <li key={i} className="pl-4 relative before:content-['✦'] before:absolute before:left-0 before:text-emerald-400">{s}</li>
               ))}
             </ul>
           </Card>
           <Card padding="lg">
-            <h3 className="text-sm font-medium text-pink-400 tracking-wide mb-3">
+            <h3 className="heading-display-md text-mystic-100 mb-3">
               {t('compatInvite.growth', { defaultValue: 'Growth edges' })}
             </h3>
-            <ul className="space-y-2">
+            <ul className="reading-copy space-y-2">
               {compat.growthEdges.map((s, i) => (
-                <li key={i} className="text-sm text-mystic-300 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">{s}</li>
+                <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">{s}</li>
               ))}
             </ul>
           </Card>
           <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30">
             <div className="flex items-center gap-2 mb-2">
               <MysticalStar size={16} halo={false} className="text-gold" />
-              <h3 className="text-sm font-medium text-gold tracking-wide">
+              <h3 className="heading-display-md text-mystic-100">
                 {t('compatInvite.advice', { defaultValue: 'For you two' })}
               </h3>
             </div>
-            <p className="text-sm text-mystic-200 italic leading-relaxed">{compat.advice}</p>
+            <p className="reading-copy italic">{compat.advice}</p>
           </Card>
         </>
       )}
 
       {!compat && (
         <Card padding="lg">
-          <p className="text-sm text-mystic-400">
+          <p className="text-ui text-mystic-400">
             {t('compatInvite.noScore', {
               defaultValue: 'Your responses are recorded. A richer joint reading is coming for this kind of quiz soon.',
             })}
@@ -309,15 +309,15 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
 
       {/* Small detail card so both sides see what was shared */}
       <Card padding="md" className="bg-mystic-800/40">
-        <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-2">
+        <p className="font-display-eyebrow text-mystic-500 mb-2">
           {t('compatInvite.yourSides', { defaultValue: 'What you shared' })}
         </p>
-        <p className="text-xs text-mystic-300">
-          <span className="text-mystic-500">{nameA}:</span>{' '}
+        <p className="text-meta text-mystic-300">
+          <span className="text-mystic-400">{nameA}:</span>{' '}
           {a.mbti ?? (a.birthDate ? getZodiacSign(a.birthDate) : '—')}
         </p>
-        <p className="text-xs text-mystic-300 mt-1">
-          <span className="text-mystic-500">{nameB}:</span>{' '}
+        <p className="text-meta text-mystic-300 mt-1">
+          <span className="text-mystic-400">{nameB}:</span>{' '}
           {b.mbti ?? (b.birthDate ? getZodiacSign(b.birthDate) : '—')}
         </p>
       </Card>

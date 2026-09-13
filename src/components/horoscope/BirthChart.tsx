@@ -111,8 +111,8 @@ export function BirthChart() {
           ].map((item) => (
             <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-xl flex flex-col items-center">
               <ZodiacGlyph sign={item.sign} size={26} className="text-gold mb-1" />
-              <div className="text-[10px] text-mystic-500">{item.labelI18n}</div>
-              <div className="text-xs font-medium text-mystic-200">{localizeSignName(item.sign)}</div>
+              <div className="text-meta text-mystic-400">{item.labelI18n}</div>
+              <div className="text-ui font-medium text-mystic-100">{localizeSignName(item.sign)}</div>
             </div>
           ))}
         </div>
@@ -127,8 +127,8 @@ export function BirthChart() {
               if (!signInterp) return null;
               return (
                 <div key={planet} className="p-3 bg-mystic-800/30 rounded-xl">
-                  <div className="text-xs font-medium text-gold mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign: localizeSignName(sign) })}</div>
-                  <p className="text-xs text-mystic-300 leading-relaxed">{signInterp.core}</p>
+                  <div className="text-ui font-medium text-mystic-100 mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign: localizeSignName(sign) })}</div>
+                  <p className="reading-copy">{signInterp.core}</p>
                 </div>
               );
             })}
@@ -139,7 +139,7 @@ export function BirthChart() {
       <ChartWheel planets={planets} houses={houses} ascendant={ascendant} />
 
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-mystic-300 px-1">{t('horoscope.birthChartView.placements')}</h3>
+        <h3 className="heading-display-md text-mystic-100 px-1">{t('horoscope.birthChartView.placements')}</h3>
         <div className="space-y-1">
           {planets.map((p) => (
             <button
@@ -152,7 +152,7 @@ export function BirthChart() {
               <ZodiacGlyph sign={p.sign} size={18} className="text-mystic-300" />
               <span className="text-sm text-mystic-300">{localizeSignName(p.sign)} {p.degree.toFixed(0)}&deg;</span>
               {p.house && (
-                <span className="text-xs text-mystic-500">{t('horoscope.birthChartView.houseShort', { num: p.house })}</span>
+                <span className="text-meta text-mystic-400">{t('horoscope.birthChartView.houseShort', { num: p.house })}</span>
               )}
               <Info className="w-3.5 h-3.5 text-mystic-600" />
             </button>
@@ -162,7 +162,7 @@ export function BirthChart() {
 
       {dominants && (
         <Card padding="md" className="space-y-3">
-          <h3 className="text-sm font-medium text-mystic-300">{t('horoscope.birthChartView.elementBalance')}</h3>
+          <h3 className="heading-display-md text-mystic-100">{t('horoscope.birthChartView.elementBalance')}</h3>
           <div className="space-y-2">
             {(Object.entries(dominants.elements) as [Element, number][]).map(([el, count]) => (
               <div key={el} className="flex items-center gap-3">
@@ -177,22 +177,22 @@ export function BirthChart() {
                     style={{ width: `${Math.min((count / 10) * 100, 100)}%` }}
                   />
                 </div>
-                <span className="text-xs text-mystic-500 w-4">{count}</span>
+                <span className="text-meta text-mystic-400 w-4">{count}</span>
               </div>
             ))}
           </div>
-          <h3 className="text-sm font-medium text-mystic-300 pt-2">{t('horoscope.birthChartView.modalityBalance')}</h3>
+          <h3 className="heading-display-md text-mystic-100 pt-2">{t('horoscope.birthChartView.modalityBalance')}</h3>
           <div className="space-y-2">
             {(Object.entries(dominants.modalities) as [Modality, number][]).map(([mod, count]) => (
               <div key={mod} className="flex items-center gap-3">
-                <span className="text-xs font-medium w-16 text-mystic-400">{mod}</span>
+                <span className="text-meta font-medium w-16 text-mystic-400">{mod}</span>
                 <div className="flex-1 bg-mystic-800/40 rounded-full h-2">
                   <div
                     className="h-full rounded-full bg-gold/60 transition-all"
                     style={{ width: `${Math.min((count / 10) * 100, 100)}%` }}
                   />
                 </div>
-                <span className="text-xs text-mystic-500 w-4">{count}</span>
+                <span className="text-meta text-mystic-400 w-4">{count}</span>
               </div>
             ))}
           </div>
@@ -201,7 +201,7 @@ export function BirthChart() {
 
       {aspects && aspects.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-mystic-300 px-1">{t('horoscope.birthChartView.keyAspects')}</h3>
+          <h3 className="heading-display-md text-mystic-100 px-1">{t('horoscope.birthChartView.keyAspects')}</h3>
           <div className="space-y-1">
             {aspects.slice(0, 10).map((a, i) => {
               const info = ASPECT_LABELS[a.type] || { symbol: '?', color: 'text-mystic-400' };
@@ -215,10 +215,10 @@ export function BirthChart() {
                   <span className={`text-sm ${info.color}`}>{info.symbol}</span>
                   <PlanetGlyph planet={a.planet2 as Planet} size={20} className="text-gold" />
 
-                  <span className="flex-1 text-xs text-mystic-400">
+                  <span className="flex-1 text-meta text-mystic-400">
                     {localizePlanetName(a.planet1 as Planet)} {localizeAspectName(a.type)} {localizePlanetName(a.planet2 as Planet)}
                   </span>
-                  <span className="text-xs text-mystic-500">{a.orb.toFixed(1)}&deg;</span>
+                  <span className="text-meta text-mystic-400">{a.orb.toFixed(1)}&deg;</span>
                 </button>
               );
             })}
@@ -264,16 +264,16 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             <span className="font-medium text-mystic-100">{localizeSignName(placement.sign)} {placement.degree.toFixed(1)}&deg;</span>
           </div>
           {placement.house && (
-            <div className="text-xs text-mystic-400">{t('horoscope.birthChartView.houseLabel', { num: placement.house })} - {HOUSE_THEMES[placement.house - 1]}</div>
+            <div className="text-meta text-mystic-400">{t('horoscope.birthChartView.houseLabel', { num: placement.house })} - {HOUSE_THEMES[placement.house - 1]}</div>
           )}
         </div>
       </div>
 
       {signInterp && (
         <div className="space-y-3">
-          <p className="text-sm text-mystic-200 leading-relaxed">{signInterp.core}</p>
+          <p className="reading-copy">{signInterp.core}</p>
           <div>
-            <h4 className="text-xs font-medium text-teal mb-1.5">{t('horoscope.birthChartView.strengths')}</h4>
+            <h4 className="text-meta font-medium text-teal mb-1.5">{t('horoscope.birthChartView.strengths')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {signInterp.strengths.map((s, i) => (
                 <span key={i} className="text-xs px-2 py-1 bg-teal/10 text-teal rounded-full">{s}</span>
@@ -281,7 +281,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             </div>
           </div>
           <div>
-            <h4 className="text-xs font-medium text-coral mb-1.5">{t('horoscope.birthChartView.blindSpots')}</h4>
+            <h4 className="text-meta font-medium text-coral mb-1.5">{t('horoscope.birthChartView.blindSpots')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {signInterp.blindSpots.map((s, i) => (
                 <span key={i} className="text-xs px-2 py-1 bg-coral/10 text-coral rounded-full">{s}</span>
@@ -290,20 +290,20 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
           </div>
           {signInterp.underStress && signInterp.underStress.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-cosmic-rose mb-1.5">{t('horoscope.birthChartView.underStress')}</h4>
+              <h4 className="text-meta font-medium text-cosmic-rose mb-1.5">{t('horoscope.birthChartView.underStress')}</h4>
               <ul className="space-y-1">
                 {signInterp.underStress.map((s, i) => (
-                  <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-cosmic-rose/20">{s}</li>
+                  <li key={i} className="reading-copy pl-3 border-l-2 border-cosmic-rose/20">{s}</li>
                 ))}
               </ul>
             </div>
           )}
           {signInterp.growthPath && signInterp.growthPath.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-gold mb-1.5">{t('horoscope.birthChartView.growthPath')}</h4>
+              <h4 className="text-meta font-medium text-gold mb-1.5">{t('horoscope.birthChartView.growthPath')}</h4>
               <ul className="space-y-1">
                 {signInterp.growthPath.map((s, i) => (
-                  <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-gold/20">{s}</li>
+                  <li key={i} className="reading-copy pl-3 border-l-2 border-gold/20">{s}</li>
                 ))}
               </ul>
             </div>
@@ -313,23 +313,23 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
 
       {houseInterp && (
         <div className="p-3 bg-mystic-800/30 rounded-xl space-y-2">
-          <h4 className="text-xs font-medium text-gold">{t('horoscope.birthChartView.inHouse', { num: placement.house })}</h4>
-          <p className="text-xs text-mystic-300 leading-relaxed">{houseInterp.expression}</p>
+          <h4 className="text-ui font-medium text-mystic-100">{t('horoscope.birthChartView.inHouse', { num: placement.house })}</h4>
+          <p className="reading-copy">{houseInterp.expression}</p>
           <div className="flex flex-wrap gap-1.5">
             {houseInterp.themes.map((t, i) => (
-              <span key={i} className="text-[10px] px-2 py-0.5 bg-gold/10 text-gold rounded-full">{t}</span>
+              <span key={i} className="text-meta px-2 py-0.5 bg-gold/10 text-gold rounded-full">{t}</span>
             ))}
           </div>
           {houseInterp.healthy && (
             <div className="pt-1">
-              <h5 className="text-[10px] font-medium text-teal mb-0.5">{t('horoscope.birthChartView.atItsBest')}</h5>
-              <p className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-teal/20">{houseInterp.healthy}</p>
+              <h5 className="text-meta font-medium text-teal mb-0.5">{t('horoscope.birthChartView.atItsBest')}</h5>
+              <p className="reading-copy pl-3 border-l-2 border-teal/20">{houseInterp.healthy}</p>
             </div>
           )}
           {houseInterp.unhealthy && (
             <div className="pt-1">
-              <h5 className="text-[10px] font-medium text-coral mb-0.5">{t('horoscope.birthChartView.shadowSide')}</h5>
-              <p className="text-xs text-mystic-300 leading-relaxed pl-3 border-l-2 border-coral/20">{houseInterp.unhealthy}</p>
+              <h5 className="text-meta font-medium text-coral mb-0.5">{t('horoscope.birthChartView.shadowSide')}</h5>
+              <p className="reading-copy pl-3 border-l-2 border-coral/20">{houseInterp.unhealthy}</p>
             </div>
           )}
         </div>
@@ -354,24 +354,24 @@ function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
       <div className="flex items-center justify-center gap-4">
         <div className="text-center flex flex-col items-center">
           <PlanetGlyph planet={aspect.planet1 as Planet} size={32} className="text-gold" framed />
-          <div className="text-xs text-mystic-400 mt-1">{aspect.planet1}</div>
+          <div className="text-meta text-mystic-400 mt-1">{aspect.planet1}</div>
         </div>
         <div className={`text-xl ${info.color}`}>{info.symbol}</div>
         <div className="text-center flex flex-col items-center">
           <PlanetGlyph planet={aspect.planet2 as Planet} size={32} className="text-gold" framed />
-          <div className="text-xs text-mystic-400 mt-1">{aspect.planet2}</div>
+          <div className="text-meta text-mystic-400 mt-1">{aspect.planet2}</div>
         </div>
       </div>
-      <div className="text-center text-xs text-mystic-500">
+      <div className="text-center text-meta text-mystic-400">
         {t('horoscope.birthChartView.aspectMeta', {
           type: aspect.type,
           orb: aspect.orb.toFixed(1),
           motion: aspect.applying ? t('horoscope.birthChartView.applying') : t('horoscope.birthChartView.separating'),
         })}
       </div>
-      <div className="space-y-2">
-        <p className="text-sm text-mystic-200 leading-relaxed">{interp.meaning}</p>
-        <p className="text-sm text-mystic-300 leading-relaxed italic">{interp.howItFeels}</p>
+      <div className="reading-copy">
+        <p>{interp.meaning}</p>
+        <p className="italic">{interp.howItFeels}</p>
       </div>
     </div>
   );

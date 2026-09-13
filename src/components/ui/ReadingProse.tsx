@@ -21,7 +21,9 @@ interface ReadingProseProps {
  * the first as a lede with the drop cap the design system defined and
  * nothing ever applied. Single newlines are honoured as paragraph breaks
  * only when the text has no blank lines at all, so a model that separates
- * paragraphs either way reads the same.
+ * paragraphs either way reads the same — and INSIDE a paragraph they stay
+ * line breaks (`whitespace-pre-line`): the generators emit numbered lists
+ * and bulleted actions that way, and the wrappers this replaced kept them.
  */
 export function ReadingProse({ text, lede = true, className = '', children }: ReadingProseProps) {
   let paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
@@ -31,7 +33,7 @@ export function ReadingProse({ text, lede = true, className = '', children }: Re
   return (
     <div className={`reading-copy ${className}`.trim()}>
       {paragraphs.map((p, i) => (
-        <p key={i} className={i === 0 && lede ? 'reading-lede drop-cap' : undefined}>
+        <p key={i} className={`whitespace-pre-line${i === 0 && lede ? ' reading-lede drop-cap' : ''}`}>
           {p}
         </p>
       ))}

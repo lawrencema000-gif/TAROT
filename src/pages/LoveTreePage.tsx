@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sprout, Share2, ArrowLeft } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { LOVE_TREE_QUIZ, ATTACHMENT_INFO, scoreLoveTree } from '../data/loveTree';
 import { LoveTree } from '../components/ritual/LoveTree';
@@ -138,7 +138,7 @@ export function LoveTreePage() {
           <h1 className="heading-display-lg text-mystic-100">
             {t('loveTree.title', { defaultValue: 'Love Tree' })}
           </h1>
-          <p className="text-sm text-mystic-400 max-w-md mx-auto">
+          <p className="text-ui text-mystic-400 max-w-md mx-auto">
             {t('loveTree.intro', {
               defaultValue:
                 '12 questions, 90 seconds, one tree. Your attachment style rendered as a living shape — and a plain-spoken read on how you love.',
@@ -147,10 +147,10 @@ export function LoveTreePage() {
         </header>
 
         <Card padding="lg">
-          <p className="text-xs text-mystic-500 uppercase tracking-widest mb-2">
+          <p className="font-display-eyebrow mb-2">
             {t('loveTree.howItWorksLabel', { defaultValue: 'How it works' })}
           </p>
-          <ul className="space-y-2 text-sm text-mystic-300 leading-relaxed">
+          <ul className="space-y-2 text-ui text-mystic-300">
             <li>• {t('loveTree.how1', { defaultValue: 'Rate 12 short statements from strongly disagree to strongly agree.' })}</li>
             <li>• {t('loveTree.how2', { defaultValue: 'We compute your anxiety + avoidance scores on the classical attachment grid.' })}</li>
             <li>• {t('loveTree.how3', { defaultValue: 'You land in one of four quadrants — rendered as a distinct, animated tree.' })}</li>
@@ -162,7 +162,7 @@ export function LoveTreePage() {
           {t('loveTree.startCta', { defaultValue: 'Begin' })}
         </Button>
 
-        <p className="text-[11px] text-mystic-500 text-center italic px-4">
+        <p className="text-caption text-mystic-500 italic">
           {t('loveTree.disclaimer', {
             defaultValue: 'A tool for self-knowledge, not a clinical diagnosis. Attachment patterns can shift — this is a snapshot, not a verdict.',
           })}
@@ -181,7 +181,7 @@ export function LoveTreePage() {
             <ArrowLeft className="w-4 h-4" />
             {t('loveTree.back', { defaultValue: 'Back' })}
           </button>
-          <span className="text-xs text-mystic-500">
+          <span className="text-meta text-mystic-400">
             {t('loveTree.progress', { defaultValue: '{{i}} of {{n}}', i: index + 1, n: totalItems })}
           </span>
         </div>
@@ -205,7 +205,7 @@ export function LoveTreePage() {
             className="space-y-5"
           >
             <Card padding="lg" className="text-center">
-              <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-2">
+              <p className="font-display-eyebrow mb-2">
                 {t(`loveTree.dimensions.${item.dimension}`, { defaultValue: item.dimension })}
               </p>
               <p className="font-display text-lg text-mystic-100 leading-relaxed">
@@ -253,67 +253,63 @@ export function LoveTreePage() {
         className="space-y-5"
       >
         <Card variant="glow" padding="lg" className="text-center">
-          <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
+          <p className="font-display-eyebrow mb-1">
             {t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
           </p>
           <h2 className="heading-display-xl text-mystic-100">
             {t(`loveTree.attachment.${result.attachment}.title`, { defaultValue: info.title })}
           </h2>
-          <p className="text-sm italic text-gold mt-1">
+          <p className="text-ui italic text-gold mt-1">
             {t(`loveTree.attachment.${result.attachment}.archetype`, { defaultValue: info.archetype })}
           </p>
           <div className="mt-4">
             <LoveTree tree={info.tree} />
           </div>
-          <div className="mt-3 flex justify-center gap-4 text-[11px] text-mystic-500">
+          <div className="mt-3 flex justify-center gap-4 text-meta text-mystic-400">
             <span>{t('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })}: {result.anxiety}</span>
             <span>{t('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}: {result.avoidance}</span>
           </div>
         </Card>
 
         <Card padding="lg">
-          <p className="text-sm text-mystic-300 leading-relaxed">
-            {t(`loveTree.attachment.${result.attachment}.summary`, { defaultValue: info.summary })}
-          </p>
+          <ReadingProse text={t(`loveTree.attachment.${result.attachment}.summary`, { defaultValue: info.summary }) as string} />
         </Card>
 
         <Card padding="lg">
-          <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-2">
+          <p className="font-display-eyebrow mb-2">
             {t('loveTree.strengthsLabel', { defaultValue: 'Your natural strengths' })}
           </p>
-          <ul className="space-y-2 text-sm text-mystic-200">
+          <ul className="reading-copy space-y-2">
             {info.strengths.map((s, i) => (
-              <li key={i} className="leading-relaxed">• {t(`loveTree.attachment.${result.attachment}.strengths.${i}`, { defaultValue: s })}</li>
+              <li key={i}>• {t(`loveTree.attachment.${result.attachment}.strengths.${i}`, { defaultValue: s })}</li>
             ))}
           </ul>
         </Card>
 
         <Card padding="lg">
-          <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-2">
+          <p className="font-display-eyebrow mb-2">
             {t('loveTree.growthLabel', { defaultValue: 'Where to grow' })}
           </p>
-          <ul className="space-y-2 text-sm text-mystic-200">
+          <ul className="reading-copy space-y-2">
             {info.growth.map((g, i) => (
-              <li key={i} className="leading-relaxed">• {t(`loveTree.attachment.${result.attachment}.growth.${i}`, { defaultValue: g })}</li>
+              <li key={i}>• {t(`loveTree.attachment.${result.attachment}.growth.${i}`, { defaultValue: g })}</li>
             ))}
           </ul>
         </Card>
 
         <Card padding="lg" className="bg-gradient-to-br from-pink-500/5 to-mystic-900 border-pink-400/20">
-          <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-2">
+          <p className="font-display-eyebrow mb-2">
             {t('loveTree.inLoveLabel', { defaultValue: 'In love' })}
           </p>
-          <p className="text-sm text-mystic-200 leading-relaxed">
-            {t(`loveTree.attachment.${result.attachment}.inLove`, { defaultValue: info.inLove })}
-          </p>
+          <ReadingProse text={t(`loveTree.attachment.${result.attachment}.inLove`, { defaultValue: info.inLove }) as string} lede={false} />
         </Card>
 
-        <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-gold mb-2">
+        <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
+          <p className="font-display-eyebrow mb-2">
             {t('loveTree.affirmationLabel', { defaultValue: 'Your affirmation' })}
           </p>
-          <p className="text-lg italic text-mystic-100 leading-relaxed">
-            "{t(`loveTree.attachment.${result.attachment}.affirmation`, { defaultValue: info.affirmation })}"
+          <p className="reading-quote my-0">
+            {t(`loveTree.attachment.${result.attachment}.affirmation`, { defaultValue: info.affirmation })}
           </p>
         </Card>
 

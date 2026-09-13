@@ -2098,6 +2098,13 @@
     }
   },
   "settings": {
+    "readingSize": {
+      "label": "阅读字号",
+      "smaller": "较小",
+      "default": "默认",
+      "larger": "较大",
+      "sample": "逆位的塔。不是崩塌本身，而是崩塌之后——尘埃落定，你才看清什么曾是承重的。"
+    },
     "title": "设置",
     "sections": {
       "account": "账号",

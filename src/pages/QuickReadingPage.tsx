@@ -187,7 +187,7 @@ export function QuickReadingPage() {
       </div>
 
       <Card padding="lg" variant="glow">
-        <p className="text-sm text-mystic-300 leading-relaxed">
+        <p className="reading-copy">
           {t('quickReading.intro', {
             defaultValue:
               'Ask anything. A single card is drawn, woven with your signals, and returned as a short reading to sit with.',

@@ -240,7 +240,7 @@ export function SoulmateScorePage() {
             <h2 className="font-display text-lg text-mystic-100">
               {t('soulmate.needsBirthData', { defaultValue: 'Add your birth data first' })}
             </h2>
-            <p className="text-sm text-mystic-400 max-w-md">
+            <p className="text-ui text-mystic-400 max-w-md">
               {t('soulmate.needsBirthDataBody', {
                 defaultValue: "We need your birth date (time is a bonus) to compare charts. Add it in Settings → Edit Profile.",
               })}
@@ -266,7 +266,7 @@ export function SoulmateScorePage() {
           <h1 className="heading-display-lg text-mystic-100">
             {t('soulmate.title', { defaultValue: 'Soulmate Score' })}
           </h1>
-          <p className="text-sm text-mystic-400 max-w-md mx-auto mt-1">
+          <p className="text-ui text-mystic-400 max-w-md mx-auto mt-1">
             {t('soulmate.subtitle', {
               defaultValue: "A classical synastry read, distilled to one number. Free, shareable, fast.",
             })}
@@ -342,7 +342,7 @@ export function SoulmateScorePage() {
             className="space-y-5"
           >
             <Card variant="glow" padding="lg" className="text-center">
-              <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
+              <p className="font-display-eyebrow mb-1">
                 {partnerName
                   ? t('soulmate.scoreWithPartner', { defaultValue: '{{you}} & {{partner}}', you: profile?.displayName || 'You', partner: partnerName })
                   : t('soulmate.scoreNoName', { defaultValue: 'Your compatibility' })}
@@ -356,7 +356,7 @@ export function SoulmateScorePage() {
                 <div className="font-display text-6xl text-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">
                   {result.score}
                 </div>
-                <div className="text-xs text-mystic-500 mt-1">
+                <div className="text-meta text-mystic-400 mt-1">
                   {t('soulmate.outOf', { defaultValue: 'out of 100' })}
                 </div>
               </motion.div>
@@ -366,13 +366,13 @@ export function SoulmateScorePage() {
                   {t(`soulmate.vibes.${result.vibe}`, { defaultValue: result.vibe })}
                 </span>
               </div>
-              <p className="text-sm text-mystic-300 mt-4 leading-relaxed">
+              <p className="reading-copy text-left mt-4">
                 {t(`soulmate.vibeDescriptions.${result.vibe}`, {
                   defaultValue: 'Your charts weave a distinct pattern together.',
                 })}
               </p>
               {!result.hasTime && (
-                <p className="text-[11px] text-mystic-500 mt-3 italic">
+                <p className="text-meta text-mystic-400 mt-3 italic">
                   {t('soulmate.noTimeHint', { defaultValue: 'Add a birth time for a more precise score.' })}
                 </p>
               )}
@@ -380,16 +380,16 @@ export function SoulmateScorePage() {
 
             {result.harmonies.length > 0 && (
               <Card padding="lg">
-                <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-2">
+                <p className="font-display-eyebrow mb-2">
                   {t('soulmate.harmoniesHeading', { defaultValue: 'Where you flow together' })}
                 </p>
                 <div className="space-y-2">
                   {result.harmonies.map((a, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm">
+                    <div key={i} className="flex items-center justify-between text-ui">
                       <span className="text-mystic-200">
                         {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
                       </span>
-                      <span className="text-[10px] text-emerald-400/70">{a.type}</span>
+                      <span className="text-meta text-emerald-400/70">{a.type}</span>
                     </div>
                   ))}
                 </div>
@@ -398,16 +398,16 @@ export function SoulmateScorePage() {
 
             {result.frictions.length > 0 && (
               <Card padding="lg">
-                <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-2">
+                <p className="font-display-eyebrow mb-2">
                   {t('soulmate.frictionsHeading', { defaultValue: 'Where you stretch each other' })}
                 </p>
                 <div className="space-y-2">
                   {result.frictions.map((a, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm">
+                    <div key={i} className="flex items-center justify-between text-ui">
                       <span className="text-mystic-200">
                         {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
                       </span>
-                      <span className="text-[10px] text-pink-400/70">{a.type}</span>
+                      <span className="text-meta text-pink-400/70">{a.type}</span>
                     </div>
                   ))}
                 </div>
@@ -426,7 +426,7 @@ export function SoulmateScorePage() {
               </Button>
             </div>
 
-            <p className="text-[11px] text-mystic-500 text-center italic">
+            <p className="text-caption text-mystic-500 italic">
               {t('soulmate.disclaimer', {
                 defaultValue: "A score isn't a verdict — it's a mirror for conversation. Charts describe patterns, not fate.",
               })}

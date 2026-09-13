@@ -89,10 +89,13 @@ export function BlogPostPage() {
       </button>
 
       <article>
-        {/* Full-bleed to the shell's column edge (main is px-4 lg:px-8).
-            Square on mobile, where the edges meet the viewport. */}
+        {/* Full-bleed to the column edge. This route renders in two shells —
+            signed-in (px-4 lg:px-8) and the public SEO shell (px-4 at every
+            width) — so -mx-4 is the largest negative margin that never
+            overhangs; at lg in the signed-in shell it sits 16px inside the
+            edge, which reads as a deliberate inset rather than a spill. */}
         {post.cover_image && (
-          <div className="-mx-4 lg:-mx-8 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
+          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
             <img
               src={post.cover_image}
               alt={post.title}

@@ -2142,6 +2142,13 @@
     }
   },
   "settings": {
+    "readingSize": {
+      "label": "Reading size",
+      "smaller": "Smaller",
+      "default": "Default",
+      "larger": "Larger",
+      "sample": "The Tower, reversed. Not the collapse itself — the moment after, when the dust settles and you can see what was load-bearing."
+    },
     "title": "Settings",
     "sections": {
       "account": "Account",

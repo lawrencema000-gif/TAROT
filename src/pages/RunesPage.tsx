@@ -42,13 +42,13 @@ export function RunesPage() {
           }
         >
           <Card variant="glow" padding="lg">
-            <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+            <p className="reading-copy mb-4">
               {t('runes.intro', {
                 defaultValue:
                   'The Elder Futhark — 24 staves carved with the oldest written wisdom of Northern Europe. Hold a question in mind. Three runes fall: past, present, future. Some may appear reversed (merkstave), softening or turning their meaning.',
               })}
             </p>
-            <label className="block text-sm text-mystic-400 mb-2">
+            <label className="block text-ui text-mystic-400 mb-2">
               {t('runes.questionLabel', { defaultValue: 'Your question (optional)' })}
             </label>
             <textarea
@@ -115,10 +115,10 @@ export function RunesPage() {
 
         {question && (
           <Card padding="md" className="bg-mystic-800/30 border-mystic-700/30">
-            <p className="text-xs text-mystic-500 mb-1">
+            <p className="text-meta text-mystic-400 mb-1">
               {t('runes.yourQuestion', { defaultValue: 'Your question' })}
             </p>
-            <p className="text-sm text-mystic-300 italic">"{question}"</p>
+            <p className="text-ui text-mystic-200 italic">"{question}"</p>
           </Card>
         )}
 
@@ -130,10 +130,10 @@ export function RunesPage() {
                 <div className={`text-6xl font-display text-gold ${r.reversed ? 'rotate-180' : ''} transition-transform`}>
                   {r.rune.glyph}
                 </div>
-                <p className="text-[10px] text-mystic-500 uppercase tracking-widest mt-1">
+                <p className="text-meta text-mystic-400 uppercase tracking-widest mt-1">
                   {positionLabels[r.position]}
                 </p>
-                <p className="text-sm text-mystic-200 font-medium mt-1">{r.rune.name}</p>
+                <p className="text-ui text-mystic-100 font-medium mt-1">{r.rune.name}</p>
                 {r.reversed && (
                   <div className="inline-flex items-center gap-1 text-[10px] text-pink-400 mt-1">
                     <RotateCcw className="w-2.5 h-2.5" />
@@ -153,28 +153,28 @@ export function RunesPage() {
                 {r.rune.glyph}
               </div>
               <div>
-                <p className="text-xs text-mystic-500 uppercase tracking-widest">{positionLabels[r.position]}</p>
-                <h3 className="font-display text-xl text-mystic-100">{r.rune.name}</h3>
-                <p className="text-xs text-mystic-500 italic mt-1">{r.rune.element}</p>
+                <p className="text-meta text-mystic-400 uppercase tracking-widest">{positionLabels[r.position]}</p>
+                <h3 className="heading-display-md text-mystic-100">{r.rune.name}</h3>
+                <p className="text-meta text-mystic-400 italic mt-1">{r.rune.element}</p>
               </div>
             </div>
-            <p className="text-sm text-gold/80 italic mb-2">
+            <p className="text-ui text-gold/80 italic mb-2">
               {r.reversed && r.rune.reversed
                 ? r.rune.reversed
                 : r.rune.upright}
             </p>
-            <p className="text-mystic-300 text-sm leading-relaxed mb-3">{r.rune.interpretation}</p>
+            <p className="reading-copy mb-3">{r.rune.interpretation}</p>
             <div className="p-3 mb-3 rounded-xl bg-mystic-800/40 border border-mystic-700/30">
-              <p className="text-[10px] text-cosmic-blue uppercase tracking-wider mb-1">
+              <p className="font-display-eyebrow text-cosmic-blue mb-1">
                 {t('runes.whenItLandsLabel', { defaultValue: 'When this lands for you' })}
               </p>
-              <p className="text-mystic-200 text-sm leading-relaxed">{r.rune.whenItLands}</p>
+              <p className="reading-copy">{r.rune.whenItLands}</p>
             </div>
             <div className="pt-3 border-t border-mystic-800/50">
-              <p className="text-[10px] text-mystic-500 uppercase tracking-wider mb-1">
+              <p className="text-meta text-mystic-400 uppercase tracking-wider mb-1">
                 {t('runes.promptLabel', { defaultValue: 'Journal prompt' })}
               </p>
-              <p className="text-mystic-200 italic text-sm">"{r.rune.prompt}"</p>
+              <p className="reading-quote my-0">{r.rune.prompt}</p>
             </div>
           </Card>
         ))}

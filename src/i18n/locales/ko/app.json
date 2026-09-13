@@ -2098,6 +2098,13 @@
     }
   },
   "settings": {
+    "readingSize": {
+      "label": "글자 크기",
+      "smaller": "작게",
+      "default": "기본",
+      "larger": "크게",
+      "sample": "역방향의 탑. 무너짐 그 자체가 아니라 그 직후 — 먼지가 가라앉고, 무엇이 버팀목이었는지 보이는 순간."
+    },
     "title": "설정",
     "sections": {
       "account": "계정",

@@ -254,7 +254,7 @@ export function CelestialMapPage() {
           divider
         />
         <Card variant="ritual" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-5">
+          <p className="reading-copy mb-5">
             {t(bodyKey, { defaultValue: bodyDefault })}
           </p>
           <CelestialBirthDataForm onSaved={refreshProfile} />
@@ -295,12 +295,12 @@ export function CelestialMapPage() {
             <div className="flex items-start gap-3">
               <Crown className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-mystic-100 mb-1">
+                <p className="text-body font-medium text-mystic-100 mb-1">
                   {t('celestial.previewLock.title', {
                     defaultValue: 'You’re seeing the Sun + Moon preview.',
                   })}
                 </p>
-                <p className="text-xs text-mystic-400 leading-relaxed mb-3">
+                <p className="text-ui text-mystic-300 mb-3">
                   {t('celestial.previewLock.body', {
                     defaultValue:
                       'Unlock all 40 planetary lines, city interpretations, and AI travel readings with Premium — or get a single travel reading for 250 Moonstones.',
@@ -333,7 +333,7 @@ export function CelestialMapPage() {
           <h2 className="heading-display-md text-mystic-100">
             {t('celestial.mapSection.title', { defaultValue: 'Your map' })}
           </h2>
-          <p className="text-sm text-mystic-400">
+          <p className="text-ui text-mystic-400">
             {t('celestial.mapSection.subtitle', {
               defaultValue:
                 'Tap any spot to see what lines run through it. Or search a specific city below.',
@@ -420,7 +420,7 @@ export function CelestialMapPage() {
           )}
         </motion.div>
 
-        <p className="text-xs text-mystic-500 text-center px-6 leading-relaxed">
+        <p className="text-meta text-mystic-400 px-6">
           {t('celestial.disclaimer', {
             defaultValue:
               'The lines mark where each planet was rising, setting, or at its meridian when you were born. They are signals, not destiny.',
@@ -461,7 +461,7 @@ export function CelestialMapPage() {
           <h3 className="heading-display-md text-mystic-100">
             {t('celestial.findPlace.needsTimeTitle', { defaultValue: 'Add your birth time to unlock this' })}
           </h3>
-          <p className="text-sm text-mystic-400 leading-relaxed">
+          <p className="reading-copy">
             {t('celestial.findPlace.needsTimeBody', {
               defaultValue:
                 'Find Your Place matches cities against your rising and midheaven lines — and those depend entirely on the time you were born. Without it we’d be guessing, so we’d rather wait until your map is real. Even an approximate time helps.',

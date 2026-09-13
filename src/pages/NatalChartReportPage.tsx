@@ -728,9 +728,9 @@ export function NatalChartReportPage() {
               return (
                 <div
                   key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
-                  className="flex items-center justify-between gap-3 py-1.5 border-b border-mystic-800/50 last:border-b-0"
+                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-1.5 border-b border-mystic-800/50 last:border-b-0"
                 >
-                  <div className="flex items-center gap-2 text-ui text-mystic-200">
+                  <div className="flex items-center gap-2 text-ui text-mystic-200 min-w-0">
                     <PlanetGlyph planet={a.planet1} size={18} className="text-gold" />
                     <Icon className={`w-3 h-3 ${meta.color}`} />
                     <PlanetGlyph planet={a.planet2} size={18} className="text-gold" />

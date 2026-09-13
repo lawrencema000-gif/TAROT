@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Heart } from 'lucide-react';
-import { Card, Button, PageHeader, Section, HoroscopeWheelIcon } from '../components/ui';
+import { Card, Button, PageHeader, Section, HoroscopeWheelIcon, ReadingProse } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { useAuth } from '../context/AuthContext';
@@ -114,7 +114,7 @@ export function PersonComparePage() {
           </button>
         ))}
       </div>
-      <p className="text-center text-xs text-mystic-500 -mt-3">{TABS.find((tDef) => tDef.key === tab)?.blurb}</p>
+      <p className="text-center text-ui text-mystic-400 -mt-3">{TABS.find((tDef) => tDef.key === tab)?.blurb}</p>
 
       {tab !== 'synastry' ? (
         relLoading && !relCharts[tab] ? (
@@ -127,12 +127,12 @@ export function PersonComparePage() {
             {relCharts[tab]!.aspects.length > 0 && (
               <Section title="Aspects in this chart" headingLevel="h3" contentClassName="space-y-3">
                 <AspectGrid aspects={relCharts[tab]!.aspects} />
-                <div className="space-y-2 pt-1">
+                <div className="space-y-3 pt-1">
                   {relCharts[tab]!.aspects.slice(0, 5).map((a, i) => (
-                    <div key={i} className="text-sm">
+                    <div key={i} className="text-ui">
                       <span className="text-mystic-200">{a.planet1} {a.type} {a.planet2}</span>
-                      <span className="text-mystic-600 text-xs"> · orb {a.orb}°</span>
-                      {interp && <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
+                      <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+                      {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
                     </div>
                   ))}
                 </div>
@@ -140,23 +140,23 @@ export function PersonComparePage() {
             )}
           </>
         ) : (
-          <Card className="p-6 text-center"><p className="text-sm text-mystic-300">Couldn't cast this chart. Try again.</p></Card>
+          <Card className="p-6 text-center"><p className="text-ui text-mystic-300">Couldn't cast this chart. Try again.</p></Card>
         )
       ) : (
       <>
       {/* Harmony score ring */}
       <Card className="p-6 text-center space-y-2">
         <div className="text-5xl font-display text-gold">{score}<span className="text-2xl text-mystic-500">/100</span></div>
-        <p className="text-sm text-mystic-400">Overall resonance from {aspects.length} cross-chart connections</p>
+        <p className="text-meta text-mystic-400">Overall resonance from {aspects.length} cross-chart connections</p>
       </Card>
 
       {/* Sun-sign compatibility */}
       {compat && (
         <Section title={<>{mySun} &amp; {theirSun}</>} headingLevel="h3">
-          <div className="space-y-2 text-sm">
-            <p><span className="text-pink-300 font-medium">Love · </span><span className="text-mystic-300">{compat.love}</span></p>
-            <p><span className="text-sky-300 font-medium">Friendship · </span><span className="text-mystic-300">{compat.friendship}</span></p>
-            <p><span className="text-emerald-300 font-medium">Work · </span><span className="text-mystic-300">{compat.work}</span></p>
+          <div className="reading-copy">
+            <p><span className="text-pink-300 font-medium">Love · </span>{compat.love}</p>
+            <p><span className="text-sky-300 font-medium">Friendship · </span>{compat.friendship}</p>
+            <p><span className="text-emerald-300 font-medium">Work · </span>{compat.work}</p>
           </div>
         </Section>
       )}
@@ -166,16 +166,16 @@ export function PersonComparePage() {
         headingLevel="h3"
         title={<span className="inline-flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /> Your strongest connections</span>}
       >
-        <div className="space-y-3">
+        <div className="space-y-4">
           {aspects.slice(0, 8).map((a, i) => (
-            <div key={i} className="text-sm">
+            <div key={i} className="text-ui">
               <div className="text-mystic-200">
                 Your <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet1]}</span> {a.planet1}
-                <span className="text-mystic-500"> {a.type} </span>
+                <span className="text-mystic-400"> {a.type} </span>
                 {name}'s <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet2]}</span> {a.planet2}
-                <span className="text-mystic-600 text-xs"> · orb {a.orb}°</span>
+                <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
               </div>
-              {interp && <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
+              {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
             </div>
           ))}
         </div>
@@ -183,7 +183,7 @@ export function PersonComparePage() {
       </>
       )}
 
-      <p className="text-center text-xs text-mystic-600">For reflection &amp; entertainment. These charts describe dynamics, not destiny.</p>
+      <p className="text-caption text-mystic-500 italic">For reflection &amp; entertainment. These charts describe dynamics, not destiny.</p>
     </div>
   );
 }

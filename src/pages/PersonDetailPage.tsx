@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Pencil, Trash2, GitCompareArrows } from 'lucide-react';
-import { Card, Button, Sheet, toast, PageHeader, Section, Disclosure, Skeleton } from '../components/ui';
+import { Card, Button, Sheet, toast, PageHeader, Section, Disclosure, Skeleton, ReadingProse } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
@@ -87,7 +87,7 @@ export function PersonDetailPage() {
         ) : undefined}
       />
       {!person.birthTime && !isPet && (
-        <p className="text-center text-xs text-mystic-600 -mt-3">Birth time unknown — houses &amp; rising sign are approximate.</p>
+        <p className="text-center text-meta text-mystic-400 -mt-3">Birth time unknown — houses &amp; rising sign are approximate.</p>
       )}
 
       {isPet && petReading && (
@@ -96,27 +96,29 @@ export function PersonDetailPage() {
             <div className="flex items-baseline gap-2">
               <span className="text-2xl">{SIGN_GLYPH[petReading.sign.charAt(0).toUpperCase() + petReading.sign.slice(1)] ?? ''}</span>
               <div>
-                <div className="text-mystic-100">{petReading.reading.headline}</div>
-                <div className="text-xs text-mystic-500">
+                <div className="heading-display-md text-mystic-100">{petReading.reading.headline}</div>
+                <div className="text-meta text-mystic-400">
                   {person.species ? SPECIES_INFO[person.species].label : 'Companion'}
                   {petReading.animal && <> · Year of the {petReading.animal.en} {petReading.animal.cn}</>}
                 </div>
               </div>
             </div>
-            <p className="text-sm text-mystic-300 leading-relaxed">{petReading.reading.temperament}</p>
-            {petReading.speciesLens && (
-              <p className="text-[13px] text-mystic-400 leading-relaxed">{petReading.speciesLens}</p>
-            )}
+            <div className="reading-copy">
+              <p>{petReading.reading.temperament}</p>
+              {petReading.speciesLens && <p>{petReading.speciesLens}</p>}
+            </div>
           </Card>
 
-          <Section title="What they need from you" headingLevel="h3" spacing="sm" contentClassName="space-y-2">
-            <p className="text-sm text-mystic-300 leading-relaxed">{petReading.reading.needs}</p>
-            <p className="text-[13px] text-mystic-400 leading-relaxed border-t border-mystic-800/40 pt-2">
-              <span className="text-gold/80">The quirk:</span> {petReading.reading.quirk}
-            </p>
+          <Section title="What they need from you" headingLevel="h3" spacing="sm">
+            <div className="reading-copy">
+              <p>{petReading.reading.needs}</p>
+              <p className="border-t border-mystic-800/40 pt-3">
+                <span className="text-gold/80">The quirk:</span> {petReading.reading.quirk}
+              </p>
+            </div>
           </Section>
 
-          <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">{PET_DISCLAIMER}</p>
+          <p className="text-caption text-mystic-500 italic">{PET_DISCLAIMER}</p>
         </>
       )}
 
@@ -136,8 +138,8 @@ export function PersonDetailPage() {
           ].filter(Boolean).map((b) => (
             <div key={b!.t} className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-3 text-center">
               <div className="text-xl" style={{ fontFamily: 'serif' }}>{b!.g}</div>
-              <div className="text-[11px] uppercase tracking-wider text-mystic-500 mt-1">{b!.t}</div>
-              <div className="text-sm text-gold">{b!.s}</div>
+              <div className="text-meta uppercase tracking-wider text-mystic-400 mt-1">{b!.t}</div>
+              <div className="text-ui text-gold">{b!.s}</div>
             </div>
           ))}
         </div>
@@ -165,14 +167,14 @@ export function PersonDetailPage() {
                   <>
                     <span className="text-mystic-100">{p.planet}</span>
                     <span className="text-mystic-400"> in {p.sign} {SIGN_GLYPH[p.sign]}</span>
-                    {p.house && <span className="text-mystic-600 text-xs"> · House {p.house}</span>}
+                    {p.house && <span className="text-meta text-mystic-400"> · House {p.house}</span>}
                     {p.retrograde && <span className="text-red-400 text-xs"> ℞</span>}
                   </>
                 }
-                contentClassName="pl-9 space-y-2 text-sm text-mystic-300 leading-relaxed"
+                contentClassName="pl-9 reading-copy"
               >
                 {sText ? <p>{sText}</p> : <Skeleton height={14} width="80%" />}
-                {hText && <p className="text-mystic-400">{hText}</p>}
+                {hText && <p>{hText}</p>}
               </Disclosure>
             );
           })}
@@ -190,12 +192,12 @@ export function PersonDetailPage() {
       {chart && chart.aspects.length > 0 && (
         <Section title="Aspects" headingLevel="h3" contentClassName="space-y-3">
           <AspectGrid aspects={chart.aspects} />
-          <div className="space-y-2 pt-1">
+          <div className="space-y-3 pt-1">
             {chart.aspects.slice(0, 6).map((a, i) => (
-              <div key={i} className="text-sm">
+              <div key={i} className="text-ui">
                 <span className="text-mystic-200">{a.planet1} {a.type} {a.planet2}</span>
-                <span className="text-mystic-600 text-xs"> · orb {a.orb}°</span>
-                {interp && <p className="text-mystic-400 text-[13px] leading-relaxed mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
+                <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+                {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
               </div>
             ))}
           </div>
@@ -221,7 +223,7 @@ export function PersonDetailPage() {
 
       <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Remove person?">
         <div className="space-y-4">
-          <p className="text-sm text-mystic-300">This deletes {person.name}'s saved birth data and chart. This can't be undone.</p>
+          <p className="text-ui text-mystic-300">This deletes {person.name}'s saved birth data and chart. This can't be undone.</p>
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={() => setConfirmDelete(false)}>Keep</Button>
             <Button variant="primary" className="flex-1 !bg-red-600 hover:!bg-red-500" onClick={handleDelete}>Remove</Button>

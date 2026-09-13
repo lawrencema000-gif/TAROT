@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -135,7 +135,7 @@ export function TarotCompanionPage() {
       {drawing && (
         <div className="py-12 text-center">
           <div className="loading-constellation mx-auto mb-3" />
-          <p className="text-xs text-mystic-500">{t('tarotCompanion.drawing', { defaultValue: 'Drawing…' })}</p>
+          <p className="text-ui text-mystic-400">{t('tarotCompanion.drawing', { defaultValue: 'Drawing…' })}</p>
         </div>
       )}
 
@@ -154,11 +154,11 @@ export function TarotCompanionPage() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+              <p className="font-display-eyebrow mb-1">
                 {card.reversed ? t('tarotCompanion.reversed', { defaultValue: 'Reversed' }) : t('tarotCompanion.upright', { defaultValue: 'Upright' })}
               </p>
-              <h2 className="font-display text-lg text-mystic-100">{card.card.name}</h2>
-              <p className="text-xs text-mystic-400 mt-1 leading-relaxed line-clamp-3">
+              <h2 className="heading-display-md text-mystic-100">{card.card.name}</h2>
+              <p className="text-ui text-mystic-300 mt-1 line-clamp-3">
                 {card.reversed ? card.card.meaningReversed : card.card.meaningUpright}
               </p>
             </div>
@@ -171,13 +171,15 @@ export function TarotCompanionPage() {
           <div ref={scrollRef} className="max-h-[50vh] overflow-y-auto space-y-3 mb-3 pr-1">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
-                  m.role === 'user'
-                    ? 'bg-gold/15 text-mystic-100 border border-gold/30'
-                    : 'bg-mystic-800/50 text-mystic-200 border border-mystic-700/40'
-                }`}>
-                  {m.content}
-                </div>
+                {m.role === 'user' ? (
+                  <div className="max-w-[85%] px-3 py-2 rounded-2xl text-ui bg-gold/15 text-mystic-100 border border-gold/30">
+                    {m.content}
+                  </div>
+                ) : (
+                  <div className="max-w-[85%] px-3 py-2 rounded-2xl bg-mystic-800/50 border border-mystic-700/40">
+                    <ReadingProse text={m.content} lede={false} className="whitespace-pre-line" />
+                  </div>
+                )}
               </div>
             ))}
             {sending && (
@@ -213,7 +215,7 @@ export function TarotCompanionPage() {
       {messages.length === 0 && !drawing && (
         <Card padding="lg" className="text-center">
           <MessageCircle className="w-6 h-6 text-mystic-500 mx-auto mb-2" />
-          <p className="text-xs text-mystic-400">
+          <p className="text-ui text-mystic-400">
             {t('tarotCompanion.empty', { defaultValue: 'Pull a card to begin a conversation.' })}
           </p>
           <Button variant="gold" onClick={draw} className="mt-3">

@@ -655,7 +655,7 @@ export function BaziPage() {
                       : 'border-gold/25 bg-gold/5';
                     return (
                       <div key={i} className={`p-3 rounded-xl border ${tint}`}>
-                        <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-1.5">
                           <span className="text-ui font-medium text-mystic-100">{s.name}</span>
                           <span className="text-meta text-mystic-400">{s.classical}</span>
                           <span className="text-meta text-mystic-400 ml-auto capitalize">{s.pillar} pillar</span>

@@ -74,7 +74,7 @@ export function IChingPage() {
           }
         >
           <Card variant="glow" padding="lg">
-            <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+            <p className="reading-copy mb-4">
               {t('iching.intro', {
                 defaultValue:
                   'The I-Ching — the Book of Changes — is the oldest divination system in the world. Hold a question in mind. Throw the coins six times. The hexagram that appears reflects the moving energies around your question.',
@@ -118,7 +118,7 @@ export function IChingPage() {
             `active` prop. */}
         <CoinToss active={tossActive} results={tossFaces} duration={800} />
 
-        <p className="text-mystic-400 text-xs tracking-widest uppercase">
+        <p className="text-meta text-mystic-400 tracking-widest uppercase">
           {t('iching.castingLine', {
             defaultValue: 'Line {{n}} of 6',
             n: Math.max(1, animatingLine + 1),
@@ -202,10 +202,10 @@ export function IChingPage() {
 
         {question && (
           <Card padding="md" className="bg-mystic-800/30 border-mystic-700/30">
-            <p className="text-xs text-mystic-500 mb-1">
+            <p className="text-meta text-mystic-400 mb-1">
               {t('iching.yourQuestion', { defaultValue: 'Your question' })}
             </p>
-            <p className="text-sm text-mystic-300 italic">"{question}"</p>
+            <p className="reading-copy italic">"{question}"</p>
           </Card>
         )}
 
@@ -254,29 +254,29 @@ export function IChingPage() {
           }
         >
           <Section headingLevel="h3" spacing="sm" title={t('iching.judgement', { defaultValue: 'The Judgement' })}>
-            <p className="text-mystic-300 text-sm leading-relaxed italic">"{localizedJudgement}"</p>
+            <p className="reading-copy italic">"{localizedJudgement}"</p>
           </Section>
 
           <Section headingLevel="h3" spacing="sm" title={t('iching.interpretation', { defaultValue: 'Interpretation' })}>
-            <p className="text-mystic-300 text-sm leading-relaxed">{localizedInterpretation}</p>
+            <p className="reading-copy">{localizedInterpretation}</p>
           </Section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card padding="lg">
-              <h3 className="font-medium text-emerald-400 mb-3">
+              <h3 className="heading-display-md text-mystic-100 mb-3">
                 {t('iching.strengths', { defaultValue: 'Strengths' })}
               </h3>
-              <ul className="space-y-2 text-mystic-300 text-sm">
+              <ul className="reading-copy space-y-2">
                 {strengths.map((s, i) => (
                   <li key={i}>• {s}</li>
                 ))}
               </ul>
             </Card>
             <Card padding="lg">
-              <h3 className="font-medium text-pink-400 mb-3">
+              <h3 className="heading-display-md text-mystic-100 mb-3">
                 {t('iching.cautions', { defaultValue: 'Cautions' })}
               </h3>
-              <ul className="space-y-2 text-mystic-300 text-sm">
+              <ul className="reading-copy space-y-2">
                 {cautions.map((c, i) => (
                   <li key={i}>• {c}</li>
                 ))}
@@ -288,7 +288,7 @@ export function IChingPage() {
             <Card padding="lg" className="border-cosmic-blue/30">
               <div className="flex items-center gap-2 mb-3">
                 <RotateCcw className="w-4 h-4 text-cosmic-blue" />
-                <h3 className="font-medium text-cosmic-blue">
+                <h3 className="heading-display-md text-mystic-100">
                   {t('iching.transformsInto', { defaultValue: 'Transforms into' })}
                 </h3>
               </div>
@@ -298,14 +298,14 @@ export function IChingPage() {
                   <p className="text-mystic-200 font-display text-lg">
                     {t(`iching.hexagrams.${transformed.number}.name`, { defaultValue: transformed.name })}
                   </p>
-                  <p className="text-mystic-500 text-xs italic mt-1">
+                  <p className="text-meta text-mystic-400 italic mt-1">
                     {t(`iching.hexagrams.${transformed.number}.tagline`, {
                       defaultValue: transformed.tagline,
                     })}
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-mystic-500 mt-3">
+              <p className="reading-copy mt-3">
                 {t('iching.transformNote', {
                   defaultValue:
                     'The changing lines show the energy moving toward this second hexagram — read as "where this situation is heading".',
@@ -315,11 +315,11 @@ export function IChingPage() {
           )}
 
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
-              <Feather className="w-4 h-4" />
+            <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
+              <Feather className="w-4 h-4 text-gold" />
               {t('iching.journalPrompt', { defaultValue: 'Journal prompt' })}
             </h3>
-            <p className="text-mystic-200 italic leading-relaxed">"{localizedJournal}"</p>
+            <p className="reading-copy italic">"{localizedJournal}"</p>
           </Card>
         </ResultLayout>
       </div>

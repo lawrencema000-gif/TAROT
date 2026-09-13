@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Sparkles, Feather, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
-import { Card, Button, toast, PageHeader, EmptyState } from '../components/ui';
+import { Card, Button, toast, PageHeader, EmptyState, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -156,7 +156,7 @@ export function MoodDiaryPage() {
         )}
 
         <Card variant="glow" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+          <p className="reading-copy mb-4">
             {t('mood.intro', {
               defaultValue:
                 'How is today landing in you? Pick the shape of it, notice the intensity, optionally write a sentence. Over time your mood curve becomes a map.',
@@ -188,7 +188,7 @@ export function MoodDiaryPage() {
 
           {selected && (
             <>
-              <label className="block text-xs text-mystic-500 mb-2">
+              <label className="block text-ui text-mystic-400 mb-2">
                 {t('mood.intensityLabel', { defaultValue: 'Intensity' })}
               </label>
               <div className="flex gap-2 mb-4">
@@ -207,7 +207,7 @@ export function MoodDiaryPage() {
                 ))}
               </div>
 
-              <label className="block text-xs text-mystic-500 mb-2">
+              <label className="block text-ui text-mystic-400 mb-2">
                 {t('mood.noteLabel', { defaultValue: 'One-line note (optional)' })}
               </label>
               <textarea
@@ -224,14 +224,14 @@ export function MoodDiaryPage() {
 
         {selectedInfo && (
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
-              <Feather className="w-4 h-4" />
+            <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
+              <Feather className="w-4 h-4 text-gold" />
               {t('mood.promptLabel', { defaultValue: 'Journal prompt' })}
             </h3>
-            <p className="text-mystic-200 italic text-sm leading-relaxed mb-3">
-              "{t(`mood.categories.${selected}.journalPrompt`, { defaultValue: selectedInfo.journalPrompt })}"
+            <p className="reading-quote my-0 mb-3">
+              {t(`mood.categories.${selected}.journalPrompt`, { defaultValue: selectedInfo.journalPrompt })}
             </p>
-            <p className="text-xs text-mystic-500">
+            <p className="reading-copy">
               💡 {t(`mood.categories.${selected}.recommendation`, { defaultValue: selectedInfo.recommendation })}
             </p>
           </Card>
@@ -342,7 +342,7 @@ export function MoodDiaryPage() {
           </svg>
         )}
 
-        <div className="flex justify-between text-[10px] text-mystic-600 mt-2">
+        <div className="flex justify-between text-meta text-mystic-400 mt-2">
           <span>{t('mood.days.30ago', { defaultValue: '30d ago' })}</span>
           <span>{t('mood.days.today', { defaultValue: 'Today' })}</span>
         </div>
@@ -353,15 +353,15 @@ export function MoodDiaryPage() {
           <div className="flex items-center gap-3 mb-2">
             <span className="text-2xl">{MOOD_CATEGORIES[dominantMood].emoji}</span>
             <div>
-              <p className="text-xs text-mystic-500">
+              <p className="text-meta text-mystic-400">
                 {t('mood.dominantLabel', { defaultValue: 'Most common mood' })}
               </p>
-              <p className="text-mystic-200 font-medium text-sm">
+              <p className="text-ui text-mystic-100 font-medium">
                 {t(`mood.categories.${dominantMood}.name`, { defaultValue: MOOD_CATEGORIES[dominantMood].name })}
               </p>
             </div>
           </div>
-          <p className="text-xs text-mystic-500">
+          <p className="text-meta text-mystic-400">
             {t('mood.avgIntensity', {
               defaultValue: 'Average intensity: {{n}} / 5',
               n: avgIntensity.toFixed(1),
@@ -375,11 +375,11 @@ export function MoodDiaryPage() {
 
       {allEntries.length >= 3 && !letter && (
         <Card variant="glow" padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
-          <h3 className="font-medium text-cosmic-violetLight mb-2 flex items-center gap-2">
-            <Mail className="w-4 h-4" />
+          <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
+            <Mail className="w-4 h-4 text-cosmic-violetLight" />
             {t('mood.letterHeading', { defaultValue: 'A letter for this week' })}
           </h3>
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+          <p className="reading-copy mb-4">
             {t('mood.letterIntro', {
               defaultValue:
                 'Generate a warm, specific letter reading your last 14 days of entries — written like a wise friend who has been paying attention.',
@@ -406,7 +406,7 @@ export function MoodDiaryPage() {
         <Card variant="glow" padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
           <div className="flex items-center gap-2 mb-3">
             <Mail className="w-5 h-5 text-gold" />
-            <h3 className="font-display text-lg text-mystic-100">
+            <h3 className="heading-display-md text-mystic-100">
               {t('mood.letterTitle', { defaultValue: 'Your weekly letter' })}
             </h3>
           </div>
@@ -416,16 +416,12 @@ export function MoodDiaryPage() {
             </span>
             <span className="text-xs text-mystic-200">{letter.dominantTheme}</span>
           </div>
-          {letter.letter.split(/\n\n+/).map((para, i) => (
-            <p key={i} className="text-mystic-200 text-sm leading-relaxed mb-3 last:mb-0">
-              {para}
-            </p>
-          ))}
+          <ReadingProse text={letter.letter} />
           <div className="mt-4 pt-4 border-t border-gold/10">
-            <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
+            <p className="font-display-eyebrow mb-1">
               {t('mood.carePracticeLabel', { defaultValue: 'One practice' })}
             </p>
-            <p className="text-mystic-200 text-sm italic leading-relaxed">{letter.careSuggestion}</p>
+            <p className="reading-copy italic">{letter.careSuggestion}</p>
           </div>
           <Button
             variant="outline"
@@ -440,7 +436,7 @@ export function MoodDiaryPage() {
       )}
 
       <Card padding="md" className="bg-mystic-800/30 border-mystic-700/30">
-        <p className="text-xs text-mystic-400 leading-relaxed">
+        <p className="text-caption text-mystic-500">
           {t('mood.privacyNote', {
             defaultValue: 'Your mood log lives on this device only. It is not uploaded or synced.',
           })}
@@ -481,16 +477,16 @@ function InsightCard({
           <DriftIcon className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-0.5">
+          <p className="font-display-eyebrow text-cosmic-blue mb-0.5">
             {t('mood.patternLabel', { defaultValue: 'This week' }) as string}
           </p>
-          <p className="text-sm text-mystic-200 leading-relaxed">{pattern.headline}</p>
+          <p className="reading-copy">{pattern.headline}</p>
 
           {expanded && (
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+            <div className="mt-3 grid grid-cols-2 gap-2 text-ui">
               {pattern.heaviestDay && (
                 <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2">
-                  <p className="text-[10px] text-mystic-500">
+                  <p className="text-meta text-mystic-400">
                     {t('mood.heaviestDayLabel', { defaultValue: 'Heaviest day' }) as string}
                   </p>
                   <p className="text-pink-400 font-medium">{pattern.heaviestDay}</p>
@@ -498,19 +494,19 @@ function InsightCard({
               )}
               {pattern.lightestDay && (
                 <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2">
-                  <p className="text-[10px] text-mystic-500">
+                  <p className="text-meta text-mystic-400">
                     {t('mood.lightestDayLabel', { defaultValue: 'Lightest day' }) as string}
                   </p>
                   <p className="text-emerald-400 font-medium">{pattern.lightestDay}</p>
                 </div>
               )}
               <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2 col-span-2">
-                <p className="text-[10px] text-mystic-500">
+                <p className="text-meta text-mystic-400">
                   {t('mood.weekOverWeekLabel', { defaultValue: 'Week-over-week' }) as string}
                 </p>
                 <p className={`font-medium ${driftTint}`}>
                   {pattern.driftDelta > 0 ? '+' : ''}{pattern.driftDelta.toFixed(2)}
-                  <span className="text-mystic-500 ml-1 font-normal text-[11px]">
+                  <span className="text-meta text-mystic-400 ml-1 font-normal">
                     {t('mood.driftUnits', { defaultValue: 'mood y-value delta' }) as string}
                   </span>
                 </p>

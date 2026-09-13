@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Input, toast, PageHeader, Section, Disclosure, ReadingProse } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -123,7 +123,7 @@ export function HumanDesignPage() {
         />
 
         <Card variant="glow" padding="lg">
-          <p className="text-mystic-300 text-sm leading-relaxed mb-4">
+          <p className="reading-copy mb-4">
             {t('humanDesign.intro', {
               defaultValue:
                 'Human Design maps the unique way you are built to engage with the world. Your Type, Strategy, Authority, and Profile show the path of least resistance — the way you are designed to make decisions, do work, and find alignment. This reading computes your real bodygraph from your birth moment using ephemeris data, not guesswork.',
@@ -147,7 +147,7 @@ export function HumanDesignPage() {
             </div>
           </div>
 
-          <p className="text-xs text-mystic-600 mt-4 italic">
+          <p className="text-caption text-mystic-500 mt-4 italic">
             {t('humanDesign.disclaimer', {
               defaultValue:
                 'Your chart is computed server-side from planetary positions at your exact birth moment + the Design moment 88° of solar arc earlier. For the full 64-gate bodygraph with colour/tone, export to a dedicated HD platform.',
@@ -222,8 +222,8 @@ export function HumanDesignPage() {
             </div>
           )}
           <h2 className="heading-display-xl text-mystic-100">{chart.type}</h2>
-          <p className="text-gold/80 text-sm mt-2 italic">"{chart.strategy}"</p>
-          <p className="text-xs text-mystic-500 mt-3">
+          <p className="text-body text-gold/80 mt-2 italic">"{chart.strategy}"</p>
+          <p className="text-meta text-mystic-400 mt-3">
             {t('humanDesign.profileLabel', { defaultValue: 'Profile' })}{' '}
             <span className="text-gold font-medium">{chart.profile}</span>
             {' · '}
@@ -234,20 +234,20 @@ export function HumanDesignPage() {
 
         {typeContent.summary && (
           <Card padding="lg">
-            <p className="text-mystic-300 text-sm leading-relaxed">{typeContent.summary}</p>
+            <ReadingProse text={typeContent.summary} />
           </Card>
         )}
 
         {/* Signature / Not-self */}
         <div className="grid grid-cols-2 gap-3">
           <Card padding="md" className="border-emerald-400/20">
-            <p className="text-xs text-mystic-500 mb-1">
+            <p className="text-meta text-mystic-400 mb-1">
               {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
             </p>
             <p className="text-lg text-emerald-400 font-display">{chart.signature}</p>
           </Card>
           <Card padding="md" className="border-pink-400/20">
-            <p className="text-xs text-mystic-500 mb-1">
+            <p className="text-meta text-mystic-400 mb-1">
               {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
             </p>
             <p className="text-lg text-pink-400 font-display">{chart.notSelfTheme}</p>
@@ -260,12 +260,12 @@ export function HumanDesignPage() {
           headingLevel="h3"
           spacing="sm"
         >
-          <p className="text-mystic-300 text-sm leading-relaxed">{chart.authorityExplanation}</p>
+          <p className="reading-copy">{chart.authorityExplanation}</p>
         </Section>
 
         {/* Bodygraph SVG */}
         <Card padding="lg">
-          <h3 className="font-medium text-gold mb-3">
+          <h3 className="heading-display-md text-mystic-100 mb-3">
             {t('humanDesign.bodygraphLabel', { defaultValue: 'Your bodygraph' })}
           </h3>
           <Bodygraph
@@ -273,7 +273,7 @@ export function HumanDesignPage() {
             definedGates={chart.definedGates}
             channels={chart.channels}
           />
-          <p className="text-xs text-mystic-500 mt-3 text-center">
+          <p className="text-meta text-mystic-400 mt-3 text-center">
             {chart.definedCenters.length}{' / 9 '}
             {t('humanDesign.centersDefined', { defaultValue: 'centres defined' })}
             {' · '}
@@ -298,7 +298,7 @@ export function HumanDesignPage() {
                 </span>
               ))}
             </div>
-            <p className="text-xs text-mystic-500 mt-3 leading-relaxed">
+            <p className="reading-copy mt-3">
               {t('humanDesign.channelsNote', {
                 defaultValue:
                   'Each channel connects two centres and defines a consistent life-force flow between them. These are fixed parts of who you are — always available to you.',
@@ -312,20 +312,20 @@ export function HumanDesignPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {typeContent.strengths?.length > 0 && (
               <Card padding="lg">
-                <h3 className="font-medium text-emerald-400 mb-3">
+                <h3 className="heading-display-md text-mystic-100 mb-3">
                   {t('humanDesign.strengthsLabel', { defaultValue: 'Strengths' })}
                 </h3>
-                <ul className="space-y-2 text-mystic-300 text-sm">
+                <ul className="reading-copy space-y-2">
                   {typeContent.strengths.map((s, i) => <li key={i}>• {s}</li>)}
                 </ul>
               </Card>
             )}
             {typeContent.challenges?.length > 0 && (
               <Card padding="lg">
-                <h3 className="font-medium text-pink-400 mb-3">
+                <h3 className="heading-display-md text-mystic-100 mb-3">
                   {t('humanDesign.challengesLabel', { defaultValue: 'Challenges' })}
                 </h3>
-                <ul className="space-y-2 text-mystic-300 text-sm">
+                <ul className="reading-copy space-y-2">
                   {typeContent.challenges.map((c, i) => <li key={i}>• {c}</li>)}
                 </ul>
               </Card>
@@ -355,13 +355,13 @@ export function HumanDesignPage() {
 
         {typeContent.affirmation && (
           <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="font-medium text-gold mb-3 flex items-center gap-2">
+            <h3 className="heading-display-md text-gold mb-3 flex items-center gap-2">
               <Feather className="w-4 h-4" />
               {t('humanDesign.affirmationLabel', { defaultValue: 'Your affirmation' })}
             </h3>
-            <p className="text-mystic-200 italic leading-relaxed mb-3">"{typeContent.affirmation}"</p>
+            <blockquote className="reading-quote mt-0 mb-3">{typeContent.affirmation}</blockquote>
             {typeContent.tarotPairing && (
-              <p className="text-xs text-mystic-500">
+              <p className="text-meta text-mystic-400">
                 {t('humanDesign.tarotPairingLabel', { defaultValue: 'Tarot pairing' })}:{' '}
                 <span className="text-gold/80">{typeContent.tarotPairing}</span>
               </p>
@@ -372,11 +372,11 @@ export function HumanDesignPage() {
         {/* Strategy in practice — concrete scenarios per Type. */}
         {TYPE_CASES[typeKey(chart.type)] && TYPE_CASES[typeKey(chart.type)].length > 0 && (
           <Card padding="lg" className="border-emerald-400/20">
-            <h3 className="font-medium text-emerald-400 mb-3 flex items-center gap-2">
+            <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
               <Target className="w-4 h-4" />
               {t('humanDesign.casesHeading', { defaultValue: 'Strategy in practice' })}
             </h3>
-            <p className="text-xs text-mystic-400 mb-4 italic">
+            <p className="text-ui text-mystic-400 mb-4 italic">
               {t('humanDesign.casesIntro', {
                 defaultValue:
                   'Concrete scenarios showing what your strategy looks like in real Tuesday-afternoon situations.',
@@ -385,25 +385,25 @@ export function HumanDesignPage() {
             <div className="space-y-4">
               {TYPE_CASES[typeKey(chart.type)].map((c, i) => (
                 <div key={i} className="space-y-2">
-                  <p className="text-sm font-medium text-mystic-100">
+                  <p className="text-ui font-medium text-mystic-100">
                     {t('humanDesign.scenarioLabel', { defaultValue: 'Scenario' })}
                   </p>
-                  <p className="text-xs text-mystic-300 leading-relaxed">{c.scenario}</p>
+                  <p className="reading-copy">{c.scenario}</p>
                   <div className="grid grid-cols-1 gap-2">
                     <div className="p-2.5 rounded-lg bg-pink-500/5 border border-pink-400/15">
-                      <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
+                      <p className="font-display-eyebrow text-pink-400 mb-1">
                         {t('humanDesign.wrongMoveLabel', { defaultValue: 'The reactive move' })}
                       </p>
-                      <p className="text-xs text-mystic-300 leading-relaxed">{c.wrongMove}</p>
+                      <p className="reading-copy">{c.wrongMove}</p>
                     </div>
                     <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-400/15">
-                      <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">
+                      <p className="font-display-eyebrow text-emerald-400 mb-1">
                         {t('humanDesign.alignedMoveLabel', { defaultValue: 'The aligned move' })}
                       </p>
-                      <p className="text-xs text-mystic-200 leading-relaxed">{c.alignedMove}</p>
+                      <p className="reading-copy">{c.alignedMove}</p>
                     </div>
                   </div>
-                  <p className="text-[11px] text-gold/80 italic">
+                  <p className="text-meta text-gold/80 italic">
                     ✦ {t('humanDesign.signatureFelt', { defaultValue: 'Signature felt' })}: {c.signature}
                   </p>
                   {i < TYPE_CASES[typeKey(chart.type)].length - 1 && (
@@ -418,31 +418,31 @@ export function HumanDesignPage() {
         {/* Authority decision-making script. */}
         {AUTHORITY_SCRIPTS[chart.authority as Authority] && (
           <Card padding="lg" className="border-cosmic-blue/30">
-            <h3 className="font-medium text-cosmic-blue mb-3 flex items-center gap-2">
+            <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
               <Compass className="w-4 h-4" />
               {t('humanDesign.decisionScriptHeading', {
                 defaultValue: 'How to make decisions: {{authority}}',
                 authority: AUTHORITY_SCRIPTS[chart.authority as Authority].authorityName,
               })}
             </h3>
-            <ol className="list-decimal list-inside space-y-2 text-xs text-mystic-300 leading-relaxed mb-4">
+            <ol className="reading-copy list-decimal list-inside space-y-2 mb-4">
               {AUTHORITY_SCRIPTS[chart.authority as Authority].decisionMakingScript.map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
             <div className="p-3 rounded-xl bg-pink-500/5 border border-pink-400/15 mb-2">
-              <p className="text-[10px] uppercase tracking-widest text-pink-400 mb-1">
+              <p className="font-display-eyebrow text-pink-400 mb-1">
                 {t('humanDesign.commonMistakeLabel', { defaultValue: 'Common mistake' })}
               </p>
-              <p className="text-xs text-mystic-300 leading-relaxed">
+              <p className="reading-copy">
                 {AUTHORITY_SCRIPTS[chart.authority as Authority].commonMistake}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-400/15">
-              <p className="text-[10px] uppercase tracking-widest text-emerald-400 mb-1">
+              <p className="font-display-eyebrow text-emerald-400 mb-1">
                 {t('humanDesign.realityCheckLabel', { defaultValue: 'Reality check' })}
               </p>
-              <p className="text-xs text-mystic-300 leading-relaxed">
+              <p className="reading-copy">
                 {AUTHORITY_SCRIPTS[chart.authority as Authority].realityCheck}
               </p>
             </div>
@@ -484,12 +484,12 @@ function ActivationList({
 }: { title: string; activations: Activation[]; tint: string }) {
   return (
     <div>
-      <p className={`text-[10px] uppercase tracking-widest mb-2 ${tint}`}>{title}</p>
+      <p className={`font-display-eyebrow mb-2 ${tint}`}>{title}</p>
       <div className="space-y-1">
         {activations.map((a) => (
           <div
             key={`${a.body}-${a.gate}-${a.line}`}
-            className="flex items-center justify-between py-1 border-b border-mystic-800/40 last:border-b-0 text-xs"
+            className="flex items-center justify-between py-1 border-b border-mystic-800/40 last:border-b-0 text-meta"
           >
             <span className="text-mystic-300">{a.body}</span>
             <span className="text-mystic-200">

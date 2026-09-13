@@ -682,7 +682,12 @@
     line-height: 1.7;
     @apply text-mystic-200;
   }
-  .prose-reading > * + * { margin-top: 1.1em; }
+  /* Every stored body is wrapped in <article class="blog-post"> by the
+     generator, so a child combinator on .prose-reading matched nothing and
+     paragraphs ran together. :where() keeps this at zero specificity so the
+     heading margins below still win. */
+  .prose-reading > * + *,
+  .prose-reading > :where(article, section, div) > * + * { margin-top: 1.1em; }
   .prose-reading h2,
   .prose-reading h3 {
     font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
@@ -693,7 +698,10 @@
   }
   .prose-reading h2 { font-size: 1.75rem; }
   .prose-reading h3 { font-size: 1.375rem; }
-  .prose-reading p:first-child { @apply reading-lede; max-width: none; }
+  /* The lede is the body's first paragraph — not the first <p> inside a
+     loose <li> or a <blockquote>, which a bare descendant selector also hit. */
+  .prose-reading > p:first-of-type,
+  .prose-reading > :where(article, section, div) > p:first-of-type { @apply reading-lede; max-width: none; }
   .prose-reading a {
     text-decoration: underline;
     text-underline-offset: 3px;

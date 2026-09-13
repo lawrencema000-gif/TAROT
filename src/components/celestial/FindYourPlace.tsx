@@ -448,8 +448,8 @@ function ReadingBody({
       transition={{ duration: 0.5 }}
       className="space-y-5"
     >
-      <p className="reading-quote italic">
-        "{reading.verdict}"
+      <p className="reading-quote">
+        {reading.verdict}
       </p>
 
       <div className="rounded-2xl bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5">

@@ -8,6 +8,18 @@ import { ListSkeleton } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 
+/**
+ * Generator-written bodies open with an <h1> that repeats the post title,
+ * and this page renders the title itself — so every article carried two
+ * h1s, and once the body got real typography the in-body one sat at 17px
+ * regular above a 19px lede: an inverted hierarchy on 115 of 124 live posts.
+ * Drop a LEADING h1 only (first element inside the article wrapper, or at
+ * the top of a bare body). An h1 deeper in the body is content and stays.
+ */
+function stripDuplicateTitle(html: string): string {
+  return html.replace(/^(\s*(?:<article\b[^>]*>\s*)?)<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, '$1');
+}
+
 const DATE_LOCALES: Record<string, string> = {
   en: 'en-US',
   ja: 'ja-JP',
@@ -147,10 +159,10 @@ export function BlogPostPage() {
 
         <div
           className="prose-reading"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, {
+          dangerouslySetInnerHTML={{ __html: stripDuplicateTitle(DOMPurify.sanitize(post.content, {
             ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'a', 'img', 'blockquote', 'ul', 'ol', 'li', 'br', 'article', 'section', 'span', 'table', 'thead', 'tbody', 'tr', 'td', 'th'],
             ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
-          }) }}
+          })) }}
         />
       </article>
     </div>

@@ -100,7 +100,7 @@ function WeeklyView() {
               <div key={i} className="flex items-center gap-2 px-3 py-2 bg-mystic-800/40 rounded-lg">
                 <ArrowRight className="w-3 h-3 text-teal flex-shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-ui font-medium text-mystic-200 truncate">{b.activity}</div>
+                  <div className="text-meta font-medium text-mystic-200 leading-snug">{b.activity}</div>
                   <div className="text-meta text-mystic-400">{b.day}</div>
                 </div>
               </div>
@@ -152,7 +152,9 @@ function MonthlyView() {
         <ReadingProse text={content.overview} />
       </Card>
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Stacked on phones: two 116px columns cannot hold a 17px sentence —
+          a single long word overhung the card. Side by side from sm up. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {content.newMoon && (
           <Card padding="sm" className="space-y-2">
             <div className="flex items-center gap-2">

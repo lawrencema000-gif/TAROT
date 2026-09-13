@@ -696,6 +696,14 @@
     margin-top: 2em;
     @apply text-mystic-100;
   }
+  .prose-reading h1 {
+    font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+    font-weight: 500;
+    font-size: 2rem;
+    line-height: 1.12;
+    margin-top: 1.6em;
+    @apply text-mystic-100;
+  }
   .prose-reading h2 { font-size: 1.75rem; }
   .prose-reading h3 { font-size: 1.375rem; }
   /* The lede is the body's first paragraph — not the first <p> inside a

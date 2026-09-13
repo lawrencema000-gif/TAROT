@@ -378,8 +378,8 @@ export function CityInsightPanel({
                 {t('celestial.city.aiReading.label', { defaultValue: 'Your reading' })}
               </span>
             </div>
-            <p className="reading-quote italic">
-              "{reading.verdict}"
+            <p className="reading-quote">
+              {reading.verdict}
             </p>
             <ReadingProse text={reading.body} />
             {reading.lineNotes.length > 0 && (

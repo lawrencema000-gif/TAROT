@@ -321,19 +321,19 @@ export function PartnerCompatPage() {
               {t('compat.synastryLabel', { defaultValue: 'Astrology Synastry' })}
             </h3>
             <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="text-center p-2 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
+              <div className="text-center px-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
                 <p className="text-2xl font-display text-emerald-400">{result.synastry.harmoniousCount}</p>
                 <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.harmoniousLabel', { defaultValue: 'Harmonious' })}
                 </p>
               </div>
-              <div className="text-center p-2 rounded-xl bg-gold/10 border border-gold/20">
+              <div className="text-center px-1 py-2 rounded-xl bg-gold/10 border border-gold/20">
                 <p className="text-2xl font-display text-gold">{result.synastry.intenseCount}</p>
                 <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.intenseLabel', { defaultValue: 'Intense' })}
                 </p>
               </div>
-              <div className="text-center p-2 rounded-xl bg-pink-500/10 border border-pink-400/20">
+              <div className="text-center px-1 py-2 rounded-xl bg-pink-500/10 border border-pink-400/20">
                 <p className="text-2xl font-display text-pink-400">{result.synastry.challengingCount}</p>
                 <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.challengingLabel', { defaultValue: 'Challenging' })}

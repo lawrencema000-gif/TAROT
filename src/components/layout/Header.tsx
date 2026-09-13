@@ -2,21 +2,15 @@ import { Search, Star, Settings } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 
 interface HeaderProps {
-  title?: string;
-  subtitle?: string;
   onSearchClick: () => void;
   onSavedClick: () => void;
   onSettingsClick: () => void;
-  showTitle?: boolean;
 }
 
 export function Header({
-  title,
-  subtitle,
   onSearchClick,
   onSavedClick,
   onSettingsClick,
-  showTitle = true,
 }: HeaderProps) {
   const { t } = useT();
   // Shared icon-button class. `hairline-gold-soft` adds a 1px low-opacity
@@ -30,18 +24,12 @@ export function Header({
 
   return (
     <header className="flex items-end justify-between mb-6">
-      {showTitle && title ? (
-        <div className="min-w-0 flex-1 pr-3">
-          <h1 className="heading-display-lg text-mystic-100 truncate">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-sm text-mystic-400 mt-1 truncate">{subtitle}</p>
-          )}
-        </div>
-      ) : (
-        <div />
-      )}
+      {/* The shell used to render its own h1 + tagline here, above a page
+          that then rendered a second h1 — four of five primary tabs titled
+          themselves twice, and every deep route wore "Today / Your daily
+          ritual awaits" over its own header. PageHeader owns the title now;
+          this row is the three actions and nothing else. */}
+      <div />
 
       <div className="flex items-center gap-1.5 shrink-0">
         <button

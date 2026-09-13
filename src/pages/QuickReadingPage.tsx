@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Share2, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
-import { Card, Button, ReadingProse, toast } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -121,12 +121,10 @@ export function QuickReadingPage() {
   if (result) {
     return (
       <div className="space-y-5 pb-6">
-        <div className="flex items-center gap-3">
-          <Zap className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('quickReading.title', { defaultValue: '3-second reading' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<Zap />}
+          title={t('quickReading.title', { defaultValue: '3-second reading' })}
+        />
 
         <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-cosmic-violet/5">
           <p className="font-display-eyebrow text-mystic-500 mb-2">
@@ -179,12 +177,10 @@ export function QuickReadingPage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex items-center gap-3">
-        <Zap className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {t('quickReading.title', { defaultValue: '3-second reading' })}
-        </h1>
-      </div>
+      <PageHeader
+        icon={<Zap />}
+        title={t('quickReading.title', { defaultValue: '3-second reading' })}
+      />
 
       <Card padding="lg" variant="glow">
         <p className="reading-copy">

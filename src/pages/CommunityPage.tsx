@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
-import { Card, Button, SparkleFourPoint, toast } from '../components/ui';
+import { Card, Button, PageHeader, SparkleFourPoint, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
@@ -224,29 +224,29 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
 
   return (
     <div className={`space-y-4 pb-6 ${isWhisperingWell ? 'text-mystic-200' : ''}`}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <HeaderIcon className={`w-6 h-6 ${isWhisperingWell ? 'text-cosmic-violetLight' : 'text-gold'}`} />
-          <h1 className="heading-display-lg text-mystic-100">
-            {isWhisperingWell
-              ? t('community.whisperingWell.title', { defaultValue: 'Whispering Well' })
-              : t('community.title', { defaultValue: 'Community' })}
-          </h1>
-        </div>
-        {user && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setView('composer')}
-            className="text-sm"
-          >
-            <Send className="w-4 h-4 mr-1" />
-            {isWhisperingWell
-              ? t('community.whisperButton', { defaultValue: 'Whisper' })
-              : t('community.postButton', { defaultValue: 'Post' })}
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        icon={<HeaderIcon />}
+        title={
+          isWhisperingWell
+            ? t('community.whisperingWell.title', { defaultValue: 'Whispering Well' })
+            : t('community.title', { defaultValue: 'Community' })
+        }
+        action={
+          user ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setView('composer')}
+              className="text-sm"
+            >
+              <Send className="w-4 h-4 mr-1" />
+              {isWhisperingWell
+                ? t('community.whisperButton', { defaultValue: 'Whisper' })
+                : t('community.postButton', { defaultValue: 'Post' })}
+            </Button>
+          ) : undefined
+        }
+      />
 
       {isWhisperingWell && (
         <Card padding="md" className="bg-cosmic-violet/5 border-cosmic-violet/20">

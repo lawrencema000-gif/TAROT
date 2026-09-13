@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { TarotCardIcon } from '../components/ui/NavIcons';
+import { Lock, CheckCircle2 } from 'lucide-react';
+import { PageHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { FOOLS_JOURNEY, getCurrentJourney } from '../data/foolsJourney';
 import { fullDeck } from '../data/tarotDeck';
@@ -35,19 +35,19 @@ export function FoolsJourneyPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-xs text-mystic-500 hover:text-mystic-300 mb-3">
-        <ArrowLeft className="w-3 h-3" /> Back
-      </button>
-
-      <header className="mb-6 text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-          <TarotCardIcon className="w-3.5 h-3.5 text-gold" />
-          <span className="text-xs uppercase tracking-wider text-gold">The Fool\'s Journey</span>
-        </div>
-        <h1 className="heading-display-xl text-mystic-100 mb-1">{current.title}</h1>
-        <p className="text-sm text-mystic-400 italic">{current.theme}</p>
-        <p className="text-xs text-mystic-500 mt-2">Level {currentLevel} of 22</p>
-      </header>
+      <PageHeader
+        className="mb-6"
+        align="center"
+        onBack={() => navigate(-1)}
+        eyebrow="The Fool’s Journey"
+        title={current.title}
+        subtitle={
+          <>
+            <span className="block italic">{current.theme}</span>
+            <span className="block text-xs text-mystic-500 mt-2">Level {currentLevel} of 22</span>
+          </>
+        }
+      />
 
       {next && (
         <section className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4 mb-6 text-center">

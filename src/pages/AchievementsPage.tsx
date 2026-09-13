@@ -21,7 +21,7 @@ import {
   getUnnotifiedAchievements,
   getCategoryDisplayName,
 } from '../services/achievements';
-import { Skeleton, EmptyState } from '../components/ui';
+import { Skeleton, EmptyState, PageHeader } from '../components/ui';
 import { quizResults } from '../dal';
 import { useT } from '../i18n/useT';
 
@@ -150,6 +150,7 @@ export function AchievementsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900 pb-24">
       <div className="max-w-lg mx-auto">
+        <PageHeader title={t('pageTitles.achievements.title')} />
         <div className="relative p-6 bg-gradient-to-br from-mystic-800/80 to-mystic-900/80 border-b border-mystic-700/30">
           <div className="flex items-center gap-6">
             <div className="relative">

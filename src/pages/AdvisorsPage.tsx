@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Star, Clock, Globe, Users, Send, Calendar } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -178,21 +178,14 @@ export function AdvisorsPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <div className="flex items-center gap-3">
-        <Users className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {t('advisors.title', { defaultValue: 'Advisors' })}
-        </h1>
-      </div>
-
-      <Card padding="md" className="bg-cosmic-violet/5 border-cosmic-violet/20">
-        <p className="text-xs text-mystic-400 leading-relaxed italic">
-          {t('advisors.intro', {
-            defaultValue:
-              'Meet the readers joining Arcana. Paid sessions are rolling out gradually. Express interest to be notified when each advisor opens bookings.',
-          })}
-        </p>
-      </Card>
+      <PageHeader
+        icon={<Users />}
+        title={t('advisors.title', { defaultValue: 'Advisors' })}
+        subtitle={t('advisors.intro', {
+          defaultValue:
+            'Meet the readers joining Arcana. Paid sessions are rolling out gradually. Express interest to be notified when each advisor opens bookings.',
+        })}
+      />
 
       {loading && (
         <div className="text-center py-12 text-mystic-500 text-sm">

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, Play } from 'lucide-react';
+import { Plus, Trash2, Save, Play } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { toast } from '../components/ui';
+import { PageHeader, toast } from '../components/ui';
 import { setPageMeta } from '../utils/seo';
 
 interface Position {
@@ -130,19 +130,14 @@ export function SpreadBuilderPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <button onClick={() => navigate('/spreads')} className="inline-flex items-center gap-1 text-xs text-mystic-500 hover:text-mystic-300 mb-3">
-        <ArrowLeft className="w-3 h-3" /> All spreads
-      </button>
-
-      <header className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <TarotCardIcon className="w-5 h-5 text-gold" />
-          <h1 className="heading-display-xl text-mystic-100">Custom spread builder</h1>
-        </div>
-        <p className="text-sm text-mystic-400">
-          Design your own spread with up to {MAX_POSITIONS} positions. Save unlimited custom spreads tied to your account.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-6"
+        onBack={() => navigate('/spreads')}
+        backLabel="All spreads"
+        icon={<TarotCardIcon />}
+        title="Custom spread builder"
+        subtitle={<>Design your own spread with up to {MAX_POSITIONS} positions. Save unlimited custom spreads tied to your account.</>}
+      />
 
       <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
         <label className="block mb-3">

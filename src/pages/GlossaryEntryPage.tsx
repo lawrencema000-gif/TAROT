@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { PageHeader, Section, EmptyState, Button } from '../components/ui';
+import { useParams, useNavigate } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
+import { Section } from '../components/ui';
+import { LearnEntryTemplate, LearnEntryNotFound } from '../components/learn/LearnEntryTemplate';
 import { getGlossaryEntry, glossaryEntries } from '../data/glossaryLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
@@ -43,19 +44,7 @@ export function GlossaryEntryPage() {
   }, [entry]);
 
   if (!entry) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-16">
-        <EmptyState
-          title="Term not found"
-          action={
-            <Button variant="secondary" onClick={() => navigate('/glossary')}>
-              <ArrowLeft className="w-4 h-4" />
-              Back to glossary
-            </Button>
-          }
-        />
-      </div>
-    );
+    return <LearnEntryNotFound title="Term not found" backLabel="Back to glossary" onBack={() => navigate('/glossary')} />;
   }
 
   const related = entry.relatedEntries
@@ -63,56 +52,26 @@ export function GlossaryEntryPage() {
     .filter((x): x is typeof glossaryEntries[number] => Boolean(x));
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <PageHeader
-        className="mb-6"
-        backHref="/glossary"
-        backLabel="All terms"
-        eyebrow={entry.category}
-        title={
-          <>
-            {entry.term}
-            {entry.pronunciation && (
-              <span className="ml-3 text-sm font-normal text-mystic-400 italic">
-                /{entry.pronunciation}/
-              </span>
-            )}
-          </>
-        }
-        subtitle={
-          entry.alsoKnownAs && entry.alsoKnownAs.length > 0
-            ? `Also known as: ${entry.alsoKnownAs.join(', ')}`
-            : undefined
-        }
-      />
-
-      <p className="text-mystic-300 leading-relaxed mb-6">{entry.longDefinition}</p>
-
-      {entry.origin && (
-        <Section eyebrow="Origin" spacing="sm" className="mb-6">
-          <p className="text-sm text-mystic-300 leading-relaxed">{entry.origin}</p>
-        </Section>
-      )}
-
+    <LearnEntryTemplate
+      eyebrow={entry.category}
+      title={entry.term}
+      symbol={<BookOpen />}
+      lede={entry.longDefinition}
+      facts={[
+        { label: 'Pronunciation', value: entry.pronunciation ? `/${entry.pronunciation}/` : undefined },
+        { label: 'Also known as', value: entry.alsoKnownAs?.join(', ') },
+      ]}
+      sections={entry.origin ? [{ title: 'Origin', body: entry.origin }] : []}
+      related={related.map((r) => ({ label: r.term, href: `/glossary/${r.slug}` }))}
+      relatedTitle="Related terms"
+      backHref="/glossary"
+      backLabel="All terms"
+    >
       {entry.example && (
-        <section className="rounded-2xl border-l-2 border-gold/40 bg-mystic-900/30 p-4 mb-6">
-          <h2 className="text-xs uppercase tracking-wider text-gold mb-2">Used in context</h2>
-          <p className="text-sm italic text-mystic-300">"{entry.example}"</p>
-        </section>
-      )}
-
-      {related.length > 0 && (
-        <Section title="Related terms" headingLevel="h3" spacing="sm">
-          <div className="grid sm:grid-cols-2 gap-2">
-            {related.map((r) => (
-              <Link key={r.slug} to={`/glossary/${r.slug}`} className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
-                <span className="text-sm text-mystic-200">{r.term}</span>
-                <ChevronRight className="w-4 h-4 text-mystic-500" />
-              </Link>
-            ))}
-          </div>
+        <Section title="Used in context">
+          <blockquote className="reading-quote">{entry.example}</blockquote>
         </Section>
       )}
-    </div>
+    </LearnEntryTemplate>
   );
 }

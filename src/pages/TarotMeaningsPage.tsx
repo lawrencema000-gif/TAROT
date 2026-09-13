@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../components/ui';
 import { fullDeck } from '../data/tarotDeck';
 import { getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
@@ -49,9 +50,12 @@ export function TarotMeaningsPage() {
     <div className="tm-page">
       {/* Hero */}
       <div className="tm-hero">
-        <div className="tm-hero-badge">{t('tarot.heroBadge')}</div>
-        <h1 className="tm-hero-title">{t('tarot.title')}</h1>
-        <p className="tm-hero-sub">{t('tarot.heroSub')}</p>
+        <PageHeader
+          align="center"
+          eyebrow={t('tarot.heroBadge')}
+          title={t('tarot.title')}
+          subtitle={t('tarot.heroSub')}
+        />
       </div>
 
       {/* Filters */}

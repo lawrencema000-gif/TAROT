@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Share2, AlertCircle } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
@@ -226,12 +226,10 @@ export function SoulmateScorePage() {
   if (!hasBirthData) {
     return (
       <div className="space-y-5 pb-6">
-        <div className="flex items-center gap-3">
-          <Heart className="w-6 h-6 text-pink-400" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('soulmate.title', { defaultValue: 'Soulmate Score' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<Heart />}
+          title={t('soulmate.title', { defaultValue: 'Soulmate Score' })}
+        />
         <Card padding="lg">
           <div className="flex flex-col items-center text-center gap-3">
             <div className="w-14 h-14 rounded-full bg-mystic-800/60 border border-gold/20 flex items-center justify-center">
@@ -256,23 +254,20 @@ export function SoulmateScorePage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <header className="text-center space-y-1 pt-1">
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Heart className="w-8 h-8 text-pink-400 mx-auto mb-2" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('soulmate.title', { defaultValue: 'Soulmate Score' })}
-          </h1>
-          <p className="text-ui text-mystic-400 max-w-md mx-auto mt-1">
-            {t('soulmate.subtitle', {
-              defaultValue: "A classical synastry read, distilled to one number. Free, shareable, fast.",
-            })}
-          </p>
-        </motion.div>
-      </header>
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <PageHeader
+          align="center"
+          icon={<Heart />}
+          title={t('soulmate.title', { defaultValue: 'Soulmate Score' })}
+          subtitle={t('soulmate.subtitle', {
+            defaultValue: "A classical synastry read, distilled to one number. Free, shareable, fast.",
+          })}
+        />
+      </motion.div>
 
       <AnimatePresence mode="wait">
         {!result ? (

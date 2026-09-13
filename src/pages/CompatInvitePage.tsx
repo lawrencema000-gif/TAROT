@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ArrowRight, AlertCircle, UserPlus } from 'lucide-react';
 import { MysticalStar } from '../components/ui/MysticalStar';
-import { Card, Button, toast, ReadingProse } from '../components/ui';
+import { Card, Button, PageHeader, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { compatInvites } from '../dal';
@@ -161,19 +161,16 @@ export function CompatInvitePage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <Card padding="lg" variant="glow" className="text-center">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-pink-400/25 flex items-center justify-center mx-auto mb-3">
-          <Heart className="w-6 h-6 text-pink-400" />
-        </div>
-        <h1 className="heading-display-lg text-mystic-100 mb-1">
-          {invite.inviter_name
+      <PageHeader
+        align="center"
+        icon={<Heart />}
+        title={
+          invite.inviter_name
             ? t('compatInvite.fromNamed', { defaultValue: '{{name}} wants to see how you vibe', name: invite.inviter_name })
-            : t('compatInvite.fromAnon', { defaultValue: 'Someone wants to see how you vibe' })}
-        </h1>
-        <p className="text-meta text-mystic-400 italic">
-          {t(`compatInvite.kinds.${invite.kind}`, { defaultValue: invite.kind })}
-        </p>
-      </Card>
+            : t('compatInvite.fromAnon', { defaultValue: 'Someone wants to see how you vibe' })
+        }
+        subtitle={<span className="italic">{t(`compatInvite.kinds.${invite.kind}`, { defaultValue: invite.kind })}</span>}
+      />
 
       {mineResult ? (
         <Card padding="lg">

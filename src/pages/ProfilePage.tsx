@@ -21,7 +21,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState } from '../components/ui';
+import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState, PageHeader } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
@@ -206,6 +206,7 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-4 pb-6">
+      <PageHeader title={t('pageTitles.profile.title')} />
 
       <Card variant="glow" padding="lg">
         <div className="flex items-start gap-4">

@@ -1,13 +1,64 @@
 /* ═══════════════════════════════════════════════════════════════
    ARCANA — "Celestial Theater" v3
-   ═══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════
+
+   Redesign 2026 / Phase 2 — one gold, one ink ramp.
+
+   This sheet used to carry a second palette (--g #d4a853 over --bg
+   #040407, ink #eae6f2 / #706a82 / #3e3a4d), so the first screen a
+   visitor saw was made of different material than the app they signed
+   into — and token gold #d4af37 was ALSO here (.free-reading-*,
+   .lp-lang-check), so two golds rendered side by side on the hero.
+
+   Every colour below is now the app's token. Where src/index.css :root
+   has an RGB triplet (gold, surfaces, coral, teal) it is reached through
+   rgb(var(--x)) / rgba(var(--x), α) so the two files cannot drift; the
+   ink ramp and the two cosmic hues have no triplet, so they are declared
+   ONCE on .lp-root below and referenced as var(--t*) / var(--lp-*).
+
+   Mapping (old → token):
+     --g    #d4a853              → rgb(var(--gold-primary))    gold        #d4af37
+     --gl   #e8c97a              → rgb(var(--gold-light))      gold-light  #f4d668
+     --gg   rgba(212,168,83,α)   → rgba(var(--gold-primary), α)
+     --bg   #040407              → rgb(var(--canvas))          mystic-950  #07070f
+     --bg2  #08081a              → rgb(var(--surface-sunken))  mystic-900  #101024
+     --tx   #eae6f2 (+#f0e8d8 #f5edd8 #fff8e7)  → mystic-100  #f2f2f7
+     --tb   (new) #c0c0c0, #d8d4c8              → mystic-300  #c6c6d8
+     --tm   #706a82 (+#a0a0b0)                  → mystic-400  #a3a3bd  (3.97:1 → 7.2:1)
+     --td   #3e3a4d                             → mystic-500  #8f8fae
+     #080808 (ink on a gold fill)               → rgb(var(--canvas))
+     #2a2442 / #15132a (card back)              → rgb(var(--hairline)) / rgb(var(--surface-card))
+     rgba(30,30,60,α)                           → rgba(var(--surface-raised), α)  mystic-800
+     rgba(4,4,7,α), rgba(8,8,16,α)              → rgba(var(--canvas), α)
+     rgba(15,12,28,α)                           → rgba(var(--surface-sunken), α)
+     rgba(212,175,55,α)                         → rgba(var(--gold-primary), α)
+     ambient violets (139,92,246 · 96,76,180 · 140,120,220 · 88,60,160) → cosmic-violet 142,110,181
+     ambient blues   (59,130,246 · 58,110,165)                          → cosmic-blue   74,126,184
+     ambient teal    (40,120,130)                                       → teal          var(--teal-primary)
+     dawn            (224,140,90)                                       → coral         var(--coral-primary)
+     gold motes      (230,200,140)                                      → gold-light    var(--gold-light)
+
+   Kept on purpose: the #fff star dots, and the #000 / #fff Google Play
+   badge (those colours are Google's, not ours). The constellation SVG
+   data-URI cannot read var(), so it carries the token values literally.
+   Radii normalised to the primitives' scale: 12px controls & tiles,
+   16px cards & panels; pills stay pills (Chip is rounded-full).
+   Semantic white-alpha hairlines (--sf/--bd) are unchanged.
+*/
 
 .lp-root {
-  --g: #d4a853; --gl: #e8c97a; --gg: rgba(212,168,83,0.25);
-  --bg: #040407; --bg2: #08081a;
+  --g: rgb(var(--gold-primary)); --gl: rgb(var(--gold-light)); --gg: rgba(var(--gold-primary), 0.25);
+  --bg: rgb(var(--canvas)); --bg2: rgb(var(--surface-sunken));
   --sf: rgba(255,255,255,0.022); --sfh: rgba(255,255,255,0.045);
-  --bd: rgba(255,255,255,0.045); --bdh: rgba(212,168,83,0.2);
-  --tx: #eae6f2; --tm: #706a82; --td: #3e3a4d;
+  --bd: rgba(255,255,255,0.045); --bdh: rgba(var(--gold-primary), 0.2);
+  /* ink — mirrors the mystic ladder in tailwind.config.js */
+  --tx: #f2f2f7; /* mystic-100 — headings, primary text */
+  --tb: #c6c6d8; /* mystic-300 — reading copy, control labels */
+  --tm: #a3a3bd; /* mystic-400 — muted body text */
+  --td: #8f8fae; /* mystic-500 — faint meta */
+  /* cosmic hues — mirror cosmic.violet / cosmic.blue in tailwind.config.js */
+  --lp-violet: 142, 110, 181;
+  --lp-blue: 74, 126, 184;
   min-height: 100vh; background: var(--bg);
   color: var(--tx); font-family: 'Inter', -apple-system, sans-serif;
   overflow-x: hidden; -webkit-font-smoothing: antialiased; position: relative;
@@ -24,7 +75,7 @@
 /* ── Gradient Dividers ── */
 .lp-divider {
   height: 1px; max-width: 600px; margin: 0 auto; position: relative; z-index: 2;
-  background: linear-gradient(90deg, transparent 0%, rgba(212,168,83,0.15) 30%, rgba(212,168,83,0.25) 50%, rgba(212,168,83,0.15) 70%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(var(--gold-primary), 0.15) 30%, rgba(var(--gold-primary), 0.25) 50%, rgba(var(--gold-primary), 0.15) 70%, transparent 100%);
 }
 
 /* ── Stars ── */
@@ -39,7 +90,7 @@
   position: absolute; bottom: -20px; border-radius: 50%;
   width: var(--psize); height: var(--psize);
   background: var(--g); opacity: 0;
-  box-shadow: 0 0 8px var(--gg), 0 0 20px rgba(212,168,83,0.08);
+  box-shadow: 0 0 8px var(--gg), 0 0 20px rgba(var(--gold-primary), 0.08);
   animation: lp-rise linear infinite;
 }
 @keyframes lp-rise {
@@ -54,7 +105,7 @@
   transition: all 0.5s cubic-bezier(0.4,0,0.2,1); border-bottom: 1px solid transparent;
 }
 .lp-nav.solid {
-  background: rgba(4,4,7,0.85); backdrop-filter: blur(24px) saturate(1.6);
+  background: rgba(var(--canvas), 0.85); backdrop-filter: blur(24px) saturate(1.6);
   -webkit-backdrop-filter: blur(24px) saturate(1.6); border-bottom-color: var(--bd);
 }
 .lp-nav-in { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
@@ -62,14 +113,14 @@
 .lp-nav-moon { font-size: 1.4rem; color: var(--g); filter: drop-shadow(0 0 10px var(--gg)); }
 .lp-nav-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif; font-size: 1.35rem; font-weight: 600; color: var(--tx); letter-spacing: 0.03em; }
 .lp-nav-right { display: flex; align-items: center; gap: 6px; }
-.lp-nav-link { padding: 8px 16px; color: var(--tm); text-decoration: none; font-size: 0.85rem; border-radius: 10px; transition: color 0.25s; }
+.lp-nav-link { padding: 8px 16px; color: var(--tm); text-decoration: none; font-size: 0.85rem; border-radius: 12px; transition: color 0.25s; }
 .lp-nav-link:hover { color: var(--tx); }
 .lp-nav-btn {
   margin-left: 10px; padding: 9px 24px; border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px; background: none; color: var(--tx); font-size: 0.85rem; font-weight: 500;
   cursor: pointer; transition: all 0.3s;
 }
-.lp-nav-btn:hover { border-color: var(--g); color: var(--g); box-shadow: 0 0 24px rgba(212,168,83,0.08); }
+.lp-nav-btn:hover { border-color: var(--g); color: var(--g); box-shadow: 0 0 24px rgba(var(--gold-primary), 0.08); }
 
 /* ── Word Reveal ── */
 .lp-word {
@@ -105,15 +156,15 @@
 .lp-hero-visual { position: relative; z-index: 3; flex-shrink: 0; }
 
 .lp-hero-orb { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(120px); }
-.lp-hero-orb.o1 { width: 450px; height: 450px; background: rgba(139,92,246,0.06); top: 0%; left: -10%; animation: lp-drift 25s ease-in-out infinite; }
-.lp-hero-orb.o2 { width: 400px; height: 400px; background: rgba(212,168,83,0.04); bottom: 5%; right: -8%; animation: lp-drift 30s ease-in-out infinite reverse; }
-.lp-hero-orb.o3 { width: 300px; height: 300px; background: rgba(59,130,246,0.03); top: 35%; left: 50%; animation: lp-drift 22s ease-in-out infinite 3s; }
+.lp-hero-orb.o1 { width: 450px; height: 450px; background: rgba(var(--lp-violet), 0.06); top: 0%; left: -10%; animation: lp-drift 25s ease-in-out infinite; }
+.lp-hero-orb.o2 { width: 400px; height: 400px; background: rgba(var(--gold-primary), 0.04); bottom: 5%; right: -8%; animation: lp-drift 30s ease-in-out infinite reverse; }
+.lp-hero-orb.o3 { width: 300px; height: 300px; background: rgba(var(--lp-blue), 0.03); top: 35%; left: 50%; animation: lp-drift 22s ease-in-out infinite 3s; }
 @keyframes lp-drift { 0%,100% { transform: translate(0,0); } 33% { transform: translate(40px,-30px); } 66% { transform: translate(-30px,35px); } }
 
 .lp-hero-badge {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 7px 18px; border-radius: 100px;
-  background: rgba(212,168,83,0.05); border: 1px solid rgba(212,168,83,0.1);
+  background: rgba(var(--gold-primary), 0.05); border: 1px solid rgba(var(--gold-primary), 0.1);
   font-size: 0.72rem; font-weight: 500; color: var(--g); letter-spacing: 0.04em; margin-bottom: 28px;
   animation: lp-fi 0.6s ease-out forwards; opacity: 0;
 }
@@ -129,7 +180,7 @@
 .lp-hero-line1 { color: var(--tx); }
 
 .lp-shimmer {
-  background: linear-gradient(120deg, var(--g) 0%, var(--gl) 20%, #fff8e7 45%, var(--gl) 70%, var(--g) 100%);
+  background: linear-gradient(120deg, var(--g) 0%, var(--gl) 20%, var(--tx) 45%, var(--gl) 70%, var(--g) 100%);
   background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent; animation: lp-shm 5s linear infinite;
 }
@@ -149,12 +200,12 @@
 .lp-orbit { position: relative; width: 400px; height: 400px; perspective: 600px; margin: 0 auto; }
 .lp-orbit-ring {
   position: absolute; inset: 20px; border-radius: 50%;
-  border: 1px solid rgba(212,168,83,0.06);
+  border: 1px solid rgba(var(--gold-primary), 0.06);
   animation: lp-orbit-spin 30s linear infinite;
 }
 .lp-orbit-glow {
   position: absolute; inset: 60px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(212,168,83,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-primary), 0.06) 0%, transparent 70%);
   animation: lp-orbit-pulse 4s ease-in-out infinite;
 }
 @keyframes lp-orbit-spin { to { transform: rotate(360deg); } }
@@ -162,7 +213,7 @@
 
 .lp-orbit-card {
   position: absolute; left: 50%; top: 50%;
-  width: 100px; height: 155px; border-radius: 10px; overflow: hidden;
+  width: 100px; height: 155px; border-radius: 12px; overflow: hidden;
   /* Reduced orbit radius from 140 to 130 so cards (50px half-width)
      reach max 180px from center vs the new 200px container half —
      20px of safe margin all around. Prevents the bottom-right
@@ -175,7 +226,7 @@
 }
 .lp-orbit-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lp-orbit-card.hovered {
-  box-shadow: 0 12px 50px rgba(0,0,0,0.6), 0 0 40px rgba(212,168,83,0.15);
+  box-shadow: 0 12px 50px rgba(0,0,0,0.6), 0 0 40px rgba(var(--gold-primary), 0.15);
   filter: brightness(1.15);
   z-index: 10;
 }
@@ -189,27 +240,28 @@
 }
 @keyframes lp-moonglow {
   0%,100% { opacity: 0.6; filter: drop-shadow(0 0 20px var(--gg)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 50px var(--gg)) drop-shadow(0 0 100px rgba(212,168,83,0.05)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 50px var(--gg)) drop-shadow(0 0 100px rgba(var(--gold-primary), 0.05)); }
 }
 
 /* ── Buttons ── */
 .lp-btn-gold {
   position: relative; display: inline-flex; align-items: center; gap: 8px;
-  padding: 15px 32px; border: none; border-radius: 14px; cursor: pointer;
+  padding: 15px 32px; border: none; border-radius: 12px; cursor: pointer;
   background: linear-gradient(135deg, var(--g), var(--gl));
-  color: #080808; font-weight: 600; font-size: 0.98rem;
+  color: rgb(var(--canvas)); font-weight: 600; font-size: 0.98rem;
   box-shadow: 0 4px 28px var(--gg), inset 0 1px 0 rgba(255,255,255,0.18);
   transition: transform 0.3s, box-shadow 0.3s; overflow: hidden;
 }
-.lp-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 48px var(--gg), 0 0 80px rgba(212,168,83,0.08); }
+.lp-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 48px var(--gg), 0 0 80px rgba(var(--gold-primary), 0.08); }
 .lp-btn-gold-glow {
   position: absolute; inset: -50%; border-radius: 50%;
   background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 60%);
   opacity: 0; transition: opacity 0.4s; pointer-events: none;
 }
 .lp-btn-gold:hover .lp-btn-gold-glow { opacity: 1; }
-.lp-btn-lg { padding: 18px 44px; font-size: 1.08rem; border-radius: 18px; }
+.lp-btn-lg { padding: 18px 44px; font-size: 1.08rem; border-radius: 12px; }
 
+/* Google Play badge — black/white are Google's badge colours, kept. */
 .lp-play-badge {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 12px 24px; background: #000; border: 1px solid rgba(255,255,255,0.12);
@@ -248,33 +300,35 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 /* aurora — hero: two counter-drifting color fields + a slow conic sheen */
 [data-ambient='aurora']::before {
   background:
-    radial-gradient(60% 45% at 18% 22%, rgba(96, 76, 180, 0.20), transparent 70%),
-    radial-gradient(50% 40% at 82% 12%, rgba(212, 168, 83, 0.10), transparent 70%),
-    radial-gradient(45% 45% at 70% 85%, rgba(58, 110, 165, 0.14), transparent 70%);
+    radial-gradient(60% 45% at 18% 22%, rgba(var(--lp-violet), 0.20), transparent 70%),
+    radial-gradient(50% 40% at 82% 12%, rgba(var(--gold-primary), 0.10), transparent 70%),
+    radial-gradient(45% 45% at 70% 85%, rgba(var(--lp-blue), 0.14), transparent 70%);
   animation: amb-drift-a 26s ease-in-out infinite alternate;
 }
 [data-ambient='aurora']::after {
   background: conic-gradient(from 210deg at 50% -10%,
-    transparent 0deg, rgba(140, 120, 220, 0.05) 60deg,
-    rgba(212, 168, 83, 0.05) 120deg, transparent 200deg);
+    transparent 0deg, rgba(var(--lp-violet), 0.05) 60deg,
+    rgba(var(--gold-primary), 0.05) 120deg, transparent 200deg);
   animation: amb-drift-b 34s ease-in-out infinite alternate;
 }
 
 /* nebula — features: deep violet/teal clouds, slow breathing */
 [data-ambient='nebula']::before {
   background:
-    radial-gradient(55% 60% at 15% 65%, rgba(88, 60, 160, 0.16), transparent 70%),
-    radial-gradient(45% 50% at 88% 30%, rgba(40, 120, 130, 0.12), transparent 70%);
+    radial-gradient(55% 60% at 15% 65%, rgba(var(--lp-violet), 0.16), transparent 70%),
+    radial-gradient(45% 50% at 88% 30%, rgba(var(--teal-primary), 0.12), transparent 70%);
   animation: amb-drift-a 30s ease-in-out infinite alternate;
 }
 [data-ambient='nebula']::after {
-  background: radial-gradient(30% 30% at 55% 50%, rgba(212, 168, 83, 0.05), transparent 75%);
+  background: radial-gradient(30% 30% at 55% 50%, rgba(var(--gold-primary), 0.05), transparent 75%);
   animation: amb-breathe 12s ease-in-out infinite;
 }
 
-/* constellation — deck showcase: faint star-line lattice (inline SVG) */
+/* constellation — deck showcase: faint star-line lattice (inline SVG).
+   A data-URI cannot read var(): the stroke is token gold 212,175,55 and
+   the dots gold-light 244,214,104, written literally. */
 [data-ambient='constellation']::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg stroke='rgba(212,168,83,0.10)' stroke-width='0.6'%3E%3Cpath d='M40 80 L130 40 L210 95 L305 60 L380 110' fill='none'/%3E%3Cpath d='M60 300 L150 250 L240 310 L330 260' fill='none'/%3E%3Cpath d='M210 95 L240 310'/%3E%3C/g%3E%3Cg fill='rgba(230,200,140,0.35)'%3E%3Ccircle cx='40' cy='80' r='1.6'/%3E%3Ccircle cx='130' cy='40' r='2.1'/%3E%3Ccircle cx='210' cy='95' r='1.4'/%3E%3Ccircle cx='305' cy='60' r='1.9'/%3E%3Ccircle cx='380' cy='110' r='1.3'/%3E%3Ccircle cx='60' cy='300' r='1.8'/%3E%3Ccircle cx='150' cy='250' r='1.3'/%3E%3Ccircle cx='240' cy='310' r='2.0'/%3E%3Ccircle cx='330' cy='260' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg stroke='rgba(212,175,55,0.10)' stroke-width='0.6'%3E%3Cpath d='M40 80 L130 40 L210 95 L305 60 L380 110' fill='none'/%3E%3Cpath d='M60 300 L150 250 L240 310 L330 260' fill='none'/%3E%3Cpath d='M210 95 L240 310'/%3E%3C/g%3E%3Cg fill='rgba(244,214,104,0.35)'%3E%3Ccircle cx='40' cy='80' r='1.6'/%3E%3Ccircle cx='130' cy='40' r='2.1'/%3E%3Ccircle cx='210' cy='95' r='1.4'/%3E%3Ccircle cx='305' cy='60' r='1.9'/%3E%3Ccircle cx='380' cy='110' r='1.3'/%3E%3Ccircle cx='60' cy='300' r='1.8'/%3E%3Ccircle cx='150' cy='250' r='1.3'/%3E%3Ccircle cx='240' cy='310' r='2.0'/%3E%3Ccircle cx='330' cy='260' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 420px 420px;
   opacity: 0.55;
   animation: amb-pan 60s linear infinite;
@@ -283,27 +337,27 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 /* halo — zodiac wheel: a breathing ring of gold light behind the chart */
 [data-ambient='halo']::before {
   background: radial-gradient(circle at 50% 46%,
-    transparent 30%, rgba(212, 168, 83, 0.07) 40%,
-    transparent 52%, rgba(140, 120, 220, 0.05) 64%, transparent 76%);
+    transparent 30%, rgba(var(--gold-primary), 0.07) 40%,
+    transparent 52%, rgba(var(--lp-violet), 0.05) 64%, transparent 76%);
   animation: amb-breathe 10s ease-in-out infinite;
 }
 
 /* dust — trust band: sparse rising gold motes */
 [data-ambient='dust']::before {
   background-image:
-    radial-gradient(1.4px 1.4px at 12% 80%, rgba(230, 200, 140, 0.5), transparent 100%),
-    radial-gradient(1px 1px at 34% 30%, rgba(230, 200, 140, 0.35), transparent 100%),
-    radial-gradient(1.7px 1.7px at 58% 65%, rgba(230, 200, 140, 0.42), transparent 100%),
-    radial-gradient(1.1px 1.1px at 79% 40%, rgba(230, 200, 140, 0.3), transparent 100%),
-    radial-gradient(1.3px 1.3px at 92% 75%, rgba(230, 200, 140, 0.45), transparent 100%);
+    radial-gradient(1.4px 1.4px at 12% 80%, rgba(var(--gold-light), 0.5), transparent 100%),
+    radial-gradient(1px 1px at 34% 30%, rgba(var(--gold-light), 0.35), transparent 100%),
+    radial-gradient(1.7px 1.7px at 58% 65%, rgba(var(--gold-light), 0.42), transparent 100%),
+    radial-gradient(1.1px 1.1px at 79% 40%, rgba(var(--gold-light), 0.3), transparent 100%),
+    radial-gradient(1.3px 1.3px at 92% 75%, rgba(var(--gold-light), 0.45), transparent 100%);
   animation: amb-rise 18s linear infinite;
 }
 
 /* dawn — final CTA: warm light rising from the horizon line */
 [data-ambient='dawn']::before {
   background:
-    linear-gradient(0deg, rgba(212, 168, 83, 0.10) 0%, transparent 45%),
-    radial-gradient(70% 55% at 50% 108%, rgba(224, 140, 90, 0.14), transparent 70%);
+    linear-gradient(0deg, rgba(var(--gold-primary), 0.10) 0%, transparent 45%),
+    radial-gradient(70% 55% at 50% 108%, rgba(var(--coral-primary), 0.14), transparent 70%);
   animation: amb-breathe 14s ease-in-out infinite;
 }
 
@@ -346,8 +400,8 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 .lp-tag {
   display: inline-block; font-size: 0.62rem; font-weight: 600;
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--g);
-  padding: 5px 16px; border: 1px solid rgba(212,168,83,0.1);
-  border-radius: 20px; background: rgba(212,168,83,0.03); margin-bottom: 18px;
+  padding: 5px 16px; border: 1px solid rgba(var(--gold-primary), 0.1);
+  border-radius: 999px; background: rgba(var(--gold-primary), 0.03); margin-bottom: 18px;
 }
 .lp-h2 {
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
@@ -379,7 +433,7 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
   grid-template-rows: auto auto; gap: 14px;
 }
 .lp-bento-card {
-  background: var(--sf); border: 1px solid var(--bd); border-radius: 20px;
+  background: var(--sf); border: 1px solid var(--bd); border-radius: 16px;
   padding: 30px; backdrop-filter: blur(6px);
   opacity: 0; transform: translateY(24px);
   transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
@@ -387,14 +441,14 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 .lp-bento-card.vis { opacity: 1; transform: none; }
 .lp-bento-card:hover {
   background: var(--sfh); border-color: var(--bdh); transform: translateY(-6px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 30px rgba(212,168,83,0.03);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 30px rgba(var(--gold-primary), 0.03);
 }
 .lp-bento-card.large { grid-column: span 2; }
 .lp-bento-card.small { grid-column: span 1; }
 
 .lp-bento-icon {
-  width: 52px; height: 52px; border-radius: 14px;
-  background: rgba(212,168,83,0.05); border: 1px solid rgba(212,168,83,0.08);
+  width: 52px; height: 52px; border-radius: 12px;
+  background: rgba(var(--gold-primary), 0.05); border: 1px solid rgba(var(--gold-primary), 0.08);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.4rem; margin-bottom: 18px; transition: transform 0.4s;
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
@@ -419,13 +473,13 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 @keyframes lp-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 .lp-marquee-card {
-  flex-shrink: 0; width: 120px; height: 190px; border-radius: 10px;
+  flex-shrink: 0; width: 120px; height: 190px; border-radius: 12px;
   overflow: hidden; transition: transform 0.4s, box-shadow 0.4s;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .lp-marquee-card:hover {
   transform: translateY(-14px) scale(1.08);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(212,168,83,0.08);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(var(--gold-primary), 0.08);
 }
 .lp-marquee-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -436,7 +490,7 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 @keyframes lp-chart-rotate { to { transform: rotate(360deg); } }
 
 .lp-chart-ring-outer { animation: lp-ring-breathe 6s ease-in-out infinite; }
-@keyframes lp-ring-breathe { 0%,100% { stroke: rgba(212,168,83,0.06); } 50% { stroke: rgba(212,168,83,0.14); } }
+@keyframes lp-ring-breathe { 0%,100% { stroke: rgba(var(--gold-primary), 0.06); } 50% { stroke: rgba(var(--gold-primary), 0.14); } }
 
 .lp-chart-center-info {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
@@ -452,10 +506,10 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 /* Zodiac popup */
 .lp-chart-popup {
   position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
-  width: 320px; background: rgba(8,8,16,0.92); backdrop-filter: blur(24px);
+  width: 320px; background: rgba(var(--canvas), 0.92); backdrop-filter: blur(24px);
   border: 1px solid rgba(255,255,255,0.06); border-radius: 16px;
   padding: 20px 22px; z-index: 10; animation: lp-popup-in 0.3s ease-out;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 30px rgba(212,168,83,0.03);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 30px rgba(var(--gold-primary), 0.03);
   /* The popup is anchored to the bottom of the wheel and overlaps the
      bottom-half sign hit-areas. Without this, hovering a bottom sign pops
      the popup UNDER the cursor, stealing the SVG <g>'s mouseleave and
@@ -496,7 +550,7 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 .lp-timeline-item.right .lp-timeline-dot { left: -6px; }
 
 .lp-timeline-card {
-  background: var(--sf); border: 1px solid var(--bd); border-radius: 18px;
+  background: var(--sf); border: 1px solid var(--bd); border-radius: 16px;
   padding: 28px; position: relative; overflow: hidden;
   transition: all 0.4s;
 }
@@ -504,7 +558,7 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 .lp-timeline-watermark {
   position: absolute; top: -10px; right: 16px;
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  font-size: 5rem; font-weight: 700; color: rgba(212,168,83,0.04);
+  font-size: 5rem; font-weight: 700; color: rgba(var(--gold-primary), 0.04);
   line-height: 1; pointer-events: none;
 }
 .lp-timeline-item.right .lp-timeline-watermark { right: auto; left: 16px; }
@@ -518,13 +572,13 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 /* ── FAQ ── */
 .lp-faq-wrap { max-width: 680px; }
 .lp-faq {
-  border: 1px solid var(--bd); border-radius: 14px; margin-bottom: 10px;
+  border: 1px solid var(--bd); border-radius: 16px; margin-bottom: 10px;
   background: var(--sf); backdrop-filter: blur(6px);
   transition: all 0.4s; overflow: hidden;
   opacity: 0; transform: translateY(16px);
 }
 .lp-faq.vis { opacity: 1; transform: none; }
-.lp-faq.open { border-color: rgba(212,168,83,0.15); box-shadow: 0 0 30px rgba(212,168,83,0.03); }
+.lp-faq.open { border-color: rgba(var(--gold-primary), 0.15); box-shadow: 0 0 30px rgba(var(--gold-primary), 0.03); }
 .lp-faq-q {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; background: none; border: none; color: var(--tx);
@@ -548,7 +602,7 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 .lp-cta-ray {
   position: absolute; top: 50%; left: 50%;
   width: 200px; height: 1px; transform-origin: left center;
-  background: linear-gradient(90deg, rgba(212,168,83,0.15), transparent);
+  background: linear-gradient(90deg, rgba(var(--gold-primary), 0.15), transparent);
   animation: lp-ray-pulse 4s ease-in-out infinite;
 }
 .lp-cta-ray.r1 { transform: rotate(0deg); }
@@ -603,50 +657,50 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
 .free-reading {
   margin-top: 32px;
   padding: 24px;
-  background: linear-gradient(140deg, rgba(212,175,55,0.06), rgba(30,30,60,0.4));
-  border: 1px solid rgba(212,175,55,0.2);
-  border-radius: 20px;
+  background: linear-gradient(140deg, rgba(var(--gold-primary), 0.06), rgba(var(--surface-raised), 0.4));
+  border: 1px solid rgba(var(--gold-primary), 0.2);
+  border-radius: 16px;
   backdrop-filter: blur(6px);
   max-width: 480px;
 }
 .free-reading-prompt { text-align: center; }
-.free-reading-icon { font-size: 28px; color: #d4af37; margin-bottom: 8px; }
-.free-reading-title { font-size: 22px; font-weight: 600; color: #f0e8d8; margin: 0 0 6px; }
-.free-reading-sub { font-size: 14px; color: #a0a0b0; margin: 0 0 18px; }
+.free-reading-icon { font-size: 28px; color: var(--g); margin-bottom: 8px; }
+.free-reading-title { font-size: 22px; font-weight: 600; color: var(--tx); margin: 0 0 6px; }
+.free-reading-sub { font-size: 14px; color: var(--tm); margin: 0 0 18px; }
 .free-reading-btn { padding: 12px 28px; min-height: 46px; }
 .free-reading-picking { text-align: center; }
 .free-reading-cards { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
 .free-reading-card-back {
   width: 90px; height: 140px; border-radius: 12px;
-  background: linear-gradient(160deg, #2a2442, #15132a);
-  border: 1px solid rgba(212,175,55,0.3);
+  background: linear-gradient(160deg, rgb(var(--hairline)), rgb(var(--surface-card)));
+  border: 1px solid rgba(var(--gold-primary), 0.3);
   cursor: pointer; transition: transform .25s ease, border-color .25s;
   display: flex; align-items: center; justify-content: center;
-  color: rgba(212,175,55,0.45); font-size: 28px;
+  color: rgba(var(--gold-primary), 0.45); font-size: 28px;
   padding: 0;
 }
-.free-reading-card-back:hover { transform: translateY(-8px); border-color: rgba(212,175,55,0.7); }
+.free-reading-card-back:hover { transform: translateY(-8px); border-color: rgba(var(--gold-primary), 0.7); }
 .free-reading-card-glyph { pointer-events: none; }
 .free-reading-revealed { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
 .free-reading-card-face {
   width: 130px; height: 200px; border-radius: 12px; overflow: hidden;
-  border: 1px solid rgba(212,175,55,0.4);
+  border: 1px solid rgba(var(--gold-primary), 0.4);
   flex-shrink: 0;
   animation: flip-reveal .5s ease-out;
 }
 .free-reading-card-face.reversed { transform: rotate(180deg); }
 .free-reading-card-img { width: 100%; height: 100%; object-fit: cover; }
-.free-reading-card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #d4af37; padding: 12px; text-align: center; font-size: 13px; }
+.free-reading-card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--g); padding: 12px; text-align: center; font-size: 13px; }
 @keyframes flip-reveal { from { transform: rotateY(180deg); opacity: 0 } to { transform: rotateY(0); opacity: 1 } }
 .free-reading-result { flex: 1; min-width: 200px; }
-.free-reading-orientation { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #d4af37; margin: 0 0 4px; }
-.free-reading-card-name { font-size: 18px; font-weight: 600; color: #f0e8d8; margin: 0 0 10px; }
+.free-reading-orientation { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g); margin: 0 0 4px; }
+.free-reading-card-name { font-size: 18px; font-weight: 600; color: var(--tx); margin: 0 0 10px; }
 .free-reading-keywords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.free-reading-keyword { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: rgba(212,175,55,0.1); color: #d4af37; }
-.free-reading-meaning { font-size: 13px; color: #c0c0c0; line-height: 1.5; margin: 0 0 14px; }
+.free-reading-keyword { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: rgba(var(--gold-primary), 0.1); color: var(--g); }
+.free-reading-meaning { font-size: 13px; color: var(--tb); line-height: 1.5; margin: 0 0 14px; }
 .free-reading-ctas { display: flex; flex-direction: column; gap: 8px; }
-.free-reading-draw-again { background: none; border: none; color: #a0a0b0; font-size: 13px; cursor: pointer; text-decoration: underline; }
-.free-reading-draw-again:hover { color: #d4af37; }
+.free-reading-draw-again { background: none; border: none; color: var(--tm); font-size: 13px; cursor: pointer; text-decoration: underline; }
+.free-reading-draw-again:hover { color: var(--g); }
 @media (max-width: 640px) {
   .free-reading { margin-left: auto; margin-right: auto; padding: 20px; }
   .free-reading-card-back { width: 75px; height: 115px; }
@@ -664,9 +718,9 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
   gap: 6px;
   padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(30, 30, 60, 0.35);
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  color: #d8d4c8;
+  background: rgba(var(--surface-raised), 0.35);
+  border: 1px solid rgba(var(--gold-primary), 0.22);
+  color: var(--tb);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -674,8 +728,8 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
   transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
 .lp-lang-trigger:hover {
-  border-color: rgba(212, 175, 55, 0.55);
-  color: #f0e8d8;
+  border-color: rgba(var(--gold-primary), 0.55);
+  color: var(--tx);
 }
 .lp-lang-code { font-variant-numeric: tabular-nums; }
 
@@ -687,9 +741,9 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
   margin: 0;
   padding: 6px;
   list-style: none;
-  background: rgba(15, 12, 28, 0.96);
-  border: 1px solid rgba(212, 175, 55, 0.28);
-  border-radius: 14px;
+  background: rgba(var(--surface-sunken), 0.96);
+  border: 1px solid rgba(var(--gold-primary), 0.28);
+  border-radius: 16px;
   backdrop-filter: blur(8px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
   z-index: 60;
@@ -702,24 +756,24 @@ html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
   padding: 9px 12px;
   background: transparent;
   border: none;
-  border-radius: 10px;
-  color: #d8d4c8;
+  border-radius: 12px;
+  color: var(--tb);
   font-size: 14px;
   text-align: left;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .lp-lang-option:hover {
-  background: rgba(212, 175, 55, 0.09);
-  color: #f5edd8;
+  background: rgba(var(--gold-primary), 0.09);
+  color: var(--tx);
 }
 .lp-lang-option.is-active {
-  background: rgba(212, 175, 55, 0.12);
-  color: #f5edd8;
+  background: rgba(var(--gold-primary), 0.12);
+  color: var(--tx);
 }
 .lp-lang-flag { font-size: 18px; line-height: 1; }
 .lp-lang-name { flex: 1; }
-.lp-lang-check { color: #d4af37; }
+.lp-lang-check { color: var(--g); }
 
 @media (max-width: 640px) {
   .lp-lang-menu { min-width: 160px; }

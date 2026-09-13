@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Gem } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Gem } from 'lucide-react';
+import { Section } from '../components/ui';
+import { LearnEntryTemplate, LearnEntryNotFound, LearnLinkList } from '../components/learn/LearnEntryTemplate';
 import { getCrystalEntry, crystalEntries } from '../data/crystalsLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function CrystalEntryPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -52,143 +56,49 @@ export function CrystalEntryPage() {
   }, [entry]);
 
   if (!entry) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="heading-display-lg text-mystic-100 mb-2">Crystal not found</h1>
-        <button onClick={() => navigate('/crystals')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300">
-          <ArrowLeft className="w-4 h-4 inline mr-2" />Back to crystals
-        </button>
-      </div>
-    );
+    return <LearnEntryNotFound title="Crystal not found" backLabel="Back to crystals" onBack={() => navigate('/crystals')} />;
   }
 
-  const related = entry.relatedEntries
-    .map((s) => crystalEntries.find((x) => x.slug === s))
-    .filter((x): x is typeof crystalEntries[number] => Boolean(x));
+  const lookup = (slugs: string[]) =>
+    slugs
+      .map((s) => crystalEntries.find((x) => x.slug === s))
+      .filter((x): x is typeof crystalEntries[number] => Boolean(x));
+  const related = lookup(entry.relatedEntries);
+  const pairsWith = lookup(entry.pairsWith);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <Link to="/crystals" className="inline-flex items-center gap-1 text-xs text-mystic-500 hover:text-mystic-300 mb-3 no-underline">
-        <ArrowLeft className="w-3 h-3" /> All crystals
-      </Link>
-
-      <header className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Gem className="w-7 h-7 text-gold" />
-          <h1 className="heading-display-xl text-mystic-100">{entry.name}</h1>
-        </div>
-        <p className="text-mystic-300 leading-relaxed mt-3">{entry.longDescription}</p>
-      </header>
-
-      <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-          <Fact label="Color" value={entry.color} />
-          <Fact label="Mohs hardness" value={String(entry.hardness)} />
-          <Fact label="Element" value={entry.element} />
-          <Fact label="Chakras" value={entry.chakras.join(', ')} />
-          <Fact label="Zodiac" value={entry.zodiac.join(', ')} />
-          <Fact label="Category" value={entry.category} />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-4">
-        <h2 className="text-xs uppercase tracking-wider text-gold mb-2">Metaphysical properties</h2>
-        <p className="text-sm text-mystic-300 leading-relaxed">{entry.metaphysicalProperties}</p>
-      </section>
-
-      <div className="grid sm:grid-cols-3 gap-3 mb-6">
-        <Section title="In Love">{entry.inLove}</Section>
-        <Section title="In Healing">{entry.inHealing}</Section>
-        <Section title="In Spirituality">{entry.inSpirituality}</Section>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-3 mb-6">
-        <ListSection title="How to use" items={entry.howToUse} accent="gold" />
-        <ListSection title="Cleansing methods" items={entry.cleansingMethods} accent="cosmic-blue" />
-      </div>
-
-      <section className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4 mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-gold mb-1">Tarot connection</h2>
-        <p className="text-sm text-mystic-300 leading-relaxed">{entry.tarotConnection}</p>
-      </section>
-
-      {entry.pairsWith.length > 0 && (
-        <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
-          <h2 className="text-xs uppercase tracking-wider text-gold mb-3">Pairs well with</h2>
-          <div className="flex flex-wrap gap-2">
-            {entry.pairsWith.map((s) => {
-              const c = crystalEntries.find((x) => x.slug === s);
-              if (!c) return null;
-              return (
-                <Link key={s} to={`/crystals/${s}`} className="px-3 py-1.5 rounded-full bg-mystic-800/60 hover:bg-mystic-800 text-sm text-mystic-200 no-underline">
-                  {c.name}
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+    <LearnEntryTemplate
+      eyebrow="Crystal"
+      title={entry.name}
+      symbol={<Gem />}
+      lede={entry.longDescription}
+      facts={[
+        { label: 'Color', value: entry.color },
+        { label: 'Mohs hardness', value: entry.hardness },
+        { label: 'Element', value: entry.element },
+        { label: 'Chakras', value: entry.chakras.join(', ') },
+        { label: 'Zodiac', value: entry.zodiac.join(', ') },
+        { label: 'Category', value: capitalize(entry.category) },
+      ]}
+      sections={[
+        { title: 'Metaphysical properties', body: entry.metaphysicalProperties },
+        { title: 'In Love', body: entry.inLove },
+        { title: 'In Healing', body: entry.inHealing },
+        { title: 'In Spirituality', body: entry.inSpirituality },
+        { title: 'How to use', body: entry.howToUse, list: true },
+        { title: 'Cleansing methods', body: entry.cleansingMethods, list: true },
+        { title: 'Tarot connection', body: entry.tarotConnection },
+      ]}
+      faqs={entry.faqs}
+      related={related.map((r) => ({ label: r.name, href: `/crystals/${r.slug}` }))}
+      backHref="/crystals"
+      backLabel="All crystals"
+    >
+      {pairsWith.length > 0 && (
+        <Section title="Pairs well with">
+          <LearnLinkList links={pairsWith.map((c) => ({ label: c.name, href: `/crystals/${c.slug}` }))} />
+        </Section>
       )}
-
-      <section className="mb-6">
-        <h2 className="font-display text-lg text-mystic-100 mb-3">Frequently asked questions</h2>
-        <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-1 divide-y divide-mystic-800/60">
-          {entry.faqs.map((f, i) => (
-            <details key={i} className="px-4 py-3">
-              <summary className="cursor-pointer text-sm font-medium text-mystic-100">{f.q}</summary>
-              <p className="mt-2 text-sm text-mystic-400 leading-relaxed">{f.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {related.length > 0 && (
-        <section>
-          <h2 className="font-display text-lg text-mystic-100 mb-3">Related</h2>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {related.map((r) => (
-              <Link key={r.slug} to={`/crystals/${r.slug}`} className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
-                <span className="text-sm text-mystic-200">{r.name}</span>
-                <ChevronRight className="w-4 h-4 text-mystic-500" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-mystic-500 mb-0.5">{label}</div>
-      <div className="text-mystic-100 capitalize">{value}</div>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
-      <h3 className="text-xs uppercase tracking-wider text-gold mb-2">{title}</h3>
-      <p className="text-sm text-mystic-300 leading-relaxed">{children}</p>
-    </div>
-  );
-}
-
-function ListSection({ title, items, accent }: { title: string; items: string[]; accent: 'gold' | 'cosmic-blue' }) {
-  const dotClass = accent === 'gold' ? 'text-gold' : 'text-cosmic-blue';
-  return (
-    <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
-      <h3 className="text-sm font-medium text-mystic-100 mb-2">{title}</h3>
-      <ul className="space-y-1">
-        {items.map((s, i) => (
-          <li key={i} className="text-sm text-mystic-300 flex items-start gap-2">
-            <span className={`mt-1 ${dotClass}`}>•</span>
-            <span>{s}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    </LearnEntryTemplate>
   );
 }

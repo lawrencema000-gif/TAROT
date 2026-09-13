@@ -2605,39 +2605,31 @@
   },
   "pageTitles": {
     "home": {
-      "title": "今日",
-      "subtitle": "你的每日仪式正等待"
+      "title": "今日"
     },
     "readings": {
-      "title": "牌阵",
-      "subtitle": "探索塔罗牌"
+      "title": "牌阵"
     },
     "quizzes": {
-      "title": "测试",
-      "subtitle": "发现自己"
+      "title": "测试"
     },
     "horoscope": {
-      "title": "星座运势",
-      "subtitle": "你的宇宙蓝图"
+      "title": "星座运势"
     },
     "achievements": {
-      "title": "成就",
-      "subtitle": "追踪你的进展"
+      "title": "成就"
     },
     "journal": {
-      "title": "日记",
-      "subtitle": "反思与成长"
+      "title": "日记"
     },
     "profile": {
       "title": "个人资料"
     },
     "blog": {
-      "title": "资讯",
-      "subtitle": "洞见与文章"
+      "title": "资讯"
     },
     "admin": {
-      "title": "管理",
-      "subtitle": "管理上传"
+      "title": "管理"
     }
   },
   "dailyInsights": {

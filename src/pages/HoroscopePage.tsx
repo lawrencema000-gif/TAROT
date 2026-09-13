@@ -7,6 +7,7 @@ import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { preloadInterpModules } from '../data/preloadInterpModules';
 import { useT } from '../i18n/useT';
 import type { HoroscopeSubTab } from '../types/astrology';
+import { PageHeader } from '../components/ui';
 
 // 2026-04-24 — landing page markets "free daily horoscope", but the page
 // used to gate the entire hub behind premium. Now the `today` tab is free
@@ -70,6 +71,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
 
   return (
     <div>
+      <PageHeader title={t('pageTitles.horoscope.title')} />
       <nav className="flex gap-1 mb-2" role="tablist">
         {TABS.map((tab) => {
           const Icon = tab.icon;

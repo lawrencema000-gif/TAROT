@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { MysticalStar } from '../components/ui/MysticalStar';
-import { Card, Button, Progress, toast } from '../components/ui';
+import { Card, Button, PageHeader, Progress, toast } from '../components/ui';
 import * as QuizIcons from '../components/ui/QuizIcons';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
@@ -2174,10 +2174,7 @@ export function QuizzesPage() {
 
   return (
     <div className="space-y-6 pb-6">
-      <div>
-        <h1 className="heading-display-lg text-mystic-100">{tApp('quizzes.title')}</h1>
-        <p className="text-mystic-400 mt-1">{tApp('quizzes.subtitle')}</p>
-      </div>
+      <PageHeader title={tApp('quizzes.title')} subtitle={tApp('quizzes.subtitle')} />
 
       {loading ? (
         <div className="text-center py-12">

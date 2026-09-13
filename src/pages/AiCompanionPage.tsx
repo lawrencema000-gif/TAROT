@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BookOpen, Feather, Flower, MessageCircle, Moon, Send } from 'lucide-react';
-import { Card, Button, ReadingProse, toast } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
@@ -169,21 +169,18 @@ export function AiCompanionPage() {
 
   return (
     <div className="space-y-4 pb-6 flex flex-col h-[calc(100dvh-200px)] max-h-[calc(100dvh-200px)]">
-      {/* Header with persona picker */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <MessageCircle className="w-5 h-5 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('companion.title', { defaultValue: 'Companion' })}
-          </h1>
-        </div>
-        <button
-          onClick={clearConversation}
-          className="text-xs text-mystic-500 hover:text-mystic-300 px-2 py-1"
-        >
-          {t('companion.newConversation', { defaultValue: 'New' })}
-        </button>
-      </div>
+      <PageHeader
+        icon={<MessageCircle />}
+        title={t('companion.title', { defaultValue: 'Companion' })}
+        action={
+          <button
+            onClick={clearConversation}
+            className="text-xs text-mystic-500 hover:text-mystic-300 px-2 py-1"
+          >
+            {t('companion.newConversation', { defaultValue: 'New' })}
+          </button>
+        }
+      />
 
       {/* Persona tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">

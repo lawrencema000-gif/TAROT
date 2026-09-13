@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight, Wallet, CreditCard } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -214,14 +214,10 @@ export function AdvisorDashboardPage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('advisorDashboard.title', { defaultValue: 'Advisor dashboard' })}
-          </h1>
-          {advisorName && <p className="text-sm text-mystic-400">{advisorName}</p>}
-        </div>
-      </div>
+      <PageHeader
+        title={t('advisorDashboard.title', { defaultValue: 'Advisor dashboard' })}
+        subtitle={advisorName}
+      />
 
       <Card padding="lg">
         <h3 className="text-sm font-medium text-gold tracking-wide mb-3 flex items-center gap-1.5">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Link2, ArrowLeft, Share2 } from 'lucide-react';
+import { Link2 } from 'lucide-react';
+import { PageHeader } from '../components/ui';
 import { decodeReading } from '../services/shareableReadings';
 import { fullDeck } from '../data/tarotDeck';
 import { setPageMeta } from '../utils/seo';
@@ -33,13 +34,14 @@ export function SharedReadingPage() {
 
   if (!payload) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="heading-display-lg text-mystic-100 mb-2">This reading link is invalid</h1>
-        <p className="text-ui text-mystic-400 mb-6">The link may be malformed or from an older version of the app.</p>
-        <button onClick={() => navigate('/')} className="px-5 py-2 rounded-xl border border-mystic-700 text-mystic-300 hover:text-mystic-100 hover:border-mystic-500 transition-colors">
-          <ArrowLeft className="w-4 h-4 inline mr-2" />
-          Back to Arcana
-        </button>
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <PageHeader
+          align="center"
+          onBack={() => navigate('/')}
+          backLabel="Back to Arcana"
+          title="This reading link is invalid"
+          subtitle="The link may be malformed or from an older version of the app."
+        />
       </div>
     );
   }
@@ -56,21 +58,20 @@ export function SharedReadingPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <header className="mb-6 text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-          <Share2 className="w-3.5 h-3.5 text-gold" />
-          <span className="text-xs uppercase tracking-wider text-gold">Shared reading</span>
-        </div>
-        <h1 className="heading-display-xl text-mystic-100 mb-2">
-          {cards.length}-card {payload.s.replace(/-/g, ' ')}
-        </h1>
-        {payload.q && (
-          <p className="text-ui italic text-mystic-200 max-w-lg mx-auto">"{payload.q}"</p>
-        )}
-        {payload.d && (
-          <p className="text-meta text-mystic-400 mt-1">Drawn {new Date(payload.d).toLocaleDateString()}</p>
-        )}
-      </header>
+      <PageHeader
+        className="mb-6"
+        align="center"
+        eyebrow="Shared reading"
+        title={<>{cards.length}-card {payload.s.replace(/-/g, ' ')}</>}
+        subtitle={
+          payload.q || payload.d ? (
+            <>
+              {payload.q && <span className="block italic text-mystic-200">"{payload.q}"</span>}
+              {payload.d && <span className="block text-meta mt-1">Drawn {new Date(payload.d).toLocaleDateString()}</span>}
+            </>
+          ) : undefined
+        }
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
         {cards.map(({ card, reversed }, idx) => {

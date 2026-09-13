@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Clock, Star, X, Play, Square as StopIcon, Users } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Send, Clock, Star, X, Play, Square as StopIcon, Users } from 'lucide-react';
+import { Card, Button, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisorSessions } from '../dal';
@@ -165,18 +165,21 @@ export function AdvisorSessionPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <button onClick={() => navigate('/advisors')} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" />
-        {t('advisorSession.back', { defaultValue: 'Back to advisors' })}
-      </button>
-
-      <Card padding="md" variant="glow">
-        <div className="flex items-center justify-between">
+      <PageHeader
+        icon={<Users />}
+        title={t('advisorSession.title', { defaultValue: 'Session' })}
+        subtitle={
+          <>
+            {new Date(session.scheduledAt).toLocaleString()}
+            {session.topic && (
+              <span className="block text-mystic-300 italic mt-1">"{session.topic}"</span>
+            )}
+          </>
+        }
+        onBack={() => navigate('/advisors')}
+        backLabel={t('advisorSession.back', { defaultValue: 'Back to advisors' }) as string}
+        action={
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-gold" />
-            <h1 className="font-display text-lg text-mystic-100">
-              {t('advisorSession.title', { defaultValue: 'Session' })}
-            </h1>
             <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${
               session.state === 'active' ? 'bg-emerald-400/20 text-emerald-400'
               : session.state === 'scheduled' ? 'bg-cosmic-blue/20 text-cosmic-blue'
@@ -185,19 +188,13 @@ export function AdvisorSessionPage() {
             }`}>
               {session.state}
             </span>
+            <span className="text-xs text-mystic-400 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {session.durationMinutes}m
+            </span>
           </div>
-          <div className="text-xs text-mystic-400 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {session.durationMinutes}m
-          </div>
-        </div>
-        <p className="text-xs text-mystic-400 mt-2">
-          {new Date(session.scheduledAt).toLocaleString()}
-        </p>
-        {session.topic && (
-          <p className="text-xs text-mystic-300 italic mt-1">"{session.topic}"</p>
-        )}
-      </Card>
+        }
+      />
 
       {session.state === 'scheduled' && (
         <Card padding="lg" className="text-center">

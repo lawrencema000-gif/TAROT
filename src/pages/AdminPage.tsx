@@ -165,7 +165,7 @@ export function AdminPage() {
                   url: urlData.publicUrl,
                   bucket: 'card-backs',
                   path,
-                  createdAt: file.created_at,
+                  createdAt: file.created_at ?? undefined,
                 });
               }
             }
@@ -201,7 +201,7 @@ export function AdminPage() {
                   url: urlData.publicUrl,
                   bucket: 'backgrounds',
                   path,
-                  createdAt: file.created_at,
+                  createdAt: file.created_at ?? undefined,
                 });
               }
             }

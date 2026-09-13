@@ -48,6 +48,14 @@ export function TarotFlipCard({
   cardBackUrl,
 }: TarotFlipCardProps) {
   const { t } = useT('app');
+  // `${card.suit} ${card.number}` used to be printed here. `number` is optional
+  // on TarotCard and unset for the bundled deck, so every minor arcana read
+  // "wands undefined" — and lowercase, unstyled. Same key TarotCardDetail uses.
+  const suitLabel = card.suit
+    ? t('tarot.detail.minorArcanaLabel', {
+        suit: `${card.suit.charAt(0).toUpperCase()}${card.suit.slice(1)}`,
+      })
+    : '';
   const [isFlipped, setIsFlipped] = useState(false);
   const [showReversed, setShowReversed] = useState(reversed);
 
@@ -168,15 +176,19 @@ export function TarotFlipCard({
               not a repaint, so the card now turns to get there — 300ms,
               ease-out, transform only.
             */}
-            <div className={`w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden transition-transform duration-slow ease-out ${showReversed ? 'rotate-180' : ''}`}>
+            {/* Upright ⇄ reversed turns the ARTWORK, not the card. This wrapper used
+                  to carry the rotate-180, so the caption — name, suit, the "Reversed"
+                  badge itself — went upside down with the picture. The chrome stays
+                  put; only the image (or its placeholder art) turns. */}
+              <div className="w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden">
               {cardImageUrl ? (
                 <>
                   <img
                     src={cardImageUrl}
                     alt={card.name}
-                    className={`w-full h-full object-cover transition-opacity duration-deliberate ${
+                    className={`w-full h-full object-cover transition-[opacity,transform] duration-slow ease-out ${
                       isCardLoading || isPlaceholder ? 'opacity-60' : 'opacity-100'
-                    }`}
+                    } ${showReversed ? 'rotate-180' : ''}`}
                   />
                   {isCardLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -187,7 +199,7 @@ export function TarotFlipCard({
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
                     <h4 className="font-display text-sm text-gold mb-0.5">{card.name}</h4>
                     <p className="text-xs text-mystic-300">
-                      {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : `${card.suit} ${card.number}`}
+                      {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : suitLabel}
                     </p>
                     {showReversed && (
                       <span className="inline-block mt-1 px-2 py-0.5 bg-mystic-700/80 rounded text-xs text-mystic-300">
@@ -200,12 +212,12 @@ export function TarotFlipCard({
                 <>
                   <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/80 to-transparent" />
                   <div className="relative h-full flex flex-col items-center justify-center p-4 text-center">
-                    <div className="mb-2">
+                    <div className={`mb-2 transition-transform duration-slow ease-out ${showReversed ? 'rotate-180' : ''}`}>
                       <MysticalStar size={40} halo={false} className="text-gold mx-auto" />
                     </div>
                     <h4 className="font-display text-lg text-gold mb-1">{card.name}</h4>
                     <p className="text-xs text-mystic-400">
-                      {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : `${card.suit} ${card.number}`}
+                      {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : suitLabel}
                     </p>
                     {showReversed && (
                       <span className="mt-2 px-2 py-0.5 bg-mystic-700 rounded text-xs text-mystic-300">

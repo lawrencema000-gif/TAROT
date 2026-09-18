@@ -95,6 +95,16 @@ export default {
         'constellation': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
+      // Radius, by role. The product had settled on 8 / 12 / 16 / 24 / pill
+      // without ever saying so; these are the names, and the primitives use
+      // them (rounded-control, rounded-card, rounded-sheet). The numeric
+      // steps stay valid — they are the same values — so a page reads either.
+      borderRadius: {
+        inset: '0.5rem',    // 8px  — inner chrome: thumbnails, small marks
+        control: '0.75rem', // 12px — buttons, inputs, tiles, tab thumbs
+        card: '1rem',       // 16px — cards, panels, disclosures, rows
+        sheet: '1.5rem',    // 24px — sheets and modals
+      },
       boxShadow: {
         'glow': '0 0 20px rgba(212, 175, 55, 0.15)',
         'glow-md': '0 0 30px rgba(212, 175, 55, 0.2), 0 0 60px rgba(212, 175, 55, 0.1)',

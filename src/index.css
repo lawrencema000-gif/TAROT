@@ -25,6 +25,12 @@
 :root {
   --font-scale: 1;
 
+  /* radius, by role — mirrors borderRadius in tailwind.config.js */
+  --radius-inset: 0.5rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+  --radius-sheet: 1.5rem;
+
   /* brand */
   --gold-primary: 212, 175, 55;    /* gold.DEFAULT  #d4af37 */
   --gold-light: 244, 214, 104;     /* gold.light    #f4d668 */
@@ -768,25 +774,19 @@
       linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(13, 13, 26, 0.92) 100%),
       radial-gradient(ellipse at top right, rgba(var(--gold-primary), 0.05), transparent 60%);
     border: 1px solid rgba(var(--gold-primary), 0.18);
-    border-radius: 1rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-    /* 0.35s with a pasted cubic-bezier, replaced by the tokens. Hover
-       feedback at 350ms feels like the card is thinking about it;
-       --dur-base lands it while the pointer is still moving. box-shadow
-       is a repaint, but this is a one-shot on hover rather than a loop,
-       which is the line that matters. */
+    border-radius: var(--radius-card);
+    /* Elevation by fill, like every other card: the black drop-shadow and
+       the gold hover bloom are gone (see Card.tsx). What is left to say
+       "liftable" is the 2px lift and the hairline brightening, both
+       compositor-cheap. Hover feedback lands on --dur-base, while the
+       pointer is still moving. */
     transition:
       transform var(--dur-fast) var(--ease-out),
-      border-color var(--dur-base) var(--ease-standard),
-      box-shadow var(--dur-base) var(--ease-standard);
+      border-color var(--dur-base) var(--ease-standard);
   }
   .card-ritual:hover {
     transform: translateY(-2px);
     border-color: rgba(var(--gold-primary), 0.32);
-    box-shadow:
-      0 10px 28px -10px rgba(0, 0, 0, 0.5),
-      0 0 30px rgba(var(--gold-primary), 0.10),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   }
   /* scale(0.997) — the previous value — is 1px of travel on a 360px card,
      i.e. below the threshold at which a finger reads it as a response at

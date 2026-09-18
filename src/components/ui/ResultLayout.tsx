@@ -105,8 +105,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
             top of the hierarchy rather than one card among many. */}
         <section
           className="
-            rounded-2xl border border-gold/25 bg-mystic-850
-            shadow-[0_8px_24px_-12px_rgba(0,0,0,0.7)]
+            rounded-card border border-gold/25 bg-mystic-800
             px-6 py-8 space-y-3
           "
         >

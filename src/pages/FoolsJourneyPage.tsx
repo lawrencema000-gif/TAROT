@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle2 } from 'lucide-react';
-import { PageHeader } from '../components/ui';
+import { Page, PageHeader, Tag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { FOOLS_JOURNEY, getCurrentJourney } from '../data/foolsJourney';
 import { fullDeck } from '../data/tarotDeck';
@@ -21,12 +21,12 @@ export function FoolsJourneyPage() {
 
   if (!user || !profile) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <Page className="py-16 text-center">
         <p className="text-mystic-300 mb-4">Sign in to see your Fool\'s Journey.</p>
         <button onClick={() => navigate('/signin')} className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
           Sign in
         </button>
-      </div>
+      </Page>
     );
   }
 
@@ -34,9 +34,8 @@ export function FoolsJourneyPage() {
   const { current, next } = getCurrentJourney(currentLevel);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+    <Page className="py-6 sm:py-10">
       <PageHeader
-        className="mb-6"
         align="center"
         onBack={() => navigate(-1)}
         eyebrow="The Fool’s Journey"
@@ -50,7 +49,7 @@ export function FoolsJourneyPage() {
       />
 
       {next && (
-        <section className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4 mb-6 text-center">
+        <section className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4 text-center">
           <p className="text-[10px] uppercase tracking-wider text-gold mb-1">Next milestone</p>
           <p className="text-mystic-100 font-display text-lg">{next.title}</p>
           <p className="text-xs text-mystic-400 mt-1">{next.cardName} · {next.milestone}</p>
@@ -86,7 +85,7 @@ export function FoolsJourneyPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="text-[10px] uppercase tracking-wider text-mystic-500">Level {level.level}</span>
-                  {isCurrent && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/20 text-gold">You are here</span>}
+                  {isCurrent && <Tag tone="gold">You are here</Tag>}
                   {isUnlocked && !isCurrent && <CheckCircle2 className="w-3 h-3 text-gold/70" />}
                 </div>
                 <h2 className={`text-sm font-medium truncate ${isUnlocked ? 'text-mystic-100' : 'text-mystic-500'}`}>{level.title}</h2>
@@ -97,9 +96,9 @@ export function FoolsJourneyPage() {
         })}
       </div>
 
-      <p className="text-xs text-mystic-500 text-center mt-6">
+      <p className="text-xs text-mystic-500 text-center">
         Each level unlocks as you build your daily practice — pulling cards, journaling readings, completing rituals.
       </p>
-    </div>
+    </Page>
   );
 }

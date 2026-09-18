@@ -4,7 +4,7 @@ import { Plus, Trash2, Save, Play } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { PageHeader, toast } from '../components/ui';
+import { Page, PageHeader, toast } from '../components/ui';
 import { setPageMeta } from '../utils/seo';
 
 interface Position {
@@ -119,19 +119,18 @@ export function SpreadBuilderPage() {
 
   if (!user) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <Page className="py-16 text-center">
         <p className="text-mystic-300 mb-4">Sign in to design custom spreads.</p>
         <button onClick={() => navigate('/signin')} className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
           Sign in
         </button>
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+    <Page className="py-6 sm:py-10">
       <PageHeader
-        className="mb-6"
         onBack={() => navigate('/spreads')}
         backLabel="All spreads"
         icon={<TarotCardIcon />}
@@ -139,7 +138,7 @@ export function SpreadBuilderPage() {
         subtitle={<>Design your own spread with up to {MAX_POSITIONS} positions. Save unlimited custom spreads tied to your account.</>}
       />
 
-      <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
+      <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
         <label className="block mb-3">
           <span className="text-xs uppercase tracking-wider text-mystic-500 mb-1 block">Spread name</span>
           <input
@@ -147,7 +146,7 @@ export function SpreadBuilderPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Morning intention"
-            className="w-full px-3 py-2 rounded-lg bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none"
+            className="w-full px-3 py-2 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none"
             maxLength={80}
           />
         </label>
@@ -157,7 +156,7 @@ export function SpreadBuilderPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="When to use this spread, what kind of question it answers…"
-            className="w-full px-3 py-2 rounded-lg bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none min-h-[60px]"
+            className="w-full px-3 py-2 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none min-h-[60px]"
             maxLength={500}
             rows={3}
           />
@@ -174,7 +173,7 @@ export function SpreadBuilderPage() {
                   value={p.name}
                   onChange={(e) => updatePosition(i, 'name', e.target.value)}
                   placeholder="Position name (e.g. The challenge)"
-                  className="flex-1 px-2 py-1 rounded-lg bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-sm"
+                  className="flex-1 px-2 py-1 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-sm"
                   maxLength={60}
                 />
                 {positions.length > 1 && (
@@ -187,7 +186,7 @@ export function SpreadBuilderPage() {
                 value={p.meaning}
                 onChange={(e) => updatePosition(i, 'meaning', e.target.value)}
                 placeholder="What this position represents…"
-                className="w-full px-2 py-1 rounded-lg bg-mystic-950 border border-mystic-800 text-mystic-300 focus:border-gold/50 outline-none text-sm"
+                className="w-full px-2 py-1 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-300 focus:border-gold/50 outline-none text-sm"
                 rows={2}
                 maxLength={300}
               />
@@ -252,6 +251,6 @@ export function SpreadBuilderPage() {
           </div>
         </section>
       )}
-    </div>
+    </Page>
   );
 }

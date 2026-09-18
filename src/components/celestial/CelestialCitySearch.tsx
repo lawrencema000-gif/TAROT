@@ -109,7 +109,7 @@ export function CelestialCitySearch({ onPick }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute z-20 left-0 right-0 mt-2 rounded-xl bg-mystic-900/95 backdrop-blur-md hairline-gold-soft overflow-hidden shadow-xl shadow-black/40"
+            className="absolute z-20 left-0 right-0 mt-2 rounded-xl bg-mystic-900/95 backdrop-blur-md hairline-gold-soft overflow-hidden"
           >
             {results.map((city, i) => (
               <button

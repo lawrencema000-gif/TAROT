@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Heart, Briefcase, Feather, Compass, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
 import { MysticalStar } from '../ui/MysticalStar';
-import { Card } from '../ui';
+import { Card, Tabs, Tag } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
@@ -54,7 +54,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               <img
                 src={imageUrl}
                 alt={card.name}
-                className={`w-full h-auto rounded-2xl shadow-2xl border-2 border-gold/30 transition-opacity duration-slow ${
+                className={`w-full h-auto rounded-2xl border-2 border-gold/30 transition-opacity duration-slow ${
                   isLoading ? 'opacity-0' : 'opacity-100'
                 }`}
               />
@@ -66,15 +66,18 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-mystic-900/40 to-transparent pointer-events-none" />
             </div>
             {reversed && (
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-mystic-800 border border-mystic-600 rounded-full">
-                <span className="text-meta text-mystic-300 flex items-center gap-1">
-                  <ArrowDown className="w-3 h-3" /> {t('tarot.detail.reversed')}
-                </span>
-              </div>
+              <Tag
+                tone="neutral"
+                size="md"
+                icon={<ArrowDown className="w-3 h-3" aria-hidden />}
+                className="absolute -bottom-3 left-1/2 -translate-x-1/2"
+              >
+                {t('tarot.detail.reversed')}
+              </Tag>
             )}
           </div>
         ) : (
-          <div className={`w-48 h-72 mx-auto bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl border-2 border-gold/30 shadow-glow flex items-center justify-center ${reversed ? 'rotate-180' : ''}`}>
+          <div className={`w-48 h-72 mx-auto bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl border-2 border-gold/30 flex items-center justify-center ${reversed ? 'rotate-180' : ''}`}>
             <MysticalStar size={64} className="text-gold" />
           </div>
         )}
@@ -92,31 +95,23 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
 
       <div className="flex flex-wrap justify-center gap-2 px-2">
         {card.keywords.map((keyword, i) => (
-          <span
-            key={i}
-            className="px-3 py-1.5 bg-gold/10 border border-gold/25 rounded-full text-sm text-gold font-medium"
-          >
+          <Tag key={i} tone="gold" size="md">
             {keyword}
-          </span>
+          </Tag>
         ))}
       </div>
 
-      <div className="flex gap-1 p-1 bg-mystic-800/50 rounded-xl">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === tab.id
-                ? 'bg-gold/20 text-gold'
-                : 'text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/50'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
-      </div>
+      <Tabs
+        idPrefix="card-detail"
+        aria-label={card.name}
+        value={activeTab}
+        onChange={setActiveTab}
+        items={tabs.map(tab => ({
+          id: tab.id,
+          icon: tab.icon,
+          label: <span className="hidden sm:inline">{tab.label}</span>,
+        }))}
+      />
 
       <div className="min-h-[200px]">
         {activeTab === 'meaning' && (

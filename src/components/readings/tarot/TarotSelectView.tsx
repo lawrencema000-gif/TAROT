@@ -69,9 +69,9 @@ export function TarotSelectView({
                 <div
                   className={`
                     aspect-[2/3] rounded-lg border-2 overflow-hidden
-                    transition-[transform,border-color,box-shadow] duration-base ease-out
+                    transition-[transform,border-color,background-color] duration-base ease-out
                     ${isSelected
-                      ? 'border-gold bg-gradient-to-br from-gold/20 to-mystic-800 shadow-gold scale-[1.06] -translate-y-1'
+                      ? 'border-gold/50 bg-gold/10 scale-[1.06] -translate-y-1'
                       : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
                     }
                     flex items-center justify-center
@@ -95,7 +95,7 @@ export function TarotSelectView({
                       The back-out curve gives the pick a bit of weight.
                     */}
                     <div
-                      className={`w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm shadow-lg transition-transform duration-base ${
+                      className={`w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm transition-transform duration-base ${
                         isSelected ? 'scale-100' : 'scale-0'
                       }`}
                       style={{
@@ -131,7 +131,6 @@ export function TarotSelectView({
           disabled={needsMore > 0}
           onClick={onReveal}
           size="lg"
-          className="shadow-xl"
         >
           {needsMore > 0 ? t('readings.selectView.selectMore', { count: needsMore }) : t('readings.selectView.revealCards')}
           <Eye className="w-4 h-4" />

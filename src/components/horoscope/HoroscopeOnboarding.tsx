@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, ChevronRight, Search, Check, Loader2, RefreshCw, AlertCircle, Globe, Home, Triangle, Star } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Button, Card, Input, HoroscopeWheelIcon } from '../ui';
+import { Button, Card, Input, HoroscopeWheelIcon, Progress } from '../ui';
 import { useGeocode } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { ZodiacGlyph } from '../icons';
@@ -370,14 +370,14 @@ function ChartComputeProgress() {
       </div>
 
       {/* Progress bar */}
-      <div className="w-full max-w-xs">
-        <div className="h-1 bg-mystic-800/40 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-gold to-teal rounded-full transition-all duration-ambient ease-out"
-            style={{ width: `${((step + 1) / COMPUTE_STEPS.length) * 100}%` }}
-          />
-        </div>
-      </div>
+      <Progress
+        value={step + 1}
+        max={COMPUTE_STEPS.length}
+        size="sm"
+        tone="gold"
+        label={t(`horoscope.onboarding.computeSteps.${COMPUTE_STEPS[step].key}`) as string}
+        className="max-w-xs"
+      />
     </div>
   );
 }

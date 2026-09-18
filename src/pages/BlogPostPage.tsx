@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Tag, User } from 'lucide-react';
+import { Calendar, Clock, Tag as TagIcon, User } from 'lucide-react';
 import { useBlogPost } from '../hooks/useBlogPosts';
 import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
-import { ListSkeleton, PageHeader } from '../components/ui';
+import { ListSkeleton, Page, PageHeader, Tag } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 
@@ -67,9 +67,9 @@ export function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 pt-2">
+      <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
         <ListSkeleton count={3} />
-      </div>
+      </Page>
     );
   }
 
@@ -91,7 +91,7 @@ export function BlogPostPage() {
   const readingMinutes = estimateReadingMinutes(post.content);
 
   return (
-    <div className="space-y-4 pt-2 pb-8">
+    <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
       <article>
         <div className="space-y-4 mb-8">
           <PageHeader
@@ -126,13 +126,9 @@ export function BlogPostPage() {
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="flex items-center gap-1 px-2 py-1 rounded-full bg-mystic-800/50 text-meta text-mystic-400"
-                >
-                  <Tag className="w-3 h-3" aria-hidden />
+                <Tag key={tag} tone="neutral" size="md" icon={<TagIcon className="w-3 h-3" aria-hidden />}>
                   {tag}
-                </span>
+                </Tag>
               ))}
             </div>
           )}
@@ -162,6 +158,6 @@ export function BlogPostPage() {
           })) }}
         />
       </article>
-    </div>
+    </Page>
   );
 }

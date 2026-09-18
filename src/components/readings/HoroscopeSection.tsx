@@ -21,7 +21,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { TarotCardIcon } from '../ui/NavIcons';
-import { Card, Button, Chip, toast, ReadingProse } from '../ui';
+import { Card, Button, Tabs, Progress, toast, ReadingProse } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { savedHighlights } from '../../dal';
@@ -168,30 +168,23 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
 
   return (
     <div className="space-y-6">
-      <div className="relative -mx-4 px-4">
-        <div
-          className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth"
-          style={{
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
-          }}
-        >
-          <Chip selected={period === 'today'} onClick={() => setPeriod('today')}>
-            {t('horoscope.periods.today')}
-          </Chip>
-          <Chip selected={period === 'week'} onClick={() => setPeriod('week')}>
-            {t('horoscope.periods.week')}
-          </Chip>
-          <Chip
-            selected={period === 'month'}
-            onClick={handleMonthView}
-          >
-            {!profile?.isPremium && <Lock className="w-3 h-3 mr-1" />}
-            {t('horoscope.periods.month')}
-          </Chip>
-        </div>
-      </div>
+      <Tabs
+        idPrefix="horoscope"
+        aria-label={t('readings.tabs.horoscope')}
+        value={period}
+        onChange={(id) => {
+          if (id === 'month') {
+            handleMonthView();
+            return;
+          }
+          setPeriod(id);
+        }}
+        items={[
+          { id: 'today' as const, label: t('horoscope.periods.today') },
+          { id: 'week' as const, label: t('horoscope.periods.week') },
+          { id: 'month' as const, label: t('horoscope.periods.month'), locked: !profile?.isPremium },
+        ]}
+      />
 
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-4 mb-6">
@@ -218,12 +211,14 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <p className="text-meta text-mystic-400 uppercase tracking-wider">{t('horoscope.energyScore')}</p>
-              <div className="flex-1 h-2 bg-mystic-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-gold/60 to-gold rounded-full transition-all"
-                  style={{ width: `${(horoscope.energy / 5) * 100}%` }}
-                />
-              </div>
+              <Progress
+                value={horoscope.energy}
+                max={5}
+                size="md"
+                tone="gold"
+                label={t('horoscope.energyScore')}
+                className="flex-1"
+              />
               <span className="text-sm text-gold font-medium">{horoscope.energy}/5</span>
             </div>
 
@@ -396,9 +391,9 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                 return (
                   <div key={i} className="text-center">
                     <p className="text-xs text-mystic-500 mb-1">{day}</p>
-                    <div className="h-12 bg-mystic-800/50 rounded flex items-end justify-center pb-1">
+                    <div className="h-12 bg-mystic-800 rounded-lg overflow-hidden flex items-end justify-center pb-1">
                       <div
-                        className="w-4 bg-gradient-to-t from-gold/60 to-gold rounded-t"
+                        className="w-4 bg-gold rounded-t-lg"
                         style={{ height: `${(energy / 5) * 100}%` }}
                       />
                     </div>

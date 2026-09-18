@@ -13,7 +13,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { Button, Input, Chip, toast } from '../components/ui';
+import { Button, Input, Chip, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
 import { useGeocode } from '../hooks/useAstrology';
@@ -220,12 +220,12 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
-      <div className="h-1 bg-mystic-800/50">
-        <div
-          className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-deliberate ease-out"
-          style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
-        />
-      </div>
+      <Progress
+        value={step + 1}
+        max={totalSteps}
+        size="sm"
+        label={`Step ${step + 1} of ${totalSteps}`}
+      />
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
         <div className="w-full max-w-md">
@@ -374,7 +374,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                       onClick={() => setData(d => ({ ...d, tonePreference: option.value }))}
                       className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] flex items-center gap-4 ${
                         isSelected
-                          ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
+                          ? 'bg-gold/10 border-gold/50'
                           : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
                       }`}
                     >
@@ -415,7 +415,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   onClick={() => setData(d => ({ ...d, notificationsEnabled: true }))}
                   className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
                     data.notificationsEnabled
-                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
+                      ? 'bg-gold/10 border-gold/50'
                       : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
                   }`}
                 >
@@ -439,7 +439,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   onClick={() => setData(d => ({ ...d, notificationsEnabled: false }))}
                   className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
                     !data.notificationsEnabled
-                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]'
+                      ? 'bg-gold/10 border-gold/50'
                       : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
                   }`}
                 >

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast, PageHeader, Section, Disclosure, ReadingProse } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, Section, Disclosure, ReadingProse, Tag } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -120,7 +120,7 @@ export function DreamInterpreterPage() {
 
   if (stage === 'input' || stage === 'loading') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<Moon />}
           title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
@@ -171,7 +171,7 @@ export function DreamInterpreterPage() {
             : t('dream.interpret', { defaultValue: 'Interpret my dream' })}
         </Button>
         {EarnSheet}
-      </div>
+      </Page>
     );
   }
 
@@ -221,7 +221,7 @@ function AiResultView({
   const dreamPreview = dreamText.length > 120 ? `${dreamText.slice(0, 120)}…` : dreamText;
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
@@ -246,12 +246,12 @@ function AiResultView({
           </h2>
         </div>
         <ReadingProse text={reading.coreTheme} className="mb-3" />
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30">
-          <span className="text-meta uppercase tracking-widest text-cosmic-violetLight">
+        <Tag tone="violet" size="md">
+          <span className="uppercase tracking-widest">
             {t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}
           </span>
-          <span className="text-ui text-mystic-200">{reading.emotionalTone}</span>
-        </div>
+          <span className="text-mystic-200">{reading.emotionalTone}</span>
+        </Tag>
       </Card>
 
       {/* Archetypes */}
@@ -262,12 +262,7 @@ function AiResultView({
           </h3>
           <div className="flex flex-wrap gap-2">
             {reading.archetypes.map((arc) => (
-              <span
-                key={arc}
-                className="px-3 py-1.5 rounded-full bg-cosmic-blue/10 border border-cosmic-blue/30 text-ui text-cosmic-blue font-medium"
-              >
-                {arc}
-              </span>
+              <Tag key={arc} tone="blue" size="md">{arc}</Tag>
             ))}
           </div>
         </Card>
@@ -351,7 +346,7 @@ function AiResultView({
           {t('dream.another', { defaultValue: 'Another dream' })}
         </Button>
       </div>
-    </div>
+    </Page>
   );
 }
 
@@ -533,7 +528,7 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
@@ -608,7 +603,7 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
           {t('dream.another', { defaultValue: 'Another dream' })}
         </Button>
       </div>
-    </div>
+    </Page>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle } from 'lucide-react';
-import { Card, Button, PageHeader, ReadingProse, toast } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -116,7 +116,7 @@ export function TarotCompanionPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         icon={<Sparkles />}
         title={t('tarotCompanion.title', { defaultValue: 'Tarot companion' })}
@@ -152,9 +152,11 @@ export function TarotCompanionPage() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-display-eyebrow mb-1">
-                {card.reversed ? t('tarotCompanion.reversed', { defaultValue: 'Reversed' }) : t('tarotCompanion.upright', { defaultValue: 'Upright' })}
-              </p>
+              <div className="mb-1">
+                <Badge tone={card.reversed ? 'coral' : 'gold'}>
+                  {card.reversed ? t('tarotCompanion.reversed', { defaultValue: 'Reversed' }) : t('tarotCompanion.upright', { defaultValue: 'Upright' })}
+                </Badge>
+              </div>
               <h2 className="heading-display-md text-mystic-100">{card.card.name}</h2>
               <p className="text-ui text-mystic-300 mt-1 line-clamp-3">
                 {card.reversed ? card.card.meaningReversed : card.card.meaningUpright}
@@ -223,7 +225,7 @@ export function TarotCompanionPage() {
         </Card>
       )}
       {EarnSheet}
-    </div>
+    </Page>
   );
 }
 

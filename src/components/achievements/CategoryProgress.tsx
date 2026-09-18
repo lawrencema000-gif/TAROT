@@ -1,6 +1,7 @@
 import * as LucideIcons from 'lucide-react';
 import type { AchievementCategory } from '../../services/achievements';
 import { getCategoryDisplayName, getCategoryIcon } from '../../services/achievements';
+import { ProgressRing } from '../ui';
 
 interface CategoryProgressProps {
   category: AchievementCategory;
@@ -29,8 +30,6 @@ export function CategoryProgress({
 }: CategoryProgressProps) {
   const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
   const Icon = getIcon(getCategoryIcon(category));
-  const circumference = 2 * Math.PI * 18;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
     <button
@@ -43,40 +42,18 @@ export function CategoryProgress({
         }
       `}
     >
-      <div className="relative w-12 h-12">
-        <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
-          <circle
-            cx="22"
-            cy="22"
-            r="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            className="text-mystic-700/50"
-          />
-          <circle
-            cx="22"
-            cy="22"
-            r="18"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            className={`
-              transition-all duration-ambient ease-out
-              ${isSelected ? 'text-gold' : 'text-mystic-400'}
-            `}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Icon className={`
-            w-5 h-5 transition-colors duration-slow
-            ${isSelected ? 'text-gold' : 'text-mystic-400'}
-          `} />
-        </div>
-      </div>
+      <ProgressRing
+        value={percentage}
+        size={40}
+        strokeWidth={3}
+        tone={isSelected ? 'gold' : 'neutral'}
+        label={getCategoryDisplayName(category)}
+      >
+        <Icon className={`
+          w-5 h-5 transition-colors duration-slow
+          ${isSelected ? 'text-gold' : 'text-mystic-400'}
+        `} />
+      </ProgressRing>
 
       <div className="text-center">
         <p className={`

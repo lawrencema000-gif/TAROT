@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, Clock, Star, X, Play, Square as StopIcon, Users } from 'lucide-react';
-import { Card, Button, PageHeader, toast } from '../components/ui';
+import { Card, Button, PageHeader, Page, Badge, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisorSessions } from '../dal';
@@ -164,7 +164,7 @@ export function AdvisorSessionPage() {
   const isClient = user?.id === session.clientUserId;
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         icon={<Users />}
         title={t('advisorSession.title', { defaultValue: 'Session' })}
@@ -180,14 +180,16 @@ export function AdvisorSessionPage() {
         backLabel={t('advisorSession.back', { defaultValue: 'Back to advisors' }) as string}
         action={
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${
-              session.state === 'active' ? 'bg-emerald-400/20 text-emerald-400'
-              : session.state === 'scheduled' ? 'bg-cosmic-blue/20 text-cosmic-blue'
-              : session.state === 'completed' ? 'bg-mystic-700 text-mystic-400'
-              : 'bg-mystic-800 text-mystic-500'
-            }`}>
+            <Badge
+              tone={
+                session.state === 'active' ? 'teal'
+                : session.state === 'scheduled' ? 'blue'
+                : 'neutral'
+              }
+              pulse={session.state === 'active'}
+            >
               {session.state}
-            </span>
+            </Badge>
             <span className="text-xs text-mystic-400 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {session.durationMinutes}m
@@ -322,7 +324,7 @@ export function AdvisorSessionPage() {
           </Button>
         </Card>
       )}
-    </div>
+    </Page>
   );
 }
 

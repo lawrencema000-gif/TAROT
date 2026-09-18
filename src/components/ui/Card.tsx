@@ -1,8 +1,21 @@
 import { HTMLAttributes, forwardRef } from 'react';
 import { FourCornerFlourishes } from './Ornament';
 
+export type CardVariant = 'default' | 'accent' | 'elevated' | 'ornate' | 'ritual' | 'glow';
+
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glow' | 'elevated' | 'ornate' | 'ritual';
+  /**
+   * default   surface-1 on a hairline. The card.
+   * accent    surface-1 on a gold hairline. The one card on a screen that is
+   *           the point of the screen — a featured reading, the current plan.
+   *           (`glow` is the old name for this and still works; it never
+   *           glowed, it was a gold hairline all along.)
+   * elevated  surface-2. One step up the fill ladder for a card that sits on
+   *           another card, or a sheet's own panel. No shadow — see below.
+   * ornate    manuscript page: double border, radial gold wash, flourishes.
+   * ritual    the tappable feature card (`.card-ritual` in index.css).
+   */
+  variant?: CardVariant;
   padding?: 'none' | 'sm' | 'md' | 'lg';
   interactive?: boolean;
   /**
@@ -13,34 +26,39 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   flourished?: boolean;
 }
 
-// Elevation is a black drop-shadow, never a coloured bloom.
+// Elevation is fill, never shadow.
+//
+// The surface ramp is a real lightness ladder now — canvas 950 → sunken 900 →
+// surface-1 850 → surface-2 800 — and a step up that ladder is what "closer to
+// you" looks like on a dark ground. A drop shadow on a dark surface is a
+// darker smear on an already-dark page: it costs a repaint on every hover and
+// buys almost nothing you can see. So the only thing that separates a card
+// from the page is its fill and its hairline, and the only thing that
+// separates a raised card from a card is one more step of fill.
 //
 // Every variant used to carry a gold halo because the surfaces underneath it
-// were invisible — a default card computed to 1.03:1 against the page, so the
-// glow was the only thing separating card from background. Now that the mystic
-// scale is a real lightness ladder (canvas→card is ΔL* 6.4), the halo has no
-// job left, and 75 glowing cards was the single loudest dated signal in the
-// product. A gold halo is now reserved for one element per screen: the primary
-// call to action.
-const variantStyles = {
+// were invisible (a default card computed to 1.03:1 against the page). That
+// halo is gone from cards, and it is gone from buttons too: a solid gold
+// fill on a near-black screen is already the loudest thing there.
+const variantStyles: Record<Exclude<CardVariant, 'glow'>, string> = {
   default: 'bg-mystic-850 border-mystic-700',
-  glow: 'bg-mystic-850 border-gold/25',
-  elevated: 'bg-mystic-800 border-mystic-700 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.7)]',
+  accent: 'bg-mystic-850 border-gold/25',
+  elevated: 'bg-mystic-800 border-mystic-700/80',
   // Ornate: two layered borders (outer gold gradient, inner hairline),
-  // a subtle parchment-like tint, and an inner stroke ring produced by
-  // an inset box-shadow. Paired with corner flourishes for the full
-  // manuscript-page feel.
+  // a subtle parchment-like tint, and an inner stroke ring. Paired with
+  // corner flourishes for the full manuscript-page feel. The inner ring's
+  // radius is derived from the card radius token so the two stay
+  // concentric if the token ever moves.
   ornate:
     'relative bg-gradient-to-br from-mystic-900/95 via-mystic-900/90 to-mystic-950/95 ' +
     'border-gold/40 ' +
     '[background-image:radial-gradient(ellipse_at_top,rgba(212,175,55,0.06),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(142,110,181,0.05),transparent_60%)] ' +
-    'before:content-[""] before:absolute before:inset-[3px] before:rounded-[calc(1rem-3px)] ' +
+    'before:content-[""] before:absolute before:inset-[3px] before:rounded-[calc(theme(borderRadius.card)-3px)] ' +
     'before:border before:border-gold/20 before:pointer-events-none',
-  // Ritual: redesign-2026 tappable feature-card style — warm gradient
-  // panel with hairline gold border. Paired with the `.card-ritual`
-  // utility from index.css (handles hover lift + active shrink). Self-
-  // contained, no `before:` overlay, so it composes well with content
-  // images placed at card edges.
+  // Ritual: the tappable feature card — warm gradient panel with a hairline
+  // gold border, hover lift and press in `.card-ritual` (index.css). Self-
+  // contained, no `before:` overlay, so it composes with content images
+  // placed at card edges.
   ritual: 'card-ritual border-0',
 };
 
@@ -54,7 +72,7 @@ const paddingStyles = {
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   (
     {
-      variant = 'default',
+      variant: variantProp = 'default',
       padding = 'md',
       interactive,
       flourished,
@@ -64,19 +82,15 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     },
     ref,
   ) => {
+    const variant = variantProp === 'glow' ? 'accent' : variantProp;
     const showFlourishes = flourished ?? variant === 'ornate';
     // The `ritual` variant has its own hover/active animation baked into
-    // the .card-ritual utility (border lift + soft shadow swell). We only
-    // add the cursor + tap feedback here; the visual transitions handled
-    // by the variant CSS prevent layering conflicts.
+    // the .card-ritual utility. We only add the cursor + tap feedback here.
     //
-    // For every other variant the interactive state is now transform-first:
+    // For every other variant the interactive state is transform-first:
     //
-    //   hover  a 2px lift, web only. It replaces `hover:shadow-glow`, which
-    //          re-introduced on hover exactly the gold bloom this redesign
-    //          took off cards, and which is a box-shadow — the most expensive
-    //          thing you can put on a transition. A lift says "liftable"
-    //          without repainting the card's shadow every frame.
+    //   hover  a 2px lift, web only. A lift says "liftable" without
+    //          repainting anything.
     //   press  0.98 and the lift drops back to zero, so pushing down reads as
     //          the inverse of hovering rather than a second, unrelated event.
     //
@@ -91,7 +105,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             // Named properties rather than `transition-all`, but background and
             // colour stay in the list: call sites add their own `hover:bg-*` on
             // top of `interactive`, and those used to transition under `all`.
-            'transition-[transform,border-color,box-shadow,background-color,color] ' +
+            'transition-[transform,border-color,background-color,color] ' +
             'duration-base ease-[cubic-bezier(0.22,0.8,0.25,1)] ' +
             // `:not(:active)` so the lift drops when pressed. Without it the
             // hover rule wins on desktop — Tailwind emits arbitrary variants
@@ -100,12 +114,14 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             '[@media(hover:hover)]:[&:hover:not(:active)]:-translate-y-0.5 ' +
             'motion-safe:active:scale-[0.98]'
         : '';
+    // No backdrop-blur: every fill here is opaque, so the blur had nothing to
+    // blur and cost a compositing layer per card for it.
     return (
       <div
         ref={ref}
         className={`
           ${variant === 'ornate' ? 'relative' : ''}
-          backdrop-blur-sm rounded-2xl ${variant !== 'ritual' ? 'border' : ''}
+          rounded-card ${variant !== 'ritual' ? 'border' : ''}
           ${variantStyles[variant]}
           ${paddingStyles[padding]}
           ${interactiveClass}
@@ -134,7 +150,7 @@ CardHeader.displayName = 'CardHeader';
 
 export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
   ({ className = '', children, ...props }, ref) => (
-    <h3 ref={ref} className={`font-display text-xl font-semibold text-mystic-100 ${className}`} {...props}>
+    <h3 ref={ref} className={`heading-display-md text-mystic-100 ${className}`} {...props}>
       {children}
     </h3>
   ),

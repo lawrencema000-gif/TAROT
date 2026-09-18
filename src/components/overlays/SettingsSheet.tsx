@@ -7,7 +7,6 @@ import {
   HelpCircle,
   FileText,
   LogOut,
-  ChevronRight,
   ChevronLeft,
   User,
   CreditCard,
@@ -30,7 +29,7 @@ import {
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { MysticalStar } from '../ui/MysticalStar';
-import { Button, Input, toast } from '../ui';
+import { Button, Input, toast, Card, ListRow, ListRowGroup, Switch } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase'; // still used for profile read/write + delete_user_account RPC
 import { journalEntries, tarotReadings, quizResults } from '../../dal';
@@ -563,18 +562,18 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             )}
 
             {showGeoResults && editForm.birthLat === undefined && geoResults.length > 0 && (
-              <div className="max-h-48 overflow-y-auto rounded-lg border border-mystic-700/60 bg-mystic-900 divide-y divide-mystic-800/60">
+              <ListRowGroup className="max-h-48 overflow-y-auto">
                 {geoResults.map((r, i) => (
-                  <button
+                  <ListRow
                     key={i}
+                    size="md"
+                    icon={<MapPin />}
+                    label={r.displayName}
+                    trailing="none"
                     onClick={() => handleSelectGeoResult(r)}
-                    className="w-full text-left px-3 py-3 hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 cursor-pointer flex items-start gap-2"
-                  >
-                    <MapPin className="w-3.5 h-3.5 text-mystic-500 mt-0.5 flex-shrink-0" />
-                    <span className="line-clamp-2">{r.displayName}</span>
-                  </button>
+                  />
                 ))}
-              </div>
+              </ListRowGroup>
             )}
 
             {cityQuery.length > 0 && cityQuery.length < 2 && (
@@ -612,29 +611,20 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       <Sheet open={open} onClose={onClose} title={tAppSettings('settings.sections.notifications')}>
         {renderBackButton()}
         <div className="space-y-4">
-          <div className="p-4 bg-mystic-800/50 rounded-xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-mystic-400" />
-                <div>
-                  <p className="font-medium text-mystic-200">{tAppSettings('settings.dailyReminders')}</p>
-                  <p className="text-sm text-mystic-500">{tAppSettings('settings.getNotified')}</p>
-                </div>
-              </div>
-              <button
-                onClick={handleToggleNotifications}
-                className={`w-12 h-7 rounded-full transition-colors relative ${
-                  profile?.notificationsEnabled ? 'bg-gold' : 'bg-mystic-700'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all ${
-                    profile?.notificationsEnabled ? 'left-6' : 'left-1'
-                  }`}
+          <ListRowGroup>
+            <ListRow
+              icon={<Bell />}
+              label={<span id="settings-daily-reminders">{tAppSettings('settings.dailyReminders')}</span>}
+              meta={tAppSettings('settings.getNotified')}
+              trailing={
+                <Switch
+                  checked={!!profile?.notificationsEnabled}
+                  onChange={handleToggleNotifications}
+                  aria-labelledby="settings-daily-reminders"
                 />
-              </button>
-            </div>
-          </div>
+              }
+            />
+          </ListRowGroup>
 
           <p className="text-xs text-mystic-500">
             When enabled, you'll receive daily reminders to check your horoscope and complete your ritual.
@@ -753,21 +743,16 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       <Sheet open={open} onClose={onClose} title={tAppSettings('settings.helpCenter.title')}>
         {renderBackButton()}
         <div className="space-y-4">
-          <a
-            href="mailto:support@arcana.app"
-            className="block p-4 bg-mystic-800/50 rounded-xl hover:bg-mystic-800 transition-colors"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-cosmic-blue/20 flex items-center justify-center">
-                <Mail className="w-5 h-5 text-cosmic-blue" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-mystic-200">{tAppSettings('settings.contactSupport')}</p>
-                <p className="text-sm text-mystic-500">support@arcana.app</p>
-              </div>
-              <ExternalLink className="w-4 h-4 text-mystic-500" />
-            </div>
-          </a>
+          <ListRowGroup>
+            <ListRow
+              href="mailto:support@arcana.app"
+              icon={<Mail />}
+              tone="blue"
+              label={tAppSettings('settings.contactSupport')}
+              meta="support@arcana.app"
+              trailing={<ExternalLink className="w-4 h-4 shrink-0 text-mystic-500" aria-hidden />}
+            />
+          </ListRowGroup>
 
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-mystic-300">{tAppSettings('settings.frequentlyAskedQuestions')}</h3>
@@ -1033,37 +1018,22 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 {group.title}
               </h3>
             )}
-            <div className="space-y-1">
+            <ListRowGroup>
               {group.items.map((item, itemIndex) => {
                 const Icon = item.icon;
                 return (
-                  <button
+                  <ListRow
                     key={itemIndex}
+                    icon={<Icon />}
+                    label={item.id === 'exportData' && isExporting ? tAppSettings('settings.deleteAccount.exporting') : item.label}
+                    value={item.value}
+                    danger={item.danger}
                     onClick={item.action}
                     disabled={item.id === 'exportData' && isExporting}
-                    className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                      ${item.danger
-                        ? 'text-coral hover:bg-coral/10'
-                        : 'text-mystic-200 hover:bg-mystic-800/50'
-                      }
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                    `}
-                  >
-                    <Icon className={`w-5 h-5 ${item.danger ? 'text-coral' : 'text-mystic-400'}`} />
-                    <span className="flex-1 text-left">
-                      {item.id === 'exportData' && isExporting ? tAppSettings('settings.deleteAccount.exporting') : item.label}
-                    </span>
-                    {item.value && (
-                      <span className="text-sm text-mystic-500">{item.value}</span>
-                    )}
-                    {!item.danger && (
-                      <ChevronRight className="w-4 h-4 text-mystic-600" />
-                    )}
-                  </button>
+                  />
                 );
               })}
-            </div>
+            </ListRowGroup>
           </div>
         ))}
 
@@ -1071,7 +1041,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           <h3 className="text-xs font-medium text-mystic-500 uppercase tracking-wider mb-3">
             Card Back Design
           </h3>
-          <div className="p-4 bg-mystic-800/50 border border-mystic-700 rounded-xl">
+          <Card variant="elevated" padding="md">
             <p className="text-xs text-mystic-400 mb-4">
               Choose the design for the back of your tarot cards
             </p>
@@ -1090,11 +1060,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   onClick={() => handleSelectCardBack(null)}
                   disabled={savingCardBack}
                   className={`
-                    relative aspect-[2/3] rounded-lg border-2 transition-all overflow-hidden
+                    relative aspect-[2/3] rounded-xl border-2 transition-all overflow-hidden
                     bg-gradient-to-br from-mystic-800 to-mystic-900
                     flex items-center justify-center min-h-[120px]
                     ${!profile?.card_back_url
-                      ? 'border-gold ring-2 ring-gold/30'
+                      ? 'border-gold'
                       : 'border-mystic-700 hover:border-mystic-500'
                     }
                     disabled:opacity-50
@@ -1114,9 +1084,9 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     onClick={() => handleSelectCardBack(cardBack.url)}
                     disabled={savingCardBack}
                     className={`
-                      relative aspect-[2/3] rounded-lg border-2 transition-all overflow-hidden min-h-[120px]
+                      relative aspect-[2/3] rounded-xl border-2 transition-all overflow-hidden min-h-[120px]
                       ${profile?.card_back_url === cardBack.url
-                        ? 'border-gold ring-2 ring-gold/30'
+                        ? 'border-gold'
                         : 'border-mystic-700 hover:border-mystic-500'
                       }
                       disabled:opacity-50
@@ -1143,14 +1113,14 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 Saving...
               </div>
             )}
-          </div>
+          </Card>
         </div>
 
         <div>
           <h3 className="text-xs font-medium text-mystic-500 uppercase tracking-wider mb-3">
             App Background
           </h3>
-          <div className="p-4 bg-mystic-800/50 border border-mystic-700 rounded-xl">
+          <Card variant="elevated" padding="md">
             <p className="text-xs text-mystic-400 mb-4">
               Choose a custom background for the app
             </p>
@@ -1170,11 +1140,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   onClick={() => handleSelectBackground(null)}
                   disabled={savingBackground}
                   className={`
-                    relative aspect-video rounded-lg border-2 transition-all overflow-hidden
+                    relative aspect-video rounded-xl border-2 transition-all overflow-hidden
                     bg-gradient-to-br from-mystic-800 to-mystic-900
                     flex items-center justify-center min-h-[100px]
                     ${!profile?.background_url
-                      ? 'border-gold ring-2 ring-gold/30'
+                      ? 'border-gold'
                       : 'border-mystic-700 hover:border-mystic-500'
                     }
                     disabled:opacity-50
@@ -1201,9 +1171,9 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   onClick={() => handleSelectBackground(CELESTIAL_BG_URL)}
                   disabled={savingBackground}
                   className={`
-                    relative aspect-video rounded-lg border-2 transition-all overflow-hidden min-h-[100px]
+                    relative aspect-video rounded-xl border-2 transition-all overflow-hidden min-h-[100px]
                     ${profile?.background_url === CELESTIAL_BG_URL
-                      ? 'border-gold ring-2 ring-gold/30'
+                      ? 'border-gold'
                       : 'border-mystic-700 hover:border-mystic-500'
                     }
                     disabled:opacity-50
@@ -1266,9 +1236,9 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     onClick={() => handleSelectBackground(bg.url)}
                     disabled={savingBackground}
                     className={`
-                      relative aspect-video rounded-lg border-2 transition-all overflow-hidden min-h-[100px]
+                      relative aspect-video rounded-xl border-2 transition-all overflow-hidden min-h-[100px]
                       ${profile?.background_url === bg.url
-                        ? 'border-gold ring-2 ring-gold/30'
+                        ? 'border-gold'
                         : 'border-mystic-700 hover:border-mystic-500'
                       }
                       disabled:opacity-50
@@ -1297,10 +1267,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 Saving...
               </div>
             )}
-          </div>
+          </Card>
         </div>
 
-        <div className="p-4 bg-mystic-800/50 border border-mystic-700 rounded-xl">
+        <Card variant="elevated" padding="md">
           <div className="flex items-start gap-3">
             <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
             <div>
@@ -1310,7 +1280,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
         <div className="text-xs text-mystic-600 space-y-1">
           <p>{tAppSettings('settings.disclaimerBody')}</p>

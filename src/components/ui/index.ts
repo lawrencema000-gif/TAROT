@@ -59,7 +59,7 @@ export { MysticalStar } from './MysticalStar';
 export { Progress, ProgressRing, type ProgressProps } from './Progress';
 export { Sheet } from './Sheet';
 export { Input, TextArea } from './Input';
-export { Chip, ChipGroup, InsightChip } from './Chip';
+export { Chip, ChipGroup, InsightChip, Tag, Badge, type TagProps, type BadgeProps, type Tone } from './Chip';
 export { toast, ToastContainer } from './Toast';
 export { TarotCardFrame } from './TarotCardFrame';
 export { RitualCardStack } from './RitualCardStack';
@@ -87,3 +87,8 @@ export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { PageGrid, type PageGridProps } from './PageGrid';
 export { ResultLayout, type ResultLayoutProps } from './ResultLayout';
 export { ReadingProse } from './ReadingProse';
+// Phase 3: the controls and rows every screen was hand-rolling.
+export { Tabs, TabPanel, type TabsProps, type TabItem, type TabPanelProps } from './Tabs';
+export { ListRow, ListRowGroup, type ListRowProps, type ListRowTone } from './ListRow';
+export { Switch, type SwitchProps } from './Switch';
+export { Page, type PageProps } from './Page';

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { TarotCardIcon } from '../ui/NavIcons';
 import { MysticalStar } from '../ui/MysticalStar';
-import { Card, Button, Chip, Sheet, toast, ReadingProse } from '../ui';
+import { Card, Button, Chip, Tabs, Tag, Badge, Sheet, toast, ReadingProse } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
 import { localizeCardNameSync, prefetchCardNameIndex } from '../../i18n/localizeCard';
@@ -219,31 +219,20 @@ export function LibrarySection() {
 
   return (
     <div className="space-y-6">
-      <div className="relative -mx-4 px-4">
-        <div
-          className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth"
-          style={{
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
-          }}
-        >
-          <Chip selected={activeTab === 'saved'} onClick={() => setActiveTab('saved')}>
-            <Bookmark className="w-3.5 h-3.5" />
-            {t('library.tabs.saved', { defaultValue: 'Saved' })}
-          </Chip>
-          {profile?.isPremium && (
-            <Chip selected={activeTab === 'ai-readings'} onClick={() => setActiveTab('ai-readings')}>
-              <Brain className="w-3.5 h-3.5" />
-              {t('library.tabs.aiReadings', { defaultValue: 'AI Readings' })}
-            </Chip>
-          )}
-          <Chip selected={activeTab === 'guides'} onClick={() => setActiveTab('guides')}>
-            <Book className="w-3.5 h-3.5" />
-            {t('library.tabs.guides', { defaultValue: 'Guides' })}
-          </Chip>
-        </div>
-      </div>
+      <Tabs
+        fill={false}
+        idPrefix="library"
+        aria-label={t('readings.tabs.library')}
+        value={activeTab}
+        onChange={setActiveTab}
+        items={[
+          { id: 'saved' as const, icon: Bookmark, label: t('library.tabs.saved', { defaultValue: 'Saved' }) },
+          ...(profile?.isPremium
+            ? [{ id: 'ai-readings' as const, icon: Brain, label: t('library.tabs.aiReadings', { defaultValue: 'AI Readings' }) }]
+            : []),
+          { id: 'guides' as const, icon: Book, label: t('library.tabs.guides', { defaultValue: 'Guides' }) },
+        ]}
+      />
 
       {activeTab === 'saved' && (
         <div className="space-y-4">
@@ -257,17 +246,13 @@ export function LibrarySection() {
               }}
             >
               {(['all', 'tarot', 'horoscope', 'spreads'] as const).map(filter => (
-                <button
+                <Chip
                   key={filter}
-                  onClick={() => setSavedFilter(filter)}
-                  className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex-shrink-0 snap-start ${
-                    savedFilter === filter
-                      ? 'bg-mystic-700 text-mystic-100'
-                      : 'text-mystic-400 hover:text-mystic-300'
-                  }`}
-                >
-                  {t(`library.filters.${filter}`, { defaultValue: filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1) })}
-                </button>
+                  size="sm"
+                  selected={savedFilter === filter}
+                  onSelect={() => setSavedFilter(filter)}
+                  label={t(`library.filters.${filter}`, { defaultValue: filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1) })}
+                />
               ))}
             </div>
           </div>
@@ -323,9 +308,9 @@ export function LibrarySection() {
                               })()}
                             </h4>
                             {reading.focus_area && (
-                              <span className="px-2 py-0.5 bg-mystic-800 rounded text-meta text-mystic-400">
+                              <Tag tone="neutral" size="md">
                                 {t(`readings.focusAreas.${reading.focus_area.toLowerCase()}`, { defaultValue: reading.focus_area })}
-                              </span>
+                              </Tag>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-1 mb-2">
@@ -541,14 +526,14 @@ export function LibrarySection() {
                             })()}
                           </h4>
                           {reading.context.usedLlm && (
-                            <span className="px-2 py-0.5 bg-gold/10 border border-gold/20 rounded text-xs text-gold">
+                            <Badge tone="gold">
                               AI
-                            </span>
+                            </Badge>
                           )}
                           {reading.context.focusArea && (
-                            <span className="px-2 py-0.5 bg-mystic-800 rounded text-meta text-mystic-400 capitalize">
+                            <Tag tone="neutral" size="md" className="capitalize">
                               {reading.context.focusArea}
-                            </span>
+                            </Tag>
                           )}
                         </div>
                         <div className="flex flex-wrap gap-1 mb-2">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Orbit, Home, Triangle, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Card, Chip, Skeleton } from '../ui';
+import { Card, Chip, Skeleton, Tabs } from '../ui';
 import { useTransitCalendar, useNatalChart } from '../../hooks/useAstrology';
 import { PLANETS, HOUSE_THEMES } from '../../types/astrology';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
@@ -75,29 +75,18 @@ export function Explore() {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex gap-1">
-        {([
-          { id: 'transits' as const, label: t('horoscope.exploreView.tabs.transits'), icon: Orbit },
-          { id: 'houses' as const, label: t('horoscope.exploreView.tabs.houses'), icon: Home },
-          { id: 'aspects' as const, label: t('horoscope.exploreView.tabs.aspects'), icon: Triangle },
-        ]).map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                tab === item.id
-                  ? 'bg-gold/15 text-gold border border-gold/25'
-                  : 'text-mystic-400 border border-transparent'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs<ExploreTab>
+        items={[
+          { id: 'transits', label: t('horoscope.exploreView.tabs.transits'), icon: Orbit },
+          { id: 'houses', label: t('horoscope.exploreView.tabs.houses'), icon: Home },
+          { id: 'aspects', label: t('horoscope.exploreView.tabs.aspects'), icon: Triangle },
+        ]}
+        value={tab}
+        onChange={setTab}
+        aria-label={t('horoscope.tabs.explore') as string}
+        size="sm"
+        idPrefix="explore"
+      />
 
       {tab === 'transits' && <TransitExplorer data={data} />}
       {tab === 'houses' && <HouseExplorer data={data} />}

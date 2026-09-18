@@ -1,16 +1,54 @@
+import type { ReactNode } from 'react';
 import { X, Heart, Briefcase, Compass, Flame, Zap, Users } from 'lucide-react';
+
+/**
+ * Three small round things, three jobs. They looked like one thing with
+ * sixty-three hand-rolled spellings, so here is the rule:
+ *
+ *   Chip   a choice. You tap it and something is selected or filtered.
+ *          It is a <button>, it has a focus ring, and its selected state
+ *          is the ONE gold-tint treatment (bg-gold/20 on a gold/30
+ *          hairline) — six variations of that were in circulation.
+ *   Tag    a label. Keyword, element, zodiac sign. Read-only: a <span>,
+ *          tinted in its tone, no border, nothing to press.
+ *   Badge  a status. LIVE, PREMIUM, RARE, NEW. Uppercase, tracked, tiny;
+ *          the thing you read before the thing it is stuck to.
+ *
+ * A chip given no handler renders as a Tag-shaped span rather than an inert
+ * button: forty hand-rolled "chips" were keywords nobody could press.
+ */
+
+export type Tone = 'neutral' | 'gold' | 'teal' | 'coral' | 'blue' | 'violet' | 'rose';
+
+const TINT: Record<Tone, string> = {
+  neutral: 'bg-mystic-800 text-mystic-300',
+  gold: 'bg-gold/10 text-gold',
+  teal: 'bg-teal/10 text-teal',
+  coral: 'bg-coral/10 text-coral',
+  blue: 'bg-cosmic-blue/15 text-cosmic-blue',
+  violet: 'bg-cosmic-violet/15 text-cosmic-violet',
+  rose: 'bg-cosmic-rose/15 text-cosmic-rose',
+};
 
 type InsightCategory = 'love' | 'career' | 'clarity' | 'confidence' | 'growth' | 'connection';
 
 interface ChipProps {
   label?: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
   selected?: boolean;
   onSelect?: () => void;
   onClick?: () => void;
   onRemove?: () => void;
   variant?: 'default' | 'gold' | 'outline';
   size?: 'sm' | 'md' | 'lg';
+  /** Leading icon, sized to the chip. */
+  icon?: ReactNode;
+  /** A dead chip: still visible, not pressable, announced as disabled. */
+  disabled?: boolean;
+  /** Accessible name when the label is an icon or a glyph. */
+  'aria-label'?: string;
+  title?: string;
+  className?: string;
 }
 
 interface InsightChipProps {
@@ -20,9 +58,6 @@ interface InsightChipProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-// Motion tokens — literals, pending the theme tokens. See Button.tsx for the
-// full note. fast = 120ms, out = cubic-bezier(0.22,0.8,0.25,1).
-//
 // A chip is small, so it takes a slightly deeper press than a button (0.96 vs
 // 0.97) to register at that size, and it is `motion-safe:` for the same reason:
 // the global reduce-motion block zeroes the duration but not the transform.
@@ -40,6 +75,13 @@ const CHIP_FOCUS =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-950';
 
+// One size scale for every chip, on the role type scale.
+const CHIP_SIZE = {
+  sm: 'px-2.5 py-1 text-caption gap-1',
+  md: 'px-4 py-2 text-ui gap-1.5',
+  lg: 'px-5 py-2.5 text-body gap-2',
+};
+
 const insightConfig: Record<InsightCategory, { label: string; icon: typeof Heart; color: string; bgColor: string; borderColor: string }> = {
   love: { label: 'Love', icon: Heart, color: 'text-coral', bgColor: 'bg-coral/10', borderColor: 'border-coral/30' },
   career: { label: 'Career', icon: Briefcase, color: 'text-cosmic-blue', bgColor: 'bg-cosmic-blue/10', borderColor: 'border-cosmic-blue/30' },
@@ -53,20 +95,15 @@ export function InsightChip({ category, selected, onSelect, size = 'md' }: Insig
   const config = insightConfig[category];
   const Icon = config.icon;
 
-  const sizeStyles = {
-    sm: 'px-2.5 py-1 text-xs gap-1',
-    md: 'px-3 py-1.5 text-sm gap-1.5',
-    lg: 'px-4 py-2 text-base gap-2',
-  };
-
   return (
     <button
       type="button"
       onClick={onSelect}
+      aria-pressed={selected}
       className={`
         inline-flex items-center rounded-full font-medium border
         ${CHIP_MOTION} ${CHIP_FOCUS}
-        ${sizeStyles[size]}
+        ${CHIP_SIZE[size]}
         ${selected
           ? `${config.bgColor} ${config.color} ${config.borderColor}`
           : 'bg-mystic-800/50 text-mystic-400 border-mystic-700/50 [@media(hover:hover)]:[&:hover:not(:active)]:border-mystic-600'
@@ -74,24 +111,30 @@ export function InsightChip({ category, selected, onSelect, size = 'md' }: Insig
         ${onSelect ? CHIP_PRESS : ''}
       `}
     >
-      <Icon className={`w-3.5 h-3.5 ${selected ? config.color : ''}`} />
+      <Icon className={`w-3.5 h-3.5 ${selected ? config.color : ''}`} aria-hidden />
       {config.label}
     </button>
   );
 }
 
-export function Chip({ label, children, selected, onSelect, onClick, onRemove, variant = 'default', size = 'md' }: ChipProps) {
-  // The press used to fire on every chip including the inert ones, so a
-  // read-only tag shrank when you poked it and promised an action it did not
-  // have. It is now attached to `handleClick`.
+export function Chip({
+  label,
+  children,
+  selected,
+  onSelect,
+  onClick,
+  onRemove,
+  variant = 'default',
+  size = 'md',
+  icon,
+  disabled,
+  title,
+  className = '',
+  ...aria
+}: ChipProps) {
   const baseStyles =
-    `inline-flex items-center gap-1.5 rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION} ${CHIP_FOCUS}`;
-
-  const sizeStyles = {
-    sm: 'px-2.5 py-1 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-5 py-2.5 text-base',
-  };
+    `inline-flex items-center rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION}`;
+  const iconNode = icon ? <span className="inline-flex shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5" aria-hidden>{icon}</span> : null;
 
   const variantStyles = {
     default: selected
@@ -104,13 +147,29 @@ export function Chip({ label, children, selected, onSelect, onClick, onRemove, v
   };
 
   const handleClick = onSelect || onClick;
+  const classes = `${baseStyles} ${CHIP_SIZE[size]} ${variantStyles[variant]} ${className}`;
+
+  // Inert: a label, not a control. No focus ring, no press, not a button.
+  if (!handleClick && !onRemove) {
+    return (
+      <span className={classes} title={title} aria-label={aria['aria-label']}>
+        {iconNode}
+        {children || label}
+      </span>
+    );
+  }
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${handleClick ? CHIP_PRESS : ''}`}
+      disabled={disabled}
+      title={title}
+      aria-label={aria['aria-label']}
+      aria-pressed={selected !== undefined ? selected : undefined}
+      className={`${classes} ${CHIP_FOCUS} ${handleClick && !disabled ? CHIP_PRESS : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
     >
+      {iconNode}
       {children || label}
       {/* inline-flex, not the default inline: transform has no effect on a
           non-replaced inline box, so the press would otherwise be silent. */}
@@ -160,5 +219,44 @@ export function ChipGroup({ options, selected, onChange, multiple = false }: Chi
         />
       ))}
     </div>
+  );
+}
+
+export interface TagProps {
+  children: ReactNode;
+  tone?: Tone;
+  size?: 'sm' | 'md';
+  icon?: ReactNode;
+  className?: string;
+}
+
+/** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
+export function Tag({ children, tone = 'neutral', size = 'sm', icon, className = '' }: TagProps) {
+  const sz = size === 'sm' ? 'px-2 py-0.5 text-caption gap-1' : 'px-2.5 py-1 text-meta gap-1.5';
+  return (
+    <span className={`inline-flex items-center rounded-full font-medium ${sz} ${TINT[tone]} ${className}`.trim()}>
+      {icon}
+      {children}
+    </span>
+  );
+}
+
+export interface BadgeProps {
+  children: ReactNode;
+  tone?: Tone;
+  /** A breathing dot before the label, for LIVE and other now-things. */
+  pulse?: boolean;
+  className?: string;
+}
+
+/** A status: LIVE, PREMIUM, RARE, NEW. Uppercase, tracked, tiny. */
+export function Badge({ children, tone = 'gold', pulse = false, className = '' }: BadgeProps) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-semibold uppercase tracking-wider ${TINT[tone]} ${className}`.trim()}
+    >
+      {pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" aria-hidden />}
+      {children}
+    </span>
   );
 }

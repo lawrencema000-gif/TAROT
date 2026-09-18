@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Globe2, Heart, Briefcase, Plane, Home as HomeIcon, Sprout, Crown } from 'lucide-react';
-import { Card, Button, EyebrowLabel, PageHeader } from '../components/ui';
+import { Card, Button, Chip, EyebrowLabel, Page, PageHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { CelestialMapView } from '../components/celestial/CelestialMapView';
@@ -246,7 +246,7 @@ export function CelestialMapPage() {
       ? 'Your saved birth date couldn’t be read. Re-enter it below and your map will be ready.'
       : 'Your celestial map is drawn from your birth chart. Enter your birth date — and time + place if you know them — and your map will be ready.';
     return (
-      <div className="space-y-6 pb-32">
+      <Page spacing="md">
         <PageHeader
           eyebrow={t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}
           title={t(headlineKey, { defaultValue: headlineDefault })}
@@ -268,12 +268,12 @@ export function CelestialMapPage() {
             {t('celestial.needBirthDate.secondary', { defaultValue: 'Edit full profile instead' })}
           </button>
         </Card>
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="space-y-8 pb-32">
+    <Page spacing="lg">
       <PageHeader
         eyebrow={t('celestial.eyebrow', { defaultValue: 'Celestial Map' })}
         title={t('celestial.title', { defaultValue: 'Where your stars align' })}
@@ -352,22 +352,18 @@ export function CelestialMapPage() {
           {LIFE_AREA_LABELS.map(({ id, icon: Icon, key, defaultLabel }, i) => {
             const isActive = activeFilter === id;
             return (
-              <motion.button
+              <motion.div
                 key={id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.04, duration: 0.3, ease: 'easeOut' }}
-                whileTap={{ scale: 0.94 }}
-                onClick={() => setActiveFilter(id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-colors flex-shrink-0 snap-start ${
-                  isActive
-                    ? 'bg-gold/20 text-gold border border-gold/30 shadow-glow'
-                    : 'bg-mystic-800/50 text-mystic-300 border border-transparent hover:bg-mystic-800'
-                }`}
+                className="flex-shrink-0 snap-start"
               >
-                <Icon className="w-4 h-4" />
-                <span className="text-sm">{t(key, { defaultValue: defaultLabel })}</span>
-              </motion.button>
+                <Chip selected={isActive} onSelect={() => setActiveFilter(id)} className="whitespace-nowrap">
+                  <Icon className="w-4 h-4" />
+                  <span>{t(key, { defaultValue: defaultLabel })}</span>
+                </Chip>
+              </motion.div>
             );
           })}
         </div>
@@ -553,7 +549,7 @@ export function CelestialMapPage() {
         open={showIntro}
         onDone={() => setShowIntro(false)}
       />
-    </div>
+    </Page>
   );
 }
 

@@ -46,7 +46,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
                   relative w-10 h-10 rounded-full flex items-center justify-center
                   transition-all duration-deliberate
                   ${isCurrent
-                    ? 'bg-gradient-to-br from-gold/30 to-amber-600/30 border-2 border-gold shadow-lg shadow-gold/30'
+                    ? 'bg-gradient-to-br from-gold/30 to-amber-600/30 border-2 border-gold'
                     : isActive
                       ? 'bg-mystic-700/50 border border-gold/50'
                       : 'bg-mystic-800/50 border border-mystic-700/30'
@@ -57,7 +57,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
                   className={`
                     w-5 h-5 transition-all duration-deliberate
                     ${isCurrent
-                      ? 'text-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]'
+                      ? 'text-gold'
                       : isActive
                         ? 'text-gold/70'
                         : 'text-mystic-600'
@@ -81,7 +81,18 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
         })}
       </div>
 
-      <div className="relative h-2 bg-mystic-800/50 rounded-full overflow-hidden">
+      {/* Segmented rank bar: the primitive's track (h-2 bg-mystic-800) with
+          one tick per rank boundary, so it stays custom — but the fill moves
+          the way every Progress fill moves: width only, on the deliberate
+          duration. */}
+      <div
+        role="progressbar"
+        aria-label={t(`achievements.ranks.${currentRankData.key}`)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(((activeIndex + progressToNext / 100) / (RANKS.length - 1)) * 100)}
+        className="relative h-2 bg-mystic-800 rounded-full overflow-hidden"
+      >
         <div className="absolute inset-0 flex">
           {RANKS.slice(0, -1).map((_, index) => (
             <div
@@ -91,7 +102,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
           ))}
         </div>
         <div
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-gold/80 to-amber-500/80 rounded-full transition-all duration-ambient"
+          className="absolute left-0 top-0 h-full bg-gold rounded-full transition-[width] duration-deliberate ease-out"
           style={{
             width: `${((activeIndex + progressToNext / 100) / (RANKS.length - 1)) * 100}%`,
           }}

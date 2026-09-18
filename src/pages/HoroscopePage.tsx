@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, Sun, Circle, TrendingUp, Compass } from 'lucide-react';
+import { Sun, Circle, TrendingUp, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
@@ -7,7 +7,7 @@ import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { preloadInterpModules } from '../data/preloadInterpModules';
 import { useT } from '../i18n/useT';
 import type { HoroscopeSubTab } from '../types/astrology';
-import { PageHeader } from '../components/ui';
+import { PageHeader, Tabs } from '../components/ui';
 
 // 2026-04-24 — landing page markets "free daily horoscope", but the page
 // used to gate the entire hub behind premium. Now the `today` tab is free
@@ -72,32 +72,20 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
   return (
     <div>
       <PageHeader title={t('pageTitles.horoscope.title')} className="mb-4" />
-      <nav className="flex gap-1 mb-2" role="tablist">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          const isLocked = tab.premiumOnly && !profile?.isPremium;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => handleTabChange(tab.id)}
-              className={`
-                flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3
-                rounded-xl text-xs font-medium transition-all duration-base cursor-pointer
-                ${isActive
-                  ? 'bg-gold/15 text-gold border border-gold/25'
-                  : 'text-mystic-400 hover:text-mystic-200 border border-transparent'
-                }
-              `}
-            >
-              {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
-              {t(tab.labelKey)}
-            </button>
-          );
-        })}
-      </nav>
+      <Tabs<HoroscopeSubTab>
+        items={TABS.map((tab) => ({
+          id: tab.id,
+          label: t(tab.labelKey),
+          icon: tab.icon,
+          locked: !!tab.premiumOnly && !profile?.isPremium,
+        }))}
+        value={activeTab}
+        onChange={handleTabChange}
+        aria-label={t('pageTitles.horoscope.title') as string}
+        size="sm"
+        idPrefix="horoscope"
+        className="mb-2"
+      />
 
       {activeTab === 'today' && <TodayForYou />}
       {activeTab === 'chart' && <BirthChart />}

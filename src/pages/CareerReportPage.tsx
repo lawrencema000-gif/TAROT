@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Briefcase, Lock, Moon, Gift, Share2, CheckCircle2, AlertCircle, Crown } from 'lucide-react';
-import { Card, Button, toast, PageHeader, Section, EmptyState, ResultLayout, ReadingProse } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, Section, EmptyState, ResultLayout, ReadingProse } from '../components/ui';
 import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -105,7 +105,7 @@ export function CareerReportPage() {
 
   if (!mbti || !archetype) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<Briefcase />}
           title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
@@ -118,7 +118,7 @@ export function CareerReportPage() {
               'This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.',
           })}
         />
-      </div>
+      </Page>
     );
   }
 
@@ -132,14 +132,14 @@ export function CareerReportPage() {
 
   if (!unlocked) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<Briefcase />}
           title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
         />
 
         <Card padding="lg" variant="ornate" className="text-center nebula-veil">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
@@ -262,14 +262,13 @@ export function CareerReportPage() {
             earnOnly
           />
         )}
-      </div>
+      </Page>
     );
   }
 
   // Unlocked — render the full report.
   return (
     <ResultLayout
-      className="pb-6"
       eyebrow={`${archetype.mbti} · ${t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}`}
       verdict={archetype.name}
       subtitle={`"${archetype.tagline}"`}

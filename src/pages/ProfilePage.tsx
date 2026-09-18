@@ -3,7 +3,6 @@ import {
   User,
   Target,
   Crown,
-  ChevronRight,
   Bookmark,
   Flame,
   Star,
@@ -21,7 +20,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState, PageHeader } from '../components/ui';
+import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
@@ -205,16 +204,15 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader title={t('pageTitles.profile.title')} />
 
       <Card variant="glow" padding="lg">
         <div className="flex items-start gap-4">
           <div className="relative">
-            {/* Persona avatar — redesign-2026 ring-2 ring-gold/40 with
-                outer halo glow matches the mockup's "Starlit Seeker"
-                portrait treatment. */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 flex items-center justify-center ring-2 ring-gold/40 shadow-[0_0_24px_rgba(212,175,55,0.18)]">
+            {/* Persona avatar — the "Starlit Seeker" portrait. The gradient
+                fill is the whole treatment; no ring, no halo. */}
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 flex items-center justify-center">
               {zodiacInfo ? (
                 <span className="text-4xl">{zodiacInfo.symbol}</span>
               ) : (
@@ -222,7 +220,7 @@ export function ProfilePage() {
               )}
             </div>
             {profile?.isPremium && (
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gold rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gold rounded-full flex items-center justify-center">
                 <Crown className="w-4 h-4 text-mystic-950" />
               </div>
             )}
@@ -249,14 +247,16 @@ export function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-mystic-800/50 rounded-xl p-3 text-center hairline-gold-soft">
+          {/* Stat tiles sit on the card, so they take one step up the fill
+              ladder (mystic-800) rather than a hairline. */}
+          <div className="bg-mystic-800 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Flame className="w-4 h-4 text-gold" />
               <span className="text-2xl font-display text-mystic-100">{profile?.streak || 0}</span>
             </div>
             <p className="text-xs text-mystic-500">{t('profile.dayStreak')}</p>
           </div>
-          <div className="bg-mystic-800/50 rounded-xl p-3 text-center hairline-gold-soft">
+          <div className="bg-mystic-800 rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Star className="w-4 h-4 text-cosmic-blue" />
               <span className="text-2xl font-display text-mystic-100">{t('profile.level', { n: profile?.level || 1 })}</span>
@@ -270,12 +270,16 @@ export function ProfilePage() {
             <span className="text-mystic-500">{t('profile.xpProgress')}</span>
             <span className="text-gold">{t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}</span>
           </div>
-          <div className="h-1.5 bg-mystic-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-gold to-gold-dark rounded-full transition-all"
-              style={{ width: `${xpProgress.percentage}%` }}
-            />
-          </div>
+          {/* value is the service's own percentage rather than current/required:
+              getXPProgress reports 100% at max level, where required is 0 and a
+              current/required ratio would clamp to nothing. */}
+          <Progress
+            value={xpProgress.percentage}
+            max={100}
+            size="sm"
+            variant="gradient"
+            label={t('profile.xpProgress')}
+          />
         </div>
       </Card>
 
@@ -283,18 +287,14 @@ export function ProfilePage() {
         <Section title={t('profile.personalityBadges')} headingLevel="h3" spacing="sm">
           <div className="flex flex-wrap gap-2">
             {profile?.mbtiType && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
-                <Brain className="w-4 h-4 text-cosmic-blue" />
-                <span className="text-sm font-medium text-mystic-100">{profile.mbtiType}</span>
-              </div>
+              <Tag tone="blue" size="md" icon={<Brain className="w-4 h-4" aria-hidden />}>
+                {profile.mbtiType}
+              </Tag>
             )}
             {profile?.loveLanguage && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-cosmic-rose/10 border border-cosmic-rose/30 rounded-xl">
-                <Heart className="w-4 h-4 text-cosmic-rose" />
-                <span className="text-sm font-medium text-mystic-100">
-                  {loveLanguageLabels[profile.loveLanguage] || profile.loveLanguage}
-                </span>
-              </div>
+              <Tag tone="rose" size="md" icon={<Heart className="w-4 h-4" aria-hidden />}>
+                {loveLanguageLabels[profile.loveLanguage] || profile.loveLanguage}
+              </Tag>
             )}
           </div>
         </Section>
@@ -331,156 +331,99 @@ export function ProfilePage() {
         >
           <div className="flex flex-wrap gap-2">
             {profile.goals.map(goal => (
-              <span key={goal} className="px-3 py-1.5 bg-gold/10 border border-gold/20 rounded-full text-sm text-gold">
+              <Tag key={goal} tone="gold" size="md">
                 {t(`profile.goals.${goal}`, { defaultValue: goal })}
-              </span>
+              </Tag>
             ))}
           </div>
         </Section>
       )}
 
-      <Card padding="none">
+      <ListRowGroup>
         {profile?.isPremium ? (
-          <div className="p-4 flex items-center gap-4 border-b border-mystic-700 bg-gold/5">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center flex-shrink-0">
-              <Crown className="w-6 h-6 text-mystic-950" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-gold">{t('profile.premiumMember')}</h3>
-              <p className="text-sm text-mystic-400">{t('profile.premiumSub')}</p>
-            </div>
-            <Zap className="w-5 h-5 text-gold" />
-          </div>
+          <ListRow
+            size="lg"
+            icon={<Crown />}
+            tone="gold"
+            label={<span className="text-gold">{t('profile.premiumMember')}</span>}
+            meta={t('profile.premiumSub')}
+            trailing={<Zap className="w-5 h-5 shrink-0 text-gold" aria-hidden />}
+            className="bg-gold/5"
+          />
         ) : (
-          <button
+          <ListRow
+            size="lg"
+            icon={<Crown />}
+            tone="gold"
+            label={t('profile.upgradeToPremium')}
+            meta={t('profile.upgradeSub')}
             onClick={handleUpgrade}
-            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center flex-shrink-0">
-              <Crown className="w-6 h-6 text-gold" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">{t('profile.upgradeToPremium')}</h3>
-              <p className="text-sm text-mystic-400">{t('profile.upgradeSub')}</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-          </button>
+          />
         )}
 
         {careerReportEnabled && profile?.mbtiType && (
-          <button
+          <ListRow
+            size="lg"
+            icon={<Briefcase />}
+            tone="gold"
+            label={t('profile.careerReportTitle', { defaultValue: 'Career Archetype Report' })}
+            meta={t('profile.careerReportSub', { defaultValue: 'Deep coaching read for {{mbti}}', mbti: profile.mbtiType })}
             onClick={() => navigate('/reports/career')}
-            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
-              <Briefcase className="w-6 h-6 text-gold" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">
-                {t('profile.careerReportTitle', { defaultValue: 'Career Archetype Report' })}
-              </h3>
-              <p className="text-sm text-mystic-400">
-                {t('profile.careerReportSub', { defaultValue: 'Deep coaching read for {{mbti}}', mbti: profile.mbtiType })}
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-          </button>
+          />
         )}
 
         {yearAheadEnabled && profile?.birthDate && profile?.birthTime && profile?.birthPlace && (
-          <button
+          <ListRow
+            size="lg"
+            icon={<Calendar />}
+            tone="blue"
+            label={t('profile.yearAheadTitle', { defaultValue: 'Year Ahead Forecast' })}
+            meta={t('profile.yearAheadSub', { defaultValue: '12 months of transits to your chart' })}
             onClick={() => navigate('/reports/year-ahead')}
-            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cosmic-blue/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-6 h-6 text-cosmic-blue" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">
-                {t('profile.yearAheadTitle', { defaultValue: 'Year Ahead Forecast' })}
-              </h3>
-              <p className="text-sm text-mystic-400">
-                {t('profile.yearAheadSub', { defaultValue: '12 months of transits to your chart' })}
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-          </button>
+          />
         )}
 
         {natalReportEnabled && profile?.birthDate && (
-          <button
+          <ListRow
+            size="lg"
+            icon={<ScrollText />}
+            tone="violet"
+            label={t('profile.natalReportTitle', { defaultValue: 'Full Natal Chart' })}
+            meta={t('profile.natalReportSub', { defaultValue: 'Printable deep chart reading' })}
             onClick={() => navigate('/reports/natal-chart')}
-            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cosmic-violet/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
-              <ScrollText className="w-6 h-6 text-cosmic-violetLight" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">
-                {t('profile.natalReportTitle', { defaultValue: 'Full Natal Chart' })}
-              </h3>
-              <p className="text-sm text-mystic-400">
-                {t('profile.natalReportSub', { defaultValue: 'Printable deep chart reading' })}
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-          </button>
+          />
         )}
 
         {compatInviteEnabled && (profile?.mbtiType || profile?.birthDate) && (
-          <button
+          <ListRow
+            size="lg"
+            icon={<Heart />}
+            tone="rose"
+            label={t('profile.compatInviteTitle', { defaultValue: 'Compatibility invite' })}
+            meta={t('profile.compatInviteSub', { defaultValue: 'Share a link to get a joint reading' })}
             onClick={() => setShowCompatInvite(true)}
-            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-400/15 to-mystic-800 flex items-center justify-center flex-shrink-0">
-              <Heart className="w-6 h-6 text-pink-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">
-                {t('profile.compatInviteTitle', { defaultValue: 'Compatibility invite' })}
-              </h3>
-              <p className="text-sm text-mystic-400">
-                {t('profile.compatInviteSub', { defaultValue: 'Share a link to get a joint reading' })}
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-          </button>
+          />
         )}
 
         {referralEnabled && (
-          <button
+          <ListRow
+            size="lg"
+            icon={<Gift />}
+            tone="gold"
+            label={t('profile.referralTitle', { defaultValue: 'Invite friends' })}
+            meta={t('profile.referralSub', { defaultValue: 'Earn 100 Moonstones per friend' })}
             onClick={() => setShowReferral(true)}
-            className="w-full p-4 flex items-center gap-4 border-b border-mystic-700 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/15 to-cosmic-violet/15 flex items-center justify-center flex-shrink-0">
-              <Gift className="w-6 h-6 text-gold" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-mystic-100">
-                {t('profile.referralTitle', { defaultValue: 'Invite friends' })}
-              </h3>
-              <p className="text-sm text-mystic-400">
-                {t('profile.referralSub', { defaultValue: 'Earn 100 Moonstones per friend' })}
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-          </button>
+          />
         )}
 
-        <button
+        <ListRow
+          size="lg"
+          icon={<Bookmark />}
+          label={t('profile.saved')}
+          meta={t('profile.yourBookmarks')}
           onClick={() => { setShowSaved(true); loadSavedHighlights(); }}
-          className="w-full p-4 flex items-center gap-4 hover:bg-mystic-800/30 active:scale-[0.99] transition-all text-left"
-        >
-          <div className="w-12 h-12 rounded-xl bg-mystic-800 flex items-center justify-center flex-shrink-0">
-            <Bookmark className="w-6 h-6 text-mystic-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-mystic-100">{t('profile.saved')}</h3>
-            <p className="text-sm text-mystic-400">{t('profile.yourBookmarks')}</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-mystic-500 flex-shrink-0" />
-        </button>
-      </Card>
+        />
+      </ListRowGroup>
 
       <p className="text-center text-xs text-mystic-600 px-4">
         {t('profile.disclaimer')}
@@ -521,18 +464,18 @@ export function ProfilePage() {
             )}
 
             {!selectedLocation && geoResults.length > 0 && (
-              <div className="space-y-1 mt-2 max-h-48 overflow-y-auto border border-mystic-700 rounded-xl bg-mystic-900">
+              <ListRowGroup className="mt-2 max-h-48 overflow-y-auto">
                 {geoResults.map((r, i) => (
-                  <button
+                  <ListRow
                     key={i}
+                    size="md"
+                    icon={<MapPin />}
+                    label={r.displayName}
+                    trailing="none"
                     onClick={() => handleSelectLocation(r)}
-                    className="w-full text-left px-3 py-2.5 hover:bg-mystic-800/60 transition-colors text-sm text-mystic-300 truncate cursor-pointer first:rounded-t-xl last:rounded-b-xl"
-                  >
-                    <MapPin className="w-3.5 h-3.5 inline mr-2 text-mystic-500" />
-                    {r.displayName}
-                  </button>
+                  />
                 ))}
-              </div>
+              </ListRowGroup>
             )}
 
             {!selectedLocation && !geoLoading && geoError && (
@@ -614,6 +557,6 @@ export function ProfilePage() {
         open={showCompatInvite}
         onClose={() => setShowCompatInvite(false)}
       />
-    </div>
+    </Page>
   );
 }

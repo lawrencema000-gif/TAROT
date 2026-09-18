@@ -466,10 +466,10 @@ export function getRarityColor(rarity: AchievementRarity): string {
 
 export function getRarityGlow(rarity: AchievementRarity): string {
   const glows: Record<AchievementRarity, string> = {
-    common: 'shadow-mystic-400/30',
-    rare: 'shadow-blue-400/40',
-    epic: 'shadow-fuchsia-400/50',
-    legendary: 'shadow-amber-400/60',
+    common: 'border-mystic-400/30',
+    rare: 'border-blue-400/40',
+    epic: 'border-fuchsia-400/50',
+    legendary: 'border-amber-400/60',
   };
   return glows[rarity];
 }

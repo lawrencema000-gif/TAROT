@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
 import { MysticalStar } from '../ui/MysticalStar';
+import { Tag } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage, useCardBackImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
@@ -143,14 +144,14 @@ export function TarotFlipCard({
           }}
         >
           <div className="absolute inset-0" style={BACKFACE}>
-            <div className="relative w-full h-full bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/30 shadow-glow overflow-hidden">
+            <div className="relative w-full h-full bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/30 overflow-hidden">
               {cardBackUrl || backImageUrl ? (
                 <img src={backImageUrl} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
               ) : (
                 <>
                   <div className="absolute inset-0 opacity-20">
                     <div className="absolute inset-4 border border-gold/40 rounded-lg" />
-                    <div className="absolute inset-8 border border-gold/20 rounded" />
+                    <div className="absolute inset-8 border border-gold/20 rounded-lg" />
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center z-10">
@@ -180,7 +181,7 @@ export function TarotFlipCard({
                   to carry the rotate-180, so the caption — name, suit, the "Reversed"
                   badge itself — went upside down with the picture. The chrome stays
                   put; only the image (or its placeholder art) turns. */}
-              <div className="w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 shadow-glow overflow-hidden">
+              <div className="w-full h-full bg-gradient-to-br from-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/40 overflow-hidden">
               {cardImageUrl ? (
                 <>
                   <img
@@ -202,9 +203,9 @@ export function TarotFlipCard({
                       {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : suitLabel}
                     </p>
                     {showReversed && (
-                      <span className="inline-block mt-1 px-2 py-0.5 bg-mystic-700/80 rounded text-xs text-mystic-300">
+                      <Tag tone="neutral" size="sm" className="mt-1">
                         {t('home.ritualCards.reversed')}
-                      </span>
+                      </Tag>
                     )}
                   </div>
                 </>
@@ -220,9 +221,9 @@ export function TarotFlipCard({
                       {card.arcana === 'major' ? t('home.ritualCards.majorArcana') : suitLabel}
                     </p>
                     {showReversed && (
-                      <span className="mt-2 px-2 py-0.5 bg-mystic-700 rounded text-xs text-mystic-300">
+                      <Tag tone="neutral" size="sm" className="mt-2">
                         {t('home.ritualCards.reversed')}
-                      </span>
+                      </Tag>
                     )}
                   </div>
                 </>
@@ -250,12 +251,9 @@ export function TarotFlipCard({
 
           <div className="flex flex-wrap justify-center gap-2">
             {card.keywords.slice(0, 4).map((keyword, i) => (
-              <span
-                key={i}
-                className="px-2.5 py-1 bg-mystic-800/50 border border-mystic-700/50 rounded-full text-xs text-mystic-300"
-              >
+              <Tag key={i} tone="neutral" size="md">
                 {keyword}
-              </span>
+              </Tag>
             ))}
           </div>
 

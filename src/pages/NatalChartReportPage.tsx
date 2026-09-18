@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
-import { Card, Button, toast, PageHeader, Section, EmptyState } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -256,7 +256,7 @@ export function NatalChartReportPage() {
 
   if (!hasBirthData) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<ScrollText />}
           title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
@@ -269,7 +269,7 @@ export function NatalChartReportPage() {
               'The full natal chart needs date, time, and place of birth. Add them in Profile → Edit profile.',
           })}
         />
-      </div>
+      </Page>
     );
   }
 
@@ -283,14 +283,14 @@ export function NatalChartReportPage() {
 
   if (!unlocked) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<ScrollText />}
           title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
         />
 
         <Card padding="lg" variant="ornate" className="text-center nebula-veil">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
@@ -411,7 +411,7 @@ export function NatalChartReportPage() {
             earnOnly
           />
         )}
-      </div>
+      </Page>
     );
   }
 
@@ -428,7 +428,7 @@ export function NatalChartReportPage() {
   }
 
   return (
-    <div className="space-y-5 pb-6 natal-report">
+    <Page spacing="md" className="natal-report">
       <style>{`
         @media print {
           nav, header, .no-print, button { display: none !important; }
@@ -456,38 +456,32 @@ export function NatalChartReportPage() {
           {t('natalReport.wheelHeading', { defaultValue: 'Your chart wheel' })}
         </p>
         {(transitOverlayEnabled || chartVariantsEnabled) && (
-          <div className="flex gap-2 mb-3 justify-center flex-wrap">
-            {(['natal', 'transits', 'progressions', 'solar-return', 'synastry'] as Variant[])
+          <Tabs
+            className="mb-3"
+            size="sm"
+            fill={false}
+            idPrefix="natal-variant"
+            aria-label={t('natalReport.wheelHeading', { defaultValue: 'Your chart wheel' })}
+            value={variant}
+            onChange={setVariant}
+            items={(['natal', 'transits', 'progressions', 'solar-return', 'synastry'] as Variant[])
               .filter((v) => {
                 if (v === 'natal') return true;
                 if (v === 'transits') return transitOverlayEnabled;
                 return chartVariantsEnabled;
               })
-              .map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setVariant(v)}
-                  className={`px-3 py-1.5 text-meta rounded-full border transition-all ${
-                    variant === v
-                      ? v === 'natal'         ? 'bg-gold/20 text-gold border-gold/40'
-                      : v === 'transits'      ? 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/40'
-                      : v === 'progressions'  ? 'bg-cosmic-violet/20 text-cosmic-violetLight border-cosmic-violet/40'
-                      : v === 'solar-return'  ? 'bg-gold/20 text-gold border-gold/40'
-                      : 'bg-pink-400/20 text-pink-400 border-pink-400/40'
-                      : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
-                  }`}
-                >
-                  {t(`natalReport.variant.${v}`, {
-                    defaultValue:
-                      v === 'natal' ? 'Natal'
-                      : v === 'transits' ? 'Transits today'
-                      : v === 'progressions' ? 'Progressions'
-                      : v === 'solar-return' ? 'Solar return'
-                      : 'Synastry',
-                  })}
-                </button>
-              ))}
-          </div>
+              .map((v) => ({
+                id: v,
+                label: t(`natalReport.variant.${v}`, {
+                  defaultValue:
+                    v === 'natal' ? 'Natal'
+                    : v === 'transits' ? 'Transits today'
+                    : v === 'progressions' ? 'Progressions'
+                    : v === 'solar-return' ? 'Solar return'
+                    : 'Synastry',
+                }),
+              }))}
+          />
         )}
 
         {variant === 'synastry' && !partnerPlanets && (
@@ -501,21 +495,21 @@ export function NatalChartReportPage() {
               onChange={(e) => setPartnerName(e.target.value)}
               placeholder={t('natalReport.partnerNamePlaceholder', { defaultValue: 'Partner name (optional)' })}
               maxLength={80}
-              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-pink-400/40"
+              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-xl px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-pink-400/40"
             />
             <div className="flex gap-2">
               <input
                 type="date"
                 value={partnerBirthDate}
                 onChange={(e) => setPartnerBirthDate(e.target.value)}
-                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-ui text-mystic-100"
+                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-xl px-3 py-2 text-ui text-mystic-100"
               />
               <input
                 type="time"
                 value={partnerBirthTime}
                 onChange={(e) => setPartnerBirthTime(e.target.value)}
                 placeholder="optional"
-                className="bg-mystic-900/60 border border-mystic-700/50 rounded-lg px-3 py-2 text-ui text-mystic-100"
+                className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl px-3 py-2 text-ui text-mystic-100"
               />
             </div>
             <Button
@@ -671,9 +665,7 @@ export function NatalChartReportPage() {
                   <div className="flex justify-between text-ui text-mystic-200">
                     <span>{el}</span><span>{pct}%</span>
                   </div>
-                  <div className="h-1 bg-mystic-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gold/50" style={{ width: `${pct}%` }} />
-                  </div>
+                  <Progress value={pct} size="sm" tone="gold" label={el} />
                 </div>
               );
             })}
@@ -688,9 +680,7 @@ export function NatalChartReportPage() {
                   <div className="flex justify-between text-ui text-mystic-200">
                     <span>{m}</span><span>{pct}%</span>
                   </div>
-                  <div className="h-1 bg-mystic-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-cosmic-violet/60" style={{ width: `${pct}%` }} />
-                  </div>
+                  <Progress value={pct} size="sm" tone="violet" label={m} />
                 </div>
               );
             })}
@@ -751,7 +741,7 @@ export function NatalChartReportPage() {
             'Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.',
         })}
       </p>
-    </div>
+    </Page>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Loader2, Sparkles, Download, RefreshCw, Heart } from 'lucide-react';
-import { Card, Button, toast, ReadingProse } from '../ui';
+import { Card, Button, Chip, toast, ReadingProse } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
 import { supabase } from '../../lib/supabase';
@@ -70,10 +70,7 @@ export function SoulmatePortrait() {
           </p>
           <div className="flex flex-wrap gap-1.5">
             {VIBES.map((v) => (
-              <button key={v.key} onClick={() => setVibe(v.key)}
-                className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${vibe === v.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400 hover:border-mystic-500'}`}>
-                {v.label}
-              </button>
+              <Chip key={v.key} label={v.label} selected={vibe === v.key} onSelect={() => setVibe(v.key)} size="sm" />
             ))}
           </div>
           <Button variant="gold" fullWidth onClick={paint} disabled={loading}>
@@ -90,7 +87,7 @@ export function SoulmatePortrait() {
           <img
             src={`data:${data.imageMime || 'image/jpeg'};base64,${data.image}`}
             alt="Symbolic illustrated portrait generated from your chart's relationship symbolism"
-            className="w-full rounded-2xl border border-gold/20 shadow-lg"
+            className="w-full rounded-2xl border border-gold/20"
           />
           <ReadingProse text={data.caption} lede={false} />
 

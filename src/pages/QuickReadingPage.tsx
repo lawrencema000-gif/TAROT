@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Share2, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
-import { Card, Button, PageHeader, ReadingProse, toast } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -120,7 +120,7 @@ export function QuickReadingPage() {
 
   if (result) {
     return (
-      <div className="space-y-5 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<Zap />}
           title={t('quickReading.title', { defaultValue: '3-second reading' })}
@@ -171,12 +171,12 @@ export function QuickReadingPage() {
             defaultValue: 'Readings are for self-reflection, not prediction or professional advice.',
           })}
         </p>
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <PageHeader
         icon={<Zap />}
         title={t('quickReading.title', { defaultValue: '3-second reading' })}
@@ -195,18 +195,12 @@ export function QuickReadingPage() {
       <div className="space-y-2.5">
         <div className="flex flex-wrap gap-1.5">
           {ORACLE_CONTEXTS.map((c) => (
-            <button key={c.key} onClick={() => setContext(c.key)}
-              className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${context === c.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400 hover:border-mystic-500'}`}>
-              {c.label}
-            </button>
+            <Chip key={c.key} label={c.label} size="sm" selected={context === c.key} onSelect={() => setContext(c.key)} />
           ))}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {suggestions.map((s) => (
-            <button key={s} onClick={() => setQuestion(s)}
-              className="px-3 py-1.5 rounded-xl text-xs bg-mystic-800/50 border border-mystic-700/40 text-mystic-300 hover:border-gold/30 hover:text-mystic-100 transition-colors text-left">
-              {s}
-            </button>
+            <Chip key={s} label={s} size="sm" variant="outline" onClick={() => setQuestion(s)} className="text-left" />
           ))}
         </div>
       </div>
@@ -264,7 +258,7 @@ export function QuickReadingPage() {
         )}
       </Button>
       {EarnSheet}
-    </div>
+    </Page>
   );
 }
 

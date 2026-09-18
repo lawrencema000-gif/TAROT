@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Moon, AlertCircle, Users } from 'lucide-react';
-import { Card, Button, Input, PageHeader, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, Chip, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisors, advisorSessions, moonstones } from '../dal';
@@ -153,7 +153,7 @@ export function AdvisorBookingPage() {
   }
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <PageHeader
         icon={
           advisor.avatarUrl ? (
@@ -182,19 +182,15 @@ export function AdvisorBookingPage() {
         <h3 className="text-sm font-medium text-gold tracking-wide mb-3">
           {t('advisorBooking.durationLabel', { defaultValue: 'Session length' })}
         </h3>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex gap-2">
           {DURATIONS.map((d) => (
-            <button
+            <Chip
               key={d}
-              onClick={() => setDuration(d)}
-              className={`px-3 py-2.5 text-sm rounded-xl border transition-all ${
-                duration === d
-                  ? 'bg-gold/15 text-gold border-gold/40'
-                  : 'bg-mystic-800/40 text-mystic-300 border-mystic-700/40'
-              }`}
-            >
-              {d}m
-            </button>
+              label={`${d}m`}
+              selected={duration === d}
+              onSelect={() => setDuration(d)}
+              className="flex-1 justify-center"
+            />
           ))}
         </div>
         <p className="text-[11px] text-mystic-500 mt-3 flex items-center gap-1.5">
@@ -235,17 +231,13 @@ export function AdvisorBookingPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {ts.map((s) => (
-                    <button
+                    <Chip
                       key={s.iso}
-                      onClick={() => setSelectedSlot(s.iso)}
-                      className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
-                        selectedSlot === s.iso
-                          ? 'bg-gold/20 text-gold border-gold/40'
-                          : 'bg-mystic-800/40 text-mystic-300 border-mystic-700/40 hover:border-mystic-600'
-                      }`}
-                    >
-                      {s.label}
-                    </button>
+                      size="sm"
+                      label={s.label}
+                      selected={selectedSlot === s.iso}
+                      onSelect={() => setSelectedSlot(s.iso)}
+                    />
                   ))}
                 </div>
               </div>
@@ -289,7 +281,7 @@ export function AdvisorBookingPage() {
           defaultValue: 'Cancel for a full refund any time before the session starts.',
         })}
       </p>
-    </div>
+    </Page>
   );
 }
 

@@ -90,9 +90,9 @@ export function LuckPillarTimeline({
           </span>
         ))}
         <span className="inline-flex items-center gap-1 text-[10px] text-mystic-500 ml-auto">
-          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ boxShadow: `inset 0 0 0 2px ${FLAVOUR_RING.supporting}` }} />
+          <span className="w-2.5 h-2.5 rounded inline-block" style={{ boxShadow: `inset 0 0 0 2px ${FLAVOUR_RING.supporting}` }} />
           supporting
-          <span className="w-2.5 h-2.5 rounded-sm inline-block ml-2" style={{ boxShadow: `inset 0 0 0 2px ${FLAVOUR_RING.challenging}` }} />
+          <span className="w-2.5 h-2.5 rounded inline-block ml-2" style={{ boxShadow: `inset 0 0 0 2px ${FLAVOUR_RING.challenging}` }} />
           challenging
         </span>
       </div>

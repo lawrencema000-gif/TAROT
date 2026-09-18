@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
-import { Card, Button, PageHeader, SparkleFourPoint, toast } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
@@ -223,7 +223,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const HeaderIcon = headerIcon;
 
   return (
-    <div className={`space-y-4 pb-6 ${isWhisperingWell ? 'text-mystic-200' : ''}`}>
+    <Page spacing="sm" className={isWhisperingWell ? 'text-mystic-200' : ''}>
       <PageHeader
         icon={<HeaderIcon />}
         title={
@@ -262,17 +262,15 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
       {!isWhisperingWell && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {TOPICS.map((t_) => (
-            <button
+            <Chip
               key={t_.id}
-              onClick={() => setSelectedTopic(t_.id)}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all border ${
-                selectedTopic === t_.id
-                  ? 'bg-gold/20 text-gold border-gold/40'
-                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
-              }`}
+              size="sm"
+              selected={selectedTopic === t_.id}
+              onSelect={() => setSelectedTopic(t_.id)}
+              className="whitespace-nowrap"
             >
               {t(t_.labelKey, { defaultValue: t_.id })}
-            </button>
+            </Chip>
           ))}
         </div>
       )}
@@ -282,19 +280,17 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
       {!isWhisperingWell && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {orderedSignZones.map((z) => (
-            <button
+            <Chip
               key={z}
-              onClick={() => setSelectedTopic(z)}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all border flex items-center gap-1.5 ${
-                selectedTopic === z
-                  ? 'bg-cosmic-violet/25 text-mystic-100 border-cosmic-violet/50'
-                  : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
-              }`}
+              size="sm"
+              selected={selectedTopic === z}
+              onSelect={() => setSelectedTopic(z)}
+              className="whitespace-nowrap"
             >
               <span style={{ fontFamily: 'serif' }}>{SIGN_ZONE_GLYPH[z]}</span>
               {SIGN_LABEL[z]}
               {z === mySign && <span className="text-[9px] uppercase tracking-wider text-gold">you</span>}
-            </button>
+            </Chip>
           ))}
         </div>
       )}
@@ -336,7 +332,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
           t={t}
         />
       ))}
-    </div>
+    </Page>
   );
 }
 
@@ -383,7 +379,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
             <MoreVertical className="w-4 h-4" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-6 z-10 bg-mystic-800 border border-mystic-700 rounded-lg shadow-lg min-w-[150px]">
+            <div className="absolute right-0 top-6 z-10 bg-mystic-800 border border-mystic-700 rounded-lg min-w-[150px]">
               {!isOwn && (
                 <>
                   <button
@@ -541,7 +537,7 @@ function Composer({
   const isWW = mode === 'whispering-well';
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <button onClick={onBack} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
         <ArrowLeft className="w-4 h-4" />
         {t('community.back', { defaultValue: 'Back to feed' })}
@@ -561,17 +557,14 @@ function Composer({
             </label>
             <div className="flex gap-2 flex-wrap mb-4">
               {TOPICS.filter((t_) => t_.id !== 'all').map((t_) => (
-                <button
+                <Chip
                   key={t_.id}
-                  onClick={() => setSelectedTopic(t_.id as CommunityTopic)}
-                  className={`px-3 py-1.5 rounded-full text-xs transition-all border ${
-                    selectedTopic === t_.id
-                      ? 'bg-gold/20 text-gold border-gold/40'
-                      : 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40'
-                  }`}
+                  size="sm"
+                  selected={selectedTopic === t_.id}
+                  onSelect={() => setSelectedTopic(t_.id as CommunityTopic)}
                 >
                   {t(t_.labelKey, { defaultValue: t_.id })}
-                </button>
+                </Chip>
               ))}
             </div>
           </>
@@ -612,7 +605,7 @@ function Composer({
             ? t('community.whisperingWell.send', { defaultValue: 'Send whisper' })
             : t('community.send', { defaultValue: 'Post' })}
       </Button>
-    </div>
+    </Page>
   );
 }
 
@@ -694,7 +687,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <button onClick={onBack} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
         <ArrowLeft className="w-4 h-4" />
         {t('community.backToFeed', { defaultValue: 'Back to feed' })}
@@ -768,7 +761,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
           </div>
         </Card>
       )}
-    </div>
+    </Page>
   );
 }
 

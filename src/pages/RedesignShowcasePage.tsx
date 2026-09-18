@@ -366,7 +366,7 @@ export function RedesignShowcasePage() {
           <div className="space-y-3">
             <h4 className="heading-display-md text-mystic-100">Today's energy</h4>
             <SectionDivider tone="mystic" />
-            <div className="inset-frame-gold p-4">
+            <div className="rounded-2xl border border-gold/20 p-4">
               <p className="text-mystic-300 italic">
                 "Trust the light within you. It knows the way."
               </p>

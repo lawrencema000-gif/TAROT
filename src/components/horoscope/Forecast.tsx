@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Star, Moon as MoonIcon, Sun, ArrowRight, Compass } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Card, Skeleton, ReadingProse } from '../ui';
+import { Card, Skeleton, ReadingProse, Tabs } from '../ui';
 import { useWeeklyForecast, useMonthlyForecast } from '../../hooks/useAstrology';
 import type { ZodiacSign, Planet } from '../../types/astrology';
 import { ZodiacGlyph, PlanetGlyph } from '../icons';
@@ -15,21 +15,17 @@ export function Forecast() {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex gap-2">
-        {(['weekly', 'monthly'] as ForecastTab[]).map((key) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-              tab === key
-                ? 'bg-gold/15 text-gold border border-gold/25'
-                : 'bg-mystic-800/60 text-mystic-400 border border-transparent'
-            }`}
-          >
-            {key === 'weekly' ? t('horoscope.forecastView.thisWeek') : t('horoscope.forecastView.thisMonth')}
-          </button>
-        ))}
-      </div>
+      <Tabs<ForecastTab>
+        items={[
+          { id: 'weekly', label: t('horoscope.forecastView.thisWeek') },
+          { id: 'monthly', label: t('horoscope.forecastView.thisMonth') },
+        ]}
+        value={tab}
+        onChange={setTab}
+        aria-label={t('horoscope.tabs.forecast') as string}
+        size="sm"
+        idPrefix="forecast"
+      />
 
       {tab === 'weekly' ? <WeeklyView /> : <MonthlyView />}
     </div>

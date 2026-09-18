@@ -3,6 +3,7 @@ import { Star, BookOpen, Brain, Filter } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { TarotCardIcon } from '../ui/NavIcons';
 import { Chip } from '../ui/Chip';
+import { ListRow, ListRowGroup } from '../ui/ListRow';
 import { useT } from '../../i18n/useT';
 
 interface SavedSheetProps {
@@ -75,31 +76,22 @@ export function SavedSheet({ open, onClose }: SavedSheetProps) {
         </div>
 
         {filteredItems.length > 0 ? (
-          <div className="space-y-3">
+          <ListRowGroup>
             {filteredItems.map((item) => {
               const Icon = item.icon;
               return (
-                <button
+                <ListRow
                   key={item.id}
-                  className="w-full flex items-start gap-4 p-4 rounded-xl bg-mystic-800/50 border border-mystic-700/50 hover:border-gold/30 transition-all text-left"
-                >
-                  <div className="p-2 rounded-lg bg-gold/10">
-                    <Icon className="w-5 h-5 text-gold" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-mystic-100 truncate">
-                      {item.title}
-                    </h4>
-                    <p className="text-sm text-mystic-400 truncate">
-                      {item.subtitle}
-                    </p>
-                    <p className="text-xs text-mystic-500 mt-1">{item.date}</p>
-                  </div>
-                  <Star className="w-5 h-5 text-gold fill-gold flex-shrink-0" />
-                </button>
+                  icon={<Icon />}
+                  tone="gold"
+                  label={item.title}
+                  meta={item.subtitle}
+                  value={item.date}
+                  trailing={<Star className="w-5 h-5 text-gold fill-gold flex-shrink-0" aria-hidden />}
+                />
               );
             })}
-          </div>
+          </ListRowGroup>
         ) : (
           <div className="py-12 text-center">
             <Star className="w-12 h-12 text-mystic-600 mx-auto mb-3" />

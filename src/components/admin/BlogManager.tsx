@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Newspaper, ChevronDown, ChevronUp, Trash2, Archive, Eye, EyeOff } from 'lucide-react';
-import { toast } from '../ui';
+import { toast, Chip } from '../ui';
 import { blogPosts } from '../../dal';
 import type { BlogPost } from '../../types/blog';
 
@@ -72,17 +72,13 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
         <div className="p-4 pt-0 space-y-3">
           <div className="flex gap-2">
             {(['all', 'published', 'archived'] as const).map(f => (
-              <button
+              <Chip
                 key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  filter === f
-                    ? 'bg-gold/20 text-gold'
-                    : 'bg-mystic-800/50 text-mystic-400 hover:text-mystic-300'
-                }`}
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
+                size="sm"
+                selected={filter === f}
+                onSelect={() => setFilter(f)}
+                label={f.charAt(0).toUpperCase() + f.slice(1)}
+              />
             ))}
           </div>
 

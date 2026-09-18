@@ -21,7 +21,7 @@ import {
   Mail,
   Sun,
 } from 'lucide-react';
-import { Button, toast, MysticalStar } from '../ui';
+import { Button, toast, MysticalStar, Badge, Tag } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService, PRODUCT_IDS, Product } from '../../services/billing';
 import { isNative } from '../../utils/platform';
@@ -346,7 +346,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           className="flex-1 flex flex-col items-center px-6 pt-12"
         >
           <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center shadow-2xl shadow-gold/20">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center">
               <Crown className="w-12 h-12 text-mystic-950" />
             </div>
             <div className="absolute -top-1 -right-1 w-8 h-8 bg-cosmic-blue rounded-full flex items-center justify-center animate-pulse">
@@ -362,10 +362,9 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           </p>
 
           {feature && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/20 rounded-full mb-6">
-              <Lock className="w-4 h-4 text-gold" />
-              <span className="text-sm text-gold">{t('premium.paywall.featureRequires', { feature })}</span>
-            </div>
+            <Tag tone="gold" size="md" icon={<Lock className="w-4 h-4" aria-hidden />} className="mb-6">
+              {t('premium.paywall.featureRequires', { feature })}
+            </Tag>
           )}
 
           <div className="w-full max-w-sm space-y-3 mb-8">
@@ -435,17 +434,18 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                   onClick={() => setSelectedPlan(plan.id)}
                   className={`w-full p-4 rounded-2xl border-2 transition-all text-left relative ${
                     selectedPlan === plan.id
-                      ? 'border-gold bg-gold/10 shadow-lg shadow-gold/10'
+                      ? 'border-gold/50 bg-gold/10'
                       : 'border-mystic-700/50 bg-mystic-800/30 hover:border-mystic-600'
                   }`}
                 >
                   {plan.badgeKey && (
-                    <span className={`absolute -top-2.5 left-4 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      plan.badgeKey === 'bestValue'
-                        ? 'bg-gold text-mystic-950'
-                        : 'bg-emerald-500 text-white'
-                    }`}>
-                      {t(`premium.paywall.badges.${plan.badgeKey}`)}
+                    // The ribbon straddles the card's top edge. A Badge is a
+                    // translucent tint, so it sits on an opaque backing that
+                    // hides the border line running behind it.
+                    <span className="absolute -top-2.5 left-4 rounded-full bg-mystic-900">
+                      <Badge tone={plan.badgeKey === 'bestValue' ? 'gold' : 'teal'}>
+                        {t(`premium.paywall.badges.${plan.badgeKey}`)}
+                      </Badge>
                     </span>
                   )}
                   <div className="flex items-center justify-between">
@@ -488,7 +488,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               onClick={handlePurchase}
               loading={purchasing}
               disabled={loadingProducts || !hasRealProducts}
-              className="text-base font-semibold shadow-xl shadow-gold/20"
+              className="text-base font-semibold"
             >
               {(() => {
                 if (!hasRealProducts && !loadingProducts) {

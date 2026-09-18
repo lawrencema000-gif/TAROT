@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { ArrowLeft, BookOpen, Coins, RotateCcw, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast, OrnateDivider, PageHeader, ResultLayout, Section } from '../components/ui';
+import { Card, Button, toast, OrnateDivider, Page, PageHeader, ResultLayout, Section } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { CoinToss, type CoinFace } from '../components/iching/CoinToss';
@@ -63,7 +63,7 @@ export function IChingPage() {
 
   if (stage === 'intro') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader title={t('iching.title', { defaultValue: 'I-Ching Oracle' })} icon={<BookOpen className="w-6 h-6 text-gold" />} />
         <Section
           spacing="lg"
@@ -94,13 +94,13 @@ export function IChingPage() {
           <Coins className="w-5 h-5 mr-2" />
           {t('iching.castButton', { defaultValue: 'Cast the coins' })}
         </Button>
-      </div>
+      </Page>
     );
   }
 
   if (stage === 'casting') {
     return (
-      <div className="space-y-8 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
+      <Page spacing="lg" className="flex flex-col items-center justify-center min-h-[60vh]">
         <PageHeader
           as="h1"
           align="center"
@@ -128,15 +128,15 @@ export function IChingPage() {
           {[0, 1, 2, 3, 4, 5].map((index) => (
             <div
               key={index}
-              className={`w-28 h-2 rounded-full transition-all duration-deliberate ${
+              className={`w-28 h-2 rounded-full transition-colors duration-deliberate ${
                 animatingLine >= index
-                  ? 'bg-gradient-to-r from-gold-dark via-gold to-gold-light shadow-[0_0_8px_rgba(212,175,55,0.6)]'
+                  ? 'bg-gradient-to-r from-gold-dark via-gold to-gold-light'
                   : 'bg-mystic-800'
               }`}
             />
           ))}
         </div>
-      </div>
+      </Page>
     );
   }
 
@@ -188,7 +188,7 @@ export function IChingPage() {
     };
 
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <button
           onClick={reset}
           className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
@@ -319,7 +319,7 @@ export function IChingPage() {
             <p className="reading-copy italic">"{localizedJournal}"</p>
           </Card>
         </ResultLayout>
-      </div>
+      </Page>
     );
   }
 

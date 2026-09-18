@@ -1,5 +1,5 @@
 import { Mic, MicOff, PhoneOff, Phone, AudioLines } from 'lucide-react';
-import { Button } from '../ui';
+import { Button, Tag } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useLiveKit, type LiveKitState } from '../../hooks/useLiveKit';
 
@@ -82,18 +82,14 @@ export function VoiceStrip({ roomName, enabled }: VoiceStripProps) {
       {isConnected && participants.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-mystic-800/60">
           {participants.map((p) => (
-            <span
+            <Tag
               key={p.identity}
-              className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                p.isSpeaking
-                  ? 'bg-emerald-400/20 text-emerald-400'
-                  : 'bg-mystic-800 text-mystic-400'
-              }`}
+              tone={p.isSpeaking ? 'teal' : 'neutral'}
+              icon={p.isMuted ? <MicOff className="w-2.5 h-2.5" aria-hidden /> : <Mic className="w-2.5 h-2.5" aria-hidden />}
             >
-              {p.isMuted ? <MicOff className="w-2.5 h-2.5" /> : <Mic className="w-2.5 h-2.5" />}
               {p.name || p.identity.slice(0, 6)}
               {p.isLocal ? ' (you)' : ''}
-            </span>
+            </Tag>
           ))}
         </div>
       )}

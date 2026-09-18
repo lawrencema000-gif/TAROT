@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Shield, AlertTriangle, RefreshCw, CheckCircle2, Clock, Flag } from 'lucide-react';
-import { Button, toast } from '../ui';
+import { Button, Badge, Tag, toast } from '../ui';
 import { supabase } from '../../lib/supabase';
 
 /**
@@ -139,9 +139,9 @@ export function ModerationPanel() {
         </div>
         <div className="flex items-center gap-2">
           {crisisCount > 0 && (
-            <span className="px-2 py-0.5 bg-pink-400/15 text-pink-400 text-xs rounded-full">
+            <Badge tone="rose">
               {crisisCount} !
-            </span>
+            </Badge>
           )}
           <div className="text-mystic-500 text-xs">{expanded ? '▲' : '▼'}</div>
         </div>
@@ -225,9 +225,9 @@ export function ModerationPanel() {
                       {event.verdict}
                     </span>
                     {event.crisis_flagged && (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-pink-400/20 text-pink-400 rounded">
+                      <Badge tone="rose">
                         crisis
-                      </span>
+                      </Badge>
                     )}
                     <span className="text-[10px] text-mystic-500">{event.surface}</span>
                   </div>
@@ -239,12 +239,9 @@ export function ModerationPanel() {
                 {event.categories.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {event.categories.map((cat) => (
-                      <span
-                        key={cat}
-                        className="text-[10px] px-1.5 py-0.5 bg-mystic-800/60 text-mystic-400 rounded"
-                      >
+                      <Tag key={cat} tone="neutral">
                         {cat}
-                      </span>
+                      </Tag>
                     ))}
                   </div>
                 )}

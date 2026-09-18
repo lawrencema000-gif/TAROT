@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sprout, Share2, ArrowLeft } from 'lucide-react';
-import { Card, Button, toast, ReadingProse } from '../components/ui';
+import { Card, Button, PageHeader, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { LOVE_TREE_QUIZ, ATTACHMENT_INFO, scoreLoveTree } from '../data/loveTree';
 import { LoveTree } from '../components/ritual/LoveTree';
@@ -133,18 +133,15 @@ export function LoveTreePage() {
   if (stage === 'intro') {
     return (
       <div className="space-y-5 pb-6">
-        <header className="text-center space-y-2 pt-2">
-          <Heart className="w-10 h-10 text-pink-400 mx-auto" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('loveTree.title', { defaultValue: 'Love Tree' })}
-          </h1>
-          <p className="text-ui text-mystic-400 max-w-md mx-auto">
-            {t('loveTree.intro', {
-              defaultValue:
-                '12 questions, 90 seconds, one tree. Your attachment style rendered as a living shape — and a plain-spoken read on how you love.',
-            })}
-          </p>
-        </header>
+        <PageHeader
+          align="center"
+          icon={<Heart />}
+          title={t('loveTree.title', { defaultValue: 'Love Tree' })}
+          subtitle={t('loveTree.intro', {
+            defaultValue:
+              '12 questions, 90 seconds, one tree. Your attachment style rendered as a living shape — and a plain-spoken read on how you love.',
+          })}
+        />
 
         <Card padding="lg">
           <p className="font-display-eyebrow mb-2">

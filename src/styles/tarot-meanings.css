@@ -1,8 +1,67 @@
 /* ═══════════════════════════════════════════════════════════════
    TAROT CARD MEANINGS LIBRARY
-   ═══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════
+
+   Redesign 2026 / Phase 2 — one gold, one ink ramp.
+
+   This sheet had 57 hex literals and not one var(): its own gold
+   (#d4a853 / #e8c97a), its own ink (#eae6f2 / #706a82 / #8a849a /
+   #3e3a4d) and white-alpha "surfaces" that computed to ~1.03:1 against
+   the canvas. Every colour is now the app's token. Gold and surfaces go
+   through the RGB triplets in src/index.css :root; the ink ramp has no
+   triplet, so it is declared ONCE on .tm-page and read as var(--tm-ink-*).
+
+   Mapping (old → token):
+     #d4a853, rgba(212,168,83,α)  → rgb(var(--gold-primary)) / rgba(…, α)   gold        #d4af37
+     #e8c97a                      → rgb(var(--gold-light))                   gold-light  #f4d668
+     #eae6f2                      → --tm-ink-100                             mystic-100  #f2f2f7
+     #706a82 reading copy         → --tm-ink-300                             mystic-300  #c6c6d8
+     #706a82 metadata / labels    → --tm-ink-400                             mystic-400  #a3a3bd
+     #8a849a (.tm-reflection-text)→ --tm-ink-400
+     #b0aac0 (.tm-cs-value)       → --tm-ink-300  (kept one step above its #706a82 label)
+     #504c5e (placeholder)        → --tm-ink-500                             mystic-500  #8f8fae
+     #3e3a4d (.tm-email-note)     → --tm-ink-500;  (.tm-breadcrumb-sep) → --tm-ink-600  #7e7e9e
+     #080808 (ink on a gold fill) → rgb(var(--canvas))                       mystic-950
+     rgba(255,255,255,.015–.02) card/panel backgrounds → rgb(var(--surface-card))   mystic-850
+     rgba(255,255,255,.03–.04) hover / input backgrounds → rgb(var(--surface-raised)) mystic-800
+     image placeholders           → rgb(var(--surface-sunken))               mystic-900
+     rgba(255,255,255,.03–.08) borders / rules → rgb(var(--hairline))       mystic-700
+   Semantic accents kept (they carry meaning — upright/yes/success and
+   reversed/no): green 93,158,90 (#5d9e5a) and orange 232,93,58 (#e85d3a),
+   declared once as --tm-yes / --tm-no triplets.
+
+   Type: .tm-description-text / .tm-meaning-text / .tm-context-text are
+   reading copy — 1.0625rem/1.7, roman, measured at 66ch like .reading-copy.
+   Radii normalised to the primitives' scale: 12px controls, 16px cards &
+   panels, pills where Chip is a pill.
+
+   .tm-cheatsheet-title / .tm-context-title / .tm-reflection-title /
+   .tm-email-title are paired
+   with .heading-display-md text-mystic-100 in TarotCardMeaningPage.tsx:
+   section titles sit in ink like every other section title in the app;
+   gold is for eyebrows and verdicts, not headings. That class lives in
+   index.css inside @layer components, and an unlayered rule beats a
+   layered one whatever its order — so these four rules carry spacing
+   only and MUST NOT set font or colour, or the heading class never wins.
+*/
 
 .tm-page {
+  /* ink — mirrors the mystic ladder in tailwind.config.js */
+  --tm-ink-100: #f2f2f7; /* mystic-100 — headings, current crumb */
+  --tm-ink-200: #dcdce6; /* mystic-200 — reading copy, matching .reading-copy in the app */
+  --tm-ink-300: #c6c6d8; /* mystic-300 — reading copy, button labels */
+  --tm-ink-400: #a3a3bd; /* mystic-400 — metadata, captions, chips */
+  --tm-ink-500: #8f8fae; /* mystic-500 — placeholder, footnote */
+  --tm-ink-600: #7e7e9e; /* mystic-600 — separators */
+  /* semantic — upright / yes / success, and reversed / no */
+  --tm-yes: 93, 158, 90;  /* #5d9e5a */
+  --tm-no: 232, 93, 58;   /* #e85d3a */
+  /* Text-only inks. The base triplets at 15% tint over the card ground
+     (#16162e) put the verdict words at 4.48:1 / 4.30:1 - below AA for
+     small text. These read 7.66:1 / 6.31:1 on that ground; the base
+     triplets stay for tints and borders. */
+  --tm-yes-ink: 139, 204, 135;
+  --tm-no-ink: 247, 140, 112;
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px 80px;
@@ -16,36 +75,8 @@
   padding: 40px 0 48px;
 }
 
-.tm-hero-badge {
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #d4a853;
-  padding: 5px 16px;
-  border: 1px solid rgba(212, 168, 83, 0.12);
-  border-radius: 20px;
-  background: rgba(212, 168, 83, 0.04);
-  margin-bottom: 18px;
-}
-
-.tm-hero-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 600;
-  color: #eae6f2;
-  margin-bottom: 12px;
-  letter-spacing: -0.01em;
-}
-
-.tm-hero-sub {
-  font-size: 1rem;
-  color: #706a82;
-  max-width: 560px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
+/* .tm-hero-badge / -title / -sub removed: the deck index renders its
+   title through PageHeader now; .tm-hero stays as the spacing wrapper. */
 
 /* ── Filters ── */
 .tm-filters {
@@ -59,10 +90,10 @@
 
 .tm-filter-btn {
   padding: 8px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border: 1px solid rgb(var(--hairline));
+  border-radius: 12px;
   background: none;
-  color: #706a82;
+  color: var(--tm-ink-400);
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
@@ -70,14 +101,14 @@
 }
 
 .tm-filter-btn:hover {
-  color: #eae6f2;
-  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--tm-ink-100);
+  border-color: var(--tm-ink-600);
 }
 
 .tm-filter-btn.active {
-  color: #d4a853;
-  border-color: rgba(212, 168, 83, 0.25);
-  background: rgba(212, 168, 83, 0.06);
+  color: rgb(var(--gold-primary));
+  border-color: rgba(var(--gold-primary), 0.25);
+  background: rgba(var(--gold-primary), 0.06);
 }
 
 /* ── Section Intro ── */
@@ -91,13 +122,13 @@
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 1.8rem;
   font-weight: 600;
-  color: #eae6f2;
+  color: var(--tm-ink-100);
   margin-bottom: 4px;
 }
 
 .tm-section-subtitle {
   font-size: 0.78rem;
-  color: #d4a853;
+  color: rgb(var(--gold-primary));
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 500;
@@ -107,14 +138,16 @@
 .tm-section-divider {
   width: 40px;
   height: 1px;
-  background: rgba(212, 168, 83, 0.2);
+  background: rgba(var(--gold-primary), 0.2);
   margin: 0 auto 16px;
 }
 
 .tm-section-desc {
   font-size: 0.92rem;
-  color: #706a82;
+  color: var(--tm-ink-200);
   line-height: 1.65;
+  max-width: 66ch;
+  margin: 0 auto;
 }
 
 /* ── Card Grid ── */
@@ -126,8 +159,8 @@
 }
 
 .tm-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgb(var(--surface-card));
+  border: 1px solid rgb(var(--hairline));
   border-radius: 16px;
   padding: 16px 12px 14px;
   cursor: pointer;
@@ -139,19 +172,19 @@
 }
 
 .tm-card:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(212, 168, 83, 0.15);
+  background: rgb(var(--surface-raised));
+  border-color: rgba(var(--gold-primary), 0.15);
   transform: translateY(-6px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 168, 83, 0.03);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--gold-primary), 0.03);
 }
 
 .tm-card-img-wrap {
   width: 100%;
   aspect-ratio: 2/3;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   margin-bottom: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--surface-sunken));
 }
 
 .tm-card-img {
@@ -173,7 +206,7 @@
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  color: rgba(212, 168, 83, 0.2);
+  color: rgba(var(--gold-primary), 0.2);
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
 }
 
@@ -181,13 +214,13 @@
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #eae6f2;
+  color: var(--tm-ink-100);
   margin-bottom: 4px;
 }
 
 .tm-card-keywords {
   font-size: 0.68rem;
-  color: #706a82;
+  color: var(--tm-ink-400);
   letter-spacing: 0.02em;
   line-height: 1.4;
 }
@@ -196,11 +229,11 @@
 .tm-breadcrumb {
   padding: 24px 0 16px;
   font-size: 0.8rem;
-  color: #706a82;
+  color: var(--tm-ink-400);
 }
 
 .tm-breadcrumb a {
-  color: #d4a853;
+  color: rgb(var(--gold-primary));
   text-decoration: none;
   transition: opacity 0.2s;
 }
@@ -211,11 +244,11 @@
 
 .tm-breadcrumb-sep {
   margin: 0 8px;
-  color: #3e3a4d;
+  color: var(--tm-ink-600);
 }
 
 .tm-breadcrumb-current {
-  color: #eae6f2;
+  color: var(--tm-ink-100);
 }
 
 /* ── Card Detail Header ── */
@@ -229,9 +262,9 @@
 .tm-detail-img-wrap {
   width: 240px;
   flex-shrink: 0;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 168, 83, 0.05);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 30px rgba(var(--gold-primary), 0.05);
 }
 
 .tm-detail-img {
@@ -246,9 +279,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--surface-sunken));
   font-size: 3rem;
-  color: rgba(212, 168, 83, 0.15);
+  color: rgba(var(--gold-primary), 0.15);
 }
 
 .tm-detail-info {
@@ -256,23 +289,8 @@
   padding-top: 8px;
 }
 
-.tm-detail-badge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #d4a853;
-  margin-bottom: 10px;
-}
-
-.tm-detail-name {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 600;
-  color: #eae6f2;
-  margin-bottom: 16px;
-  letter-spacing: -0.01em;
-}
+/* .tm-detail-badge / .tm-detail-name removed: the card page renders its
+   title through PageHeader (eyebrow + h1). */
 
 .tm-detail-keywords {
   display: flex;
@@ -283,18 +301,19 @@
 
 .tm-detail-keyword {
   padding: 4px 14px;
-  border-radius: 20px;
-  background: rgba(212, 168, 83, 0.06);
-  border: 1px solid rgba(212, 168, 83, 0.1);
+  border-radius: 999px;
+  background: rgba(var(--gold-primary), 0.06);
+  border: 1px solid rgba(var(--gold-primary), 0.1);
   font-size: 0.75rem;
-  color: #d4a853;
+  color: rgb(var(--gold-primary));
   font-weight: 500;
 }
 
 .tm-detail-desc {
   font-size: 0.95rem;
-  color: #706a82;
+  color: var(--tm-ink-200);
   line-height: 1.7;
+  max-width: 66ch;
 }
 
 /* ── Meanings ── */
@@ -306,18 +325,18 @@
 }
 
 .tm-meaning-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 18px;
+  background: rgb(var(--surface-card));
+  border: 1px solid rgb(var(--hairline));
+  border-radius: 16px;
   padding: 28px;
 }
 
 .tm-meaning-card.upright {
-  border-color: rgba(93, 158, 90, 0.12);
+  border-color: rgba(var(--tm-yes), 0.12);
 }
 
 .tm-meaning-card.reversed {
-  border-color: rgba(232, 93, 58, 0.12);
+  border-color: rgba(var(--tm-no), 0.12);
 }
 
 .tm-meaning-header {
@@ -330,7 +349,7 @@
 .tm-meaning-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,26 +358,27 @@
 }
 
 .upright .tm-meaning-icon {
-  background: rgba(93, 158, 90, 0.1);
-  color: #5d9e5a;
+  background: rgba(var(--tm-yes), 0.1);
+  color: rgb(var(--tm-yes-ink));
 }
 
 .reversed .tm-meaning-icon {
-  background: rgba(232, 93, 58, 0.1);
-  color: #e85d3a;
+  background: rgba(var(--tm-no), 0.1);
+  color: rgb(var(--tm-no-ink));
 }
 
 .tm-meaning-title {
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #eae6f2;
+  color: var(--tm-ink-100);
 }
 
 .tm-meaning-text {
-  font-size: 0.92rem;
-  color: #706a82;
+  font-size: 1.0625rem;
+  color: var(--tm-ink-200);
   line-height: 1.7;
+  max-width: 66ch;
 }
 
 /* ── Love & Career ── */
@@ -370,45 +390,35 @@
 }
 
 .tm-context-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 18px;
+  background: rgb(var(--surface-card));
+  border: 1px solid rgb(var(--hairline));
+  border-radius: 16px;
   padding: 28px;
 }
 
+/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-context-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #eae6f2;
   margin-bottom: 12px;
 }
 
-.tm-context-icon {
-  color: #d4a853;
-  margin-right: 6px;
-}
-
 .tm-context-text {
-  font-size: 0.92rem;
-  color: #706a82;
+  font-size: 1.0625rem;
+  color: var(--tm-ink-200);
   line-height: 1.7;
+  max-width: 66ch;
 }
 
 /* ── Reflection ── */
 .tm-reflection {
-  background: rgba(212, 168, 83, 0.03);
-  border: 1px solid rgba(212, 168, 83, 0.08);
-  border-radius: 18px;
+  background: rgba(var(--gold-primary), 0.03);
+  border: 1px solid rgba(var(--gold-primary), 0.08);
+  border-radius: 16px;
   padding: 28px;
   margin-bottom: 40px;
 }
 
+/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-reflection-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #d4a853;
   margin-bottom: 12px;
 }
 
@@ -416,9 +426,10 @@
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 1.15rem;
   font-style: italic;
-  color: #8a849a;
+  color: var(--tm-ink-400);
   line-height: 1.65;
-  border-left: 2px solid rgba(212, 168, 83, 0.15);
+  max-width: 66ch;
+  border-left: 2px solid rgba(var(--gold-primary), 0.15);
   padding-left: 20px;
   margin: 0;
 }
@@ -429,72 +440,69 @@
   justify-content: space-between;
   margin-bottom: 48px;
   padding: 24px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgb(var(--hairline));
 }
 
 .tm-card-nav-btn {
   padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgb(var(--hairline));
   border-radius: 12px;
   background: none;
-  color: #706a82;
+  color: var(--tm-ink-300);
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .tm-card-nav-btn:hover {
-  color: #d4a853;
-  border-color: rgba(212, 168, 83, 0.2);
+  color: rgb(var(--gold-primary));
+  border-color: rgba(var(--gold-primary), 0.2);
 }
 
 /* ── Bottom CTA ── */
 .tm-bottom-cta {
   text-align: center;
   padding: 48px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgb(var(--hairline));
 }
 
 .tm-bottom-text {
   font-size: 1rem;
-  color: #706a82;
-  margin-bottom: 16px;
+  color: var(--tm-ink-200);
+  max-width: 66ch;
+  margin: 0 auto 16px;
 }
 
 .tm-bottom-btn {
   display: inline-block;
   padding: 14px 36px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #d4a853, #e8c97a);
-  color: #080808;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(var(--gold-primary)), rgb(var(--gold-light)));
+  color: rgb(var(--canvas));
   font-weight: 600;
   font-size: 0.95rem;
   text-decoration: none;
-  box-shadow: 0 4px 20px rgba(212, 168, 83, 0.25);
+  box-shadow: 0 4px 20px rgba(var(--gold-primary), 0.25);
   transition: all 0.3s;
 }
 
 .tm-bottom-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(212, 168, 83, 0.3);
+  box-shadow: 0 8px 32px rgba(var(--gold-primary), 0.3);
 }
 
 /* ── Cheat Sheet ── */
 .tm-cheatsheet {
   margin-top: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
+  background: rgb(var(--surface-card));
+  border: 1px solid rgb(var(--hairline));
+  border-radius: 16px;
   padding: 20px;
 }
 
 .tm-cheatsheet-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #d4a853;
+  /* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
   margin-bottom: 14px;
-  letter-spacing: 0.03em;
 }
 
 .tm-cheatsheet-table {
@@ -504,7 +512,7 @@
 
 .tm-cheatsheet-table td {
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgb(var(--hairline));
   font-size: 0.85rem;
   vertical-align: top;
 }
@@ -512,47 +520,47 @@
 .tm-cheatsheet-table tr:last-child td { border-bottom: none; }
 
 .tm-cs-label {
-  color: #706a82;
+  color: var(--tm-ink-400);
   width: 100px;
   font-weight: 500;
 }
 
-.tm-cs-value { color: #b0aac0; }
+.tm-cs-value { color: var(--tm-ink-300); }
 
 .tm-yesno {
   display: inline-block;
   padding: 2px 12px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-weight: 600;
   font-size: 0.8rem;
 }
 
-.tm-yesno.yes { background: rgba(93, 158, 90, 0.15); color: #5d9e5a; }
-.tm-yesno.no { background: rgba(232, 93, 58, 0.15); color: #e85d3a; }
-.tm-yesno.maybe { background: rgba(212, 168, 83, 0.15); color: #d4a853; }
+.tm-yesno.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes-ink)); }
+.tm-yesno.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); }
+.tm-yesno.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); }
 
 /* ── Card Description Section ── */
 .tm-description {
   margin-bottom: 32px;
   padding: 28px;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 18px;
+  background: rgb(var(--surface-card));
+  border: 1px solid rgb(var(--hairline));
+  border-radius: 16px;
 }
 
 .tm-section-h2 {
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #eae6f2;
+  color: var(--tm-ink-100);
   margin-bottom: 12px;
 }
 
 .tm-description-text {
-  font-size: 0.95rem;
-  color: #706a82;
-  line-height: 1.75;
-  font-style: italic;
+  font-size: 1.0625rem;
+  color: var(--tm-ink-200);
+  line-height: 1.7;
+  max-width: 66ch;
 }
 
 /* ── Full Context Readings (Love, Career, Yes/No) ── */
@@ -572,39 +580,37 @@
 .tm-yesno-badge {
   display: inline-block;
   padding: 6px 20px;
-  border-radius: 10px;
+  border-radius: 999px;
   font-weight: 700;
   font-size: 1rem;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-.tm-yesno-badge.yes { background: rgba(93, 158, 90, 0.15); color: #5d9e5a; border: 1px solid rgba(93, 158, 90, 0.2); }
-.tm-yesno-badge.no { background: rgba(232, 93, 58, 0.15); color: #e85d3a; border: 1px solid rgba(232, 93, 58, 0.2); }
-.tm-yesno-badge.maybe { background: rgba(212, 168, 83, 0.15); color: #d4a853; border: 1px solid rgba(212, 168, 83, 0.2); }
+.tm-yesno-badge.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes-ink)); border: 1px solid rgba(var(--tm-yes), 0.2); }
+.tm-yesno-badge.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); border: 1px solid rgba(var(--tm-no), 0.2); }
+.tm-yesno-badge.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); border: 1px solid rgba(var(--gold-primary), 0.2); }
 
 /* ── Email Capture ── */
 .tm-email-capture {
-  background: rgba(212, 168, 83, 0.03);
-  border: 1px solid rgba(212, 168, 83, 0.1);
-  border-radius: 18px;
+  background: rgba(var(--gold-primary), 0.03);
+  border: 1px solid rgba(var(--gold-primary), 0.1);
+  border-radius: 16px;
   padding: 32px;
   text-align: center;
   margin-bottom: 40px;
 }
 
+/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-email-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #d4a853;
   margin-bottom: 8px;
 }
 
 .tm-email-desc {
   font-size: 0.92rem;
-  color: #706a82;
-  margin-bottom: 20px;
+  color: var(--tm-ink-200);
+  max-width: 66ch;
+  margin: 0 auto 20px;
 }
 
 .tm-email-form {
@@ -617,22 +623,22 @@
 .tm-email-input {
   flex: 1;
   padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(var(--surface-raised));
+  border: 1px solid rgb(var(--hairline));
   border-radius: 12px;
-  color: #eae6f2;
+  color: var(--tm-ink-100);
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.3s;
 }
 
-.tm-email-input:focus { border-color: rgba(212, 168, 83, 0.3); }
-.tm-email-input::placeholder { color: #504c5e; }
+.tm-email-input:focus { border-color: rgba(var(--gold-primary), 0.3); }
+.tm-email-input::placeholder { color: var(--tm-ink-500); }
 
 .tm-email-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #d4a853, #e8c97a);
-  color: #080808;
+  background: linear-gradient(135deg, rgb(var(--gold-primary)), rgb(var(--gold-light)));
+  color: rgb(var(--canvas));
   font-weight: 600;
   font-size: 0.88rem;
   border: none;
@@ -642,11 +648,11 @@
   transition: all 0.3s;
 }
 
-.tm-email-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212, 168, 83, 0.25); }
+.tm-email-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--gold-primary), 0.25); }
 
 .tm-email-note {
   font-size: 0.72rem;
-  color: #3e3a4d;
+  color: var(--tm-ink-500);
   margin-top: 10px;
 }
 
@@ -656,7 +662,7 @@
   justify-content: center;
   gap: 10px;
   font-size: 1rem;
-  color: #5d9e5a;
+  color: rgb(var(--tm-yes-ink));
   font-weight: 500;
   padding: 16px;
 }
@@ -665,7 +671,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(93, 158, 90, 0.15);
+  background: rgba(var(--tm-yes), 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -681,7 +687,7 @@
   font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #eae6f2;
+  color: var(--tm-ink-100);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -698,7 +704,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 4px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: none;
   border: 1px solid transparent;
   cursor: pointer;
@@ -706,16 +712,18 @@
 }
 
 .tm-related-card:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(212, 168, 83, 0.12);
+  background: rgb(var(--surface-card));
+  border-color: rgba(var(--gold-primary), 0.12);
 }
 
 .tm-related-card.active {
-  background: rgba(212, 168, 83, 0.06);
-  border-color: rgba(212, 168, 83, 0.2);
+  background: rgba(var(--gold-primary), 0.06);
+  border-color: rgba(var(--gold-primary), 0.2);
   cursor: default;
 }
 
+/* 56px (48px on phones) tarot thumbnails: 12px would be a quarter of the
+   card's width and round it into a pill, so these two stay at 6px. */
 .tm-related-img {
   width: 56px;
   height: auto;
@@ -727,17 +735,17 @@
   width: 56px;
   height: 84px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--surface-sunken));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  color: rgba(212, 168, 83, 0.15);
+  color: rgba(var(--gold-primary), 0.15);
 }
 
 .tm-related-name {
   font-size: 0.6rem;
-  color: #706a82;
+  color: var(--tm-ink-400);
   text-align: center;
   line-height: 1.2;
   max-width: 70px;
@@ -745,7 +753,7 @@
   text-overflow: ellipsis;
 }
 
-.tm-related-card.active .tm-related-name { color: #d4a853; }
+.tm-related-card.active .tm-related-name { color: rgb(var(--gold-primary)); }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {

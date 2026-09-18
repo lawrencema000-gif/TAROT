@@ -23,6 +23,12 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
   icon?: ReactNode;
   /** One line naming what is missing. Keep it concrete. */
   title: ReactNode;
+  /**
+   * Element for the title. Default `p`: an empty state inside a titled page
+   * is not a heading. Pass `h1` when the empty state IS the screen — a
+   * not-found branch — so the route still has one title owner.
+   */
+  as?: 'p' | 'h1' | 'h2';
   /** Optional second line: what to do, or why the list is empty. */
   description?: ReactNode;
   /** The action that fills the space. Usually a single `Button`. */
@@ -56,6 +62,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
     {
       icon,
       title,
+      as: TitleTag = 'p',
       description,
       action,
       variant = 'panel',
@@ -88,9 +95,9 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
             {icon}
           </span>
         )}
-        <p className={`text-mystic-200 ${size === 'md' ? 'heading-display-md' : 'text-sm font-medium'}`}>
+        <TitleTag className={`text-mystic-200 ${size === 'md' ? 'heading-display-md' : 'text-sm font-medium'}`}>
           {title}
-        </p>
+        </TitleTag>
         {description && (
           <p className="text-sm text-mystic-400 leading-relaxed max-w-sm">{description}</p>
         )}

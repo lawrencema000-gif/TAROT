@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Aperture, TrendingUp, Layers, Hash, RotateCcw, Flame, Calendar } from 'lucide-react';
+import { PageHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getMirrorStats, type MirrorPeriod, type MirrorStats } from '../services/mirror';
 import { setPageMeta } from '../utils/seo';
@@ -40,17 +41,12 @@ export function MirrorPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
-      <header className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
-            <Aperture className="w-5 h-5 text-gold" />
-          </div>
-          <h1 className="heading-display-xl text-mystic-100">Mirror</h1>
-        </div>
-        <p className="text-sm text-mystic-400">
-          What your reading history reveals about you. Aggregated patterns over your saved tarot pulls.
-        </p>
-      </header>
+      <PageHeader
+        className="mb-6"
+        icon={<Aperture />}
+        title="Mirror"
+        subtitle="What your reading history reveals about you. Aggregated patterns over your saved tarot pulls."
+      />
 
       <nav className="flex gap-2 mb-6" role="tablist">
         {PERIODS.map((p) => (

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dice6, Feather, Zap } from 'lucide-react';
-import { Card, Button, ReadingProse, Section } from '../components/ui';
+import { Card, Button, ReadingProse, Section, PageHeader } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
@@ -80,14 +80,9 @@ export function DicePage() {
 
   return (
     <div className="space-y-6 pb-6">
+      <PageHeader title={t('dice.title', { defaultValue: 'Dice Oracle' })} icon={<Dice6 className="w-6 h-6 text-gold" />} />
       <Section
         spacing="lg"
-        title={
-          <span className="flex items-center gap-3">
-            <Dice6 className="w-6 h-6 text-gold" />
-            {t('dice.title', { defaultValue: 'Dice Oracle' })}
-          </span>
-        }
         contentClassName="space-y-6"
       >
         {/* mode toggle */}

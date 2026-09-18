@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle } from 'lucide-react';
-import { Card, Button, ReadingProse, toast } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -117,18 +117,16 @@ export function TarotCompanionPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('tarotCompanion.title', { defaultValue: 'Tarot companion' })}
-          </h1>
-        </div>
-        <Button variant="ghost" size="sm" onClick={draw} disabled={drawing} className="gap-1">
-          <Shuffle className="w-3 h-3" />
-          {t('tarotCompanion.redraw', { defaultValue: 'New card' })}
-        </Button>
-      </div>
+      <PageHeader
+        icon={<Sparkles />}
+        title={t('tarotCompanion.title', { defaultValue: 'Tarot companion' })}
+        action={
+          <Button variant="ghost" size="sm" onClick={draw} disabled={drawing} className="gap-1">
+            <Shuffle className="w-3 h-3" />
+            {t('tarotCompanion.redraw', { defaultValue: 'New card' })}
+          </Button>
+        }
+      />
 
       {messages.length === 0 && !drawing && <MoonstoneCostLine />}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Heart, Users } from 'lucide-react';
-import { Card, Button, Input, toast, ReadingProse } from '../components/ui';
+import { Card, Button, Input, PageHeader, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -170,12 +170,10 @@ export function PartnerCompatPage() {
   if (stage === 'input' || stage === 'loading') {
     return (
       <div className="space-y-6 pb-6">
-        <div className="flex items-center gap-3">
-          <Users className="w-6 h-6 text-gold" />
-          <h1 className="heading-display-lg text-mystic-100">
-            {t('compat.title', { defaultValue: 'Partner Compatibility' })}
-          </h1>
-        </div>
+        <PageHeader
+          icon={<Users />}
+          title={t('compat.title', { defaultValue: 'Partner Compatibility' })}
+        />
 
         <Card variant="glow" padding="lg">
           <p className="text-ui text-mystic-300 mb-4">

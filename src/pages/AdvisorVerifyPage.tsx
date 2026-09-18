@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Upload, Check, AlertCircle, Clock, XCircle } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -110,12 +110,10 @@ export function AdvisorVerifyPage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex items-center gap-3">
-        <Shield className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {t('advisorVerify.title', { defaultValue: 'Advisor verification' })}
-        </h1>
-      </div>
+      <PageHeader
+        icon={<Shield />}
+        title={t('advisorVerify.title', { defaultValue: 'Advisor verification' })}
+      />
 
       {status === 'pending' && existing && (
         <Card padding="lg" variant="glow" className="bg-cosmic-blue/5 border-cosmic-blue/30">

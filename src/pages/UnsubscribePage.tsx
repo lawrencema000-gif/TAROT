@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Check, X, Loader2 } from 'lucide-react';
+import { PageHeader } from '../components/ui';
 import { supabase } from '../lib/supabase';
 import { setPageMeta } from '../utils/seo';
 
@@ -55,12 +56,18 @@ export function UnsubscribePage() {
             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center">
               <Check className="w-6 h-6 text-gold" />
             </div>
-            <h1 className="heading-display-lg text-mystic-100 mb-2">You're unsubscribed</h1>
-            {email && (
-              <p className="text-sm text-mystic-400 mb-4">
-                <span className="text-mystic-200">{email}</span> will no longer receive Arcana emails.
-              </p>
-            )}
+            <PageHeader
+              align="center"
+              className="mb-4"
+              title="You're unsubscribed"
+              subtitle={
+                email ? (
+                  <>
+                    <span className="text-mystic-200">{email}</span> will no longer receive Arcana emails.
+                  </>
+                ) : undefined
+              }
+            />
             <p className="text-xs text-mystic-500 mb-6">If this was a mistake, just sign up again at any time.</p>
             <Link to="/" className="inline-block px-5 py-2 rounded-xl border border-mystic-700 text-mystic-200 hover:text-mystic-100 hover:border-gold/40 transition-colors no-underline text-sm">
               Back to Arcana
@@ -70,8 +77,12 @@ export function UnsubscribePage() {
 
         {status === 'already' && (
           <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-8">
-            <h1 className="heading-display-lg text-mystic-100 mb-2">Already unsubscribed</h1>
-            <p className="text-sm text-mystic-400 mb-6">No further emails will be sent.</p>
+            <PageHeader
+              align="center"
+              className="mb-6"
+              title="Already unsubscribed"
+              subtitle="No further emails will be sent."
+            />
             <Link to="/" className="inline-block px-5 py-2 rounded-xl border border-mystic-700 text-mystic-200 hover:text-mystic-100 no-underline text-sm">
               Back to Arcana
             </Link>
@@ -83,10 +94,12 @@ export function UnsubscribePage() {
             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-mystic-800/60 flex items-center justify-center">
               <X className="w-6 h-6 text-mystic-400" />
             </div>
-            <h1 className="heading-display-lg text-mystic-100 mb-2">Link not recognised</h1>
-            <p className="text-sm text-mystic-400 mb-6">
-              This unsubscribe link looks invalid or has expired. If you keep receiving emails you didn't expect, reply to one of them — we'll handle it manually.
-            </p>
+            <PageHeader
+              align="center"
+              className="mb-6"
+              title="Link not recognised"
+              subtitle="This unsubscribe link looks invalid or has expired. If you keep receiving emails you didn't expect, reply to one of them — we'll handle it manually."
+            />
             <Link to="/" className="inline-block px-5 py-2 rounded-xl border border-mystic-700 text-mystic-200 hover:text-mystic-100 no-underline text-sm">
               Back to Arcana
             </Link>

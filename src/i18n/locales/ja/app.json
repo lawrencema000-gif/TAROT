@@ -2605,39 +2605,31 @@
   },
   "pageTitles": {
     "home": {
-      "title": "今日",
-      "subtitle": "日々のリチュアルが待っています"
+      "title": "今日"
     },
     "readings": {
-      "title": "リーディング",
-      "subtitle": "カードを探究する"
+      "title": "リーディング"
     },
     "quizzes": {
-      "title": "診断",
-      "subtitle": "自分を発見する"
+      "title": "診断"
     },
     "horoscope": {
-      "title": "星占い",
-      "subtitle": "あなたの宇宙の設計図"
+      "title": "星占い"
     },
     "achievements": {
-      "title": "実績",
-      "subtitle": "進捗を記録する"
+      "title": "実績"
     },
     "journal": {
-      "title": "ジャーナル",
-      "subtitle": "振り返り、育つ"
+      "title": "ジャーナル"
     },
     "profile": {
       "title": "プロフィール"
     },
     "blog": {
-      "title": "ニュース",
-      "subtitle": "洞察と記事"
+      "title": "ニュース"
     },
     "admin": {
-      "title": "管理",
-      "subtitle": "アップロード管理"
+      "title": "管理"
     }
   },
   "dailyInsights": {
@@ -4021,6 +4013,7 @@
     "contentBlocked": "このコンテンツはコミュニティガイドラインに反しています。"
   },
   "common": {
+    "mainContent": "メインコンテンツ",
     "loading": "読み込み中……",
     "cancel": "キャンセル"
   },

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ArrowLeft, Moon, AlertCircle, Users } from 'lucide-react';
-import { Card, Button, Input, toast } from '../components/ui';
+import { Calendar, Clock, Moon, AlertCircle, Users } from 'lucide-react';
+import { Card, Button, Input, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisors, advisorSessions, moonstones } from '../dal';
@@ -154,30 +154,29 @@ export function AdvisorBookingPage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" />
-        {t('advisorBooking.back', { defaultValue: 'Back' })}
-      </button>
-
-      <Card padding="lg" variant="glow">
-        <div className="flex items-center gap-3 mb-2">
-          {advisor.avatarUrl && (
-            <img src={advisor.avatarUrl} alt={advisor.displayName} className="w-12 h-12 rounded-full object-cover" />
-          )}
-          <div>
-            <h1 className="font-display text-xl text-mystic-100">{advisor.displayName}</h1>
-            <p className="text-xs text-mystic-400">{advisor.headline}</p>
-          </div>
-        </div>
-        {advisor.hourlyRateCents && (
-          <p className="text-xs text-mystic-500 mt-2">
-            {t('advisorBooking.rate', {
-              defaultValue: 'Indicative rate: ${{dollars}}/hr',
-              dollars: (advisor.hourlyRateCents / 100).toFixed(0),
-            })}
-          </p>
-        )}
-      </Card>
+      <PageHeader
+        icon={
+          advisor.avatarUrl ? (
+            <img src={advisor.avatarUrl} alt={advisor.displayName} className="w-full h-full rounded-xl object-cover" />
+          ) : undefined
+        }
+        title={advisor.displayName}
+        subtitle={
+          <>
+            {advisor.headline}
+            {advisor.hourlyRateCents && (
+              <span className="block text-xs text-mystic-500 mt-1">
+                {t('advisorBooking.rate', {
+                  defaultValue: 'Indicative rate: ${{dollars}}/hr',
+                  dollars: (advisor.hourlyRateCents / 100).toFixed(0),
+                })}
+              </span>
+            )}
+          </>
+        }
+        onBack={() => navigate(-1)}
+        backLabel={t('advisorBooking.back', { defaultValue: 'Back' }) as string}
+      />
 
       <Card padding="lg">
         <h3 className="text-sm font-medium text-gold tracking-wide mb-3">

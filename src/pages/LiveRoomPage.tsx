@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mic, Clock, Users, Heart, Play, Lock, Unlock } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Mic, Clock, Users, Heart, Play, Lock, Unlock } from 'lucide-react';
+import { Card, Button, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -156,33 +156,31 @@ export function LiveRoomPage() {
 
   return (
     <div className="space-y-4 pb-6">
-      <button onClick={() => navigate('/live-rooms')} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
-        <ArrowLeft className="w-4 h-4" />
-        {t('liveRoom.back', { defaultValue: 'All rooms' })}
-      </button>
-
-      <Card padding="lg" variant="glow">
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Mic className="w-4 h-4 text-gold" />
-              <h1 className="font-display text-xl text-mystic-100">{room.title}</h1>
-            </div>
-            <p className="text-xs text-mystic-400 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {new Date(room.scheduled_at).toLocaleString()} · {room.duration_minutes}m
-            </p>
-          </div>
-          {isLive && (
+      <PageHeader
+        onBack={() => navigate('/live-rooms')}
+        backLabel={t('liveRoom.back', { defaultValue: 'All rooms' }) as string}
+        icon={<Mic />}
+        title={room.title}
+        subtitle={
+          <span className="inline-flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {new Date(room.scheduled_at).toLocaleString()} · {room.duration_minutes}m
+          </span>
+        }
+        action={
+          isLive ? (
             <span className="text-[10px] px-2 py-0.5 bg-gold/20 text-gold rounded-full uppercase tracking-wider animate-pulse">
               Live
             </span>
-          )}
-        </div>
-        {room.description && (
-          <p className="text-sm text-mystic-300 leading-relaxed mt-3">{room.description}</p>
-        )}
-      </Card>
+          ) : undefined
+        }
+      />
+
+      {room.description && (
+        <Card padding="lg" variant="glow">
+          <p className="text-sm text-mystic-300 leading-relaxed">{room.description}</p>
+        </Card>
+      )}
 
       <Card padding="md">
         <div className="flex items-center justify-between">

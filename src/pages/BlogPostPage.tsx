@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Tag, User } from 'lucide-react';
+import { Calendar, Clock, Tag, User } from 'lucide-react';
 import { useBlogPost } from '../hooks/useBlogPosts';
 import DOMPurify from 'dompurify';
 import { setArticleMeta } from '../utils/seo';
-import { ListSkeleton } from '../components/ui';
+import { ListSkeleton, PageHeader } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 
@@ -92,55 +92,36 @@ export function BlogPostPage() {
 
   return (
     <div className="space-y-4 pt-2 pb-8">
-      <button
-        onClick={() => navigate('/blog')}
-        className="flex items-center gap-1 text-sm text-mystic-400 hover:text-gold transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('common:nav.backToNews')}
-      </button>
-
       <article>
-        {/* Full-bleed to the column edge. This route renders in two shells —
-            signed-in (px-4 lg:px-8) and the public SEO shell (px-4 at every
-            width) — so -mx-4 is the largest negative margin that never
-            overhangs; at lg in the signed-in shell it sits 16px inside the
-            edge, which reads as a deliberate inset rather than a spill. */}
-        {post.cover_image && (
-          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
-            <img
-              src={post.cover_image}
-              alt={post.title}
-              className="w-full h-56 sm:h-72 object-cover"
-            />
-          </div>
-        )}
-
-        <header className="space-y-4 mb-8">
-          <h1 className="heading-display-xl text-mystic-100">
-            {post.title}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-meta text-mystic-400">
-            <span className="flex items-center gap-1">
-              <User className="w-3.5 h-3.5" aria-hidden />
-              {post.author}
-            </span>
-            {post.published_at && (
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" aria-hidden />
-                {new Date(post.published_at).toLocaleDateString(dateLocale, {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
+        <div className="space-y-4 mb-8">
+          <PageHeader
+            as="h1"
+            onBack={() => navigate('/blog')}
+            backLabel={t('common:nav.backToNews') as string}
+            title={post.title}
+            subtitle={
+              <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-meta">
+                <span className="flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" aria-hidden />
+                  {post.author}
+                </span>
+                {post.published_at && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" aria-hidden />
+                    {new Date(post.published_at).toLocaleDateString(dateLocale, {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" aria-hidden />
+                  {t('blog.readingTime', { n: readingMinutes })}
+                </span>
               </span>
-            )}
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" aria-hidden />
-              {t('blog.readingTime', { n: readingMinutes })}
-            </span>
-          </div>
+            }
+          />
 
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -155,7 +136,23 @@ export function BlogPostPage() {
               ))}
             </div>
           )}
-        </header>
+        </div>
+
+        {/* Under the headline, not over it: the back link and the title come
+            first on the page. Full-bleed to the column edge. This route renders in two shells —
+            signed-in (px-4 lg:px-8) and the public SEO shell (px-4 at every
+            width) — so -mx-4 is the largest negative margin that never
+            overhangs; at lg in the signed-in shell it sits 16px inside the
+            edge, which reads as a deliberate inset rather than a spill. */}
+        {post.cover_image && (
+          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full h-56 sm:h-72 object-cover"
+            />
+          </div>
+        )}
 
         <div
           className="prose-reading"

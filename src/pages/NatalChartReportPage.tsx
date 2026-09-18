@@ -258,7 +258,6 @@ export function NatalChartReportPage() {
     return (
       <div className="space-y-4 pb-6">
         <PageHeader
-          as="h2"
           icon={<ScrollText />}
           title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
         />
@@ -286,7 +285,6 @@ export function NatalChartReportPage() {
     return (
       <div className="space-y-4 pb-6">
         <PageHeader
-          as="h2"
           icon={<ScrollText />}
           title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
         />
@@ -442,7 +440,6 @@ export function NatalChartReportPage() {
       `}</style>
 
       <PageHeader
-        as="h2"
         className="no-print"
         icon={<ScrollText />}
         title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}

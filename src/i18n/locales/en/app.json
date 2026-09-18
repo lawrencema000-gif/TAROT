@@ -2649,39 +2649,31 @@
   },
   "pageTitles": {
     "home": {
-      "title": "Today",
-      "subtitle": "Your daily ritual awaits"
+      "title": "Today"
     },
     "readings": {
-      "title": "Readings",
-      "subtitle": "Explore the cards"
+      "title": "Readings"
     },
     "quizzes": {
-      "title": "Quizzes",
-      "subtitle": "Discover yourself"
+      "title": "Quizzes"
     },
     "horoscope": {
-      "title": "Horoscope",
-      "subtitle": "Your cosmic blueprint"
+      "title": "Horoscope"
     },
     "achievements": {
-      "title": "Achievements",
-      "subtitle": "Track your progress"
+      "title": "Achievements"
     },
     "journal": {
-      "title": "Journal",
-      "subtitle": "Reflect and grow"
+      "title": "Journal"
     },
     "profile": {
       "title": "Profile"
     },
     "blog": {
-      "title": "News",
-      "subtitle": "Insights & articles"
+      "title": "News"
     },
     "admin": {
-      "title": "Admin",
-      "subtitle": "Manage uploads"
+      "title": "Admin"
     }
   },
   "dailyInsights": {
@@ -3871,6 +3863,7 @@
     }
   },
   "common": {
+    "mainContent": "Main content",
     "loading": "Loading…",
     "cancel": "Cancel"
   },

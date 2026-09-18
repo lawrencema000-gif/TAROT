@@ -29,9 +29,10 @@ export interface ResultLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   /** The answer. One line, in the display serif. */
   verdict: ReactNode;
   /**
-   * Heading level for the verdict. Defaults to h2, NOT h1 — the app shell
-   * already renders an h1 for the page (Header.tsx), so an h1 here would ship
-   * two per screen and break heading navigation for screen readers.
+   * Heading level for the verdict. Defaults to h1: on a result screen the
+   * verdict IS the page title, and the app shell no longer renders one (the
+   * title-ownership pass removed it). Pass h2 only when the page already
+   * has an h1 above the result.
    */
   as?: 'h1' | 'h2';
   /** A short qualifier under the verdict. The archetype, the element, the score. */
@@ -60,7 +61,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
   (
     {
       eyebrow,
-      as: Heading = 'h2',
+      as: Heading = 'h1',
       verdict,
       subtitle,
       summary,

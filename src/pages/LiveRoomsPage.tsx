@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, CalendarPlus, CheckCircle2 } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Card, Button, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -89,12 +89,10 @@ export function LiveRoomsPage() {
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex items-center gap-3">
-        <Mic className="w-6 h-6 text-gold" />
-        <h1 className="heading-display-lg text-mystic-100">
-          {t('liveRooms.title', { defaultValue: 'Live rooms' })}
-        </h1>
-      </div>
+      <PageHeader
+        icon={<Mic />}
+        title={t('liveRooms.title', { defaultValue: 'Live rooms' })}
+      />
 
       <Card padding="lg" variant="glow">
         <p className="text-sm text-mystic-300 leading-relaxed">

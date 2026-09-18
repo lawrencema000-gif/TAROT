@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Tag, ChevronLeft, ChevronRight, Newspaper } from 'lucide-react';
-import { Card } from '../components/ui';
+import { Card, ListSkeleton, PageHeader } from '../components/ui';
 import { useBlogPosts } from '../hooks/useBlogPosts';
 import { setPageMeta } from '../utils/seo';
-import { ListSkeleton } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 
@@ -56,10 +55,7 @@ export function BlogPage() {
 
   return (
     <div className="space-y-4 pt-2 pb-8">
-      <header>
-        <h1 className="heading-display-lg text-mystic-100">{t('blog.title')}</h1>
-        <p className="text-mystic-400 text-sm mt-1">{t('blog.subtitle')}</p>
-      </header>
+      <PageHeader title={t('blog.title')} subtitle={t('blog.subtitle')} />
       <div className="grid gap-4">
         {posts.map((post) => (
           <button

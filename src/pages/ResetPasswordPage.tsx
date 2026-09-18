@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
-import { Button, Input, toast, BrandMark, BrandWordmark } from '../components/ui';
+import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Button, Input, PageHeader, toast, BrandMark, BrandWordmark } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useT } from '../i18n/useT';
@@ -174,14 +174,15 @@ export function ResetPasswordPage() {
             <CheckCircle className="w-10 h-10 text-gold" />
             <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
-          <h1 className="heading-display-xl text-mystic-100 mb-2">
-            {t('auth.resetSuccess', { defaultValue: 'Password updated' })}
-          </h1>
-          <p className="text-mystic-400 mb-2">
-            {passwordRecoveryMode
-              ? t('auth.resetSuccessRecoveryHint', { defaultValue: 'Signing you out — please sign in again with your new password.' })
-              : t('auth.resetSuccessHint', { defaultValue: 'Returning you to the app…' })}
-          </p>
+          <PageHeader
+            align="center"
+            title={t('auth.resetSuccess', { defaultValue: 'Password updated' })}
+            subtitle={
+              passwordRecoveryMode
+                ? t('auth.resetSuccessRecoveryHint', { defaultValue: 'Signing you out — please sign in again with your new password.' })
+                : t('auth.resetSuccessHint', { defaultValue: 'Returning you to the app…' })
+            }
+          />
         </div>
       </div>
     );
@@ -190,15 +191,6 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
       <div className="w-full max-w-sm">
-        <button
-          onClick={handleCancel}
-          className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
-          type="button"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('auth.backToSignIn', { defaultValue: 'Back to sign in' })}
-        </button>
-
         <div className="text-center mb-10">
           <div className="flex justify-center mb-5">
             <BrandMark size={60} className="text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)]" />
@@ -206,14 +198,17 @@ export function ResetPasswordPage() {
           <div className="flex justify-center mb-6">
             <BrandWordmark size={26} />
           </div>
-          <h1 className="heading-display-xl text-mystic-100 mb-2">
-            {t('auth.resetPassword', { defaultValue: 'Reset password' })}
-          </h1>
-          <p className="text-mystic-400">
-            {isStandalone && !user
-              ? t('auth.resetLinkExpiredHint', { defaultValue: 'Reset links are one-shot. If yours expired, request another from the sign-in page.' })
-              : t('auth.enterNewPassword', { defaultValue: 'Choose a new password for your Arcana account.' })}
-          </p>
+          <PageHeader
+            align="center"
+            onBack={handleCancel}
+            backLabel={t('auth.backToSignIn', { defaultValue: 'Back to sign in' }) as string}
+            title={t('auth.resetPassword', { defaultValue: 'Reset password' })}
+            subtitle={
+              isStandalone && !user
+                ? t('auth.resetLinkExpiredHint', { defaultValue: 'Reset links are one-shot. If yours expired, request another from the sign-in page.' })
+                : t('auth.enterNewPassword', { defaultValue: 'Choose a new password for your Arcana account.' })
+            }
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

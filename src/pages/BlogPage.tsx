@@ -27,7 +27,7 @@ export function BlogPage() {
 
   if (loading) {
     return (
-      <Page spacing="sm" className="pt-2">
+      <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
         <ListSkeleton count={4} />
       </Page>
     );
@@ -54,7 +54,7 @@ export function BlogPage() {
   const dateLocale = DATE_LOCALES[getLocale()] || DATE_LOCALES.en;
 
   return (
-    <Page spacing="sm" className="pt-2">
+    <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
       <PageHeader title={t('blog.title')} subtitle={t('blog.subtitle')} />
       <div className="grid gap-4">
         {posts.map((post) => (

@@ -67,7 +67,7 @@ export function BlogPostPage() {
 
   if (loading) {
     return (
-      <Page spacing="sm" className="pt-2">
+      <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
         <ListSkeleton count={3} />
       </Page>
     );
@@ -91,7 +91,7 @@ export function BlogPostPage() {
   const readingMinutes = estimateReadingMinutes(post.content);
 
   return (
-    <Page spacing="sm" className="pt-2">
+    <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
       <article>
         <div className="space-y-4 mb-8">
           <PageHeader

@@ -42,7 +42,7 @@ export function UnsubscribePage() {
   }, [token]);
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
+    <div className="max-w-2xl mx-auto min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="max-w-md w-full text-center">
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3">

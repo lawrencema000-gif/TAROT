@@ -34,7 +34,7 @@ export function SharedReadingPage() {
 
   if (!payload) {
     return (
-      <Page className="py-16">
+      <Page className="max-w-2xl mx-auto py-16">
         <PageHeader
           align="center"
           onBack={() => navigate('/')}

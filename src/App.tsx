@@ -439,7 +439,7 @@ function AppContent() {
               </button>
             </div>
           </nav>
-          <main className="max-w-3xl mx-auto px-4 pb-16">
+          <main className="max-w-3xl lg:max-w-5xl mx-auto px-4 pb-16">
             <Suspense fallback={<ListSkeleton count={3} />}>
               <Routes>
                 <Route path="/blog" element={<BlogPage />} />

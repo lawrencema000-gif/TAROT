@@ -3702,6 +3702,7 @@
       ]
     },
     "common": {
+      "mainContent": "본문",
       "scoreDistribution": "점수 분포"
     },
     "jungian-functions": {

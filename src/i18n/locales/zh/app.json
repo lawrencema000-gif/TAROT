@@ -3702,6 +3702,7 @@
       ]
     },
     "common": {
+      "mainContent": "主要内容",
       "scoreDistribution": "得分分布"
     },
     "jungian-functions": {

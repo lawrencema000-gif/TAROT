@@ -3702,6 +3702,7 @@
       ]
     },
     "common": {
+      "mainContent": "メインコンテンツ",
       "scoreDistribution": "スコア分布"
     },
     "jungian-functions": {

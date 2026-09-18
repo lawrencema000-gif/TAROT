@@ -122,7 +122,6 @@ export function DreamInterpreterPage() {
     return (
       <div className="space-y-6 pb-6">
         <PageHeader
-          as="h2"
           icon={<Moon />}
           title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
         />
@@ -224,7 +223,6 @@ function AiResultView({
   return (
     <div className="space-y-4 pb-6">
       <PageHeader
-        as="h2"
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
         onBack={onReset}
@@ -537,7 +535,6 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
   return (
     <div className="space-y-4 pb-6">
       <PageHeader
-        as="h2"
         icon={<Moon />}
         title={t('dream.title', { defaultValue: 'Dream Interpreter' })}
         onBack={onReset}

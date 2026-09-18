@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -13,12 +13,19 @@ import { join } from 'node:path';
  * see it.
  *
  * So: the shell must not title, and a page must not hand-roll an <h1>. The
- * title comes from PageHeader (or ResultLayout on result screens), which is
- * the only way the type, spacing and back-affordance stay consistent across
- * routes. This test is the CI gate the migration was measured against.
+ * title comes from PageHeader (or ResultLayout on result screens, or the
+ * LearnEntryTemplate that wraps one), which is the only way the type,
+ * spacing and back-affordance stay consistent across routes.
+ *
+ * The gate cuts both ways. Removing the shell h1 silently demoted every
+ * page that had been deferring to it with `as="h2"` — the three report
+ * screens, both ResultLayout consumers, Dice and Runes had no h1 at all
+ * for one commit — so the second half checks that every routed page still
+ * OWNS a title, not merely that it doesn't own two.
  */
 
-const PAGES = join(process.cwd(), 'src', 'pages');
+const ROOT = process.cwd();
+const PAGES = join(ROOT, 'src', 'pages');
 
 /**
  * Screens whose title block is rebuilt wholesale in Phase 5 (home hero,
@@ -30,48 +37,123 @@ const DEFERRED = new Set([
   'OnboardingPage.tsx',  // Phase 5 — shows the deck, not a medallion
   'AuthPage.tsx',        // Phase 5 — with onboarding
   'LandingPage.tsx',     // Phase 5 — hero is the thesis; keeps its own h1
+  'PickACardPage.tsx',   // Phase 5 — motion.h1 over the deck; rebuilt with it
   'SandboxPage.tsx',     // flag-off preview
   'AdminPage.tsx',       // internal
 ]);
+
+/**
+ * Routed screens that have no page title by design. Also a claim, not a
+ * permission: an entry that grows a title owner is flagged as stale.
+ */
+const UNTITLED = new Set([
+  'OAuthOnboardingPage.tsx',   // full-screen stepper shown in place of the app; Phase 5 with onboarding
+  'RedesignShowcasePage.tsx',  // /dev/ route, internal
+]);
+
+/**
+ * A heading is a heading whether it is `<h1>` or framer-motion's
+ * `<motion.h1>`; the first version of this gate only saw the former and
+ * walked straight past PickACardPage's animated title.
+ */
+const H1 = /<(?:motion\.|m\.)?h1\b/;
+
+/** The components that may own a page title. */
+const OWNER = /<(?:PageHeader|ResultLayout|LearnEntryTemplate)\b/g;
 
 function pageFiles(): string[] {
   return readdirSync(PAGES).filter((f) => /\.tsx$/.test(f));
 }
 
+/** Blank comments, keeping newlines so reported line numbers stay honest. */
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '))
+    .replace(/\/\/[^\n]*/g, (c) => ' '.repeat(c.length));
+}
+
+/** Pages App.tsx actually routes — imported statically or through lazy(). */
+function routedPages(): string[] {
+  const app = readFileSync(join(ROOT, 'src', 'App.tsx'), 'utf8');
+  const names = new Set<string>();
+  for (const m of app.matchAll(/pages\/([A-Za-z0-9_]+)['"]/g)) names.add(`${m[1]}.tsx`);
+  return [...names].filter((n) => existsSync(join(PAGES, n))).sort();
+}
+
+/**
+ * True when `<h1` on this line sits inside a string or regex literal rather
+ * than in JSX — BlogPostPage strips a duplicate heading out of generator HTML
+ * with a regex, and that pattern is not a heading. An unbalanced quote or an
+ * open regex before the match is the tell; a bare `.replace(` on the line is
+ * not, because `<h1>{name.replace(…)}</h1>` is a real heading.
+ */
+function insideLiteral(line: string): boolean {
+  const before = line.slice(0, line.search(H1));
+  const unbalanced = ["'", '"', '`'].some((q) => (before.split(q).length - 1) % 2 === 1);
+  return unbalanced || /(?:\.replace\(\s*\/|new RegExp\(|\/\^)/.test(before);
+}
+
+/**
+ * True when the page renders at least one title owner that is not demoted
+ * to h2. The open tag ends at the first `>` that is not part of `=>`, so
+ * `onBack={() => …}` props do not cut it short.
+ */
+function ownsTitle(code: string): boolean {
+  const re = new RegExp(OWNER.source, 'g');
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(code))) {
+    const rest = code.slice(m.index);
+    const close = rest.search(/(?<!=)>/);
+    const tag = close === -1 ? rest : rest.slice(0, close + 1);
+    if (!/\bas=["']h2["']/.test(tag)) return true;
+  }
+  return false;
+}
+
 describe('one title owner per screen', () => {
   it('the shell header renders no title', () => {
-    const header = readFileSync(join(process.cwd(), 'src', 'components', 'layout', 'Header.tsx'), 'utf8');
-    expect(header.includes('<h1')).toBe(false);
+    const header = readFileSync(join(ROOT, 'src', 'components', 'layout', 'Header.tsx'), 'utf8');
+    expect(H1.test(stripComments(header))).toBe(false);
   });
 
   it('no page hand-rolls an <h1> outside the deferred list', () => {
     const offenders: string[] = [];
     for (const f of pageFiles()) {
       if (DEFERRED.has(f)) continue;
-      const src = readFileSync(join(PAGES, f), 'utf8');
-      // Blank comments (keeping newlines so line numbers stay honest) and
-      // skip regex/string literals: BlogPostPage strips a duplicate <h1> from
-      // generator HTML, and the pattern that does it is not a heading.
-      const code = src
-        .replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '))
-        .replace(/\/\/[^\n]*/g, (c) => ' '.repeat(c.length));
+      const code = stripComments(readFileSync(join(PAGES, f), 'utf8'));
       code.split('\n').forEach((line, i) => {
-        if (!/<h1\b/.test(line)) return;
-        if (/\.replace\(|\/\^|new RegExp|['"`][^'"`]*<h1/.test(line)) return;
+        if (!H1.test(line) || insideLiteral(line)) return;
         offenders.push(`src/pages/${f}:${i + 1}`);
       });
     }
     expect(offenders).toEqual([]);
   });
 
-  it('the deferred list only names files that still need it', () => {
+  it('every routed page owns its title', () => {
+    const missing: string[] = [];
+    for (const f of routedPages()) {
+      if (UNTITLED.has(f)) continue;
+      const code = stripComments(readFileSync(join(PAGES, f), 'utf8'));
+      const owns = DEFERRED.has(f) ? H1.test(code) : ownsTitle(code);
+      if (!owns) missing.push(`src/pages/${f}`);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('the deferred and untitled lists only name files that still need it', () => {
     // A stale allow-list is how a gate rots. If a deferred page no longer
-    // has an <h1>, its entry must go.
+    // has an <h1>, or an untitled page has grown a title owner, its entry
+    // must go.
     const stale: string[] = [];
     for (const f of DEFERRED) {
-      let src = '';
-      try { src = readFileSync(join(PAGES, f), 'utf8'); } catch { stale.push(`${f} (missing)`); continue; }
-      if (!/<h1\b/.test(src)) stale.push(f);
+      if (!existsSync(join(PAGES, f))) { stale.push(`${f} (missing)`); continue; }
+      if (!H1.test(stripComments(readFileSync(join(PAGES, f), 'utf8')))) stale.push(f);
+    }
+    const routed = new Set(routedPages());
+    for (const f of UNTITLED) {
+      if (!routed.has(f)) { stale.push(`${f} (not routed)`); continue; }
+      const code = stripComments(readFileSync(join(PAGES, f), 'utf8'));
+      if (ownsTitle(code) || H1.test(code)) stale.push(`${f} (now titled)`);
     }
     expect(stale).toEqual([]);
   });

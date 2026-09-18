@@ -12,12 +12,12 @@
  *
  * These exist because the product had drifted into two palettes. The app
  * is built on gold #d4af37 over canvas #07070f; src/styles/landing.css
- * declares its own `--g: #d4a853` over `--bg: #040407`, so the first
- * screen a new user sees is made of slightly different material than the
- * app they sign into afterwards. Nobody names the difference, but the two
- * screens do not look like the same product. landing.css is not owned by
- * this pass — see the integration note for the four lines to repoint at
- * these tokens.
+ * used to declare its own `--g: #d4a853` over `--bg: #040407`, so the
+ * first screen a new user saw was made of slightly different material
+ * than the app they signed into afterwards. Nobody named the difference,
+ * but the two screens did not look like the same product. landing.css and
+ * tarot-meanings.css now read these tokens (the palette pass); a colour
+ * that needs to move, moves here.
  *
  * The surface values mirror the mystic scale in tailwind.config.js. Keep
  * them in step: if the ladder moves there, move it here.

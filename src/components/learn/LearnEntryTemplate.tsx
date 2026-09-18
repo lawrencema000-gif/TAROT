@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Button, Disclosure, EmptyState, PageHeader, Section } from '../ui';
 
@@ -147,6 +147,7 @@ export function LearnEntryNotFound({
   return (
     <div className="max-w-2xl mx-auto px-4 py-16">
       <EmptyState
+        as="h1"
         title={title}
         action={
           <Button variant="secondary" onClick={onBack}>
@@ -173,6 +174,7 @@ export function LearnEntryTemplate({
   backLabel,
   children,
 }: LearnEntryTemplateProps) {
+  const navigate = useNavigate();
   const icon =
     symbol === undefined || symbol === null ? undefined : typeof symbol === 'string' || typeof symbol === 'number' ? (
       <span className="font-display text-xl leading-none">{symbol}</span>
@@ -190,11 +192,13 @@ export function LearnEntryTemplate({
         as="h1"
         eyebrow={eyebrow}
         title={title}
-        subtitle={lede}
-        backHref={backHref}
+        onBack={() => navigate(backHref)}
         backLabel={backLabel}
         icon={icon}
       />
+      {/* The opening paragraph is reading copy, not a one-line muted subtitle;
+          in the subtitle slot it rendered at 14px mystic-400. */}
+      {lede && <p className="reading-lede">{lede}</p>}
 
       {shownFacts.length > 0 && <FactsTable facts={shownFacts} />}
 

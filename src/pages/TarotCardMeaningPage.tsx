@@ -234,7 +234,7 @@ export function TarotCardMeaningPage() {
           {imgPath ? <img src={imgPath} alt={card.name} className="tm-detail-img" /> : <div className="tm-detail-placeholder" aria-hidden="true" />}
         </div>
         <div className="tm-detail-info">
-          <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} />
+          <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-4" />
           <div className="tm-detail-keywords">
             {card.keywords.map(k => <span key={k} className="tm-detail-keyword">{k}</span>)}
           </div>

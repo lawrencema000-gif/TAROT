@@ -93,21 +93,6 @@ export function BlogPostPage() {
   return (
     <div className="space-y-4 pt-2 pb-8">
       <article>
-        {/* Full-bleed to the column edge. This route renders in two shells —
-            signed-in (px-4 lg:px-8) and the public SEO shell (px-4 at every
-            width) — so -mx-4 is the largest negative margin that never
-            overhangs; at lg in the signed-in shell it sits 16px inside the
-            edge, which reads as a deliberate inset rather than a spill. */}
-        {post.cover_image && (
-          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
-            <img
-              src={post.cover_image}
-              alt={post.title}
-              className="w-full h-56 sm:h-72 object-cover"
-            />
-          </div>
-        )}
-
         <div className="space-y-4 mb-8">
           <PageHeader
             as="h1"
@@ -152,6 +137,22 @@ export function BlogPostPage() {
             </div>
           )}
         </div>
+
+        {/* Under the headline, not over it: the back link and the title come
+            first on the page. Full-bleed to the column edge. This route renders in two shells —
+            signed-in (px-4 lg:px-8) and the public SEO shell (px-4 at every
+            width) — so -mx-4 is the largest negative margin that never
+            overhangs; at lg in the signed-in shell it sits 16px inside the
+            edge, which reads as a deliberate inset rather than a spill. */}
+        {post.cover_image && (
+          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full h-56 sm:h-72 object-cover"
+            />
+          </div>
+        )}
 
         <div
           className="prose-reading"

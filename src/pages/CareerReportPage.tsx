@@ -107,7 +107,6 @@ export function CareerReportPage() {
     return (
       <div className="space-y-4 pb-6">
         <PageHeader
-          as="h2"
           icon={<Briefcase />}
           title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
         />
@@ -135,7 +134,6 @@ export function CareerReportPage() {
     return (
       <div className="space-y-4 pb-6">
         <PageHeader
-          as="h2"
           icon={<Briefcase />}
           title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
         />

@@ -195,15 +195,15 @@ function ZodiacWheel() {
     <div className="lp-chart-wrap">
       <svg viewBox={`0 0 ${svgSize} ${svgSize}`} className="lp-chart-svg" aria-label="Zodiac wheel">
         <defs>
-          <radialGradient id="zg-cg" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(212,168,83,0.15)" /><stop offset="100%" stopColor="transparent" /></radialGradient>
+          <radialGradient id="zg-cg" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(212, 175, 55,0.15)" /><stop offset="100%" stopColor="transparent" /></radialGradient>
         </defs>
         <circle cx={cx} cy={cy} r={rCenter + 30} fill="url(#zg-cg)" />
-        <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="rgba(212,168,83,0.08)" strokeWidth="1" className="lp-chart-ring-outer" />
-        {ticks.map((t, i) => <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={t.major ? 'rgba(212,168,83,0.2)' : 'rgba(212,168,83,0.07)'} strokeWidth={t.major ? 1 : 0.5} />)}
-        <circle cx={cx} cy={cy} r={rSigns} fill="none" stroke="rgba(212,168,83,0.05)" strokeWidth="0.5" strokeDasharray="2 6" />
+        <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="rgba(212, 175, 55,0.08)" strokeWidth="1" className="lp-chart-ring-outer" />
+        {ticks.map((t, i) => <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={t.major ? 'rgba(212, 175, 55,0.2)' : 'rgba(212, 175, 55,0.07)'} strokeWidth={t.major ? 1 : 0.5} />)}
+        <circle cx={cx} cy={cy} r={rSigns} fill="none" stroke="rgba(212, 175, 55,0.05)" strokeWidth="0.5" strokeDasharray="2 6" />
         <circle cx={cx} cy={cy} r={rInner} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
         <circle cx={cx} cy={cy} r={rCore} fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
-        {ZODIAC.map((_, i) => { const a = ((i * 30) - 90) * (Math.PI / 180); return <line key={i} x1={cx + Math.cos(a) * rCore} y1={cy + Math.sin(a) * rCore} x2={cx + Math.cos(a) * rOuter} y2={cy + Math.sin(a) * rOuter} stroke="rgba(212,168,83,0.04)" strokeWidth="0.5" />; })}
+        {ZODIAC.map((_, i) => { const a = ((i * 30) - 90) * (Math.PI / 180); return <line key={i} x1={cx + Math.cos(a) * rCore} y1={cy + Math.sin(a) * rCore} x2={cx + Math.cos(a) * rOuter} y2={cy + Math.sin(a) * rOuter} stroke="rgba(212, 175, 55,0.04)" strokeWidth="0.5" />; })}
         {ZODIAC.map((s, i) => {
           const a = ((i * 30) - 90) * (Math.PI / 180);
           const sa = ((i * 30) - 105) * (Math.PI / 180); const ea = ((i * 30) - 75) * (Math.PI / 180);
@@ -213,16 +213,16 @@ function ZodiacWheel() {
             <g key={s.name} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)} style={{ cursor: 'pointer' }}>
               {isA && <path d={`M ${cx + Math.cos(sa) * rSigns} ${cy + Math.sin(sa) * rSigns} A ${rSigns} ${rSigns} 0 0 1 ${cx + Math.cos(ea) * rSigns} ${cy + Math.sin(ea) * rSigns}`} fill="none" stroke={col} strokeWidth={3} strokeLinecap="round" style={{ transition: 'all 0.4s' }} />}
               {isA && <circle cx={x} cy={y} r={24} fill={col} opacity={0.08} />}
-              <circle cx={x} cy={y} r={20} fill={isA ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)'} stroke={isA ? col : 'rgba(212,168,83,0.1)'} strokeWidth={isA ? 1.5 : 0.5} style={{ transition: 'all 0.35s' }} />
-              <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={isA ? 18 : 15} fill={isA ? col : 'rgba(212,168,83,0.6)'} style={{ transition: 'all 0.35s', fontFamily: 'serif' }}>{s.symbol}</text>
+              <circle cx={x} cy={y} r={20} fill={isA ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)'} stroke={isA ? col : 'rgba(212, 175, 55,0.1)'} strokeWidth={isA ? 1.5 : 0.5} style={{ transition: 'all 0.35s' }} />
+              <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={isA ? 18 : 15} fill={isA ? col : 'rgba(212, 175, 55,0.6)'} style={{ transition: 'all 0.35s', fontFamily: 'serif' }}>{s.symbol}</text>
               {isA && <text x={cx + Math.cos(a) * (rOuter + 20)} y={cy + Math.sin(a) * (rOuter + 20)} textAnchor="middle" dominantBaseline="central" fontSize={11} fill={col} fontWeight={500} fontFamily="'Cormorant Garamond', serif" letterSpacing="0.05em">{s.name}</text>}
             </g>
           );
         })}
-        <circle cx={cx} cy={cy} r={rCenter} fill="rgba(5,5,8,0.8)" stroke="rgba(212,168,83,0.08)" strokeWidth="0.5" />
-        <line x1={cx - 20} y1={cy} x2={cx + 20} y2={cy} stroke="rgba(212,168,83,0.1)" strokeWidth="0.5" />
-        <line x1={cx} y1={cy - 20} x2={cx} y2={cy + 20} stroke="rgba(212,168,83,0.1)" strokeWidth="0.5" />
-        {[0, 90, 180, 270].map(d => { const a = d * (Math.PI / 180); return <circle key={d} cx={cx + Math.cos(a) * 15} cy={cy + Math.sin(a) * 15} r={1.5} fill="rgba(212,168,83,0.3)" />; })}
+        <circle cx={cx} cy={cy} r={rCenter} fill="rgba(5,5,8,0.8)" stroke="rgba(212, 175, 55,0.08)" strokeWidth="0.5" />
+        <line x1={cx - 20} y1={cy} x2={cx + 20} y2={cy} stroke="rgba(212, 175, 55,0.1)" strokeWidth="0.5" />
+        <line x1={cx} y1={cy - 20} x2={cx} y2={cy + 20} stroke="rgba(212, 175, 55,0.1)" strokeWidth="0.5" />
+        {[0, 90, 180, 270].map(d => { const a = d * (Math.PI / 180); return <circle key={d} cx={cx + Math.cos(a) * 15} cy={cy + Math.sin(a) * 15} r={1.5} fill="rgba(212, 175, 55,0.3)" />; })}
       </svg>
       <div className="lp-chart-center-info">
         {active !== null ? (<>

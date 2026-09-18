@@ -71,7 +71,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
 
   return (
     <div>
-      <PageHeader title={t('pageTitles.horoscope.title')} />
+      <PageHeader title={t('pageTitles.horoscope.title')} className="mb-4" />
       <nav className="flex gap-1 mb-2" role="tablist">
         {TABS.map((tab) => {
           const Icon = tab.icon;

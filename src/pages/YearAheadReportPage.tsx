@@ -144,7 +144,6 @@ export function YearAheadReportPage() {
     return (
       <div className="space-y-4 pb-6">
         <PageHeader
-          as="h2"
           icon={<Calendar />}
           title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
         />
@@ -172,7 +171,6 @@ export function YearAheadReportPage() {
     return (
       <div className="space-y-4 pb-6">
         <PageHeader
-          as="h2"
           icon={<Calendar />}
           title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
         />
@@ -339,7 +337,6 @@ export function YearAheadReportPage() {
   return (
     <div className="space-y-5 pb-6">
       <PageHeader
-        as="h2"
         icon={<Calendar />}
         title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
       />

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
-import { Card, Button, Section, toast } from '../components/ui';
+import { Card, Button, Section, toast, PageHeader } from '../components/ui';
 import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
@@ -32,14 +32,9 @@ export function RunesPage() {
   if (stage === 'intro') {
     return (
       <div className="space-y-6 pb-6">
+        <PageHeader title={t('runes.title', { defaultValue: 'Runes' })} icon={<MysticalStar className="w-6 h-6 text-gold" />} />
         <Section
           spacing="lg"
-          title={
-            <span className="flex items-center gap-3">
-              <MysticalStar className="w-6 h-6 text-gold" />
-              {t('runes.title', { defaultValue: 'Runes' })}
-            </span>
-          }
         >
           <Card variant="glow" padding="lg">
             <p className="reading-copy mb-4">

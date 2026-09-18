@@ -36,10 +36,12 @@
    panels, pills where Chip is a pill.
 
    .tm-context-title / .tm-reflection-title / .tm-email-title are paired
-   with .font-display-eyebrow in TarotCardMeaningPage.tsx. That class lives
-   in index.css inside @layer components, and an unlayered rule beats a
+   with .heading-display-md text-mystic-100 in TarotCardMeaningPage.tsx:
+   section titles sit in ink like every other section title in the app;
+   gold is for eyebrows and verdicts, not headings. That class lives in
+   index.css inside @layer components, and an unlayered rule beats a
    layered one whatever its order — so these three rules carry spacing
-   only and MUST NOT set font or colour, or the eyebrow never renders.
+   only and MUST NOT set font or colour, or the heading class never wins.
 */
 
 .tm-page {
@@ -53,6 +55,12 @@
   /* semantic — upright / yes / success, and reversed / no */
   --tm-yes: 93, 158, 90;  /* #5d9e5a */
   --tm-no: 232, 93, 58;   /* #e85d3a */
+  /* Text-only inks. The base triplets at 15% tint over the card ground
+     (#16162e) put the verdict words at 4.48:1 / 4.30:1 - below AA for
+     small text. These read 7.66:1 / 6.31:1 on that ground; the base
+     triplets stay for tints and borders. */
+  --tm-yes-ink: 139, 204, 135;
+  --tm-no-ink: 247, 140, 112;
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px 80px;
@@ -280,23 +288,8 @@
   padding-top: 8px;
 }
 
-.tm-detail-badge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgb(var(--gold-primary));
-  margin-bottom: 10px;
-}
-
-.tm-detail-name {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 600;
-  color: var(--tm-ink-100);
-  margin-bottom: 16px;
-  letter-spacing: -0.01em;
-}
+/* .tm-detail-badge / .tm-detail-name removed: the card page renders its
+   title through PageHeader (eyebrow + h1). */
 
 .tm-detail-keywords {
   display: flex;
@@ -365,12 +358,12 @@
 
 .upright .tm-meaning-icon {
   background: rgba(var(--tm-yes), 0.1);
-  color: rgb(var(--tm-yes));
+  color: rgb(var(--tm-yes-ink));
 }
 
 .reversed .tm-meaning-icon {
   background: rgba(var(--tm-no), 0.1);
-  color: rgb(var(--tm-no));
+  color: rgb(var(--tm-no-ink));
 }
 
 .tm-meaning-title {
@@ -402,7 +395,7 @@
   padding: 28px;
 }
 
-/* Spacing only — type comes from .font-display-eyebrow (see header). */
+/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-context-title {
   margin-bottom: 12px;
 }
@@ -423,7 +416,7 @@
   margin-bottom: 40px;
 }
 
-/* Spacing only — type comes from .font-display-eyebrow (see header). */
+/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-reflection-title {
   margin-bottom: 12px;
 }
@@ -545,8 +538,8 @@
   font-size: 0.8rem;
 }
 
-.tm-yesno.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes)); }
-.tm-yesno.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no)); }
+.tm-yesno.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes-ink)); }
+.tm-yesno.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); }
 .tm-yesno.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); }
 
 /* ── Card Description Section ── */
@@ -590,15 +583,15 @@
 .tm-yesno-badge {
   display: inline-block;
   padding: 6px 20px;
-  border-radius: 12px;
+  border-radius: 999px;
   font-weight: 700;
   font-size: 1rem;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-.tm-yesno-badge.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes)); border: 1px solid rgba(var(--tm-yes), 0.2); }
-.tm-yesno-badge.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no)); border: 1px solid rgba(var(--tm-no), 0.2); }
+.tm-yesno-badge.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes-ink)); border: 1px solid rgba(var(--tm-yes), 0.2); }
+.tm-yesno-badge.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); border: 1px solid rgba(var(--tm-no), 0.2); }
 .tm-yesno-badge.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); border: 1px solid rgba(var(--gold-primary), 0.2); }
 
 /* ── Email Capture ── */
@@ -611,7 +604,7 @@
   margin-bottom: 40px;
 }
 
-/* Spacing only — type comes from .font-display-eyebrow (see header). */
+/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-email-title {
   margin-bottom: 8px;
 }
@@ -672,7 +665,7 @@
   justify-content: center;
   gap: 10px;
   font-size: 1rem;
-  color: rgb(var(--tm-yes));
+  color: rgb(var(--tm-yes-ink));
   font-weight: 500;
   padding: 16px;
 }

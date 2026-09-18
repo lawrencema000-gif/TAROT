@@ -38,6 +38,7 @@ const DEFERRED = new Set([
   'AuthPage.tsx',        // Phase 5 — with onboarding
   'LandingPage.tsx',     // Phase 5 — hero is the thesis; keeps its own h1
   'PickACardPage.tsx',   // Phase 5 — motion.h1 over the deck; rebuilt with it
+  'RedesignShowcasePage.tsx', // /dev/ route; titles itself with HeroGreeting
   'SandboxPage.tsx',     // flag-off preview
   'AdminPage.tsx',       // internal
 ]);
@@ -48,15 +49,16 @@ const DEFERRED = new Set([
  */
 const UNTITLED = new Set([
   'OAuthOnboardingPage.tsx',   // full-screen stepper shown in place of the app; Phase 5 with onboarding
-  'RedesignShowcasePage.tsx',  // /dev/ route, internal
 ]);
 
 /**
- * A heading is a heading whether it is `<h1>` or framer-motion's
- * `<motion.h1>`; the first version of this gate only saw the former and
- * walked straight past PickACardPage's animated title.
+ * A heading is a heading whether it is `<h1>`, framer-motion's
+ * `<motion.h1>`, or the `HeroGreeting` ornament, which renders an h1
+ * unless told otherwise. The first version of this gate saw only the
+ * first and walked straight past PickACardPage's animated title and the
+ * showcase page's hero.
  */
-const H1 = /<(?:motion\.|m\.)?h1\b/;
+const H1 = /<(?:motion\.|m\.)?h1\b|<HeroGreeting\b(?![^>]*\bas=["']h[2-6]["'])/;
 
 /** The components that may own a page title. */
 const OWNER = /<(?:PageHeader|ResultLayout|LearnEntryTemplate)\b/g;
@@ -94,18 +96,31 @@ function insideLiteral(line: string): boolean {
 }
 
 /**
- * True when the page renders at least one title owner that is not demoted
- * to h2. The open tag ends at the first `>` that is not part of `=>`, so
- * `onBack={() => …}` props do not cut it short.
+ * The open tag starting at `rest[0]`: everything up to the first `>` at
+ * brace depth 0 that is not part of `=>`. A JSX-valued prop such as
+ * `icon={<Calendar />}` closes its own tag inside the braces, so a plain
+ * search for `>` would end the tag there and hide an `as="h2"` after it.
  */
+function openTag(rest: string): string {
+  let depth = 0;
+  let quote: string | null = null;
+  for (let i = 0; i < rest.length; i++) {
+    const c = rest[i];
+    if (quote) { if (c === quote) quote = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') depth--;
+    else if (c === '>' && depth === 0 && rest[i - 1] !== '=') return rest.slice(0, i + 1);
+  }
+  return rest;
+}
+
+/** True when the page renders at least one title owner that is not demoted to h2. */
 function ownsTitle(code: string): boolean {
   const re = new RegExp(OWNER.source, 'g');
   let m: RegExpExecArray | null;
   while ((m = re.exec(code))) {
-    const rest = code.slice(m.index);
-    const close = rest.search(/(?<!=)>/);
-    const tag = close === -1 ? rest : rest.slice(0, close + 1);
-    if (!/\bas=["']h2["']/.test(tag)) return true;
+    if (!/\bas=["']h2["']/.test(openTag(code.slice(m.index)))) return true;
   }
   return false;
 }

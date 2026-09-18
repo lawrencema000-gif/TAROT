@@ -3702,7 +3702,6 @@
       ]
     },
     "common": {
-      "mainContent": "主要内容",
       "scoreDistribution": "得分分布"
     },
     "jungian-functions": {
@@ -4014,6 +4013,7 @@
     "contentBlocked": "此内容与我们的社区指南相冲突。"
   },
   "common": {
+    "mainContent": "主要内容",
     "loading": "加载中…",
     "cancel": "取消"
   },

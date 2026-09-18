@@ -35,12 +35,13 @@
    Radii normalised to the primitives' scale: 12px controls, 16px cards &
    panels, pills where Chip is a pill.
 
-   .tm-context-title / .tm-reflection-title / .tm-email-title are paired
+   .tm-cheatsheet-title / .tm-context-title / .tm-reflection-title /
+   .tm-email-title are paired
    with .heading-display-md text-mystic-100 in TarotCardMeaningPage.tsx:
    section titles sit in ink like every other section title in the app;
    gold is for eyebrows and verdicts, not headings. That class lives in
    index.css inside @layer components, and an unlayered rule beats a
-   layered one whatever its order — so these three rules carry spacing
+   layered one whatever its order — so these four rules carry spacing
    only and MUST NOT set font or colour, or the heading class never wins.
 */
 
@@ -500,12 +501,8 @@
 }
 
 .tm-cheatsheet-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgb(var(--gold-primary));
+  /* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
   margin-bottom: 14px;
-  letter-spacing: 0.03em;
 }
 
 .tm-cheatsheet-table {

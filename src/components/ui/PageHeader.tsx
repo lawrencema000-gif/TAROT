@@ -1,4 +1,4 @@
-import { HTMLAttributes, ReactNode, forwardRef } from 'react';
+import { HTMLAttributes, ReactNode, forwardRef, type MouseEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { EyebrowLabel, SectionDivider } from './Ornament';
 
@@ -20,7 +20,10 @@ import { EyebrowLabel, SectionDivider } from './Ornament';
  *
  * Router-free by design. Pass `onBack` (usually `() => navigate(-1)`)
  * for a button, or `backHref` for a real link when the destination is a
- * known URL and middle-click should work.
+ * known URL and middle-click should work. Pass both for a link that also
+ * navigates client-side: the anchor keeps its href for crawlers and
+ * modified clicks, and `onBack` receives the click to preventDefault and
+ * push the route (LearnEntryTemplate does this).
  */
 
 export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
@@ -31,7 +34,7 @@ export interface PageHeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'titl
   /** One line of muted body copy under the title. */
   subtitle?: ReactNode;
   /** Back handler. Renders a button. Ignored when `backHref` is set. */
-  onBack?: () => void;
+  onBack?: (e: MouseEvent<HTMLElement>) => void;
   /** Back destination. Renders an anchor instead of a button. */
   backHref?: string;
   /** Text beside the back arrow. Default "Back". */
@@ -80,7 +83,7 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(
       <header ref={ref} className={`space-y-3 ${className}`} {...props}>
         {showBack && (
           backHref ? (
-            <a href={backHref} className={backClass}>
+            <a href={backHref} onClick={onBack} className={backClass}>
               <ArrowLeft className="w-4 h-4" aria-hidden />
               {backLabel}
             </a>

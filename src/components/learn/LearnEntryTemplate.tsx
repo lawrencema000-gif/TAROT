@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Button, Disclosure, EmptyState, PageHeader, Section } from '../ui';
@@ -175,6 +175,13 @@ export function LearnEntryTemplate({
   children,
 }: LearnEntryTemplateProps) {
   const navigate = useNavigate();
+  // The back control is a real anchor (crawlable, middle-clickable); a plain
+  // left click navigates client-side like react-router's Link does.
+  const handleBack = (e: MouseEvent<HTMLElement>) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    navigate(backHref);
+  };
   const icon =
     symbol === undefined || symbol === null ? undefined : typeof symbol === 'string' || typeof symbol === 'number' ? (
       <span className="font-display text-xl leading-none">{symbol}</span>
@@ -188,17 +195,22 @@ export function LearnEntryTemplate({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 space-y-8">
-      <PageHeader
-        as="h1"
-        eyebrow={eyebrow}
-        title={title}
-        onBack={() => navigate(backHref)}
-        backLabel={backLabel}
-        icon={icon}
-      />
-      {/* The opening paragraph is reading copy, not a one-line muted subtitle;
-          in the subtitle slot it rendered at 14px mystic-400. */}
-      {lede && <p className="reading-lede">{lede}</p>}
+      {/* Title and opening paragraph are one group: the lede belongs to its
+          title, closer to it than to the facts table below. In the subtitle
+          slot it rendered at 14px mystic-400; loose in the space-y-8 column
+          it sat 32px from the title. */}
+      <div className="space-y-3">
+        <PageHeader
+          as="h1"
+          eyebrow={eyebrow}
+          title={title}
+          backHref={backHref}
+          onBack={handleBack}
+          backLabel={backLabel}
+          icon={icon}
+        />
+        {lede && <p className="reading-lede">{lede}</p>}
+      </div>
 
       {shownFacts.length > 0 && <FactsTable facts={shownFacts} />}
 

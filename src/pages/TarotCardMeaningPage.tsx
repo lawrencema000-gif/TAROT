@@ -241,7 +241,7 @@ export function TarotCardMeaningPage() {
 
           {/* ── Cheat Sheet (NEW) ── */}
           <div className="tm-cheatsheet">
-            <h3 className="tm-cheatsheet-title">{t('tarot.quickReference')}</h3>
+            <h3 className="tm-cheatsheet-title heading-display-md text-mystic-100">{t('tarot.quickReference')}</h3>
             <table className="tm-cheatsheet-table">
               <tbody>
                 <tr>

@@ -3552,7 +3552,6 @@
       ]
     },
     "common": {
-      "mainContent": "Main content",
       "scoreDistribution": "Score distribution"
     },
     "jungian-functions": {
@@ -3864,6 +3863,7 @@
     }
   },
   "common": {
+    "mainContent": "Main content",
     "loading": "Loading…",
     "cancel": "Cancel"
   },

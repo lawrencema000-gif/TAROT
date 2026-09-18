@@ -3702,7 +3702,6 @@
       ]
     },
     "common": {
-      "mainContent": "본문",
       "scoreDistribution": "점수 분포"
     },
     "jungian-functions": {
@@ -4014,6 +4013,7 @@
     "contentBlocked": "이 콘텐츠는 커뮤니티 가이드라인에 위배됩니다."
   },
   "common": {
+    "mainContent": "본문",
     "loading": "불러오는 중…",
     "cancel": "취소"
   },

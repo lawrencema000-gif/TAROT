@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
+import { RotateCcw, Share2 } from 'lucide-react';
 import { Card, Button, Section, toast, PageHeader } from '../components/ui';
 import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
@@ -103,10 +103,12 @@ export function RunesPage() {
 
     return (
       <div className="space-y-4 pb-6">
-        <button onClick={reset} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          {t('runes.back', { defaultValue: 'Cast again' })}
-        </button>
+        <PageHeader
+          title={t('runes.title', { defaultValue: 'Runes' })}
+          eyebrow={t('runes.castLabel', { defaultValue: 'Three-rune cast' })}
+          onBack={reset}
+          backLabel={t('runes.back', { defaultValue: 'Cast again' }) as string}
+        />
 
         {question && (
           <Card padding="md" className="bg-mystic-800/30 border-mystic-700/30">

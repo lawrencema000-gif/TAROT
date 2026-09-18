@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { ArrowLeft, BookOpen, Coins, RotateCcw, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast, OrnateDivider, ResultLayout, Section } from '../components/ui';
+import { Card, Button, toast, OrnateDivider, PageHeader, ResultLayout, Section } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { CoinToss, type CoinFace } from '../components/iching/CoinToss';
@@ -64,14 +64,9 @@ export function IChingPage() {
   if (stage === 'intro') {
     return (
       <div className="space-y-6 pb-6">
+        <PageHeader title={t('iching.title', { defaultValue: 'I-Ching Oracle' })} icon={<BookOpen className="w-6 h-6 text-gold" />} />
         <Section
           spacing="lg"
-          title={
-            <span className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-gold" />
-              {t('iching.title', { defaultValue: 'I-Ching Oracle' })}
-            </span>
-          }
         >
           <Card variant="glow" padding="lg">
             <p className="reading-copy mb-4">
@@ -106,9 +101,11 @@ export function IChingPage() {
   if (stage === 'casting') {
     return (
       <div className="space-y-8 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="heading-display-lg text-mystic-100 text-center">
-          {t('iching.casting', { defaultValue: 'Casting the coins…' })}
-        </h2>
+        <PageHeader
+          as="h1"
+          align="center"
+          title={t('iching.casting', { defaultValue: 'Casting the coins…' })}
+        />
         <div className="text-gold/60">
           <OrnateDivider width={120} />
         </div>

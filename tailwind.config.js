@@ -100,21 +100,17 @@ export default {
       // them (rounded-control, rounded-card, rounded-sheet). The numeric
       // steps stay valid — they are the same values — so a page reads either.
       borderRadius: {
-        inset: '0.5rem',    // 8px  — inner chrome: thumbnails, small marks
+        mark: '0.25rem',    // 4px  — inline code, checkboxes, legend swatches, bubble tails (= bare `rounded`)
+        inset: '0.5rem',    // 8px  — inner chrome: thumbnails, tiles inside cards
         control: '0.75rem', // 12px — buttons, inputs, tiles, tab thumbs
         card: '1rem',       // 16px — cards, panels, disclosures, rows
         sheet: '1.5rem',    // 24px — sheets and modals
       },
-      boxShadow: {
-        'glow': '0 0 20px rgba(212, 175, 55, 0.15)',
-        'glow-md': '0 0 30px rgba(212, 175, 55, 0.2), 0 0 60px rgba(212, 175, 55, 0.1)',
-        'glow-lg': '0 0 40px rgba(212, 175, 55, 0.25), 0 0 80px rgba(212, 175, 55, 0.15)',
-        'glow-coral': '0 0 20px rgba(224, 122, 95, 0.2)',
-        'glow-teal': '0 0 20px rgba(78, 205, 196, 0.2)',
-        'inner-glow': 'inset 0 0 20px rgba(212, 175, 55, 0.1)',
-        'card': '0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(212, 175, 55, 0.08)',
-        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(212, 175, 55, 0.12)',
-      },
+      // No glow tokens and no gold-tinted card shadow: elevation is fill
+      // (see Card.tsx). Tailwind's neutral shadow-* scale remains available for
+      // the two places a real overlay needs it (a dropdown over content, a
+      // dragged card); nothing in the primitives uses it.
+      boxShadow: {},
       // ── Motion scale ───────────────────────────────────────────────
       //
       // There was no `transitionDuration` and no `transitionTimingFunction`

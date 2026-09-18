@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Lock, Crown, Compass, Palette, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, PageHeader, Section, ReadingProse } from '../components/ui';
+import { Card, Button, Input, toast, Page, PageHeader, Progress, ResultLayout, Section } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -94,7 +94,7 @@ export function BaziPage() {
 
   if (stage === 'input') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<HoroscopeWheelIcon />}
           title={t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
@@ -143,7 +143,7 @@ export function BaziPage() {
         <Button variant="primary" size="lg" fullWidth onClick={runCalc}>
           {t('bazi.calculate', { defaultValue: 'Cast the four pillars' })}
         </Button>
-      </div>
+      </Page>
     );
   }
 
@@ -192,26 +192,27 @@ export function BaziPage() {
     };
 
     return (
-      <div className="space-y-4 pb-6">
-        <PageHeader
-          icon={<HoroscopeWheelIcon />}
-          title={t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
-          onBack={reset}
-          backLabel={t('bazi.back', { defaultValue: 'Recalculate' }) as string}
-        />
-
-        <Card variant="glow" padding="lg" className="text-center">
-          <div className={`text-6xl mb-3 ${ELEMENT_COLOR[result.dayMasterElement]}`}>
-            {ELEMENT_EMOJI[result.dayMasterElement]}
-          </div>
-          <h2 className="heading-display-xl text-mystic-100">{name}</h2>
-          <p className="text-gold/80 text-body mt-2 italic">"{archetype}"</p>
-        </Card>
-
-        <Card padding="lg">
-          <ReadingProse text={summary} />
-        </Card>
-
+      <ResultLayout
+        onBack={reset}
+        backLabel={t('bazi.back', { defaultValue: 'Recalculate' }) as string}
+        glyph={<span className={ELEMENT_COLOR[result.dayMasterElement]}>{ELEMENT_EMOJI[result.dayMasterElement]}</span>}
+        eyebrow={t('bazi.title', { defaultValue: 'Bazi — Four Pillars of Destiny' })}
+        verdict={name}
+        subtitle={<span className="italic">"{archetype}"</span>}
+        summary={summary}
+        actions={
+          <>
+            <Button variant="outline" fullWidth onClick={handleShare}>
+              <Share2 className="w-4 h-4 mr-2" />
+              {t('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={reset}>
+              {t('bazi.recalculate', { defaultValue: 'Recalculate' })}
+            </Button>
+          </>
+        }
+        defaultDetailOpen
+      >
         <Card padding="lg">
           <h3 className="heading-display-md text-mystic-100 mb-3">
             {t('bazi.pillarsLabel', { defaultValue: 'Your Four Pillars' })}
@@ -244,12 +245,14 @@ export function BaziPage() {
                 <span className="text-ui text-mystic-200 capitalize flex-1">
                   {t(`bazi.elements.${el}`, { defaultValue: el })}
                 </span>
-                <div className="flex-1 bg-mystic-800/40 rounded-full h-2 overflow-hidden max-w-[120px]">
-                  <div
-                    className={`h-full ${result.dominantElement === el ? 'bg-gold' : 'bg-mystic-600'}`}
-                    style={{ width: `${(result.elementBalance[el] / 8) * 100}%` }}
-                  />
-                </div>
+                <Progress
+                  value={result.elementBalance[el]}
+                  max={8}
+                  size="md"
+                  tone={result.dominantElement === el ? 'gold' : 'neutral'}
+                  label={t(`bazi.elements.${el}`, { defaultValue: el }) as string}
+                  className="flex-1 max-w-[120px]"
+                />
                 <span className="text-meta text-mystic-400 w-4 text-right">{result.elementBalance[el]}</span>
               </div>
             ))}
@@ -431,7 +434,7 @@ export function BaziPage() {
                       {t('bazi.luckyColorTodayLabel', { defaultValue: "Today's Lucky Color" })}
                     </h3>
                     <div className="flex items-center gap-3 mt-2">
-                      <div className="w-12 h-12 rounded-xl flex-shrink-0 shadow-lg" style={{ backgroundColor: luckyColor.color, boxShadow: `0 0 24px ${luckyColor.color}55` }} />
+                      <div className="w-12 h-12 rounded-xl flex-shrink-0" style={{ backgroundColor: luckyColor.color }} />
                       <div>
                         <p className="text-ui font-medium text-mystic-100 capitalize">{luckyColor.colorName}</p>
                         <p className="reading-copy mt-0.5">{luckyColor.oneLiner}</p>
@@ -596,7 +599,7 @@ export function BaziPage() {
                   return (
                     <div
                       key={i}
-                      className={`p-3 rounded-xl border ${tint} ${isCurrent ? 'ring-1 ring-gold/50' : ''}`}
+                      className={`p-3 rounded-xl border ${isCurrent ? 'border-gold/50 bg-gold/10' : tint}`}
                     >
                       <div className="flex items-center justify-between text-meta mb-1">
                         <span className="text-mystic-100 font-medium">
@@ -755,17 +758,7 @@ export function BaziPage() {
             onUpgradeClick={() => navigate('/profile')}
           />
         )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth onClick={handleShare}>
-            <Share2 className="w-4 h-4 mr-2" />
-            {t('quizzes.share.button', { defaultValue: 'Share' })}
-          </Button>
-          <Button variant="outline" fullWidth onClick={reset}>
-            {t('bazi.recalculate', { defaultValue: 'Recalculate' })}
-          </Button>
-        </div>
-      </div>
+      </ResultLayout>
     );
   }
 

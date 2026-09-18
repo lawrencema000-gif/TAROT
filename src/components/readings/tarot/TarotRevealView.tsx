@@ -23,7 +23,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { MysticalStar } from '../../ui/MysticalStar';
-import { Card, Button, ReadingProse } from '../../ui';
+import { Card, Button, Chip, Tabs, Tag, ReadingProse } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
 import type { TarotCard } from '../../../types';
@@ -236,7 +236,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       is exactly when a mid-range phone can least afford it.
                     */}
                     <div
-                      className="absolute inset-0 rounded-xl overflow-hidden border border-gold/40 shadow-glow flex items-center justify-center"
+                      className="absolute inset-0 rounded-xl overflow-hidden border border-gold/40 flex items-center justify-center"
                       style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
                       aria-hidden={!drawn.revealed}
                     >
@@ -261,7 +261,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                   now it has an affordance.
                 */}
                 <div
-                  className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg pointer-events-none transition-opacity duration-base ease-out"
+                  className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 pointer-events-none transition-opacity duration-base ease-out"
                   style={{
                     opacity: drawn.revealed ? 1 : 0,
                     transitionDelay: `${delay + FLIP_MS - 140}ms`,
@@ -301,10 +301,11 @@ export function TarotRevealView(props: TarotRevealViewProps) {
             <div className="flex items-center justify-between mb-4">
               <h3 className="heading-display-md text-mystic-100">{t('readings.interpretation')}</h3>
               {!showAIInterpretation && (
-                <button
-                  onClick={onGetAIInterpretation}
-                  disabled={loadingAI}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-gold/20 to-cosmic-blue/20 border border-gold/30 rounded-full text-xs text-gold hover:from-gold/30 hover:to-cosmic-blue/30 transition-all disabled:opacity-50"
+                <Chip
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { if (!loadingAI) onGetAIInterpretation(); }}
+                  className={loadingAI ? 'opacity-50 pointer-events-none' : ''}
                 >
                   {loadingAI ? (
                     <>
@@ -317,7 +318,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       {isPremium ? t('readings.revealView.getAIInsight') : t('readings.revealView.premiumAI')}
                     </>
                   )}
-                </button>
+                </Chip>
               )}
             </div>
 
@@ -346,34 +347,26 @@ export function TarotRevealView(props: TarotRevealViewProps) {
               <div className="space-y-4">
                 {(selectedFocus === 'Love' || selectedFocus === 'Career' || selectedFocus === 'Money') &&
                  drawnCards.some(d => getFocusInterpretation(d.card, selectedFocus, d.reversed)) && (
-                  <div className="flex gap-1 p-1 bg-mystic-800/50 rounded-lg mb-4">
-                    <button
-                      onClick={() => onSetInterpretationView('focus')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                        interpretationView === 'focus'
-                          ? 'bg-gold/20 text-gold'
-                          : 'text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/50'
-                      }`}
-                    >
-                      {selectedFocus === 'Love' ? <Heart className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
-                      {selectedFocus === 'Love'
-                        ? t('readings.revealView.loveFocus')
-                        : selectedFocus === 'Career'
-                          ? t('readings.revealView.careerFocus')
-                          : t('readings.revealView.moneyFocus')}
-                    </button>
-                    <button
-                      onClick={() => onSetInterpretationView('traditional')}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                        interpretationView === 'traditional'
-                          ? 'bg-gold/20 text-gold'
-                          : 'text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/50'
-                      }`}
-                    >
-                      <ArrowUp className="w-4 h-4" />
-                      {t('readings.revealView.traditional')}
-                    </button>
-                  </div>
+                  <Tabs
+                    size="sm"
+                    idPrefix="interp"
+                    aria-label={t('readings.interpretation')}
+                    className="mb-4"
+                    value={interpretationView}
+                    onChange={onSetInterpretationView}
+                    items={[
+                      {
+                        id: 'focus',
+                        icon: selectedFocus === 'Love' ? Heart : Briefcase,
+                        label: selectedFocus === 'Love'
+                          ? t('readings.revealView.loveFocus')
+                          : selectedFocus === 'Career'
+                            ? t('readings.revealView.careerFocus')
+                            : t('readings.revealView.moneyFocus'),
+                      },
+                      { id: 'traditional', icon: ArrowUp, label: t('readings.revealView.traditional') },
+                    ]}
+                  />
                 )}
 
                 {drawnCards.map((drawn, i) => {
@@ -383,9 +376,9 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                   return (
                     <div key={i} className="mb-6 last:mb-0">
                       <div className="flex items-start gap-3 mb-2">
-                        <span className="px-2 py-0.5 bg-mystic-800 rounded text-meta text-mystic-400">
+                        <Tag tone="neutral" size="md">
                           {getPositionLabel(i)}
-                        </span>
+                        </Tag>
                         <div className="flex-1">
                           <h4 className="font-medium text-mystic-100">
                             {drawn.card.name}

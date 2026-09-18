@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2, ChevronRight, Clock } from 'lucide-react';
-import { Card, Button, PageHeader, Section, EmptyState } from '../components/ui';
+import { Card, Button, Page, PageHeader, Section, EmptyState } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
@@ -90,7 +90,7 @@ export function ChartSuitePage() {
   // ── hub grid ──
   if (!selected) {
     return (
-      <div className="space-y-6 pb-28">
+      <Page spacing="md">
         <PageHeader
           eyebrow="Chart Library"
           title="Every sky, every angle"
@@ -117,14 +117,14 @@ export function ChartSuitePage() {
             );
           })}
         </div>
-      </div>
+      </Page>
     );
   }
 
   // ── detail view ──
   const chart = resp?.chart ?? null;
   return (
-    <div className="space-y-6 pb-28">
+    <Page spacing="md">
       <PageHeader
         eyebrow={selected.tagline}
         title={selected.name}
@@ -230,6 +230,6 @@ export function ChartSuitePage() {
       ) : null}
 
       <p className="text-ui text-mystic-400 max-w-prose">{selected.whenToRead}</p>
-    </div>
+    </Page>
   );
 }

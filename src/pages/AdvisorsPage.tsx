@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Star, Clock, Globe, Users, Send, Calendar } from 'lucide-react';
-import { Card, Button, PageHeader, toast } from '../components/ui';
+import { Card, Button, PageHeader, Page, Tag, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -52,7 +52,7 @@ export function AdvisorsPage() {
 
   if (view === 'profile' && selected) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <button
           onClick={() => setView('directory')}
           className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200"
@@ -110,9 +110,9 @@ export function AdvisorsPage() {
             <p className="text-xs text-mystic-500 mb-2">{t('advisors.specialtiesLabel', { defaultValue: 'Specialties' })}</p>
             <div className="flex flex-wrap gap-1">
               {selected.specialties.map((s) => (
-                <span key={s} className="text-xs px-2 py-1 bg-mystic-800/50 text-mystic-300 rounded-full">
+                <Tag key={s} tone="neutral" size="md">
                   {t(`advisors.specialties.${s}`, { defaultValue: s.replace(/-/g, ' ') })}
-                </span>
+                </Tag>
               ))}
             </div>
           </Card>
@@ -172,12 +172,12 @@ export function AdvisorsPage() {
             </p>
           </Card>
         )}
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         icon={<Users />}
         title={t('advisors.title', { defaultValue: 'Advisors' })}
@@ -225,9 +225,9 @@ export function AdvisorsPage() {
                 <p className="text-gold/70 text-xs italic mb-2 line-clamp-1">{advisor.headline}</p>
                 <div className="flex flex-wrap gap-1">
                   {advisor.specialties.slice(0, 3).map((s) => (
-                    <span key={s} className="text-[10px] px-1.5 py-0.5 bg-mystic-800/50 text-mystic-400 rounded">
+                    <Tag key={s} tone="neutral">
                       {t(`advisors.specialties.${s}`, { defaultValue: s.replace(/-/g, ' ') })}
-                    </span>
+                    </Tag>
                   ))}
                 </div>
               </div>
@@ -235,7 +235,7 @@ export function AdvisorsPage() {
           </Card>
         </button>
       ))}
-    </div>
+    </Page>
   );
 }
 

@@ -34,11 +34,11 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
           {/* the line itself, drawn */}
           <span className="w-9 flex-shrink-0 flex items-center justify-center">
             {l.line === 'yang'
-              ? <span className="block w-7 h-1 bg-mystic-200 rounded-sm" />
+              ? <span className="block w-7 h-1 bg-mystic-200 rounded-full" />
               : (
                 <span className="flex gap-1">
-                  <span className="block w-3 h-1 bg-mystic-200 rounded-sm" />
-                  <span className="block w-3 h-1 bg-mystic-200 rounded-sm" />
+                  <span className="block w-3 h-1 bg-mystic-200 rounded-full" />
+                  <span className="block w-3 h-1 bg-mystic-200 rounded-full" />
                 </span>
               )}
           </span>

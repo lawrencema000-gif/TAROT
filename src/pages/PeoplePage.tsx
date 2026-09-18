@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, ChevronRight, Users, Loader2 } from 'lucide-react';
-import { Button, Sheet, PageHeader, EmptyState } from '../components/ui';
+import { Button, Sheet, Page, PageHeader, EmptyState } from '../components/ui';
 import { PersonForm } from '../components/people/PersonForm';
 import { FriendCircleStats } from '../components/people/FriendCircleStats';
 import { useAuth } from '../context/AuthContext';
@@ -37,7 +37,7 @@ export function PeoplePage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="space-y-6 pb-28">
+    <Page spacing="md">
       <PageHeader
         eyebrow="Your circle"
         title="People"
@@ -86,6 +86,6 @@ export function PeoplePage() {
           onCancel={() => setShowForm(false)}
         />
       </Sheet>
-    </div>
+    </Page>
   );
 }

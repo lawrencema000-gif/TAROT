@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Tag, ChevronLeft, ChevronRight, Newspaper } from 'lucide-react';
-import { Card, ListSkeleton, PageHeader } from '../components/ui';
+import { Card, ListSkeleton, Page, PageHeader } from '../components/ui';
 import { useBlogPosts } from '../hooks/useBlogPosts';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
@@ -27,9 +27,9 @@ export function BlogPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 pt-2">
+      <Page spacing="sm" className="pt-2">
         <ListSkeleton count={4} />
-      </div>
+      </Page>
     );
   }
 
@@ -54,7 +54,7 @@ export function BlogPage() {
   const dateLocale = DATE_LOCALES[getLocale()] || DATE_LOCALES.en;
 
   return (
-    <div className="space-y-4 pt-2 pb-8">
+    <Page spacing="sm" className="pt-2">
       <PageHeader title={t('blog.title')} subtitle={t('blog.subtitle')} />
       <div className="grid gap-4">
         {posts.map((post) => (
@@ -126,6 +126,6 @@ export function BlogPage() {
           </button>
         </div>
       )}
-    </div>
+    </Page>
   );
 }

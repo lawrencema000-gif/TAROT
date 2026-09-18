@@ -79,7 +79,7 @@ export function CelticCrossLayout({
             {/* Face — mounted from the start and pre-turned, so the image is
                 already decoded when the turn begins. */}
             <div
-              className="absolute inset-0 rounded-lg overflow-hidden border border-gold/40 shadow-glow flex items-center justify-center"
+              className="absolute inset-0 rounded-lg overflow-hidden border border-gold/40 flex items-center justify-center"
               style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
               aria-hidden={!drawn.revealed}
             >
@@ -99,7 +99,7 @@ export function CelticCrossLayout({
           </div>
         </div>
         {drawn.revealed && (
-          <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30 shadow-lg">
+          <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30">
             <Info className="w-2.5 h-2.5 text-gold" />
           </div>
         )}

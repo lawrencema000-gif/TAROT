@@ -1,4 +1,4 @@
-import { useRef, type ComponentType, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentType, type KeyboardEvent, type ReactNode } from 'react';
 import { Lock } from 'lucide-react';
 
 /**
@@ -33,6 +33,8 @@ export interface TabItem<T extends string = string> {
   disabled?: boolean;
   /** Trailing count or dot, rendered after the label. */
   badge?: ReactNode;
+  /** Accessible name when the visible label is hidden at some width (icon-only tabs). */
+  'aria-label'?: string;
 }
 
 export interface TabsProps<T extends string = string> {
@@ -86,6 +88,15 @@ export function Tabs<T extends string = string>({
   const listRef = useRef<HTMLDivElement>(null);
   const s = SIZE[size];
 
+  // A scrolling strip brings the current tab into view — a deep link into
+  // the eighth of nine tabs would otherwise land on a strip showing the
+  // first four. `nearest` so it does not yank the page vertically.
+  useEffect(() => {
+    if (fill || !listRef.current) return;
+    const el = listRef.current.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+    el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [value, fill]);
+
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
     if (!keys.includes(e.key) || !listRef.current) return;
@@ -121,6 +132,7 @@ export function Tabs<T extends string = string>({
             role="tab"
             id={`${idPrefix}-tab-${item.id}`}
             aria-selected={active}
+            aria-label={item['aria-label']}
             aria-controls={`${idPrefix}-panel-${item.id}`}
             tabIndex={active ? 0 : -1}
             disabled={item.disabled}

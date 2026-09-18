@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Share2, AlertCircle } from 'lucide-react';
-import { Card, Button, Input, PageHeader, toast } from '../components/ui';
+import { Card, Button, Input, Page, PageHeader, ResultLayout, Tag, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
@@ -225,7 +225,7 @@ export function SoulmateScorePage() {
   // Gate: user needs a computed natal chart.
   if (!hasBirthData) {
     return (
-      <div className="space-y-5 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<Heart />}
           title={t('soulmate.title', { defaultValue: 'Soulmate Score' })}
@@ -248,12 +248,12 @@ export function SoulmateScorePage() {
             </Button>
           </div>
         </Card>
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <motion.div
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
@@ -334,102 +334,106 @@ export function SoulmateScorePage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.94 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-5"
           >
-            <Card variant="glow" padding="lg" className="text-center">
-              <p className="font-display-eyebrow mb-1">
-                {partnerName
+            <ResultLayout
+              as="h2"
+              eyebrow={
+                partnerName
                   ? t('soulmate.scoreWithPartner', { defaultValue: '{{you}} & {{partner}}', you: profile?.displayName || 'You', partner: partnerName })
-                  : t('soulmate.scoreNoName', { defaultValue: 'Your compatibility' })}
-              </p>
-              <motion.div
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                className="my-3"
-              >
-                <div className="font-display text-6xl text-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">
+                  : t('soulmate.scoreNoName', { defaultValue: 'Your compatibility' })
+              }
+              verdict={
+                <motion.span
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                  className="inline-block font-display text-6xl text-gold"
+                >
                   {result.score}
-                </div>
-                <div className="text-meta text-mystic-400 mt-1">
-                  {t('soulmate.outOf', { defaultValue: 'out of 100' })}
-                </div>
-              </motion.div>
-              <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-400/30">
-                <Heart className="w-3.5 h-3.5 text-pink-400" />
-                <span className="text-xs font-medium text-pink-300">
-                  {t(`soulmate.vibes.${result.vibe}`, { defaultValue: result.vibe })}
-                </span>
-              </div>
-              <p className="reading-copy text-left mt-4">
-                {t(`soulmate.vibeDescriptions.${result.vibe}`, {
-                  defaultValue: 'Your charts weave a distinct pattern together.',
-                })}
-              </p>
-              {!result.hasTime && (
-                <p className="text-meta text-mystic-400 mt-3 italic">
-                  {t('soulmate.noTimeHint', { defaultValue: 'Add a birth time for a more precise score.' })}
-                </p>
-              )}
-            </Card>
-
-            {result.harmonies.length > 0 && (
-              <Card padding="lg">
-                <p className="font-display-eyebrow mb-2">
-                  {t('soulmate.harmoniesHeading', { defaultValue: 'Where you flow together' })}
-                </p>
-                <div className="space-y-2">
-                  {result.harmonies.map((a, i) => (
-                    <div key={i} className="flex items-center justify-between text-ui">
-                      <span className="text-mystic-200">
-                        {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
-                      </span>
-                      <span className="text-meta text-emerald-400/70">{a.type}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            {result.frictions.length > 0 && (
-              <Card padding="lg">
-                <p className="font-display-eyebrow mb-2">
-                  {t('soulmate.frictionsHeading', { defaultValue: 'Where you stretch each other' })}
-                </p>
-                <div className="space-y-2">
-                  {result.frictions.map((a, i) => (
-                    <div key={i} className="flex items-center justify-between text-ui">
-                      <span className="text-mystic-200">
-                        {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
-                      </span>
-                      <span className="text-meta text-pink-400/70">{a.type}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            <SoulmatePortrait />
-
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={reset} className="flex-1">
-                {t('soulmate.tryAnother', { defaultValue: 'Try another' })}
-              </Button>
-              <Button variant="gold" onClick={handleShare} className="flex-1">
-                <Share2 className="w-4 h-4 mr-2" />
-                {t('soulmate.share', { defaultValue: 'Share score' })}
-              </Button>
-            </div>
-
-            <p className="text-caption text-mystic-500 italic">
-              {t('soulmate.disclaimer', {
-                defaultValue: "A score isn't a verdict — it's a mirror for conversation. Charts describe patterns, not fate.",
+                </motion.span>
+              }
+              subtitle={
+                <>
+                  <span className="block text-meta text-mystic-400">
+                    {t('soulmate.outOf', { defaultValue: 'out of 100' })}
+                  </span>
+                  <span className="block mt-3">
+                    <Tag tone="rose" size="md" icon={<Heart className="w-3.5 h-3.5" aria-hidden />}>
+                      {t(`soulmate.vibes.${result.vibe}`, { defaultValue: result.vibe })}
+                    </Tag>
+                  </span>
+                  {!result.hasTime && (
+                    <span className="block text-meta text-mystic-400 mt-3 italic">
+                      {t('soulmate.noTimeHint', { defaultValue: 'Add a birth time for a more precise score.' })}
+                    </span>
+                  )}
+                </>
+              }
+              summary={t(`soulmate.vibeDescriptions.${result.vibe}`, {
+                defaultValue: 'Your charts weave a distinct pattern together.',
               })}
-            </p>
+              actions={
+                <>
+                  <Button variant="outline" onClick={reset} className="flex-1">
+                    {t('soulmate.tryAnother', { defaultValue: 'Try another' })}
+                  </Button>
+                  <Button variant="gold" onClick={handleShare} className="flex-1">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    {t('soulmate.share', { defaultValue: 'Share score' })}
+                  </Button>
+                </>
+              }
+              defaultDetailOpen
+              footer={
+                <p className="text-caption text-mystic-500 italic">
+                  {t('soulmate.disclaimer', {
+                    defaultValue: "A score isn't a verdict — it's a mirror for conversation. Charts describe patterns, not fate.",
+                  })}
+                </p>
+              }
+            >
+              {result.harmonies.length > 0 && (
+                <Card padding="lg">
+                  <p className="font-display-eyebrow mb-2">
+                    {t('soulmate.harmoniesHeading', { defaultValue: 'Where you flow together' })}
+                  </p>
+                  <div className="space-y-2">
+                    {result.harmonies.map((a, i) => (
+                      <div key={i} className="flex items-center justify-between text-ui">
+                        <span className="text-mystic-200">
+                          {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
+                        </span>
+                        <span className="text-meta text-emerald-400/70">{a.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {result.frictions.length > 0 && (
+                <Card padding="lg">
+                  <p className="font-display-eyebrow mb-2">
+                    {t('soulmate.frictionsHeading', { defaultValue: 'Where you stretch each other' })}
+                  </p>
+                  <div className="space-y-2">
+                    {result.frictions.map((a, i) => (
+                      <div key={i} className="flex items-center justify-between text-ui">
+                        <span className="text-mystic-200">
+                          {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
+                        </span>
+                        <span className="text-meta text-pink-400/70">{a.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              <SoulmatePortrait />
+            </ResultLayout>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </Page>
   );
 }
 

@@ -53,9 +53,9 @@ export function TarotHomeView({
         padding="lg"
         interactive
         onClick={onStartDraw}
-        className="text-center active:scale-[0.98] transition-transform hover:shadow-gold"
+        className="text-center active:scale-[0.98] transition-transform"
       >
-        <div className="w-20 h-28 mx-auto mb-4 rounded-xl border-2 border-gold/30 flex items-center justify-center shadow-glow hover:scale-105 transition-transform overflow-hidden animate-float-gentle">
+        <div className="w-20 h-28 mx-auto mb-4 rounded-xl border-2 border-gold/30 flex items-center justify-center hover:scale-105 transition-transform overflow-hidden animate-float-gentle">
           <img
             src={cardBackUrl || '/card-backs/default.svg'}
             alt=""
@@ -119,7 +119,7 @@ export function TarotHomeView({
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="w-8 h-11 rounded border border-mystic-600 hover:border-gold/40 transition-colors overflow-hidden"
+                  className="w-8 h-11 rounded-lg border border-mystic-600 hover:border-gold/40 transition-colors overflow-hidden"
                 >
                   <img
                     src={cardBackUrl || '/card-backs/default.svg'}

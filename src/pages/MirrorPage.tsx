@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Aperture, TrendingUp, Layers, Hash, RotateCcw, Flame, Calendar } from 'lucide-react';
-import { PageHeader } from '../components/ui';
+import { PageHeader, Page, Tabs, Progress } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getMirrorStats, type MirrorPeriod, type MirrorStats } from '../services/mirror';
 import { setPageMeta } from '../utils/seo';
@@ -33,38 +33,28 @@ export function MirrorPage() {
 
   if (!user) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10 text-center">
+      <Page className="py-10 text-center">
         <p className="text-mystic-300">Sign in to see your Mirror.</p>
-      </div>
+      </Page>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+    <Page className="py-6 sm:py-10">
       <PageHeader
-        className="mb-6"
         icon={<Aperture />}
         title="Mirror"
         subtitle="What your reading history reveals about you. Aggregated patterns over your saved tarot pulls."
       />
 
-      <nav className="flex gap-2 mb-6" role="tablist">
-        {PERIODS.map((p) => (
-          <button
-            key={p.id}
-            role="tab"
-            aria-selected={period === p.id}
-            onClick={() => setPeriod(p.id)}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all ${
-              period === p.id
-                ? 'bg-gold/15 text-gold border border-gold/30'
-                : 'text-mystic-400 hover:text-mystic-200 border border-transparent'
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-      </nav>
+      <Tabs<MirrorPeriod>
+        items={PERIODS.map((p) => ({ id: p.id, label: p.label }))}
+        value={period}
+        onChange={setPeriod}
+        aria-label="Period"
+        size="sm"
+        idPrefix="mirror-period"
+      />
 
       {loading || !stats ? (
         <div className="text-center py-16 text-mystic-500">Reading the mirror…</div>
@@ -137,7 +127,7 @@ export function MirrorPage() {
           </section>
         </div>
       )}
-    </div>
+    </Page>
   );
 }
 
@@ -173,9 +163,7 @@ function SuitBars({ breakdown }: { breakdown: Record<string, number> }) {
         return (
           <div key={suit} className="flex items-center gap-2 text-xs">
             <span className="w-16 text-mystic-400">{suit}</span>
-            <div className="flex-1 h-2 rounded-full bg-mystic-800/60 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-gold/60 to-gold rounded-full transition-all" style={{ width: `${pct}%` }} />
-            </div>
+            <Progress value={pct} size="md" tone="gold" label={suit} className="flex-1" />
             <span className="w-10 text-right text-mystic-500 tabular-nums">{pct}%</span>
           </div>
         );
@@ -189,8 +177,8 @@ function ArcanaBar({ major, minor }: { major: number; minor: number }) {
   const majorPct = Math.round((major / total) * 100);
   return (
     <div className="space-y-1">
-      <div className="h-3 rounded-full overflow-hidden flex">
-        <div className="bg-gold h-full" style={{ width: `${majorPct}%` }} />
+      <div className="h-2 bg-mystic-800 rounded-full overflow-hidden flex">
+        <div className="bg-gold h-full transition-[width] duration-deliberate ease-out" style={{ width: `${majorPct}%` }} />
         <div className="bg-cosmic-blue h-full flex-1" />
       </div>
       <div className="flex justify-between text-xs text-mystic-500">

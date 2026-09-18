@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { RotateCcw, Share2 } from 'lucide-react';
-import { Card, Button, Section, toast, PageHeader } from '../components/ui';
+import { Card, Button, Page, Section, toast, PageHeader } from '../components/ui';
 import { MysticalStar } from '../components/ui/MysticalStar';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
@@ -31,7 +31,7 @@ export function RunesPage() {
 
   if (stage === 'intro') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader title={t('runes.title', { defaultValue: 'Runes' })} icon={<MysticalStar className="w-6 h-6 text-gold" />} />
         <Section
           spacing="lg"
@@ -62,18 +62,18 @@ export function RunesPage() {
           <MysticalStar className="w-5 h-5 mr-2" />
           {t('runes.castButton', { defaultValue: 'Cast the runes' })}
         </Button>
-      </div>
+      </Page>
     );
   }
 
   if (stage === 'casting') {
     return (
-      <div className="space-y-6 pb-6 flex flex-col items-center justify-center min-h-[60vh]">
+      <Page spacing="md" className="flex flex-col items-center justify-center min-h-[60vh]">
         <MysticalStar size={40} className="text-gold animate-pulse" halo={false} />
         <p className="text-mystic-200 text-lg font-display text-center">
           {t('runes.casting', { defaultValue: 'Casting...' })}
         </p>
-      </div>
+      </Page>
     );
   }
 
@@ -102,7 +102,7 @@ export function RunesPage() {
     };
 
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           title={t('runes.title', { defaultValue: 'Runes' })}
           eyebrow={t('runes.castLabel', { defaultValue: 'Three-rune cast' })}
@@ -191,7 +191,7 @@ export function RunesPage() {
             {t('runes.castAgain', { defaultValue: 'Cast again' })}
           </Button>
         </div>
-      </div>
+      </Page>
     );
   }
 

@@ -51,9 +51,9 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
   const Row = ({ data, colors, label }: { data: Record<string, number>; colors: Record<string, string>; label: string }) => (
     <div className="space-y-1.5">
       <div className="text-[11px] uppercase tracking-wider text-mystic-500">{label}</div>
-      <div className="flex h-2.5 rounded-full overflow-hidden bg-mystic-800/60">
+      <div className="flex h-2 bg-mystic-800 rounded-full overflow-hidden">
         {Object.entries(data).map(([k, v]) => v > 0 && (
-          <div key={k} title={`${k}: ${v}`} style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
+          <div key={k} title={`${k}: ${v}`} className="h-full transition-[width] duration-deliberate ease-out" style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
@@ -85,7 +85,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
             return (
               <div key={sign} title={`${sign}: ${count}`} className="flex flex-col items-center gap-0.5">
                 <div className="w-full h-10 flex items-end">
-                  <div className="w-full rounded-t transition-all"
+                  <div className="w-full rounded-t-full transition-[height]"
                     style={{
                       height: `${count > 0 ? Math.max(14, (count / maxSign) * 100) : 4}%`,
                       background: count > 0 ? signColor(sign) : 'rgba(255,255,255,0.06)',

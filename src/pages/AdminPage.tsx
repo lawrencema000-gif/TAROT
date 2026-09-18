@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Upload, Trash2, Image, Layers, RefreshCw, ChevronDown, ChevronUp, Check, Star, Sparkles, Flame } from 'lucide-react';
-import { Button, toast } from '../components/ui';
+import { Button, Page, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useRitual } from '../context/RitualContext';
 import { supabase } from '../lib/supabase';
@@ -513,7 +513,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="space-y-6 pb-6">
+    <Page spacing="md">
       <div className="flex items-center justify-between">
         <h1 className="heading-display-lg text-mystic-100">Admin Panel</h1>
         <Button
@@ -790,6 +790,6 @@ export function AdminPage() {
           );
         })}
       </div>
-    </div>
+    </Page>
   );
 }

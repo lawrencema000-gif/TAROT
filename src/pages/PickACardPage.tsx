@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, RotateCcw, Flame, BookOpen } from 'lucide-react';
-import { Card, Button, toast } from '../components/ui';
+import { Button, Page, ResultLayout, Tag, toast } from '../components/ui';
 import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
@@ -198,7 +198,7 @@ export function PickACardPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <Page spacing="md">
       <header className="text-center space-y-2 pt-2">
         <motion.h1
           initial={{ opacity: 0, y: -8 }}
@@ -253,7 +253,7 @@ export function PickACardPage() {
                 whileHover={{ y: -12, rotate: 0, scale: 1.04, transition: { duration: 0.2 } }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.5, delay: 0.15 * i, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-24 sm:w-28 md:w-32 aspect-[2/3] rounded-xl overflow-hidden border border-gold/30 shadow-xl disabled:opacity-50"
+                className="relative w-24 sm:w-28 md:w-32 aspect-[2/3] rounded-xl overflow-hidden border border-gold/30 disabled:opacity-50"
                 aria-label={t('pickACard.optionAria', { defaultValue: 'Card {{n}}', n: i + 1 }) as string}
               >
                 <img
@@ -276,7 +276,7 @@ export function PickACardPage() {
             className="flex flex-col items-center gap-5 pt-4"
           >
             {pickedCard && (
-              <div className="relative w-44 sm:w-52 aspect-[2/3] rounded-2xl overflow-hidden border-2 border-gold/60 shadow-[0_0_40px_rgba(212,175,55,0.25)]">
+              <div className="relative w-44 sm:w-52 aspect-[2/3] rounded-2xl overflow-hidden border-2 border-gold/60">
                 {getBundledCardPath(pickedCard.id) ? (
                   <img
                     src={getBundledCardPath(pickedCard.id)!}
@@ -293,51 +293,53 @@ export function PickACardPage() {
             )}
 
             {pickedCard && (
-              <Card variant="glow" padding="lg" className="w-full max-w-md text-center">
-                <p className="font-display-eyebrow mb-1">
-                  {picked.reversed
+              <ResultLayout
+                as="h2"
+                className="w-full max-w-md"
+                eyebrow={
+                  picked.reversed
                     ? t('pickACard.reversed', { defaultValue: 'Reversed' })
-                    : t('pickACard.upright', { defaultValue: 'Upright' })}
-                </p>
-                <h2 className="heading-display-lg text-mystic-100 mb-2">{pickedCard.name}</h2>
-                <p className="reading-copy text-left">
-                  {picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright}
-                </p>
-                {pickedCard.keywords?.length > 0 && (
-                  <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-                    {pickedCard.keywords.slice(0, 3).map((kw) => (
-                      <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-mystic-800/60 border border-mystic-700/40 text-mystic-400">
-                        {kw}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </Card>
+                    : t('pickACard.upright', { defaultValue: 'Upright' })
+                }
+                verdict={pickedCard.name}
+                summary={picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright}
+                subtitle={
+                  pickedCard.keywords?.length > 0 ? (
+                    <span className="inline-flex flex-wrap justify-center gap-1.5">
+                      {pickedCard.keywords.slice(0, 3).map((kw) => (
+                        <Tag key={kw} tone="neutral">{kw}</Tag>
+                      ))}
+                    </span>
+                  ) : undefined
+                }
+                actions={
+                  <>
+                    <Button variant="outline" onClick={handleShare} className="flex-1">
+                      <Share2 className="w-4 h-4 mr-2" />
+                      {t('pickACard.share', { defaultValue: 'Share' })}
+                    </Button>
+                    <Button
+                      variant="gold"
+                      onClick={() => navigate(`/tarot-meanings/${pickedCard ? pickedCard.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : ''}`)}
+                      className="flex-1"
+                    >
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      {t('pickACard.learnMore', { defaultValue: 'Learn more' })}
+                    </Button>
+                  </>
+                }
+                footer={
+                  <p className="text-ui text-mystic-400 flex items-center justify-center gap-1.5">
+                    <RotateCcw className="w-3 h-3" />
+                    {t('pickACard.comeBack', { defaultValue: 'New cards arrive at midnight.' })}
+                  </p>
+                }
+              />
             )}
-
-            <div className="flex gap-3 w-full max-w-md">
-              <Button variant="outline" onClick={handleShare} className="flex-1">
-                <Share2 className="w-4 h-4 mr-2" />
-                {t('pickACard.share', { defaultValue: 'Share' })}
-              </Button>
-              <Button
-                variant="gold"
-                onClick={() => navigate(`/tarot-meanings/${pickedCard ? pickedCard.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : ''}`)}
-                className="flex-1"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                {t('pickACard.learnMore', { defaultValue: 'Learn more' })}
-              </Button>
-            </div>
-
-            <p className="text-ui text-mystic-400 flex items-center gap-1.5">
-              <RotateCcw className="w-3 h-3" />
-              {t('pickACard.comeBack', { defaultValue: 'New cards arrive at midnight.' })}
-            </p>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </Page>
   );
 }
 

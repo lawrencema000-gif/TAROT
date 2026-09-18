@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
-import { Card, Button, toast, PageHeader, EmptyState, Disclosure, ReadingProse } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -142,7 +142,7 @@ export function YearAheadReportPage() {
 
   if (!hasNatalChart) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<Calendar />}
           title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
@@ -155,7 +155,7 @@ export function YearAheadReportPage() {
               'Year-ahead forecasts need date, time, and place of birth to compute transits to your natal chart. Add them in Profile → Edit profile.',
           })}
         />
-      </div>
+      </Page>
     );
   }
 
@@ -169,14 +169,14 @@ export function YearAheadReportPage() {
 
   if (!unlocked) {
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<Calendar />}
           title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
         />
 
         <Card padding="lg" variant="ornate" className="text-center nebula-veil">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4 shadow-glow">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
@@ -294,7 +294,7 @@ export function YearAheadReportPage() {
             earnOnly
           />
         )}
-      </div>
+      </Page>
     );
   }
 
@@ -335,7 +335,7 @@ export function YearAheadReportPage() {
   if (!data) return null;
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <PageHeader
         icon={<Calendar />}
         title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
@@ -413,7 +413,7 @@ export function YearAheadReportPage() {
             'Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.',
         })}
       </p>
-    </div>
+    </Page>
   );
 }
 

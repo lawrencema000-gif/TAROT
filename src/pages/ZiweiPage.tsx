@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Input, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Input, Page, PageHeader, Section, Disclosure } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { ZiweiChart } from '../components/charts/ZiweiChart';
 import { computeZiweiChart } from '../data/ziwei';
@@ -39,7 +39,7 @@ export function ZiweiPage() {
   const lifePalace = chart?.palaces.find((p) => p.isLife);
 
   return (
-    <div className="space-y-6 pb-28">
+    <Page spacing="md">
       <PageHeader
         eyebrow="紫微斗数"
         title={t('ziwei.title', { defaultValue: 'Zi Wei Dou Shu' })}
@@ -176,6 +176,6 @@ export function ZiweiPage() {
           </p>
         </>
       )}
-    </div>
+    </Page>
   );
 }

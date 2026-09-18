@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, Heart, Play, Lock, Unlock } from 'lucide-react';
-import { Card, Button, PageHeader, toast } from '../components/ui';
+import { Card, Button, Badge, Page, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -155,7 +155,7 @@ export function LiveRoomPage() {
   const isHost = user?.id === room.host_user_id;
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         onBack={() => navigate('/live-rooms')}
         backLabel={t('liveRoom.back', { defaultValue: 'All rooms' }) as string}
@@ -169,9 +169,9 @@ export function LiveRoomPage() {
         }
         action={
           isLive ? (
-            <span className="text-[10px] px-2 py-0.5 bg-gold/20 text-gold rounded-full uppercase tracking-wider animate-pulse">
+            <Badge tone="gold" pulse>
               Live
-            </span>
+            </Badge>
           ) : undefined
         }
       />
@@ -279,7 +279,7 @@ export function LiveRoomPage() {
           </div>
         </Card>
       )}
-    </div>
+    </Page>
   );
 }
 

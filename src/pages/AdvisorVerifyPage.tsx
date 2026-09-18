@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Upload, Check, AlertCircle, Clock, XCircle } from 'lucide-react';
-import { Card, Button, Input, PageHeader, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -109,7 +109,7 @@ export function AdvisorVerifyPage() {
   const status: VerifyStatus = existing?.status || 'none';
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <PageHeader
         icon={<Shield />}
         title={t('advisorVerify.title', { defaultValue: 'Advisor verification' })}
@@ -273,7 +273,7 @@ export function AdvisorVerifyPage() {
           </p>
         </>
       )}
-    </div>
+    </Page>
   );
 }
 

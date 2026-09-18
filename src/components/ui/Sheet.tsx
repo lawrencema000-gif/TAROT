@@ -110,16 +110,14 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
 
   if (!mounted) return null;
 
-  // Refined surfaces for redesign-2026:
-  //   default — slate panel with a hairline gold separator below the
-  //             drag handle (subtle brand presence on every sheet)
-  //   glow    — same as default but with a gold halo bordering the
-  //             top edge for premium / paywall sheets
+  // Surfaces. No shadow on either: the scrim is what separates a sheet from
+  // the page, and the panel's own fill does the rest. The only difference
+  // between the two is the weight of the gold hairline along the top edge.
+  //   default — slate panel with a soft gold hairline
+  //   glow    — same panel, a firmer gold hairline for premium / paywall sheets
   const sheetStyles = variant === 'glow'
-    ? 'bg-gradient-to-b from-mystic-850 to-mystic-900 ' +
-      '[box-shadow:0_-12px_60px_-12px_rgba(212,175,55,0.18),inset_0_1px_0_rgba(212,175,55,0.22)]'
-    : 'bg-gradient-to-b from-mystic-850 to-mystic-900 ' +
-      '[box-shadow:0_-12px_40px_-16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(212,175,55,0.10)]';
+    ? 'bg-gradient-to-b from-mystic-850 to-mystic-900 border-t border-gold/25'
+    : 'bg-gradient-to-b from-mystic-850 to-mystic-900 border-t border-gold/10';
 
   return (
     <div
@@ -145,7 +143,7 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
       <div
         ref={sheetRef}
         className={`
-          absolute bottom-0 left-0 right-0 rounded-t-3xl max-h-[90dvh] overflow-hidden flex flex-col
+          absolute bottom-0 left-0 right-0 rounded-t-sheet max-h-[90dvh] overflow-hidden flex flex-col
           transition-[transform,opacity]
           ${shown
             ? 'translate-y-0 opacity-100 duration-slow ease-[cubic-bezier(0.22,0.8,0.25,1)]'

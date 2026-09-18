@@ -15,7 +15,7 @@ import {
   Star,
   TrendingUp,
 } from 'lucide-react';
-import { Card, Button, Input, Chip } from '../ui';
+import { Card, Button, Input, Chip, Tag, Progress, ProgressRing } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getZodiacSign, zodiacData, getCompatibility } from '../../utils/zodiac';
 import type { ZodiacSign } from '../../types';
@@ -215,38 +215,20 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             </div>
           </div>
 
-          <div className="relative w-32 h-32 mx-auto mb-4">
-            <svg className="w-full h-full transform -rotate-90">
-              <circle
-                cx="64"
-                cy="64"
-                r="56"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                className="text-mystic-800"
-              />
-              <circle
-                cx="64"
-                cy="64"
-                r="56"
-                fill="none"
-                stroke="url(#gradient)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${(result.overallScore / 100) * 352} 352`}
-              />
-              <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#d4af37" />
-                  <stop offset="100%" stopColor="#f5d67b" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-display text-gold">{result.overallScore}%</span>
-              <span className="text-xs text-mystic-400">{t('compatibility.match')}</span>
-            </div>
+          <div className="mb-4">
+            <ProgressRing
+              value={result.overallScore}
+              max={100}
+              size={128}
+              strokeWidth={8}
+              tone="gold"
+              label={t('compatibility.match')}
+            >
+              <div className="flex flex-col items-center">
+                <span className="text-3xl font-display text-gold">{result.overallScore}%</span>
+                <span className="text-xs text-mystic-400">{t('compatibility.match')}</span>
+              </div>
+            </ProgressRing>
           </div>
 
           <h2 className="font-display text-xl text-mystic-100">{result.connectionStyle}</h2>
@@ -277,12 +259,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.emotional}%</span>
               </div>
-              <div className="h-2 bg-mystic-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-cosmic-rose to-cosmic-rose/70 rounded-full transition-all"
-                  style={{ width: `${result.dimensions.emotional}%` }}
-                />
-              </div>
+              <Progress
+                value={result.dimensions.emotional}
+                max={100}
+                size="md"
+                tone="rose"
+                label={t('compatibility.dimensions.emotional')}
+              />
             </div>
 
             <div>
@@ -293,12 +276,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.intellectual}%</span>
               </div>
-              <div className="h-2 bg-mystic-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-cosmic-blue to-cosmic-blue/70 rounded-full transition-all"
-                  style={{ width: `${result.dimensions.intellectual}%` }}
-                />
-              </div>
+              <Progress
+                value={result.dimensions.intellectual}
+                max={100}
+                size="md"
+                tone="blue"
+                label={t('compatibility.dimensions.intellectual')}
+              />
             </div>
 
             <div>
@@ -309,12 +293,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.physical}%</span>
               </div>
-              <div className="h-2 bg-mystic-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-gold to-gold/70 rounded-full transition-all"
-                  style={{ width: `${result.dimensions.physical}%` }}
-                />
-              </div>
+              <Progress
+                value={result.dimensions.physical}
+                max={100}
+                size="md"
+                tone="gold"
+                label={t('compatibility.dimensions.physical')}
+              />
             </div>
 
             <div>
@@ -325,12 +310,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                 </div>
                 <span className="text-sm text-gold font-medium">{result.dimensions.spiritual}%</span>
               </div>
-              <div className="h-2 bg-mystic-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-teal to-teal/70 rounded-full transition-all"
-                  style={{ width: `${result.dimensions.spiritual}%` }}
-                />
-              </div>
+              <Progress
+                value={result.dimensions.spiritual}
+                max={100}
+                size="md"
+                tone="teal"
+                label={t('compatibility.dimensions.spiritual')}
+              />
             </div>
           </div>
         </Card>
@@ -476,17 +462,13 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                 <label className="block text-sm text-mystic-400 mb-2">{t('compatibility.theirMbti')}</label>
                 <div className="flex flex-wrap gap-1.5">
                   {(showAllMbti ? mbtiTypes : mbtiTypes.slice(0, 8)).map(type => (
-                    <button
+                    <Chip
                       key={type}
-                      onClick={() => setPartnerMbti(partnerMbti === type ? '' : type)}
-                      className={`px-2 py-1 rounded text-xs transition-colors ${
-                        partnerMbti === type
-                          ? 'bg-gold/20 text-gold border border-gold/30'
-                          : 'bg-mystic-800 text-mystic-400 border border-transparent hover:border-mystic-600'
-                      }`}
-                    >
-                      {type}
-                    </button>
+                      size="sm"
+                      label={type}
+                      selected={partnerMbti === type}
+                      onSelect={() => setPartnerMbti(partnerMbti === type ? '' : type)}
+                    />
                   ))}
                   {!showAllMbti && (
                     <button
@@ -533,9 +515,9 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         <p className="text-sm text-mystic-400 mb-4">{t('compatibility.bestMatchesSubtitle', { sign: localizeSignName(userInfo.name as ZodiacSignPC) })}</p>
         <div className="flex gap-2 flex-wrap">
           {getTopMatches(userSign).map(sign => (
-            <span key={sign} className="px-3 py-1.5 bg-mystic-800 rounded-full text-sm text-mystic-300">
+            <Tag key={sign} tone="neutral" size="md">
               {localizeSignName(zodiacData[sign].name as ZodiacSignPC)}
-            </span>
+            </Tag>
           ))}
         </div>
       </Card>

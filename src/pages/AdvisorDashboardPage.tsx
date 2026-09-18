@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight, Wallet, CreditCard } from 'lucide-react';
-import { Card, Button, Input, PageHeader, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -213,7 +213,7 @@ export function AdvisorDashboardPage() {
   }
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <PageHeader
         title={t('advisorDashboard.title', { defaultValue: 'Advisor dashboard' })}
         subtitle={advisorName}
@@ -391,7 +391,7 @@ export function AdvisorDashboardPage() {
             : t('advisorDashboard.saveCta', { defaultValue: 'Save availability' })}
         </Button>
       </Card>
-    </div>
+    </Page>
   );
 }
 

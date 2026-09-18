@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Crown, Check, Gift } from 'lucide-react';
-import { MysticalStar } from '../ui';
+import { MysticalStar, Badge } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useT } from '../../i18n/useT';
 import { PaywallSheet } from './PaywallSheet';
@@ -56,7 +56,7 @@ export function TrialReminderModal() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-md bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 border border-gold/30 rounded-3xl shadow-2xl shadow-gold/10 overflow-hidden animate-slide-up"
+        className="relative w-full max-w-md bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 border border-gold/30 rounded-sheet overflow-hidden animate-slide-up"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0px)' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -72,7 +72,7 @@ export function TrialReminderModal() {
 
         <div className="relative px-6 pt-8 pb-6 flex flex-col items-center">
           <div className="relative mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center shadow-lg shadow-gold/20">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center">
               <Crown className="w-8 h-8 text-mystic-950" />
             </div>
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-cosmic-blue rounded-full flex items-center justify-center animate-pulse">
@@ -80,12 +80,10 @@ export function TrialReminderModal() {
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-            <Gift className="w-3.5 h-3.5 text-gold" />
-            <span className="text-xs font-semibold text-gold uppercase tracking-wider">
-              {t('premium.trialReminder.badge', { defaultValue: '3 days free' })}
-            </span>
-          </div>
+          <Badge tone="gold" className="mb-3">
+            <Gift className="w-3.5 h-3.5" aria-hidden />
+            {t('premium.trialReminder.badge', { defaultValue: '3 days free' })}
+          </Badge>
 
           <h2
             id="trial-reminder-title"
@@ -112,7 +110,7 @@ export function TrialReminderModal() {
 
           <button
             onClick={() => setShowPaywall(true)}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-base shadow-lg shadow-gold/20 hover:shadow-gold/30 transition-shadow"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-base"
           >
             {t('premium.trialReminder.cta', { defaultValue: 'Start free trial' })}
           </button>

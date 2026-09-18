@@ -41,6 +41,13 @@ interface ChipProps {
   onRemove?: () => void;
   variant?: 'default' | 'gold' | 'outline';
   size?: 'sm' | 'md' | 'lg';
+  /** Leading icon, sized to the chip. */
+  icon?: ReactNode;
+  /** A dead chip: still visible, not pressable, announced as disabled. */
+  disabled?: boolean;
+  /** Accessible name when the label is an icon or a glyph. */
+  'aria-label'?: string;
+  title?: string;
   className?: string;
 }
 
@@ -110,9 +117,24 @@ export function InsightChip({ category, selected, onSelect, size = 'md' }: Insig
   );
 }
 
-export function Chip({ label, children, selected, onSelect, onClick, onRemove, variant = 'default', size = 'md', className = '' }: ChipProps) {
+export function Chip({
+  label,
+  children,
+  selected,
+  onSelect,
+  onClick,
+  onRemove,
+  variant = 'default',
+  size = 'md',
+  icon,
+  disabled,
+  title,
+  className = '',
+  ...aria
+}: ChipProps) {
   const baseStyles =
     `inline-flex items-center rounded-full font-medium flex-shrink-0 snap-start ${CHIP_MOTION}`;
+  const iconNode = icon ? <span className="inline-flex shrink-0 [&>svg]:w-3.5 [&>svg]:h-3.5" aria-hidden>{icon}</span> : null;
 
   const variantStyles = {
     default: selected
@@ -129,16 +151,25 @@ export function Chip({ label, children, selected, onSelect, onClick, onRemove, v
 
   // Inert: a label, not a control. No focus ring, no press, not a button.
   if (!handleClick && !onRemove) {
-    return <span className={classes}>{children || label}</span>;
+    return (
+      <span className={classes} title={title} aria-label={aria['aria-label']}>
+        {iconNode}
+        {children || label}
+      </span>
+    );
   }
 
   return (
     <button
       type="button"
       onClick={handleClick}
+      disabled={disabled}
+      title={title}
+      aria-label={aria['aria-label']}
       aria-pressed={selected !== undefined ? selected : undefined}
-      className={`${classes} ${CHIP_FOCUS} ${handleClick ? CHIP_PRESS : ''}`}
+      className={`${classes} ${CHIP_FOCUS} ${handleClick && !disabled ? CHIP_PRESS : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
     >
+      {iconNode}
       {children || label}
       {/* inline-flex, not the default inline: transform has no effect on a
           non-replaced inline box, so the press would otherwise be silent. */}

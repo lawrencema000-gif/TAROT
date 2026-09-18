@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react';
 import { X, Download } from 'lucide-react';
+import { Chip } from '../ui';
 import { useVersionCheck } from '../../hooks/useVersionCheck';
 import { appStorage } from '../../lib/appStorage';
 
@@ -47,7 +48,7 @@ export function UpdateAvailableBanner() {
   };
 
   return (
-    <div className="fixed bottom-20 left-2 right-2 z-40 mx-auto max-w-md rounded-2xl border border-gold/40 bg-gradient-to-r from-mystic-900/95 to-mystic-800/95 p-3 shadow-glow backdrop-blur">
+    <div className="fixed bottom-20 left-2 right-2 z-40 mx-auto max-w-md rounded-2xl border border-gold/40 bg-gradient-to-r from-mystic-900/95 to-mystic-800/95 p-3 backdrop-blur">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gold/20">
           <Download className="h-4 w-4 text-gold" />
@@ -58,18 +59,8 @@ export function UpdateAvailableBanner() {
             Includes recent fixes and improvements. Update from Play Store to get them.
           </p>
           <div className="mt-2 flex gap-2">
-            <button
-              onClick={handleUpdate}
-              className="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-mystic-950 hover:bg-gold/90 transition-colors"
-            >
-              Update now
-            </button>
-            <button
-              onClick={handleDismiss}
-              className="rounded-full px-3 py-1 text-xs text-mystic-400 hover:text-mystic-200 transition-colors"
-            >
-              Later
-            </button>
+            <Chip variant="gold" size="sm" onClick={handleUpdate} label="Update now" />
+            <Chip variant="outline" size="sm" onClick={handleDismiss} label="Later" />
           </div>
         </div>
         <button

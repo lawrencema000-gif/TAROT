@@ -61,7 +61,7 @@ export function FreeEmailCourseCard() {
 
   return (
     <div className="lp-wrap" style={{ padding: '48px 16px' }}>
-      <div className="rounded-3xl border border-gold/30 bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 p-6 sm:p-10 shadow-2xl shadow-gold/10 max-w-2xl mx-auto">
+      <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 p-6 sm:p-10 max-w-2xl mx-auto">
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
             <Gift className="w-3.5 h-3.5 text-gold" />

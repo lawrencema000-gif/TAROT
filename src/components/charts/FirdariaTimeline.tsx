@@ -42,7 +42,7 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
     <div className="space-y-4">
       {/* major-period band */}
       <div>
-        <div className="relative h-9 rounded-lg overflow-hidden border border-mystic-800/60">
+        <div className="relative h-9 bg-mystic-800 rounded-full overflow-hidden">
           {data.periods.map((p, i) => {
             const { left, width } = seg(p.start, p.end);
             if (width <= 0) return null;
@@ -54,7 +54,7 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
               </div>
             );
           })}
-          <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ left: `${nowPct}%` }} />
+          <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${nowPct}%` }} />
         </div>
         <div className="flex justify-between text-[10px] text-mystic-600 mt-1">
           <span>birth</span><span>30</span><span>60</span><span>90 yrs</span>
@@ -67,12 +67,12 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
           <div className="text-xs text-mystic-400 mb-1.5">
             Inside your <span className="text-gold">{currentMajor.lord}</span> period ({currentMajor.start.slice(0, 4)}–{currentMajor.end.slice(0, 4)}):
           </div>
-          <div className="relative h-7 rounded-lg overflow-hidden border border-mystic-800/60 flex">
+          <div className="relative h-7 bg-mystic-800 rounded-full overflow-hidden flex">
             {currentMajor.subs.map((s, i) => {
               const isNow = Date.now() >= Date.parse(s.start) && Date.now() < Date.parse(s.end);
               return (
                 <div key={i} title={`${s.lord}: ${s.start} → ${s.end}`}
-                  className={`flex-1 flex items-center justify-center text-[10px] font-semibold ${isNow ? 'ring-2 ring-white/80 z-10' : ''}`}
+                  className="flex-1 flex items-center justify-center text-[10px] font-semibold"
                   style={{ background: LORD_COLOR[s.lord] ?? '#666', opacity: isNow ? 1 : 0.55, color: '#12101c' }}>
                   {PLANET_GLYPH[s.lord]}
                 </div>

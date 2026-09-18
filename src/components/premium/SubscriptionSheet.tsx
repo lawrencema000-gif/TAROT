@@ -22,7 +22,7 @@ import {
   Mail,
   Sun,
 } from 'lucide-react';
-import { Button, toast, OrnateDivider, MysticalStar } from '../ui';
+import { Button, toast, OrnateDivider, MysticalStar, ListRow } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService } from '../../services/billing';
 import { isNative, isAndroid } from '../../utils/platform';
@@ -102,7 +102,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
         <div className="flex-1 flex flex-col items-center px-6 pt-12 pb-6">
           <div className="relative mb-6">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center shadow-2xl shadow-gold/20">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center">
               <Crown className="w-12 h-12 text-mystic-950" />
             </div>
             <div className="absolute -top-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
@@ -139,20 +139,22 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
                 </div>
               </div>
 
-              <div className="space-y-3 pt-3 border-t border-gold/10">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-mystic-400">
-                    <Calendar className="w-4 h-4" />
-                    <span>{t('premium.subscription.status')}</span>
-                  </div>
-                  <span className="text-emerald-400 font-medium">{t('premium.subscription.statusActive')}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-mystic-400">
-                    <CreditCard className="w-4 h-4" />
-                    <span>{t('premium.subscription.billing')}</span>
-                  </div>
-                  <span className="text-mystic-300">{t('premium.subscription.billingGooglePlay')}</span>
+              <div className="pt-3 border-t border-gold/10">
+                {/* -mx-4 cancels the row's own inset so the tiles line up
+                    with the card content above. */}
+                <div className="-mx-4">
+                  <ListRow
+                    size="md"
+                    icon={<Calendar />}
+                    label={t('premium.subscription.status')}
+                    value={<span className="text-emerald-400 font-medium">{t('premium.subscription.statusActive')}</span>}
+                  />
+                  <ListRow
+                    size="md"
+                    icon={<CreditCard />}
+                    label={t('premium.subscription.billing')}
+                    value={<span className="text-mystic-300">{t('premium.subscription.billingGooglePlay')}</span>}
+                  />
                 </div>
               </div>
             </div>

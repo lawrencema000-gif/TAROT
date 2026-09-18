@@ -36,7 +36,7 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
       />
 
       <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className="bg-gradient-to-b from-mystic-850 to-mystic-900 rounded-3xl border border-gold/20 w-full max-w-sm p-8 text-center animate-scale-in relative shadow-glow">
+        <div className="bg-gradient-to-b from-mystic-850 to-mystic-900 rounded-sheet border border-gold/20 w-full max-w-sm p-8 text-center animate-scale-in relative">
           <button
             onClick={handleLater}
             className="absolute top-4 right-4 p-2 rounded-full hover:bg-mystic-800 transition-colors"

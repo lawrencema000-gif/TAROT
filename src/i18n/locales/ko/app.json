@@ -147,7 +147,8 @@
       "partner": "궁합",
       "fengshui": "풍수",
       "runes": "룬",
-      "dice": "주사위"
+      "dice": "주사위",
+      "celestial": "천체 지도"
     },
     "dailyRemaining": "오늘 무료 리딩 {{used}} / {{limit}}",
     "upgradeForUnlimited": "무제한 이용으로 업그레이드",
@@ -4957,16 +4958,34 @@
   "celestial": {
     "needBirthDate": {
       "cta": "프로필로 이동",
-      "secondary": "전체 프로필 편집하기"
+      "secondary": "전체 프로필 편집하기",
+      "title": "먼저 생년월일이 필요해요",
+      "body": "당신의 천체 지도는 출생 차트에서 그려져요. 프로필 페이지에서 생년월일(알고 있다면 출생 시각도)을 추가하면 지도가 준비돼요."
     },
     "previewLock": {
-      "title": "지금은 태양 + 달 미리보기예요."
+      "title": "지금은 태양 + 달 미리보기예요.",
+      "body": "프리미엄으로 40개 행성 라인 전부, 도시별 해석, AI 여행 리딩까지 열어 보세요 — 또는 여행 리딩 한 번을 250 문스톤으로 받을 수 있어요.",
+      "cta": "전체 지도 열기"
     },
     "city": {
       "aiReading": {
-        "body": "이 라인들을 당신의 출생 차트, 그리고 지금 찾고 있는 것과 엮어 읽은 맞춤 해석 — 오직 당신을 위해 써 드려요."
+        "body": "이 라인들을 당신의 출생 차트, 그리고 지금 찾고 있는 것과 엮어 읽은 맞춤 해석 — 오직 당신을 위해 써 드려요.",
+        "title": "개인 여행 리딩",
+        "loading": "리딩을 쓰는 중…",
+        "ctaPremium": "리딩 만들기",
+        "ctaMoonstones": "250 문스톤으로 열기",
+        "error": "지금은 리딩을 생성하지 못했어요 — 잠시 후 다시 시도해 주세요.",
+        "label": "당신의 리딩",
+        "cautionsLabel": "조심할 점",
+        "practiceLabel": "이곳에서의 첫 사흘"
       },
-      "lockedCount": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요"
+      "lockedCount": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요",
+      "unknown": "먼바다 / 외딴 곳",
+      "noLines": "여기서 700 km 안을 지나는 행성 라인이 없어요. 이곳은 당신의 차트에서 천체적으로 고요한 곳이에요 — 돕지도, 막지도 않아요.",
+      "activeLines": "이곳의 활성 라인",
+      "lockedCount_one": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요",
+      "lockedCount_other": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요",
+      "unlockHint": "프리미엄으로 전체 지도 열기"
     },
     "form": {
       "dateRequired": "생년월일을 입력해 주세요.",
@@ -5056,6 +5075,18 @@
     "mapSection": {
       "title": "당신의 지도",
       "subtitle": "아무 지점이나 누르면 그곳을 지나는 라인을 볼 수 있어요. 아래에서 특정 도시를 검색해도 돼요."
+    },
+    "eyebrow": "천체 지도",
+    "title": "당신의 별들이 모이는 곳",
+    "disclaimer": "이 라인들은 당신이 태어난 순간 각 행성이 떠오르고, 지고, 자오선에 있던 자리를 표시해요. 운명이 아니라 신호예요.",
+    "filter": {
+      "all": "전체",
+      "love": "사랑",
+      "career": "커리어",
+      "travel": "여행",
+      "healing": "치유",
+      "home": "집",
+      "growth": "성장"
     }
   },
   "freeCourse": {

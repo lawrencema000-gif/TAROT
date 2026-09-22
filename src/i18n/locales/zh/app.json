@@ -147,7 +147,8 @@
       "partner": "契合",
       "fengshui": "风水",
       "runes": "符文",
-      "dice": "骰子"
+      "dice": "骰子",
+      "celestial": "天体地图"
     },
     "dailyRemaining": "今日免费牌阵 {{used}} / {{limit}}",
     "upgradeForUnlimited": "升级解锁无限",
@@ -4957,16 +4958,34 @@
   "celestial": {
     "needBirthDate": {
       "cta": "前往个人资料",
-      "secondary": "改为编辑完整资料"
+      "secondary": "改为编辑完整资料",
+      "title": "请先添加你的出生日期",
+      "body": "你的天体地图是从你的出生星盘绘制而来的。请在「个人资料」页添加出生日期（如果知道，也加上出生时间），你的地图就会准备好。"
     },
     "previewLock": {
-      "title": "你正在查看太阳 + 月亮预览。"
+      "title": "你正在查看太阳 + 月亮预览。",
+      "body": "用高级版解锁全部 40 条行星线、城市解读和 AI 旅行解读——或用 250 月光石获取单次旅行解读。",
+      "cta": "解锁完整地图"
     },
     "city": {
       "aiReading": {
-        "body": "获取一份专属解读，把这些行星线与你的出生星盘和你所寻求的事结合起来——专为你而写。"
+        "body": "获取一份专属解读，把这些行星线与你的出生星盘和你所寻求的事结合起来——专为你而写。",
+        "title": "专属旅行解读",
+        "loading": "正在撰写你的解读…",
+        "ctaPremium": "生成解读",
+        "ctaMoonstones": "用 250 月光石解锁",
+        "error": "暂时无法生成解读，请稍后再试。",
+        "label": "你的解读",
+        "cautionsLabel": "需要留意",
+        "practiceLabel": "在这里的头三天"
       },
-      "lockedCount": "还有 {{count}} 条行星线经过此地"
+      "lockedCount": "还有 {{count}} 条行星线经过此地",
+      "unknown": "远洋 / 偏远地区",
+      "noLines": "此地 700 公里内没有行星线经过。对你的星盘来说，这里是一片安静的天空——既不助力，也不阻碍。",
+      "activeLines": "经过此地的行星线",
+      "lockedCount_one": "还有 {{count}} 条行星线经过此地",
+      "lockedCount_other": "还有 {{count}} 条行星线经过此地",
+      "unlockHint": "用高级版解锁完整地图"
     },
     "form": {
       "dateRequired": "请输入出生日期。",
@@ -5056,6 +5075,18 @@
     "mapSection": {
       "title": "你的地图",
       "subtitle": "点击任意位置查看经过的行星线，或在下方搜索指定城市。"
+    },
+    "eyebrow": "天体地图",
+    "title": "你的星辰交汇之处",
+    "disclaimer": "这些线标出你出生那一刻每颗行星正在升起、落下或过中天的位置。它们是信号，而非命运。",
+    "filter": {
+      "all": "全部",
+      "love": "爱情",
+      "career": "事业",
+      "travel": "旅行",
+      "healing": "疗愈",
+      "home": "安居",
+      "growth": "成长"
     }
   },
   "freeCourse": {

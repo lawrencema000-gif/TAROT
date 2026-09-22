@@ -453,12 +453,6 @@ export function TarotRevealView(props: TarotRevealViewProps) {
             )}
           </div>
 
-          <Card padding="md" className="bg-gold/5 border-gold/20">
-            <p className="reading-copy">
-              {t('readings.revealView.cardsSpoken')}
-            </p>
-          </Card>
-
           <div className="grid grid-cols-3 gap-2">
             <Button variant="outline" onClick={onSave}>
               {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}

@@ -10,7 +10,7 @@
     "level": "レベル {{n}}",
     "xpProgress": "経験値の進捗",
     "todaysRitual": "今日のリチュアル",
-    "ritualComplete": "リチュアル完了!",
+    "ritualComplete": "リチュアル完了",
     "streak": "{{n}}日連続達成。このまま続けていきましょう。",
     "savedToday": "今日保存したもの",
     "savedHighlights": "保存したハイライト",
@@ -118,7 +118,6 @@
   },
   "readings": {
     "title": "リーディング",
-    "subtitle": "今日のスプレッドを選びましょう",
     "tabs": {
       "tarot": "タロット",
       "horoscope": "星占い",
@@ -204,8 +203,7 @@
       }
     },
     "dailyDraw": {
-      "title": "デイリードロー",
-      "subtitle": "タップしてリーディングを開始"
+      "title": "デイリードロー"
     },
     "browse": {
       "title": "デッキを見る",
@@ -261,8 +259,7 @@
       "reversalNote": "逆位置ノート: {{text}}",
       "save": "保存",
       "saved": "保存済み",
-      "newReading": "新しいリーディング",
-      "cardsSpoken": "「カードは語りました。このガイダンスに沿って、今日あなたが取れる小さな行動は何ですか?」"
+      "newReading": "新しいリーディング"
     },
     "status": {
       "try": "お試し",
@@ -341,7 +338,6 @@
   },
   "journal": {
     "title": "ジャーナル",
-    "subtitle": "振り返り、覚え、育てる。",
     "newEntry": "新しいエントリー",
     "entryPlaceholder": "今日、心に残ったことは?",
     "titlePlaceholder": "タイトル(任意)",
@@ -426,7 +422,6 @@
   },
   "quizzes": {
     "title": "診断",
-    "subtitle": "内なる地図を見つけましょう",
     "questions": "問",
     "takes": "所要時間",
     "minutes": "分",
@@ -1359,11 +1354,7 @@
   },
   "horoscope": {
     "title": "星占い",
-    "subtitle": "今日の宇宙からの予報",
     "today": "今日",
-    "week": "今週",
-    "month": "今月",
-    "year": "今年",
     "energyScore": "エネルギースコア",
     "sections": {
       "overview": "全体",
@@ -1377,9 +1368,6 @@
     "birthChart": "出生図",
     "compatibility": "相性",
     "transits": "トランジット",
-    "yourPersonalHoroscope": "あなただけの星占い",
-    "whatUnlocks": "解放される機能",
-    "premiumLocked": "プレミアム",
     "completeBirthChart": "出生情報を入力して解放",
     "enterBirthInfo": "出生情報を入力",
     "tabs": {
@@ -1389,31 +1377,6 @@
       "explore": "探求"
     },
     "unlockPremium": "プレミアムを解放",
-    "unlockIntro": "あなた専用の占星術プロフィールを解放しましょう。パーソナライズされたデイリーインサイト、出生図解析、コスミック予報。",
-    "joinThousands": "多くのユーザーが自分のコスミックな可能性を見つけています",
-    "features": {
-      "dailyForecast": {
-        "title": "パーソナライズされたデイリー予報",
-        "desc": "あなたの出生図に基づいた毎日の星占い"
-      },
-      "fullChart": {
-        "title": "完全な出生図",
-        "desc": "すべての惑星配置とアスペクトを含む完全な出生図"
-      },
-      "transits": {
-        "title": "トランジットカレンダー",
-        "desc": "あなたのチャートに影響する今後の宇宙の変化を追跡"
-      },
-      "forecasts": {
-        "title": "週間・月間予報",
-        "desc": "タイミングを読む長期予報"
-      }
-    },
-    "periods": {
-      "today": "今日",
-      "week": "今週",
-      "month": "今月"
-    },
     "general": "全般",
     "love": "恋愛",
     "work": "仕事",
@@ -1444,40 +1407,6 @@
     "actionStep": "アクションステップ",
     "showMore": "もっと見る",
     "showLess": "閉じる",
-    "weeklyOverview": "週の概観",
-    "weekdayInitials": {
-      "mon": "月",
-      "tue": "火",
-      "wed": "水",
-      "thu": "木",
-      "fri": "金",
-      "sat": "土",
-      "sun": "日"
-    },
-    "lovePeak": "恋愛ピーク",
-    "careerPeak": "キャリアピーク",
-    "bestDay": "ベストデー",
-    "peakDays": {
-      "wednesday": "水曜日",
-      "thursday": "木曜日",
-      "friday": "金曜日"
-    },
-    "monthlyTheme": "月のテーマ",
-    "moonPhaseInfluence": "月相の影響",
-    "moonPhaseText": "12日の新月が新しい始まりを後押しします",
-    "keyDates": "重要な日付",
-    "keyDatesText": "7日、15日、23日 - ハイエナジーな日",
-    "weeklyInsights": [
-      "週の前半はコミュニケーションに明晰さをもたらします。週半ばは大胆な決断に有利。週末は休息を必要とします。",
-      "週初めは人間関係に集中。キャリアのことは週半ばでピーク。金曜までに金銭の見直しを。",
-      "月曜はスロースタートですが勢いを増します。水曜に思いがけない知らせ。週末はロマンスの可能性が。",
-      "週の初めは創造的エネルギーが高まります。週半ばは実務が要求されます。土曜は社交イベントに最適。"
-    ],
-    "monthlyThemes": [
-      "今月は自己変容がテーマ。15日ごろにキャリアのチャンス。月末に向けて恋愛が安定します。",
-      "月初めは金銭問題が中心。月半ばに人間関係の進展。最終週は自己成長が加速します。",
-      "健康とウェルネスが主役。仕事での評価が思いがけず訪れます。20日までに感情の明晰さが。"
-    ],
     "journalButton": "ジャーナル",
     "birthChartCard": {
       "title": "出生図の分析",
@@ -1485,12 +1414,11 @@
       "upgrade": "アップグレード"
     },
     "paywallFeatures": {
-      "monthly": "月間ホロスコープ",
       "birthChart": "出生図の分析"
     },
     "share": {
       "title": "今日のホロスコープ",
-      "template": "{{sign}}の今日のホロスコープ\n\n{{general}}\n\nアファメーション: {{affirmation}}\n\nArcanaで作成 ✨"
+      "template": "{{sign}}の今日のホロスコープ\n\n{{general}}\n\nアファメーション: {{affirmation}}\n\nArcanaで作成"
     },
     "toasts": {
       "saveFailed": "保存に失敗しました",
@@ -1689,7 +1617,6 @@
   },
   "achievements": {
     "title": "トロフィー",
-    "subtitle": "これまでの歩み",
     "noInCategory": "このカテゴリにはまだ実績がありません。",
     "errorLoading": "実績の読み込みに失敗しました:",
     "novicesSeeker": "ノービスシーカー",
@@ -1776,11 +1703,11 @@
     "allSuitCards": "{{suit}}一覧",
     "suitMinorLabel": "{{suit}} · 小アルカナ",
     "elements": {
-      "fire": "火 🔥",
-      "water": "水 💧",
-      "air": "風 💨",
-      "earth": "地 🌍",
-      "spirit": "霊 ✨"
+      "fire": "火",
+      "water": "水",
+      "air": "風",
+      "earth": "地",
+      "spirit": "霊"
     },
     "suits": {
       "major": {
@@ -1854,8 +1781,6 @@
     }
   },
   "premium": {
-    "title": "プレミアムを解放",
-    "subtitle": "毎日の実践をさらに深く。",
     "features": {
       "unlimited_saves": {
         "name": "無制限保存",
@@ -1901,16 +1826,7 @@
     "monthly": "月額",
     "yearly": "年額",
     "lifetime": "買い切り",
-    "bestValue": "おすすめ",
-    "save": "{{pct}}% お得",
-    "perMonth": "/月",
-    "perYear": "/年",
-    "oneTime": "一回払い",
-    "subscribe": "サブスクリプションをはじめる",
-    "startFreeTrial": "無料トライアルをはじめる",
     "restorePurchases": "購入を復元",
-    "termsNotice": "自動更新課金。いつでもキャンセル可能。",
-    "activeUntil": "有効期限 {{date}}",
     "badge": "プレミアム",
     "paywall": {
       "heading": "全てのカードを解き放つ",
@@ -2059,22 +1975,6 @@
       }
     },
     "watchAd": {
-      "defaultTitle": "{{feature}}を試す",
-      "defaultSubtitle": "短い広告を見ると、このプレミアム機能を1回だけ解放できます",
-      "contexts": {
-        "extraReading": {
-          "title": "もう1回リーディングを取得",
-          "subtitle": "短い広告を見ると、今日もう1回タロットリーディングを解放できます"
-        },
-        "deepInterpretations": {
-          "title": "拡張解釈を解放",
-          "subtitle": "短い広告を見ると、カードをより深く読み解けます"
-        }
-      },
-      "unlocksRemaining": "本日の無料解放: 残り{{remaining}}/{{total}}回",
-      "watchAdToUnlock": "広告を見て解放",
-      "usedAllUnlocks": "本日の無料解放はすべて使用済みです",
-      "comeBackTomorrow": "明日また来るか、プレミアムにアップグレード",
       "getUnlimited": "無制限アクセスを取得",
       "notNow": "後で",
       "footerDisclaimer": "プレミアム会員は広告なしで全機能を無制限にご利用いただけます",
@@ -2251,7 +2151,6 @@
   },
   "saved": {
     "title": "保存済み",
-    "subtitle": "ブックマークした瞬間",
     "empty": "保存したアイテムはまだありません",
     "emptySub": "リーディング、カード、気づきの星マークをタップして保存しましょう。",
     "emptySubAlt": "リーディング、ジャーナル、診断結果に星を付けると、ここに保存されます",
@@ -2593,9 +2492,9 @@
   },
   "celebration": {
     "streak": {
-      "dedication": "素晴らしい継続です!",
-      "ritualComplete": "儀式完了!",
-      "keepFlowing": "このまま宇宙のエネルギーを保ちましょう!"
+      "dedication": "始めてから毎日、途切れなく。",
+      "ritualComplete": "儀式完了",
+      "keepFlowing": "明日も一回続ければ、記録は保たれます。"
     },
     "levelUp": {
       "title": "レベルアップ!",
@@ -4222,7 +4121,6 @@
     "unlockFailed": "アンロックできませんでした",
     "insufficientBalance": "Moonstonesが不足しています — デイリーチェックインや招待で獲得できます",
     "balance": "残高: {{n}} Moonstones",
-    "priceNote": "Stripeでも購入可 ${{price}}（近日対応）",
     "computing": "あなたの一年をマッピング中…",
     "errorNatalMissing": "計算済みのネイタルチャートが見つかりません。プロフィールで出生データを再入力してください。",
     "errorGeneric": "予報を読み込めません。少し待ってからお試しください。",
@@ -4250,7 +4148,6 @@
     "unlockFailed": "アンロックできませんでした",
     "insufficientBalance": "Moonstonesが不足しています — デイリーチェックインや招待で獲得できます",
     "balance": "残高: {{n}} Moonstones",
-    "priceNote": "Stripeでも購入可 ${{price}}（近日対応）",
     "errorChartMissing": "計算済みの出生図が見つかりません。プロフィールで出生データを再入力してください。",
     "printCta": "PDFとして保存",
     "bigThreeHeading": "ビッグスリー",
@@ -4301,7 +4198,6 @@
     "unlockFailed": "解放できませんでした",
     "insufficientBalance": "Moonstonesが不足しています—デイリーチェックインや招待で獲得できます",
     "balance": "残高: {{n}} Moonstones",
-    "priceNote": "Stripeでも${{price}}で利用可能（近日公開）",
     "bestFit": "最適職種",
     "drains": "消耗を招く環境",
     "collaboration": "協働パターン",

@@ -103,7 +103,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
           </a>
         </div>
 
-        <p className="text-[11px] text-mystic-500 leading-relaxed mt-4 italic">
+        <p className="text-meta text-mystic-400 leading-relaxed mt-4">
           {t('crisis.footer', {
             defaultValue:
               'Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.',

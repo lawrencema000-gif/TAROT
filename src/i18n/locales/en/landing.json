@@ -71,7 +71,7 @@
       },
       "journal": {
         "title": "Write a Reflection",
-        "desc": "Journal your thoughts using a guided prompt or free-write. Link your entry to today's reading."
+        "desc": "Journal your thoughts using a guided prompt or free-write. Link your entry to today’s reading."
       }
     }
   },
@@ -81,7 +81,7 @@
     "items": {
       "free": {
         "q": "Is Arcana free to use?",
-        "a": "Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads."
+        "a": "Yes. Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads."
       },
       "accuracy": {
         "q": "How accurate are the tarot readings?",
@@ -97,11 +97,11 @@
       },
       "premium": {
         "q": "Is there a premium version?",
-        "a": "Yes! Arcana is completely free to use. When you're ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding."
+        "a": "Yes. Arcana is completely free to use. When you’re ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding."
       },
       "web": {
         "q": "Does it work on the web?",
-        "a": "Yes! Use Arcana right here on the web, or download the Android app for offline support and push notifications."
+        "a": "Yes. Use Arcana right here on the web, or download the Android app for offline support and push notifications."
       }
     }
   },
@@ -169,11 +169,11 @@
     "emailPlaceholder": "your@email.com",
     "cta": "Send me Lesson 1",
     "sending": "Sending…",
-    "success": "You're in. Check your inbox.",
+    "success": "You’re in. Check your inbox.",
     "disclaimer": "No spam. Unsubscribe with one click. 3 emails over 5 days.",
     "errors": {
       "invalidEmail": "Please enter a valid email.",
-      "signupFailed": "Couldn't sign you up — please try again in a moment."
+      "signupFailed": "Couldn’t sign you up — please try again in a moment."
     }
   }
 }

@@ -2100,7 +2100,7 @@ export function QuizzesPage() {
 
   return (
     <Page spacing="md">
-      <PageHeader title={tApp('quizzes.title')} subtitle={tApp('quizzes.subtitle')} />
+      <PageHeader title={tApp('quizzes.title')} />
 
       {loading ? (
         <div className="text-center py-12">

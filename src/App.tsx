@@ -458,7 +458,7 @@ function AppContent() {
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
-                <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
+                {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
               </Routes>
             </Suspense>
           </main>
@@ -626,7 +626,7 @@ function AppContent() {
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
-                  <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
+                  {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

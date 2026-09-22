@@ -515,7 +515,7 @@ function ReadingBody({
           ) : savedFlash ? (
             <>
               <Bookmark className="w-4 h-4 mr-2 fill-current" aria-hidden />
-              {t('celestial.findPlace.reading.saved', { defaultValue: 'Saved ✨' })}
+              {t('celestial.findPlace.reading.saved', { defaultValue: 'Saved' })}
             </>
           ) : (
             <>

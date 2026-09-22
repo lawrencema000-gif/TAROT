@@ -10,7 +10,7 @@
     "level": "等级 {{n}}",
     "xpProgress": "经验进度",
     "todaysRitual": "今日仪式",
-    "ritualComplete": "仪式完成!",
+    "ritualComplete": "仪式完成",
     "streak": "已连续 {{n}} 天,继续保持。",
     "savedToday": "今日已保存",
     "savedHighlights": "已保存的亮点",
@@ -118,7 +118,6 @@
   },
   "readings": {
     "title": "牌阵",
-    "subtitle": "选择今日的牌阵",
     "tabs": {
       "tarot": "塔罗",
       "horoscope": "星座",
@@ -204,8 +203,7 @@
       }
     },
     "dailyDraw": {
-      "title": "每日抽牌",
-      "subtitle": "点击开始你的解读"
+      "title": "每日抽牌"
     },
     "browse": {
       "title": "浏览牌组",
@@ -261,8 +259,7 @@
       "reversalNote": "逆位说明: {{text}}",
       "save": "保存",
       "saved": "已保存",
-      "newReading": "新解读",
-      "cardsSpoken": "\"牌已说话。遵循这份指引,你今天可以采取哪个小小的行动?\""
+      "newReading": "新解读"
     },
     "status": {
       "try": "试用",
@@ -341,7 +338,6 @@
   },
   "journal": {
     "title": "日记",
-    "subtitle": "回望、记住、成长。",
     "newEntry": "新条目",
     "entryPlaceholder": "今天心里有什么?",
     "titlePlaceholder": "标题(可选)",
@@ -426,7 +422,6 @@
   },
   "quizzes": {
     "title": "测试",
-    "subtitle": "探索你的内心版图",
     "questions": "题",
     "takes": "耗时",
     "minutes": "分钟",
@@ -1359,11 +1354,7 @@
   },
   "horoscope": {
     "title": "星座运势",
-    "subtitle": "今日宇宙的预报",
     "today": "今天",
-    "week": "本周",
-    "month": "本月",
-    "year": "今年",
     "energyScore": "能量评分",
     "sections": {
       "overview": "综合",
@@ -1377,9 +1368,6 @@
     "birthChart": "出生星盘",
     "compatibility": "配对",
     "transits": "行运",
-    "yourPersonalHoroscope": "你的专属运势",
-    "whatUnlocks": "解锁内容",
-    "premiumLocked": "高级版",
     "completeBirthChart": "完成出生信息以解锁",
     "enterBirthInfo": "填写出生信息",
     "tabs": {
@@ -1389,31 +1377,6 @@
       "explore": "探索"
     },
     "unlockPremium": "解锁高级版",
-    "unlockIntro": "解锁你的专属占星资料,包括个性化每日洞察、出生星盘解读与宇宙预报。",
-    "joinThousands": "成千上万的人正在发现自己的宇宙潜能",
-    "features": {
-      "dailyForecast": {
-        "title": "个性化每日预报",
-        "desc": "基于你出生星盘的专属每日运势"
-      },
-      "fullChart": {
-        "title": "完整出生星盘",
-        "desc": "包含所有行星位置与相位的完整本命盘"
-      },
-      "transits": {
-        "title": "行运日历",
-        "desc": "追踪影响你星盘的宇宙变化"
-      },
-      "forecasts": {
-        "title": "每周与每月预报",
-        "desc": "长线预测,把握宇宙时机"
-      }
-    },
-    "periods": {
-      "today": "今天",
-      "week": "本周",
-      "month": "本月"
-    },
     "general": "综合",
     "love": "爱情",
     "work": "工作",
@@ -1444,40 +1407,6 @@
     "actionStep": "行动步骤",
     "showMore": "显示更多洞察",
     "showLess": "收起",
-    "weeklyOverview": "本周概览",
-    "weekdayInitials": {
-      "mon": "一",
-      "tue": "二",
-      "wed": "三",
-      "thu": "四",
-      "fri": "五",
-      "sat": "六",
-      "sun": "日"
-    },
-    "lovePeak": "爱情高峰",
-    "careerPeak": "事业高峰",
-    "bestDay": "最佳日",
-    "peakDays": {
-      "wednesday": "周三",
-      "thursday": "周四",
-      "friday": "周五"
-    },
-    "monthlyTheme": "本月主题",
-    "moonPhaseInfluence": "月相影响",
-    "moonPhaseText": "12日的新月放大新的开始",
-    "keyDates": "关键日期",
-    "keyDatesText": "7日、15日、23日 - 高能量日",
-    "weeklyInsights": [
-      "周初带来沟通的清晰。周中有利于果断决策。周末需要休息。",
-      "周初专注于人际关系。事业问题在周中达到高峰。周五前需要财务审视。",
-      "周一开始缓慢但势头渐增。周三带来意外消息。周末有浪漫的可能。",
-      "周初创意能量高涨。周中实际事务需要关注。周六适合社交活动。"
-    ],
-    "monthlyThemes": [
-      "本月强调个人转变。15日左右出现事业机会。月底前感情生活稳定。",
-      "月初财务问题为主。月中关系发展。最后一周个人成长加速。",
-      "健康与身心占据中心。专业认可意外到来。20日前情感清晰到位。"
-    ],
     "journalButton": "日记",
     "birthChartCard": {
       "title": "出生星盘分析",
@@ -1485,12 +1414,11 @@
       "upgrade": "升级"
     },
     "paywallFeatures": {
-      "monthly": "每月星座运势",
       "birthChart": "出生星盘分析"
     },
     "share": {
       "title": "我的每日星座运势",
-      "template": "{{sign}}今日运势\n\n{{general}}\n\n肯定语:{{affirmation}}\n\n由 Arcana 生成 ✨"
+      "template": "{{sign}}今日运势\n\n{{general}}\n\n肯定语:{{affirmation}}\n\n由 Arcana 生成"
     },
     "toasts": {
       "saveFailed": "保存失败",
@@ -1689,7 +1617,6 @@
   },
   "achievements": {
     "title": "成就",
-    "subtitle": "至此的旅程",
     "noInCategory": "该类别暂无成就。",
     "errorLoading": "加载成就失败:",
     "novicesSeeker": "新手探寻者",
@@ -1776,11 +1703,11 @@
     "allSuitCards": "全部{{suit}}",
     "suitMinorLabel": "{{suit}} · 小阿卡纳",
     "elements": {
-      "fire": "火 🔥",
-      "water": "水 💧",
-      "air": "风 💨",
-      "earth": "土 🌍",
-      "spirit": "灵 ✨"
+      "fire": "火",
+      "water": "水",
+      "air": "风",
+      "earth": "土",
+      "spirit": "灵"
     },
     "suits": {
       "major": {
@@ -1854,8 +1781,6 @@
     }
   },
   "premium": {
-    "title": "解锁高级版",
-    "subtitle": "让每日修习走得更深。",
     "features": {
       "unlimited_saves": {
         "name": "无限保存",
@@ -1901,16 +1826,7 @@
     "monthly": "月付",
     "yearly": "年付",
     "lifetime": "永久",
-    "bestValue": "最划算",
-    "save": "省 {{pct}}%",
-    "perMonth": "/月",
-    "perYear": "/年",
-    "oneTime": "一次性",
-    "subscribe": "开始订阅",
-    "startFreeTrial": "开始免费试用",
     "restorePurchases": "恢复购买",
-    "termsNotice": "自动续费,可随时取消。",
-    "activeUntil": "有效期至 {{date}}",
     "badge": "高级版",
     "paywall": {
       "heading": "解锁完整牌组",
@@ -2059,22 +1975,6 @@
       }
     },
     "watchAd": {
-      "defaultTitle": "试用{{feature}}",
-      "defaultSubtitle": "观看一则短广告即可解锁此高级功能一次",
-      "contexts": {
-        "extraReading": {
-          "title": "获取额外一次解读",
-          "subtitle": "观看一则短广告,今日再解锁一次塔罗解读"
-        },
-        "deepInterpretations": {
-          "title": "解锁扩展解读",
-          "subtitle": "观看一则短广告,获得更深入的牌面解读"
-        }
-      },
-      "unlocksRemaining": "今日剩余免费解锁次数:{{remaining}}/{{total}}",
-      "watchAdToUnlock": "观看广告解锁",
-      "usedAllUnlocks": "今日免费解锁次数已用完",
-      "comeBackTomorrow": "明天再来或升级到高级版",
       "getUnlimited": "获取无限访问",
       "notNow": "暂不",
       "footerDisclaimer": "高级会员可无广告无限制使用全部功能",
@@ -2251,7 +2151,6 @@
   },
   "saved": {
     "title": "已收藏",
-    "subtitle": "你收藏的瞬间",
     "empty": "还没有收藏项",
     "emptySub": "点击任意牌阵、卡牌或洞察旁的星标即可收藏。",
     "emptySubAlt": "给牌阵、日记、测试结果点星,就会保存到这里",
@@ -2593,9 +2492,9 @@
   },
   "celebration": {
     "streak": {
-      "dedication": "令人惊叹的坚持!",
-      "ritualComplete": "仪式完成!",
-      "keepFlowing": "继续保持宇宙能量的流动!"
+      "dedication": "从开始那天起，每天都没有间断。",
+      "ritualComplete": "仪式完成",
+      "keepFlowing": "明天再来一次，记录就会延续。"
     },
     "levelUp": {
       "title": "升级!",
@@ -4222,7 +4121,6 @@
     "unlockFailed": "无法解锁",
     "insufficientBalance": "Moonstones不足——可通过每日签到或邀请获取",
     "balance": "余额：{{n}} Moonstones",
-    "priceNote": "也可通过 Stripe 以${{price}} 购买（即将推出）",
     "computing": "正在绘制你的年度地图…",
     "errorNatalMissing": "未找到你的本命盘计算结果。请在“个人资料”中重新输入出生信息。",
     "errorGeneric": "无法加载预测。稍后重试。",
@@ -4250,7 +4148,6 @@
     "unlockFailed": "无法解锁",
     "insufficientBalance": "Moonstones 不足——可通过每日签到或邀请获取",
     "balance": "余额：{{n}} Moonstones",
-    "priceNote": "也可通过 Stripe 以 ${{price}} 购买（即将上线）",
     "errorChartMissing": "未找到你的已计算本命盘。请在“个人资料”中重新输入出生信息。",
     "printCta": "保存为 PDF",
     "bigThreeHeading": "三大主轴",
@@ -4301,7 +4198,6 @@
     "unlockFailed": "无法解锁",
     "insufficientBalance": "Moonstones 不足——可通过每日签到或邀请获取",
     "balance": "余额：{{n}} Moonstones",
-    "priceNote": "也可通过 Stripe 以 ${{price}} 购买（即将推出）",
     "bestFit": "最佳匹配岗位",
     "drains": "让你耗竭的环境",
     "collaboration": "协作模式",

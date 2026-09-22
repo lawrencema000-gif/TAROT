@@ -27,7 +27,7 @@
     "invalidPassword": "Invalid password.",
     "userExists": "Try signing in instead.",
     "profileSaveFailed": "Failed to save profile. Please try again.",
-    "accountCreated": "Account created! Let's personalize your experience."
+    "accountCreated": "Account created. Let’s personalize your experience."
   },
   "signIn": {
     "heading": "Welcome back",
@@ -36,11 +36,11 @@
     "divider": "or sign in with email",
     "submit": "Sign In",
     "forgotPassword": "Forgot password?",
-    "switchToSignUp": "Don't have an account? Sign up"
+    "switchToSignUp": "Don’t have an account? Sign up"
   },
   "oauth": {
-    "welcome": "Welcome, {{name}}!",
-    "welcomeSub": "Let's personalize your experience in just a few steps",
+    "welcome": "Welcome, {{name}}.",
+    "welcomeSub": "Let’s personalize your experience in just a few steps",
     "goals": {
       "heading": "What do you want help with?",
       "hint": "Select all that apply"
@@ -54,7 +54,7 @@
       "birthTimeHint": "For deeper chart accuracy",
       "birthPlace": "Birth place",
       "birthPlaceHint": "Helps compute your natal chart later",
-      "searchPlaceholder": "Search city or town...",
+      "searchPlaceholder": "Search city or town…",
       "locationVerified": "Location verified",
       "invalidBirthDate": "Invalid birth date"
     },
@@ -81,7 +81,7 @@
     "beginJourney": "Begin Your Journey",
     "toast": {
       "saveFailed": "Failed to save profile. Please try again.",
-      "welcome": "Welcome to Arcana!"
+      "welcome": "Welcome to Arcana."
     }
   }
 }

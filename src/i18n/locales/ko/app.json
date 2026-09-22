@@ -10,7 +10,7 @@
     "level": "레벨 {{n}}",
     "xpProgress": "XP 진행도",
     "todaysRitual": "오늘의 의식",
-    "ritualComplete": "의식 완료!",
+    "ritualComplete": "의식 완료",
     "streak": "{{n}}일 연속이에요. 이대로 계속 가요.",
     "savedToday": "오늘 저장한 것",
     "savedHighlights": "저장한 하이라이트",
@@ -118,7 +118,6 @@
   },
   "readings": {
     "title": "리딩",
-    "subtitle": "오늘의 스프레드를 골라보세요",
     "tabs": {
       "tarot": "타로",
       "horoscope": "별자리",
@@ -204,8 +203,7 @@
       }
     },
     "dailyDraw": {
-      "title": "데일리 드로우",
-      "subtitle": "탭하여 리딩 시작"
+      "title": "데일리 드로우"
     },
     "browse": {
       "title": "덱 보기",
@@ -261,8 +259,7 @@
       "reversalNote": "역방향 노트: {{text}}",
       "save": "저장",
       "saved": "저장됨",
-      "newReading": "새 리딩",
-      "cardsSpoken": "\"카드가 말했습니다. 이 안내에 따라 오늘 당신이 취할 수 있는 작은 행동은 무엇인가요?\""
+      "newReading": "새 리딩"
     },
     "status": {
       "try": "시도",
@@ -341,7 +338,6 @@
   },
   "journal": {
     "title": "저널",
-    "subtitle": "돌아보고, 기억하고, 성장하세요.",
     "newEntry": "새 글",
     "entryPlaceholder": "오늘 마음에 무엇이 있나요?",
     "titlePlaceholder": "제목 (선택)",
@@ -426,7 +422,6 @@
   },
   "quizzes": {
     "title": "퀴즈",
-    "subtitle": "내면의 지도를 찾아보세요",
     "questions": "문항",
     "takes": "소요시간",
     "minutes": "분",
@@ -1359,11 +1354,7 @@
   },
   "horoscope": {
     "title": "별자리 운세",
-    "subtitle": "오늘 우주가 전하는 예보",
     "today": "오늘",
-    "week": "이번 주",
-    "month": "이번 달",
-    "year": "올해",
     "energyScore": "에너지 점수",
     "sections": {
       "overview": "전체",
@@ -1377,9 +1368,6 @@
     "birthChart": "출생 차트",
     "compatibility": "궁합",
     "transits": "트랜짓",
-    "yourPersonalHoroscope": "당신만을 위한 운세",
-    "whatUnlocks": "해제되는 기능",
-    "premiumLocked": "프리미엄",
     "completeBirthChart": "출생 정보를 입력해 해제하세요",
     "enterBirthInfo": "출생 정보 입력",
     "tabs": {
@@ -1389,31 +1377,6 @@
       "explore": "탐색"
     },
     "unlockPremium": "프리미엄 접근 해제",
-    "unlockIntro": "당신만을 위한 별자리 프로필을 해제하세요. 맞춤형 데일리 인사이트, 출생 차트 분석, 우주 예보까지.",
-    "joinThousands": "수많은 이들이 자신의 우주적 잠재력을 발견하고 있어요",
-    "features": {
-      "dailyForecast": {
-        "title": "맞춤 데일리 예보",
-        "desc": "출생 차트에 기반한 나만의 매일 운세"
-      },
-      "fullChart": {
-        "title": "완전한 출생 차트",
-        "desc": "모든 행성 배치와 어스펙트를 포함한 본격 네이털 차트"
-      },
-      "transits": {
-        "title": "트랜짓 캘린더",
-        "desc": "당신의 차트에 영향을 주는 우주적 변화 추적"
-      },
-      "forecasts": {
-        "title": "주간·월간 예보",
-        "desc": "장기 예측으로 타이밍을 읽어요"
-      }
-    },
-    "periods": {
-      "today": "오늘",
-      "week": "이번 주",
-      "month": "이번 달"
-    },
     "general": "종합",
     "love": "사랑",
     "work": "일",
@@ -1444,40 +1407,6 @@
     "actionStep": "행동 단계",
     "showMore": "더 많은 통찰 보기",
     "showLess": "간단히 보기",
-    "weeklyOverview": "주간 개요",
-    "weekdayInitials": {
-      "mon": "월",
-      "tue": "화",
-      "wed": "수",
-      "thu": "목",
-      "fri": "금",
-      "sat": "토",
-      "sun": "일"
-    },
-    "lovePeak": "사랑의 절정",
-    "careerPeak": "커리어 절정",
-    "bestDay": "최고의 날",
-    "peakDays": {
-      "wednesday": "수요일",
-      "thursday": "목요일",
-      "friday": "금요일"
-    },
-    "monthlyTheme": "이달의 테마",
-    "moonPhaseInfluence": "달의 위상 영향",
-    "moonPhaseText": "12일의 신월이 새로운 시작을 증폭시킵니다",
-    "keyDates": "주요 날짜",
-    "keyDatesText": "7일, 15일, 23일 - 에너지가 높은 날",
-    "weeklyInsights": [
-      "주 초반은 의사소통에 명확함을 가져옵니다. 주 중반은 과감한 결정에 유리하며, 주말은 휴식이 필요합니다.",
-      "주 초반에는 관계에 집중하세요. 커리어는 주 중반에 정점에 이릅니다. 금요일까지 재정을 검토하세요.",
-      "월요일은 느리게 시작하지만 추진력이 붙습니다. 수요일에는 예상치 못한 소식이 있으며, 주말에는 로맨틱한 가능성이 열립니다.",
-      "주 초반에는 창조적 에너지가 높습니다. 주 중반에는 실무가 요구됩니다. 토요일은 사교 행사에 완벽합니다."
-    ],
-    "monthlyThemes": [
-      "이번 달은 개인적 변화를 강조합니다. 15일경 커리어 기회가 나타나고, 월말에는 사랑이 안정됩니다.",
-      "월초에는 재정 문제가 지배적입니다. 월 중반에는 관계의 진전이 있고, 마지막 주에는 개인적 성장이 가속됩니다.",
-      "건강과 웰빙이 중심입니다. 전문적인 인정이 예기치 않게 찾아옵니다. 20일까지 감정의 명료함이 도착합니다."
-    ],
     "journalButton": "저널",
     "birthChartCard": {
       "title": "출생 차트 분석",
@@ -1485,12 +1414,11 @@
       "upgrade": "업그레이드"
     },
     "paywallFeatures": {
-      "monthly": "월간 호로스코프",
       "birthChart": "출생 차트 분석"
     },
     "share": {
       "title": "나의 오늘의 호로스코프",
-      "template": "{{sign}} 오늘의 호로스코프\n\n{{general}}\n\n확언: {{affirmation}}\n\nArcana에서 생성 ✨"
+      "template": "{{sign}} 오늘의 호로스코프\n\n{{general}}\n\n확언: {{affirmation}}\n\nArcana에서 생성"
     },
     "toasts": {
       "saveFailed": "저장에 실패했습니다",
@@ -1689,7 +1617,6 @@
   },
   "achievements": {
     "title": "트로피",
-    "subtitle": "지금까지의 여정",
     "noInCategory": "이 카테고리엔 아직 업적이 없어요.",
     "errorLoading": "업적을 불러오지 못했어요:",
     "novicesSeeker": "노비스 시커",
@@ -1776,11 +1703,11 @@
     "allSuitCards": "{{suit}} 전체",
     "suitMinorLabel": "{{suit}} · 마이너 아르카나",
     "elements": {
-      "fire": "불 🔥",
-      "water": "물 💧",
-      "air": "공기 💨",
-      "earth": "땅 🌍",
-      "spirit": "영혼 ✨"
+      "fire": "불",
+      "water": "물",
+      "air": "공기",
+      "earth": "땅",
+      "spirit": "영혼"
     },
     "suits": {
       "major": {
@@ -1854,8 +1781,6 @@
     }
   },
   "premium": {
-    "title": "프리미엄 해제",
-    "subtitle": "당신의 하루 수행을 더 깊이.",
     "features": {
       "unlimited_saves": {
         "name": "무제한 저장",
@@ -1901,16 +1826,7 @@
     "monthly": "월간",
     "yearly": "연간",
     "lifetime": "평생",
-    "bestValue": "가장 인기",
-    "save": "{{pct}}% 할인",
-    "perMonth": "/월",
-    "perYear": "/년",
-    "oneTime": "1회 결제",
-    "subscribe": "구독 시작",
-    "startFreeTrial": "무료 체험 시작",
     "restorePurchases": "구매 복원",
-    "termsNotice": "자동 갱신. 언제든 취소 가능.",
-    "activeUntil": "만료일 {{date}}",
     "badge": "프리미엄",
     "paywall": {
       "heading": "전체 덱을 잠금 해제",
@@ -2059,22 +1975,6 @@
       }
     },
     "watchAd": {
-      "defaultTitle": "{{feature}} 체험하기",
-      "defaultSubtitle": "짧은 광고를 시청하면 이 프리미엄 기능을 1회 사용할 수 있습니다",
-      "contexts": {
-        "extraReading": {
-          "title": "리딩 1회 더 받기",
-          "subtitle": "짧은 광고를 시청하면 오늘 타로 리딩을 1회 더 받을 수 있습니다"
-        },
-        "deepInterpretations": {
-          "title": "확장 해석 잠금 해제",
-          "subtitle": "짧은 광고를 시청하면 카드를 더 깊이 들여다볼 수 있습니다"
-        }
-      },
-      "unlocksRemaining": "오늘 남은 무료 해제: {{remaining}}/{{total}}회",
-      "watchAdToUnlock": "광고 보고 잠금 해제",
-      "usedAllUnlocks": "오늘 무료 해제 횟수를 모두 사용했습니다",
-      "comeBackTomorrow": "내일 다시 오거나 프리미엄으로 업그레이드하세요",
       "getUnlimited": "무제한 이용권 받기",
       "notNow": "나중에",
       "footerDisclaimer": "프리미엄 회원은 광고 없이 모든 기능을 무제한으로 이용할 수 있습니다",
@@ -2251,7 +2151,6 @@
   },
   "saved": {
     "title": "저장됨",
-    "subtitle": "북마크한 순간들",
     "empty": "아직 저장한 항목이 없어요",
     "emptySub": "리딩, 카드, 인사이트의 별표를 눌러 저장해 보세요.",
     "emptySubAlt": "리딩, 저널, 퀴즈 결과에 별표를 누르면 여기에 저장돼요",
@@ -2593,9 +2492,9 @@
   },
   "celebration": {
     "streak": {
-      "dedication": "놀라운 헌신입니다!",
-      "ritualComplete": "의식 완료!",
-      "keepFlowing": "우주의 에너지를 계속 유지하세요!"
+      "dedication": "시작한 날부터 매일, 빠짐없이.",
+      "ritualComplete": "의식 완료",
+      "keepFlowing": "내일 한 번 더 하면 기록이 이어집니다."
     },
     "levelUp": {
       "title": "레벨 업!",
@@ -4222,7 +4121,6 @@
     "unlockFailed": "해제할 수 없음",
     "insufficientBalance": "Moonstones가 부족합니다 — 데일리 체크인이나 초대로 더 모으세요",
     "balance": "잔액: {{n}} Moonstones",
-    "priceNote": "Stripe로 ${{price}} 결제도 가능 (곧 제공)",
     "computing": "당신의 올해를 그리는 중…",
     "errorNatalMissing": "계산된 출생 차트를 찾을 수 없습니다. 프로필에서 출생 정보를 다시 입력하세요.",
     "errorGeneric": "예보를 불러올 수 없습니다. 잠시 후 다시 시도하세요.",
@@ -4250,7 +4148,6 @@
     "unlockFailed": "잠금 해제에 실패했어요",
     "insufficientBalance": "Moonstones가 부족합니다 — 매일 출석이나 초대로 더 모으세요",
     "balance": "잔액: {{n}} Moonstones",
-    "priceNote": "Stripe로 ${{price}} 결제도 가능 (곧 제공)",
     "errorChartMissing": "계산된 출생 차트를 찾지 못했어요. 프로필에서 출생 정보를 다시 입력해주세요.",
     "printCta": "PDF로 저장",
     "bigThreeHeading": "Big Three",
@@ -4301,7 +4198,6 @@
     "unlockFailed": "잠금 해제할 수 없습니다",
     "insufficientBalance": "문스톤이 부족합니다 — 데일리 체크인이나 초대로 더 모으세요",
     "balance": "잔액: {{n}} 문스톤",
-    "priceNote": "Stripe로 ${{price}}에 구매 가능(곧 제공)",
     "bestFit": "최적 역할",
     "drains": "당신을 소모시키는 환경",
     "collaboration": "협업 패턴",

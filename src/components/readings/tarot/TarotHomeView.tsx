@@ -64,7 +64,6 @@ export function TarotHomeView({
           />
         </div>
         <h2 className="font-display text-xl text-mystic-100 mb-1">{t('readings.dailyDraw.title')}</h2>
-        <p className="text-mystic-400 text-sm">{t('readings.dailyDraw.subtitle')}</p>
       </Card>
 
       <div>

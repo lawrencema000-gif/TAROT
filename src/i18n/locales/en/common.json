@@ -58,12 +58,13 @@
     "readMore": "Read more",
     "share": "Share",
     "copy": "Copy",
-    "copied": "Copied!",
+    "copied": "Copied.",
     "saved": "Saved",
-    "shareFailed": "Couldn't share. Try again.",
+    "shareFailed": "Couldn’t share. Try again.",
     "upgrade": "Upgrade",
     "restore": "Restore purchases",
-    "manage": "Manage subscription"
+    "manage": "Manage subscription",
+    "loading": "Loading…"
   },
   "labels": {
     "email": "Email",
@@ -89,7 +90,7 @@
     "generic": "Something went wrong. Please try again.",
     "network": "Network error. Check your connection.",
     "unauthorized": "Please sign in to continue.",
-    "forbidden": "You don't have permission for that.",
+    "forbidden": "You don’t have permission for that.",
     "notFound": "Not found.",
     "invalidEmail": "Please enter a valid email address.",
     "emailTooLong": "Email address is too long.",
@@ -135,9 +136,9 @@
     "savedSuccess": "Saved.",
     "deletedSuccess": "Deleted.",
     "copiedSuccess": "Copied to clipboard.",
-    "welcomeBack": "Welcome back!",
+    "welcomeBack": "Welcome back.",
     "signedOut": "Signed out.",
-    "offline": "You're offline. Some features are unavailable.",
+    "offline": "You’re offline. Some features are unavailable.",
     "reconnected": "Back online.",
     "updateAvailable": "A new version is available.",
     "languageChanged": "Language changed."

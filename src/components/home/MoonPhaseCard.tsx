@@ -47,7 +47,7 @@ export function MoonPhaseCard() {
         <p className="text-[10px] uppercase tracking-wider text-mystic-500 mb-1">
           {t('moon.ritual', { defaultValue: 'Tonight\'s ritual' })}
         </p>
-        <p className="text-xs text-mystic-400 leading-relaxed italic">
+        <p className="text-xs text-mystic-400 leading-relaxed">
           {t(`moon.phase.${phase.key}.ritual`, { defaultValue: phase.ritual })}
         </p>
       </div>

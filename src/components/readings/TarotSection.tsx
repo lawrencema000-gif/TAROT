@@ -1202,12 +1202,6 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
               )}
             </div>
 
-            <Card padding="md" className="bg-gold/5 border-gold/20">
-              <p className="reading-copy">
-                {t('readings.revealView.cardsSpoken')}
-              </p>
-            </Card>
-
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" onClick={handleSaveReading}>
                 {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
@@ -1255,7 +1249,6 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
               )}
             </div>
             <h2 className="font-display text-xl text-mystic-100 mb-1">{t('readings.dailyDraw.title')}</h2>
-            <p className="text-mystic-400 text-sm">{t('readings.dailyDraw.subtitle')}</p>
           </Card>
 
           <div>

@@ -8,8 +8,7 @@
  * parent — this component is pure presentation.
  */
 import { useRef, type CSSProperties } from 'react';
-import {
-  Eye,
+import { ChevronLeft, Eye,
   Feather,
   Bookmark,
   BookmarkCheck,
@@ -20,8 +19,7 @@ import {
   Heart,
   Briefcase,
   ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
+  ArrowDown } from 'lucide-react';
 import { MysticalStar } from '../../ui/MysticalStar';
 import { Card, Button, Chip, Tabs, Tag, ReadingProse } from '../../ui';
 import { useT } from '../../../i18n/useT';
@@ -152,6 +150,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
           onClick={onBack}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
+          <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
         </button>
         <button
@@ -217,7 +216,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       style={BACKFACE}
                     >
                       {cardBackUrl ? (
-                        <img src={cardBackUrl} alt="Card Back" className="w-full h-full object-cover" />
+                        <img src={cardBackUrl} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
                       ) : (
                         <div className="text-center">
                           <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors duration-base">
@@ -463,7 +462,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
               onClick={onShare}
             >
               <Share2 className="w-4 h-4" />
-              <span className="text-xs">{t('readings.revealView.share', { defaultValue: 'Share' })}</span>
+              <span className="text-xs">{t('readings.revealView.share', { defaultValue: 'Share this reading' })}</span>
             </Button>
             <Button variant="gold" onClick={onNewReading}>
               <span className="text-xs">{t('readings.revealView.newReading')}</span>

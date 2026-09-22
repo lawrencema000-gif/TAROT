@@ -241,8 +241,8 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
             >
               <Send className="w-4 h-4 mr-1" />
               {isWhisperingWell
-                ? t('community.whisperButton', { defaultValue: 'Whisper' })
-                : t('community.postButton', { defaultValue: 'Post' })}
+                ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                : t('community.postButton', { defaultValue: 'Write a post' })}
             </Button>
           ) : undefined
         }
@@ -356,7 +356,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
   const [reportOpen, setReportOpen] = useState(false);
 
   const displayName = post.isAnonymous
-    ? t('community.anonymous', { defaultValue: 'Anonymous seeker' })
+    ? t('community.anonymous', { defaultValue: 'Anonymous' })
     : post.authorDisplayName || 'User';
 
   return (
@@ -603,7 +603,7 @@ function Composer({
           ? t('community.posting', { defaultValue: 'Posting...' })
           : isWW
             ? t('community.whisperingWell.send', { defaultValue: 'Send whisper' })
-            : t('community.send', { defaultValue: 'Post' })}
+            : t('community.publishPost', { defaultValue: 'Publish my post' })}
       </Button>
     </Page>
   );
@@ -722,7 +722,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
             <div className="flex items-center gap-2 text-xs text-mystic-500 mb-2">
               <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
                 {c.isAnonymous
-                  ? t('community.anonymous', { defaultValue: 'Anonymous seeker' })
+                  ? t('community.anonymous', { defaultValue: 'Anonymous' })
                   : c.authorDisplayName || 'User'}
               </span>
               <span>·</span>
@@ -756,7 +756,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
               </span>
             </label>
             <Button variant="primary" onClick={submitComment} disabled={submitting || !newComment.trim()} className="text-sm">
-              {t('community.send', { defaultValue: 'Post' })}
+              {t('community.send', { defaultValue: 'Post my comment' })}
             </Button>
           </div>
         </Card>

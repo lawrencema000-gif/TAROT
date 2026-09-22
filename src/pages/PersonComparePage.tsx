@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { people as peopleDal } from '../dal';
 import { supabase } from '../lib/supabase';
 import { type NatalChart, PLANET_GLYPH, SIGN_GLYPH, computeSynastry, synastryScore } from '../lib/chart';
+import { useT } from '../i18n/useT';
 
 type CompareTab = 'synastry' | 'composite' | 'davison' | 'progressed-composite';
 const TABS: { key: CompareTab; label: string; blurb: string }[] = [
@@ -29,6 +30,7 @@ async function chartFor(body: Record<string, unknown>): Promise<NatalChart | nul
 export function PersonComparePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useT('app');
   const { profile } = useAuth();
   const [name, setName] = useState('');
   const [mine, setMine] = useState<NatalChart | null>(null);
@@ -59,19 +61,19 @@ export function PersonComparePage() {
   const load = useCallback(async () => {
     if (!id || !profile) return;
     setLoading(true); setErr(null);
-    if (!profile.birthDate) { setErr('Add your own birth date in your profile to compare charts.'); setLoading(false); return; }
+    if (!profile.birthDate) { setErr(t('people.compare.needOwnBirth', { defaultValue: 'Add your own birth date in your profile to compare charts.' })); setLoading(false); return; }
     const pRes = await peopleDal.getById(id);
-    if (!pRes.ok || !pRes.data) { setErr('Person not found.'); setLoading(false); return; }
+    if (!pRes.ok || !pRes.data) { setErr(t('people.notFound', { defaultValue: "We couldn't find this person in your circle." })); setLoading(false); return; }
     setName(pRes.data.name);
     const [own, other] = await Promise.all([
       chartFor({ birthDate: profile.birthDate, birthTime: profile.birthTime ?? null, birthUtc: profile.birthUtc ?? null, lat: profile.birthLat ?? null, lon: profile.birthLon ?? null, timezone: profile.birthTz ?? profile.timezone ?? null }),
       chartFor({ personId: id }),
     ]);
-    if (!own || !other) { setErr('Could not compute both charts.'); setLoading(false); return; }
+    if (!own || !other) { setErr(t('people.compare.castFailed', { defaultValue: "Couldn't cast both charts — check your connection and try again." })); setLoading(false); return; }
     setMine(own); setTheirs(other);
     setLoading(false);
     import('../data/interpretations').then(setInterp);
-  }, [id, profile]);
+  }, [id, profile, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -79,7 +81,7 @@ export function PersonComparePage() {
   if (err) return (
     <div className="p-6 text-center space-y-4">
       <p className="text-mystic-300">{err}</p>
-      <Button variant="ghost" onClick={() => navigate(-1)}>Back</Button>
+      <Button variant="ghost" onClick={() => navigate(-1)}>{t('people.compare.goBack', { defaultValue: 'Go back' })}</Button>
     </div>
   );
 
@@ -95,8 +97,8 @@ export function PersonComparePage() {
         align="center"
         onBack={() => navigate(`/people/${id}`)}
         backLabel={name}
-        eyebrow="Synastry"
-        title={<>You &amp; {name}</>}
+        eyebrow={t('people.compare.eyebrow', { defaultValue: 'Synastry' })}
+        title={t('people.compare.title', { defaultValue: 'You and {{name}}', name })}
       />
 
       <div className="flex items-center justify-center gap-3 text-mystic-300 -mt-3">
@@ -107,14 +109,14 @@ export function PersonComparePage() {
 
       {/* Chart-type tabs */}
       <Tabs
-        items={TABS.map((tDef) => ({ id: tDef.key, label: tDef.label }))}
+        items={TABS.map((tDef) => ({ id: tDef.key, label: t(`people.compare.tabs.${tDef.key}.label`, { defaultValue: tDef.label }) }))}
         value={tab}
         onChange={setTab}
-        aria-label="Chart type"
+        aria-label={t('people.compare.chartTypeAria', { defaultValue: 'Chart type' })}
         size="sm"
         idPrefix="compare"
       />
-      <p className="text-center text-ui text-mystic-400 -mt-3">{TABS.find((tDef) => tDef.key === tab)?.blurb}</p>
+      <p className="text-center text-ui text-mystic-400 -mt-3">{t(`people.compare.tabs.${tab}.blurb`, { defaultValue: TABS.find((tDef) => tDef.key === tab)?.blurb ?? '' })}</p>
 
       {tab !== 'synastry' ? (
         relLoading && !relCharts[tab] ? (
@@ -140,7 +142,7 @@ export function PersonComparePage() {
             )}
           </>
         ) : (
-          <Card className="p-6 text-center"><p className="text-ui text-mystic-300">Couldn't cast this chart. Try again.</p></Card>
+          <Card className="p-6 text-center"><p className="text-ui text-mystic-300">{t('people.compare.tabFailed', { defaultValue: "Couldn't cast this chart — check your connection and try again." })}</p></Card>
         )
       ) : (
       <>
@@ -183,7 +185,7 @@ export function PersonComparePage() {
       </>
       )}
 
-      <p className="text-caption text-mystic-500 italic">For reflection &amp; entertainment. These charts describe dynamics, not destiny.</p>
+      <p className="text-caption text-mystic-500 italic">{t('people.compare.disclaimer', { defaultValue: 'For reflection and entertainment. These charts describe dynamics, not destiny.' })}</p>
     </Page>
   );
 }

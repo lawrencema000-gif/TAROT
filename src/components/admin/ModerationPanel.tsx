@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Shield, AlertTriangle, RefreshCw, CheckCircle2, Clock, Flag } from 'lucide-react';
 import { Button, Badge, Tag, toast } from '../ui';
 import { supabase } from '../../lib/supabase';
+import { useT } from '../../i18n/useT';
 
 /**
  * Moderation admin panel — surfaces the audit tables the community-moderate
@@ -46,6 +47,7 @@ const VERDICT_STYLES: Record<ModerationEvent['verdict'], string> = {
 };
 
 export function ModerationPanel() {
+  const { t } = useT('app');
   const [events, setEvents] = useState<ModerationEvent[]>([]);
   const [crisisFlags, setCrisisFlags] = useState<CrisisFlag[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,17 +74,19 @@ export function ModerationPanel() {
     ]);
 
     if (eventsRes.error) {
-      toast(`Moderation events: ${eventsRes.error.message}`, 'error');
+      console.error('[Moderation] Events load failed:', eventsRes.error.message);
+      toast(t('admin.moderation.toasts.loadEventsFailed', { defaultValue: 'Couldn’t load moderation events — tap Refresh to try again.' }), 'error');
     } else {
       setEvents((eventsRes.data ?? []) as ModerationEvent[]);
     }
     if (crisisRes.error) {
-      toast(`Crisis flags: ${crisisRes.error.message}`, 'error');
+      console.error('[Moderation] Crisis flags load failed:', crisisRes.error.message);
+      toast(t('admin.moderation.toasts.loadFlagsFailed', { defaultValue: 'Couldn’t load crisis flags — tap Refresh to try again.' }), 'error');
     } else {
       setCrisisFlags((crisisRes.data ?? []) as CrisisFlag[]);
     }
     setLoading(false);
-  }, [showReviewed]);
+  }, [showReviewed, t]);
 
   useEffect(() => {
     if (expanded) load();
@@ -94,7 +98,8 @@ export function ModerationPanel() {
       .update({ reviewed: true, reviewed_at: new Date().toISOString() })
       .eq('id', id);
     if (error) {
-      toast(error.message, 'error');
+      console.error('[Moderation] Mark reviewed failed:', error.message);
+      toast(t('admin.moderation.toasts.markReviewedFailed', { defaultValue: 'Couldn’t mark that event reviewed — refresh and try again.' }), 'error');
       return;
     }
     setEvents((prev) => prev.filter((e) => e.id !== id));
@@ -107,7 +112,8 @@ export function ModerationPanel() {
       .update({ acknowledged: true, acknowledged_at: new Date().toISOString() })
       .eq('id', id);
     if (error) {
-      toast(error.message, 'error');
+      console.error('[Moderation] Acknowledge failed:', error.message);
+      toast(t('admin.moderation.toasts.acknowledgeFailed', { defaultValue: 'Couldn’t acknowledge that flag — refresh and try again.' }), 'error');
       return;
     }
     setCrisisFlags((prev) => prev.filter((c) => c.id !== id));

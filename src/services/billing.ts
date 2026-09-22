@@ -209,6 +209,25 @@ class NativeBillingService implements BillingService {
         const product = pkg.product;
         let period: 'month' | 'year' | 'lifetime' | undefined;
         let isLifetime = false;
+        // Trials. RevenueCat exposes an intro price on both stores and, on
+        // Android, subscription options with a free phase; without reading
+        // them the paywall's trial line and the reminder's trial copy never
+        // showed on a real build even when the store had an intro offer.
+        const rc = product as typeof product & {
+          introPrice?: { price: number; periodUnit?: string; periodNumberOfUnits?: number } | null;
+          subscriptionOptions?: Array<{ freePhase?: { billingPeriod?: { unit?: string; value?: number } | null } | null }> | null;
+        };
+        const freePhase = rc.subscriptionOptions?.find((o) => o?.freePhase)?.freePhase ?? null;
+        const introFree = rc.introPrice && rc.introPrice.price === 0 ? rc.introPrice : null;
+        const toDays = (unit?: string, value?: number) => {
+          if (!value) return undefined;
+          const u = (unit || '').toUpperCase();
+          return u.startsWith('WEEK') ? value * 7 : u.startsWith('MONTH') ? value * 30 : u.startsWith('YEAR') ? value * 365 : value;
+        };
+        const hasTrial = Boolean(freePhase || introFree);
+        const trialDays = freePhase
+          ? toDays(freePhase.billingPeriod?.unit, freePhase.billingPeriod?.value)
+          : introFree ? toDays(introFree.periodUnit, introFree.periodNumberOfUnits) : undefined;
 
         if (product.subscriptionPeriod) {
           const periodUnit = product.subscriptionPeriod.toLowerCase();
@@ -231,6 +250,8 @@ class NativeBillingService implements BillingService {
           currency: product.currencyCode,
           period,
           isLifetime,
+          hasTrial,
+          trialDays,
           rcPackage: pkg,
         };
       });
@@ -306,6 +327,7 @@ class NativeBillingService implements BillingService {
           console.error('[RevenueCat] Available product IDs:', products.map(p => p.id));
           return {
             success: false,
+            errorKey: 'billing.productUnavailable',
             error: 'Product not available. Please check RevenueCat configuration.',
           };
         }
@@ -314,6 +336,7 @@ class NativeBillingService implements BillingService {
           console.error('[RevenueCat] Product found but no rcPackage:', foundProduct);
           return {
             success: false,
+            errorKey: 'billing.productUnavailable',
             error: 'Product not configured in RevenueCat. Please set up offerings.',
           };
         }
@@ -506,7 +529,12 @@ class WebBillingService implements BillingService {
       if (!billingCheck.allowed) {
         return {
           success: false,
-          errorKey: 'billing.alreadyPremium',
+          errorKey:
+            billingCheck.code === 'mobile'
+              ? 'billing.alreadyPremiumMobile'
+              : billingCheck.code === 'web'
+                ? 'billing.alreadyPremiumWeb'
+                : 'billing.alreadyPremium',
           error: billingCheck.reason || 'Already have premium',
         };
       }
@@ -577,6 +605,7 @@ class WebBillingService implements BillingService {
       console.error('[Stripe] Purchase error:', error);
       return {
         success: false,
+        errorKey: 'billing.purchaseFailed',
         error: error instanceof Error ? error.message : 'Purchase failed',
       };
     }

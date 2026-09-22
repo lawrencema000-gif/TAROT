@@ -143,7 +143,7 @@ export function BaziAIReadingPanel({
           onClick={() => doFetch(true)}
           disabled={loading}
           className="text-meta text-mystic-400 hover:text-mystic-200 inline-flex items-center gap-1 disabled:opacity-50"
-          title="Regenerate (uses one Gemini call)"
+          title="Regenerate this reading"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
           Regenerate

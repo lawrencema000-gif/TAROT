@@ -15,7 +15,7 @@ import {
 
 describe('validateEmail', () => {
   it('rejects empty string', () => {
-    expect(validateEmail('')).toEqual({ valid: false, error: 'Email is required' });
+    expect(validateEmail('')).toEqual({ valid: false, error: 'common:errors.emailRequired' });
   });
 
   it('rejects missing @', () => {

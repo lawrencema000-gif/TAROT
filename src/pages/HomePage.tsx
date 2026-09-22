@@ -325,19 +325,19 @@ export function HomePage() {
 
   const getDisplayName = () => {
     if (!profile?.displayName || profile.displayName.trim() === '') {
-      return t('home.seeker');
+      return '';
     }
 
     const name = profile.displayName.trim();
     const local = name.includes('@') ? name.split('@')[0] : name;
 
-    // Fallback to "Seeker" for obviously auto-generated handles —
+    // Omit the name for obviously auto-generated handles —
     // long, digit-heavy, or dash-heavy strings (e.g. `arcana-qa-auth-1776994003021`
     // from signup fallback) look hostile in a welcome header.
     const tooManyDashes = (local.match(/-/g)?.length ?? 0) >= 3;
     const mostlyDigits = (local.match(/\d/g)?.length ?? 0) / local.length > 0.4;
     if (local.length > 20 || tooManyDashes || mostlyDigits) {
-      return t('home.seeker');
+      return '';
     }
 
     if (name.includes('@') || /[._-]/.test(name)) {
@@ -346,7 +346,7 @@ export function HomePage() {
         .filter(Boolean)
         .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(' ');
-      return formatted || t('home.seeker');
+      return formatted;
     }
 
     return name;
@@ -387,8 +387,14 @@ export function HomePage() {
     <Page spacing="md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <EyebrowLabel className="!text-mystic-400">{greeting()}</EyebrowLabel>
-          <h1 className="heading-display-xl text-mystic-100 mt-1 truncate">{displayName}.</h1>
+          {displayName ? (
+            <>
+              <EyebrowLabel className="!text-mystic-400">{greeting()}</EyebrowLabel>
+              <h1 className="heading-display-xl text-mystic-100 mt-1 truncate">{displayName}.</h1>
+            </>
+          ) : (
+            <h1 className="heading-display-xl text-mystic-100 truncate">{greeting()}.</h1>
+          )}
           {profile?.seekerRank && (
             <div className="flex items-center gap-2 mt-1.5">
               <span className="text-xs text-gold">{t('home.level', { n: profile.level })}</span>
@@ -639,7 +645,7 @@ export function HomePage() {
               onClick={() => openOverlay('saved')}
               className="text-xs text-gold hover:text-gold-light transition-colors"
             >
-              {t('common:actions.viewAll')}
+              {t('home.seeAllSaved', { defaultValue: 'See all saved' })}
             </button>
           </div>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">

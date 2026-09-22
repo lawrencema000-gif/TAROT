@@ -100,7 +100,8 @@ export function CelestialBirthDataForm({ onSaved }: Props) {
     });
     setSaving(false);
     if (saveError) {
-      setError(saveError.message);
+      console.error('[CelestialBirthDataForm] Save failed:', saveError.message);
+      setError(t('celestial.form.saveFailed', { defaultValue: 'Couldn’t save your birth details — check your connection and try again.' }) as string);
       return;
     }
     onSaved();

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useT } from '../i18n/useT';
 import { Link } from 'react-router-dom';
 import { Compass, ChevronRight } from 'lucide-react';
 import { PageHeader, Section } from '../components/ui';
@@ -14,6 +15,7 @@ const SECTIONS: { id: AstroCategory; label: string; description: string }[] = [
 ];
 
 export function AstrologyLearnPage() {
+  const { t } = useT('app');
   useEffect(() => {
     setPageMeta(
       'Astrology Learn — Signs, Planets, Houses & Aspects',
@@ -53,7 +55,7 @@ export function AstrologyLearnPage() {
       <PageHeader
         className="mb-8"
         icon={<Compass />}
-        title="Astrology Learn"
+        title={t('astrologyLearn.title', { defaultValue: 'Astrology' })}
         subtitle={`${astrologyEntries.length} entries — every sign, planet, house, and aspect with full rulerships, correspondences, and frequently asked questions.`}
       />
 

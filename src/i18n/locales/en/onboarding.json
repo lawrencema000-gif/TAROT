@@ -1,12 +1,14 @@
 {
   "language": {
     "title": "Choose your language",
-    "subtitle": "You can change this later in Settings."
+    "subtitle": "You can change this later in Settings.",
+    "saveCta": "Save my language",
+    "cta": "Continue with this language"
   },
   "welcome": {
     "heading": "Your daily ritual starts here.",
     "subheading": "Tarot, astrology, and personality insights — beautifully combined.",
-    "cta": "Get Started",
+    "cta": "Set up my account",
     "alreadyHaveAccount": "I already have an account"
   },
   "createAccount": {
@@ -18,15 +20,15 @@
     "passwordPlaceholder": "Password (min 8 chars, letters + numbers)",
     "newsletter": "Subscribe to newsletters and promotions. Get cosmic insights, tips, and exclusive offers.",
     "ageConfirm": "I confirm I am at least 13 years old and agree to the Terms of Service.",
-    "submit": "Create Account",
+    "submit": "Create my account",
     "switchToSignIn": "Already have an account? Sign in",
-    "back": "Back"
+    "back": "Previous step"
   },
   "toast": {
-    "invalidEmail": "Please enter a valid email.",
-    "invalidPassword": "Invalid password.",
+    "invalidEmail": "That email doesn’t look right — check it and try again.",
+    "invalidPassword": "Use at least 8 characters with both letters and numbers.",
     "userExists": "Try signing in instead.",
-    "profileSaveFailed": "Failed to save profile. Please try again.",
+    "profileSaveFailed": "Your account was created, but your profile didn’t save — check your connection and sign in to continue.",
     "accountCreated": "Account created. Let’s personalize your experience."
   },
   "signIn": {
@@ -34,7 +36,7 @@
     "subheading": "Pick up where you left off",
     "googleCta": "Continue with Google",
     "divider": "or sign in with email",
-    "submit": "Sign In",
+    "submit": "Sign in",
     "forgotPassword": "Forgot password?",
     "switchToSignUp": "Don’t have an account? Sign up"
   },
@@ -56,7 +58,7 @@
       "birthPlaceHint": "Helps compute your natal chart later",
       "searchPlaceholder": "Search city or town…",
       "locationVerified": "Location verified",
-      "invalidBirthDate": "Invalid birth date"
+      "invalidBirthDate": "That birth date doesn’t look right — check it and try again."
     },
     "tone": {
       "heading": "Your cosmic tone",
@@ -75,13 +77,16 @@
       }
     },
     "notifications": {
-      "reminderTime": "Reminder time"
+      "reminderTime": "Reminder time",
+      "dailyPromise": "One reminder a day, at the time you choose. No spam.",
+      "webNote": "Reminders arrive in the Arcana app on your phone. Your choice is saved for when you install it."
     },
-    "next": "Next",
-    "beginJourney": "Begin Your Journey",
+    "next": "Save and continue",
+    "beginJourney": "Begin my first ritual",
     "toast": {
-      "saveFailed": "Failed to save profile. Please try again.",
+      "saveFailed": "Couldn’t save your details — check your connection and try again.",
       "welcome": "Welcome to Arcana."
-    }
+    },
+    "back": "Previous step"
   }
 }

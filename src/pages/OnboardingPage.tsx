@@ -115,12 +115,12 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const handleEmailSignup = async () => {
     const emailResult = validateEmail(email);
     if (!emailResult.valid) {
-      toast(emailResult.error || t('toast.invalidEmail'), 'error');
+      toast(t(emailResult.error ?? 'toast.invalidEmail'), 'error');
       return;
     }
     const passwordResult = validatePassword(password);
     if (!passwordResult.valid) {
-      toast(passwordResult.error || t('toast.invalidPassword'), 'error');
+      toast(t(passwordResult.error ?? 'toast.invalidPassword'), 'error');
       return;
     }
 
@@ -230,7 +230,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   }}
                   size="lg"
                 >
-                  {t('common:actions.continue')}
+                  {t('language.cta', { defaultValue: 'Continue with this language' })}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>

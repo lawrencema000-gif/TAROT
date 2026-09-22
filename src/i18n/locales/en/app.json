@@ -8,8 +8,8 @@
     },
     "subtitle": "Three parts: your horoscope, one card, one question.",
     "level": "Level {{n}}",
-    "xpProgress": "XP Progress",
-    "todaysRitual": "Today’s Ritual",
+    "xpProgress": "XP progress",
+    "todaysRitual": "Today’s ritual",
     "ritualComplete": "Ritual complete",
     "quickReading": "3-second reading",
     "quickReadingSub": "Ask anything",
@@ -28,19 +28,18 @@
     "eveningRitual": "Evening Ritual",
     "savedToHighlights": "Saved to highlights",
     "copiedToClipboard": "Copied to clipboard",
-    "seeker": "Seeker",
     "dayStreakLabel": "day streak",
     "xpValue": "{{current}} / {{required}} XP",
     "ritualReady": {
       "title": "Your ritual is ready.",
       "sub": "Pull one card, then write one honest sentence."
     },
-    "startTodaysRitual": "Start Today’s Ritual",
+    "startTodaysRitual": "Start today's ritual",
     "ritualCards": {
-      "todaysEnergy": "Today’s Energy",
-      "yourPrompt": "Your Prompt",
+      "todaysEnergy": "Today’s energy",
+      "yourPrompt": "Your prompt",
       "reflection": "Reflection",
-      "yourCard": "Your Card",
+      "yourCard": "Your card",
       "tapToReveal": "Tap to reveal",
       "reversed": "Reversed",
       "upright": "Upright",
@@ -57,22 +56,23 @@
     },
     "xpEarned": "+{{xp}} XP earned.",
     "removedFromSaved": "Removed from saved",
-    "exploreMore": "Beyond today's ritual"
+    "exploreMore": "Beyond today's ritual",
+    "seeAllSaved": "See all saved"
   },
   "auth": {
-    "welcomeBack": "Welcome Back",
+    "welcomeBack": "Welcome back",
     "signInSub": "Sign in to continue your journey",
     "newToArcana": "New to Arcana?",
-    "verifyEmail": "Verify Your Email",
-    "checkEmail": "Check Your Email",
+    "verifyEmail": "Verify your email",
+    "checkEmail": "Check your email",
     "verificationSent": "Verification email sent.",
     "resendVerification": "Resend verification email",
-    "resendFailed": "Failed to resend verification email.",
-    "resetPassword": "Reset Password",
+    "resendFailed": "Couldn’t send the verification email — check the address and try again.",
+    "resetPassword": "Reset password",
     "enterEmailForReset": "Enter your email to receive a password reset link",
     "enterEmail": "Please enter your email address.",
     "resetSent": "Reset link sent. Check your inbox.",
-    "resetFailed": "Failed to send reset email. Please try again.",
+    "resetFailed": "Couldn’t send the reset link — check the address and try again.",
     "sendResetLink": "Send reset link",
     "forgotPassword": "Forgot password?",
     "backToSignIn": "Back to sign in",
@@ -94,9 +94,12 @@
     "checkSpam": "Check your spam folder if you don’t see it.",
     "resetSentTo": "We’ve sent a reset link to {{email}}",
     "resetDidntReceive": "Didn’t receive the email? Check your spam folder or try again.",
-    "tryAgain": "Try Again",
+    "tryAgain": "Try again",
     "orDivider": "or",
-    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy."
+    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "bootstrap": {
+      "signInAgain": "Sign in again"
+    }
   },
   "cardMeaning": {
     "yesNo": {
@@ -136,7 +139,7 @@
     "needBirthDate": {
       "title": "We need your birth date first",
       "body": "Your celestial map is drawn from your birth chart. Add your birth date (and time, if you know it) on the Profile page and your map will be ready.",
-      "cta": "Go to Profile",
+      "cta": "Go to profile",
       "secondary": "Edit full profile instead"
     },
     "previewLock": {
@@ -182,7 +185,8 @@
       "placePlaceholder": "e.g. Tokyo, Japan",
       "accuracyHint": "Birth time matters a lot here: without it we assume noon, and your rising and midheaven lines can land on the wrong continent. Add your time — even an approximate one — for a map you can trust.",
       "saving": "Saving…",
-      "cta": "Draw my map"
+      "cta": "Draw my map",
+      "saveFailed": "Couldn’t save your birth details — check your connection and try again."
     },
     "search": {
       "placeholder": "Search a city or country…",
@@ -195,7 +199,10 @@
     },
     "use": {
       "eyebrow": "What you can divine",
-      "subtitle": "Tap a theme to filter the map for that intent."
+      "subtitle": "Tap a theme to filter the map for that intent.",
+      "love": {
+        "body": "Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last."
+      }
     },
     "angles": {
       "title": "How to read the lines"
@@ -230,7 +237,9 @@
       },
       "error": {
         "title": "We couldn't finish your reading",
-        "retry": "Try again"
+        "retry": "Try the reading again",
+        "body": "Check your connection and try again.",
+        "noPlace": "No strong place found for this intent — try a different life area."
       },
       "hero": {
         "eyebrow": "Your destined place"
@@ -240,7 +249,7 @@
         "linesLabel": "Why this place",
         "practiceLabel": "Your first month",
         "cautionsLabel": "Honestly",
-        "rerollCta": "Try another",
+        "rerollCta": "Show me a different place",
         "saving": "Saving…",
         "saved": "Saved",
         "saveCta": "Save this place"
@@ -264,7 +273,7 @@
       "horoscope": "Horoscope",
       "compatibility": "Compatibility",
       "library": "Library",
-      "iching": "I-Ching",
+      "iching": "I Ching",
       "humanDesign": "Human Design",
       "bazi": "Bazi",
       "dream": "Dreams",
@@ -320,7 +329,7 @@
     },
     "spreads": {
       "single": {
-        "name": "1-Card Daily",
+        "name": "1-card daily",
         "description": "Quick guidance"
       },
       "threeCard": {
@@ -332,24 +341,24 @@
         "description": "10-card deep reading"
       },
       "relationship": {
-        "name": "Relationship Spread",
+        "name": "Relationship spread",
         "description": "5-card love reading"
       },
       "careerSpread": {
-        "name": "Career Decision",
+        "name": "Career decision",
         "description": "6-card career insight"
       },
       "shadow": {
-        "name": "Shadow Work",
+        "name": "Shadow work",
         "description": "7-card inner work"
       }
     },
     "dailyDraw": {
-      "title": "Daily Draw"
+      "title": "Daily draw"
     },
     "browse": {
-      "title": "Browse Deck",
-      "allCards": "All 78 Cards",
+      "title": "Browse deck",
+      "allCards": "All 78 cards",
       "learnMeanings": "Learn card meanings",
       "filters": {
         "all": "All",
@@ -364,61 +373,64 @@
     "focusView": {
       "title": "What’s your focus?",
       "subtitle": "Choose an area to guide your reading",
-      "continue": "Continue"
+      "continue": "Shuffle for this focus"
     },
     "shuffleView": {
       "inProgress": "Shuffling the deck…",
       "clearMind": "Clear your mind",
       "spreading": "Spreading all 78 cards",
       "focusQuestion": "Focus on your question",
-      "shuffleDeck": "Shuffle Deck"
+      "shuffleDeck": "Shuffle deck"
     },
     "selectView": {
       "chooseMore_one": "Choose {{count}} more card",
       "chooseMore_other": "Choose {{count}} more cards",
       "readyReveal": "Ready to reveal.",
       "trustIntuition": "Trust your intuition • All 78 cards",
-      "selectMore": "Select {{count}} More",
-      "revealCards": "Reveal Cards"
+      "selectMore": "Select {{count}} more",
+      "revealCards": "Reveal cards",
+      "chooseMore": "Choose {{count}} more"
     },
     "revealView": {
-      "focusReading": "{{focus}} Reading",
+      "focusReading": "{{focus}} reading",
       "tapToReveal": "Tap to reveal",
-      "revealAll": "Reveal All",
+      "revealAll": "Reveal all",
       "generating": "Generating…",
-      "getAIInsight": "Get AI Insight",
+      "getAIInsight": "Get AI insight",
       "premiumAI": "Premium AI",
-      "aiInterpretation": "AI Interpretation",
+      "aiInterpretation": "AI interpretation",
       "aiSubtitle": "Personalized insight based on your cards and profile",
       "showCardMeanings": "← Show card meanings",
-      "loveFocus": "Love Focus",
-      "careerFocus": "Career Focus",
-      "moneyFocus": "Money Focus",
+      "loveFocus": "Love focus",
+      "careerFocus": "Career focus",
+      "moneyFocus": "Money focus",
       "traditional": "Traditional",
       "reversedParen": "(Reversed)",
       "reversed": "Reversed",
       "upright": "Upright",
       "reversalNote": "Reversal note: {{text}}",
-      "save": "Save",
+      "save": "Save this reading",
       "saved": "Saved",
-      "newReading": "New Reading",
-      "share": "Share"
+      "newReading": "Start a new reading",
+      "share": "Share this reading"
     },
     "status": {
-      "try": "Try",
+      "try": "Watch an ad",
       "unlocked": "Unlocked"
     },
-    "back": "← Back",
+    "back": "Back",
     "toasts": {
       "cardsNotFound": "Some selected cards could not be found. Please reshuffle and try again.",
-      "saveFailed": "Failed to save reading",
+      "saveFailed": "Couldn’t save this reading — check your connection and try again.",
       "readingSaved": "Reading saved",
       "aiReady": "AI interpretation ready",
       "interpretationReady": "Interpretation ready",
-      "aiFailed": "Failed to generate interpretation"
+      "aiFailed": "Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.",
+      "aiInsufficient": "Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.",
+      "aiLimit": "You’ve reached today’s limit for AI interpretations. Come back tomorrow for more."
     },
     "positions": {
-      "yourCard": "Your Card",
+      "yourCard": "Your card",
       "past": "Past",
       "present": "Present",
       "future": "Future",
@@ -434,7 +446,7 @@
     },
     "spreadPositions": {
       "single": [
-        "Your Card"
+        "Your card"
       ],
       "threeCard": [
         "Past",
@@ -479,7 +491,8 @@
       ]
     },
     "shareText": "My {{spread}} tarot reading on Arcana",
-    "share": "Share reading"
+    "share": "Share reading",
+    "cardBackAlt": "Card back"
   },
   "journal": {
     "title": "Journal",
@@ -492,7 +505,7 @@
     "addPrompt": "Add a prompt",
     "linkToReading": "Link to a reading",
     "linkToCard": "Link to a card",
-    "saveEntry": "Save entry",
+    "saveEntry": "Save this entry",
     "saved": "Entry saved.",
     "deleted": "Entry deleted.",
     "noEntries": "No entries yet",
@@ -527,29 +540,29 @@
       "templates": "Templates",
       "insights": "Insights"
     },
-    "todaysPrompt": "Today’s Prompt",
+    "todaysPrompt": "Today’s prompt",
     "defaultPrompt": "What are you reflecting on today?",
     "emptyState": "No journal entries yet.",
     "emptyStateSub": "Start your reflection journey today.",
     "loadMore": "Load more entries",
     "loadingMore": "Loading…",
-    "totalEntries": "Total Entries",
-    "dayStreak": "Day Streak",
-    "moodTrend": "Mood Trend (7 days)",
-    "mostCommonTags": "Most Common Tags",
-    "moodDistribution": "Mood Distribution",
-    "personalInsight": "Personal Insight",
-    "thisWeek": "This Week",
-    "writingStats": "Writing Stats",
+    "totalEntries": "Total entries",
+    "dayStreak": "Day streak",
+    "moodTrend": "Mood trend (7 days)",
+    "mostCommonTags": "Most common tags",
+    "moodDistribution": "Mood distribution",
+    "personalInsight": "Personal insight",
+    "thisWeek": "This week",
+    "writingStats": "Writing stats",
     "avgWords": "Avg words",
     "last30Days": "Last 30 days",
     "totalWords": "Total words",
     "insightsEmpty": "Write your first entry to see insights.",
     "noReadings": "No readings to link yet.",
     "editSheet": {
-      "newEntry": "New Entry",
-      "editEntry": "Edit Entry",
-      "yourThoughts": "Your Thoughts",
+      "newEntry": "New entry",
+      "editEntry": "Edit entry",
+      "yourThoughts": "Your thoughts",
       "howFeeling": "How are you feeling?",
       "tags": "Tags",
       "attachments": "Attachments",
@@ -564,7 +577,11 @@
       "deleteConfirm": "Delete this journal entry?",
       "deleted": "Entry deleted"
     },
-    "linkReading": "Link Reading"
+    "linkReading": "Link a reading",
+    "startWriting": "Write my first entry",
+    "editor": {
+      "cancel": "Cancel"
+    }
   },
   "quizzes": {
     "title": "Quizzes",
@@ -587,15 +604,15 @@
     "submit": "See results",
     "answerPlaceholder": "Choose your answer",
     "likert": {
-      "1": "Strongly Disagree",
+      "1": "Strongly disagree",
       "2": "Disagree",
       "3": "Neutral",
       "4": "Agree",
-      "5": "Strongly Agree"
+      "5": "Strongly agree"
     },
     "definitions": {
       "mbti": {
-        "title": "Personality Type Assessment",
+        "title": "Personality type assessment",
         "description": "This assessment explores the way you naturally process information, make decisions, and move through the world. Instead of judging personality as right or wrong, it highlights your default strengths, your blind spots under stress, and what you tend to need from relationships and environments to thrive.",
         "timeEstimate": "10-15 min",
         "whatYouGet": [
@@ -606,7 +623,7 @@
         ]
       },
       "loveLanguage": {
-        "title": "Love Language Assessment",
+        "title": "Love language assessment",
         "description": "This assessment helps you discover how you most naturally give and receive love. Many relationship conflicts are not a lack of love — they are a mismatch of expression. You will receive a primary and secondary love language with clear ways to ask for what you need.",
         "timeEstimate": "5-7 min",
         "whatYouGet": [
@@ -617,7 +634,7 @@
         ]
       },
       "enneagram": {
-        "title": "Enneagram Type Assessment",
+        "title": "Enneagram type assessment",
         "description": "This assessment identifies your core motivation and the emotional pattern that drives your choices. You will discover your primary type, your wing, growth directions, and stress signatures.",
         "timeEstimate": "10-12 min",
         "whatYouGet": [
@@ -628,7 +645,7 @@
         ]
       },
       "bigfive": {
-        "title": "Big Five Assessment",
+        "title": "Big Five assessment",
         "description": "This assessment measures five core personality dimensions: openness, conscientiousness, extraversion, agreeableness, and emotional stability. The most research-validated personality framework.",
         "timeEstimate": "8-10 min",
         "whatYouGet": [
@@ -639,7 +656,7 @@
         ]
       },
       "attachment": {
-        "title": "Attachment Style Assessment",
+        "title": "Attachment style assessment",
         "description": "This assessment reveals how you form and maintain close bonds. You will identify your default attachment pattern in relationships and learn strategies for earning secure attachment.",
         "timeEstimate": "5-7 min",
         "whatYouGet": [
@@ -650,7 +667,7 @@
         ]
       },
       "mood": {
-        "title": "Mood Check-In",
+        "title": "Mood check-in",
         "description": "A short daily check-in to track how you are feeling and what your emotional needs are today.",
         "timeEstimate": "30 sec",
         "whatYouGet": [
@@ -661,7 +678,7 @@
         ]
       },
       "mbtiQuick": {
-        "title": "Quick Personality Type",
+        "title": "Quick personality type",
         "description": "A fast 12-question read on how you recharge, perceive, decide, and structure your life. Great as an intro — upgrade to the full 70-question deep dive any time for a more precise result.",
         "timeEstimate": "3 min",
         "whatYouGet": [
@@ -710,7 +727,7 @@
         }
       },
       "courtMatch": {
-        "title": "Tarot Court Card Match",
+        "title": "Tarot court card match",
         "description": "Twelve cards. One verdict. Which of the sixteen court cards of the tarot best mirrors your current energy? This reading pairs elemental style (Wands / Cups / Swords / Pentacles) with rank (Page / Knight / Queen / King) so you get a living archetype — not just a trait.",
         "timeEstimate": "4 min",
         "whatYouGet": [
@@ -831,7 +848,7 @@
         }
       },
       "shadowArchetype": {
-        "title": "Shadow Archetype",
+        "title": "Shadow archetype",
         "description": "Which inner archetype is running the room right now? This reading maps you to one of the seven deep patterns — Lover, Warrior, Magician, Sovereign, Sage, Innocent, or Explorer — with the gift each one brings, the shadow it casts when wounded, and a path toward integration.",
         "timeEstimate": "6 min",
         "whatYouGet": [
@@ -907,7 +924,7 @@
         }
       },
       "elementAffinity": {
-        "title": "Element Affinity",
+        "title": "Element affinity",
         "description": "Ten quick questions to discover which of the four classical elements most echoes how you actually live — fire, water, air, or earth. Pairs with your astrology chart’s native element for a \"chart says X, behaviour says Y\" comparison.",
         "timeEstimate": "2 min",
         "whatYouGet": [
@@ -1010,7 +1027,7 @@
         }
       },
       "ayurveda-dosha": {
-        "title": "Ayurvedic Dosha",
+        "title": "Ayurvedic dosha",
         "description": "Thirty questions on body, mind, and habits to reveal your dominant dosha — Vata (air/space), Pitta (fire/water), or Kapha (earth/water). Ayurveda is the traditional Indian system of mind-body wellness; your dosha shows the default way your nature expresses itself and what tends to throw it out of balance.",
         "timeEstimate": "5-7 min",
         "whatYouGet": [
@@ -1031,20 +1048,20 @@
     },
     "resultSections": {
       "strengths": "Strengths",
-      "blindSpots": "Blind Spots",
-      "underStress": "Under Stress",
-      "inRelationships": "In Relationships",
-      "atWork": "At Work",
-      "growthQuests": "Growth Quests",
-      "stressSignature": "Stress Signature",
-      "recoveryPath": "Recovery Path",
-      "realLifeExamples": "Real Life Examples",
-      "bigFiveProfile": "Big Five Profile",
-      "emotionalStability": "Emotional Stability",
+      "blindSpots": "Blind spots",
+      "underStress": "Under stress",
+      "inRelationships": "In relationships",
+      "atWork": "At work",
+      "growthQuests": "Growth quests",
+      "stressSignature": "Stress signature",
+      "recoveryPath": "Recovery path",
+      "realLifeExamples": "Real life examples",
+      "bigFiveProfile": "Big Five profile",
+      "emotionalStability": "Emotional stability",
       "higherThanAverage": "Higher than average",
       "lowerThanAverage": "Lower than average",
       "averageRange": "Average range",
-      "compatibleTypes": "Compatible Types",
+      "compatibleTypes": "Compatible types",
       "enneagramType": "Type {{n}}",
       "whenDrawn": "When this card appears",
       "shadow": "Shadow side",
@@ -1052,9 +1069,40 @@
       "gift": "The gift",
       "integration": "Integration",
       "tarotPairing": "Tarot pairing",
-      "whenDominant": "When this element is dominant"
+      "whenDominant": "When this element is dominant",
+      "commonTriggers": "Common triggers",
+      "coreDesire": "Core desire",
+      "coreFear": "Core fear",
+      "coreMotivation": "Core motivation",
+      "corePattern": "Core pattern",
+      "discomfortWithClosenessAndDependence": "Discomfort with closeness and dependence",
+      "fearOfAbandonmentAndNeedForReassurance": "Fear of abandonment and need for reassurance",
+      "growthDirection": "Growth direction",
+      "growthLever": "Growth lever",
+      "growthPractices": "Growth practices",
+      "growthTips": "Growth tips",
+      "healingPractices": "Healing practices",
+      "howToAskForIt": "How to ask for it",
+      "journalPrompt": "Journal prompt",
+      "journalPrompts": "Journal prompts",
+      "miniRitual": "Mini ritual",
+      "pathToSecure": "Path to secure",
+      "reflection": "Reflection",
+      "stressDirection": "Stress direction",
+      "suggestionForYou": "Suggestion for you",
+      "tarotArchetype": "Tarot archetype",
+      "tarotEnergy": "Tarot energy",
+      "tryThisWeek": "Try this week",
+      "whatYouNeed": "What you need",
+      "whatToAvoid": "What to avoid",
+      "whatToDoToday": "What to do today",
+      "whenThisLanguageGoesUnmet": "When this language goes unmet",
+      "whenThisLanguageIsWellFed": "When this language is well-fed",
+      "yourDimensions": "Your dimensions",
+      "yourScores": "Your scores",
+      "yourTraitScores": "Your trait scores"
     },
-    "takeAnother": "Take Another Quiz",
+    "takeAnother": "Take another quiz",
     "courtCards": {
       "page-of-wands": {
         "name": "Page of Wands",
@@ -1346,11 +1394,11 @@
       "elementAffinity": "An elemental current is emerging…"
     },
     "share": {
-      "button": "Share",
+      "button": "Share my result",
       "downloaded": "Saved to your device",
-      "failed": "Could not create share image"
+      "failed": "Couldn’t create the share image — try again in a moment."
     },
-    "backToQuizzes": "Back to Quizzes",
+    "backToQuizzes": "Back to quizzes",
     "shadowArchetypes": {
       "lover": {
         "name": "The Lover",
@@ -1498,12 +1546,14 @@
       "differNote": "Your chart says {{natal}} but your behaviour says {{behaviour}} — worth noticing where you’re stretching."
     },
     "askOracleCta": "Read this result for me",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "saveToProfile": "Save to my profile",
+    "compareLocked": "Compare with a friend"
   },
   "horoscope": {
     "title": "Horoscope",
     "today": "Today",
-    "energyScore": "Energy Score",
+    "energyScore": "Energy score",
     "sections": {
       "overview": "Overview",
       "love": "Love",
@@ -1538,42 +1588,42 @@
       "steady": "Steady",
       "introspective": "Introspective"
     },
-    "luckyFocus": "Lucky Focus",
+    "luckyFocus": "Lucky focus",
     "luckyLabels": {
       "color": "Color",
       "number": "Number",
       "vibe": "Vibe"
     },
-    "todaysMood": "Today’s Mood",
-    "shadowInsight": "Shadow Insight",
+    "todaysMood": "Today’s mood",
+    "shadowInsight": "Shadow insight",
     "caution": "Caution",
-    "planetaryTransit": "Planetary Transit",
-    "dailyAffirmation": "Daily Affirmation",
-    "cardOfTheDay": "Card of the Day",
-    "luckyNumbersLabel": "Lucky Numbers",
-    "miniRitual": "Mini Ritual",
-    "actionStep": "Action Step",
-    "showMore": "Show More Insights",
-    "showLess": "Show Less",
-    "journalButton": "Journal",
+    "planetaryTransit": "Planetary transit",
+    "dailyAffirmation": "Daily affirmation",
+    "cardOfTheDay": "Card of the day",
+    "luckyNumbersLabel": "Lucky numbers",
+    "miniRitual": "Mini ritual",
+    "actionStep": "Action step",
+    "showMore": "Show more insights",
+    "showLess": "Show less",
+    "journalButton": "Write about this",
     "birthChartCard": {
-      "title": "Birth Chart Analysis",
+      "title": "Birth chart analysis",
       "subtitle": "Personalized transit notes",
-      "upgrade": "Upgrade"
+      "upgrade": "Unlock my birth chart"
     },
     "paywallFeatures": {
       "birthChart": "Birth Chart Analysis"
     },
     "share": {
-      "title": "My Daily Horoscope",
+      "title": "My daily horoscope",
       "template": "{{sign}} Horoscope for Today\n\n{{general}}\n\nAffirmation: {{affirmation}}\n\nGenerated by Arcana"
     },
     "toasts": {
-      "saveFailed": "Failed to save",
+      "saveFailed": "Couldn’t save this horoscope — check your connection and try again.",
       "horoscopeSaved": "Horoscope saved",
       "shared": "Shared successfully",
       "copied": "Copied to clipboard",
-      "unableToShare": "Unable to share"
+      "unableToShare": "Couldn’t open sharing — try again in a moment."
     },
     "birthChartView": {
       "noChartData": "No chart data available",
@@ -1584,16 +1634,16 @@
       "planetInSign": "{{planet}} in {{sign}}",
       "placements": "Placements",
       "houseShort": "H{{num}}",
-      "elementBalance": "Element Balance",
-      "modalityBalance": "Modality Balance",
-      "keyAspects": "Key Aspects",
+      "elementBalance": "Element balance",
+      "modalityBalance": "Modality balance",
+      "keyAspects": "Key aspects",
       "strengths": "Strengths",
-      "blindSpots": "Blind Spots",
-      "underStress": "Under Stress",
-      "growthPath": "Growth Path",
-      "inHouse": "In House {{num}}",
-      "atItsBest": "At Its Best",
-      "shadowSide": "Shadow Side",
+      "blindSpots": "Blind spots",
+      "underStress": "Under stress",
+      "growthPath": "Growth path",
+      "inHouse": "In house {{num}}",
+      "atItsBest": "At its best",
+      "shadowSide": "Shadow side",
       "houseLabel": "House {{num}}",
       "aspectMeta": "{{type}} • Orb: {{orb}}° • {{motion}}",
       "applying": "Applying",
@@ -1606,53 +1656,54 @@
       }
     },
     "forecastView": {
-      "thisWeek": "This Week",
-      "thisMonth": "This Month",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
       "weeklyUnavailable": "Weekly forecast unavailable",
       "monthlyUnavailable": "Monthly forecast unavailable",
-      "weeklyTheme": "Weekly Theme",
-      "keyMoments": "Key Moments",
-      "bestDaysFor": "Best Days For",
-      "monthlyOverview": "Monthly Overview",
-      "newMoon": "New Moon",
-      "fullMoon": "Full Moon",
-      "keyDates": "Key Dates",
-      "oneThingThisMonth": "One Thing This Month",
-      "outerPlanetThemes": "Outer Planet Themes"
+      "weeklyTheme": "Weekly theme",
+      "keyMoments": "Key moments",
+      "bestDaysFor": "Best days for",
+      "monthlyOverview": "Monthly overview",
+      "newMoon": "New moon",
+      "fullMoon": "Full moon",
+      "keyDates": "Key dates",
+      "oneThingThisMonth": "One thing this month",
+      "outerPlanetThemes": "Outer planet themes"
     },
     "todayForYou": {
-      "heading": "Today For You",
+      "heading": "Today for you",
       "noDailyContent": "No daily content available",
-      "tryAgain": "Try Again",
+      "tryAgain": "Reload today's reading",
       "moonIn": "Moon in",
       "houseParen": "(House {{num}})",
-      "activeTransits": "Active Transits",
-      "powerMove": "Power Move",
+      "activeTransits": "Active transits",
+      "powerMove": "Power move",
       "doLabel": "Do",
       "avoidLabel": "Avoid",
-      "miniRitual": "Mini Ritual",
-      "journalPrompt": "Journal Prompt",
+      "miniRitual": "Mini ritual",
+      "journalPrompt": "Journal prompt",
       "categories": {
         "love": "Love",
         "career": "Career",
         "money": "Money",
         "energy": "Energy"
-      }
+      },
+      "loadFailed": "Couldn't load today's reading — check your connection and try again."
     },
     "onboarding": {
-      "oneMoreDetail": "One More Detail",
+      "oneMoreDetail": "One more detail",
       "needBirthLocation": "We need your birth location to compute an accurate natal chart.",
       "profileDetailsNote": "Your other birth details are already saved from your profile.",
       "dateLabel": "Date:",
       "timeLabel": "Time:",
-      "birthLocation": "Birth Location",
+      "birthLocation": "Birth location",
       "searchCityPlaceholder": "Search city or town…",
-      "computeMyChart": "Compute My Chart",
+      "computeMyChart": "Compute my chart",
       "selectLocationToContinue": "Select a location above to continue",
       "chartComputationFailed": "Chart Computation Failed",
       "chartComputeFailDefault": "We could not compute your natal chart. Please try again or update your birth location.",
       "retry": "Retry",
-      "changeBirthLocation": "Change Birth Location",
+      "changeBirthLocation": "Change birth location",
       "errors": {
         "couldNotFindLocation": "Could not find your birth location. Please search below.",
         "couldNotAutoCompute": "Could not compute your chart automatically. Please confirm your birth location below.",
@@ -1687,31 +1738,31 @@
   },
   "profile": {
     "title": "Profile",
-    "birthProfile": "Birth Profile",
-    "birthPlaceOptional": "Birth Place (optional)",
-    "yourGoals": "Your Goals",
-    "personalityBadges": "Personality Badges",
+    "birthProfile": "Birth profile",
+    "birthPlaceOptional": "Birth place (optional)",
+    "yourGoals": "Your goals",
+    "personalityBadges": "Personality badges",
     "saved": "Saved",
     "yourBookmarks": "Your bookmarked readings & insights",
     "noSaved": "No saved items yet",
     "noSavedSub": "Bookmark readings and insights to see them here",
-    "dayStreak": "Day Streak",
+    "dayStreak": "Day streak",
     "level": "Level {{n}}",
-    "xpProgress": "XP Progress",
-    "upgradeToPremium": "Upgrade to Premium",
-    "upgradeSub": "Unlock all spreads, charts & more",
+    "xpProgress": "XP progress",
+    "upgradeToPremium": "Get Premium",
+    "upgradeSub": "Every spread, your full birth chart, no ads",
     "referralTitle": "Invite friends",
     "referralSub": "Earn 100 Moonstones per friend",
-    "careerReportTitle": "Career Archetype Report",
+    "careerReportTitle": "Career archetype report",
     "careerReportSub": "Deep coaching read for {{mbti}}",
-    "yearAheadTitle": "Year Ahead Forecast",
+    "yearAheadTitle": "Year ahead forecast",
     "yearAheadSub": "12 months of transits to your chart",
-    "natalReportTitle": "Full Natal Chart",
+    "natalReportTitle": "Full natal chart",
     "natalReportSub": "Printable deep chart reading",
     "compatInviteTitle": "Compatibility invite",
     "compatInviteSub": "Share a link to get a joint reading",
-    "premiumMember": "Premium Member",
-    "premiumSub": "Full access to all features",
+    "premiumMember": "Premium is on",
+    "premiumSub": "Every spread, chart and reading is open to you",
     "manageSubscription": "Manage subscription",
     "editProfile": "Edit profile",
     "signOut": "Sign out",
@@ -1742,36 +1793,42 @@
     },
     "profileUpdated": "Profile updated",
     "editProfileSheet": {
-      "title": "Edit Profile",
-      "displayName": "Display Name",
+      "title": "Edit profile",
+      "displayName": "Display name",
       "yourName": "Your name",
-      "birthTimeOptional": "Birth Time (optional)",
-      "searchCity": "Search city or town…"
+      "birthTimeOptional": "Birth time (optional)",
+      "searchCity": "Search city or town…",
+      "save": "Save my profile"
     },
-    "disclaimer": "This app is for entertainment and self-reflection purposes only.",
-    "elementSign": "{{element}} Sign",
+    "disclaimer": "Arcana is for entertainment and self-reflection only.",
+    "elementSign": "{{element}} sign",
     "cosmic": {
-      "title": "Cosmic Profile",
+      "title": "Cosmic profile",
       "sun": "Sun",
       "animal": "Animal",
-      "lifePath": "Life Path",
+      "lifePath": "Life path",
       "expression": "Expression",
-      "soulUrge": "Soul Urge",
+      "soulUrge": "Soul urge",
       "personality": "Personality",
-      "shareButton": "Share Cosmic Profile",
+      "shareButton": "Share cosmic profile",
       "shareSubtitle": "Sun · Animal · Life Path",
-      "myProfile": "My Cosmic Profile"
+      "myProfile": "My cosmic profile"
     },
-    "yourProgress": "Your progress"
+    "yourProgress": "Your progress",
+    "saveProfile": "Save my profile",
+    "toasts": {
+      "saveFailed": "Couldn’t save your profile — check your connection and try again."
+    },
+    "untitled": "Your profile"
   },
   "achievements": {
     "title": "Trophies",
     "noInCategory": "No achievements in this category yet.",
     "errorLoading": "Error loading achievements:",
     "novicesSeeker": "Novice Seeker",
-    "achievementsUnlocked": "Achievements Unlocked",
+    "achievementsUnlocked": "Achievements unlocked",
     "xpEarned": "{{n}} XP earned",
-    "recentUnlocks": "Recent Unlocks",
+    "recentUnlocks": "Recent unlocks",
     "all": "All",
     "unlocked": "Unlocked",
     "locked": "Locked",
@@ -1781,7 +1838,7 @@
       "exploration": "Exploration",
       "mastery": "Mastery",
       "milestones": "Milestones",
-      "quiz_results": "Quiz Results",
+      "quiz_results": "Quiz results",
       "special": "Special"
     },
     "ranks": {
@@ -1799,13 +1856,14 @@
       "streakDays_other": "{{count}} days",
       "readings": "Readings",
       "journal": "Journal",
-      "quizzes": "Quizzes"
+      "quizzes": "Quizzes",
+      "streakDays": "Streak days"
     }
   },
   "blog": {
-    "title": "News & Insights",
+    "title": "News & insights",
     "subtitle": "Tarot, astrology and self-discovery",
-    "failedToLoad": "Failed to load articles.",
+    "failedToLoad": "Couldn’t load the articles — check your connection and reload the page.",
     "noArticles": "No articles yet",
     "comeBackSoon": "Check back soon for tarot insights and spiritual guidance.",
     "articleNotFound": "Article not found.",
@@ -1813,43 +1871,43 @@
     "by": "By {{author}}"
   },
   "tarot": {
-    "title": "Tarot Card Meanings",
+    "title": "Tarot card meanings",
     "subtitle": "A complete guide to every card in the tarot deck — upright and reversed meanings, love and career interpretations, and reflection prompts.",
-    "allCards": "All Cards",
-    "backToAllCards": "Back to All Cards",
+    "allCards": "All cards",
+    "backToAllCards": "Back to all cards",
     "majorArcana": "Major Arcana",
     "wands": "Wands",
     "cups": "Cups",
     "swords": "Swords",
     "pentacles": "Pentacles",
     "cardNotFound": "Card not found.",
-    "uprightMeaning": "Upright Meaning",
-    "reversedMeaning": "Reversed Meaning",
+    "uprightMeaning": "Upright meaning",
+    "reversedMeaning": "Reversed meaning",
     "upright": "Upright",
     "reversed": "Reversed",
-    "yesOrNo": "Yes or No",
-    "cardDescription": "Card Description",
-    "quickReference": "Quick Reference",
+    "yesOrNo": "Yes or no",
+    "cardDescription": "Card description",
+    "quickReference": "Quick reference",
     "element": "Element",
-    "loveAndRelationships": "Love & Relationships",
-    "careerAndFinances": "Career & Finances",
-    "reflectionPrompt": "Reflection Prompt",
+    "loveAndRelationships": "Love & relationships",
+    "careerAndFinances": "Career & finances",
+    "reflectionPrompt": "Reflection prompt",
     "experienceInReading": "Experience {{name}} in a reading",
-    "tryFreeReading": "Try a Free Reading",
-    "freeTarotGuide": "Free Tarot Guide",
+    "tryFreeReading": "Try a free reading",
+    "freeTarotGuide": "Free tarot guide",
     "freeTarotGuideDesc": "Get a free beginner’s guide to tarot readings — delivered to your inbox.",
-    "getFreeGuide": "Get Free Guide",
+    "getFreeGuide": "Get the free guide",
     "noSpam": "No spam. Unsubscribe anytime.",
     "youreIn": "You’re in. Check your inbox for your free tarot guide.",
     "yourEmail": "Your email address",
-    "heroBadge": "78 Cards · Full Meanings",
+    "heroBadge": "78 cards · full meanings",
     "heroSub": "A complete guide to every card in the tarot deck — upright and reversed meanings, love and career interpretations, and reflection prompts.",
     "bottomText": "Ready to put these meanings into practice?",
     "pageTitle": "Tarot Card Meanings — All 78 Cards Explained",
     "pageDesc": "Explore the meaning of all 78 tarot cards. Upright and reversed meanings, love and career interpretations, keywords, and reflection prompts for every card.",
-    "yesOrNoReading": "Yes or No Reading",
-    "allMajorCards": "All Major Arcana Cards",
-    "allSuitCards": "All {{suit}} Cards",
+    "yesOrNoReading": "Yes or no reading",
+    "allMajorCards": "All Major Arcana cards",
+    "allSuitCards": "All {{suit}} cards",
     "suitMinorLabel": "{{suit}} · Minor Arcana",
     "elements": {
       "fire": "Fire",
@@ -1896,24 +1954,24 @@
         "career": "Career",
         "reflect": "Reflect"
       },
-      "loveTitle": "Love & Relationships",
+      "loveTitle": "Love & relationships",
       "loveSubtitle": "Matters of the heart",
       "loveFallback": "No love-and-relationships reading is written for this card yet.",
       "loveInsightReversed": "Reversed, look at what is currently stopping you from being open with someone.",
       "loveInsightUpright": "Upright, this card asks for the honest version of the conversation rather than the easy one.",
-      "careerTitle": "Career & Finance",
+      "careerTitle": "Career & finance",
       "careerSubtitle": "Professional guidance",
       "careerFallback": "No career reading is written for this card yet.",
       "careerInsightReversed": "Reversed, look at which fear is being dressed up as a strategy.",
       "careerInsightUpright": "Upright, this card favors doing the work rather than planning more of it.",
-      "reflectionTitle": "Personal Reflection",
+      "reflectionTitle": "Personal reflection",
       "reflectionSubtitle": "Questions for deeper insight",
       "reflectionFallback": "What part of this card’s image do you keep coming back to?",
       "journalPromptsLabel": "Journal prompts:",
       "journalPrompt1": "How does the imagery of this card speak to me today?",
       "journalPrompt2": "What aspect of this card’s meaning challenges me most?",
       "journalPrompt3": "What small action can I take today to honor this card’s guidance?",
-      "todaysAction": "Today’s Action",
+      "todaysAction": "Today’s action",
       "todaysActionText": "Pick one small action that aligns with {{name}}'s energy. Make it easy enough to do in 10 minutes.",
       "closeLabel": "Close"
     },
@@ -1928,134 +1986,110 @@
       "ads": "Ads",
       "users": "Users",
       "content": "Content"
+    },
+    "verifications": {
+      "toasts": {
+        "loadFailed": "Couldn’t load the verification queue — tap Refresh to try again.",
+        "previewFailed": "Couldn’t load the ID and video previews — tap Load preview again.",
+        "decideFailed": "Couldn’t save that decision — refresh the queue and try again."
+      }
+    },
+    "moderation": {
+      "toasts": {
+        "loadEventsFailed": "Couldn’t load moderation events — tap Refresh to try again.",
+        "loadFlagsFailed": "Couldn’t load crisis flags — tap Refresh to try again.",
+        "markReviewedFailed": "Couldn’t mark that event reviewed — refresh and try again.",
+        "acknowledgeFailed": "Couldn’t acknowledge that flag — refresh and try again."
+      }
+    },
+    "blog": {
+      "toasts": {
+        "updateFailed": "Couldn’t update the post — refresh and try again.",
+        "deleteFailed": "Couldn’t delete the post — refresh and try again."
+      }
     }
   },
   "premium": {
-    "features": {
-      "unlimited_saves": {
-        "name": "Unlimited Saves",
-        "description": "Save as many readings and insights as you want"
-      },
-      "celtic_cross": {
-        "name": "Celtic Cross Spread",
-        "description": "The ultimate 10-card spread for deep insight"
-      },
-      "three_card": {
-        "name": "Three Card Spread",
-        "description": "Past, present, future readings"
-      },
-      "compatibility_full": {
-        "name": "Full Compatibility",
-        "description": "Complete partner compatibility analysis"
-      },
-      "deep_interpretations": {
-        "name": "Deep Interpretations",
-        "description": "Extended meanings and personalized guidance"
-      },
-      "guided_prompts": {
-        "name": "Guided Prompts",
-        "description": "AI-crafted reflection prompts based on your readings"
-      },
-      "journal_insights": {
-        "name": "Journal Insights",
-        "description": "Advanced mood tracking and pattern analysis"
-      },
-      "personalization": {
-        "name": "Personalization Engine",
-        "description": "Content tailored to your tone and goals"
-      },
-      "birth_chart": {
-        "name": "Birth Chart Analysis",
-        "description": "Complete astrological birth chart breakdown"
-      },
-      "extra_reading": {
-        "name": "Extra Reading",
-        "description": "One additional tarot reading beyond your daily limit"
-      }
-    },
     "monthly": "Monthly",
     "yearly": "Yearly",
     "lifetime": "Lifetime",
-    "restorePurchases": "Restore purchases",
     "badge": "Premium",
     "trialReminder": {
-      "badge": "3 days free",
-      "title": "Try Premium free for 3 days",
-      "subtitle": "Unlock everything for 3 days, then $19.99/year. Cancel anytime.",
+      "badge": "{{days}} days free",
+      "title": "Try Premium free for {{days}} days",
+      "subtitle": "Everything opens for {{days}} days, then {{price}} a year. Cancel before the trial ends and you pay nothing.",
       "cta": "Start free trial",
-      "dismiss": "Maybe later",
+      "dismiss": "Not now",
       "benefits": {
-        "allFeatures": "All premium features unlocked",
-        "adFree": "Completely ad-free",
-        "cancelAnytime": "Cancel anytime, no charge"
+        "spreads": "Every tarot spread, Celtic Cross included",
+        "chart": "Your full birth chart, planet by planet",
+        "noAds": "No ads, and no Moonstones to spend"
+      },
+      "noTrial": {
+        "title": "Open everything with Premium",
+        "subtitle": "{{price}} a year, or pay monthly. Cancel anytime.",
+        "subtitleNoPrice": "Yearly or monthly, at the prices shown in the store. Cancel anytime.",
+        "cta": "See Premium plans"
       }
     },
     "paywall": {
-      "heading": "Unlock the Full Deck",
-      "subheading": "Deeper spreads, unlimited saves, compatibility insights & more",
-      "featureRequires": "{{feature}} requires Premium",
-      "whatYouUnlock": "What You Unlock",
+      "heading": "Open every reading",
+      "subheading": "Every tarot spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend.",
+      "featureRequires": "{{feature}} opens with Premium",
+      "whatYouUnlock": "What opens with Premium",
       "loadingPrices": "Loading prices…",
       "unlocks": {
         "adFree": {
-          "label": "Ad-Free Experience",
-          "desc": "No interruptions, pure focus"
+          "label": "Ad-free",
+          "desc": "No ads between readings"
         },
         "allSpreads": {
-          "label": "All Tarot Spreads",
-          "desc": "Celtic Cross, 3-Card & more"
-        },
-        "unlimitedSaves": {
-          "label": "Unlimited Saves",
-          "desc": "Keep every insight forever"
+          "label": "All tarot spreads",
+          "desc": "Every spread, up to ten cards"
         },
         "compatibility": {
-          "label": "Full Compatibility",
-          "desc": "Deep partner analysis"
+          "label": "Full compatibility",
+          "desc": "Friendship and work, not just love"
         },
         "deepInterpretations": {
-          "label": "Deep Interpretations",
-          "desc": "Personalized guidance"
-        },
-        "guidedPrompts": {
-          "label": "Guided Prompts",
-          "desc": "AI-crafted reflections"
+          "label": "AI interpretations",
+          "desc": "Written for your draw, no Moonstones"
         },
         "birthChart": {
-          "label": "Birth Chart",
-          "desc": "Your cosmic blueprint"
+          "label": "Birth chart",
+          "desc": "Every planet, sign and house"
         },
         "partnerSynastry": {
-          "label": "Partner Synastry",
-          "desc": "Real cross-aspect astrology"
+          "label": "Partner synastry",
+          "desc": "Two charts, aspect by aspect"
         },
         "horoscopeFull": {
-          "label": "Full Horoscope",
-          "desc": "Chart, Forecast, Explore — all unlocked"
+          "label": "Full horoscope",
+          "desc": "Chart, Forecast and Explore"
         },
         "humanDesign": {
           "label": "Human Design",
-          "desc": "Real bodygraph + profile + authority"
+          "desc": "Bodygraph, profile, authority"
         },
         "bazi": {
-          "label": "Bazi Pillars",
-          "desc": "Classical Chinese 8-character reading"
+          "label": "Bazi pillars",
+          "desc": "Your four pillars, interpreted"
         },
         "dreamAi": {
-          "label": "AI Dream Interpreter",
-          "desc": "Jungian reading of any dream"
+          "label": "Dream interpreter",
+          "desc": "A Jungian reading of any dream"
         },
         "moodLetter": {
-          "label": "Weekly Mood Letter",
-          "desc": "Personal letter from your log"
+          "label": "Weekly mood letter",
+          "desc": "A letter written from your log"
         },
         "oracleChat": {
-          "label": "Oracle Companion",
-          "desc": "Four personas, unlimited chat"
+          "label": "Oracle companion",
+          "desc": "Four personas to talk with"
         },
         "shadowWork": {
-          "label": "Shadow Work Spread",
-          "desc": "The deepest tarot layout"
+          "label": "Shadow Work spread",
+          "desc": "Seven cards for inner work"
         }
       },
       "plans": {
@@ -2069,92 +2103,169 @@
         "oneTime": "one-time"
       },
       "badges": {
-        "bestValue": "Best Value",
-        "foreverAccess": "Forever Access"
+        "bestValue": "Best value",
+        "foreverAccess": "Pay once"
       },
       "cta": {
-        "notAvailable": "Premium Not Available",
-        "getLifetime": "Get Lifetime Access",
-        "subscribeNow": "Subscribe Now",
-        "startTrial": "Start 3-day free trial"
+        "getLifetime": "Unlock Premium for life",
+        "startTrial": "Start your {{days}}-day free trial",
+        "subscribe": "Subscribe to Premium"
       },
-      "restorePurchase": "Restore Purchase",
+      "restorePurchase": "Restore a previous purchase",
       "errors": {
-        "loadFailed": "Unable to load pricing. Please check your connection.",
-        "notAvailableTitle": "Premium Not Available",
-        "notAvailableDesc": "RevenueCat offerings need to be configured. Purchases are disabled until setup is complete."
+        "loadFailed": "Couldn’t load prices. Check your connection and try again.",
+        "notAvailableTitle": "Premium isn’t available right now",
+        "notAvailableDesc": "The store didn’t return any plans. Try again later — if you already subscribed, use Restore purchases."
       },
       "disclaimers": {
-        "lifetime": "One-time purchase. No recurring charges. Lifetime access to all premium features.",
-        "subscription": "Cancel anytime. Payment will be charged to your account. Subscription automatically renews unless canceled at least 24 hours before the end of the current period."
+        "lifetime": "One payment, nothing renews. Premium stays yours.",
+        "subscription": "Renews automatically at the end of each period unless you cancel at least 24 hours before it ends. Cancel anytime."
       },
       "toasts": {
-        "productsUnavailable": "Products not available. Please try again later.",
-        "welcome": "Welcome to Premium.",
-        "purchaseFailed": "Purchase failed",
-        "purchasesRestored": "Purchases restored.",
-        "noPurchases": "No purchases found",
-        "restoreFailed": "Restore failed"
+        "productsUnavailable": "This plan isn’t available in the store right now — try again later.",
+        "purchaseFailed": "The purchase didn’t complete. Try again — if you were charged, use Restore purchases.",
+        "purchasesRestored": "Premium restored — everything is open again.",
+        "noPurchases": "No previous purchases found for this store account. If you subscribed with a different account, switch accounts and restore again.",
+        "restoreFailed": "Couldn’t reach the store to restore — check your connection and try again."
+      },
+      "trialLine": "{{days}}-day free trial. Cancel before it ends and you pay nothing.",
+      "byFeature": {
+        "celticCross": {
+          "heading": "Read the Celtic Cross",
+          "outcome": "Ten cards on one question, read position by position — and every other spread with it. Premium opens them all, with no ads.",
+          "cta": "Unlock the Celtic Cross"
+        },
+        "relationship": {
+          "heading": "Read the Relationship Spread",
+          "outcome": "Five cards on you, them, what holds you together and what to do next — and every other spread with it. Premium opens them all, with no ads.",
+          "cta": "Unlock the Relationship Spread"
+        },
+        "careerSpread": {
+          "heading": "Read the Career Decision spread",
+          "outcome": "Six cards on where you stand, what drives you and the likely outcome — and every other spread with it. Premium opens them all, with no ads.",
+          "cta": "Unlock the Career Decision spread"
+        },
+        "shadow": {
+          "heading": "Read the Shadow Work spread",
+          "outcome": "Seven cards, from the mask you wear to the step that integrates it — and every other spread with it. Premium opens them all, with no ads.",
+          "cta": "Unlock the Shadow Work spread"
+        },
+        "unlimitedReadings": {
+          "heading": "Keep reading today",
+          "outcome": "Free accounts get three tarot readings a day. Premium lifts that limit and opens every spread, with no ads.",
+          "cta": "Lift the daily limit"
+        },
+        "horoscopeChart": {
+          "heading": "See your full birth chart",
+          "outcome": "Every planet in its sign and house, the aspects between them and what each means for you. Premium opens the Chart, Forecast and Explore tabs together.",
+          "cta": "Unlock my birth chart"
+        },
+        "horoscopeForecast": {
+          "heading": "See your week and month ahead",
+          "outcome": "Weekly and monthly forecasts computed for your own chart, not just your Sun sign. Premium opens the Chart, Forecast and Explore tabs together.",
+          "cta": "Unlock my forecast"
+        },
+        "horoscopeExplore": {
+          "heading": "Explore your chart",
+          "outcome": "Current transits, your houses and your aspects, each explained. Premium opens the Chart, Forecast and Explore tabs together.",
+          "cta": "Unlock the Explore tab"
+        },
+        "humanDesign": {
+          "heading": "See your Human Design",
+          "outcome": "Your bodygraph, type, profile and authority, computed from your birth data. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock my Human Design"
+        },
+        "bazi": {
+          "heading": "See your Bazi chart",
+          "outcome": "Your four pillars from your date and hour of birth, read pillar by pillar. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock my Bazi chart"
+        },
+        "dreams": {
+          "heading": "Have a dream read",
+          "outcome": "Describe any dream and read a Jungian interpretation of its symbols. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock dream readings"
+        },
+        "partnerSynastry": {
+          "heading": "See your synastry",
+          "outcome": "Add a partner’s birth data and read the aspects between your two charts. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock partner synastry"
+        },
+        "celestialMap": {
+          "heading": "See your whole Celestial Map",
+          "outcome": "All 40 planetary lines, city interpretations and AI travel readings with Premium — or a single travel reading for 250 Moonstones.",
+          "cta": "Unlock the full map"
+        },
+        "compatFull": {
+          "heading": "See the full match",
+          "outcome": "Friendship and work compatibility alongside love, for anyone whose birth date you know. Premium opens all three.",
+          "cta": "Unlock friendship and work matches"
+        },
+        "compatFriendship": {
+          "heading": "Match as friends",
+          "outcome": "Your sign pairing read for friendship rather than romance, with work compatibility alongside. Premium opens both.",
+          "cta": "Unlock friendship compatibility"
+        },
+        "compatWork": {
+          "heading": "Match at work",
+          "outcome": "Your sign pairing read for working together, with friendship compatibility alongside. Premium opens both.",
+          "cta": "Unlock work compatibility"
+        }
       }
     },
-    "gate": {
-      "watchAdToTry": "Watch Ad to Try",
-      "unlockPremium": "Unlock Premium"
-    },
     "subscription": {
-      "heading": "Premium Active",
-      "subheading": "You have full access to all premium features",
+      "heading": "Premium is on",
+      "subheading": "Every spread, chart and reading is open to you, with no ads and no Moonstones to spend.",
       "planTitle": "Premium Plan",
       "memberFallback": "Member",
       "status": "Status",
       "statusActive": "Active",
       "billing": "Billing",
-      "billingGooglePlay": "Google Play",
-      "yourBenefits": "Your Premium Benefits",
-      "manageOnGooglePlay": "Manage on Google Play",
-      "syncStatus": "Sync Subscription Status",
-      "disclaimer": "To cancel or modify your subscription, use the Google Play Store app or website. Changes may take a few minutes to reflect in the app.",
-      "features": {
-        "adFree": "Ad-Free Experience",
-        "allSpreads": "All Tarot Spreads",
-        "unlimitedSaves": "Unlimited Saves",
-        "compatibility": "Full Compatibility",
-        "deepInterpretations": "Deep Interpretations",
-        "guidedPrompts": "Guided Prompts",
-        "birthChart": "Birth Chart",
-        "partnerSynastry": "Partner Synastry",
-        "horoscopeFull": "Full Horoscope",
-        "humanDesign": "Human Design",
-        "bazi": "Bazi Pillars",
-        "dreamAi": "AI Dream Interpreter",
-        "moodLetter": "Weekly Mood Letter",
-        "oracleChat": "Oracle Companion",
-        "shadowWork": "Shadow Work Spread"
-      },
+      "yourBenefits": "Included in your plan",
+      "syncStatus": "Refresh my subscription",
       "toasts": {
-        "verified": "Subscription verified.",
-        "active": "Subscription is active",
-        "verifyFailed": "Could not verify subscription"
+        "verified": "Your subscription is confirmed.",
+        "active": "Nothing to update — your subscription is as shown.",
+        "verifyFailed": "Couldn’t confirm your subscription with the store — check your connection and try again.",
+        "portalFailed": "Couldn’t open the billing portal. Check your connection and try again."
+      },
+      "billingVia": {
+        "android": "Google Play",
+        "ios": "App Store",
+        "web": "Card, through Stripe"
+      },
+      "manage": {
+        "android": "Manage on Google Play",
+        "ios": "Manage in the App Store",
+        "web": "Manage subscription"
+      },
+      "storeNote": {
+        "android": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
+        "ios": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
+        "web": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here."
       }
     },
     "watchAd": {
-      "getUnlimited": "Get Unlimited Access",
+      "getUnlimited": "Or open everything with Premium",
       "notNow": "Not now",
-      "footerDisclaimer": "Premium members get unlimited access to all features with no ads",
+      "footerDisclaimer": "With Premium there is nothing to spend: every spread, chart and reading is open, with no ads.",
       "toasts": {
-        "unlocked": "Feature unlocked. Enjoy your free trial.",
-        "notAvailable": "Ad not available. Please try again.",
-        "error": "Something went wrong. Please try again.",
-        "credited": "+{{n}} Moonstones added. Tap \"Spend\" to unlock.",
-        "persistFailed": "Ad watched, but we couldn't credit your balance. Check your connection.",
-        "spendFailed": "Could not spend Moonstones. Try again.",
-        "insufficient": "You need {{n}} Moonstones to unlock this. Watch an ad to earn more."
+        "unlocked": "Unlocked. Your reading is open.",
+        "notAvailable": "No ad is available right now — try again in a minute.",
+        "error": "The ad didn’t finish — nothing was spent. Try again in a moment.",
+        "credited": "{{n}} Moonstones added. Spend them below to unlock.",
+        "persistFailed": "You watched the ad, but the Moonstones couldn’t be saved. Check your connection and try again.",
+        "spendFailed": "Couldn’t spend your Moonstones — nothing was taken. Check your connection and try again.",
+        "insufficient": "You need {{n}} Moonstones for this. Watch an ad to earn more.",
+        "adsDisabled": "Ads aren’t available on this device.",
+        "creditedEarnOnly": "{{n}} Moonstones added."
       },
       "unlockTitle": "Unlock this reading",
-      "unlockSubtitle": "Spend {{cost}} Moonstones, or watch a short ad to earn {{ad}} first.",
+      "unlockSubtitle": "Spend {{cost}} Moonstones to read it now, or watch a short ad to earn {{ad}} first.",
       "currentBalance": "You have {{n}} Moonstones",
       "spendCta": "Spend {{n}} Moonstones to unlock",
-      "watchAdCta": "Watch ad → +{{n}} Moonstones"
+      "watchAdCta": "Watch an ad, earn {{n}} Moonstones",
+      "unlockNamed": "Unlock {{name}}",
+      "earnOnlySubtitle": "It costs {{cost}} Moonstones. Each short ad earns {{ad}}; once you have enough, unlock it from this page."
     }
   },
   "settings": {
@@ -2176,27 +2287,27 @@
       "support": "Support"
     },
     "menu": {
-      "editProfile": "Edit Profile",
+      "editProfile": "Edit profile",
       "subscription": "Subscription",
       "premium": "Premium",
       "free": "Free",
-      "switchAccount": "Switch Account",
+      "switchAccount": "Switch account",
       "appearance": "Appearance",
-      "exportData": "Export My Data",
-      "deleteAccount": "Delete Account",
-      "helpCenter": "Help Center",
+      "exportData": "Export my data",
+      "deleteAccount": "Delete account",
+      "helpCenter": "Help center",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy",
-      "developerDiagnostics": "Developer Diagnostics",
-      "signOut": "Sign Out",
+      "developerDiagnostics": "Developer diagnostics",
+      "signOut": "Sign out",
       "errorCount": "{{n}} errors",
       "toggleOn": "On",
       "toggleOff": "Off",
-      "backToSettings": "Back to Settings",
+      "backToSettings": "Back to settings",
       "notificationsEnabled": "Notifications enabled",
       "notificationsDisabled": "Notifications disabled",
       "themeChanged": "Theme changed to {{name}}",
-      "updateFailed": "Failed to update"
+      "updateFailed": "Couldn’t change that setting — check your connection and try again."
     },
     "language": "Language",
     "languageSub": "Choose your preferred language",
@@ -2235,19 +2346,19 @@
     "exportData": "Export my data",
     "privacyPolicy": "Privacy policy",
     "termsOfService": "Terms of service",
-    "contactSupport": "Contact Support",
+    "contactSupport": "Contact support",
     "version": "Version {{v}}",
     "about": "About Arcana",
     "aboutText": "Arcana is your daily companion for tarot, astrology, journaling, and self-discovery.",
     "emailNotChangeable": "Email cannot be changed",
     "typeMinChars": "Type at least 2 characters to search",
-    "saveChanges": "Save Changes",
-    "dailyReminders": "Daily Reminders",
+    "saveChanges": "Save changes",
+    "dailyReminders": "Daily reminders",
     "getNotified": "Get notified for your daily ritual",
     "noTransits": "No transits found for this period",
-    "chartUnavailable": "Chart data not available",
-    "birthCity": "Birth City",
-    "frequentlyAskedQuestions": "Frequently Asked Questions",
+    "chartUnavailable": "No chart data yet — add your birth details to compute one.",
+    "birthCity": "Birth city",
+    "frequentlyAskedQuestions": "Frequently asked questions",
     "faq": {
       "accuracyQ": "How accurate are the readings?",
       "cancelQ": "Can I cancel my subscription?",
@@ -2258,30 +2369,35 @@
     "disclaimerBody": "We collect minimal data. Birth time and location are optional.",
     "actionCannotBeUndone": "This action cannot be undone",
     "toasts": {
-      "exportPartial": "Some data could not be exported. Please try again.",
+      "exportPartial": "Some of your data didn’t export — try again in a moment.",
       "profileUpdated": "Profile updated",
-      "profileUpdateFailed": "Failed to update profile",
-      "updateFailed": "Failed to update",
+      "profileUpdateFailed": "Couldn’t save your profile — check your connection and try again.",
+      "updateFailed": "Couldn’t change that setting — check your connection and try again.",
       "devModeEnabled": "Developer mode enabled"
     },
     "editProfile": {
-      "title": "Edit Profile",
-      "displayName": "Display Name",
+      "title": "Edit profile",
+      "displayName": "Display name",
       "displayNamePlaceholder": "Your name",
-      "birthDate": "Birth Date",
-      "birthTime": "Birth Time (optional)"
+      "birthDate": "Birth date",
+      "birthTime": "Birth time (optional)"
     },
     "helpCenter": {
-      "title": "Help Center"
+      "title": "Help center"
     },
     "deleteAccount": {
-      "title": "Delete Account",
+      "title": "Delete account",
       "dataWarning": "All your data will be permanently deleted, including your profile, journal entries, tarot readings, and saved items.",
       "exportRecommendation": "We recommend exporting your data before deleting your account.",
-      "exportFirst": "Export Data First",
+      "exportFirst": "Export data first",
       "exporting": "Exporting…",
-      "deleteMyAccount": "Delete My Account",
+      "deleteMyAccount": "Delete my account",
       "deleting": "Deleting…"
+    },
+    "legal": {
+      "entertainmentDisclaimer": "Entertainment disclaimer",
+      "acceptanceOfTerms": "Acceptance of terms",
+      "notProfessionalAdvice": "Not professional advice"
     }
   },
   "search": {
@@ -2294,12 +2410,12 @@
       "threeCardSpread": "Three card spread"
     },
     "suggestions": "Suggestions",
-    "recentSearches": "Recent Searches",
-    "quickLinks": "Quick Links",
+    "recentSearches": "Recent searches",
+    "quickLinks": "Quick links",
     "quickLink": {
-      "horoscope": "Daily Horoscope",
-      "journalPrompts": "Journal Prompts",
-      "personalityQuiz": "Personality Quiz"
+      "horoscope": "Daily horoscope",
+      "journalPrompts": "Journal prompts",
+      "personalityQuiz": "Personality quiz"
     },
     "resultsFor": "Search results for \"{{query}}\" will appear here",
     "sections": {
@@ -2332,16 +2448,16 @@
       "friendship": "Friendship Compatibility",
       "work": "Work Compatibility"
     },
-    "disclaimer": "This app is for reflection and entertainment. It does not provide medical, legal, or financial advice.",
+    "disclaimer": "Arcana is for reflection and entertainment. It does not give medical, legal, or financial advice.",
     "you": "You",
-    "theirName": "Their Name",
+    "theirName": "Their name",
     "theirNamePlaceholder": "Enter their name",
-    "theirBirthDate": "Their Birth Date",
+    "theirBirthDate": "Their birth date",
     "requiredMark": "*",
-    "optionalLabel": "Optional: More details for deeper insight",
-    "theirMbti": "Their MBTI Type",
+    "optionalLabel": "Optional: more details for deeper insight",
+    "theirMbti": "Their MBTI type",
     "moreMbti": "+{{count}} more",
-    "theirLoveLanguage": "Their Love Language",
+    "theirLoveLanguage": "Their love language",
     "selectPlaceholder": "Select…",
     "loveLanguages": {
       "words": "Words of Affirmation",
@@ -2350,21 +2466,21 @@
       "quality": "Quality Time",
       "touch": "Physical Touch"
     },
-    "calculate": "Calculate Compatibility",
-    "bestMatches": "Your Best Matches",
+    "calculate": "Calculate compatibility",
+    "bestMatches": "Your best matches",
     "bestMatchesSubtitle": "As a {{sign}}, you’re most compatible with:",
-    "startOver": "Start Over",
+    "startOver": "Compare two other signs",
     "match": "Match",
     "famousPairing": "Famous pairing:",
     "dimensions": {
-      "title": "Relationship Dimensions",
+      "title": "Relationship dimensions",
       "emotional": "Emotional",
       "intellectual": "Intellectual",
       "physical": "Physical",
       "spiritual": "Spiritual"
     },
     "strengths": "Strengths",
-    "frictionPoints": "Friction Points",
+    "frictionPoints": "Friction points",
     "doThisToday": "Do this today",
     "reflectionDisclaimer": "This is a reflection tool — not a verdict. Use it to spark conversation and understanding.",
     "connectionStyles": {
@@ -2403,23 +2519,25 @@
   "library": {
     "loading": "Loading…",
     "toasts": {
-      "loadSavedFailed": "Could not load saved items — you may be offline",
-      "loadMoreFailed": "Failed to load more items",
-      "deleteFailed": "Failed to delete",
-      "deleted": "Deleted"
+      "loadSavedFailed": "Couldn’t load your saved items — check your connection and open the library again.",
+      "deleteFailed": "Couldn’t delete that item — check your connection and try again.",
+      "deleted": "Deleted",
+      "loadMoreSavedFailed": "Couldn’t load more saved items — check your connection and tap Load more again.",
+      "loadMoreSpreadsFailed": "Couldn’t load more spreads — check your connection and tap Load more again.",
+      "loadMoreReadingsFailed": "Couldn’t load more readings — check your connection and tap Load more again."
     },
     "empty": {
       "noAIReadings": "No AI readings yet",
       "getAIFromTarot": "Get AI interpretations from the Tarot section"
     },
     "reading": {
-      "yourQuestion": "Your Question",
-      "cardsDrawn": "Cards Drawn",
+      "yourQuestion": "Your question",
+      "cardsDrawn": "Cards drawn",
       "interpretation": "Interpretation"
     },
     "guides": {
       "tarot-basics": {
-        "title": "Tarot Basics",
+        "title": "Tarot basics",
         "description": "Learn the fundamentals of tarot reading",
         "sections": [
           {
@@ -2427,43 +2545,43 @@
             "content": "The Major Arcana consists of 22 cards representing life's major themes and spiritual lessons. The Minor Arcana has 56 cards divided into four suits, representing day-to-day experiences."
           },
           {
-            "title": "The Four Suits",
+            "title": "The four suits",
             "content": "Wands (Fire — Passion), Cups (Water — Emotions), Swords (Air — Thoughts), Pentacles (Earth — Material)"
           },
           {
-            "title": "Reading Spreads",
+            "title": "Reading spreads",
             "content": "Different card layouts like the Three-Card Spread (Past-Present-Future) and Celtic Cross provide various perspectives on questions."
           },
           {
-            "title": "Reversed Cards",
+            "title": "Reversed cards",
             "content": "When cards appear upside down, they can indicate blocked energy, internalized energy, or the opposite meaning."
           }
         ]
       },
       "mbti-guide": {
-        "title": "MBTI Explained",
+        "title": "MBTI explained",
         "description": "Understanding the 16 personality types",
         "sections": [
           {
-            "title": "The Four Dichotomies",
+            "title": "The four dichotomies",
             "content": "E/I (Energy direction), S/N (Information processing), T/F (Decision making), J/P (Lifestyle approach)"
           },
           {
-            "title": "Cognitive Functions",
+            "title": "Cognitive functions",
             "content": "Each type uses eight cognitive functions in a specific order, determining how they perceive and judge the world."
           },
           {
-            "title": "Your Type's Strengths",
+            "title": "Your type's strengths",
             "content": "Every type has unique gifts — INTJs excel at strategic thinking, ENFPs at inspiring others, ISTJs at reliability."
           },
           {
-            "title": "Growth Areas",
+            "title": "Growth areas",
             "content": "Understanding your inferior function helps identify areas for personal development and stress management."
           }
         ]
       },
       "love-languages": {
-        "title": "Love Languages",
+        "title": "Love languages",
         "description": "The 5 ways we give and receive love",
         "sections": [
           {
@@ -2489,63 +2607,63 @@
         ]
       },
       "zodiac-elements": {
-        "title": "Zodiac Elements",
+        "title": "Zodiac elements",
         "description": "Fire, Earth, Air, and Water signs",
         "sections": [
           {
-            "title": "Fire Signs",
+            "title": "Fire signs",
             "content": "Aries, Leo, Sagittarius — Passionate, enthusiastic, bold, and inspirational. They lead with action."
           },
           {
-            "title": "Earth Signs",
+            "title": "Earth signs",
             "content": "Taurus, Virgo, Capricorn — Grounded, practical, reliable, and focused on tangible results."
           },
           {
-            "title": "Air Signs",
+            "title": "Air signs",
             "content": "Gemini, Libra, Aquarius — Intellectual, communicative, social, and idea-oriented."
           },
           {
-            "title": "Water Signs",
+            "title": "Water signs",
             "content": "Cancer, Scorpio, Pisces — Emotional, intuitive, empathetic, and deeply feeling."
           },
           {
-            "title": "Element Compatibility",
+            "title": "Element compatibility",
             "content": "Fire and Air energize each other. Earth and Water nurture each other. Similar elements understand each other."
           }
         ]
       },
       "moon-phases": {
-        "title": "Moon Phases & Rituals",
+        "title": "Moon phases & rituals",
         "description": "Harness lunar energy for manifestation",
         "sections": [
           {
-            "title": "New Moon",
+            "title": "New moon",
             "content": "Time for new beginnings, setting intentions, and planting seeds for the future."
           },
           {
-            "title": "Waxing Moon",
+            "title": "Waxing moon",
             "content": "Building energy phase — take action on your goals, make progress, attract what you want."
           },
           {
-            "title": "Full Moon",
+            "title": "Full moon",
             "content": "Peak energy for manifestation, celebration, and releasing what no longer serves you."
           },
           {
-            "title": "Waning Moon",
+            "title": "Waning moon",
             "content": "Time for reflection, rest, letting go, and clearing space for new opportunities."
           },
           {
-            "title": "Moon Rituals",
+            "title": "Moon rituals",
             "content": "Write intentions on new moons, charge crystals during full moons, and practice gratitude journaling."
           }
         ]
       },
       "crystals-guide": {
-        "title": "Crystals & Stones",
+        "title": "Crystals & stones",
         "description": "Energy healing with gemstones",
         "sections": [
           {
-            "title": "Clear Quartz",
+            "title": "Clear quartz",
             "content": "The master healer — amplifies energy, clarifies thoughts, enhances spiritual awareness."
           },
           {
@@ -2553,11 +2671,11 @@
             "content": "Calming and protective — promotes peaceful sleep, intuition, and spiritual connection."
           },
           {
-            "title": "Rose Quartz",
+            "title": "Rose quartz",
             "content": "The love stone — attracts love, promotes self-love, heals emotional wounds."
           },
           {
-            "title": "Black Tourmaline",
+            "title": "Black tourmaline",
             "content": "Protective shield — grounds energy, repels negativity, provides emotional stability."
           },
           {
@@ -2567,61 +2685,61 @@
         ]
       },
       "chakras": {
-        "title": "Chakra System",
+        "title": "Chakra system",
         "description": "Balance your energy centers",
         "sections": [
           {
-            "title": "Root Chakra",
+            "title": "Root chakra",
             "content": "Red — Grounding, security, survival. Located at the base of spine. Balanced = stable and secure."
           },
           {
-            "title": "Sacral Chakra",
+            "title": "Sacral chakra",
             "content": "Orange — Creativity, sexuality, emotions. Below navel. Balanced = passionate and creative."
           },
           {
-            "title": "Solar Plexus",
+            "title": "Solar plexus",
             "content": "Yellow — Personal power, confidence, will. Upper abdomen. Balanced = confident and purposeful."
           },
           {
-            "title": "Heart Chakra",
+            "title": "Heart chakra",
             "content": "Green — Love, compassion, connection. Center of chest. Balanced = loving and accepting."
           },
           {
-            "title": "Throat Chakra",
+            "title": "Throat chakra",
             "content": "Blue — Communication, truth, expression. Throat. Balanced = authentic and expressive."
           },
           {
-            "title": "Third Eye",
+            "title": "Third eye",
             "content": "Indigo — Intuition, wisdom, insight. Between eyebrows. Balanced = intuitive and wise."
           },
           {
-            "title": "Crown Chakra",
+            "title": "Crown chakra",
             "content": "Violet — Spiritual connection, enlightenment. Top of head. Balanced = spiritually connected."
           }
         ]
       },
       "numerology": {
-        "title": "Numerology Basics",
+        "title": "Numerology basics",
         "description": "The mystical significance of numbers",
         "sections": [
           {
-            "title": "Life Path Number",
+            "title": "Life path number",
             "content": "Calculated from birthdate — reveals your life's purpose and the path you're meant to walk."
           },
           {
-            "title": "Expression Number",
+            "title": "Expression number",
             "content": "From your full name — shows your natural talents, abilities, and how you express yourself."
           },
           {
-            "title": "Soul Urge",
+            "title": "Soul urge",
             "content": "From vowels in your name — reveals your innermost desires, motivations, and what drives you."
           },
           {
-            "title": "Personality Number",
+            "title": "Personality number",
             "content": "From consonants — how others perceive you, the mask you show to the world."
           },
           {
-            "title": "Master Numbers",
+            "title": "Master numbers",
             "content": "11, 22, 33 carry powerful spiritual significance and heightened potential for growth."
           }
         ]
@@ -2630,15 +2748,15 @@
     "loadMoreSpreads": "Load more spreads",
     "loadMoreSaved": "Load more saved items",
     "loadMoreReadings": "Load more readings",
-    "contentComingSoon": "Content coming soon…",
+    "contentComingSoon": "More guides are on the way.",
     "continueExploring": "Continue exploring the guides to deepen your spiritual practice",
-    "savedSpreads": "Saved Spreads",
-    "savedCards": "Saved Cards",
-    "savedHoroscopes": "Saved Horoscopes",
+    "savedSpreads": "Saved spreads",
+    "savedCards": "Saved cards",
+    "savedHoroscopes": "Saved horoscopes",
     "periodDaily": "Daily",
     "tabs": {
       "saved": "Saved",
-      "aiReadings": "AI Readings",
+      "aiReadings": "AI readings",
       "guides": "Guides"
     },
     "filters": {
@@ -2648,7 +2766,8 @@
       "spreads": "Spreads"
     },
     "periodWeekly": "Weekly",
-    "periodMonthly": "Monthly"
+    "periodMonthly": "Monthly",
+    "aiReading": "AI reading"
   },
   "celebration": {
     "streak": {
@@ -2657,9 +2776,9 @@
       "keepFlowing": "One more tomorrow keeps it."
     },
     "levelUp": {
-      "title": "Level Up.",
+      "title": "Level up.",
       "level": "Level",
-      "newAbilities": "New Abilities Unlocked",
+      "newAbilities": "New abilities unlocked",
       "rank": "Rank"
     }
   },
@@ -3024,52 +3143,65 @@
     ]
   },
   "errorBoundary": {
-    "title": "Something broke",
+    "title": "This screen stopped",
     "message": "This screen hit an error and stopped loading. Try again first, and go back home if it happens twice.",
-    "tryAgain": "Try Again",
-    "returnHome": "Return Home",
-    "viewDiagnostics": "View Diagnostics",
-    "hideDetails": "Hide Details",
-    "showDetails": "Show Details",
-    "errorDetails": "Error Details",
+    "tryAgain": "Reload this screen",
+    "returnHome": "Go home",
+    "viewDiagnostics": "View diagnostics",
+    "hideDetails": "Hide details",
+    "showDetails": "Show details",
+    "errorDetails": "Error details",
     "copy": "Copy",
     "copied": "Copied",
     "tailFooter": "Nothing you have saved is affected.",
     "networkTitle": "No connection",
     "networkMessage": "We could not reach the server. Check your internet connection, then try again.",
     "notFoundTitle": "Page not found",
-    "notFoundMessage": "This link does not go anywhere. The page may have been moved or removed."
+    "notFoundMessage": "This link does not go anywhere. The page may have been moved or removed.",
+    "retryContent": "Reload this content",
+    "contentTitle": "Couldn’t load this {{type}}",
+    "contentMessage": "It didn’t load this time. Reload to try again.",
+    "contentRetry": "Reload {{type}}"
   },
   "astrologyErrors": {
-    "noChart": "No chart found",
-    "loadChart": "Failed to load chart",
-    "computeChart": "Failed to compute chart",
-    "dailyHoroscope": "Failed to load daily horoscope",
-    "weeklyForecast": "Failed to load weekly forecast",
-    "monthlyForecast": "Failed to load monthly forecast",
-    "transits": "Failed to load transits"
+    "noChart": "No chart yet — add your birth details to compute one.",
+    "loadChart": "Couldn’t load your chart — check your connection and try again.",
+    "computeChart": "Couldn’t compute your chart — check your birth details and try again.",
+    "dailyHoroscope": "Couldn’t load today’s horoscope — check your connection and try again.",
+    "weeklyForecast": "Couldn’t load this week’s forecast — check your connection and try again.",
+    "monthlyForecast": "Couldn’t load this month’s forecast — check your connection and try again.",
+    "transits": "Couldn’t load your transits — check your connection and try again.",
+    "signedOut": "Your session ended — sign in again to load this.",
+    "timeout": "The request timed out — check your connection and try again.",
+    "rateLimited": "Too many requests — wait a moment and try again.",
+    "contract": "The server sent something this version couldn’t read — try again in a moment.",
+    "geocodeNone": "No places matched — try the nearest city, or add the country.",
+    "geocodeUnavailable": "Place search isn’t responding — check your connection and try again."
   },
   "savedSheet": {
-    "threeCardSpread": "Three Card Spread",
-    "morningReflection": "Morning Reflection",
+    "threeCardSpread": "Three-card spread",
+    "morningReflection": "Morning reflection",
     "morningReflectionSub": "Gratitude and intentions",
-    "loveLanguageResult": "Love Language Result",
+    "loveLanguageResult": "Love language result",
     "wordsOfAffirmation": "Words of Affirmation"
   },
   "billing": {
-    "purchaseCancelled": "Purchase cancelled",
-    "purchaseFailed": "Purchase failed",
-    "webNotAvailableOnMobile": "Web billing is not available on mobile. Please use the app store.",
-    "userNotAuthenticated": "User not authenticated",
-    "alreadyPremium": "Already have premium",
-    "stripeNotConfigured": "Stripe is not configured. Please contact support.",
-    "notAuthenticated": "Not authenticated",
-    "checkoutSessionFailed": "Failed to create checkout session",
-    "noCheckoutUrl": "No checkout URL returned",
+    "purchaseCancelled": "Purchase cancelled — nothing was charged.",
+    "purchaseFailed": "The purchase didn’t complete. Try again — if you were charged, use Restore purchases.",
+    "webNotAvailableOnMobile": "Card checkout isn’t available in the app — subscribe through Google Play instead.",
+    "userNotAuthenticated": "Sign in to subscribe.",
+    "alreadyPremium": "You already have Premium on this account.",
+    "stripeNotConfigured": "Card checkout isn’t available right now — try again later.",
+    "notAuthenticated": "Sign in to subscribe.",
+    "checkoutSessionFailed": "Couldn’t open checkout — check your connection and try again.",
+    "noCheckoutUrl": "Couldn’t open checkout — try again in a moment.",
     "paymentCancelled": "Payment cancelled — no charge was made.",
-    "premiumActivated": "Premium activated. Welcome!",
+    "premiumActivated": "Premium is active on your account.",
     "processingPayment": "Processing your subscription… this may take a few seconds.",
-    "processingTimeout": "Your payment is being processed. If premium doesn't appear shortly, refresh or contact support."
+    "processingTimeout": "Your payment went through, but Premium hasn’t switched on yet. Refresh in a minute — if it’s still off, contact support.",
+    "alreadyPremiumWeb": "You already subscribed on the web — manage it from Settings.",
+    "alreadyPremiumMobile": "You already subscribed in the app — manage it in Google Play.",
+    "productUnavailable": "This plan isn’t available in the store right now — try again later."
   },
   "lifePath": {
     "1": {
@@ -3316,7 +3448,7 @@
     }
   },
   "iching": {
-    "title": "I-Ching Oracle",
+    "title": "I Ching Oracle",
     "intro": "The I-Ching — the Book of Changes — is the oldest divination system in the world. Hold a question in mind. Throw the coins six times. The hexagram that appears reflects the moving energies around your question.",
     "questionLabel": "Your question (optional)",
     "questionPlaceholder": "What would be most helpful for me to understand right now?",
@@ -3336,7 +3468,8 @@
     "readAsLiuYao": "Read this cast as 六爻",
     "castingLine": "Line {{n}} of 6",
     "readFullReading": "Read the full reading",
-    "askOracleCta": "Read this hexagram for me"
+    "askOracleCta": "Read this hexagram for me",
+    "share": "Share this hexagram"
   },
   "humanDesign": {
     "title": "Human Design",
@@ -3344,7 +3477,7 @@
     "birthDate": "Birth date",
     "birthTime": "Birth time (optional, sharpens result)",
     "calculate": "Reveal my design",
-    "calcFailed": "Could not calculate chart",
+    "calcFailed": "Couldn’t calculate your design — check your birth details and try again.",
     "needBirthDate": "Birth date is required",
     "disclaimer": "This is a lightweight reading. A full Human Design chart uses planetary positions from your exact birth moment. For the complete 9-centre bodygraph, export your birth data and visit a dedicated Human Design site.",
     "signatureLabel": "Signature",
@@ -3356,7 +3489,7 @@
     "affirmationLabel": "Your affirmation",
     "tarotPairingLabel": "Tarot pairing",
     "backToInput": "Recalculate",
-    "recalculate": "Recalculate",
+    "recalculate": "Calculate another chart",
     "types": {
       "manifestor": {
         "name": "Manifestor"
@@ -3392,7 +3525,8 @@
     "signatureFelt": "Signature felt",
     "decisionScriptHeading": "How to make decisions: {{authority}}",
     "commonMistakeLabel": "Common mistake",
-    "realityCheckLabel": "Reality check"
+    "realityCheckLabel": "Reality check",
+    "share": "Share my design"
   },
   "bazi": {
     "title": "Bazi — Four Pillars of Destiny",
@@ -3400,15 +3534,15 @@
     "birthDate": "Birth date",
     "birthTime": "Birth time (optional)",
     "calculate": "Cast the four pillars",
-    "calcFailed": "Could not compute Bazi",
+    "calcFailed": "Couldn’t cast your four pillars — check your birth details and try again.",
     "needBirthDate": "Birth date is required",
-    "pillarsLabel": "Your Four Pillars",
+    "pillarsLabel": "Your four pillars",
     "year": "Year",
     "month": "Month",
     "day": "Day",
     "hour": "Hour",
-    "elementBalanceLabel": "Element Balance",
-    "guidanceLabel": "Element Guidance",
+    "elementBalanceLabel": "Element balance",
+    "guidanceLabel": "Element guidance",
     "dayMasterLabel": "Day Master",
     "strengthsLabel": "Strengths",
     "challengesLabel": "Challenges",
@@ -3416,7 +3550,7 @@
     "strugglingLabel": "When you struggle",
     "affirmationLabel": "Your affirmation",
     "back": "Recalculate",
-    "recalculate": "Recalculate",
+    "recalculate": "Cast for another birth date",
     "elements": {
       "wood": "Wood",
       "fire": "Fire",
@@ -3439,18 +3573,18 @@
         "desc": "Your day-master element runs lean. You receive and absorb easily; the growth edge is in assertion and self-sourcing."
       }
     },
-    "innerForcesLabel": "Inner Forces",
+    "innerForcesLabel": "Inner forces",
     "innerForcesSub": "Each pillar maps to a classical Ten-Gods archetype relative to your Inner Element.",
-    "hiddenInfluencesLabel": "Hidden Influences",
+    "hiddenInfluencesLabel": "Hidden influences",
     "hiddenInfluencesSub": "Each earthly branch carries 1–3 additional stems that quietly shape the pillar.",
-    "nayinLabel": "Soul Sound of your year",
-    "supportingLabel": "Your Supporting Element",
+    "nayinLabel": "Soul sound of your year",
+    "supportingLabel": "Your supporting element",
     "supportingSub": "The element your chart leans toward for balance — wear its color, face its direction, keep its numbers close.",
     "luckyNumbersLabel": "Lucky numbers",
-    "luckyColorTodayLabel": "Today’s Lucky Color",
+    "luckyColorTodayLabel": "Today’s lucky color",
     "premiumTeaserTitle": "Go deeper with Premium",
     "premiumTeaserBody": "Unlock your Inner Forces (classical Ten-Gods), Hidden Influences, Soul Sound, your Supporting Element with lucky color + direction + numbers, and Today’s Lucky Color widget.",
-    "premiumTeaserCta": "See Premium",
+    "premiumTeaserCta": "Unlock the full reading",
     "gender": "Birth gender — required for luck pillars + annual reading",
     "selectGender": "Select to unlock deep mode",
     "male": "Male",
@@ -3476,7 +3610,8 @@
     "lifeAreasHeading": "Wealth · Partnership · Health",
     "wealthLabel": "Wealth",
     "spouseLabel": "Partnership",
-    "healthLabel": "Health"
+    "healthLabel": "Health",
+    "share": "Share my pillars"
   },
   "ayurveda": {
     "withSecondary": "with secondary {{sec}}",
@@ -3499,7 +3634,7 @@
     }
   },
   "dream": {
-    "title": "Dream Interpreter",
+    "title": "Dream interpreter",
     "intro": "Describe your dream in as much detail as you remember. Don’t worry about order or clarity — the mind works in symbols. We’ll match archetypal patterns and offer reflective questions to sit with. Dreams don’t have single meanings; they have invitations.",
     "label": "Tell me about your dream",
     "placeholder": "I was standing by a dark ocean and couldn’t find my way home. A bird flew overhead carrying something in its beak…",
@@ -3514,8 +3649,8 @@
     "practiceBody": "Keep a notebook by your bed. Record dreams the moment you wake, before they fade. Over time, recurring symbols reveal the language your unconscious uses with you.",
     "archetypeLabel": "A dream symbol reading",
     "back": "Interpret another dream",
-    "another": "Another dream",
-    "genericTitle": "Dream Reading",
+    "another": "Interpret another dream",
+    "genericTitle": "Dream reading",
     "genericReflection": "Dreams bring messages — honour the question they leave with you.",
     "interpreting": "Reading the dream…",
     "yourDreamLabel": "Your dream",
@@ -3533,11 +3668,12 @@
     "resourcesLabel": "Going deeper",
     "culturesLabel": "How different traditions read dreams",
     "lucidLabel": "Lucid dreaming techniques",
-    "nightmaresLabel": "Working with nightmares"
+    "nightmaresLabel": "Working with nightmares",
+    "share": "Share this interpretation"
   },
   "extraQuizzes": {
     "dark-triad": {
-      "title": "Dark Triad Shadow",
+      "title": "Dark Triad shadow",
       "description": "Three shadow traits psychologists call the 'dark triad' — narcissism, Machiavellianism, and psychopathy — exist to some degree in all of us. Surface where your shadow runs strongest.",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3547,7 +3683,7 @@
       ]
     },
     "disc": {
-      "title": "DISC Behavioural Profile",
+      "title": "DISC behavioural profile",
       "description": "A four-quadrant model of workplace behaviour: Dominance, Influence, Steadiness, Conscientiousness. See which style leads for you and how you naturally contribute to a team.",
       "timeEstimate": "5 min",
       "whatYouGet": [
@@ -3557,7 +3693,7 @@
       ]
     },
     "money-personality": {
-      "title": "Money Personality",
+      "title": "Money personality",
       "description": "Five distinct patterns of relating to money — the Saver, the Spender, the Avoider, the Monk, the Status-Seeker. See which script your money self is running.",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3567,7 +3703,7 @@
       ]
     },
     "boundaries": {
-      "title": "Boundaries Check-In",
+      "title": "Boundaries check-in",
       "description": "Where are your boundaries strong, where are they weak, and where do they shift depending on who’s asking? Four patterns: rigid walls, porous openness, healthy flex, situation-dependent.",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3577,7 +3713,7 @@
       ]
     },
     "burnout": {
-      "title": "Burnout Check",
+      "title": "Burnout check",
       "description": "Burnout has three measurable dimensions: exhaustion (drained energy), cynicism (distance from the work), and efficacy-loss (I’m not effective anymore). See where you are today.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3587,7 +3723,7 @@
       ]
     },
     "communication": {
-      "title": "Communication Style",
+      "title": "Communication style",
       "description": "Four styles emerge under difficulty: passive (hide), aggressive (attack), passive-aggressive (sideways), assertive (clear + respectful). See your default and which is available when you’re regulated.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3597,7 +3733,7 @@
       ]
     },
     "conflict": {
-      "title": "Conflict Style",
+      "title": "Conflict style",
       "description": "The Thomas-Kilmann model identifies five modes for handling conflict: competing, collaborating, compromising, avoiding, accommodating. See your preferred response — and which modes you need to practice.",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3607,7 +3743,7 @@
       ]
     },
     "chronotype": {
-      "title": "Sleep Chronotype",
+      "title": "Sleep chronotype",
       "description": "Four sleep-wake personalities by Dr. Michael Breus: the Lion (morning), the Bear (daytime), the Wolf (evening), the Dolphin (restless). Find your rhythm — and when your real peak hours are.",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3617,7 +3753,7 @@
       ]
     },
     "creative-type": {
-      "title": "Creative Type",
+      "title": "Creative type",
       "description": "Five ways of being creative — five roles in the creative process. The Maker, the Dreamer, the Performer, the Organiser, the Analyser. See which you take on naturally — and who you partner best with.",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3627,7 +3763,7 @@
       ]
     },
     "spiritual-type": {
-      "title": "Spiritual Type",
+      "title": "Spiritual type",
       "description": "Five ways of relating to the sacred, across all traditions: the Mystic (direct experience), the Ritualist (ceremony), the Seeker (study), the Servant (devotion through action), the Warrior (discipline as path).",
       "timeEstimate": "4 min",
       "whatYouGet": [
@@ -3640,7 +3776,7 @@
       "scoreDistribution": "Score distribution"
     },
     "jungian-functions": {
-      "title": "Jungian Functions",
+      "title": "Jungian functions",
       "description": "Your dominant Jungian cognitive function — Ni, Ne, Si, Se, Ti, Te, Fi, or Fe — and how it stacks with your MBTI letters into the way you process the world.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3650,7 +3786,7 @@
       ]
     },
     "love-styles": {
-      "title": "Love Styles",
+      "title": "Love styles",
       "description": "Which of the four Greek love styles you lead with: Eros (passion), Philia (deep friendship), Storge (steady warmth), or Agape (unconditional). One isn’t better — they ask different things of you.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3660,7 +3796,7 @@
       ]
     },
     "parenting-style": {
-      "title": "Parenting Style",
+      "title": "Parenting style",
       "description": "Your default Baumrind parenting style — Authoritative, Authoritarian, Permissive, or Neglectful — under stress versus when you’re at your best. What research says about each, and one affirmation to carry.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3670,7 +3806,7 @@
       ]
     },
     "learning-style": {
-      "title": "Learning Style",
+      "title": "Learning style",
       "description": "Your VARK preference — Visual, Auditory, Read/Write, or Kinesthetic. How you actually take in information, and how to design study + work to match the wiring.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3700,7 +3836,7 @@
       ]
     },
     "mood-screener": {
-      "title": "Mood Screener",
+      "title": "Mood screener",
       "description": "A two-week mood signal read using non-diagnostic PHQ-2-style questions. not a diagnosis — a self-reflection mirror, with crisis resources surfaced if your answers suggest you need support.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3710,7 +3846,7 @@
       ]
     },
     "anxiety-profile": {
-      "title": "Anxiety Profile",
+      "title": "Anxiety profile",
       "description": "Where anxiety tends to show up in your body and life — somatic (body-first), generalised, social, or performance — and which tools tend to actually help that flavour.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3720,7 +3856,7 @@
       ]
     },
     "leadership-style": {
-      "title": "Leadership Style",
+      "title": "Leadership style",
       "description": "Your default leadership mode under pressure — Visionary, Servant, Commander, or Coach. Including who you should pair with, and where this style breaks under stress.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3730,7 +3866,7 @@
       ]
     },
     "productivity-style": {
-      "title": "Productivity Style",
+      "title": "Productivity style",
       "description": "Your work-rhythm profile — Deep Worker, Sprinter, Connector, or Organiser. Where your energy actually lands, the ideal environment for it, and what to stop forcing.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3740,7 +3876,7 @@
       ]
     },
     "relationship-readiness": {
-      "title": "Relationship Readiness",
+      "title": "Relationship readiness",
       "description": "Where you are in your readiness for partnership — ready, healing, avoiding, or rushing. Without judgment, with one thing to tend to first.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3750,7 +3886,7 @@
       ]
     },
     "wellness-type": {
-      "title": "Wellness Type",
+      "title": "Wellness type",
       "description": "How you best restore — Athlete (move), Healer (deep self-care), Contemplative (stillness), or Balanced (mix). The tools that actually work for your nature, not the trends.",
       "timeEstimate": "3 min",
       "whatYouGet": [
@@ -3761,7 +3897,7 @@
     }
   },
   "mood": {
-    "title": "Daily Mood",
+    "title": "Daily mood",
     "intro": "How is today landing in you? Pick the shape of it, notice the intensity, optionally write a sentence. Over time your mood curve becomes a map.",
     "intensityLabel": "Intensity",
     "noteLabel": "One-line note (optional)",
@@ -3818,7 +3954,7 @@
     "letterTitle": "Your weekly letter",
     "themeLabel": "Theme",
     "carePracticeLabel": "One practice",
-    "rewriteLetter": "Rewrite",
+    "rewriteLetter": "Write me another letter",
     "patternLabel": "This week",
     "heaviestDayLabel": "Heaviest day",
     "lightestDayLabel": "Lightest day",
@@ -3826,7 +3962,7 @@
     "driftUnits": "mood y-value delta"
   },
   "compat": {
-    "title": "Partner Compatibility",
+    "title": "Partner compatibility",
     "intro": "Combines MBTI cognitive-function fit with astrology elemental compatibility to show you where you click, where you rub, and where the growth edges live. Enter what you know about each side — at least one from each.",
     "yourSide": "You",
     "yourMbti": "Your MBTI type",
@@ -3837,11 +3973,11 @@
     "selectOrSkip": "Select or skip",
     "runButton": "Reveal our compatibility",
     "needBothSides": "Need at least one data point from each side (MBTI or birth date).",
-    "failed": "Could not compute compatibility",
+    "failed": "Couldn’t compute the match — check your connection and try again.",
     "back": "Check another pair",
     "another": "Check another",
     "compatibilityLabel": "Compatibility",
-    "mbtiLabel": "MBTI Fit",
+    "mbtiLabel": "MBTI fit",
     "astroLabel": "Astrology Fit",
     "strengthsLabel": "Strengths",
     "growthLabel": "Growth edges",
@@ -3849,7 +3985,7 @@
     "yourBirthTime": "Your birth time (sharpens the reading — includes the Moon)",
     "partnerBirthTime": "Partner's birth time (optional)",
     "computing": "Computing the aspects…",
-    "synastryLabel": "Astrology Synastry",
+    "synastryLabel": "Astrology synastry",
     "harmoniousLabel": "Harmonious",
     "intenseLabel": "Intense",
     "challengingLabel": "Challenging",
@@ -3859,10 +3995,11 @@
     "partnerPlanet": "Partner's",
     "elementalLabel": "Elemental blend",
     "compositeLabel": "Your relationship as a third entity",
-    "compositeIntro": "A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity."
+    "compositeIntro": "A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.",
+    "share": "Share this match"
   },
   "wisdom": {
-    "title": "Daily Wisdom"
+    "title": "Daily wisdom"
   },
   "fengshui": {
     "title": "Feng Shui Bagua",
@@ -3870,7 +4007,7 @@
     "scale": "1 = severely depleted · 3 = okay · 5 = thriving",
     "reveal": "Reveal my Bagua",
     "backToRate": "Re-rate",
-    "reRate": "Re-rate",
+    "reRate": "Rate the areas again",
     "mapLabel": "Your Bagua map",
     "overallScore": "Overall: {{n}} / 5",
     "focusLabel": "Area needing attention",
@@ -3929,46 +4066,47 @@
     "problemsHeading": "Common problems checklist",
     "problemsIntro": "Tap any that apply to your home. Each one comes with a concrete fix. Most people find 3-5 that hit, and fixing the high-severity ones first delivers visible results within weeks.",
     "why": "Why it matters",
-    "fix": "Remedy"
+    "fix": "Remedy",
+    "share": "Share my Bagua"
   },
   "community": {
     "title": "Community",
-    "postButton": "Post",
-    "whisperButton": "Whisper",
+    "postButton": "Write a post",
+    "whisperButton": "Write a whisper",
     "newPost": "New post",
     "topicLabel": "Topic",
     "placeholder": "Share a reading, a thought, a question…",
     "postAnonymously": "Post anonymously",
-    "send": "Post",
+    "send": "Post my comment",
     "posting": "Posting…",
     "posted": "Posted",
-    "postFailed": "Could not post",
+    "postFailed": "Couldn’t post — check your connection and try again.",
     "postedUnderReview": "Posted — our team will review shortly.",
     "commentUnderReview": "Comment posted — our team will review shortly.",
     "contentBlocked": "This content conflicts with our community guidelines.",
     "contentTooLong": "Post is too long (max 2000)",
     "contentDisallowed": "That phrase is not allowed",
     "contentEmpty": "Write something first",
-    "anonymous": "Anonymous seeker",
-    "loadFailed": "Could not load feed",
+    "anonymous": "Anonymous",
+    "loadFailed": "Couldn’t load the feed — check your connection and try again.",
     "empty": "No posts here yet. Be the first.",
     "signInFirst": "Sign in to react",
     "signInToPost": "Sign in to post, react, and comment.",
-    "reactFailed": "Could not react",
+    "reactFailed": "Couldn’t add your reaction — try again.",
     "reported": "Report submitted. Thank you.",
-    "reportFailed": "Could not submit report",
+    "reportFailed": "Couldn’t send the report — check your connection and try again.",
     "report": "Report",
     "reportPostTitle": "Report post",
     "blockUser": "Block user",
     "blocked": "User blocked",
-    "blockFailed": "Could not block",
+    "blockFailed": "Couldn’t block this member — try again.",
     "back": "Back to feed",
     "backToFeed": "Back to feed",
     "commentsHeading": "Comments",
     "noComments": "No comments yet. Be the first to respond.",
     "commentPlaceholder": "Write a response…",
     "commentAnonymously": "Comment anonymously",
-    "commentFailed": "Could not post comment",
+    "commentFailed": "Couldn’t post your comment — check your connection and try again.",
     "topics": {
       "all": "All",
       "general": "General",
@@ -3995,7 +4133,8 @@
       "placeholder": "What needs to be said but has no audience?",
       "send": "Send whisper",
       "empty": "The well is quiet. Be the first to whisper."
-    }
+    },
+    "publishPost": "Publish my post"
   },
   "common": {
     "mainContent": "Main content",
@@ -4010,10 +4149,42 @@
     "claiming": "Claiming…",
     "alreadyClaimed": "Come back tomorrow",
     "claimed": "+{{n}} Moonstones · Day {{d}} streak",
-    "claimFailed": "Could not claim today’s reward",
+    "claimFailed": "Couldn’t claim today’s reward — check your connection and try again.",
     "topUp": "Top up",
     "premiumLabel": "Premium · all readings unlocked",
-    "earn": "Earn moonstones"
+    "earn": "Earn Moonstones",
+    "costLine": "Each reading uses <gold>{{n}} Moonstones</gold>",
+    "youHave": "You have {{n}}",
+    "earnSheet": {
+      "title": "Earn Moonstones",
+      "titleSoftCap": "Daily limit reached",
+      "softCapBody": "You’ve done 50 readings in the last 24 hours — the limit that keeps AI quality high for everyone. Your next reading opens in <gold>{{when}}</gold>, and slots free up one at a time as older readings age out. Premium stays on throughout.",
+      "softCapSoon": "a few hours",
+      "now": "now",
+      "timeHM": "{{h}}h {{m}}m",
+      "timeM": "{{m}}m",
+      "browseBody": "Each AI reading costs <gold>{{cost}} Moonstones</gold>.",
+      "insufficientBody": "You need <gold>{{cost}} Moonstones</gold> for this reading.",
+      "youHave": "You have <strong>{{n}}</strong>.",
+      "earnBelow": "Earn more below.",
+      "adCredited": "{{n}} Moonstones added.",
+      "adNotReady": "No ad is ready yet — try again in a moment.",
+      "adPersistFailed": "You watched the ad, but the Moonstones couldn’t be saved. Check your connection and try again.",
+      "adDismissed": "Ad closed early — watch it to the end to earn Moonstones.",
+      "adsUnavailable": "Ads aren’t available on this device.",
+      "checkinDone": "{{n}} Moonstones added — day {{day}} of your streak.",
+      "checkinFailed": "Couldn’t check in. Check your connection and try again.",
+      "watchAdTitle": "Watch a short video",
+      "watchAdSub": "Earn {{n}} Moonstones",
+      "watchAdNotReady": "No ad is ready right now",
+      "checkinTitle": "Daily check-in",
+      "checkinSub": "{{min}} to {{max}} Moonstones, rising with your streak",
+      "checkinRange": "+{{min}} to +{{max}}",
+      "checkinClaimed": "You’ve already checked in today.",
+      "premiumTitle": "Get Premium",
+      "premiumSub": "No Moonstones to spend, no ads, every spread and chart",
+      "notNow": "Not now"
+    }
   },
   "askOracle": {
     "cta": "Ask the Oracle about this",
@@ -4023,9 +4194,11 @@
     "contextLabel": "Your question",
     "cardLabel": "Card drawn",
     "drawing": "Drawing…",
-    "errorGeneric": "Could not reach the Oracle. Try again.",
-    "share": "Share",
-    "redraw": "New read"
+    "errorGeneric": "Couldn't reach the Oracle — check your connection and try again.",
+    "share": "Share this reading",
+    "redraw": "Draw again",
+    "retry": "Ask the Oracle again",
+    "close": "Close the Oracle"
   },
   "moonstoneTopUp": {
     "title": "Top up Moonstones",
@@ -4038,19 +4211,19 @@
       "devotee": "Devotee"
     },
     "success": "{{n}} Moonstones on the way — takes a few seconds to land.",
-    "packNotFound": "Pack not available in store.",
-    "stripeFailed": "Could not open checkout",
-    "generic": "Purchase failed",
-    "securePayment": "Secure checkout powered by Stripe. One-time purchase — cancel anytime.",
+    "packNotFound": "That pack isn’t in the store right now — pick another or try again later.",
+    "stripeFailed": "Couldn’t open checkout — check your connection and try again.",
+    "generic": "The purchase didn’t complete. Try again in a moment.",
+    "securePayment": "Secure checkout powered by Stripe. One-time purchase — no subscription.",
     "playStorePurchase": "Charged through Google Play. Manage purchases in your Google account."
   },
   "companion": {
     "title": "Companion",
-    "newConversation": "New",
+    "newConversation": "New conversation",
     "emptyState": "Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.",
     "placeholder": "Ask the companion…",
     "thinking": "thinking…",
-    "sendFailed": "Could not reach the companion: {{err}}",
+    "sendFailed": "Couldn’t reach your companion — check your connection and send again.",
     "dailyLimitReached": "Daily message limit reached — come back tomorrow.",
     "dailyRemaining": "{{remaining}} messages left today",
     "personas": {
@@ -4074,7 +4247,7 @@
   },
   "advisors": {
     "title": "Advisors",
-    "intro": "Meet the readers joining Arcana. Paid sessions are rolling out gradually. Express interest to be notified when each advisor opens bookings.",
+    "intro": "Meet the readers joining Arcana. Paid sessions are rolling out gradually. Express interest and check back — a Book a session button appears on each advisor’s profile when they open bookings.",
     "back": "All advisors",
     "empty": "No advisors available yet. Check back soon.",
     "yearsLabel": "Experience",
@@ -4083,18 +4256,18 @@
     "specialtiesLabel": "Specialties",
     "rateLabel": "Indicative rate",
     "expressInterest": "Express interest",
-    "bookingsComingSoon": "Paid sessions are rolling out gradually. Tell us what you’d like help with and we’ll notify you when this advisor opens bookings.",
+    "bookingsComingSoon": "Paid sessions are rolling out gradually. Tell us what you’d like help with — when this advisor opens bookings, a Book a session button appears on this page.",
     "topicPlaceholder": "What would you like to work on? (optional)",
-    "notifyMe": "Notify me when bookings open",
+    "notifyMe": "Register my interest",
     "submitting": "Submitting…",
-    "interestSubmitted": "Interest noted — we’ll notify you when {{n}} opens bookings.",
-    "interestFailed": "Could not submit interest",
+    "interestSubmitted": "Interest noted. Check back on this profile — a Book a session button appears here when {{n}} opens bookings.",
+    "interestFailed": "Couldn’t record your interest — check your connection and try again.",
     "signInToExpress": "Sign in to express interest",
     "specialties": {
       "tarot": "tarot",
       "astrology": "astrology",
       "natal-chart": "natal chart",
-      "i-ching": "I-Ching",
+      "i-ching": "I Ching",
       "bazi": "bazi",
       "career": "career",
       "dreams": "dreams",
@@ -4105,55 +4278,55 @@
     "bookCta": "Book a session"
   },
   "moon": {
-    "title": "Tonight’s Moon",
+    "title": "Tonight’s moon",
     "illumination": "{{pct}}% illuminated · day {{day}} of ~29.5",
     "ritual": "Tonight’s ritual",
     "nextPhase": "Next: {{name}} in {{days}} days",
     "phase": {
       "new": {
-        "name": "New Moon",
+        "name": "New moon",
         "guidance": "A quiet threshold. Name what you are beginning — not what is finished. Do not force clarity; just set direction.",
         "ritual": "Write three intentions for the coming cycle. Fold the paper, keep it somewhere private until the full moon."
       },
       "waxing-crescent": {
-        "name": "Waxing Crescent",
+        "name": "Waxing crescent",
         "guidance": "Take the first small action toward what you named at the new moon. Consistency beats intensity here.",
         "ritual": "Light a candle and list three tiny steps you can take this week. Take the first one today."
       },
       "first-quarter": {
-        "name": "First Quarter",
+        "name": "First quarter",
         "guidance": "Expect resistance now — this is when momentum meets doubt. Recommit or adjust; do not abandon.",
         "ritual": "Name one obstacle standing between you and your intention. Write the exact next action that moves past it."
       },
       "waxing-gibbous": {
-        "name": "Waxing Gibbous",
+        "name": "Waxing gibbous",
         "guidance": "The result is close but needs polish. Do the boring, careful work now — editing, checking, repairing.",
         "ritual": "Review what you have built this cycle. What one detail, if improved, would change the whole?"
       },
       "full": {
-        "name": "Full Moon",
+        "name": "Full moon",
         "guidance": "Harvest what is ripe. Celebrate progress; acknowledge what is now clearly not working. Emotions run high — move slowly.",
         "ritual": "Under moonlight (or facing a window), name three things completed this cycle. Speak one truth you have been avoiding."
       },
       "waning-gibbous": {
-        "name": "Waning Gibbous",
+        "name": "Waning gibbous",
         "guidance": "Share what you learned. Teach, thank, record. This is integration — not striving.",
         "ritual": "Send one message of thanks to someone who supported you this cycle. Write one lesson in your journal."
       },
       "last-quarter": {
-        "name": "Last Quarter",
+        "name": "Last quarter",
         "guidance": "Clear space. Finish what is finishable; release what is not. Do not start new projects yet.",
         "ritual": "Name one habit, item, or commitment to release. Write it down, then cross it out."
       },
       "waning-crescent": {
-        "name": "Waning Crescent",
+        "name": "Waning crescent",
         "guidance": "Do less. Sleep more. Dream. This is not procrastination — it is the nervous system restoring before the next cycle.",
         "ritual": "Unplug for an hour. No screens, no productivity. Sit, walk, lie down. Notice what surfaces when you stop."
       }
     }
   },
   "runes": {
-    "title": "Rune Casting",
+    "title": "Rune casting",
     "intro": "Three staves from the Elder Futhark — past, present, future. Hold a question, then cast.",
     "castButton": "Cast the runes",
     "casting": "Casting…",
@@ -4176,7 +4349,8 @@
     "reversed": "merkstave",
     "whenItLandsLabel": "When this lands for you",
     "promptLabel": "Journal prompt",
-    "askOracleCta": "Read the cast as a whole"
+    "askOracleCta": "Read the cast as a whole",
+    "share": "Share this cast"
   },
   "dice": {
     "title": "Dice Oracle",
@@ -4215,14 +4389,14 @@
     "yourCodeLabel": "Your code",
     "copy": "Copy link",
     "copied": "Link copied",
-    "copyFailed": "Could not copy",
-    "share": "Share",
+    "copyFailed": "Couldn’t copy the code — select it and copy it manually.",
+    "share": "Share my code",
     "shareText": "I’ve been using Arcana for tarot + astrology — use my code for 100 free Moonstones: {{url}}",
     "invitesCount": "{{n}} friends joined with your code",
     "redeemLabel": "Got a code?",
     "redeemHelper": "Enter a friend’s code in your first 30 days to claim 100 Moonstones.",
     "codePlaceholder": "ABCD1234",
-    "redeem": "Redeem",
+    "redeem": "Redeem this code",
     "redeeming": "Redeeming…",
     "redeemSuccess": "+{{n}} Moonstones — welcome.",
     "alreadyRedeemed": "You’ve already redeemed a referral code.",
@@ -4231,11 +4405,11 @@
       "notFound": "Code not found.",
       "selfRedeem": "You can’t use your own code.",
       "accountTooOld": "Referral codes only work in the first 30 days.",
-      "generic": "Could not redeem code."
+      "generic": "Couldn’t redeem that code — check it and try again."
     }
   },
   "yearAhead": {
-    "title": "Year Ahead",
+    "title": "Year ahead",
     "cardTitle": "{{year}} — 12 monthly briefings",
     "cardSub": "A month-by-month map of the biggest transits to your natal chart.",
     "needsBirthData": "Add your full birth data first",
@@ -4247,28 +4421,26 @@
       "feat4": "Overall year-long narrative"
     },
     "unlockCta": "Unlock for {{n}} Moonstones",
-    "unlocking": "Unlocking…",
     "unlocked": "Forecast unlocked",
-    "unlockFailed": "Could not unlock",
-    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
-    "balance": "Balance: {{n}} Moonstones",
+    "unlockFailed": "Couldn’t unlock the forecast — check your connection and try again.",
+    "insufficientBalance": "Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.",
     "computing": "Mapping your year…",
     "errorNatalMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
     "errorGeneric": "Could not load forecast. Try again in a moment.",
     "overall": "Overall arc",
     "emptyMonth": "A quiet month, astrologically. Use it to rest.",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.",
-    "stripeFailed": "Could not start checkout",
-    "payWithStripe": "Or pay ${{price}} with card",
-    "upgradeToPremium": "Upgrade to Premium — unlocks everything",
+    "upgradeToPremium": "See what Premium includes",
     "orEarnMoonstones": "Or unlock with {{n}} Moonstones",
     "balanceShort": "Balance: {{n}}",
     "earnHint": "Earn Moonstones via daily check-in, watching ads, or inviting friends.",
-    "earnNow": "Earn 50 Moonstones — watch ad",
-    "eventCount": "{{n}} transits"
+    "earnNow": "Watch an ad, earn {{n}} Moonstones",
+    "eventCount": "{{n}} transits",
+    "retry": "Reload the forecast",
+    "stripeFailed": "Couldn’t open checkout — check your connection and try again."
   },
   "natalReport": {
-    "title": "Full Natal Chart",
+    "title": "Full natal chart",
     "cardTitle": "Your complete birth chart — printable",
     "cardSub": "Every planet in its sign and house, every aspect, with interpretations.",
     "needsBirthData": "Add your birth data first",
@@ -4280,11 +4452,9 @@
       "feat4": "Save as PDF or print from your browser"
     },
     "unlockCta": "Unlock for {{n}} Moonstones",
-    "unlocking": "Unlocking…",
     "unlocked": "Chart unlocked",
-    "unlockFailed": "Could not unlock",
-    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
-    "balance": "Balance: {{n}} Moonstones",
+    "unlockFailed": "Couldn’t unlock the report — check your connection and try again.",
+    "insufficientBalance": "Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.",
     "errorChartMissing": "We could not find your computed natal chart. Please re-enter your birth data in Profile.",
     "printCta": "Save as PDF",
     "bigThreeHeading": "The Big Three",
@@ -4307,23 +4477,22 @@
     "synastryPrompt": "Partner birth data",
     "partnerNamePlaceholder": "Partner name (optional)",
     "synastryCta": "Overlay partner chart",
-    "synastryFailed": "Could not compute synastry.",
+    "synastryFailed": "Couldn’t compute the synastry — check both sets of birth details and try again.",
     "overlayFailed": "Couldn’t load that overlay. Check your connection and try again.",
     "balanceShort": "Balance: {{n}}",
     "earnHint": "Earn via daily check-in + inviting friends.",
     "orEarnMoonstones": "Or unlock with {{n}} Moonstones",
     "crossAspects": "Top cross-aspects",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
-    "stripeFailed": "Could not start checkout",
-    "payWithStripe": "Or pay ${{price}} with card",
-    "upgradeToPremium": "Upgrade to Premium — unlocks everything",
-    "earnNow": "Earn 50 Moonstones — watch ad"
+    "upgradeToPremium": "See what Premium includes",
+    "earnNow": "Watch an ad, earn {{n}} Moonstones",
+    "stripeFailed": "Couldn’t open checkout — check your connection and try again."
   },
   "careerReport": {
-    "title": "Career Archetype",
+    "title": "Career archetype",
     "needsMbti": "Take the personality quiz first",
     "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.",
-    "shareLabel": "Career Archetype",
+    "shareLabel": "Career archetype",
     "locked": {
       "body": "A ~900-word coaching-grade report tailored to your type — best-fit roles, drains, collaboration patterns, blind spots, and a first-90-days plan.",
       "feat1": "10 best-fit roles across industries",
@@ -4332,11 +4501,9 @@
       "feat4": "First-90-days plan in a new role"
     },
     "unlockCta": "Unlock for {{n}} Moonstones",
-    "unlocking": "Unlocking…",
     "unlocked": "Report unlocked",
-    "unlockFailed": "Could not unlock",
-    "insufficientBalance": "Not enough Moonstones — earn more via daily check-in or invites",
-    "balance": "Balance: {{n}} Moonstones",
+    "unlockFailed": "Couldn’t unlock the report — check your connection and try again.",
+    "insufficientBalance": "Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.",
     "bestFit": "Best-fit roles",
     "drains": "Environments that drain you",
     "collaboration": "Collaboration pattern",
@@ -4345,19 +4512,18 @@
     "monthLabel": "Month {{n}}",
     "reflection": "Sit with these questions",
     "share": "Share my archetype",
-    "stripeFailed": "Could not start checkout",
-    "payWithStripe": "Or pay ${{price}} with card",
-    "upgradeToPremium": "Upgrade to Premium — unlocks everything",
+    "upgradeToPremium": "See what Premium includes",
     "orEarnMoonstones": "Or unlock with {{n}} Moonstones",
     "balanceShort": "Balance: {{n}}",
     "earnHint": "Earn Moonstones via daily check-in, watching ads, or inviting friends.",
-    "earnNow": "Earn 50 Moonstones — watch ad",
-    "fullReport": "The full report"
+    "earnNow": "Watch an ad, earn {{n}} Moonstones",
+    "fullReport": "The full report",
+    "stripeFailed": "Couldn’t open checkout — check your connection and try again."
   },
   "compatInvite": {
     "createTitle": "Invite someone",
     "createSubtitle": "Send a link. They take their side; you both see the joint reading.",
-    "createFailed": "Could not create invite",
+    "createFailed": "Couldn’t create the invite link — check your connection and try again.",
     "pickKind": "Compatibility kind",
     "nothingToShare": "Take the personality quiz or add your birth date first.",
     "generateLink": "Generate invite link",
@@ -4372,12 +4538,12 @@
     "needMbti": "You need to take the personality quiz first.",
     "needBirthDate": "Add your birth date in Profile first.",
     "goToQuiz": "Take the quiz",
-    "goToProfile": "Open Profile",
+    "goToProfile": "Open profile",
     "notFound": "This invite could not be found or has expired.",
     "ownInvite": "This is your own invite. Share the link with a friend or partner — they need to respond.",
     "signInTitle": "Sign in to see your match",
     "signInBody": "Create a free account or sign in to take your side of the compatibility reading.",
-    "signInCta": "Continue",
+    "signInCta": "Sign in to see the match",
     "resultLabel": "Compatibility",
     "mbtiSection": "Personality compatibility",
     "astroSection": "Astrological compatibility",
@@ -4393,17 +4559,18 @@
       "selfInvite": "You can’t respond to your own invite.",
       "expired": "This invite has expired.",
       "notFound": "Invite not found.",
-      "generic": "Could not respond."
+      "generic": "Couldn’t send your response — check your connection and try again."
     },
     "kinds": {
       "mbti": "Personality (MBTI)",
-      "love-language": "Love Language",
-      "attachment": "Attachment Style",
+      "love-language": "Love language",
+      "attachment": "Attachment style",
       "big-five": "Big Five",
       "enneagram": "Enneagram",
       "zodiac": "Zodiac",
       "element": "Element"
-    }
+    },
+    "shareLink": "Share my invite link"
   },
   "advisorBooking": {
     "back": "Back",
@@ -4420,7 +4587,7 @@
     "bookedToast": "Session booked — we debited {{n}} Moonstones.",
     "insufficientBalance": "Not enough Moonstones. Top up and try again.",
     "slotTaken": "That slot just got taken. Pick another.",
-    "bookFailed": "Could not book that slot.",
+    "bookFailed": "Couldn’t book that slot — it may have just been taken. Pick another time.",
     "disclaimer": "Cancel for a full refund any time before the session starts."
   },
   "advisorSession": {
@@ -4429,7 +4596,7 @@
     "notFound": "Session not found.",
     "startsIn": "Starts in {{n}} minutes. Start any time within 5 minutes of the scheduled time.",
     "readyToStart": "Ready when you are.",
-    "cancel": "Cancel",
+    "cancel": "Cancel this session",
     "start": "Start session",
     "started": "Session started",
     "ended": "Session ended",
@@ -4438,10 +4605,10 @@
     "cancelledToast": "Cancelled. {{n}} Moonstones refunded.",
     "noMessages": "Say hi to get started.",
     "composerPlaceholder": "Write a message…",
-    "sendFailed": "Could not send",
+    "sendFailed": "Couldn’t send your message — check your connection and try again.",
     "rateTitle": "How was it?",
     "reviewPlaceholder": "Anything to share? (optional)",
-    "submitRating": "Submit rating",
+    "submitRating": "Send my rating",
     "ratingThanks": "Thanks for the feedback"
   },
   "advisorDashboard": {
@@ -4472,13 +4639,13 @@
     "cashoutExceeds": "Amount exceeds your cashable balance.",
     "cashoutSent": "Sent ${{usd}} to your Stripe account.",
     "cashoutMinNote": "Minimum 100 Moonstones ($10 gross / $7 to you).",
-    "stripeFailed": "Could not start Stripe onboarding",
+    "stripeFailed": "Couldn’t open Stripe onboarding — check your connection and try again.",
     "onboardingRequired": "Complete Stripe onboarding first."
   },
   "voice": {
     "join": "Join voice",
     "joining": "Joining…",
-    "leave": "Leave",
+    "leave": "Leave voice",
     "notConnected": "Voice off",
     "state": {
       "idle": "",
@@ -4492,11 +4659,11 @@
   "liveRoom": {
     "back": "All rooms",
     "notFound": "Room not found.",
-    "listeners": "{{n}} RSVPd / cap {{cap}}",
-    "rsvp": "RSVP",
+    "listeners": "{{n}} of {{cap}} seats taken",
+    "rsvp": "Save my seat",
     "rsvpd": "You’re in",
     "notLiveYet": "Voice opens when the host starts the room.",
-    "rsvpToJoin": "RSVP first to join voice.",
+    "rsvpToJoin": "Save a seat first to join the voice room.",
     "tipHost": "Tip the host",
     "tipSent": "Sent {{n}} Moonstones to the host.",
     "replayHeading": "Replay",
@@ -4504,9 +4671,17 @@
     "unlockReplay": "Unlock replay — {{n}} Moonstones",
     "unlocking": "Unlocking…",
     "replayUnlocked": "Replay unlocked",
-    "replayInsufficient": "Not enough Moonstones to unlock.",
+    "replayInsufficient": "Not enough Moonstones for the replay — top up from the home widget, or earn more from the daily check-in.",
     "signInToUnlock": "Sign in to unlock the replay",
-    "listenFree": "Listen — free"
+    "listenFree": "Listen — free",
+    "tipInsufficient": "Not enough Moonstones for that tip — top up from the home widget, or earn more from the daily check-in.",
+    "tipAmount": "{{n}} Moonstones",
+    "toasts": {
+      "rsvpFailed": "Couldn’t save your seat — check your connection and try again.",
+      "cancelFailed": "Couldn’t release your seat — check your connection and try again.",
+      "unlockFailed": "Couldn’t unlock the replay — your Moonstones weren’t taken. Try again in a moment.",
+      "tipFailed": "Couldn’t send the tip — your Moonstones weren’t taken. Try again in a moment."
+    }
   },
   "advisorVerify": {
     "title": "Advisor verification",
@@ -4525,26 +4700,28 @@
     "idLabel": "Government ID (image)",
     "uploadId": "Upload ID",
     "selfieLabel": "Selfie video (say your name + today’s date)",
-    "uploadSelfie": "Upload video",
+    "uploadSelfie": "Upload my verification video",
     "submitCta": "Submit for review",
     "submitting": "Submitting…",
     "submitted": "Submitted. We’ll review within 72 hours.",
     "incomplete": "Fill in every field and upload both files.",
-    "privacyNote": "Documents are encrypted and only visible to admin reviewers."
+    "privacyNote": "Documents are encrypted and only visible to admin reviewers.",
+    "uploadIdFailed": "Couldn't upload your ID — check your connection and try again.",
+    "uploadVideoFailed": "Couldn't upload your video — check your connection and try again."
   },
   "sandbox": {
     "title": "Archetypal sandbox",
     "intro": "Pick symbolic objects, place them on the plinth, and the oracle reads the arrangement. Preview release — positions are spiralled automatically, drag-drop is coming.",
     "pickObject": "Choose an object",
     "place": "Place on plinth",
-    "reset": "Reset",
+    "reset": "Clear the plinth",
     "placedLabel": "On the plinth",
     "placeMore": "Place at least two objects.",
     "interpretCta": "Read the arrangement",
     "reading": "Reading the arrangement…",
     "readingLabel": "The oracle reads",
-    "rearrange": "Rearrange",
-    "interpretFailed": "Could not interpret.",
+    "rearrange": "Clear and arrange again",
+    "interpretFailed": "Couldn’t read the arrangement — try again in a moment.",
     "preview": "Preview — drag-to-place and save/share are coming.",
     "webglUnavailableTitle": "3D preview is not available",
     "webglUnavailableBody": "Your browser or device doesn't support WebGL. You can still place archetypal objects and get an interpretation — the reading doesn't require the 3D view."
@@ -4576,15 +4753,15 @@
     "reversed": "Reversed",
     "composerPlaceholder": "Ask a follow-up…",
     "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
-    "aiFailed": "Could not reach the oracle"
+    "aiFailed": "Couldn’t reach the oracle — check your connection and ask again."
   },
   "journalCoach": {
     "askCta": "Ask the journal coach",
     "thinking": "Reading…",
-    "failed": "Could not reach coach",
+    "failed": "Couldn’t reach the coach — check your connection and try again.",
     "observationLabel": "An observation",
     "promptsLabel": "Sit with these",
-    "dismiss": "Dismiss"
+    "dismiss": "Hide these prompts"
   },
   "chartWheel": {
     "tapPrompt": "Tap a planet, house, or aspect line.",
@@ -4598,12 +4775,16 @@
     "intro": "Scheduled live gatherings — full moon circles, Mercury retrograde debriefs, live tarot pulls. Audio-first, soon. RSVP to reserve your seat.",
     "empty": "No live rooms on the calendar yet — check back soon.",
     "capacity": "up to {{n}} listeners",
-    "rsvp": "RSVP",
+    "rsvp": "Save my seat",
     "rsvpd": "You’re in",
-    "rsvpConfirmed": "You’re on the list — we’ll notify you.",
-    "rsvpCancelled": "RSVP cancelled",
-    "signInToRsvp": "Sign in to RSVP",
-    "voiceComingSoon": "Audio streaming is rolling out gradually. RSVP and we’ll notify you when your room opens."
+    "rsvpConfirmed": "You’re on the list. Check back here — the room opens at {{time}}.",
+    "rsvpCancelled": "Seat released — you can RSVP again any time.",
+    "signInToRsvp": "Sign in to save a seat",
+    "voiceComingSoon": "Audio is rolling out gradually. Save a seat, then check back here — each room opens at its scheduled time.",
+    "toasts": {
+      "rsvpFailed": "Couldn’t save your seat — check your connection and try again.",
+      "cancelFailed": "Couldn’t release your seat — check your connection and try again."
+    }
   },
   "pickACard": {
     "title": "Pick a card",
@@ -4613,8 +4794,8 @@
     "optionAria": "Card {{n}}",
     "upright": "Upright",
     "reversed": "Reversed",
-    "share": "Share",
-    "learnMore": "Learn more",
+    "share": "Share my card",
+    "learnMore": "Read this card's meaning",
     "comeBack": "New cards arrive at midnight.",
     "shareText": "Today I drew {{name}} ({{orientation}}) — {{keyword}}"
   },
@@ -4625,11 +4806,11 @@
     "doneSub": "New mission arrives at midnight."
   },
   "soulmate": {
-    "title": "Soulmate Score",
+    "title": "Soulmate score",
     "subtitle": "A classical synastry read, distilled to one number. Free, shareable, fast.",
     "needsBirthData": "Add your birth data first",
     "needsBirthDataBody": "We need your birth date (time is a bonus) to compare charts. Add it in Settings → Edit Profile.",
-    "goToProfile": "Go to Profile",
+    "goToProfile": "Add my birth details",
     "partnerNameLabel": "Partner’s name",
     "partnerNamePlaceholder": "Optional",
     "birthDateLabel": "Birth date",
@@ -4643,7 +4824,7 @@
     "noTimeHint": "Add a birth time for a more precise score.",
     "harmoniesHeading": "Where you flow together",
     "frictionsHeading": "Where you stretch each other",
-    "tryAnother": "Try another",
+    "tryAnother": "Score another person",
     "share": "Share score",
     "shareText": "Our Arcana soulmate score is {{score}}/100 ({{vibe}}). Try yours at arcana.app",
     "disclaimer": "A score isn’t a verdict — it’s a mirror for conversation. Charts describe patterns, not fate.",
@@ -4688,10 +4869,11 @@
     "whatFor": "What are you choosing a day for?",
     "best": "Best days ahead",
     "avoid": "Days to avoid",
-    "export": "Calendar",
+    "export": "Add to my calendar",
     "intro": "Chinese date selection asks a different question from a birth chart: not what you are like, but when to do a particular thing. Each day is read from the lunar mansion that governs it — and, once we know your birth date, from how the day sits against your own pillars.",
     "noBirth": "These are the almanac readings, which are the same for everyone. Add your birth date in your profile and each day is also checked against your own pillars — a clash there is the most common reason a traditional almanac says to pick another date.",
-    "disclaimer": "A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle."
+    "disclaimer": "A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle.",
+    "windowNote": "Looking at the next {{days}} days. Tap a day to see exactly why it scored the way it did."
   },
   "freeCourse": {
     "errors": {
@@ -4718,7 +4900,7 @@
     "how1": "Rate 12 short statements from strongly disagree to strongly agree.",
     "how2": "We compute your anxiety + avoidance scores on the classical attachment grid.",
     "how3": "You land in one of four quadrants — rendered as a distinct, animated tree.",
-    "startCta": "Begin",
+    "startCta": "Grow my tree",
     "disclaimer": "A tool for self-knowledge, not a clinical diagnosis. Attachment patterns can shift — this is a snapshot, not a verdict.",
     "back": "Back",
     "progress": "{{i}} of {{n}}",
@@ -4734,5 +4916,254 @@
   },
   "createAccount": {
     "appleCta": "Continue with Apple"
+  },
+  "updateBanner": {
+    "title": "A new version is available",
+    "body": "Includes recent fixes and improvements. Update from Google Play to get them.",
+    "update": "Update on Google Play",
+    "later": "Remind me in two days",
+    "dismiss": "Dismiss"
+  },
+  "rateApp": {
+    "title": "Thank you for trying my first app",
+    "body1": "I built this while studying, so I'm working with limited time and resources. I know it isn't perfect yet, but I'm actively improving it.",
+    "body2": "If anything feels off or you spot a bug, please let me know. And if you're enjoying it, a 5-star review helps a lot.",
+    "rate": "Rate Arcana on Google Play",
+    "feedback": "Report a problem by email",
+    "later": "Ask me another time"
+  },
+  "people": {
+    "eyebrow": "Your circle",
+    "title": "People",
+    "subtitle": "Save the birth details of people you care about to explore their charts and your compatibility.",
+    "addPerson": "Add a person",
+    "emptyTitle": "No one here yet",
+    "emptyBody": "Add your partner, a parent, or a friend to reveal their natal chart and see how your stars align.",
+    "timeUnknown": "time unknown",
+    "savedCount": "{{n}} of 50 saved",
+    "notFound": "We couldn't find this person in your circle.",
+    "relationship": {
+      "self": "You",
+      "partner": "Partner",
+      "family": "Family",
+      "friend": "Friend",
+      "other": "Other",
+      "pet": "Pet"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Mom, Alex, Jamie",
+      "relationship": "Relationship",
+      "species": "Species",
+      "birthDate": "Birth date",
+      "birthTime": "Birth time (optional — sharpens the chart)",
+      "petTime": "Time (optional — most adopted animals have none)",
+      "birthPlace": "Birth place (optional)",
+      "nameRequired": "Give this person a name.",
+      "dateRequired": "Enter their birth date.",
+      "limit": "You've reached the 50-person limit.",
+      "saveFailed": "Couldn't save this person — check your connection and try again.",
+      "updated": "{{name}} updated",
+      "added": "{{name}} added",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saveChanges": "Save birth details",
+      "add": "Add this person"
+    },
+    "detail": {
+      "chartFailed": "Couldn't cast the chart — check your connection and try again.",
+      "deleted": "{{name}} deleted",
+      "deleteFailed": "Couldn't delete {{name}} — try again.",
+      "backToPeople": "Back to people",
+      "birthTimeUnknown": "Birth time unknown — houses and rising sign are approximate.",
+      "compare": "Compare our charts",
+      "edit": "Edit birth details",
+      "delete": "Delete {{name}}",
+      "editTitle": "Edit {{name}}",
+      "deleteTitle": "Delete {{name}}?",
+      "deleteBody": "This deletes {{name}}'s saved birth data and chart. It can't be undone.",
+      "keep": "Keep {{name}}",
+      "deleteConfirm": "Delete permanently"
+    },
+    "compare": {
+      "needOwnBirth": "Add your own birth date in your profile to compare charts.",
+      "castFailed": "Couldn't cast both charts — check your connection and try again.",
+      "tabFailed": "Couldn't cast this chart — check your connection and try again.",
+      "goBack": "Go back",
+      "eyebrow": "Synastry",
+      "title": "You and {{name}}",
+      "chartTypeAria": "Chart type",
+      "disclaimer": "For reflection and entertainment. These charts describe dynamics, not destiny.",
+      "tabs": {
+        "synastry": {
+          "label": "Synastry",
+          "blurb": "How your two charts talk to each other"
+        },
+        "composite": {
+          "label": "Composite",
+          "blurb": "The midpoint chart of the relationship itself"
+        },
+        "davison": {
+          "label": "Davison",
+          "blurb": "A real sky, halfway between your births in time and space"
+        },
+        "progressed-composite": {
+          "label": "Progressed",
+          "blurb": "Where the relationship chart has evolved to now"
+        }
+      }
+    }
+  },
+  "mirror": {
+    "signIn": "Sign in to see your mirror.",
+    "title": "Mirror",
+    "subtitle": "What your reading history reveals about you. Aggregated patterns over your saved tarot pulls.",
+    "period": {
+      "week": "Last 7 days",
+      "month": "Last 30 days",
+      "all": "All time"
+    },
+    "periodAria": "Period",
+    "loading": "Reading the mirror…",
+    "emptyTitle": "No readings in this period yet.",
+    "emptyBody": "Pull a card today and your patterns will start to surface here.",
+    "stats": {
+      "readings": "Readings",
+      "cardsDrawn": "Cards drawn",
+      "reversals": "Reversals",
+      "streak": "Streak"
+    },
+    "highlights": {
+      "cardNow": "Your card right now",
+      "dominantSuit": "Dominant suit",
+      "recurringNumber": "Recurring number"
+    },
+    "sections": {
+      "topCards": "Top 5 cards",
+      "suitBalance": "Suit balance (Minor Arcana)",
+      "majorMinor": "Major vs Minor",
+      "majorMinorNote": "Major Arcana = life themes; Minor = day-to-day energies."
+    }
+  },
+  "spreadDetail": {
+    "notFound": "Spread not found",
+    "backToAll": "Back to all spreads",
+    "allSpreads": "All spreads"
+  },
+  "chartSuite": {
+    "eyebrow": "Chart Library",
+    "title": "Every sky, every angle",
+    "subtitle": "Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.",
+    "needBirth": "Add your birth date in your profile to cast this chart.",
+    "addBirth": "Add my birth details",
+    "castFailed": "Couldn't cast this chart — check your connection and try again.",
+    "retry": "Cast the chart again"
+  },
+  "foolsJourney": {
+    "signInHint": "Sign in to see your Fool's Journey.",
+    "signIn": "Sign in to walk the journey"
+  },
+  "soulmatePortrait": {
+    "title": "Your soulmate portrait",
+    "intro": "An illustrated portrait of the qualities your chart reaches for in love — painted from your Descendant, Venus, Mars, and Moon. Symbolic art, not a photo of a real person.",
+    "vibe": {
+      "romantic": "Romantic",
+      "grounded": "Grounded",
+      "electric": "Electric",
+      "soulful": "Soulful"
+    },
+    "paint": "Paint the portrait",
+    "painting": "Painting your portrait…",
+    "notEnough": "Not enough Moonstones",
+    "failed": "The portrait couldn't be painted — try again.",
+    "saved": "Saved",
+    "alt": "Symbolic illustrated portrait generated from your chart's relationship symbolism",
+    "why": "Why it looks like this",
+    "save": "Save the image",
+    "repaint": "Paint it again",
+    "disclaimer": "An artistic interpretation of your chart's symbolism — not a depiction of a real person."
+  },
+  "wishingSky": {
+    "eyebrow": "The Wishing Sky",
+    "title": "Everyone's wishes, in one sky",
+    "subtitle": "Every star here is someone's wish. Make one and yours joins them. When you echo a wish — say you want it for them too — a line is drawn between your star and theirs.",
+    "loading": "Lighting the sky…",
+    "emptyTitle": "The sky is empty tonight.",
+    "emptyBody": "Make the first wish and light it.",
+    "makeWish": "Make a wish",
+    "signInHint": "Sign in to add your own star and to echo other people's wishes.",
+    "recent": "Recent wishes",
+    "openToHelp": "open to help",
+    "yours": "yours",
+    "noWishes": "No wishes yet.",
+    "themeOther": "Something else",
+    "placeholder": "I wish…",
+    "publicNote": "Everyone using Arcana can read this.",
+    "contactWarning": "That looks like {{what}}. Please take it out — a wish is public, and contact details on a public wish are how scams find people. Turn on \"open to help\" below instead, and anyone kind can write to you privately.",
+    "anEmail": "an email address",
+    "aPhone": "a phone number",
+    "themeLabel": "What is it about?",
+    "openToHelpLabel": "Let people offer to help",
+    "openToHelpBody": "Anyone can send you a private message about this wish. They never see your contact details — you read what they wrote and decide whether to reply.",
+    "nameLabel": "A name to go by (optional)",
+    "namePlaceholder": "First name, a nickname, or nothing at all",
+    "lightStar": "Light my star",
+    "lighting": "Lighting…",
+    "starLit": "Your star is lit.",
+    "signInToEcho": "Sign in to echo a wish.",
+    "wishTitle": "A wish",
+    "echo": "I wish this too",
+    "echoed": "Echoed",
+    "offerHelp": "Offer to help",
+    "report": "Report this wish",
+    "thisIsYours": "This one is yours.",
+    "linked": "Your star and theirs are linked in the sky now.",
+    "offerIntro": "This goes only to them. They will see your message and can reply if they want to — neither of you has to share anything you would rather not.",
+    "offerPlaceholder": "What you could do, and how you would like to help…",
+    "sendPrivately": "Send privately",
+    "sending": "Sending…",
+    "offerSent": "Sent. They will see it privately and can reply if they want to.",
+    "neverMind": "Never mind",
+    "reported": "Reported. Thank you — we will look at it.",
+    "reportFailed": "Couldn't send the report — try again.",
+    "footer": "Wishes are public and anyone can read them. Never put a phone number, an address or an email in one — if you are open to help, people can reach you privately instead.",
+    "errors": {
+      "loadSky": "Couldn't load the sky — check your connection and try again.",
+      "lightStar": "Couldn't light your star — check your connection and try again.",
+      "loadLinks": "Couldn't load the links — check your connection and try again.",
+      "addEcho": "Couldn't add your echo — try again in a moment.",
+      "removeEcho": "Couldn't remove your echo — try again in a moment.",
+      "alreadyOffered": "You've already offered to help with this wish.",
+      "sendOffer": "Couldn't send your offer — check your connection and try again.",
+      "loadOffers": "Couldn't load the offers — check your connection and try again.",
+      "respond": "Couldn't send your reply — try again in a moment.",
+      "sendReport": "Couldn't send the report — check your connection and try again."
+    }
+  },
+  "spreadBuilder": {
+    "signIn": "Sign in to build a spread",
+    "signInPrompt": "Custom spreads are saved to your account.",
+    "signInCta": "Sign in to build a spread",
+    "toasts": {
+      "signInToSave": "Sign in to save this spread.",
+      "nameRequired": "Give your spread a name before saving.",
+      "positionRequired": "Add at least one position with both a name and a meaning.",
+      "saveFailed": "Couldn’t save your spread — check your connection and try again.",
+      "saved": "Spread saved — it’s listed under Your saved spreads.",
+      "deleteFailed": "Couldn’t delete that spread — check your connection and try again.",
+      "deleted": "Spread deleted."
+    }
+  },
+  "authBootstrap": {
+    "backToSignIn": "Back to sign in"
+  },
+  "publicNav": {
+    "signIn": "Sign in"
+  },
+  "astrologyLearn": {
+    "title": "Astrology"
+  },
+  "spreads": {
+    "pageTitle": "Tarot spreads"
   }
 }

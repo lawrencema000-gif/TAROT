@@ -172,7 +172,7 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
               </Button>
               <Button variant="primary" fullWidth onClick={handleShare}>
                 <Share2 className="w-4 h-4 mr-2" />
-                {t('referral.share', { defaultValue: 'Share' })}
+                {t('compatInvite.shareLink', { defaultValue: 'Share my invite link' })}
               </Button>
             </div>
             <p className="text-[10px] text-mystic-500 mt-3 text-center">

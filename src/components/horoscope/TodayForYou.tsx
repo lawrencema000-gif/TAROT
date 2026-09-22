@@ -61,7 +61,11 @@ export function TodayForYou() {
   if (error || !content) {
     return (
       <div className="p-6 text-center space-y-4">
-        <p className="text-mystic-400">{error || t('horoscope.todayForYou.noDailyContent')}</p>
+        <p className="text-mystic-400">
+          {error
+            ? t('horoscope.todayForYou.loadFailed', { defaultValue: "Couldn't load today's reading — check your connection and try again." })
+            : t('horoscope.todayForYou.noDailyContent')}
+        </p>
         <button onClick={() => refresh()} className="text-gold text-sm hover:underline cursor-pointer">
           {t('horoscope.todayForYou.tryAgain')}
         </button>

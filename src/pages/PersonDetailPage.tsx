@@ -12,6 +12,7 @@ import type { Person } from '../dal/people';
 import { supabase } from '../lib/supabase';
 import { type NatalChart, PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
 import { readPet, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
+import { useT } from '../i18n/useT';
 
 type Interp = typeof import('../data/interpretations');
 
@@ -20,6 +21,7 @@ const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', fam
 export function PersonDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useT('app');
   const [person, setPerson] = useState<Person | null>(null);
   const [chart, setChart] = useState<NatalChart | null>(null);
   const [interp, setInterp] = useState<Interp | null>(null);
@@ -33,7 +35,7 @@ export function PersonDetailPage() {
     if (!id) return;
     setLoading(true); setErr(null);
     const pRes = await peopleDal.getById(id);
-    if (!pRes.ok || !pRes.data) { setErr('Person not found.'); setLoading(false); return; }
+    if (!pRes.ok || !pRes.data) { setErr(t('people.notFound', { defaultValue: "We couldn't find this person in your circle." })); setLoading(false); return; }
     setPerson(pRes.data);
     if (pRes.data.relationship === 'pet') {
       // A pet gets a temperament reading, not a natal wheel — no houses, no
@@ -42,26 +44,26 @@ export function PersonDetailPage() {
       return;
     }
     const { data, error } = await supabase.functions.invoke('astrology-person-chart', { body: { personId: id } });
-    if (error) { setErr('Could not compute the chart.'); setLoading(false); return; }
+    if (error) { setErr(t('people.detail.chartFailed', { defaultValue: "Couldn't cast the chart — check your connection and try again." })); setLoading(false); return; }
     setChart((data?.data?.chart ?? data?.chart) as NatalChart);
     setLoading(false);
     import('../data/interpretations').then(setInterp);
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => { load(); }, [load]);
 
   const handleDelete = async () => {
     if (!id) return;
     const res = await peopleDal.remove(id);
-    if (res.ok) { toast('Removed', 'success'); navigate('/people'); }
-    else toast('Could not delete', 'error');
+    if (res.ok) { toast(t('people.detail.deleted', { defaultValue: '{{name}} deleted', name: person?.name ?? '' }), 'success'); navigate('/people'); }
+    else toast(t('people.detail.deleteFailed', { defaultValue: "Couldn't delete {{name}} — try again.", name: person?.name ?? '' }), 'error');
   };
 
   if (loading) return <div className="flex justify-center py-24"><Loader2 className="w-7 h-7 text-gold animate-spin" /></div>;
   if (err || !person) return (
     <div className="p-6 text-center space-y-4">
       <p className="text-mystic-300">{err}</p>
-      <Button variant="ghost" onClick={() => navigate('/people')}>Back to People</Button>
+      <Button variant="ghost" onClick={() => navigate('/people')}>{t('people.detail.backToPeople', { defaultValue: 'Back to People' })}</Button>
     </div>
   );
 
@@ -75,8 +77,8 @@ export function PersonDetailPage() {
       <PageHeader
         align="center"
         onBack={() => navigate('/people')}
-        backLabel="People"
-        eyebrow={REL_LABEL[person.relationship]}
+        backLabel={t('people.title', { defaultValue: 'People' })}
+        eyebrow={t(`people.relationship.${person.relationship}`, { defaultValue: REL_LABEL[person.relationship] })}
         title={person.name}
         subtitle={!isPet && chart ? (
           <>
@@ -87,7 +89,7 @@ export function PersonDetailPage() {
         ) : undefined}
       />
       {!person.birthTime && !isPet && (
-        <p className="text-center text-meta text-mystic-400 -mt-3">Birth time unknown — houses &amp; rising sign are approximate.</p>
+        <p className="text-center text-meta text-mystic-400 -mt-3">{t('people.detail.birthTimeUnknown', { defaultValue: 'Birth time unknown — houses and rising sign are approximate.' })}</p>
       )}
 
       {isPet && petReading && (
@@ -207,26 +209,26 @@ export function PersonDetailPage() {
       {/* Actions */}
       <div className="grid grid-cols-2 gap-2">
         <Button variant="primary" size="md" onClick={() => navigate(`/people/${person.id}/compare`)}>
-          <GitCompareArrows className="w-4 h-4 mr-2" /> Compare
+          <GitCompareArrows className="w-4 h-4 mr-2" /> {t('people.detail.compare', { defaultValue: 'Compare our charts' })}
         </Button>
         <Button variant="ghost" size="md" onClick={() => setEditing(true)}>
-          <Pencil className="w-4 h-4 mr-2" /> Edit
+          <Pencil className="w-4 h-4 mr-2" /> {t('people.detail.edit', { defaultValue: 'Edit birth details' })}
         </Button>
       </div>
       <button onClick={() => setConfirmDelete(true)} className="w-full text-center text-xs text-red-400/70 hover:text-red-400 py-2 flex items-center justify-center gap-1">
-        <Trash2 className="w-3.5 h-3.5" /> Remove {person.name}
+        <Trash2 className="w-3.5 h-3.5" /> {t('people.detail.delete', { defaultValue: 'Delete {{name}}', name: person.name })}
       </button>
 
-      <Sheet open={editing} onClose={() => setEditing(false)} title={`Edit ${person.name}`}>
+      <Sheet open={editing} onClose={() => setEditing(false)} title={t('people.detail.editTitle', { defaultValue: 'Edit {{name}}', name: person.name })}>
         <PersonForm existing={person} onSaved={() => { setEditing(false); load(); }} onCancel={() => setEditing(false)} />
       </Sheet>
 
-      <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Remove person?">
+      <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title={t('people.detail.deleteTitle', { defaultValue: 'Delete {{name}}?', name: person.name })}>
         <div className="space-y-4">
-          <p className="text-ui text-mystic-300">This deletes {person.name}'s saved birth data and chart. This can't be undone.</p>
+          <p className="text-ui text-mystic-300">{t('people.detail.deleteBody', { defaultValue: "This deletes {{name}}'s saved birth data and chart. It can't be undone.", name: person.name })}</p>
           <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={() => setConfirmDelete(false)}>Keep</Button>
-            <Button variant="primary" className="flex-1 !bg-red-600 hover:!bg-red-500" onClick={handleDelete}>Remove</Button>
+            <Button variant="ghost" className="flex-1" onClick={() => setConfirmDelete(false)}>{t('people.detail.keep', { defaultValue: 'Keep {{name}}', name: person.name })}</Button>
+            <Button variant="destructive" className="flex-1" onClick={handleDelete}>{t('people.detail.deleteConfirm', { defaultValue: 'Delete permanently' })}</Button>
           </div>
         </div>
       </Sheet>

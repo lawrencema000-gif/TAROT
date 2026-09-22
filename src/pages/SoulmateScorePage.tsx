@@ -244,7 +244,7 @@ export function SoulmateScorePage() {
               })}
             </p>
             <Button variant="gold" onClick={() => navigate('/profile')} className="mt-2">
-              {t('soulmate.goToProfile', { defaultValue: 'Go to Profile' })}
+              {t('soulmate.goToProfile', { defaultValue: 'Add my birth details' })}
             </Button>
           </div>
         </Card>
@@ -375,7 +375,7 @@ export function SoulmateScorePage() {
               actions={
                 <>
                   <Button variant="outline" onClick={reset} className="flex-1">
-                    {t('soulmate.tryAnother', { defaultValue: 'Try another' })}
+                    {t('soulmate.tryAnother', { defaultValue: 'Score another person' })}
                   </Button>
                   <Button variant="gold" onClick={handleShare} className="flex-1">
                     <Share2 className="w-4 h-4 mr-2" />

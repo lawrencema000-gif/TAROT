@@ -24,7 +24,7 @@
  * motion the deck simply *is* there, fanned and still.
  */
 import type { CSSProperties } from 'react';
-import { Shuffle } from 'lucide-react';
+import { ChevronLeft, Shuffle } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 
@@ -77,6 +77,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }
         onClick={onBack}
         className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
       >
+        <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}
       </button>
 

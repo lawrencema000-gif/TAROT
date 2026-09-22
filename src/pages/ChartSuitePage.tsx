@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { type NatalChart, type AspectData, PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
 import { CHART_TYPES, FIRDARIA_LORD_MEANINGS, type ChartTypeInfo } from '../data/chartSuiteContent';
+import { useT } from '../i18n/useT';
 
 type Interp = typeof import('../data/interpretations');
 
@@ -43,6 +44,7 @@ interface SuiteResp {
  */
 export function ChartSuitePage() {
   const navigate = useNavigate();
+  const { t } = useT('app');
   const { profile } = useAuth();
   const [params, setParams] = useSearchParams();
   const selectedKey = params.get('type');
@@ -75,10 +77,10 @@ export function ChartSuitePage() {
       ({ data, error } = await supabase.functions.invoke('astrology-chart-suite', { body }));
       if (!error) setResp((data?.data ?? data) as SuiteResp);
     }
-    if (error) setErr('Could not cast this chart. Try again.');
+    if (error) setErr(t('chartSuite.castFailed', { defaultValue: "Couldn't cast this chart — check your connection and try again." }));
     setLoading(false);
     import('../data/interpretations').then(setInterp);
-  }, [profile]);
+  }, [profile, t]);
 
   useEffect(() => {
     if (!selected) return;
@@ -92,9 +94,9 @@ export function ChartSuitePage() {
     return (
       <Page spacing="md">
         <PageHeader
-          eyebrow="Chart Library"
-          title="Every sky, every angle"
-          subtitle="Thirteen ways to read a moment — from the chart you were born with to the sky above you right now."
+          eyebrow={t('chartSuite.eyebrow', { defaultValue: 'Chart Library' })}
+          title={t('chartSuite.title', { defaultValue: 'Every sky, every angle' })}
+          subtitle={t('chartSuite.subtitle', { defaultValue: 'Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.' })}
           divider
         />
         <div className="grid gap-3">
@@ -130,21 +132,21 @@ export function ChartSuitePage() {
         title={selected.name}
         subtitle={selected.description}
         onBack={() => setParams({})}
-        backLabel="Chart Library"
+        backLabel={t('chartSuite.eyebrow', { defaultValue: 'Chart Library' })}
         align="center"
       />
 
       {!hasBirth && selected.key !== 'sky-now' ? (
         <EmptyState
-          title="Add your birth date in your profile to cast this chart."
-          action={<Button variant="primary" onClick={() => navigate('/profile')}>Go to profile</Button>}
+          title={t('chartSuite.needBirth', { defaultValue: 'Add your birth date in your profile to cast this chart.' })}
+          action={<Button variant="primary" onClick={() => navigate('/profile')}>{t('chartSuite.addBirth', { defaultValue: 'Add my birth details' })}</Button>}
         />
       ) : loading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 text-gold animate-spin" /></div>
       ) : err ? (
         <Card className="p-6 text-center space-y-3">
           <p className="text-ui text-mystic-300">{err}</p>
-          <Button variant="ghost" onClick={() => load(selected.key)}>Retry</Button>
+          <Button variant="ghost" onClick={() => load(selected.key)}>{t('chartSuite.retry', { defaultValue: 'Cast the chart again' })}</Button>
         </Card>
       ) : selected.key === 'firdaria' && resp?.firdaria ? (
         <>

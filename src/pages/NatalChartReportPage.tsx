@@ -11,6 +11,7 @@ import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { ZodiacGlyph, PlanetGlyph } from '../components/icons';
 import { OrnateDivider } from '../components/ui';
+import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
   HOUSE_THEMES,
   type AspectType,
@@ -111,10 +112,11 @@ export function NatalChartReportPage() {
       reportUnlocks.isUnlocked('natal-chart-pdf', reference),
       moonstones.getBalance(user.id),
     ]);
-    if (unlockRes.ok) setUnlocked(unlockRes.data);
+    // Premium includes every report; a subscriber needs no unlock row.
+    if (unlockRes.ok) setUnlocked(unlockRes.data || Boolean(profile?.isPremium));
     if (balanceRes.ok) setBalance(balanceRes.data);
     setChecking(false);
-  }, [user, hasBirthData, reference]);
+  }, [user, hasBirthData, reference, profile?.isPremium]);
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
 
@@ -243,12 +245,18 @@ export function NatalChartReportPage() {
     } else if (res.error === 'insufficient-balance') {
       toast(
         t('natalReport.insufficientBalance', {
-          defaultValue: 'Not enough Moonstones — earn more via daily check-in or invites',
+          defaultValue: 'Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.',
+          n: NATAL_COST,
         }),
         'error',
       );
     } else {
-      toast(t('natalReport.unlockFailed', { defaultValue: 'Could not unlock' }), 'error');
+      toast(
+        t('natalReport.unlockFailed', {
+          defaultValue: 'Couldn’t unlock the chart — check your connection and try again.',
+        }),
+        'error',
+      );
     }
   };
 
@@ -339,7 +347,7 @@ export function NatalChartReportPage() {
           >
             <Crown className="w-4 h-4 mr-2" />
             {t('natalReport.upgradeToPremium', {
-              defaultValue: 'Upgrade to Premium — unlocks everything',
+              defaultValue: 'See what Premium includes',
             })}
           </Button>
 
@@ -383,7 +391,8 @@ export function NatalChartReportPage() {
               >
                 <Moon className="w-3.5 h-3.5 mr-1.5" />
                 {t('natalReport.earnNow', {
-                  defaultValue: 'Earn 50 Moonstones — watch ad',
+                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                  n: MOONSTONES_PER_AD,
                 })}
               </Button>
             </div>
@@ -397,10 +406,13 @@ export function NatalChartReportPage() {
             it told a non-paying user they were already premium and gave
             them no way to buy — which is the likeliest reason the
             subscriptions table is empty. */}
+        {/* No `feature` here: Premium does not unlock this report (the page
+            checks report_unlocks only, and the RPC has no premium bypass),
+            so a "Full Natal Chart opens with Premium" line would be untrue.
+            The sheet shows its generic copy. */}
         <PaywallSheet
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
-          feature="natal-chart-report"
         />
         {moonstonesEnabled && (
           <WatchAdSheet
@@ -409,6 +421,8 @@ export function NatalChartReportPage() {
             onCredited={(newBalance) => setBalance(newBalance)}
             onShowPaywall={() => setShowSubscription(true)}
             earnOnly
+            cost={NATAL_COST}
+            itemName={t('natalReport.title', { defaultValue: 'Full Natal Chart' }) as string}
           />
         )}
       </Page>

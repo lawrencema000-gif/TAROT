@@ -115,7 +115,7 @@ export function FindYourPlace({
 
   async function handleStart() {
     if (ranked.length === 0) {
-      setPhase({ kind: 'error', result: null, message: 'No strong place found for this intent — try a different life area.' });
+      setPhase({ kind: 'error', result: null, message: t('celestial.findPlace.error.noPlace', { defaultValue: 'No strong place found for this intent — try a different life area.' }) });
       return;
     }
     if (!isPremium) {
@@ -148,10 +148,10 @@ export function FindYourPlace({
       if (res.ok) {
         setPhase({ kind: 'done', result: top, reading: res.data });
       } else {
-        setPhase({ kind: 'error', result: top, message: res.error });
+        setPhase({ kind: 'error', result: top, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
       }
-    } catch (err) {
-      setPhase({ kind: 'error', result: top, message: err instanceof Error ? err.message : 'unknown error' });
+    } catch {
+      setPhase({ kind: 'error', result: top, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
     }
   }
 
@@ -192,10 +192,10 @@ export function FindYourPlace({
       if (res.ok) {
         setPhase({ kind: 'done', result: next, reading: res.data });
       } else {
-        setPhase({ kind: 'error', result: next, message: res.error });
+        setPhase({ kind: 'error', result: next, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
       }
-    } catch (err) {
-      setPhase({ kind: 'error', result: next, message: err instanceof Error ? err.message : 'unknown error' });
+    } catch {
+      setPhase({ kind: 'error', result: next, message: t('celestial.findPlace.error.body', { defaultValue: 'Check your connection and try again.' }) });
     }
   }
 
@@ -309,7 +309,7 @@ export function FindYourPlace({
                         </p>
                         <Button variant="ghost" size="sm" onClick={() => (phase.result ? handleReroll() : handleStart())}>
                           <RefreshCw className="w-3 h-3 mr-1.5" aria-hidden />
-                          {t('celestial.findPlace.error.retry', { defaultValue: 'Try again' })}
+                          {t('celestial.findPlace.error.retry', { defaultValue: 'Try the reading again' })}
                         </Button>
                       </div>
                     </div>
@@ -498,7 +498,7 @@ function ReadingBody({
       <div className="flex gap-2 pt-2">
         <Button variant="ghost" size="md" onClick={onReroll} disabled={saving}>
           <RefreshCw className="w-4 h-4 mr-2" aria-hidden />
-          {t('celestial.findPlace.reading.rerollCta', { defaultValue: 'Try another' })}
+          {t('celestial.findPlace.reading.rerollCta', { defaultValue: 'Show me a different place' })}
         </Button>
         <Button
           variant={savedFlash ? 'secondary' : 'primary'}

@@ -8,6 +8,7 @@ import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { OrnateDivider } from '../components/ui';
+import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
   getCareerArchetype,
   CAREER_REPORT_COST_MOONSTONES,
@@ -48,10 +49,11 @@ export function CareerReportPage() {
       reportUnlocks.isUnlocked('career-archetype', mbti),
       moonstones.getBalance(user.id),
     ]);
-    if (unlockRes.ok) setUnlocked(unlockRes.data);
+    // Premium includes every report; a subscriber needs no unlock row.
+    if (unlockRes.ok) setUnlocked(unlockRes.data || Boolean(profile?.isPremium));
     if (balanceRes.ok) setBalance(balanceRes.data);
     setChecking(false);
-  }, [user, mbti]);
+  }, [user, mbti, profile?.isPremium]);
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
 
@@ -71,12 +73,18 @@ export function CareerReportPage() {
     } else if (res.error === 'insufficient-balance') {
       toast(
         t('careerReport.insufficientBalance', {
-          defaultValue: 'Not enough Moonstones — top up from the home widget, or earn via daily check-in and invites',
+          defaultValue: 'Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.',
+          n: CAREER_REPORT_COST_MOONSTONES,
         }),
         'error',
       );
     } else {
-      toast(t('careerReport.unlockFailed', { defaultValue: 'Could not unlock' }), 'error');
+      toast(
+        t('careerReport.unlockFailed', {
+          defaultValue: 'Couldn’t unlock the report — check your connection and try again.',
+        }),
+        'error',
+      );
     }
   };
 
@@ -192,7 +200,7 @@ export function CareerReportPage() {
           >
             <Crown className="w-4 h-4 mr-2" />
             {t('careerReport.upgradeToPremium', {
-              defaultValue: 'Upgrade to Premium — unlocks everything',
+              defaultValue: 'See what Premium includes',
             })}
           </Button>
 
@@ -234,7 +242,8 @@ export function CareerReportPage() {
               >
                 <Gift className="w-3.5 h-3.5 mr-1.5" />
                 {t('careerReport.earnNow', {
-                  defaultValue: 'Earn 50 Moonstones — watch ad',
+                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                  n: MOONSTONES_PER_AD,
                 })}
               </Button>
             </div>
@@ -248,10 +257,13 @@ export function CareerReportPage() {
             it told a non-paying user they were already premium and gave
             them no way to buy — which is the likeliest reason the
             subscriptions table is empty. */}
+        {/* No `feature` here: Premium does not unlock this report (the page
+            checks report_unlocks only, and neither the RPC nor the report
+            functions bypass for premium), so a "Career Archetype opens with
+            Premium" line would be untrue. The sheet shows its generic copy. */}
         <PaywallSheet
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
-          feature="career-report"
         />
         {moonstonesEnabled && (
           <WatchAdSheet
@@ -260,6 +272,8 @@ export function CareerReportPage() {
             onCredited={(newBalance) => setBalance(newBalance)}
             onShowPaywall={() => setShowSubscription(true)}
             earnOnly
+            cost={CAREER_REPORT_COST_MOONSTONES}
+            itemName={t('careerReport.title', { defaultValue: 'Career Archetype' }) as string}
           />
         )}
       </Page>

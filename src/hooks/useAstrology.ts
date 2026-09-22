@@ -2,11 +2,44 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
-const tErr = (key: string, fallback: string) => i18n.t(`astrologyErrors.${key}`, { ns: 'app', defaultValue: fallback });
 import { newCorrelationId, CORRELATION_ID_HEADER } from '../utils/correlationId';
 import { apiCall, ApiError, ApiContractError } from '../lib/apiClient';
 import { DailyResponse, WeeklyResponse, MonthlyResponse, TransitCalendarResponse } from '../schema';
 import type { NatalChart, DailyContent, WeeklyContent, MonthlyContent, TransitEvent } from '../types/astrology';
+
+const tErr = (key: string, fallback: string) => i18n.t(`astrologyErrors.${key}`, { ns: 'app', defaultValue: fallback });
+
+/** Error from the legacy callFn path, carrying a code so the UI can pick a message. */
+class AstroCallError extends Error {
+  constructor(readonly code: 'NO_SESSION' | 'TIMEOUT' | 'HTTP', message: string, readonly status?: number) {
+    super(message);
+    this.name = 'AstroCallError';
+  }
+}
+
+/**
+ * Turn any thrown error into a message that says what happened and what to
+ * do next. The raw server/network text goes to the console for diagnostics
+ * and is never rendered.
+ */
+function userMessage(e: unknown, key: string, fallback: string): string {
+  console.error(`[astrology] ${key} failed:`, e);
+  const code = e instanceof ApiError || e instanceof AstroCallError ? e.code : null;
+  const status = e instanceof ApiError || e instanceof AstroCallError ? e.status : undefined;
+  if (code === 'NO_SESSION' || code === 'UNAUTHORIZED' || status === 401) {
+    return tErr('signedOut', 'Your session ended — sign in again to load this.');
+  }
+  if (code === 'TIMEOUT') {
+    return tErr('timeout', 'The request timed out — check your connection and try again.');
+  }
+  if (code === 'RATE_LIMITED' || status === 429) {
+    return tErr('rateLimited', 'Too many requests — wait a moment and try again.');
+  }
+  if (e instanceof ApiContractError) {
+    return tErr('contract', 'The server sent something this version couldn’t read — try again in a moment.');
+  }
+  return tErr(key, fallback);
+}
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -53,7 +86,7 @@ if (typeof window !== 'undefined') {
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
-    throw new Error('You must be signed in to view horoscopes. Please log in and try again.');
+    throw new AstroCallError('NO_SESSION', 'No active session');
   }
   return {
     'Content-Type': 'application/json',
@@ -106,7 +139,7 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
             });
             if (!retry.ok) {
               const text = await retry.text();
-              throw new Error(text);
+              throw new AstroCallError('HTTP', text, retry.status);
             }
             return retry.json();
           } finally {
@@ -115,12 +148,12 @@ async function callFn<T>(name: string, body?: Record<string, unknown>): Promise<
         }
       }
       const text = await res.text();
-      throw new Error(text);
+      throw new AstroCallError('HTTP', text, res.status);
     }
     return res.json();
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
-      throw new Error(`Request to ${name} timed out. Please try again.`);
+      throw new AstroCallError('TIMEOUT', `Request to ${name} timed out`);
     }
     throw e;
   } finally {
@@ -171,11 +204,12 @@ export function useGeocode() {
       const fallbackResults = await geocodeClientFallback(birthPlace);
       setResults(fallbackResults);
       if (!fallbackResults.length) {
-        setError('No locations found. Try a different search term.');
+        setError(tErr('geocodeNone', 'No places matched — try the nearest city, or add the country.'));
       }
-    } catch {
+    } catch (e) {
+      console.error('[astrology] geocode fallback failed:', e);
       setResults([]);
-      setError('Location search unavailable. Please try again.');
+      setError(tErr('geocodeUnavailable', 'Place search isn’t responding — check your connection and try again.'));
     } finally {
       setLoading(false);
     }
@@ -209,11 +243,11 @@ export function useNatalChart() {
         setCache('chart', data);
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : tErr('loadChart', 'Failed to load chart');
-      if (msg.includes('No chart found')) {
+      const raw = e instanceof Error ? e.message : '';
+      if (raw.includes('No chart found')) {
         setChart(null);
       } else {
-        setError(msg);
+        setError(userMessage(e, 'loadChart', 'Couldn’t load your chart — check your connection and try again.'));
       }
     } finally {
       setLoading(false);
@@ -242,7 +276,7 @@ export function useNatalChart() {
       setCache('chart', data);
       return data;
     } catch (e) {
-      setError(e instanceof Error ? e.message : tErr('computeChart', 'Failed to compute chart'));
+      setError(userMessage(e, 'computeChart', 'Couldn’t compute your chart — check your birth details and try again.'));
       throw e;
     } finally {
       setLoading(false);
@@ -277,11 +311,7 @@ export function useDailyHoroscope() {
       setContent(content);
       setCache(key, content);
     } catch (e) {
-      if (e instanceof ApiError || e instanceof ApiContractError) {
-        setError(e.message);
-      } else {
-        setError(e instanceof Error ? e.message : tErr('dailyHoroscope', 'Failed to load daily horoscope'));
-      }
+      setError(userMessage(e, 'dailyHoroscope', 'Couldn’t load today’s horoscope — check your connection and try again.'));
     } finally {
       setLoading(false);
     }
@@ -317,11 +347,7 @@ export function useWeeklyForecast() {
       setContent(content);
       setCache(cacheKey, content);
     } catch (e) {
-      if (e instanceof ApiError || e instanceof ApiContractError) {
-        setError(e.message);
-      } else {
-        setError(e instanceof Error ? e.message : tErr('weeklyForecast', 'Failed to load weekly forecast'));
-      }
+      setError(userMessage(e, 'weeklyForecast', 'Couldn’t load this week’s forecast — check your connection and try again.'));
     } finally {
       setLoading(false);
     }
@@ -357,11 +383,7 @@ export function useMonthlyForecast() {
       setContent(content);
       setCache(cacheKey, content);
     } catch (e) {
-      if (e instanceof ApiError || e instanceof ApiContractError) {
-        setError(e.message);
-      } else {
-        setError(e instanceof Error ? e.message : tErr('monthlyForecast', 'Failed to load monthly forecast'));
-      }
+      setError(userMessage(e, 'monthlyForecast', 'Couldn’t load this month’s forecast — check your connection and try again.'));
     } finally {
       setLoading(false);
     }
@@ -402,11 +424,7 @@ export function useTransitCalendar() {
       setEvents(typed.events || []);
       setCache(cacheKey, typed);
     } catch (e) {
-      if (e instanceof ApiError || e instanceof ApiContractError) {
-        setError(e.message);
-      } else {
-        setError(e instanceof Error ? e.message : tErr('transits', 'Failed to load transits'));
-      }
+      setError(userMessage(e, 'transits', 'Couldn’t load your transits — check your connection and try again.'));
     } finally {
       setLoading(false);
     }

@@ -61,7 +61,7 @@ export function usePostCheckout() {
     // Already premium? Clean up and celebrate.
     if (profile?.isPremium) {
       toast(
-        t('billing.premiumActivated', { defaultValue: 'Premium activated. Welcome!' }),
+        t('billing.premiumActivated', { defaultValue: 'Premium is on. Every reading is open to you.' }),
         'success',
       );
       params.delete('payment');
@@ -83,13 +83,14 @@ export function usePostCheckout() {
         navigate({ pathname: location.pathname, search: params2.toString() }, { replace: true });
         if (confirmed) {
           toast(
-            t('billing.premiumActivated', { defaultValue: 'Premium activated. Welcome!' }),
+            t('billing.premiumActivated', { defaultValue: 'Premium is on. Every reading is open to you.' }),
             'success',
           );
         } else {
           toast(
             t('billing.processingTimeout', {
-              defaultValue: "Your payment is being processed. If premium doesn't appear shortly, refresh or contact support.",
+              defaultValue:
+                'Your payment went through, but Premium hasn’t switched on yet. Refresh in a minute — if it’s still off, contact support.',
             }),
             'info',
           );

@@ -320,7 +320,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
         <Button variant="outline" onClick={handleSave}>
           {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
         </Button>
-        <Button variant="gold" onClick={handleJournalPrompt}>
+        <Button variant="outline" onClick={handleJournalPrompt}>
           <PenLine className="w-4 h-4" />
           {t('horoscope.journalButton')}
         </Button>

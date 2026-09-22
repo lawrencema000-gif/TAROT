@@ -204,10 +204,10 @@ export function BaziPage() {
           <>
             <Button variant="outline" fullWidth onClick={handleShare}>
               <Share2 className="w-4 h-4 mr-2" />
-              {t('quizzes.share.button', { defaultValue: 'Share' })}
+              {t('bazi.share', { defaultValue: 'Share my pillars' })}
             </Button>
             <Button variant="outline" fullWidth onClick={reset}>
-              {t('bazi.recalculate', { defaultValue: 'Recalculate' })}
+              {t('bazi.recalculate', { defaultValue: 'Cast for another birth date' })}
             </Button>
           </>
         }
@@ -460,7 +460,7 @@ export function BaziPage() {
                 </p>
                 <Button variant="gold" onClick={() => navigate('/profile')}>
                   <Crown className="w-4 h-4 mr-2" />
-                  {t('bazi.premiumTeaserCta', { defaultValue: 'See Premium' })}
+                  {t('bazi.premiumTeaserCta', { defaultValue: 'Unlock the full reading' })}
                 </Button>
               </Card>
             )}

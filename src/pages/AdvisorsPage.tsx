@@ -42,11 +42,11 @@ export function AdvisorsPage() {
     });
     setSubmitting(false);
     if (res.ok) {
-      toast(t('advisors.interestSubmitted', { defaultValue: 'Interest noted — we\'ll notify you when {{n}} opens bookings.', n: selected.displayName }), 'success');
+      toast(t('advisors.interestSubmitted', { defaultValue: 'Interest noted. Check back on this profile — a Book a session button appears here when {{n}} opens bookings.', n: selected.displayName }), 'success');
       setTopic('');
       setView('directory');
     } else {
-      toast(t('advisors.interestFailed', { defaultValue: 'Could not submit interest' }), 'error');
+      toast(t('advisors.interestFailed', { defaultValue: 'Couldn’t record your interest — check your connection and try again.' }), 'error');
     }
   };
 
@@ -145,7 +145,7 @@ export function AdvisorsPage() {
             </h3>
             <p className="text-xs text-mystic-400 mb-3 italic">
               {t('advisors.bookingsComingSoon', {
-                defaultValue: 'Paid sessions are rolling out gradually. Tell us what you\'d like help with and we\'ll notify you when this advisor opens bookings.',
+                defaultValue: 'Paid sessions are rolling out gradually. Tell us what you’d like help with — when this advisor opens bookings, a Book a session button appears on this page.',
               })}
             </p>
             <textarea
@@ -162,7 +162,7 @@ export function AdvisorsPage() {
               <Send className="w-4 h-4 mr-2" />
               {submitting
                 ? t('advisors.submitting', { defaultValue: 'Submitting...' })
-                : t('advisors.notifyMe', { defaultValue: 'Notify me when bookings open' })}
+                : t('advisors.notifyMe', { defaultValue: 'Register my interest' })}
             </Button>
           </Card>
         ) : (

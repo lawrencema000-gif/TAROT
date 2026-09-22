@@ -56,6 +56,11 @@ interface WatchAdSheetProps {
   onCredited?: (newBalance: number) => void;
   /** Called when the user taps "Upgrade to Premium" instead. */
   onShowPaywall: () => void;
+  /**
+   * Localized name of the thing being unlocked ("Career Archetype"). The
+   * headline reads "Unlock {{name}}"; without it, "Unlock this reading".
+   */
+  itemName?: string;
 }
 
 export function WatchAdSheet({
@@ -68,6 +73,7 @@ export function WatchAdSheet({
   onSpent,
   onCredited,
   onShowPaywall,
+  itemName,
 }: WatchAdSheetProps) {
   const { t } = useT('app');
   const { user } = useAuth();
@@ -102,10 +108,15 @@ export function WatchAdSheet({
       switch (outcome) {
         case 'credited':
           toast(
-            t('premium.watchAd.toasts.credited', {
-              defaultValue: '+{{n}} Moonstones added. Tap "Spend" to unlock.',
-              n: MOONSTONES_PER_AD,
-            }),
+            earnOnly
+              ? t('premium.watchAd.toasts.creditedEarnOnly', {
+                  defaultValue: '{{n}} Moonstones added.',
+                  n: MOONSTONES_PER_AD,
+                })
+              : t('premium.watchAd.toasts.credited', {
+                  defaultValue: '{{n}} Moonstones added. Spend them below to unlock.',
+                  n: MOONSTONES_PER_AD,
+                }),
             'success',
           );
           // NOTE: deliberately do NOT call onUnlocked here. Earning Moonstones
@@ -115,7 +126,7 @@ export function WatchAdSheet({
         case 'not-ready':
           toast(
             t('premium.watchAd.toasts.notAvailable', {
-              defaultValue: 'Ad not available right now. Try again in a moment.',
+              defaultValue: 'No ad is ready right now. Try again in a moment.',
             }),
             'error',
           );
@@ -123,7 +134,8 @@ export function WatchAdSheet({
         case 'persist-failed':
           toast(
             t('premium.watchAd.toasts.persistFailed', {
-              defaultValue: "Ad watched, but we couldn't credit your balance. Check your connection.",
+              defaultValue:
+                'You watched the ad, but the Moonstones couldn’t be saved. Check your connection and try again.',
             }),
             'error',
           );
@@ -132,8 +144,8 @@ export function WatchAdSheet({
           break;
         case 'disabled':
           toast(
-            t('premium.watchAd.toasts.notAvailable', {
-              defaultValue: 'Ad not available right now. Try again in a moment.',
+            t('premium.watchAd.toasts.adsDisabled', {
+              defaultValue: 'Ads aren’t available on this device.',
             }),
             'error',
           );
@@ -141,7 +153,12 @@ export function WatchAdSheet({
       }
     } catch (error) {
       console.error('[WatchAdSheet] Error showing ad:', error);
-      toast(t('premium.watchAd.toasts.error', { defaultValue: 'Something went wrong. Please try again.' }), 'error');
+      toast(
+        t('premium.watchAd.toasts.error', {
+          defaultValue: 'The ad couldn’t play. Check your connection and try again.',
+        }),
+        'error',
+      );
     } finally {
       setAdLoading(false);
     }
@@ -154,7 +171,9 @@ export function WatchAdSheet({
       const res = await spendForAction(actionKey, cost, idem);
       if (!res.ok) {
         toast(
-          t('premium.watchAd.toasts.spendFailed', { defaultValue: 'Could not spend Moonstones. Try again.' }),
+          t('premium.watchAd.toasts.spendFailed', {
+            defaultValue: 'Couldn’t spend your Moonstones — check your connection and try again.',
+          }),
           'error',
         );
         return;
@@ -162,7 +181,7 @@ export function WatchAdSheet({
       if (!res.data.allowed) {
         toast(
           t('premium.watchAd.toasts.insufficient', {
-            defaultValue: 'You need {{n}} Moonstones to unlock this. Watch an ad to earn more.',
+            defaultValue: 'You need {{n}} Moonstones for this. Watch an ad to earn more.',
             n: cost,
           }),
           'error',
@@ -172,7 +191,7 @@ export function WatchAdSheet({
       // Premium bypass: server didn't actually debit (free for premium users).
       // Either way, we've earned the right to grant access.
       toast(
-        t('premium.watchAd.toasts.unlocked', { defaultValue: 'Unlocked. Enjoy your reading.' }),
+        t('premium.watchAd.toasts.unlocked', { defaultValue: 'Unlocked. Your reading is open.' }),
         'success',
       );
       onSpent?.();
@@ -219,18 +238,27 @@ export function WatchAdSheet({
           </div>
 
           <h2 className="font-display-hero text-2xl text-mystic-100 text-center mb-2">
-            {t('premium.watchAd.unlockTitle', { defaultValue: 'Unlock this reading' })}
+            {itemName
+              ? t('premium.watchAd.unlockNamed', { defaultValue: 'Unlock {{name}}', name: itemName })
+              : t('premium.watchAd.unlockTitle', { defaultValue: 'Unlock this reading' })}
           </h2>
           <div className="flex justify-center mb-3 text-gold/60">
             <OrnateDivider width={140} />
           </div>
 
           <p className="text-sm text-mystic-300 text-center mb-2 leading-relaxed">
-            {t('premium.watchAd.unlockSubtitle', {
-              defaultValue: 'Spend {{cost}} Moonstones, or watch a short ad to earn {{ad}} first.',
-              cost,
-              ad: MOONSTONES_PER_AD,
-            })}
+            {earnOnly
+              ? t('premium.watchAd.earnOnlySubtitle', {
+                  defaultValue:
+                    'It costs {{cost}} Moonstones. Each short ad earns {{ad}}; once you have enough, unlock it from this page.',
+                  cost,
+                  ad: MOONSTONES_PER_AD,
+                })
+              : t('premium.watchAd.unlockSubtitle', {
+                  defaultValue: 'Spend {{cost}} Moonstones to read it now, or watch a short ad to earn {{ad}} first.',
+                  cost,
+                  ad: MOONSTONES_PER_AD,
+                })}
           </p>
 
           {balance !== null && (
@@ -272,7 +300,7 @@ export function WatchAdSheet({
               >
                 <Play className="w-4 h-4" />
                 {t('premium.watchAd.watchAdCta', {
-                  defaultValue: 'Watch ad → +{{n}} Moonstones',
+                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
                   n: MOONSTONES_PER_AD,
                 })}
               </Button>
@@ -286,7 +314,7 @@ export function WatchAdSheet({
             >
               <Crown className="w-4 h-4" />
               {t('premium.watchAd.getUnlimited', {
-                defaultValue: 'Or upgrade for unlimited access',
+                defaultValue: 'Or open everything with Premium',
               })}
             </Button>
 
@@ -303,7 +331,7 @@ export function WatchAdSheet({
           <p className="text-xs text-mystic-600 text-center leading-relaxed">
             {t('premium.watchAd.footerDisclaimer', {
               defaultValue:
-                'Premium unlocks every feature with no ads — usually better value than spending Moonstones one at a time.',
+                'With Premium there is nothing to spend: every spread, chart and reading is open, with no ads.',
             })}
           </p>
         </div>

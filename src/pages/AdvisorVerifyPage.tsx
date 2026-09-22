@@ -75,7 +75,7 @@ export function AdvisorVerifyPage() {
     });
     if (up1.error) {
       setSubmitting(false);
-      toast(up1.error.message, 'error');
+      toast(t('advisorVerify.uploadIdFailed', { defaultValue: "Couldn't upload your ID — check your connection and try again." }), 'error');
       return;
     }
     const up2 = await supabase.storage.from('advisor-verification').upload(selfiePath, selfieFile, {
@@ -83,7 +83,7 @@ export function AdvisorVerifyPage() {
     });
     if (up2.error) {
       setSubmitting(false);
-      toast(up2.error.message, 'error');
+      toast(t('advisorVerify.uploadVideoFailed', { defaultValue: "Couldn't upload your video — check your connection and try again." }), 'error');
       return;
     }
 
@@ -250,7 +250,7 @@ export function AdvisorVerifyPage() {
               className="w-full"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {selfieFile ? selfieFile.name : t('advisorVerify.uploadSelfie', { defaultValue: 'Upload video' })}
+              {selfieFile ? selfieFile.name : t('advisorVerify.uploadSelfie', { defaultValue: 'Upload my verification video' })}
             </Button>
           </Card>
 

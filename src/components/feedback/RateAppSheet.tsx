@@ -1,5 +1,6 @@
 import { Heart, Star, MessageCircle, X } from 'lucide-react';
 import { Button } from '../ui';
+import { useT } from '../../i18n/useT';
 import { ratePromptService } from '../../services/ratePrompt';
 
 interface RateAppSheetProps {
@@ -9,6 +10,7 @@ interface RateAppSheetProps {
 }
 
 export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
+  const { t } = useT('app');
   if (!open) return null;
 
   const handleRate = async () => {
@@ -52,15 +54,13 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
 
           <div className="space-y-4 mb-8">
             <h2 className="font-display text-2xl text-mystic-100">
-              Thank you for trying my first app
+              {t('rateApp.title', { defaultValue: 'Thank you for trying my first app' })}
             </h2>
             <p className="text-mystic-300 text-sm leading-relaxed">
-              I built this while studying, so I'm working with limited time and resources.
-              I know it isn't perfect yet, but I'm actively improving it.
+              {t('rateApp.body1', { defaultValue: "I built this while studying, so I'm working with limited time and resources. I know it isn't perfect yet, but I'm actively improving it." })}
             </p>
             <p className="text-mystic-300 text-sm leading-relaxed">
-              If anything feels off or you spot a bug, please let me know. And if you're
-              enjoying it, a 5-star review helps a lot.
+              {t('rateApp.body2', { defaultValue: "If anything feels off or you spot a bug, please let me know. And if you're enjoying it, a 5-star review helps a lot." })}
             </p>
           </div>
 
@@ -72,7 +72,7 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
               onClick={handleRate}
             >
               <Star className="w-5 h-5" />
-              Rate the App
+              {t('rateApp.rate', { defaultValue: 'Rate Arcana on Google Play' })}
             </Button>
 
             <Button
@@ -81,14 +81,14 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
               onClick={handleFeedback}
             >
               <MessageCircle className="w-5 h-5" />
-              Report an Issue
+              {t('rateApp.feedback', { defaultValue: 'Report a problem by email' })}
             </Button>
 
             <button
               onClick={handleLater}
               className="w-full py-3 text-mystic-400 hover:text-mystic-300 transition-colors text-sm"
             >
-              Maybe later
+              {t('rateApp.later', { defaultValue: 'Ask me another time' })}
             </button>
           </div>
         </div>

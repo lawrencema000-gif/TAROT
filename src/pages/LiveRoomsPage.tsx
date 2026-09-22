@@ -57,6 +57,7 @@ export function LiveRoomsPage() {
 
   const toggleRsvp = async (roomId: string) => {
     if (!user) return;
+    const room = rooms.find((r) => r.id === roomId);
     const attending = rsvpSet.has(roomId);
     if (attending) {
       const { error } = await supabase
@@ -65,23 +66,31 @@ export function LiveRoomsPage() {
         .eq('room_id', roomId)
         .eq('user_id', user.id);
       if (error) {
-        toast(error.message, 'error');
+        console.error('[LiveRooms] RSVP cancel failed:', error.message);
+        toast(t('liveRooms.toasts.cancelFailed', { defaultValue: 'Couldn’t release your seat — check your connection and try again.' }), 'error');
         return;
       }
       setRsvpSet((prev) => {
         const n = new Set(prev); n.delete(roomId); return n;
       });
-      toast(t('liveRooms.rsvpCancelled', { defaultValue: 'RSVP cancelled' }), 'info');
+      toast(t('liveRooms.rsvpCancelled', { defaultValue: 'Seat released — you can RSVP again any time.' }), 'info');
     } else {
       const { error } = await supabase
         .from('live_room_rsvps')
         .insert({ room_id: roomId, user_id: user.id });
       if (error) {
-        toast(error.message, 'error');
+        console.error('[LiveRooms] RSVP failed:', error.message);
+        toast(t('liveRooms.toasts.rsvpFailed', { defaultValue: 'Couldn’t save your seat — check your connection and try again.' }), 'error');
         return;
       }
       setRsvpSet((prev) => new Set(prev).add(roomId));
-      toast(t('liveRooms.rsvpConfirmed', { defaultValue: 'You\'re on the list — we\'ll notify you.' }), 'success');
+      toast(
+        t('liveRooms.rsvpConfirmed', {
+          defaultValue: 'You’re on the list. Check back here — the room opens at {{time}}.',
+          time: room ? new Date(room.scheduled_at).toLocaleString() : '',
+        }),
+        'success',
+      );
     }
   };
 
@@ -153,13 +162,13 @@ export function LiveRoomsPage() {
                     ) : (
                       <>
                         <CalendarPlus className="w-3 h-3 mr-1" />
-                        {t('liveRooms.rsvp', { defaultValue: 'RSVP' })}
+                        {t('liveRooms.rsvp', { defaultValue: 'Save my seat' })}
                       </>
                     )}
                   </Button>
                 ) : (
                   <p className="text-xs text-mystic-500 italic">
-                    {t('liveRooms.signInToRsvp', { defaultValue: 'Sign in to RSVP' })}
+                    {t('liveRooms.signInToRsvp', { defaultValue: 'Sign in to save a seat' })}
                   </p>
                 )}
               </div>
@@ -171,7 +180,7 @@ export function LiveRoomsPage() {
 
       <p className="text-[10px] text-center text-mystic-600 italic">
         {t('liveRooms.voiceComingSoon', {
-          defaultValue: 'Audio streaming is rolling out gradually. RSVP and we\'ll notify you when your room opens.',
+          defaultValue: 'Audio is rolling out gradually. Save a seat, then check back here — each room opens at its scheduled time.',
         })}
       </p>
     </Page>

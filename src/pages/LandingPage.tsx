@@ -651,8 +651,8 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <div>
               <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">Learn</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="/tarot-meanings" className="text-mystic-300 hover:text-mystic-100 no-underline">Tarot Card Meanings</a></li>
-                <li><a href="/spreads" className="text-mystic-300 hover:text-mystic-100 no-underline">Tarot Spreads</a></li>
+                <li><a href="/tarot-meanings" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.cardMeanings', { defaultValue: "Tarot card meanings" })}</a></li>
+                <li><a href="/spreads" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.spreads', { defaultValue: "Tarot spreads" })}</a></li>
                 <li><a href="/astrology" className="text-mystic-300 hover:text-mystic-100 no-underline">Astrology</a></li>
                 <li><a href="/numerology" className="text-mystic-300 hover:text-mystic-100 no-underline">Numerology</a></li>
                 <li><a href="/crystals" className="text-mystic-300 hover:text-mystic-100 no-underline">Crystals</a></li>
@@ -665,15 +665,15 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               <ul className="space-y-2 text-sm">
                 <li><a href="/signup" className="text-mystic-300 hover:text-mystic-100 no-underline">Sign up — 3-day free trial</a></li>
                 <li><a href="/signin" className="text-mystic-300 hover:text-mystic-100 no-underline">Sign in</a></li>
-                <li><a href="/spreads/builder" className="text-mystic-300 hover:text-mystic-100 no-underline">Custom Spread Builder</a></li>
-                <li><a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">Get on Google Play</a></li>
+                <li><a href="/spreads/builder" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.spreadBuilder', { defaultValue: "Custom spread builder" })}</a></li>
+                <li><a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.googlePlay', { defaultValue: 'Get it on Google Play' })}</a></li>
               </ul>
             </div>
             <div>
               <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">Company</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="/privacy-policy.html" className="text-mystic-300 hover:text-mystic-100 no-underline">Privacy Policy</a></li>
-                <li><a href="mailto:support@arcana.app" className="text-mystic-300 hover:text-mystic-100 no-underline">Contact / Support</a></li>
+                <li><a href="/privacy-policy.html" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.privacy', { defaultValue: "Privacy policy" })}</a></li>
+                <li><a href="mailto:support@arcana.app" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.contact', { defaultValue: "Contact and support" })}</a></li>
                 <li><a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">Shop (partner)</a></li>
               </ul>
             </div>

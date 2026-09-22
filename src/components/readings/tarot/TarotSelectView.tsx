@@ -6,7 +6,7 @@
  * Selected cards show their pick order; the CTA stays disabled until N
  * are chosen.
  */
-import { Eye } from 'lucide-react';
+import { ChevronLeft, Eye } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 
@@ -37,6 +37,7 @@ export function TarotSelectView({
         onClick={onBack}
         className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
       >
+        <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}
       </button>
 

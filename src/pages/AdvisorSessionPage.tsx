@@ -211,7 +211,7 @@ export function AdvisorSessionPage() {
           <div className="flex gap-2">
             <Button variant="outline" fullWidth onClick={handleCancel} >
               <X className="w-4 h-4 mr-1" />
-              {t('advisorSession.cancel', { defaultValue: 'Cancel' })}
+              {t('advisorSession.cancel', { defaultValue: 'Cancel this session' })}
             </Button>
             <Button variant="gold" fullWidth onClick={handleStart} >
               <Play className="w-4 h-4 mr-1" />
@@ -320,7 +320,7 @@ export function AdvisorSessionPage() {
             className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
           />
           <Button variant="primary" fullWidth onClick={handleSubmitRating} disabled={rating === 0}>
-            {t('advisorSession.submitRating', { defaultValue: 'Submit rating' })}
+            {t('advisorSession.submitRating', { defaultValue: 'Send my rating' })}
           </Button>
         </Card>
       )}

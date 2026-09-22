@@ -156,7 +156,7 @@ export function LoveTreePage() {
 
         <Button variant="gold" size="lg" fullWidth onClick={() => setStage('quiz')}>
           <Sprout className="w-4 h-4 mr-2" />
-          {t('loveTree.startCta', { defaultValue: 'Begin' })}
+          {t('loveTree.startCta', { defaultValue: 'Grow my tree' })}
         </Button>
 
         <p className="text-caption text-mystic-500 italic">

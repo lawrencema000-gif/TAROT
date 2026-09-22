@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Shield, RefreshCw, Check, X, Eye, Clock } from 'lucide-react';
 import { Button, Badge, toast } from '../ui';
 import { supabase } from '../../lib/supabase';
+import { useT } from '../../i18n/useT';
 
 /**
  * Admin-only panel to review pending advisor verifications. Lists rows
@@ -21,6 +22,7 @@ interface VerificationRow {
 }
 
 export function AdvisorVerificationPanel() {
+  const { t } = useT('app');
   const [rows, setRows] = useState<VerificationRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -37,12 +39,13 @@ export function AdvisorVerificationPanel() {
     if (!showAll) q = q.eq('status', 'pending');
     const { data, error } = await q;
     if (error) {
-      toast(error.message, 'error');
+      console.error('[AdvisorVerification] Queue load failed:', error.message);
+      toast(t('admin.verifications.toasts.loadFailed', { defaultValue: 'Couldn’t load the verification queue — tap Refresh to try again.' }), 'error');
     } else {
       setRows((data ?? []) as VerificationRow[]);
     }
     setLoading(false);
-  }, [showAll]);
+  }, [showAll, t]);
 
   useEffect(() => { if (expanded) load(); }, [expanded, load]);
 
@@ -53,7 +56,8 @@ export function AdvisorVerificationPanel() {
       supabase.storage.from('advisor-verification').createSignedUrl(row.selfie_video_path, 60 * 10),
     ]);
     if (!idRes.data?.signedUrl || !vidRes.data?.signedUrl) {
-      toast('Could not load preview', 'error');
+      console.error('[AdvisorVerification] Preview URLs failed:', idRes.error?.message, vidRes.error?.message);
+      toast(t('admin.verifications.toasts.previewFailed', { defaultValue: 'Couldn’t load the ID and video previews — tap Load preview again.' }), 'error');
       return;
     }
     setPreviewUrls((prev) => ({
@@ -69,7 +73,8 @@ export function AdvisorVerificationPanel() {
       p_notes: notes[row.id] || null,
     });
     if (error) {
-      toast(error.message, 'error');
+      console.error('[AdvisorVerification] Decision failed:', error.message);
+      toast(t('admin.verifications.toasts.decideFailed', { defaultValue: 'Couldn’t save that decision — refresh the queue and try again.' }), 'error');
       return;
     }
     toast(decision === 'approved' ? 'Approved' : 'Rejected', 'success');

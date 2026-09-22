@@ -229,10 +229,10 @@ export function HumanDesignPage() {
           <>
             <Button variant="outline" fullWidth onClick={handleShare}>
               <Share2 className="w-4 h-4 mr-2" />
-              {t('quizzes.share.button', { defaultValue: 'Share' })}
+              {t('humanDesign.share', { defaultValue: 'Share my design' })}
             </Button>
             <Button variant="outline" fullWidth onClick={reset}>
-              {t('humanDesign.recalculate', { defaultValue: 'Recalculate' })}
+              {t('humanDesign.recalculate', { defaultValue: 'Calculate another chart' })}
             </Button>
           </>
         }

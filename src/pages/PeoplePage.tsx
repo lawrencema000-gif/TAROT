@@ -9,6 +9,7 @@ import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
 import { getZodiacSign } from '../utils/zodiac';
 import { SIGN_GLYPH } from '../lib/chart';
+import { useT } from '../i18n/useT';
 
 const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other' };
 
@@ -25,6 +26,7 @@ function signGlyphFor(birthDate: string): string {
 export function PeoplePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useT('app');
   const [list, setList] = useState<Person[] | null>(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -39,14 +41,14 @@ export function PeoplePage() {
   return (
     <Page spacing="md">
       <PageHeader
-        eyebrow="Your circle"
-        title="People"
-        subtitle="Save the birth details of people you care about to explore their charts and your compatibility."
+        eyebrow={t('people.eyebrow', { defaultValue: 'Your circle' })}
+        title={t('people.title', { defaultValue: 'People' })}
+        subtitle={t('people.subtitle', { defaultValue: 'Save the birth details of people you care about to explore their charts and your compatibility.' })}
         divider
       />
 
       <Button variant="primary" size="md" fullWidth onClick={() => setShowForm(true)}>
-        <UserPlus className="w-4 h-4 mr-2" /> Add a person
+        <UserPlus className="w-4 h-4 mr-2" /> {t('people.addPerson', { defaultValue: 'Add a person' })}
       </Button>
 
       {list === null ? (
@@ -54,8 +56,8 @@ export function PeoplePage() {
       ) : list.length === 0 ? (
         <EmptyState
           icon={<Users />}
-          title="No one here yet"
-          description="Add your partner, a parent, or a friend to reveal their natal chart and see how your stars align."
+          title={t('people.emptyTitle', { defaultValue: 'No one here yet' })}
+          description={t('people.emptyBody', { defaultValue: 'Add your partner, a parent, or a friend to reveal their natal chart and see how your stars align.' })}
         />
       ) : (
         <div className="space-y-3">
@@ -69,18 +71,18 @@ export function PeoplePage() {
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-mystic-100 truncate">{p.name}</div>
                 <div className="text-xs text-mystic-500">
-                  {REL_LABEL[p.relationship]} · {new Date(p.birthDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                  {!p.birthTime && ' · time unknown'}
+                  {t(`people.relationship.${p.relationship}`, { defaultValue: REL_LABEL[p.relationship] })} · {new Date(p.birthDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  {!p.birthTime && <> · {t('people.timeUnknown', { defaultValue: 'time unknown' })}</>}
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
             </button>
           ))}
-          <p className="text-center text-xs text-mystic-600 pt-2"><Users className="w-3 h-3 inline mr-1" />{list.length} / 50 saved</p>
+          <p className="text-center text-xs text-mystic-600 pt-2"><Users className="w-3 h-3 inline mr-1" />{t('people.savedCount', { defaultValue: '{{n}} of 50 saved', n: list.length })}</p>
         </div>
       )}
 
-      <Sheet open={showForm} onClose={() => setShowForm(false)} title="Add a person">
+      <Sheet open={showForm} onClose={() => setShowForm(false)} title={t('people.addPerson', { defaultValue: 'Add a person' })}>
         <PersonForm
           onSaved={(person) => { setShowForm(false); load(); navigate(`/people/${person.id}`); }}
           onCancel={() => setShowForm(false)}

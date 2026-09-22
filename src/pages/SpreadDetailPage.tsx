@@ -6,10 +6,12 @@ import { Button, Disclosure, EmptyState, Page, PageHeader, Section } from '../co
 import { getSpreadBySlug, allSpreads as tarotSpreads } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import { useT } from '../i18n/useT';
 
 export function SpreadDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { t } = useT('app');
   const spread = slug ? getSpreadBySlug(slug) : null;
 
   useEffect(() => {
@@ -62,10 +64,10 @@ export function SpreadDetailPage() {
       <Page className="py-16">
         <EmptyState
           icon={<Layers />}
-          title="Spread not found"
+          title={t('spreadDetail.notFound', { defaultValue: 'Spread not found' })}
           action={
             <Button variant="outline" onClick={() => navigate('/spreads')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />Back to all spreads
+              <ArrowLeft className="w-4 h-4 mr-2" />{t('spreadDetail.backToAll', { defaultValue: 'Back to all spreads' })}
             </Button>
           }
         />
@@ -81,7 +83,7 @@ export function SpreadDetailPage() {
     <Page className="py-6 sm:py-10">
       <PageHeader
         backHref="/spreads"
-        backLabel="All spreads"
+        backLabel={t('spreadDetail.allSpreads', { defaultValue: 'All spreads' })}
         eyebrow={
           <>
             {spread.cardCount} cards · {spread.difficulty} ·{' '}

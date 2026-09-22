@@ -8,6 +8,7 @@ import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { OrnateDivider } from '../components/ui';
+import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 
 /**
  * Year-Ahead Forecast — 300 Moonstones or Premium subscription.
@@ -79,10 +80,11 @@ export function YearAheadReportPage() {
       reportUnlocks.isUnlocked('year-ahead', reference),
       moonstones.getBalance(user.id),
     ]);
-    if (unlockRes.ok) setUnlocked(unlockRes.data);
+    // Premium includes every report; a subscriber needs no unlock row.
+    if (unlockRes.ok) setUnlocked(unlockRes.data || Boolean(profile?.isPremium));
     if (balanceRes.ok) setBalance(balanceRes.data);
     setChecking(false);
-  }, [user, currentYear]);
+  }, [user, currentYear, profile?.isPremium]);
 
   useEffect(() => { checkUnlock(); }, [checkUnlock]);
 
@@ -131,12 +133,18 @@ export function YearAheadReportPage() {
     } else if (res.error === 'insufficient-balance') {
       toast(
         t('yearAhead.insufficientBalance', {
-          defaultValue: 'Not enough Moonstones — earn more via daily check-in or invites',
+          defaultValue: 'Not enough Moonstones — you need {{n}}. Earn more from the daily check-in, an ad or an invite.',
+          n: YEAR_AHEAD_COST,
         }),
         'error',
       );
     } else {
-      toast(t('yearAhead.unlockFailed', { defaultValue: 'Could not unlock' }), 'error');
+      toast(
+        t('yearAhead.unlockFailed', {
+          defaultValue: 'Couldn’t unlock the forecast — check your connection and try again.',
+        }),
+        'error',
+      );
     }
   };
 
@@ -224,7 +232,7 @@ export function YearAheadReportPage() {
           >
             <Crown className="w-4 h-4 mr-2" />
             {t('yearAhead.upgradeToPremium', {
-              defaultValue: 'Upgrade to Premium — unlocks everything',
+              defaultValue: 'See what Premium includes',
             })}
           </Button>
 
@@ -266,7 +274,8 @@ export function YearAheadReportPage() {
               >
                 <Gift className="w-3.5 h-3.5 mr-1.5" />
                 {t('yearAhead.earnNow', {
-                  defaultValue: 'Earn 50 Moonstones — watch ad',
+                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                  n: MOONSTONES_PER_AD,
                 })}
               </Button>
             </div>
@@ -280,10 +289,14 @@ export function YearAheadReportPage() {
             it told a non-paying user they were already premium and gave
             them no way to buy — which is the likeliest reason the
             subscriptions table is empty. */}
+        {/* No `feature` here: Premium does not unlock this forecast (the page
+            checks report_unlocks only, and astrology-year-ahead returns 402
+            for anyone without a row, premium included), so a "Year Ahead
+            opens with Premium" line would be untrue. The sheet shows its
+            generic copy. */}
         <PaywallSheet
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
-          feature="year-ahead-report"
         />
         {moonstonesEnabled && (
           <WatchAdSheet
@@ -292,6 +305,8 @@ export function YearAheadReportPage() {
             onCredited={(newBalance) => setBalance(newBalance)}
             onShowPaywall={() => setShowSubscription(true)}
             earnOnly
+            cost={YEAR_AHEAD_COST}
+            itemName={t('yearAhead.title', { defaultValue: 'Year Ahead' }) as string}
           />
         )}
       </Page>
@@ -327,7 +342,7 @@ export function YearAheadReportPage() {
           {t('yearAhead.errorGeneric', { defaultValue: 'Could not load forecast. Try again in a moment.' })}
         </p>
         <Button variant="primary" onClick={loadData} className="mt-3">
-          {t('common:actions.retry', { defaultValue: 'Retry' })}
+          {t('yearAhead.retry', { defaultValue: 'Reload the forecast' })}
         </Button>
       </Card>
     );

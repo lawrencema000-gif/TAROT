@@ -135,7 +135,7 @@ export async function listSky(limit = 2000): Promise<Result<Wish[]>> {
     .limit(limit);
   if (error) {
     captureException('dal.wishes.listSky', error);
-    return { ok: false, error: 'Could not load the sky.' };
+    return { ok: false, error: 'wishingSky.errors.loadSky' };
   }
   return { ok: true, data: (data ?? []).map(mapWish) };
 }
@@ -179,7 +179,7 @@ export async function makeWish(userId: string, input: NewWish): Promise<Result<W
 
   if (error) {
     captureException('dal.wishes.makeWish', error);
-    return { ok: false, error: 'Could not light your star. Try again.' };
+    return { ok: false, error: 'wishingSky.errors.lightStar' };
   }
   return { ok: true, data: mapWish(data as Record<string, unknown>) };
 }
@@ -188,7 +188,7 @@ export async function listEchoes(): Promise<Result<WishEcho[]>> {
   const { data, error } = await supabase.from('wish_echoes').select('wish_id, user_id');
   if (error) {
     captureException('dal.wishes.listEchoes', error);
-    return { ok: false, error: 'Could not load the links.' };
+    return { ok: false, error: 'wishingSky.errors.loadLinks' };
   }
   return {
     ok: true,
@@ -202,7 +202,7 @@ export async function echo(wishId: string, userId: string): Promise<Result<true>
   if (error) {
     if (error.code === '23505') return { ok: true, data: true }; // already echoed
     captureException('dal.wishes.echo', error);
-    return { ok: false, error: 'Could not add your echo.' };
+    return { ok: false, error: 'wishingSky.errors.addEcho' };
   }
   return { ok: true, data: true };
 }
@@ -212,7 +212,7 @@ export async function unecho(wishId: string, userId: string): Promise<Result<tru
     .from('wish_echoes').delete().eq('wish_id', wishId).eq('user_id', userId);
   if (error) {
     captureException('dal.wishes.unecho', error);
-    return { ok: false, error: 'Could not remove your echo.' };
+    return { ok: false, error: 'wishingSky.errors.removeEcho' };
   }
   return { ok: true, data: true };
 }
@@ -229,9 +229,9 @@ export async function offerHelp(
   const { error } = await supabase
     .from('wish_offers').insert({ wish_id: wishId, helper_id: helperId, message: message.trim() });
   if (error) {
-    if (error.code === '23505') return { ok: false, error: 'You have already offered to help with this wish.' };
+    if (error.code === '23505') return { ok: false, error: 'wishingSky.errors.alreadyOffered' };
     captureException('dal.wishes.offerHelp', error);
-    return { ok: false, error: 'Could not send your offer.' };
+    return { ok: false, error: 'wishingSky.errors.sendOffer' };
   }
   return { ok: true, data: true };
 }
@@ -244,7 +244,7 @@ export async function listOffers(): Promise<Result<WishOffer[]>> {
     .order('created_at', { ascending: false });
   if (error) {
     captureException('dal.wishes.listOffers', error);
-    return { ok: false, error: 'Could not load offers.' };
+    return { ok: false, error: 'wishingSky.errors.loadOffers' };
   }
   return {
     ok: true,
@@ -265,7 +265,7 @@ export async function respondToOffer(
   const { error } = await supabase.from('wish_offers').update({ status }).eq('id', offerId);
   if (error) {
     captureException('dal.wishes.respondToOffer', error);
-    return { ok: false, error: 'Could not respond.' };
+    return { ok: false, error: 'wishingSky.errors.respond' };
   }
   return { ok: true, data: true };
 }
@@ -276,7 +276,7 @@ export async function report(wishId: string, userId: string, reason?: string): P
   if (error) {
     if (error.code === '23505') return { ok: true, data: true }; // already reported
     captureException('dal.wishes.report', error);
-    return { ok: false, error: 'Could not send the report.' };
+    return { ok: false, error: 'wishingSky.errors.sendReport' };
   }
   return { ok: true, data: true };
 }

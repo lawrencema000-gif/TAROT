@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
-import {
-  Compass,
+import { ChevronLeft, Compass,
   Eye,
   Feather,
   ChevronRight,
@@ -18,8 +17,7 @@ import {
   Briefcase,
   ArrowUp,
   ArrowDown,
-  Share2,
-} from 'lucide-react';
+  Share2 } from 'lucide-react';
 import { MysticalStar } from '../ui/MysticalStar';
 import { Card, Button, Sheet, Chip, Tabs, Tag, Badge, toast, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
@@ -577,7 +575,16 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     } catch (error) {
       await refundAi();
       console.error('Failed to generate AI interpretation:', error);
-      const errorMessage = error instanceof Error ? error.message : t('readings.toasts.aiFailed');
+      // The edge function refunds the Moonstone debit itself when the reading
+      // fails, so a failure never costs the user anything. Map the server's
+      // error code (embedded in the thrown message) to a message that says
+      // what happened and what to do; never surface the raw text.
+      const raw = error instanceof Error ? error.message : '';
+      const errorMessage = raw.includes('INSUFFICIENT_BALANCE')
+        ? t('readings.toasts.aiInsufficient', { defaultValue: 'Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.' })
+        : raw.includes('AI_SOFT_CAP') || raw.includes('AI_DAILY_LIMIT')
+          ? t('readings.toasts.aiLimit', { defaultValue: 'You’ve reached today’s limit for AI interpretations. Come back tomorrow for more.' })
+          : t('readings.toasts.aiFailed', { defaultValue: 'Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.' });
       toast(errorMessage, 'error');
     } finally {
       setLoadingAI(false);
@@ -661,6 +668,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           onClick={() => setView('home')}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
+          <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
         </button>
 
@@ -712,6 +720,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           onClick={() => setView('focus')}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
+          <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
         </button>
 
@@ -804,6 +813,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           onClick={() => setView('shuffle')}
           className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
         >
+          <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
         </button>
 
@@ -841,7 +851,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                     `}
                   >
                     {!isSelected && profile?.card_back_url && (
-                      <img src={profile.card_back_url} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="absolute inset-0 w-full h-full object-cover" />
                     )}
                     <div className="relative z-10">
                       {isSelected ? (
@@ -918,6 +928,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
             onClick={() => setView('home')}
             className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
           >
+            <ChevronLeft className="w-4 h-4" aria-hidden />
             {t('readings.back')}
           </button>
           <div className="flex items-center gap-1">
@@ -986,7 +997,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                         style={BACKFACE}
                       >
                         {profile?.card_back_url ? (
-                          <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
+                          <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
                         ) : (
                           <div className="text-center">
                             <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors duration-base">
@@ -1243,7 +1254,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
           >
             <div className="w-20 h-28 mx-auto mb-4 bg-gradient-to-br from-gold/20 to-mystic-800 rounded-xl border-2 border-gold/30 flex items-center justify-center hover:scale-105 transition-transform overflow-hidden">
               {profile?.card_back_url ? (
-                <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
+                <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
               ) : (
                 <MysticalStar size={40} halo={false} className="text-gold animate-pulse" />
               )}
@@ -1306,7 +1317,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                       className="w-8 h-11 bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-lg border border-mystic-600 hover:border-gold/40 transition-colors overflow-hidden"
                     >
                       {profile?.card_back_url && (
-                        <img src={profile.card_back_url} alt="Card Back" className="w-full h-full object-cover" />
+                        <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
                       )}
                     </div>
                   ))}

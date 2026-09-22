@@ -73,7 +73,7 @@ export function VoiceStrip({ roomName, enabled }: VoiceStripProps) {
           ) : (
             <Button variant="outline" size="sm" onClick={disconnect} >
               <PhoneOff className="w-3 h-3 mr-1" />
-              {t('voice.leave', { defaultValue: 'Leave' })}
+              {t('voice.leave', { defaultValue: 'Leave voice' })}
             </Button>
           )}
         </div>

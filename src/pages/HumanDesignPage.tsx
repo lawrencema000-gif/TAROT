@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, PageHeader, Section, Disclosure, ReadingProse } from '../components/ui';
+import { Card, Button, Input, toast, Page, PageHeader, ResultLayout, Section, Disclosure, Tag } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -116,7 +116,7 @@ export function HumanDesignPage() {
 
   if (stage === 'input' || stage === 'loading') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<HoroscopeWheelIcon />}
           title={t('humanDesign.title', { defaultValue: 'Human Design' })}
@@ -169,7 +169,7 @@ export function HumanDesignPage() {
         </Button>
         <MoonstoneCostLine />
         {EarnSheet}
-      </div>
+      </Page>
     );
   }
 
@@ -206,38 +206,38 @@ export function HumanDesignPage() {
     };
 
     return (
-      <div className="space-y-4 pb-6">
-        <PageHeader
-          icon={<HoroscopeWheelIcon />}
-          title={t('humanDesign.title', { defaultValue: 'Human Design' })}
-          onBack={reset}
-          backLabel={t('humanDesign.backToInput', { defaultValue: 'Recalculate' }) as string}
-        />
-
-        {/* Hero — Type + Profile */}
-        <Card variant="glow" padding="lg" className="text-center">
-          {typeContent.percentOfPopulation && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-mystic-800/50 rounded-full mb-3">
-              <span className="text-xs text-mystic-500">{typeContent.percentOfPopulation}</span>
-            </div>
-          )}
-          <h2 className="heading-display-xl text-mystic-100">{chart.type}</h2>
-          <p className="text-body text-gold/80 mt-2 italic">"{chart.strategy}"</p>
-          <p className="text-meta text-mystic-400 mt-3">
-            {t('humanDesign.profileLabel', { defaultValue: 'Profile' })}{' '}
-            <span className="text-gold font-medium">{chart.profile}</span>
-            {' · '}
-            {t('humanDesign.authorityLabel', { defaultValue: 'Authority' })}{' '}
-            <span className="text-cosmic-blue font-medium">{chart.authority}</span>
-          </p>
-        </Card>
-
-        {typeContent.summary && (
-          <Card padding="lg">
-            <ReadingProse text={typeContent.summary} />
-          </Card>
-        )}
-
+      <ResultLayout
+        onBack={reset}
+        backLabel={t('humanDesign.backToInput', { defaultValue: 'Recalculate' }) as string}
+        glyph={<HoroscopeWheelIcon />}
+        eyebrow={typeContent.percentOfPopulation || t('humanDesign.title', { defaultValue: 'Human Design' })}
+        verdict={chart.type}
+        subtitle={
+          <>
+            <span className="block italic">"{chart.strategy}"</span>
+            <span className="block text-meta text-mystic-400 mt-1">
+              {t('humanDesign.profileLabel', { defaultValue: 'Profile' })}{' '}
+              <span className="text-gold font-medium">{chart.profile}</span>
+              {' · '}
+              {t('humanDesign.authorityLabel', { defaultValue: 'Authority' })}{' '}
+              <span className="text-cosmic-blue font-medium">{chart.authority}</span>
+            </span>
+          </>
+        }
+        summary={typeContent.summary || undefined}
+        actions={
+          <>
+            <Button variant="outline" fullWidth onClick={handleShare}>
+              <Share2 className="w-4 h-4 mr-2" />
+              {t('quizzes.share.button', { defaultValue: 'Share' })}
+            </Button>
+            <Button variant="outline" fullWidth onClick={reset}>
+              {t('humanDesign.recalculate', { defaultValue: 'Recalculate' })}
+            </Button>
+          </>
+        }
+        defaultDetailOpen
+      >
         {/* Signature / Not-self */}
         <div className="grid grid-cols-2 gap-3">
           <Card padding="md" className="border-emerald-400/20">
@@ -290,12 +290,7 @@ export function HumanDesignPage() {
           >
             <div className="flex flex-wrap gap-2">
               {chart.channels.map((c) => (
-                <span
-                  key={c}
-                  className="px-2.5 py-1 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30 text-xs text-cosmic-violetLight font-medium"
-                >
-                  {c}
-                </span>
+                <Tag key={c} tone="violet" size="md">{c}</Tag>
               ))}
             </div>
             <p className="reading-copy mt-3">
@@ -448,17 +443,7 @@ export function HumanDesignPage() {
             </div>
           </Card>
         )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" fullWidth onClick={handleShare}>
-            <Share2 className="w-4 h-4 mr-2" />
-            {t('quizzes.share.button', { defaultValue: 'Share' })}
-          </Button>
-          <Button variant="outline" fullWidth onClick={reset}>
-            {t('humanDesign.recalculate', { defaultValue: 'Recalculate' })}
-          </Button>
-        </div>
-      </div>
+      </ResultLayout>
     );
   }
 

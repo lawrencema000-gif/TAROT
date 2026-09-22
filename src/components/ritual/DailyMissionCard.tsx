@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, Moon, Flame } from 'lucide-react';
-import { Card } from '../ui';
+import { Card, Tag } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useT } from '../../i18n/useT';
 import { pickDailyMission } from '../../data/dailyMissions';
@@ -99,10 +99,9 @@ export function DailyMissionCard({ onDone }: DailyMissionCardProps) {
           {t('dailyMission.label', { defaultValue: "Today's mission" })}
         </p>
         {streak > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gold/10 border border-gold/25">
-            <Flame className="w-3 h-3 text-gold" />
-            <span className="text-[10px] text-gold font-medium">{streak}</span>
-          </span>
+          <Tag tone="gold" icon={<Flame className="w-3 h-3" aria-hidden />}>
+            {streak}
+          </Tag>
         )}
       </div>
 

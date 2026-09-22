@@ -106,7 +106,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
 
           {/* Slide-up menu panel */}
           <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
-            <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden">
+            <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-mystic-700/30">
                 <span className="text-gold font-semibold text-sm tracking-wide">{t('nav.more')}</span>
@@ -136,12 +136,12 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                       `;
                   const iconWrap = `
                         p-2.5 rounded-xl transition-all duration-base
-                        ${isActive ? 'bg-gold/15 shadow-[0_0_12px_rgba(212,175,55,0.2)]' : 'bg-mystic-700/30'}
+                        ${isActive ? 'bg-gold/15' : 'bg-mystic-700/30'}
                       `;
                   const inner = (
                     <>
                       <div className={iconWrap}>
-                        <Icon className={`w-5 h-5 transition-all duration-base ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]' : ''}`} />
+                        <Icon className="w-5 h-5 transition-all duration-base" />
                       </div>
                       <span className={`text-xs font-medium ${isActive ? 'text-gold' : ''}`}>
                         {t(item.labelKey)}
@@ -225,7 +225,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                     relative p-1.5 rounded-xl transition-all duration-slow
                     ${isActive ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
                   `}>
-                    <Icon className={`w-5 h-5 transition-all duration-slow ${isActive ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
+                    <Icon className="w-5 h-5 transition-all duration-slow" />
                   </div>
                   <span className={`text-[10px] font-medium tracking-wide transition-all duration-slow ${isActive ? 'text-gold' : ''}`}>
                     {t(tab.labelKey)}
@@ -237,7 +237,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   {isActive && (
                     <span
                       aria-hidden
-                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold shadow-[0_0_6px_rgba(212,175,55,0.7)]"
+                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold"
                     />
                   )}
                 </button>
@@ -261,7 +261,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                 relative p-1.5 rounded-xl transition-all duration-slow
                 ${isMoreActive || moreOpen ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
               `}>
-                <MoreHorizontal className={`w-5 h-5 transition-all duration-slow ${isMoreActive || moreOpen ? 'drop-shadow-[0_0_8px_rgba(212,175,55,0.55)]' : ''}`} />
+                <MoreHorizontal className="w-5 h-5 transition-all duration-slow" />
               </div>
               <span className={`text-[10px] font-medium tracking-wide transition-all duration-slow ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
                 {t('nav.more')}
@@ -269,7 +269,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               {(isMoreActive || moreOpen) && (
                 <span
                   aria-hidden
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold shadow-[0_0_6px_rgba(212,175,55,0.7)]"
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold"
                 />
               )}
             </button>

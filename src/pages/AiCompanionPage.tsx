@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BookOpen, Feather, Flower, MessageCircle, Moon, Send } from 'lucide-react';
-import { Card, Button, PageHeader, ReadingProse, toast } from '../components/ui';
+import { Card, Button, PageHeader, ReadingProse, toast, Page, Tabs } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
@@ -168,7 +168,7 @@ export function AiCompanionPage() {
   const Icon = currentPersonaInfo.icon;
 
   return (
-    <div className="space-y-4 pb-6 flex flex-col h-[calc(100dvh-200px)] max-h-[calc(100dvh-200px)]">
+    <Page spacing="sm" className="flex flex-col h-[calc(100dvh-200px)] max-h-[calc(100dvh-200px)]">
       <PageHeader
         icon={<MessageCircle />}
         title={t('companion.title', { defaultValue: 'Companion' })}
@@ -183,26 +183,18 @@ export function AiCompanionPage() {
       />
 
       {/* Persona tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {PERSONAS.map((p) => {
-          const PIcon = p.icon;
-          const isActive = persona === p.id;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setPersona(p.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all border ${
-                isActive
-                  ? `${p.accent} bg-mystic-800/70 border-current`
-                  : 'text-mystic-400 bg-mystic-800/30 border-mystic-700/30'
-              }`}
-            >
-              <PIcon className="w-3.5 h-3.5" />
-              {t(`companion.personas.${p.id}.name`, { defaultValue: p.id })}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs<Persona>
+        items={PERSONAS.map((p) => ({
+          id: p.id,
+          label: t(`companion.personas.${p.id}.name`, { defaultValue: p.id }),
+          icon: p.icon,
+        }))}
+        value={persona}
+        onChange={setPersona}
+        aria-label={t('companion.title', { defaultValue: 'Companion' }) as string}
+        size="sm"
+        idPrefix="companion-persona"
+      />
 
       {/* Persona intro + meta */}
       <Card padding="md" className="bg-mystic-800/30 border-mystic-700/30">
@@ -232,11 +224,11 @@ export function AiCompanionPage() {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'user' ? (
-              <div className="max-w-[85%] rounded-xl p-3 text-ui bg-gold/15 text-mystic-100 rounded-br-sm">
+              <div className="max-w-[85%] rounded-xl p-3 text-ui bg-gold/15 text-mystic-100 rounded-br">
                 {msg.content}
               </div>
             ) : (
-              <div className="max-w-[85%] rounded-xl p-3 bg-mystic-800/60 rounded-bl-sm">
+              <div className="max-w-[85%] rounded-xl p-3 bg-mystic-800/60 rounded-bl">
                 <ReadingProse text={msg.content} lede={false} className="whitespace-pre-line" />
               </div>
             )}
@@ -244,7 +236,7 @@ export function AiCompanionPage() {
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="bg-mystic-800/60 rounded-xl rounded-bl-sm p-3 text-sm text-mystic-400 italic">
+            <div className="bg-mystic-800/60 rounded-xl rounded-bl p-3 text-sm text-mystic-400 italic">
               <span className="inline-block animate-pulse">
                 {t('companion.thinking', { defaultValue: 'thinking…' })}
               </span>
@@ -290,7 +282,7 @@ export function AiCompanionPage() {
         {history.length === 0 && <MoonstoneCostLine className="mt-1" />}
       </div>
       {EarnSheet}
-    </div>
+    </Page>
   );
 }
 

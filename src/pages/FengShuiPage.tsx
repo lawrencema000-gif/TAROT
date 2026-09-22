@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, Wind, Target, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Chip, Input, toast, Page, PageHeader, Section, Disclosure, Tag } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -79,7 +79,7 @@ export function FengShuiPage() {
 
   if (stage === 'rate') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<Home />}
           title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
@@ -106,17 +106,14 @@ export function FengShuiPage() {
                   </p>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((v) => (
-                      <button
+                      <Chip
                         key={v}
-                        onClick={() => setScore(area, v)}
-                        className={`flex-1 py-2 rounded-lg border text-sm transition-all ${
-                          scores[area] === v
-                            ? 'bg-gold/20 border-gold/50 text-gold'
-                            : 'bg-mystic-900/50 border-mystic-700/30 text-mystic-400'
-                        }`}
-                      >
-                        {v}
-                      </button>
+                        label={String(v)}
+                        selected={scores[area] === v}
+                        onSelect={() => setScore(area, v)}
+                        size="sm"
+                        className="flex-1 justify-center"
+                      />
                     ))}
                   </div>
                 </div>
@@ -186,7 +183,7 @@ export function FengShuiPage() {
           <Wind className="w-5 h-5 mr-2" />
           {t('fengshui.reveal', { defaultValue: 'Reveal my Bagua' })}
         </Button>
-      </div>
+      </Page>
     );
   }
 
@@ -218,7 +215,7 @@ export function FengShuiPage() {
     };
 
     return (
-      <div className="space-y-4 pb-6">
+      <Page spacing="sm">
         <PageHeader
           icon={<Home />}
           title={t('fengshui.title', { defaultValue: 'Feng Shui Bagua' })}
@@ -340,9 +337,9 @@ export function FengShuiPage() {
                 <div key={key} className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-400/15">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-emerald-400">{FAVORABLE_LABEL[key]}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300">
+                    <Tag tone="teal">
                       {DIRECTION_LABEL[kua.favorable[key]]}
-                    </span>
+                    </Tag>
                   </div>
                   <p className="reading-copy">{FAVORABLE_MEANING[key]}</p>
                 </div>
@@ -357,9 +354,9 @@ export function FengShuiPage() {
                 <div key={key} className="p-3 rounded-xl bg-pink-500/5 border border-pink-400/15">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-pink-400">{UNFAVORABLE_LABEL[key]}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300">
+                    <Tag tone="rose">
                       {DIRECTION_LABEL[kua.unfavorable[key]]}
-                    </span>
+                    </Tag>
                   </div>
                   <p className="reading-copy">{UNFAVORABLE_MEANING[key]}</p>
                 </div>
@@ -537,7 +534,7 @@ export function FengShuiPage() {
             {t('fengshui.reRate', { defaultValue: 'Re-rate' })}
           </Button>
         </div>
-      </div>
+      </Page>
     );
   }
 

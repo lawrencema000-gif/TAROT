@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Sparkles, Feather, Heart, TrendingUp, TrendingDown, Minus, Mail } from 'lucide-react';
-import { Card, Button, toast, PageHeader, EmptyState, ReadingProse } from '../components/ui';
+import { Card, Button, toast, PageHeader, EmptyState, ReadingProse, Page, Chip, Tag } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -142,7 +142,7 @@ export function MoodDiaryPage() {
   if (stage === 'log') {
     const selectedInfo = selected ? MOOD_CATEGORIES[selected] : null;
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<Heart />}
           title={t('mood.title', { defaultValue: 'Daily Mood' })}
@@ -173,7 +173,7 @@ export function MoodDiaryPage() {
                   onClick={() => setSelected(cat)}
                   className={`p-3 rounded-xl border transition-all active:scale-95 ${
                     isActive
-                      ? 'bg-gold/20 border-gold/50 shadow-lg shadow-gold/10'
+                      ? 'bg-gold/10 border-gold/50'
                       : 'bg-mystic-800/30 border-mystic-700/30 hover:border-mystic-600'
                   }`}
                 >
@@ -193,17 +193,13 @@ export function MoodDiaryPage() {
               </label>
               <div className="flex gap-2 mb-4">
                 {[1, 2, 3, 4, 5].map((v) => (
-                  <button
+                  <Chip
                     key={v}
-                    onClick={() => setIntensity(v as 1 | 2 | 3 | 4 | 5)}
-                    className={`flex-1 py-2 rounded-lg border text-sm transition-all ${
-                      intensity === v
-                        ? 'bg-gold/20 border-gold/50 text-gold'
-                        : 'bg-mystic-800/30 border-mystic-700/30 text-mystic-400'
-                    }`}
-                  >
-                    {v}
-                  </button>
+                    label={String(v)}
+                    selected={intensity === v}
+                    onSelect={() => setIntensity(v as 1 | 2 | 3 | 4 | 5)}
+                    className="flex-1 justify-center"
+                  />
                 ))}
               </div>
 
@@ -247,7 +243,7 @@ export function MoodDiaryPage() {
             {t('mood.viewHistory', { defaultValue: 'View 30-day curve' })}
           </Button>
         </div>
-      </div>
+      </Page>
     );
   }
 
@@ -289,7 +285,7 @@ export function MoodDiaryPage() {
     : '';
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         onBack={() => setStage('log')}
         backLabel={t('mood.backToLog', { defaultValue: 'Back to log' })}
@@ -410,12 +406,12 @@ export function MoodDiaryPage() {
               {t('mood.letterTitle', { defaultValue: 'Your weekly letter' })}
             </h3>
           </div>
-          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cosmic-violet/10 border border-cosmic-violet/30">
-            <span className="text-[10px] uppercase tracking-widest text-cosmic-violetLight">
+          <Tag tone="violet" size="md" className="mb-4">
+            <span className="text-caption uppercase tracking-widest">
               {t('mood.themeLabel', { defaultValue: 'Theme' })}
             </span>
-            <span className="text-xs text-mystic-200">{letter.dominantTheme}</span>
-          </div>
+            <span className="text-mystic-200">{letter.dominantTheme}</span>
+          </Tag>
           <ReadingProse text={letter.letter} />
           <div className="mt-4 pt-4 border-t border-gold/10">
             <p className="font-display-eyebrow mb-1">
@@ -442,7 +438,7 @@ export function MoodDiaryPage() {
           })}
         </p>
       </Card>
-    </div>
+    </Page>
   );
 }
 

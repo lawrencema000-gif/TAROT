@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
-import { Button, Input, toast } from '../ui';
+import { Button, Chip, Input, toast } from '../ui';
 import { CelestialCitySearch } from '../celestial/CelestialCitySearch';
 import { deriveBirthTz } from '../../utils/birthTz';
 import { people } from '../../dal';
@@ -86,10 +86,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
         <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">Relationship</label>
         <div className="flex flex-wrap gap-2">
           {RELATIONSHIPS.map((r) => (
-            <button key={r.key} type="button" onClick={() => setRelationship(r.key)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${relationship === r.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'}`}>
-              {r.label}
-            </button>
+            <Chip key={r.key} label={r.label} selected={relationship === r.key} onSelect={() => setRelationship(r.key)} />
           ))}
         </div>
       </div>
@@ -99,10 +96,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
           <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">Species</label>
           <div className="flex flex-wrap gap-2">
             {SPECIES_KEYS.map((k) => (
-              <button key={k} type="button" onClick={() => setSpecies(k)}
-                className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${species === k ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'}`}>
-                {SPECIES_INFO[k].label}
-              </button>
+              <Chip key={k} label={SPECIES_INFO[k].label} selected={species === k} onSelect={() => setSpecies(k)} />
             ))}
           </div>
         </div>

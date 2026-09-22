@@ -110,7 +110,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle }
                 }}
               >
                 <div
-                  className="w-20 h-28 rounded-xl border-2 border-gold/30 shadow-glow overflow-hidden bg-mystic-900"
+                  className="w-20 h-28 rounded-xl border-2 border-gold/30 overflow-hidden bg-mystic-900"
                   style={{
                     // Cards nearest the top of the stack lead the riffle;
                     // the small per-card duration spread stops ten cards

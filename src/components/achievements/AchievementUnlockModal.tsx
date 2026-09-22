@@ -4,6 +4,14 @@ import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { getRarityColor } from '../../services/achievements';
 import { prefersReducedMotion } from '../../utils/motion';
+import { Badge, type Tone } from '../ui';
+
+const RARITY_TONE: Record<AchievementRarity, Tone> = {
+  common: 'neutral',
+  rare: 'blue',
+  epic: 'violet',
+  legendary: 'gold',
+};
 
 interface AchievementUnlockModalProps {
   achievement: AchievementWithProgress | null;
@@ -28,16 +36,6 @@ function getRarityGradient(rarity: AchievementRarity): string {
     legendary: 'from-amber-400 via-yellow-300 to-amber-400',
   };
   return gradients[rarity];
-}
-
-function getRarityGlow(rarity: AchievementRarity): string {
-  const glows: Record<AchievementRarity, string> = {
-    common: 'shadow-mystic-400/50',
-    rare: 'shadow-blue-400/50',
-    epic: 'shadow-fuchsia-400/50',
-    legendary: 'shadow-amber-400/60',
-  };
-  return glows[rarity];
 }
 
 export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlockModalProps) {
@@ -81,7 +79,6 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
   const Icon = getIcon(achievement.icon_name);
   const rarityColor = getRarityColor(achievement.rarity);
   const rarityGradient = getRarityGradient(achievement.rarity);
-  const rarityGlow = getRarityGlow(achievement.rarity);
 
   return (
     <div
@@ -95,7 +92,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
       <div
         className={`
           relative max-w-sm w-full bg-gradient-to-b from-mystic-800 to-mystic-900
-          rounded-3xl border border-mystic-700/50 p-8
+          rounded-sheet border border-mystic-700/50 p-8
           transition-all duration-deliberate
           ${showContent ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}
         `}
@@ -131,8 +128,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
               className={`
                 relative w-24 h-24 rounded-2xl flex items-center justify-center
                 bg-gradient-to-br from-mystic-700/50 to-mystic-800/50
-                border-2 shadow-2xl
-                ${rarityGlow}
+                border-2
                 ${achievement.rarity === 'legendary'
                   ? 'border-amber-500/50 animate-pulse'
                   : achievement.rarity === 'epic'
@@ -147,14 +143,9 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
             </div>
 
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-              <span
-                className={`
-                  px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                  bg-gradient-to-r ${rarityGradient} text-mystic-900
-                `}
-              >
+              <Badge tone={RARITY_TONE[achievement.rarity]}>
                 {achievement.rarity}
-              </span>
+              </Badge>
             </div>
           </div>
 

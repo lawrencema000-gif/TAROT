@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Card, Sheet, Skeleton } from '../ui';
+import { Card, Sheet, Skeleton, Progress, Tag, type Tone } from '../ui';
 import { ChartWheel } from './ChartWheel';
 import { useNatalChart } from '../../hooks/useAstrology';
 import { HOUSE_THEMES } from '../../types/astrology';
@@ -48,11 +48,11 @@ function useInterpData() {
   return { loaded, ...modulesRef.current };
 }
 
-const ELEMENT_COLORS: Record<Element, string> = {
-  Fire: 'bg-coral/20 text-coral',
-  Earth: 'bg-teal/20 text-teal',
-  Air: 'bg-cosmic-blue/20 text-cosmic-blue',
-  Water: 'bg-mystic-500/20 text-mystic-300',
+const ELEMENT_TONES: Record<Element, Tone> = {
+  Fire: 'coral',
+  Earth: 'teal',
+  Air: 'blue',
+  Water: 'neutral',
 };
 
 const ASPECT_LABELS: Record<string, { symbol: string; color: string }> = {
@@ -166,17 +166,17 @@ export function BirthChart() {
           <div className="space-y-2">
             {(Object.entries(dominants.elements) as [Element, number][]).map(([el, count]) => (
               <div key={el} className="flex items-center gap-3">
-                <span className={`text-xs font-medium w-12 px-2 py-0.5 rounded-full text-center ${ELEMENT_COLORS[el]}`}>
+                <Tag tone={ELEMENT_TONES[el]} className="w-12 justify-center">
                   {t(`horoscope.birthChartView.elements.${el}`)}
-                </span>
-                <div className="flex-1 bg-mystic-800/40 rounded-full h-2">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      el === 'Fire' ? 'bg-coral' : el === 'Earth' ? 'bg-teal' : el === 'Air' ? 'bg-cosmic-blue' : 'bg-mystic-400'
-                    }`}
-                    style={{ width: `${Math.min((count / 10) * 100, 100)}%` }}
-                  />
-                </div>
+                </Tag>
+                <Progress
+                  value={count}
+                  max={10}
+                  size="md"
+                  tone={ELEMENT_TONES[el]}
+                  label={t(`horoscope.birthChartView.elements.${el}`) as string}
+                  className="flex-1"
+                />
                 <span className="text-meta text-mystic-400 w-4">{count}</span>
               </div>
             ))}
@@ -186,12 +186,7 @@ export function BirthChart() {
             {(Object.entries(dominants.modalities) as [Modality, number][]).map(([mod, count]) => (
               <div key={mod} className="flex items-center gap-3">
                 <span className="text-meta font-medium w-16 text-mystic-400">{mod}</span>
-                <div className="flex-1 bg-mystic-800/40 rounded-full h-2">
-                  <div
-                    className="h-full rounded-full bg-gold/60 transition-all"
-                    style={{ width: `${Math.min((count / 10) * 100, 100)}%` }}
-                  />
-                </div>
+                <Progress value={count} max={10} size="md" tone="gold" label={mod} className="flex-1" />
                 <span className="text-meta text-mystic-400 w-4">{count}</span>
               </div>
             ))}
@@ -276,7 +271,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             <h4 className="text-meta font-medium text-teal mb-1.5">{t('horoscope.birthChartView.strengths')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {signInterp.strengths.map((s, i) => (
-                <span key={i} className="text-xs px-2 py-1 bg-teal/10 text-teal rounded-full">{s}</span>
+                <Tag key={i} tone="teal">{s}</Tag>
               ))}
             </div>
           </div>
@@ -284,7 +279,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             <h4 className="text-meta font-medium text-coral mb-1.5">{t('horoscope.birthChartView.blindSpots')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {signInterp.blindSpots.map((s, i) => (
-                <span key={i} className="text-xs px-2 py-1 bg-coral/10 text-coral rounded-full">{s}</span>
+                <Tag key={i} tone="coral">{s}</Tag>
               ))}
             </div>
           </div>
@@ -317,7 +312,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
           <p className="reading-copy">{houseInterp.expression}</p>
           <div className="flex flex-wrap gap-1.5">
             {houseInterp.themes.map((t, i) => (
-              <span key={i} className="text-meta px-2 py-0.5 bg-gold/10 text-gold rounded-full">{t}</span>
+              <Tag key={i} tone="gold">{t}</Tag>
             ))}
           </div>
           {houseInterp.healthy && (

@@ -40,7 +40,7 @@ export function Skeleton({
     ? 'animate-shimmer bg-gradient-to-r from-mystic-800 via-mystic-700 to-mystic-800 bg-[length:200%_100%]'
     : '';
   const variantClasses = {
-    text: 'rounded',
+    text: 'rounded-lg',
     circular: 'rounded-full',
     rectangular: 'rounded-lg',
   };
@@ -207,7 +207,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Tarot card area */}
-      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-3xl p-6 border border-mystic-700">
+      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700">
         <Skeleton height={16} width={80} className="mb-2" />
         <Skeleton height={20} width={140} className="mb-6" />
         <div className="flex justify-center">
@@ -293,7 +293,7 @@ export function HoroscopePageSkeleton() {
 
 export function RitualCardSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-3xl p-6 border border-mystic-700 min-h-[400px]">
+    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700 min-h-[400px]">
       <div className="flex items-center justify-between mb-6">
         <Skeleton height={24} width={120} />
         <Skeleton variant="circular" width={32} height={32} />

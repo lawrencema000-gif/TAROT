@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MysticalStar } from './MysticalStar';
+import { Tag } from './Chip';
 import { useImageLoader } from '../../hooks/useImageLoader';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
@@ -70,12 +71,12 @@ export function TarotCardFrame({
           className={`
             absolute inset-0 rounded-xl overflow-hidden backface-hidden
             bg-gradient-to-br from-mystic-800 via-mystic-850 to-mystic-900
-            border-2 border-gold/30 shadow-card
-            ${glowOnHover ? 'hover:shadow-card-hover hover:border-gold/50 transition-all duration-slow' : ''}
+            border-2 border-gold/30
+            ${glowOnHover ? 'hover:border-gold/50 transition-all duration-slow' : ''}
           `}
         >
           <div className="absolute inset-1 rounded-lg border border-gold/20" />
-          <div className="absolute inset-2 rounded-md border border-gold/10" />
+          <div className="absolute inset-2 rounded-lg border border-gold/10" />
 
           {revealed ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
@@ -131,7 +132,7 @@ export function TarotCardFrame({
           className={`
             absolute inset-0 rounded-xl overflow-hidden backface-hidden rotate-y-180
             bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900
-            border-2 border-gold/20 shadow-card
+            border-2 border-gold/20
           `}
         >
           <div className="absolute inset-0 flex items-center justify-center">
@@ -147,9 +148,9 @@ export function TarotCardFrame({
       </div>
 
       {reversed && revealed && (
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-mystic-800 px-2 py-0.5 rounded text-xs text-mystic-400 border border-mystic-700">
+        <Tag tone="neutral" size="sm" className="absolute -bottom-2 left-1/2 -translate-x-1/2">
           Reversed
-        </div>
+        </Tag>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
-import { PageHeader } from '../components/ui';
+import { Page, PageHeader } from '../components/ui';
 import { decodeReading } from '../services/shareableReadings';
 import { fullDeck } from '../data/tarotDeck';
 import { setPageMeta } from '../utils/seo';
@@ -34,7 +34,7 @@ export function SharedReadingPage() {
 
   if (!payload) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16">
+      <Page className="max-w-2xl mx-auto py-16">
         <PageHeader
           align="center"
           onBack={() => navigate('/')}
@@ -42,7 +42,7 @@ export function SharedReadingPage() {
           title="This reading link is invalid"
           subtitle="The link may be malformed or from an older version of the app."
         />
-      </div>
+      </Page>
     );
   }
 
@@ -57,9 +57,8 @@ export function SharedReadingPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+    <Page className="max-w-2xl mx-auto py-6 sm:py-10">
       <PageHeader
-        className="mb-6"
         align="center"
         eyebrow="Shared reading"
         title={<>{cards.length}-card {payload.s.replace(/-/g, ' ')}</>}
@@ -73,7 +72,7 @@ export function SharedReadingPage() {
         }
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {cards.map(({ card, reversed }, idx) => {
           const imgUrl = getBundledFullPath(card.id);
           return (
@@ -98,7 +97,7 @@ export function SharedReadingPage() {
         })}
       </div>
 
-      <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 mb-6">
+      <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
         <h2 className="heading-display-md text-mystic-100 mb-2">What this reading suggests</h2>
         <div className="reading-copy">
           {cards.map(({ card, reversed }, idx) => (
@@ -125,6 +124,6 @@ export function SharedReadingPage() {
           Get your own reading on Arcana
         </button>
       </div>
-    </div>
+    </Page>
   );
 }

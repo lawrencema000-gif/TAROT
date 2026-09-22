@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sprout, Share2, ArrowLeft } from 'lucide-react';
-import { Card, Button, PageHeader, toast, ReadingProse } from '../components/ui';
+import { Card, Button, Page, PageHeader, Progress, ResultLayout, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { LOVE_TREE_QUIZ, ATTACHMENT_INFO, scoreLoveTree } from '../data/loveTree';
 import { LoveTree } from '../components/ritual/LoveTree';
@@ -132,7 +132,7 @@ export function LoveTreePage() {
   // ── Intro stage ─────────────────────────────────────────────────
   if (stage === 'intro') {
     return (
-      <div className="space-y-5 pb-6">
+      <Page spacing="md">
         <PageHeader
           align="center"
           icon={<Heart />}
@@ -164,7 +164,7 @@ export function LoveTreePage() {
             defaultValue: 'A tool for self-knowledge, not a clinical diagnosis. Attachment patterns can shift — this is a snapshot, not a verdict.',
           })}
         </p>
-      </div>
+      </Page>
     );
   }
 
@@ -172,7 +172,7 @@ export function LoveTreePage() {
   if (stage === 'quiz') {
     const item = LOVE_TREE_QUIZ[index];
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <div className="flex items-center justify-between">
           <button onClick={handleBack} className="flex items-center gap-1.5 text-mystic-400 hover:text-mystic-200 text-sm">
             <ArrowLeft className="w-4 h-4" />
@@ -183,14 +183,11 @@ export function LoveTreePage() {
           </span>
         </div>
 
-        <div className="relative h-1 bg-mystic-800 rounded-full overflow-hidden">
-          <motion.div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-pink-400 to-gold rounded-full"
-            initial={false}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          />
-        </div>
+        <Progress
+          value={progress}
+          size="sm"
+          label={t('loveTree.progress', { defaultValue: '{{i}} of {{n}}', i: index + 1, n: totalItems }) as string}
+        />
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -228,7 +225,7 @@ export function LoveTreePage() {
             </div>
           </motion.div>
         </AnimatePresence>
-      </div>
+      </Page>
     );
   }
 
@@ -237,39 +234,36 @@ export function LoveTreePage() {
   const info = ATTACHMENT_INFO[result.attachment];
 
   return (
-    <div className="space-y-5 pb-6">
-      <button onClick={handleRestart} className="flex items-center gap-1.5 text-mystic-400 hover:text-mystic-200 text-sm">
-        <ArrowLeft className="w-4 h-4" />
-        {t('loveTree.retake', { defaultValue: 'Retake' })}
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="space-y-5"
-      >
-        <Card variant="glow" padding="lg" className="text-center">
-          <p className="font-display-eyebrow mb-1">
-            {t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
-          </p>
-          <h2 className="heading-display-xl text-mystic-100">
-            {t(`loveTree.attachment.${result.attachment}.title`, { defaultValue: info.title })}
-          </h2>
-          <p className="text-ui italic text-gold mt-1">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.94 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <ResultLayout
+        onBack={handleRestart}
+        backLabel={t('loveTree.retake', { defaultValue: 'Retake' }) as string}
+        eyebrow={t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
+        verdict={t(`loveTree.attachment.${result.attachment}.title`, { defaultValue: info.title })}
+        subtitle={
+          <span className="italic">
             {t(`loveTree.attachment.${result.attachment}.archetype`, { defaultValue: info.archetype })}
-          </p>
-          <div className="mt-4">
-            <LoveTree tree={info.tree} />
-          </div>
+          </span>
+        }
+        summary={t(`loveTree.attachment.${result.attachment}.summary`, { defaultValue: info.summary }) as string}
+        actions={
+          <Button variant="gold" size="lg" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
+            {t('loveTree.share', { defaultValue: 'Share my tree' })}
+          </Button>
+        }
+        defaultDetailOpen
+      >
+        <Card padding="lg" className="text-center">
+          <LoveTree tree={info.tree} />
           <div className="mt-3 flex justify-center gap-4 text-meta text-mystic-400">
             <span>{t('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })}: {result.anxiety}</span>
             <span>{t('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}: {result.avoidance}</span>
           </div>
-        </Card>
-
-        <Card padding="lg">
-          <ReadingProse text={t(`loveTree.attachment.${result.attachment}.summary`, { defaultValue: info.summary }) as string} />
         </Card>
 
         <Card padding="lg">
@@ -309,13 +303,8 @@ export function LoveTreePage() {
             {t(`loveTree.attachment.${result.attachment}.affirmation`, { defaultValue: info.affirmation })}
           </p>
         </Card>
-
-        <Button variant="gold" size="lg" fullWidth onClick={handleShare}>
-          <Share2 className="w-4 h-4 mr-2" />
-          {t('loveTree.share', { defaultValue: 'Share my tree' })}
-        </Button>
-      </motion.div>
-    </div>
+      </ResultLayout>
+    </motion.div>
   );
 }
 

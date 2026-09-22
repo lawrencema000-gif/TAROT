@@ -65,7 +65,7 @@ export function StreakCelebration({ streak, open, onClose }: StreakCelebrationPr
       )}
 
       <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className="bg-mystic-900 rounded-3xl border border-mystic-700/50 w-full max-w-sm p-8 text-center animate-scale-in relative">
+        <div className="bg-mystic-900 rounded-sheet border border-mystic-700/50 w-full max-w-sm p-8 text-center animate-scale-in relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full hover:bg-mystic-800 transition-colors"

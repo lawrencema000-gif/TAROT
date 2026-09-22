@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Pencil, Trash2, GitCompareArrows } from 'lucide-react';
-import { Card, Button, Sheet, toast, PageHeader, Section, Disclosure, Skeleton, ReadingProse } from '../components/ui';
+import { Card, Button, Sheet, toast, Page, PageHeader, Section, Disclosure, Skeleton, ReadingProse } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
@@ -71,7 +71,7 @@ export function PersonDetailPage() {
   const moon = chart?.planets.find((p) => p.planet === 'Moon');
 
   return (
-    <div className="space-y-6 pb-28">
+    <Page spacing="md">
       <PageHeader
         align="center"
         onBack={() => navigate('/people')}
@@ -230,6 +230,6 @@ export function PersonDetailPage() {
           </div>
         </div>
       </Sheet>
-    </div>
+    </Page>
   );
 }

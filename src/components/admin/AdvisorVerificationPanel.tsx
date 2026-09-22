@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Shield, RefreshCw, Check, X, Eye, Clock } from 'lucide-react';
-import { Button, toast } from '../ui';
+import { Button, Badge, toast } from '../ui';
 import { supabase } from '../../lib/supabase';
 
 /**
@@ -121,13 +121,13 @@ export function AdvisorVerificationPanel() {
                       {new Date(row.created_at).toLocaleString()} · {row.country}
                     </p>
                   </div>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                    row.status === 'pending' ? 'bg-cosmic-blue/20 text-cosmic-blue'
-                    : row.status === 'approved' ? 'bg-emerald-400/20 text-emerald-400'
-                    : 'bg-pink-400/20 text-pink-400'
-                  }`}>
+                  <Badge tone={
+                    row.status === 'pending' ? 'blue'
+                    : row.status === 'approved' ? 'teal'
+                    : 'rose'
+                  }>
                     {row.status}
-                  </span>
+                  </Badge>
                 </div>
 
                 <p className="text-[10px] text-mystic-500 font-mono mb-2">user: {row.user_id.slice(0, 12)}</p>
@@ -140,11 +140,11 @@ export function AdvisorVerificationPanel() {
                   <div className="space-y-2 mb-3">
                     <div>
                       <p className="text-[10px] uppercase text-mystic-500 mb-1">ID</p>
-                      <img src={preview.idUrl} alt="ID" className="max-h-48 rounded border border-mystic-800" />
+                      <img src={preview.idUrl} alt="ID" className="max-h-48 rounded-lg border border-mystic-800" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase text-mystic-500 mb-1">Selfie video</p>
-                      <video src={preview.videoUrl} controls className="max-h-48 rounded border border-mystic-800 w-full" />
+                      <video src={preview.videoUrl} controls className="max-h-48 rounded-lg border border-mystic-800 w-full" />
                     </div>
                   </div>
                 )}

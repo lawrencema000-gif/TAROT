@@ -16,7 +16,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
-import { Button, toast } from '../ui';
+import { Button, Tabs, Switch, toast } from '../ui';
 import { useDiagnostics } from '../../context/DiagnosticsContext';
 import {
   copyReportToClipboard,
@@ -145,19 +145,13 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
             <span className="text-sm text-mystic-300">{getPlatform()}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-mystic-500">Dev Mode</span>
-            <button
-              onClick={toggleDevMode}
-              className={`w-10 h-6 rounded-full transition-colors relative ${
-                devModeEnabled ? 'bg-gold' : 'bg-mystic-700'
-              }`}
-            >
-              <div
-                className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${
-                  devModeEnabled ? 'left-5' : 'left-1'
-                }`}
-              />
-            </button>
+            <span id="diagnostics-dev-mode-label" className="text-xs text-mystic-500">Dev Mode</span>
+            <Switch
+              checked={devModeEnabled}
+              onChange={toggleDevMode}
+              size="sm"
+              aria-labelledby="diagnostics-dev-mode-label"
+            />
           </div>
         </div>
 
@@ -182,29 +176,18 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant={activeTab === 'logs' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('logs')}
-          >
-            Logs
-          </Button>
-          <Button
-            variant={activeTab === 'errors' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('errors')}
-          >
-            Errors ({errors.length})
-          </Button>
-          <Button
-            variant={activeTab === 'config' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('config')}
-          >
-            Config
-          </Button>
-        </div>
+        <Tabs
+          items={[
+            { id: 'logs', label: 'Logs' },
+            { id: 'errors', label: `Errors (${errors.length})` },
+            { id: 'config', label: 'Config' },
+          ]}
+          value={activeTab}
+          onChange={setActiveTab}
+          aria-label="Diagnostics sections"
+          size="sm"
+          idPrefix="diagnostics"
+        />
 
         {activeTab === 'logs' && (
           <div className="space-y-3">
@@ -306,12 +289,12 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                           </div>
                         )}
                         {log.data && (
-                          <pre className="text-xs font-mono text-mystic-300 bg-mystic-900/50 p-2 rounded overflow-x-auto">
+                          <pre className="text-xs font-mono text-mystic-300 bg-mystic-900/50 p-2 rounded-lg overflow-x-auto">
                             {JSON.stringify(log.data, null, 2)}
                           </pre>
                         )}
                         {devModeEnabled && log.stackTrace && (
-                          <pre className="mt-2 text-xs font-mono text-coral/80 bg-coral/5 p-2 rounded overflow-x-auto">
+                          <pre className="mt-2 text-xs font-mono text-coral/80 bg-coral/5 p-2 rounded-lg overflow-x-auto">
                             {log.stackTrace}
                           </pre>
                         )}
@@ -348,12 +331,12 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                       <p className="text-sm text-coral font-medium">{log.step}</p>
                       <p className="text-sm text-mystic-300 mt-1">{log.message}</p>
                       {log.data && (
-                        <pre className="mt-2 text-xs font-mono text-mystic-400 bg-mystic-900/50 p-2 rounded overflow-x-auto">
+                        <pre className="mt-2 text-xs font-mono text-mystic-400 bg-mystic-900/50 p-2 rounded-lg overflow-x-auto">
                           {JSON.stringify(log.data, null, 2)}
                         </pre>
                       )}
                       {devModeEnabled && log.stackTrace && (
-                        <pre className="mt-2 text-xs font-mono text-coral/70 bg-coral/5 p-2 rounded overflow-x-auto whitespace-pre-wrap">
+                        <pre className="mt-2 text-xs font-mono text-coral/70 bg-coral/5 p-2 rounded-lg overflow-x-auto whitespace-pre-wrap">
                           {log.stackTrace}
                         </pre>
                       )}

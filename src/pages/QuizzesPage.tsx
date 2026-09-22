@@ -23,8 +23,6 @@ import {
   XCircle,
   ListChecks,
   Lock,
-  ChevronDown,
-  ChevronUp,
   Pentagon,
   Link,
   TrendingUp,
@@ -38,7 +36,7 @@ import {
 } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { MysticalStar } from '../components/ui/MysticalStar';
-import { Card, Button, PageHeader, Progress, toast } from '../components/ui';
+import { Card, Button, PageHeader, Page, ResultLayout, Disclosure, Progress, ProgressRing, Tag, toast } from '../components/ui';
 import * as QuizIcons from '../components/ui/QuizIcons';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
@@ -601,7 +599,7 @@ export function QuizzesPage() {
     const sneakPeek = computeSneakPeek(progress.quiz, progress.answers, currentQ, totalQuestions, tApp);
 
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <div className="flex items-center gap-4">
           <button onClick={resetQuiz} className="p-2 -ml-2 hover:bg-mystic-800 rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5 text-mystic-400" />
@@ -611,7 +609,7 @@ export function QuizzesPage() {
               <p className="text-sm font-medium text-mystic-200">{currentQ} / {totalQuestions}</p>
               <p className="text-xs text-mystic-500">{Math.round(progressPercent)}%</p>
             </div>
-            <Progress value={progressPercent} variant="gold" size="sm" />
+            <Progress value={progressPercent} tone="gold" size="sm" label="Quiz progress" />
           </div>
         </div>
 
@@ -654,7 +652,7 @@ export function QuizzesPage() {
             ))}
           </div>
         </Card>
-      </div>
+      </Page>
     );
   }
 
@@ -664,41 +662,26 @@ export function QuizzesPage() {
       const moodInfo = moodDescriptions[moodResult.overallMood];
 
       return (
-        <div className="space-y-6 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Quizzes
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className={`w-20 h-20 mx-auto mb-4 rounded-full bg-mystic-800 flex items-center justify-center ${moodInfo.color}`}>
-              <Smile className="w-10 h-10" />
-            </div>
-            <h2 className="heading-display-lg text-mystic-100 mb-2">{moodResult.overallMood}</h2>
-            <p className="text-mystic-300">{moodInfo.message}</p>
-
-            <div className="mt-6 flex justify-center">
-              <div className="relative w-32 h-32">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="64" cy="64" r="56" fill="none" stroke="currentColor" strokeWidth="8" className="text-mystic-800" />
-                  <circle
-                    cx="64" cy="64" r="56" fill="none" stroke="url(#moodGradient)" strokeWidth="8" strokeLinecap="round"
-                    strokeDasharray={`${(moodResult.moodScore / 100) * 352} 352`}
-                  />
-                  <defs>
-                    <linearGradient id="moodGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#d4af37" />
-                      <stop offset="100%" stopColor="#f5d67b" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-display text-gold">{moodResult.moodScore}%</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={
+            <ProgressRing value={moodResult.moodScore} size={80} strokeWidth={6} tone="gold" label="Mood score">
+              <span className="text-2xl font-display text-gold">{moodResult.moodScore}%</span>
+            </ProgressRing>
+          }
+          glyphHidden={false}
+          verdict={moodResult.overallMood}
+          subtitle={<Smile className={`inline-block w-5 h-5 ${moodInfo.color}`} aria-hidden />}
+          summary={moodInfo.message}
+          onBack={resetQuiz}
+          backLabel="Back to Quizzes"
+          actions={
+            <Button variant="outline" fullWidth onClick={resetQuiz}>
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
+            </Button>
+          }
+          defaultDetailOpen
+        >
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-4">Your Dimensions</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -716,7 +699,7 @@ export function QuizzesPage() {
                     <div className="flex-1">
                       <p className="text-xs text-mystic-500 capitalize">{dim}</p>
                       <div className="flex items-center gap-2">
-                        <Progress value={(value / 5) * 100} variant="gold" size="sm" className="flex-1" />
+                        <Progress value={(value / 5) * 100} tone="gold" size="sm" className="flex-1" label={dim} />
                         <span className="text-sm text-mystic-300">{value}/5</span>
                       </div>
                     </div>
@@ -757,11 +740,7 @@ export function QuizzesPage() {
               <p className="text-mystic-300 text-sm leading-relaxed">{moodInfo.tarotSuggestion}</p>
             </Card>
           )}
-
-          <Button variant="outline" fullWidth onClick={resetQuiz}>
-            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
-          </Button>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -808,22 +787,27 @@ export function QuizzesPage() {
       };
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="text-5xl mb-3">{scoringEntry.emoji}</div>
-            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
-            <p className="text-gold/80 text-sm mt-3 italic">"{tagline}"</p>
-          </Card>
-
-          <Card padding="lg">
-            <p className="text-mystic-300 text-sm leading-relaxed">{summary}</p>
-          </Card>
-
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={scoringEntry.emoji}
+          verdict={name}
+          subtitle={<span className="italic">"{tagline}"</span>}
+          summary={summary}
+          onBack={resetQuiz}
+          backLabel={tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          actions={
+            <>
+              <Button variant="outline" fullWidth onClick={handleShare}>
+                <Share2 className="w-4 h-4 mr-2" />
+                {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+              </Button>
+              <Button variant="outline" fullWidth onClick={resetQuiz}>
+                {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+        >
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-3">
               {tApp('extraQuizzes.common.scoreDistribution', { defaultValue: 'Score distribution' })}
@@ -840,12 +824,14 @@ export function QuizzesPage() {
                     <span className={`text-xs flex-1 ${isPrimary ? 'text-gold font-medium' : 'text-mystic-400'}`}>
                       {dimName}
                     </span>
-                    <div className="flex-1 bg-mystic-800/40 rounded-full h-2 overflow-hidden max-w-[140px]">
-                      <div
-                        className={`h-full ${isPrimary ? 'bg-gold' : 'bg-mystic-600'}`}
-                        style={{ width: `${maxScore > 0 ? (score / maxScore) * 100 : 0}%` }}
-                      />
-                    </div>
+                    <Progress
+                      value={score}
+                      max={maxScore}
+                      size="md"
+                      tone={isPrimary ? 'gold' : 'neutral'}
+                      label={dimName}
+                      className="flex-1 max-w-[140px]"
+                    />
                     <span className="text-xs text-mystic-500 w-6 text-right">{score}</span>
                   </div>
                 );
@@ -885,17 +871,7 @@ export function QuizzesPage() {
             context={`my ${result.quiz.title} result: ${name} (${tagline})`}
             label={tApp('quizzes.askOracleCta', { defaultValue: 'Read this result for me' }) as string}
           />
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" fullWidth onClick={handleShare}>
-              <Share2 className="w-4 h-4 mr-2" />
-              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={resetQuiz}>
-              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
-            </Button>
-          </div>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -926,53 +902,82 @@ export function QuizzesPage() {
       const emoji: Record<string, string> = { vata: '🌬️', pitta: '🔥', kapha: '⛰️' };
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="text-6xl mb-3">{emoji[key] || '✦'}</div>
-            <p className="text-xs text-mystic-500 tracking-widest uppercase">{elements}</p>
-            <h2 className="heading-display-xl text-mystic-100 mt-2">{primaryName}</h2>
-            {secondaryInfo && (
-              <p className="text-sm text-cosmic-blue mt-2">
-                {tApp('ayurveda.withSecondary', {
-                  defaultValue: 'with secondary {{sec}}',
-                  sec: tApp(`ayurveda.doshas.${ayResult.secondary}.name`, {
-                    defaultValue: secondaryInfo.name,
-                  }),
-                })}
-              </p>
-            )}
-            <p className="text-gold/80 text-sm mt-3 italic">"{tagline}"</p>
-          </Card>
-
-          <Card padding="lg">
-            <p className="text-mystic-300 text-sm leading-relaxed">{summary}</p>
-          </Card>
-
+        <ResultLayout
+          eyebrow={elements}
+          glyph={emoji[key] || '✦'}
+          verdict={primaryName}
+          subtitle={
+            <>
+              {secondaryInfo && (
+                <span className="block text-cosmic-blue">
+                  {tApp('ayurveda.withSecondary', {
+                    defaultValue: 'with secondary {{sec}}',
+                    sec: tApp(`ayurveda.doshas.${ayResult.secondary}.name`, {
+                      defaultValue: secondaryInfo.name,
+                    }),
+                  })}
+                </span>
+              )}
+              <span className="block italic">"{tagline}"</span>
+            </>
+          }
+          summary={summary}
+          onBack={resetQuiz}
+          backLabel={tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={async () => {
+                  try {
+                    const blob = await renderShareCard({
+                      title: primaryName,
+                      subtitle: elements,
+                      tagline,
+                      affirmation,
+                      brand: 'Arcana · Ayurveda',
+                    });
+                    const out = await shareOrDownload(blob, `arcana-ayurveda-${key}.png`, `My Ayurvedic dosha: ${primaryName}`);
+                    if (out === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                  } catch {
+                    toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+              </Button>
+              <Button variant="outline" fullWidth onClick={resetQuiz}>
+                {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+        >
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-3">
               {tApp('ayurveda.scoresLabel', { defaultValue: 'Your dosha balance' })}
             </h3>
             <div className="space-y-2">
-              {(['vata', 'pitta', 'kapha'] as const).map((d) => (
-                <div key={d} className="flex items-center gap-3">
-                  <span className="text-lg w-8 text-center">{emoji[d]}</span>
-                  <span className="text-sm text-mystic-300 flex-1">
-                    {tApp(`ayurveda.doshas.${d}.name`, { defaultValue: DOSHA_INFO[d].name })}
-                  </span>
-                  <div className="flex-1 bg-mystic-800/40 rounded-full h-2 overflow-hidden max-w-[140px]">
-                    <div
-                      className={`h-full ${ayResult.primary === d ? 'bg-gold' : 'bg-mystic-600'}`}
-                      style={{ width: `${(ayResult.scores[d] / 30) * 100}%` }}
+              {(['vata', 'pitta', 'kapha'] as const).map((d) => {
+                const doshaName = tApp(`ayurveda.doshas.${d}.name`, { defaultValue: DOSHA_INFO[d].name }) as string;
+                return (
+                  <div key={d} className="flex items-center gap-3">
+                    <span className="text-lg w-8 text-center">{emoji[d]}</span>
+                    <span className="text-sm text-mystic-300 flex-1">{doshaName}</span>
+                    <Progress
+                      value={ayResult.scores[d]}
+                      max={30}
+                      size="md"
+                      tone={ayResult.primary === d ? 'gold' : 'neutral'}
+                      label={doshaName}
+                      className="flex-1 max-w-[140px]"
                     />
+                    <span className="text-xs text-mystic-500 w-6 text-right">{ayResult.scores[d]}</span>
                   </div>
-                  <span className="text-xs text-mystic-500 w-6 text-right">{ayResult.scores[d]}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
 
@@ -1013,35 +1018,7 @@ export function QuizzesPage() {
             </h3>
             <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
           </Card>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={async () => {
-                try {
-                  const blob = await renderShareCard({
-                    title: primaryName,
-                    subtitle: elements,
-                    tagline,
-                    affirmation,
-                    brand: 'Arcana · Ayurveda',
-                  });
-                  const out = await shareOrDownload(blob, `arcana-ayurveda-${key}.png`, `My Ayurvedic dosha: ${primaryName}`);
-                  if (out === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
-                } catch {
-                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
-                }
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={resetQuiz}>
-              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
-            </Button>
-          </div>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -1060,20 +1037,44 @@ export function QuizzesPage() {
       const tarotPairing = localized('tarotPairing', info.tarotPairing);
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
-              <MysticalStar className="w-10 h-10 text-gold" />
-            </div>
-            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
-            <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
-          </Card>
-
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={<MysticalStar className="w-10 h-10 text-gold" />}
+          verdict={name}
+          subtitle={<span className="italic">"{tagline}"</span>}
+          onBack={resetQuiz}
+          backLabel={tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={async () => {
+                  try {
+                    const blob = await renderShareCard({
+                      title: name,
+                      subtitle: tagline,
+                      tagline: tarotPairing,
+                      affirmation,
+                      brand: 'Arcana · Shadow Archetype',
+                    });
+                    const outcome = await shareOrDownload(blob, `arcana-shadow-${key}.png`, `My shadow archetype is ${name}. ${tagline}`);
+                    if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                  } catch {
+                    toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+              </Button>
+              <Button variant="outline" fullWidth onClick={resetQuiz}>
+                {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+        >
           <Card padding="lg">
             <h3 className="font-medium text-emerald-400 mb-3">{tApp('quizzes.resultSections.gift', { defaultValue: 'The gift' })}</h3>
             <p className="text-mystic-300 text-sm leading-relaxed">{gift}</p>
@@ -1099,35 +1100,7 @@ export function QuizzesPage() {
               {tApp('quizzes.resultSections.tarotPairing', { defaultValue: 'Tarot pairing' })}: <span className="text-gold/80">{tarotPairing}</span>
             </p>
           </Card>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={async () => {
-                try {
-                  const blob = await renderShareCard({
-                    title: name,
-                    subtitle: tagline,
-                    tagline: tarotPairing,
-                    affirmation,
-                    brand: 'Arcana · Shadow Archetype',
-                  });
-                  const outcome = await shareOrDownload(blob, `arcana-shadow-${key}.png`, `My shadow archetype is ${name}. ${tagline}`);
-                  if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
-                } catch {
-                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
-                }
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={resetQuiz}>
-              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
-            </Button>
-          </div>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -1152,22 +1125,45 @@ export function QuizzesPage() {
       const glyphMap: Record<string, string> = { fire: '🔥', water: '🌊', air: '🌬️', earth: '🌱' };
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="text-6xl mb-3">{glyphMap[key] || '✦'}</div>
-            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
-            <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
-          </Card>
-
-          <Card padding="lg">
-            <p className="text-mystic-300 text-sm leading-relaxed">{description}</p>
-          </Card>
-
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={glyphMap[key] || '✦'}
+          verdict={name}
+          subtitle={<span className="italic">"{tagline}"</span>}
+          summary={description}
+          onBack={resetQuiz}
+          backLabel={tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={async () => {
+                  try {
+                    const blob = await renderShareCard({
+                      title: name,
+                      subtitle: tagline,
+                      tagline: affirmation,
+                      affirmation: whenDominant,
+                      brand: 'Arcana · Element Affinity',
+                    });
+                    const outcome = await shareOrDownload(blob, `arcana-element-${key}.png`, `My element is ${name}. ${tagline}`);
+                    if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                  } catch {
+                    toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+              </Button>
+              <Button variant="outline" fullWidth onClick={resetQuiz}>
+                {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+        >
           {natalElement && (
             <Card padding="lg" className={elementsMatch ? 'border-emerald-400/30' : 'border-cosmic-blue/30'}>
               <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
@@ -1209,35 +1205,7 @@ export function QuizzesPage() {
             </h3>
             <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
           </Card>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={async () => {
-                try {
-                  const blob = await renderShareCard({
-                    title: name,
-                    subtitle: tagline,
-                    tagline: affirmation,
-                    affirmation: whenDominant,
-                    brand: 'Arcana · Element Affinity',
-                  });
-                  const outcome = await shareOrDownload(blob, `arcana-element-${key}.png`, `My element is ${name}. ${tagline}`);
-                  if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
-                } catch {
-                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
-                }
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={resetQuiz}>
-              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
-            </Button>
-          </div>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -1256,24 +1224,55 @@ export function QuizzesPage() {
       const affirmation = localized('affirmation', info.affirmation) as string;
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            {tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="mx-auto mb-4 w-28 h-40 rounded-xl bg-gradient-to-br from-gold/30 via-mystic-800 to-mystic-900 border-2 border-gold/30 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.2)_0%,transparent_70%)]" />
-              <div className="relative">
-                <MysticalStar className="w-8 h-8 text-gold mx-auto mb-1" />
-                <span className="text-xs tracking-widest text-gold/70 uppercase">{archetype}</span>
-              </div>
-            </div>
-            <h2 className="heading-display-xl text-mystic-100">{name}</h2>
-            <p className="text-gold/80 text-sm mt-2 italic">"{tagline}"</p>
-          </Card>
-
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={<MysticalStar className="w-10 h-10 text-gold" />}
+          verdict={name}
+          subtitle={
+            <>
+              <span className="block text-xs tracking-widest text-gold/70 uppercase">{archetype}</span>
+              <span className="block italic">"{tagline}"</span>
+            </>
+          }
+          onBack={resetQuiz}
+          backLabel={tApp('quizzes.backToQuizzes', { defaultValue: 'Back to Quizzes' })}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={async () => {
+                  try {
+                    const blob = await renderShareCard({
+                      title: name,
+                      subtitle: archetype,
+                      tagline,
+                      affirmation,
+                      brand: 'Arcana · Tarot Court Card Match',
+                    });
+                    const outcome = await shareOrDownload(
+                      blob,
+                      `arcana-${cardKey}.png`,
+                      `My tarot court card is the ${name}. ${tagline}`,
+                    );
+                    if (outcome === 'downloaded') {
+                      toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                    }
+                  } catch {
+                    toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                {tApp('quizzes.share.button', { defaultValue: 'Share' })}
+              </Button>
+              <Button variant="outline" fullWidth onClick={resetQuiz}>
+                {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+        >
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-3 flex items-center gap-2">
               <TarotCardIcon className="w-4 h-4 text-gold" />
@@ -1308,41 +1307,7 @@ export function QuizzesPage() {
             </h3>
             <p className="text-mystic-200 italic leading-relaxed">"{affirmation}"</p>
           </Card>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={async () => {
-                try {
-                  const blob = await renderShareCard({
-                    title: name,
-                    subtitle: archetype,
-                    tagline,
-                    affirmation,
-                    brand: 'Arcana · Tarot Court Card Match',
-                  });
-                  const outcome = await shareOrDownload(
-                    blob,
-                    `arcana-${cardKey}.png`,
-                    `My tarot court card is the ${name}. ${tagline}`,
-                  );
-                  if (outcome === 'downloaded') {
-                    toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
-                  }
-                } catch {
-                  toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
-                }
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              {tApp('quizzes.share.button', { defaultValue: 'Share' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={resetQuiz}>
-              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another' })}
-            </Button>
-          </div>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -1350,171 +1315,150 @@ export function QuizzesPage() {
       const mbtiResult = result.result as { type: string; dimensions: Record<string, number> };
       const typeInfo = mbtiDescriptions[mbtiResult.type];
 
-      const CollapsibleSection = ({
-        title,
-        icon: Icon,
-        sectionKey,
-        children,
-      }: {
-        title: string;
-        icon: React.ComponentType<{ className?: string }>;
-        sectionKey: string;
-        children: React.ReactNode;
-      }) => {
-        const isExpanded = expandedSections[sectionKey] ?? true;
-        return (
-          <Card padding="lg">
-            <button
-              onClick={() => toggleSection(sectionKey)}
-              className="w-full flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <Icon className="w-5 h-5 text-gold" />
-                <h3 className="font-medium text-mystic-200">{title}</h3>
-              </div>
-              {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-mystic-500" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-mystic-500" />
-              )}
-            </button>
-            {isExpanded && <div className="mt-4">{children}</div>}
-          </Card>
-        );
-      };
+      // Each section row is controlled by the page's expandedSections map so
+      // the existing toggleSection handler (and its "open by default" rule)
+      // carries over unchanged.
+      const sectionRow = (sectionKey: string) => ({
+        open: expandedSections[sectionKey] ?? true,
+        onOpenChange: () => toggleSection(sectionKey),
+      });
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Quizzes
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
-              <span className="font-display text-3xl text-gold">{mbtiResult.type}</span>
-            </div>
-            <h2 className="heading-display-lg text-mystic-100">{typeInfo?.title}</h2>
-            <p className="text-gold/80 text-sm mb-3">{typeInfo?.subtitle}</p>
-            <p className="text-mystic-300 leading-relaxed">{typeInfo?.description}</p>
-          </Card>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => saveToProfile('mbti', mbtiResult.type)}
-              disabled={saving}
-            >
-              <Bookmark className="w-4 h-4 mr-2" />
-              Save to Profile
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={mbtiResult.type}
+          glyphHidden={false}
+          verdict={typeInfo?.title}
+          subtitle={typeInfo?.subtitle}
+          summary={typeInfo?.description}
+          onBack={resetQuiz}
+          backLabel="Back to Quizzes"
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => saveToProfile('mbti', mbtiResult.type)}
+                disabled={saving}
+              >
+                <Bookmark className="w-4 h-4 mr-2" />
+                Save to Profile
+              </Button>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => shareResult('mbti', mbtiResult.type)}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+          footer={
+            <Button variant="outline" fullWidth onClick={resetQuiz}>
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
             </Button>
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => shareResult('mbti', mbtiResult.type)}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </div>
-
-          <CollapsibleSection title="Strengths" icon={Zap} sectionKey="strengths">
-            <ul className="space-y-2">
-              {typeInfo?.strengths.map((strength, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-mystic-300 text-sm">{strength}</span>
-                </li>
-              ))}
-            </ul>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={tApp('quizzes.resultSections.blindSpots')} icon={AlertTriangle} sectionKey="blindspots">
-            <ul className="space-y-2">
-              {typeInfo?.blindSpots.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-4 h-4 rounded-full bg-orange-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
-                  </div>
-                  <span className="text-mystic-300 text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={tApp('quizzes.resultSections.underStress')} icon={Zap} sectionKey="stress">
-            <ul className="space-y-2">
-              {typeInfo?.underStress.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-4 h-4 rounded-full bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                  </div>
-                  <span className="text-mystic-300 text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={tApp('quizzes.resultSections.inRelationships')} icon={HeartHandshake} sectionKey="relationships">
-            <ul className="space-y-2">
-              {typeInfo?.inRelationships.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <Heart className="w-4 h-4 text-cosmic-rose flex-shrink-0 mt-0.5" />
-                  <span className="text-mystic-300 text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={tApp('quizzes.resultSections.atWork')} icon={Briefcase} sectionKey="work">
-            <ul className="space-y-2">
-              {typeInfo?.atWork.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-4 h-4 rounded-full bg-cosmic-blue/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-cosmic-blue" />
-                  </div>
-                  <span className="text-mystic-300 text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={tApp('quizzes.resultSections.growthQuests')} icon={Target} sectionKey="growth">
-            <div className="space-y-4">
-              {typeInfo?.growthQuests.map((quest, i) => (
-                <div key={i} className="p-4 bg-gold/5 border border-gold/20 rounded-xl">
-                  <h4 className="font-medium text-gold text-sm mb-1">{quest.title}</h4>
-                  <p className="text-mystic-400 text-sm">{quest.description}</p>
-                </div>
-              ))}
-            </div>
-          </CollapsibleSection>
-
-          {typeInfo?.stressSignature && (
-            <CollapsibleSection title={tApp('quizzes.resultSections.stressSignature')} icon={Zap} sectionKey="stressSignature">
-              <p className="text-mystic-300 text-sm leading-relaxed">{typeInfo.stressSignature}</p>
-              {typeInfo.recoveryPath && (
-                <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/20 rounded-xl">
-                  <p className="text-xs text-emerald-400 uppercase tracking-wide mb-2">{tApp('quizzes.resultSections.recoveryPath')}</p>
-                  <p className="text-mystic-300 text-sm">{typeInfo.recoveryPath}</p>
-                </div>
-              )}
-            </CollapsibleSection>
-          )}
-
-          {typeInfo?.realLifeExamples && typeInfo.realLifeExamples.length > 0 && (
-            <CollapsibleSection title={tApp('quizzes.resultSections.realLifeExamples')} icon={Compass} sectionKey="realLife">
+          }
+        >
+          <Card padding="none" className="px-5 py-2">
+            <Disclosure variant="row" label="Strengths" icon={<Zap />} {...sectionRow('strengths')}>
               <ul className="space-y-2">
-                {typeInfo.realLifeExamples.map((example, i) => (
+                {typeInfo?.strengths.map((strength, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0 mt-2" />
-                    <span className="text-mystic-300 text-sm">{example}</span>
+                    <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-mystic-300 text-sm">{strength}</span>
                   </li>
                 ))}
               </ul>
-            </CollapsibleSection>
-          )}
+            </Disclosure>
+
+            <Disclosure variant="row" label={tApp('quizzes.resultSections.blindSpots')} icon={<AlertTriangle />} {...sectionRow('blindspots')}>
+              <ul className="space-y-2">
+                {typeInfo?.blindSpots.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full bg-orange-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                    </div>
+                    <span className="text-mystic-300 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Disclosure>
+
+            <Disclosure variant="row" label={tApp('quizzes.resultSections.underStress')} icon={<Zap />} {...sectionRow('stress')}>
+              <ul className="space-y-2">
+                {typeInfo?.underStress.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    </div>
+                    <span className="text-mystic-300 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Disclosure>
+
+            <Disclosure variant="row" label={tApp('quizzes.resultSections.inRelationships')} icon={<HeartHandshake />} {...sectionRow('relationships')}>
+              <ul className="space-y-2">
+                {typeInfo?.inRelationships.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Heart className="w-4 h-4 text-cosmic-rose flex-shrink-0 mt-0.5" />
+                    <span className="text-mystic-300 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Disclosure>
+
+            <Disclosure variant="row" label={tApp('quizzes.resultSections.atWork')} icon={<Briefcase />} {...sectionRow('work')}>
+              <ul className="space-y-2">
+                {typeInfo?.atWork.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full bg-cosmic-blue/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-cosmic-blue" />
+                    </div>
+                    <span className="text-mystic-300 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Disclosure>
+
+            <Disclosure variant="row" label={tApp('quizzes.resultSections.growthQuests')} icon={<Target />} {...sectionRow('growth')}>
+              <div className="space-y-4">
+                {typeInfo?.growthQuests.map((quest, i) => (
+                  <div key={i} className="p-4 bg-gold/5 border border-gold/20 rounded-xl">
+                    <h4 className="font-medium text-gold text-sm mb-1">{quest.title}</h4>
+                    <p className="text-mystic-400 text-sm">{quest.description}</p>
+                  </div>
+                ))}
+              </div>
+            </Disclosure>
+
+            {typeInfo?.stressSignature && (
+              <Disclosure variant="row" label={tApp('quizzes.resultSections.stressSignature')} icon={<Zap />} {...sectionRow('stressSignature')}>
+                <p className="text-mystic-300 text-sm leading-relaxed">{typeInfo.stressSignature}</p>
+                {typeInfo.recoveryPath && (
+                  <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/20 rounded-xl">
+                    <p className="text-xs text-emerald-400 uppercase tracking-wide mb-2">{tApp('quizzes.resultSections.recoveryPath')}</p>
+                    <p className="text-mystic-300 text-sm">{typeInfo.recoveryPath}</p>
+                  </div>
+                )}
+              </Disclosure>
+            )}
+
+            {typeInfo?.realLifeExamples && typeInfo.realLifeExamples.length > 0 && (
+              <Disclosure variant="row" label={tApp('quizzes.resultSections.realLifeExamples')} icon={<Compass />} {...sectionRow('realLife')}>
+                <ul className="space-y-2">
+                  {typeInfo.realLifeExamples.map((example, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0 mt-2" />
+                      <span className="text-mystic-300 text-sm">{example}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Disclosure>
+            )}
+          </Card>
 
           {typeInfo?.tarotArchetype && (
             <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
@@ -1550,42 +1494,37 @@ export function QuizzesPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {typeInfo?.compatibility.map((type, i) => (
-                <span key={i} className="px-4 py-2 bg-cosmic-blue/20 text-cosmic-blue rounded-full text-sm font-medium">
+                <Tag key={i} tone="blue" size="md">
                   {type}
-                </span>
+                </Tag>
               ))}
             </div>
           </Card>
-
-          <Button variant="outline" fullWidth onClick={resetQuiz}>
-            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
-          </Button>
-        </div>
+        </ResultLayout>
       );
     }
 
     if (result.quiz.id === 'big-five-v1') {
       const bfResult = result.result as ReturnType<typeof calculateBigFive>;
+      // Static class names: Tailwind purges `text-${color}` templates.
       const dimensions = [
-        { key: 'openness', label: 'Openness', color: 'cosmic-blue' },
-        { key: 'conscientiousness', label: 'Conscientiousness', color: 'emerald-400' },
-        { key: 'extraversion', label: 'Extraversion', color: 'gold' },
-        { key: 'agreeableness', label: 'Agreeableness', color: 'cosmic-rose' },
-        { key: 'neuroticism', label: tApp('quizzes.resultSections.emotionalStability'), color: 'mystic-300' },
+        { key: 'openness', label: 'Openness', color: 'text-cosmic-blue' },
+        { key: 'conscientiousness', label: 'Conscientiousness', color: 'text-emerald-400' },
+        { key: 'extraversion', label: 'Extraversion', color: 'text-gold' },
+        { key: 'agreeableness', label: 'Agreeableness', color: 'text-cosmic-rose' },
+        { key: 'neuroticism', label: tApp('quizzes.resultSections.emotionalStability'), color: 'text-mystic-300' },
       ];
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Quizzes
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <Pentagon className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-            <h2 className="heading-display-lg text-mystic-100 mb-2">Your Big Five Profile</h2>
-            <p className="text-mystic-400 text-sm">Five dimensions that define your personality</p>
-          </Card>
+        <Page spacing="sm">
+          <PageHeader
+            as="h1"
+            title="Your Big Five Profile"
+            subtitle="Five dimensions that define your personality"
+            icon={<Pentagon />}
+            onBack={resetQuiz}
+            backLabel="Back to Quizzes"
+          />
 
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-4">Your Trait Scores</h3>
@@ -1598,9 +1537,9 @@ export function QuizzesPage() {
                   <div key={key}>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-mystic-300">{label}</span>
-                      <span className={`text-${color}`}>{score}%</span>
+                      <span className={color}>{score}%</span>
                     </div>
-                    <Progress value={score} variant={score >= 50 ? 'gold' : 'default'} size="sm" />
+                    <Progress value={score} tone={score >= 50 ? 'gold' : 'neutral'} size="sm" label={label} />
                     <p className="text-xs text-mystic-500 mt-1">
                       {isHigh ? tApp('quizzes.resultSections.higherThanAverage') : isLow ? tApp('quizzes.resultSections.lowerThanAverage') : tApp('quizzes.resultSections.averageRange')}
                     </p>
@@ -1652,7 +1591,7 @@ export function QuizzesPage() {
           <Button variant="outline" fullWidth onClick={resetQuiz}>
             {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
           </Button>
-        </div>
+        </Page>
       );
     }
 
@@ -1662,46 +1601,51 @@ export function QuizzesPage() {
       const wingInfo = enResult.wing ? enneagramDescriptions[enResult.wing] : null;
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Quizzes
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/30 to-mystic-800 flex items-center justify-center border-2 border-gold/30">
-              <span className="font-display text-4xl text-gold">{enResult.primaryType}</span>
-            </div>
-            <h2 className="heading-display-lg text-mystic-100">{typeInfo.name}</h2>
-            <p className="text-gold/80 text-sm mb-2">{typeInfo.title}</p>
-            {enResult.wing && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-mystic-800/50 rounded-full">
-                <span className="text-xs text-mystic-500">Wing:</span>
-                <span className="text-sm text-mystic-300">{enResult.wing} - {wingInfo?.name}</span>
-              </div>
-            )}
-          </Card>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => saveToProfile('enneagram', String(enResult.primaryType), { enneagram_wing: enResult.wing })}
-              disabled={saving}
-            >
-              <Bookmark className="w-4 h-4 mr-2" />
-              Save
+        <ResultLayout
+          eyebrow={result.quiz.title}
+          glyph={enResult.primaryType}
+          verdict={<><span className="sr-only">Type {enResult.primaryType} · </span>{typeInfo.name}</>}
+          subtitle={
+            <>
+              <span className="block">{typeInfo.title}</span>
+              {enResult.wing && (
+                <span className="block text-mystic-300">
+                  <span className="text-mystic-500">Wing:</span> {enResult.wing} - {wingInfo?.name}
+                </span>
+              )}
+            </>
+          }
+          summary={typeInfo.description}
+          onBack={resetQuiz}
+          backLabel="Back to Quizzes"
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => saveToProfile('enneagram', String(enResult.primaryType), { enneagram_wing: enResult.wing })}
+                disabled={saving}
+              >
+                <Bookmark className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => shareResult('enneagram', `Type ${enResult.primaryType} (${typeInfo.name})`)}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+          footer={
+            <Button variant="outline" fullWidth onClick={resetQuiz}>
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
             </Button>
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => shareResult('enneagram', `Type ${enResult.primaryType} (${typeInfo.name})`)}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </div>
-
+          }
+        >
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-3">Core Pattern</h3>
             <div className="space-y-3">
@@ -1727,10 +1671,6 @@ export function QuizzesPage() {
                 </div>
               </div>
             </div>
-          </Card>
-
-          <Card padding="lg">
-            <p className="text-mystic-300 leading-relaxed">{typeInfo.description}</p>
           </Card>
 
           <Card padding="lg">
@@ -1821,11 +1761,7 @@ export function QuizzesPage() {
               )}
             </Card>
           )}
-
-          <Button variant="outline" fullWidth onClick={resetQuiz}>
-            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
-          </Button>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -1833,47 +1769,51 @@ export function QuizzesPage() {
       const atResult = result.result as ReturnType<typeof calculateAttachment>;
       const styleInfo = attachmentDescriptions[atResult.style];
 
+      // Static class names: Tailwind purges `text-${color}` templates.
       const styleColors: Record<string, string> = {
-        secure: 'emerald-400',
-        anxious: 'cosmic-rose',
-        avoidant: 'cosmic-blue',
-        'fearful-avoidant': 'orange-400',
+        secure: 'text-emerald-400',
+        anxious: 'text-cosmic-rose',
+        avoidant: 'text-cosmic-blue',
+        'fearful-avoidant': 'text-orange-400',
       };
 
       return (
-        <div className="space-y-4 pb-6">
-          <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Quizzes
-          </button>
-
-          <Card variant="glow" padding="lg" className="text-center">
-            <Shield className={`w-16 h-16 text-${styleColors[atResult.style]} mx-auto mb-4`} />
-            <p className="text-sm text-mystic-500 mb-1">Your Attachment Style</p>
-            <h2 className="heading-display-lg text-mystic-100 mb-2">{styleInfo.name}</h2>
-            <p className="text-mystic-400 text-sm">{styleInfo.subtitle}</p>
-          </Card>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => saveToProfile('attachment', atResult.style)}
-              disabled={saving}
-            >
-              <Bookmark className="w-4 h-4 mr-2" />
-              Save
+        <ResultLayout
+          eyebrow="Your Attachment Style"
+          glyph={<Shield className={styleColors[atResult.style]} />}
+          verdict={styleInfo.name}
+          subtitle={styleInfo.subtitle}
+          summary={styleInfo.description}
+          onBack={resetQuiz}
+          backLabel="Back to Quizzes"
+          actions={
+            <>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => saveToProfile('attachment', atResult.style)}
+                disabled={saving}
+              >
+                <Bookmark className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => shareResult('attachment', styleInfo.name)}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </>
+          }
+          defaultDetailOpen
+          footer={
+            <Button variant="outline" fullWidth onClick={resetQuiz}>
+              {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
             </Button>
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => shareResult('attachment', styleInfo.name)}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </div>
-
+          }
+        >
           <Card padding="lg">
             <h3 className="font-medium text-mystic-200 mb-4">Your Dimensions</h3>
             <div className="space-y-4">
@@ -1882,7 +1822,7 @@ export function QuizzesPage() {
                   <span className="text-mystic-300">Anxiety</span>
                   <span className="text-cosmic-rose">{atResult.anxiety}%</span>
                 </div>
-                <Progress value={atResult.anxiety} variant="default" size="sm" />
+                <Progress value={atResult.anxiety} tone="neutral" size="sm" label="Anxiety" />
                 <p className="text-xs text-mystic-500 mt-1">Fear of abandonment and need for reassurance</p>
               </div>
               <div>
@@ -1890,15 +1830,10 @@ export function QuizzesPage() {
                   <span className="text-mystic-300">Avoidance</span>
                   <span className="text-cosmic-blue">{atResult.avoidance}%</span>
                 </div>
-                <Progress value={atResult.avoidance} variant="default" size="sm" />
+                <Progress value={atResult.avoidance} tone="neutral" size="sm" label="Avoidance" />
                 <p className="text-xs text-mystic-500 mt-1">Discomfort with closeness and dependence</p>
               </div>
             </div>
-          </Card>
-
-          <Card padding="lg">
-            <h3 className="font-medium text-mystic-200 mb-3">What This Means</h3>
-            <p className="text-mystic-400 text-sm leading-relaxed">{styleInfo.description}</p>
           </Card>
 
           <Card padding="lg">
@@ -1990,11 +1925,7 @@ export function QuizzesPage() {
               <p className="text-mystic-400 text-sm leading-relaxed">{styleInfo.tarotArchetype.reason}</p>
             </Card>
           )}
-
-          <Button variant="outline" fullWidth onClick={resetQuiz}>
-            {tApp('quizzes.takeAnother', { defaultValue: 'Take Another Quiz' })}
-          </Button>
-        </div>
+        </ResultLayout>
       );
     }
 
@@ -2006,51 +1937,55 @@ export function QuizzesPage() {
     const secondaryInfo = loveLanguageDescriptions[secondaryLang];
 
     return (
-      <div className="space-y-4 pb-6">
-        <button onClick={resetQuiz} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Quizzes
-        </button>
-
-        <Card variant="glow" padding="lg" className="text-center">
-          <Heart className="w-16 h-16 text-cosmic-rose mx-auto mb-4" />
-          <p className="text-sm text-mystic-500 mb-1">Your Primary Love Language</p>
-          <h2 className="heading-display-lg text-mystic-100 mb-4">{primaryInfo?.title}</h2>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-mystic-800/50 rounded-full">
-            <span className="text-xs text-mystic-500">Secondary:</span>
-            <span className="text-sm text-mystic-300">{secondaryInfo?.title}</span>
-          </div>
-        </Card>
-
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={() => saveToProfile('love-language', primaryLang)}
-            disabled={saving}
-          >
-            <Bookmark className="w-4 h-4 mr-2" />
-            Save
+      <ResultLayout
+        eyebrow="Your Primary Love Language"
+        glyph={<Heart className="text-cosmic-rose" />}
+        verdict={primaryInfo?.title}
+        subtitle={
+          <span className="text-mystic-300">
+            <span className="text-mystic-500">Secondary:</span> {secondaryInfo?.title}
+          </span>
+        }
+        summary={primaryInfo?.whatItMeans}
+        onBack={resetQuiz}
+        backLabel="Back to Quizzes"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => saveToProfile('love-language', primaryLang)}
+              disabled={saving}
+            >
+              <Bookmark className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => shareResult('love-language', primaryInfo?.title || primaryLang)}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+            <Button
+              variant="outline"
+              fullWidth
+              className="opacity-60"
+              disabled
+            >
+              <Lock className="w-4 h-4 mr-2" />
+              Compare
+            </Button>
+          </>
+        }
+        defaultDetailOpen
+        footer={
+          <Button variant="outline" fullWidth onClick={resetQuiz}>
+            Take Another Quiz
           </Button>
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={() => shareResult('love-language', primaryInfo?.title || primaryLang)}
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
-          </Button>
-          <Button
-            variant="outline"
-            fullWidth
-            className="opacity-60"
-            disabled
-          >
-            <Lock className="w-4 h-4 mr-2" />
-            Compare
-          </Button>
-        </div>
-
+        }
+      >
         <Card padding="lg">
           <h3 className="font-medium text-mystic-200 mb-4">Your Scores</h3>
           <div className="space-y-4">
@@ -2067,16 +2002,11 @@ export function QuizzesPage() {
                     </span>
                     <span className="text-gold">{score}</span>
                   </div>
-                  <Progress value={score} max={15} variant={isPrimary ? 'gold' : 'default'} size="sm" />
+                  <Progress value={score} max={15} tone={isPrimary ? 'gold' : 'neutral'} size="sm" label={info?.title || lang} />
                 </div>
               );
             })}
           </div>
-        </Card>
-
-        <Card padding="lg">
-          <h3 className="font-medium text-mystic-200 mb-3">What It Means</h3>
-          <p className="text-mystic-400 text-sm leading-relaxed">{primaryInfo?.whatItMeans}</p>
         </Card>
 
         <Card padding="lg">
@@ -2164,16 +2094,12 @@ export function QuizzesPage() {
             <p className="text-mystic-400 text-sm leading-relaxed">{primaryInfo.tarotArchetype.reason}</p>
           </Card>
         )}
-
-        <Button variant="outline" fullWidth onClick={resetQuiz}>
-          Take Another Quiz
-        </Button>
-      </div>
+      </ResultLayout>
     );
   }
 
   return (
-    <div className="space-y-6 pb-6">
+    <Page spacing="md">
       <PageHeader title={tApp('quizzes.title')} subtitle={tApp('quizzes.subtitle')} />
 
       {loading ? (
@@ -2225,21 +2151,20 @@ export function QuizzesPage() {
 
                     {hasResult && lastResult.label && (
                       <div className="mb-3">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gold/10 text-gold">
-                          <Zap className="w-3 h-3" />
+                        <Tag tone="gold" size="md" icon={<Zap className="w-3 h-3" />}>
                           {/* DB labels may still contain the English "Type N" prefix from prior
                               quiz runs before the enneagramType i18n lookup landed — translate
                               it on render so historical results don't stay English. */}
                           {lastResult.label.replace(/^Type\s+(\d+)/, (_m, n) => tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n }))}
-                        </span>
+                        </Tag>
                       </div>
                     )}
 
                     <div className="flex flex-wrap gap-1.5">
                       {metadata.whatYouGet.slice(0, 3).map((item, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-mystic-800/50 rounded text-xs text-mystic-400">
+                        <Tag key={i} tone="neutral" size="sm">
                           {item}
-                        </span>
+                        </Tag>
                       ))}
                     </div>
                   </div>
@@ -2250,6 +2175,6 @@ export function QuizzesPage() {
 
         </div>
       )}
-    </div>
+    </Page>
   );
 }

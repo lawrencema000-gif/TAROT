@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useCelestialMapEngine, type MapMode } from './useCelestialMapEngine';
 import { CelestialMapControls } from './CelestialMapControls';
 import { CelestialDestinedBeacon } from './CelestialDestinedBeacon';
+import { Tag } from '../ui';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { haversineKm, type City } from '../../utils/celestialGeo';
 import type { PlanetName, Angle } from '../../utils/astrocartography';
@@ -676,9 +677,11 @@ export function CelestialMapView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4 }}
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-mystic-900/80 backdrop-blur-md hairline-gold-soft text-xs text-mystic-200 whitespace-nowrap pointer-events-none"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
           >
-            Drag to pan · Pinch to zoom · Tap a place for insight
+            <Tag tone="neutral" size="md" className="whitespace-nowrap">
+              Drag to pan · Pinch to zoom · Tap a place for insight
+            </Tag>
           </motion.div>
         )}
       </AnimatePresence>

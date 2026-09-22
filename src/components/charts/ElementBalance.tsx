@@ -1,25 +1,29 @@
-import { ELEMENT_COLOR } from '../../lib/chart';
+import { Progress, type ProgressProps } from '../ui';
 
-const MODALITY_COLOR: Record<string, string> = {
-  Cardinal: '#d4a853', Fixed: '#c98a9b', Mutable: '#7db0d8',
+type Tone = NonNullable<ProgressProps['tone']>;
+
+// Nearest primitive tone to each chart colour (lib/chart ELEMENT_COLOR and the
+// old modality hexes): Fire coral, Earth teal, Air blue, Water violet;
+// Cardinal gold, Fixed rose, Mutable blue.
+const ELEMENT_TONE: Record<string, Tone> = {
+  Fire: 'coral', Earth: 'teal', Air: 'blue', Water: 'violet',
 };
 
-function Bars({ data, total, colors, label }: { data: Record<string, number>; total: number; colors: Record<string, string>; label: string }) {
+const MODALITY_TONE: Record<string, Tone> = {
+  Cardinal: 'gold', Fixed: 'rose', Mutable: 'blue',
+};
+
+function Bars({ data, total, tones, label }: { data: Record<string, number>; total: number; tones: Record<string, Tone>; label: string }) {
   return (
     <div className="space-y-2">
       <div className="text-[11px] uppercase tracking-wider text-mystic-500">{label}</div>
-      {Object.entries(data).map(([key, val]) => {
-        const pct = total > 0 ? Math.round((val / total) * 100) : 0;
-        return (
-          <div key={key} className="flex items-center gap-2">
-            <span className="w-16 text-xs text-mystic-300">{key}</span>
-            <div className="flex-1 h-2 rounded-full bg-mystic-800/60 overflow-hidden">
-              <div className="h-full rounded-full transition-all duration-deliberate" style={{ width: `${pct}%`, background: colors[key] }} />
-            </div>
-            <span className="w-8 text-right text-xs text-mystic-400 tabular-nums">{val}</span>
-          </div>
-        );
-      })}
+      {Object.entries(data).map(([key, val]) => (
+        <div key={key} className="flex items-center gap-2">
+          <span className="w-16 text-xs text-mystic-300">{key}</span>
+          <Progress value={val} max={total} size="md" tone={tones[key] ?? 'neutral'} label={key} className="flex-1" />
+          <span className="w-8 text-right text-xs text-mystic-400 tabular-nums">{val}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -29,8 +33,8 @@ export function ElementBalance({ elements, modalities }: { elements: Record<stri
   const modTotal = Object.values(modalities).reduce((a, b) => a + b, 0);
   return (
     <div className="grid sm:grid-cols-2 gap-5">
-      <Bars data={elements} total={elTotal} colors={ELEMENT_COLOR} label="Elements" />
-      <Bars data={modalities} total={modTotal} colors={MODALITY_COLOR} label="Modalities" />
+      <Bars data={elements} total={elTotal} tones={ELEMENT_TONE} label="Elements" />
+      <Bars data={modalities} total={modTotal} tones={MODALITY_TONE} label="Modalities" />
     </div>
   );
 }

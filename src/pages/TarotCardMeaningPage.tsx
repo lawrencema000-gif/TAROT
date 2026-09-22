@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
-import { Disclosure, EmptyState, PageHeader } from '../components/ui';
+import { Disclosure, EmptyState, PageGrid, PageHeader } from '../components/ui';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
 import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
@@ -213,6 +213,59 @@ export function TarotCardMeaningPage() {
     : t('tarot.majorArcana');
   const elementKey = card.suit === 'wands' ? 'fire' : card.suit === 'cups' ? 'water' : card.suit === 'swords' ? 'air' : card.suit === 'pentacles' ? 'earth' : 'spirit';
 
+  const relatedTitle = card.arcana === 'major'
+    ? t('tarot.allMajorCards')
+    : t('tarot.allSuitCards', { suit: t(`tarot.${suitKeyMap[card.suit!]}`) });
+  // The deck rail: previous/next and the whole arcana or suit. Beside the
+  // reading on desktop, below it on a phone — the same order the page had
+  // as one column, so nothing moves for the reader who never sees a rail.
+  const aside = (
+    <>
+      {/* Prev/Next Navigation */}
+      <div className="tm-card-nav">
+        {prevCard ? (
+          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(prevCard.id)}`)}>
+            ← {prevCard.name}
+          </button>
+        ) : <div />}
+        {nextCard ? (
+          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(nextCard.id)}`)}>
+            {nextCard.name} →
+          </button>
+        ) : <div />}
+      </div>
+
+      {/* ── Full Card Navigation Grid (NEW) ── */}
+      <div className="tm-related">
+        <h3 className="tm-related-title">
+          {card.arcana === 'major'
+            ? t('tarot.allMajorCards')
+            : t('tarot.allSuitCards', { suit: t(`tarot.${suitKeyMap[card.suit!]}`) })}
+        </h3>
+        <div className="tm-related-grid">
+          {relatedCards.map(rc => {
+            const thumb = getBundledThumbPath(rc.id);
+            const isActive = rc.id === card.id;
+            return (
+              <button
+                key={rc.id}
+                className={`tm-related-card ${isActive ? 'active' : ''}`}
+                onClick={() => { if (!isActive) navigate(`/tarot-meanings/${slugFromId(rc.id)}`); }}
+              >
+                {thumb ? (
+                  <img src={thumb} alt={rc.name} className="tm-related-img" loading="lazy" />
+                ) : (
+                  <div className="tm-related-placeholder" aria-hidden="true" />
+                )}
+                <span className="tm-related-name">{rc.name.replace('of ', '').replace('The ', '')}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="tm-page">
       {/* Breadcrumb */}
@@ -228,6 +281,11 @@ export function TarotCardMeaningPage() {
         <span className="tm-breadcrumb-current">{card.name}</span>
       </nav>
 
+      <PageGrid
+        aside={aside}
+        asideLabel={relatedTitle}
+        asideClassName="lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto scrollbar-hide"
+      >
       {/* Card Header */}
       <div className="tm-detail-header">
         <div className="tm-detail-img-wrap">
@@ -464,48 +522,7 @@ export function TarotCardMeaningPage() {
         )}
       </div>
 
-      {/* Prev/Next Navigation */}
-      <div className="tm-card-nav">
-        {prevCard ? (
-          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(prevCard.id)}`)}>
-            ← {prevCard.name}
-          </button>
-        ) : <div />}
-        {nextCard ? (
-          <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(nextCard.id)}`)}>
-            {nextCard.name} →
-          </button>
-        ) : <div />}
-      </div>
-
-      {/* ── Full Card Navigation Grid (NEW) ── */}
-      <div className="tm-related">
-        <h3 className="tm-related-title">
-          {card.arcana === 'major'
-            ? t('tarot.allMajorCards')
-            : t('tarot.allSuitCards', { suit: t(`tarot.${suitKeyMap[card.suit!]}`) })}
-        </h3>
-        <div className="tm-related-grid">
-          {relatedCards.map(rc => {
-            const thumb = getBundledThumbPath(rc.id);
-            const isActive = rc.id === card.id;
-            return (
-              <button
-                key={rc.id}
-                className={`tm-related-card ${isActive ? 'active' : ''}`}
-                onClick={() => { if (!isActive) navigate(`/tarot-meanings/${slugFromId(rc.id)}`); }}
-              >
-                {thumb ? (
-                  <img src={thumb} alt={rc.name} className="tm-related-img" loading="lazy" />
-                ) : (
-                  <div className="tm-related-placeholder" aria-hidden="true" />
-                )}
-                <span className="tm-related-name">{rc.name.replace('of ', '').replace('The ', '')}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      </PageGrid>
 
       {/* Bottom CTA */}
       <div className="tm-bottom-cta">

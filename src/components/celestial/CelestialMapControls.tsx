@@ -12,7 +12,7 @@ import type { MapMode } from './useCelestialMapEngine';
  * with a small margin (icon-only with aria-label, no text).
  *
  * Visual treatment: `bg-mystic-900/70 backdrop-blur-md hairline-gold-soft`.
- * Hover state lifts opacity to 90% + adds a faint gold ring.
+ * The active mode is a gold hairline on a gold tint; hover lifts the fill.
  */
 
 interface Props {
@@ -91,7 +91,7 @@ export function CelestialMapControls({
       initial={{ opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }}
-      className="absolute top-3 right-3 z-20 flex flex-col gap-1.5 p-1.5 rounded-2xl bg-mystic-900/70 backdrop-blur-md hairline-gold-soft shadow-lg shadow-black/40"
+      className="absolute top-3 right-3 z-20 flex flex-col gap-1.5 p-1.5 rounded-2xl bg-mystic-900/70 backdrop-blur-md hairline-gold-soft"
     >
       {buttons.map((btn, i) => {
         // Separator between mode toggle (first two) and zoom controls.
@@ -106,10 +106,10 @@ export function CelestialMapControls({
               onClick={btn.onClick}
               aria-label={btn.label}
               title={btn.label}
-              className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
+              className={`relative w-9 h-9 rounded-xl flex items-center justify-center border transition-all active:scale-90 ${
                 btn.active
-                  ? 'bg-gold/25 text-gold ring-1 ring-gold/40 shadow-[0_0_12px_rgba(212,175,55,0.35)]'
-                  : 'text-mystic-200 hover:text-gold hover:bg-mystic-800/60 hover:ring-1 hover:ring-gold/20'
+                  ? 'bg-gold/10 text-gold border-gold/50'
+                  : 'border-transparent text-mystic-200 hover:text-gold hover:bg-mystic-800/60'
               }`}
             >
               <btn.icon className="w-4 h-4" aria-hidden />

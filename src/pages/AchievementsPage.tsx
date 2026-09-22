@@ -21,7 +21,7 @@ import {
   getUnnotifiedAchievements,
   getCategoryDisplayName,
 } from '../services/achievements';
-import { Skeleton, EmptyState, PageHeader } from '../components/ui';
+import { Skeleton, EmptyState, PageHeader, Page, ProgressRing, Chip } from '../components/ui';
 import { quizResults } from '../dal';
 import { useT } from '../i18n/useT';
 
@@ -119,8 +119,6 @@ export function AchievementsPage() {
   }, [achievements]);
 
   const completionPercentage = stats?.completion_percentage || 0;
-  const circumference = 2 * Math.PI * 45;
-  const strokeDashoffset = circumference - (completionPercentage / 100) * circumference;
 
   function handleCloseCelebration() {
     setCelebrationAchievement(null);
@@ -128,8 +126,8 @@ export function AchievementsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900 pb-24">
-        <div className="max-w-lg mx-auto space-y-6">
+      <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900">
+        <Page spacing="md" className="max-w-lg mx-auto">
           <PageHeader title={t('pageTitles.achievements.title')} />
           <Skeleton className="h-48 rounded-2xl" />
           <Skeleton className="h-24 rounded-2xl" />
@@ -143,54 +141,31 @@ export function AchievementsPage() {
               <Skeleton key={i} className="h-32 rounded-2xl" />
             ))}
           </div>
-        </div>
+        </Page>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900">
       <div className="max-w-lg mx-auto">
         <PageHeader title={t('pageTitles.achievements.title')} className="mb-6" />
         <div className="relative p-6 bg-gradient-to-br from-mystic-800/80 to-mystic-900/80 border-b border-mystic-700/30">
           <div className="flex items-center gap-6">
-            <div className="relative">
-              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  className="text-mystic-700/30"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="url(#goldGradient)"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  className="transition-all duration-ambient ease-out"
-                />
-                <defs>
-                  <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#D4AF37" />
-                    <stop offset="100%" stopColor="#F5D77B" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <ProgressRing
+              value={completionPercentage}
+              size={112}
+              strokeWidth={6}
+              tone="gold"
+              label={t('achievements.achievementsUnlocked')}
+            >
+              <div className="flex flex-col items-center justify-center">
                 <Trophy className="w-8 h-8 text-gold mb-1" />
                 <span className="text-2xl font-bold text-white">
                   {Math.round(completionPercentage)}%
                 </span>
               </div>
-            </div>
+            </ProgressRing>
 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -215,7 +190,7 @@ export function AchievementsPage() {
           </div>
         </div>
 
-        <div className="p-4 space-y-6">
+        <Page spacing="md" className="p-4">
           <div className="bg-mystic-800/30 rounded-2xl p-4 border border-mystic-700/30">
             <RankProgressBar
               currentRank={profile?.seekerRank || 'Novice Seeker'}
@@ -262,33 +237,21 @@ export function AchievementsPage() {
             <div className="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide pb-2">
               {stats?.category_stats && (
                 <>
-                  <button
-                    onClick={() => setSelectedCategory('all')}
-                    className={`
-                      flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all
-                      ${selectedCategory === 'all'
-                        ? 'bg-gold text-mystic-900'
-                        : 'bg-mystic-800/50 text-mystic-400 hover:bg-mystic-700/50'
-                      }
-                    `}
+                  <Chip
+                    selected={selectedCategory === 'all'}
+                    onSelect={() => setSelectedCategory('all')}
                   >
                     {t('achievements.all')} ({stats.unlocked_achievements}/{stats.total_achievements})
-                  </button>
+                  </Chip>
                   {(Object.entries(stats.category_stats) as [AchievementCategory, { total: number; unlocked: number }][]).map(
                     ([category, data]) => (
-                      <button
+                      <Chip
                         key={category}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`
-                          flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all
-                          ${selectedCategory === category
-                            ? 'bg-gold text-mystic-900'
-                            : 'bg-mystic-800/50 text-mystic-400 hover:bg-mystic-700/50'
-                          }
-                        `}
+                        selected={selectedCategory === category}
+                        onSelect={() => setSelectedCategory(category)}
                       >
                         {t(`achievements.categories.${category}`, { defaultValue: getCategoryDisplayName(category) })} ({data.unlocked}/{data.total})
-                      </button>
+                      </Chip>
                     )
                   )}
                 </>
@@ -333,7 +296,7 @@ export function AchievementsPage() {
               title={t('achievements.noInCategory')}
             />
           )}
-        </div>
+        </Page>
       </div>
 
       <AchievementUnlockModal

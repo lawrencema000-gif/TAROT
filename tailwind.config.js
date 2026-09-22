@@ -65,7 +65,12 @@ export default {
           // fails AA as text.
           violet: '#8e6eb5',
           violetLight: '#a98fd0',
-        },
+                  // Text inks for the two cool tones. #4a7eb8 and #8e6eb5 are fills — on
+          // their own 15% tints over surface-1 they read 3.5:1, under AA for small
+          // text — so a Tag, Badge or tile label uses these (5.3:1 / 5.0:1).
+          'blue-ink': '#779eca',
+          'violet-ink': '#a58bc4',
+},
       },
       fontFamily: {
         display: ['Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],
@@ -95,16 +100,22 @@ export default {
         'constellation': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
-      boxShadow: {
-        'glow': '0 0 20px rgba(212, 175, 55, 0.15)',
-        'glow-md': '0 0 30px rgba(212, 175, 55, 0.2), 0 0 60px rgba(212, 175, 55, 0.1)',
-        'glow-lg': '0 0 40px rgba(212, 175, 55, 0.25), 0 0 80px rgba(212, 175, 55, 0.15)',
-        'glow-coral': '0 0 20px rgba(224, 122, 95, 0.2)',
-        'glow-teal': '0 0 20px rgba(78, 205, 196, 0.2)',
-        'inner-glow': 'inset 0 0 20px rgba(212, 175, 55, 0.1)',
-        'card': '0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(212, 175, 55, 0.08)',
-        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(212, 175, 55, 0.12)',
+      // Radius, by role. The product had settled on 8 / 12 / 16 / 24 / pill
+      // without ever saying so; these are the names, and the primitives use
+      // them (rounded-control, rounded-card, rounded-sheet). The numeric
+      // steps stay valid — they are the same values — so a page reads either.
+      borderRadius: {
+        mark: '0.25rem',    // 4px  — inline code, checkboxes, legend swatches, bubble tails (= bare `rounded`)
+        inset: '0.5rem',    // 8px  — inner chrome: thumbnails, tiles inside cards
+        control: '0.75rem', // 12px — buttons, inputs, tiles, tab thumbs
+        card: '1rem',       // 16px — cards, panels, disclosures, rows
+        sheet: '1.5rem',    // 24px — sheets and modals
       },
+      // No glow tokens and no gold-tinted card shadow: elevation is fill
+      // (see Card.tsx). Tailwind's neutral shadow-* scale remains available for
+      // the two places a real overlay needs it (a dropdown over content, a
+      // dragged card); nothing in the primitives uses it.
+      boxShadow: {},
       // ── Motion scale ───────────────────────────────────────────────
       //
       // There was no `transitionDuration` and no `transitionTimingFunction`

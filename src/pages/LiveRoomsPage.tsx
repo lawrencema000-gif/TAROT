@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, CalendarPlus, CheckCircle2 } from 'lucide-react';
-import { Card, Button, PageHeader, toast } from '../components/ui';
+import { Card, Button, Badge, Page, PageHeader, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -88,7 +88,7 @@ export function LiveRoomsPage() {
   if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
 
   return (
-    <div className="space-y-5 pb-6">
+    <Page spacing="md">
       <PageHeader
         icon={<Mic />}
         title={t('liveRooms.title', { defaultValue: 'Live rooms' })}
@@ -126,9 +126,9 @@ export function LiveRoomsPage() {
                   </p>
                 </div>
                 {isLive && (
-                  <span className="text-[10px] px-2 py-0.5 bg-gold/20 text-gold rounded-full uppercase tracking-wider animate-pulse">
+                  <Badge tone="gold" pulse>
                     Live
-                  </span>
+                  </Badge>
                 )}
               </div>
               {room.description && (
@@ -174,7 +174,7 @@ export function LiveRoomsPage() {
           defaultValue: 'Audio streaming is rolling out gradually. RSVP and we\'ll notify you when your room opens.',
         })}
       </p>
-    </div>
+    </Page>
   );
 }
 

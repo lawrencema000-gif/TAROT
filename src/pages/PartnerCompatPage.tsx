@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Share2, Heart, Users } from 'lucide-react';
-import { Card, Button, Input, PageHeader, toast, ReadingProse } from '../components/ui';
+import { Share2, Heart, Users } from 'lucide-react';
+import { Card, Button, Input, Page, PageHeader, Progress, Tag, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -169,7 +169,7 @@ export function PartnerCompatPage() {
 
   if (stage === 'input' || stage === 'loading') {
     return (
-      <div className="space-y-6 pb-6">
+      <Page spacing="md">
         <PageHeader
           icon={<Users />}
           title={t('compat.title', { defaultValue: 'Partner Compatibility' })}
@@ -265,7 +265,7 @@ export function PartnerCompatPage() {
         </Button>
         <MoonstoneCostLine />
         {EarnSheet}
-      </div>
+      </Page>
     );
   }
 
@@ -293,11 +293,13 @@ export function PartnerCompatPage() {
     };
 
     return (
-      <div className="space-y-4 pb-6">
-        <button onClick={reset} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          {t('compat.back', { defaultValue: 'Check another pair' })}
-        </button>
+      <Page spacing="sm">
+        <PageHeader
+          icon={<Users />}
+          title={t('compat.title', { defaultValue: 'Partner Compatibility' })}
+          onBack={reset}
+          backLabel={t('compat.back', { defaultValue: 'Check another pair' }) as string}
+        />
 
         {/* Overall score hero */}
         <Card variant="glow" padding="lg" className="text-center">
@@ -354,19 +356,19 @@ export function PartnerCompatPage() {
               {t('compat.topAspectsLabel', { defaultValue: 'Your most telling aspects' })}
             </h3>
             {result.synastry.crossAspects.slice(0, 8).map((a, i) => {
-              const flavourColor =
-                a.flavour === 'harmonious' ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/5'
-                : a.flavour === 'challenging' ? 'text-pink-400 border-pink-400/30 bg-pink-400/5'
-                : 'text-gold border-gold/30 bg-gold/5';
+              const flavourTone =
+                a.flavour === 'harmonious' ? 'teal'
+                : a.flavour === 'challenging' ? 'rose'
+                : 'gold';
               return (
                 <Card key={i} padding="md">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-ui font-medium text-mystic-200">
                       {t('compat.myPlanet', { defaultValue: 'Your' })} {a.myPlanet}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full border text-[10px] font-medium capitalize ${flavourColor}`}>
+                    <Tag tone={flavourTone} className="capitalize">
                       {a.type}
-                    </span>
+                    </Tag>
                     <span className="text-ui font-medium text-mystic-200">
                       {t('compat.partnerPlanet', { defaultValue: "Partner's" })} {a.partnerPlanet}
                     </span>
@@ -388,13 +390,11 @@ export function PartnerCompatPage() {
             <div className="space-y-2">
               {(['fire', 'earth', 'air', 'water'] as const).map((el) => {
                 const pct = result.synastry!.elementalBlend[el];
-                const col = el === 'fire' ? 'bg-coral' : el === 'earth' ? 'bg-teal' : el === 'air' ? 'bg-cosmic-blue' : 'bg-cosmic-violet';
+                const tone = el === 'fire' ? 'coral' : el === 'earth' ? 'teal' : el === 'air' ? 'blue' : 'violet';
                 return (
                   <div key={el} className="flex items-center gap-3">
                     <span className="text-meta capitalize text-mystic-400 w-14">{el}</span>
-                    <div className="flex-1 h-2 bg-mystic-800 rounded-full overflow-hidden">
-                      <div className={`h-full ${col}`} style={{ width: `${pct}%` }} />
-                    </div>
+                    <Progress value={pct} size="md" tone={tone} label={el} className="flex-1" />
                     <span className="text-meta text-mystic-400 w-10 text-right">{pct}%</span>
                   </div>
                 );
@@ -454,7 +454,7 @@ export function PartnerCompatPage() {
             {t('compat.another', { defaultValue: 'Check another' })}
           </Button>
         </div>
-      </div>
+      </Page>
     );
   }
 

@@ -25,6 +25,13 @@
 :root {
   --font-scale: 1;
 
+  /* radius, by role — mirrors borderRadius in tailwind.config.js */
+  --radius-mark: 0.25rem;
+  --radius-inset: 0.5rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+  --radius-sheet: 1.5rem;
+
   /* brand */
   --gold-primary: 212, 175, 55;    /* gold.DEFAULT  #d4af37 */
   --gold-light: 244, 214, 104;     /* gold.light    #f4d668 */
@@ -190,25 +197,11 @@
     @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light bg-clip-text text-transparent;
   }
 
-  .border-glow {
-    @apply border border-gold/20;
-    box-shadow: 0 0 15px rgba(var(--gold-primary), 0.1), inset 0 0 15px rgba(var(--gold-primary), 0.05);
-  }
 
   .card-mystic {
     @apply bg-mystic-900/80 backdrop-blur-sm rounded-2xl border border-mystic-700/50;
   }
 
-  .glow-gold {
-    box-shadow: 0 0 20px rgba(var(--gold-primary), 0.15),
-                0 0 40px rgba(var(--gold-primary), 0.1),
-                0 0 60px rgba(var(--gold-primary), 0.05);
-  }
-
-  .glow-gold-subtle {
-    box-shadow: 0 0 10px rgba(var(--gold-primary), 0.08),
-                0 0 20px rgba(var(--gold-primary), 0.04);
-  }
 
   .constellation-bg {
     position: relative;
@@ -297,17 +290,6 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  .device-frame {
-    position: relative;
-    max-width: 375px;
-    margin: 0 auto;
-    border-radius: 40px;
-    overflow: hidden;
-    box-shadow:
-      0 0 0 12px #1a1a25,
-      0 0 0 14px #2d2d40,
-      0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  }
 
   .device-frame::before {
     content: '';
@@ -768,25 +750,19 @@
       linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(13, 13, 26, 0.92) 100%),
       radial-gradient(ellipse at top right, rgba(var(--gold-primary), 0.05), transparent 60%);
     border: 1px solid rgba(var(--gold-primary), 0.18);
-    border-radius: 1rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-    /* 0.35s with a pasted cubic-bezier, replaced by the tokens. Hover
-       feedback at 350ms feels like the card is thinking about it;
-       --dur-base lands it while the pointer is still moving. box-shadow
-       is a repaint, but this is a one-shot on hover rather than a loop,
-       which is the line that matters. */
+    border-radius: var(--radius-card);
+    /* Elevation by fill, like every other card: the black drop-shadow and
+       the gold hover bloom are gone (see Card.tsx). What is left to say
+       "liftable" is the 2px lift and the hairline brightening, both
+       compositor-cheap. Hover feedback lands on --dur-base, while the
+       pointer is still moving. */
     transition:
       transform var(--dur-fast) var(--ease-out),
-      border-color var(--dur-base) var(--ease-standard),
-      box-shadow var(--dur-base) var(--ease-standard);
+      border-color var(--dur-base) var(--ease-standard);
   }
   .card-ritual:hover {
     transform: translateY(-2px);
     border-color: rgba(var(--gold-primary), 0.32);
-    box-shadow:
-      0 10px 28px -10px rgba(0, 0, 0, 0.5),
-      0 0 30px rgba(var(--gold-primary), 0.10),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   }
   /* scale(0.997) — the previous value — is 1px of travel on a 360px card,
      i.e. below the threshold at which a finger reads it as a response at
@@ -815,14 +791,6 @@
     background: rgba(var(--gold-primary), 0.5);
   }
 
-  /* Soft inset frame — used inside ritual cards to host a quote or
-     micro-stat. Hairline gold border + faint warm glow. */
-  .inset-frame-gold {
-    border: 1px solid rgba(var(--gold-primary), 0.16);
-    border-radius: 0.75rem;
-    background: rgba(255, 255, 255, 0.012);
-    box-shadow: inset 0 0 22px rgba(var(--gold-primary), 0.04);
-  }
 
   /* Horoscope chart — outer rim slow spin.
      Applied to just the decorative bead-and-diamond ring on the
@@ -1122,40 +1090,6 @@
   mix-blend-mode: overlay;
 }
 
-/* A single breath of light on arrival, then a steady halo. Good on a
-   primary CTA. */
-@keyframes breathe-glow {
-  from { box-shadow: 0 0 16px rgba(212, 175, 55, 0.24), 0 0 34px rgba(212, 175, 55, 0.11); }
-  to   { box-shadow: 0 0 24px rgba(212, 175, 55, 0.42), 0 0 52px rgba(212, 175, 55, 0.20); }
-}
-.breathe-glow {
-  /* The resting halo, declared as a real property rather than as a
-     keyframe the element has to be mid-animation to show. */
-  box-shadow: 0 0 16px rgba(212, 175, 55, 0.24), 0 0 34px rgba(212, 175, 55, 0.11);
-  /* Was `3.4s ease-in-out infinite` — a box-shadow loop, on the app's
-     primary CTA, for ever. box-shadow cannot be composited: every frame
-     of that was a repaint of the button and its surroundings, on the
-     main thread, on the mid-range Androids this ships to. Two
-     alternating iterations = one breath in and out, then it rests on
-     the box-shadow above and stops costing anything. */
-  animation: breathe-glow var(--dur-deliberate) var(--ease-standard) 2 alternate;
-}
-
-/* Interactive hover lift — put `.hover-lift` on a child of a `.group`
-   container to get a rise plus glow on hover. Kept although it has no
-   call sites yet: it is the counterpart to `.card-ritual` for rows that
-   are not cards, and it is where a hover treatment should be added
-   rather than pasting another cubic-bezier. */
-.hover-lift {
-  transition:
-    transform var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-standard),
-    border-color var(--dur-base) var(--ease-standard);
-}
-.group:hover .hover-lift {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px -12px rgba(212, 175, 55, 0.35);
-}
 
 /* Floating particles — place inside any relative container to drift a
    couple of sparks upward. Pseudo-elements, so no extra DOM. */
@@ -1267,13 +1201,6 @@
 [data-stagger] > *:nth-child(9)  { animation-delay: calc(var(--stagger-step, 40ms) * 8); }
 [data-stagger] > *:nth-child(n + 10) { animation-delay: calc(var(--stagger-step, 40ms) * 9); }
 
-.shadow-gold {
-  box-shadow: 0 0 20px rgba(var(--gold-primary), 0.3), 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.shadow-glow {
-  box-shadow: 0 0 15px rgba(var(--gold-primary), 0.2), 0 0 30px rgba(var(--gold-primary), 0.1);
-}
 
 .hover\:scale-102:hover {
   transform: scale(1.02);

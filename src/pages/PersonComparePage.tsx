@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Heart } from 'lucide-react';
-import { Card, Button, PageHeader, Section, HoroscopeWheelIcon, ReadingProse } from '../components/ui';
+import { Card, Button, Page, PageHeader, Section, Tabs, HoroscopeWheelIcon, ReadingProse } from '../components/ui';
 import { NatalWheel } from '../components/charts/NatalWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { useAuth } from '../context/AuthContext';
@@ -90,7 +90,7 @@ export function PersonComparePage() {
   const compat = interp && mySun && theirSun ? interp.signCompatText(mySun, theirSun) : null;
 
   return (
-    <div className="space-y-6 pb-28">
+    <Page spacing="md">
       <PageHeader
         align="center"
         onBack={() => navigate(`/people/${id}`)}
@@ -106,14 +106,14 @@ export function PersonComparePage() {
       </div>
 
       {/* Chart-type tabs */}
-      <div className="flex gap-1.5 justify-center flex-wrap">
-        {TABS.map((tDef) => (
-          <button key={tDef.key} onClick={() => setTab(tDef.key)}
-            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${tab === tDef.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400 hover:border-mystic-500'}`}>
-            {tDef.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        items={TABS.map((tDef) => ({ id: tDef.key, label: tDef.label }))}
+        value={tab}
+        onChange={setTab}
+        aria-label="Chart type"
+        size="sm"
+        idPrefix="compare"
+      />
       <p className="text-center text-ui text-mystic-400 -mt-3">{TABS.find((tDef) => tDef.key === tab)?.blurb}</p>
 
       {tab !== 'synastry' ? (
@@ -184,6 +184,6 @@ export function PersonComparePage() {
       )}
 
       <p className="text-caption text-mystic-500 italic">For reflection &amp; entertainment. These charts describe dynamics, not destiny.</p>
-    </div>
+    </Page>
   );
 }

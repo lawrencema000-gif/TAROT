@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Download, AlertTriangle } from 'lucide-react';
-import { Card, Button, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, Section, Disclosure } from '../components/ui';
 import {
   INTENTIONS, scoreWindow, bestDays, daysToAvoid, toICS,
   type Intention, type DayScore,
@@ -103,7 +103,7 @@ export function AuspiciousDatesPage() {
   };
 
   return (
-    <div className="space-y-6 pb-28">
+    <Page spacing="md">
       <PageHeader
         eyebrow="擇日"
         title={t('dates.title', { defaultValue: 'Pick a good day' })}
@@ -123,17 +123,14 @@ export function AuspiciousDatesPage() {
       >
         <div className="flex flex-wrap gap-2">
           {(Object.keys(INTENTIONS) as Intention[]).map((k) => (
-            <button
+            <Chip
               key={k}
-              onClick={() => { setIntention(k); setExpanded(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                intention === k
-                  ? 'border-gold/60 text-gold bg-gold/10'
-                  : 'border-mystic-800/60 text-mystic-400 hover:border-mystic-700'
-              }`}
+              size="sm"
+              selected={intention === k}
+              onSelect={() => { setIntention(k); setExpanded(null); }}
             >
               <span style={{ fontFamily: 'serif' }}>{INTENTIONS[k].cn}</span> {INTENTIONS[k].label}
-            </button>
+            </Chip>
           ))}
         </div>
         <p className="text-xs text-mystic-500">{INTENTIONS[intention].blurb}</p>
@@ -179,6 +176,6 @@ export function AuspiciousDatesPage() {
             'A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle.',
         })}
       </p>
-    </div>
+    </Page>
   );
 }

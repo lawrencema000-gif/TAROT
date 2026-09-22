@@ -3,7 +3,7 @@ import {
   Plus,
   Search,
   Calendar,
-  Tag,
+  Tag as TagIcon,
   ChevronRight,
   ChevronLeft,
   Edit2,
@@ -26,7 +26,7 @@ import {
   Moon,
   Feather,
 } from 'lucide-react';
-import { Card, Button, Sheet, Input, toast, PageHeader, Section, EmptyState } from '../components/ui';
+import { Card, Button, Sheet, Input, toast, PageHeader, Section, EmptyState, Page, Tabs, Chip, Tag, Progress, type Tone } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -52,28 +52,28 @@ const moodEmojis = [
   { emoji: '🤔', label: 'Thoughtful', value: 'thoughtful' },
 ];
 
-const categoryTags = [
-  { label: 'Love', value: 'love', color: 'bg-cosmic-rose/20 text-cosmic-rose border-cosmic-rose/30' },
-  { label: 'Career', value: 'career', color: 'bg-cosmic-blue/20 text-cosmic-blue border-cosmic-blue/30' },
-  { label: 'Anxiety', value: 'anxiety', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
-  { label: 'Gratitude', value: 'gratitude', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  { label: 'Growth', value: 'growth', color: 'bg-gold/20 text-gold border-gold/30' },
-  { label: 'Health', value: 'health', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
-  { label: 'Family', value: 'family', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
-  { label: 'Dreams', value: 'dreams', color: 'bg-mystic-400/20 text-mystic-300 border-mystic-400/30' },
+const categoryTags: { label: string; value: string; tone: Tone }[] = [
+  { label: 'Love', value: 'love', tone: 'rose' },
+  { label: 'Career', value: 'career', tone: 'blue' },
+  { label: 'Anxiety', value: 'anxiety', tone: 'coral' },
+  { label: 'Gratitude', value: 'gratitude', tone: 'teal' },
+  { label: 'Growth', value: 'growth', tone: 'gold' },
+  { label: 'Health', value: 'health', tone: 'teal' },
+  { label: 'Family', value: 'family', tone: 'rose' },
+  { label: 'Dreams', value: 'dreams', tone: 'neutral' },
 ];
 
-const moodColors: Record<string, string> = {
-  happy: 'bg-yellow-500',
-  calm: 'bg-blue-400',
-  anxious: 'bg-orange-500',
-  grateful: 'bg-emerald-500',
-  inspired: 'bg-gold',
-  tired: 'bg-mystic-500',
-  sad: 'bg-blue-600',
-  frustrated: 'bg-red-500',
-  loved: 'bg-pink-500',
-  thoughtful: 'bg-cyan-400',
+const moodTones: Record<string, Tone> = {
+  happy: 'gold',
+  calm: 'blue',
+  anxious: 'coral',
+  grateful: 'teal',
+  inspired: 'gold',
+  tired: 'neutral',
+  sad: 'blue',
+  frustrated: 'coral',
+  loved: 'rose',
+  thoughtful: 'teal',
 };
 
 interface JournalEntry {
@@ -492,7 +492,7 @@ export function JournalPage() {
   ];
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <PageHeader
         title={t('journal.title')}
         action={
@@ -503,25 +503,13 @@ export function JournalPage() {
         }
       />
 
-      <div className="flex gap-2">
-        {tabs.map(tab => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-gold/20 text-gold border border-gold/30'
-                  : 'bg-mystic-800/50 text-mystic-400 border border-transparent'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs<JournalTab>
+        items={tabs}
+        value={activeTab}
+        onChange={setActiveTab}
+        aria-label={t('journal.title') as string}
+        idPrefix="journal"
+      />
 
       {activeTab === 'entries' && (
         <>
@@ -598,26 +586,20 @@ export function JournalPage() {
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-            <button
-              onClick={() => setSelectedTagFilter(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                !selectedTagFilter
-                  ? 'bg-gold/20 text-gold border border-gold/30'
-                  : 'bg-mystic-800/50 text-mystic-400 border border-mystic-700'
-              }`}
-            >
-              All
-            </button>
+            <Chip
+              label="All"
+              selected={!selectedTagFilter}
+              onSelect={() => setSelectedTagFilter(null)}
+              size="sm"
+            />
             {categoryTags.map(tag => (
-              <button
+              <Chip
                 key={tag.value}
-                onClick={() => setSelectedTagFilter(selectedTagFilter === tag.value ? null : tag.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
-                  selectedTagFilter === tag.value ? tag.color : 'bg-mystic-800/50 text-mystic-400 border-mystic-700'
-                }`}
-              >
-                {tag.label}
-              </button>
+                label={tag.label}
+                selected={selectedTagFilter === tag.value}
+                onSelect={() => setSelectedTagFilter(selectedTagFilter === tag.value ? null : tag.value)}
+                size="sm"
+              />
             ))}
           </div>
 
@@ -656,12 +638,9 @@ export function JournalPage() {
                           {entry.tags.map(tagValue => {
                             const tagInfo = categoryTags.find(t => t.value === tagValue);
                             return (
-                              <span
-                                key={tagValue}
-                                className={`px-2 py-0.5 rounded text-xs border ${tagInfo?.color || 'bg-mystic-700/50 text-mystic-300 border-mystic-600'}`}
-                              >
+                              <Tag key={tagValue} tone={tagInfo?.tone || 'neutral'}>
                                 {tagInfo?.label || tagValue}
-                              </span>
+                              </Tag>
                             );
                           })}
                         </div>
@@ -738,31 +717,24 @@ export function JournalPage() {
           )}
 
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-            <button
-              onClick={() => setSelectedTemplateCategory(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                !selectedTemplateCategory
-                  ? 'bg-gold/20 text-gold border border-gold/30'
-                  : 'bg-mystic-800/50 text-mystic-400 border border-mystic-700'
-              }`}
-            >
-              All
-            </button>
+            <Chip
+              label="All"
+              selected={!selectedTemplateCategory}
+              onSelect={() => setSelectedTemplateCategory(null)}
+              size="sm"
+            />
             {Object.entries(templateCategories).map(([key, cat]) => {
               const Icon = categoryIcons[key] || FileText;
               return (
-                <button
+                <Chip
                   key={key}
-                  onClick={() => setSelectedTemplateCategory(selectedTemplateCategory === key ? null : key)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 border ${
-                    selectedTemplateCategory === key
-                      ? 'bg-gold/20 text-gold border-gold/30'
-                      : 'bg-mystic-800/50 text-mystic-400 border-mystic-700'
-                  }`}
+                  selected={selectedTemplateCategory === key}
+                  onSelect={() => setSelectedTemplateCategory(selectedTemplateCategory === key ? null : key)}
+                  size="sm"
                 >
                   <Icon className="w-3 h-3" />
                   {cat.name}
-                </button>
+                </Chip>
               );
             })}
           </div>
@@ -780,9 +752,7 @@ export function JournalPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium text-mystic-100">{template.title}</h4>
-                        <span className="text-xs text-mystic-500 px-2 py-0.5 bg-mystic-800 rounded-full">
-                          {catInfo?.name}
-                        </span>
+                        <Tag tone="neutral">{catInfo?.name}</Tag>
                       </div>
                       <p className="text-sm text-mystic-400 line-clamp-2">{template.description}</p>
                       <div className="flex items-center gap-3 mt-2">
@@ -844,7 +814,7 @@ export function JournalPage() {
           {insights.topTags.length > 0 && (
             <Section
               headingLevel="h3"
-              title={<span className="inline-flex items-center gap-2"><Tag className="w-4 h-4 text-mystic-500" /> {t('journal.mostCommonTags')}</span>}
+              title={<span className="inline-flex items-center gap-2"><TagIcon className="w-4 h-4 text-mystic-500" /> {t('journal.mostCommonTags')}</span>}
             >
               <div className="space-y-3">
                 {insights.topTags.map(([tagValue, count]) => {
@@ -856,12 +826,7 @@ export function JournalPage() {
                         <span className="text-mystic-300">{tagInfo?.label || tagValue}</span>
                         <span className="text-mystic-500">{count}x</span>
                       </div>
-                      <div className="h-2 bg-mystic-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gold"
-                          style={{ width: `${(count / maxCount) * 100}%` }}
-                        />
-                      </div>
+                      <Progress value={count} max={maxCount} size="md" tone="gold" label={tagInfo?.label || tagValue} />
                     </div>
                   );
                 })}
@@ -886,12 +851,7 @@ export function JournalPage() {
                         </span>
                         <span className="text-mystic-500">{percentage}%</span>
                       </div>
-                      <div className="h-2 bg-mystic-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${moodColors[mood] || 'bg-gold'}`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                      <Progress value={percentage} size="md" tone={moodTones[mood] || 'gold'} label={moodInfo?.label || mood} />
                     </div>
                   );
                 })}
@@ -1129,15 +1089,12 @@ export function JournalPage() {
               <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.tags')}</label>
               <div className="flex flex-wrap gap-2">
                 {categoryTags.map(tag => (
-                  <button
+                  <Chip
                     key={tag.value}
-                    onClick={() => toggleTag(tag.value)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                      selectedTags.includes(tag.value) ? tag.color : 'bg-mystic-800/50 text-mystic-400 border-mystic-700'
-                    }`}
-                  >
-                    {tag.label}
-                  </button>
+                    label={tag.label}
+                    selected={selectedTags.includes(tag.value)}
+                    onSelect={() => toggleTag(tag.value)}
+                  />
                 ))}
               </div>
             </div>
@@ -1150,7 +1107,7 @@ export function JournalPage() {
                   <span className="text-sm text-mystic-200 flex-1">{t('journal.editSheet.tarotLinked')}</span>
                   <button
                     onClick={() => setLinkedReadingId(null)}
-                    className="p-1 hover:bg-mystic-700 rounded"
+                    className="p-1 hover:bg-mystic-700 rounded-lg"
                   >
                     <X className="w-4 h-4 text-mystic-400" />
                   </button>
@@ -1230,6 +1187,6 @@ export function JournalPage() {
           )}
         </div>
       </Sheet>
-    </div>
+    </Page>
   );
 }

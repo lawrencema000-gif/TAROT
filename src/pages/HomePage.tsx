@@ -14,6 +14,8 @@ import {
 import {
   Card,
   Button,
+  Page,
+  Progress,
   toast,
   HomePageSkeleton,
   MysticalStar,
@@ -359,7 +361,7 @@ export function HomePage() {
   if (!ritualStarted && isFirstTime) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-        <div className="mb-6 text-gold drop-shadow-[0_0_20px_rgba(212,175,55,0.35)]">
+        <div className="mb-6 text-gold">
           <MysticalStar size={96} spinning />
         </div>
 
@@ -382,7 +384,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="space-y-6 pb-6">
+    <Page spacing="md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <EyebrowLabel className="!text-mystic-400">{greeting()}</EyebrowLabel>
@@ -412,7 +414,7 @@ export function HomePage() {
         <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil">
           <span className="floating-particles-overlay floating-particles" aria-hidden />
           <div className="relative z-[1] py-2">
-            <div className="mb-3 text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)] inline-block animate-float-gentle">
+            <div className="mb-3 text-gold inline-block animate-float-gentle">
               <MysticalStar size={72} />
             </div>
             <h2 className="heading-display-lg text-mystic-100 mb-2">{t('home.todaysRitual')}</h2>
@@ -420,7 +422,7 @@ export function HomePage() {
               <OrnateDivider width={120} />
             </div>
             <p className="text-mystic-300 text-sm mb-6">{t('home.subtitle')}</p>
-            <Button variant="gold" onClick={handleStartRitual} className="gold-sweep breathe-glow">
+            <Button variant="gold" onClick={handleStartRitual} className="gold-sweep">
               {t('home.startTodaysRitual')}
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -504,7 +506,7 @@ export function HomePage() {
               {[-12, 0, 12].map((rot, i) => (
                 <div
                   key={rot}
-                  className="absolute inset-0 rounded-md border border-gold/40 overflow-hidden shadow-glow origin-bottom transition-transform duration-slow group-hover:scale-105"
+                  className="absolute inset-0 rounded-lg border border-gold/40 overflow-hidden origin-bottom transition-transform duration-slow group-hover:scale-105"
                   style={{ transform: `rotate(${rot}deg)`, zIndex: i }}
                 >
                   <img
@@ -619,12 +621,12 @@ export function HomePage() {
               {t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}
             </span>
           </div>
-          <div className="relative h-2 bg-mystic-800 rounded-full overflow-hidden">
-            <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold via-gold-light to-gold rounded-full transition-all duration-deliberate"
-              style={{ width: `${xpProgress.percentage}%` }}
-            />
-          </div>
+          <Progress
+            value={xpProgress.percentage}
+            variant="gradient"
+            size="md"
+            label={t('home.xpProgress')}
+          />
         </div>
       )}
 
@@ -678,6 +680,6 @@ export function HomePage() {
         onClose={() => setShowCelebration(false)}
       />
 
-    </div>
+    </Page>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Moon, Heart, Flag, HandHeart, X } from 'lucide-react';
-import { Card, Button, Input, Sheet, toast, PageHeader, EmptyState, MysticalStar } from '../components/ui';
+import { Card, Button, Chip, Input, Page, Sheet, Tag, toast, PageHeader, EmptyState, MysticalStar } from '../components/ui';
 import { WishSky } from '../components/wishes/WishSky';
 import { wishes as wishesDal } from '../dal';
 import {
@@ -121,7 +121,7 @@ export function WishingSkyPage() {
   const themeLabel = (k: WishTheme) => WISH_THEMES.find((t) => t.key === k)?.label ?? 'Something else';
 
   return (
-    <div className="space-y-5 pb-28">
+    <Page spacing="md">
       <PageHeader
         onBack={() => navigate(-1)}
         eyebrow="The Wishing Sky"
@@ -157,10 +157,10 @@ export function WishingSkyPage() {
         )}
 
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
-          <span className="text-[11px] text-mystic-500 bg-black/40 rounded-full px-2 py-1 backdrop-blur-sm">
+          <Tag tone="neutral">
             {sky.length} {sky.length === 1 ? 'wish' : 'wishes'}
             {links.length > 0 && <> · {links.length} linked</>}
-          </span>
+          </Tag>
           {user && (
             <Button variant="primary" size="sm" className="pointer-events-auto"
                     onClick={() => setComposing(true)}>
@@ -233,10 +233,7 @@ export function WishingSkyPage() {
             <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">What is it about?</label>
             <div className="flex flex-wrap gap-2">
               {WISH_THEMES.map((t) => (
-                <button key={t.key} type="button" onClick={() => setTheme(t.key)}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${theme === t.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'}`}>
-                  {t.label}
-                </button>
+                <Chip key={t.key} label={t.label} selected={theme === t.key} onSelect={() => setTheme(t.key)} />
               ))}
             </div>
           </div>
@@ -343,6 +340,6 @@ export function WishingSkyPage() {
         Wishes are public and anyone can read them. Never put a phone number, an address or an email
         in one — if you are open to help, people can reach you privately instead.
       </p>
-    </div>
+    </Page>
   );
 }

@@ -3,10 +3,19 @@ import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import {
   getRarityColor,
-  getRarityGlow,
   getRarityBorder,
   getRarityBackground,
 } from '../../services/achievements';
+import { Badge, Progress, type Tone } from '../ui';
+
+// Rarity → the nearest primitive tone (blue = cosmic-blue, violet stands in
+// for the fuchsia epics, legendary is gold).
+const RARITY_TONE: Record<AchievementRarity, Tone> = {
+  common: 'neutral',
+  rare: 'blue',
+  epic: 'violet',
+  legendary: 'gold',
+};
 
 interface AchievementCardProps {
   achievement: AchievementWithProgress;
@@ -36,9 +45,9 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
   const Icon = getIcon(achievement.icon_name);
 
   const rarityColor = getRarityColor(achievement.rarity);
-  const rarityGlow = getRarityGlow(achievement.rarity);
   const rarityBorder = getRarityBorder(achievement.rarity);
   const rarityBg = getRarityBackground(achievement.rarity);
+  const rarityTone = RARITY_TONE[achievement.rarity];
 
   return (
     <button
@@ -46,7 +55,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
       className={`
         relative w-full p-4 rounded-2xl border transition-all duration-slow
         ${isUnlocked
-          ? `bg-gradient-to-br ${rarityBg} ${rarityBorder} shadow-lg ${rarityGlow}`
+          ? `bg-gradient-to-br ${rarityBg} ${rarityBorder}`
           : 'bg-mystic-800/40 border-mystic-700/30'
         }
         ${isPremiumLocked ? 'overflow-hidden' : ''}
@@ -56,10 +65,10 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
     >
       {isPremiumLocked && (
         <div className="absolute inset-0 backdrop-blur-sm bg-mystic-900/60 z-10 flex flex-col items-center justify-center rounded-2xl">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/30">
-            <Crown className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-medium text-amber-300">Premium</span>
-          </div>
+          <Badge tone="gold">
+            <Crown className="w-3 h-3" aria-hidden />
+            Premium
+          </Badge>
         </div>
       )}
 
@@ -68,7 +77,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
           relative flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center
           transition-all duration-slow
           ${isUnlocked
-            ? `bg-gradient-to-br ${rarityBg} shadow-inner`
+            ? `bg-gradient-to-br ${rarityBg}`
             : 'bg-mystic-700/30'
           }
         `}>
@@ -98,15 +107,9 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
             `}>
               {isLocked && achievement.is_hidden ? '???' : achievement.name}
             </h3>
-            <span className={`
-              flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium
-              ${isUnlocked
-                ? `${rarityColor} bg-white/5`
-                : 'text-mystic-500 bg-mystic-700/30'
-              }
-            `}>
+            <Badge tone={isUnlocked ? rarityTone : 'neutral'} className="flex-shrink-0">
               {getRarityLabel(achievement.rarity)}
-            </span>
+            </Badge>
           </div>
 
           <p className={`
@@ -130,17 +133,12 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
                   {Math.round(progressPercentage)}%
                 </span>
               </div>
-              <div className="h-1.5 bg-mystic-700/50 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-deliberate ${
-                    achievement.rarity === 'legendary' ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
-                    achievement.rarity === 'epic' ? 'bg-gradient-to-r from-fuchsia-500 to-fuchsia-400' :
-                    achievement.rarity === 'rare' ? 'bg-gradient-to-r from-blue-500 to-blue-400' :
-                    'bg-gradient-to-r from-mystic-400 to-mystic-300'
-                  }`}
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
+              <Progress
+                value={progressPercentage}
+                size="sm"
+                tone={rarityTone}
+                label={isLocked && achievement.is_hidden ? '???' : achievement.name}
+              />
             </div>
           )}
 

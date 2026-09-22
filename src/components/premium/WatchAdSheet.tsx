@@ -198,7 +198,7 @@ export function WatchAdSheet({
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-sm bg-gradient-to-b from-mystic-900 to-mystic-950 rounded-3xl border border-gold/40 shadow-2xl shadow-glow-md overflow-hidden animate-scale-in nebula-veil">
+      <div className="relative w-full max-w-sm bg-gradient-to-b from-mystic-900 to-mystic-950 rounded-sheet border border-gold/40 overflow-hidden animate-scale-in nebula-veil">
         <div className="absolute inset-[3px] rounded-[calc(1.5rem-3px)] border border-gold/15 pointer-events-none" />
         <FourCornerFlourishes className="text-gold/60 z-10" size={28} />
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-gold/10 to-transparent" />
@@ -213,7 +213,7 @@ export function WatchAdSheet({
 
         <div className="relative px-6 pt-8 pb-6">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/25 to-mystic-800 flex items-center justify-center shadow-glow">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/25 to-mystic-800 flex items-center justify-center">
               <Coins className="w-8 h-8 text-gold" />
             </div>
           </div>

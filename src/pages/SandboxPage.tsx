@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Plus, Trash2, Sparkles, RotateCcw } from 'lucide-react';
-import { Card, Button, MysticalStar, toast } from '../components/ui';
+import { Card, Button, Page, Tag, MysticalStar, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
@@ -277,7 +277,7 @@ export function SandboxPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <Page spacing="sm">
       <div className="flex items-center gap-3">
         <Box className="w-6 h-6 text-gold" />
         <h1 className="heading-display-lg text-mystic-100">
@@ -329,9 +329,9 @@ export function SandboxPage() {
             <button
               key={a.id}
               onClick={() => setSelectedArchetype(a)}
-              className={`p-2 rounded-lg border transition-all text-center ${
+              className={`p-2 rounded-xl border transition-all text-center ${
                 selectedArchetype?.id === a.id
-                  ? 'bg-gold/15 border-gold/40'
+                  ? 'bg-gold/10 border-gold/50'
                   : 'bg-mystic-800/40 border-mystic-700/40 hover:border-mystic-600'
               }`}
             >
@@ -365,12 +365,9 @@ export function SandboxPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {placed.map((p) => (
-              <span
-                key={p.id}
-                className="text-[11px] px-2 py-0.5 bg-mystic-800 text-mystic-300 rounded-full"
-              >
+              <Tag key={p.id} tone="neutral">
                 {p.archetype.name}
-              </span>
+              </Tag>
             ))}
           </div>
         </Card>
@@ -408,7 +405,7 @@ export function SandboxPage() {
       <p className="text-[10px] text-center text-mystic-600 italic">
         {t('sandbox.preview', { defaultValue: 'Preview — drag-to-place and save/share are coming.' })}
       </p>
-    </div>
+    </Page>
   );
 }
 

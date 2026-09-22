@@ -22,7 +22,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-mystic-950 border border-pink-400/40 rounded-2xl max-w-md w-full p-5 relative shadow-2xl">
+      <div className="bg-mystic-950 border border-pink-400/40 rounded-2xl max-w-md w-full p-5 relative">
         <button
           onClick={onClose}
           aria-label={t('common:actions.close', { defaultValue: 'Close' })}

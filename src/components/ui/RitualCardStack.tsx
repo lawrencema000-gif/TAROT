@@ -107,7 +107,7 @@ export function RitualCardStack({
                 pointerEvents: isActive ? 'auto' : 'none',
               }}
             >
-              <div className="w-full h-full bg-mystic-900/80 backdrop-blur-sm rounded-2xl border border-mystic-700/50 p-6 shadow-card">
+              <div className="w-full h-full bg-mystic-900/80 backdrop-blur-sm rounded-2xl border border-mystic-700/50 p-6">
                 {card.content}
               </div>
             </div>

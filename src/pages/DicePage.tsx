@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dice6, Feather, Zap } from 'lucide-react';
-import { Card, Button, ReadingProse, Section, PageHeader } from '../components/ui';
+import { Card, Button, Chip, Page, ReadingProse, Section, PageHeader } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
@@ -64,14 +64,14 @@ export function DicePage() {
   };
 
   const renderDie = (value: number, idx: number) => (
-    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl font-display text-gold shadow-inner-glow">
+    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl font-display text-gold">
       {value}
     </div>
   );
 
   const astroDie = (glyph: string, label: string) => (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl text-gold shadow-inner-glow" style={{ fontFamily: 'serif' }}>
+      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl text-gold" style={{ fontFamily: 'serif' }}>
         {glyph}
       </div>
       <span className="text-meta uppercase tracking-wider text-mystic-400">{label}</span>
@@ -79,7 +79,7 @@ export function DicePage() {
   );
 
   return (
-    <div className="space-y-6 pb-6">
+    <Page spacing="md">
       <PageHeader title={t('dice.title', { defaultValue: 'Dice Oracle' })} icon={<Dice6 className="w-6 h-6 text-gold" />} />
       <Section
         spacing="lg"
@@ -87,14 +87,12 @@ export function DicePage() {
       >
         {/* mode toggle */}
         <div className="flex gap-1.5">
-          <button onClick={() => { setMode('astro'); setReading(null); }}
-            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mode === 'astro' ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400'}`}>
+          <Chip size="sm" selected={mode === 'astro'} onSelect={() => { setMode('astro'); setReading(null); }}>
             Astro dice
-          </button>
-          <button onClick={() => { setMode('classic'); setAstro(null); }}
-            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mode === 'classic' ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400'}`}>
+          </Chip>
+          <Chip size="sm" selected={mode === 'classic'} onSelect={() => { setMode('classic'); setAstro(null); }}>
             Classic
-          </button>
+          </Chip>
         </div>
 
         <Card variant="glow" padding="lg">
@@ -172,7 +170,7 @@ export function DicePage() {
             ? t('dice.rollAgain', { defaultValue: 'Roll again' })
             : t('dice.rollButton', { defaultValue: 'Roll the dice' })}
       </Button>
-    </div>
+    </Page>
   );
 }
 

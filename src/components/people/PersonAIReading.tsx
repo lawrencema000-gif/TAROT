@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
-import { Card, Button, ReadingProse, toast } from '../ui';
+import { Card, Button, Chip, ReadingProse, toast } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
 import { supabase } from '../../lib/supabase';
@@ -45,10 +45,7 @@ export function PersonAIReading({ personId, personName }: { personId: string; pe
         <>
           <div className="flex flex-wrap gap-2">
             {FOCUS.map((f) => (
-              <button key={f.key} onClick={() => setFocus(f.key)}
-                className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${focus === f.key ? 'bg-gold/15 border-gold/50 text-gold' : 'border-mystic-700 text-mystic-400 hover:border-mystic-500'}`}>
-                {f.label}
-              </button>
+              <Chip key={f.key} label={f.label} size="sm" selected={focus === f.key} onSelect={() => setFocus(f.key)} />
             ))}
           </div>
           <p className="text-sm text-mystic-400">A personal, chart-grounded interpretation of {personName}'s stars.</p>

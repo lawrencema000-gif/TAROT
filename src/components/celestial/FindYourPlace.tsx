@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Bookmark, Compass, Crown, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
-import { Button, ReadingProse } from '../ui';
+import { Button, Badge, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { scorePlaces, type PlaceScore, type LifeIntent } from '../../utils/celestialScoring';
@@ -229,10 +229,10 @@ export function FindYourPlace({
                 {t('celestial.findPlace.cta.title', { defaultValue: 'Find your destined place' })}
               </h3>
               {!isPremium && (
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gold/90 bg-gold/15 border border-gold/30 rounded-full px-2 py-0.5">
+                <Badge tone="gold">
                   <Crown className="w-3 h-3" aria-hidden />
                   {t('celestial.findPlace.cta.premiumBadge', { defaultValue: 'Premium' })}
-                </span>
+                </Badge>
               )}
             </div>
             <p className="text-xs text-mystic-300 leading-relaxed">
@@ -264,7 +264,7 @@ export function FindYourPlace({
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 32, opacity: 0 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="relative w-full sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-gradient-to-b from-mystic-900 to-mystic-950 hairline-gold shadow-[0_-12px_60px_-12px_rgba(212,175,55,0.25)]"
+              className="relative w-full sm:max-w-2xl max-h-[90dvh] overflow-y-auto rounded-t-sheet sm:rounded-sheet bg-gradient-to-b from-mystic-900 to-mystic-950 hairline-gold"
             >
               {/* Close button — only after the reading lands */}
               {(phase.kind === 'done' || phase.kind === 'error') && (
@@ -395,7 +395,6 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
               style={{
                 backgroundColor: `${PLANET_COLOR[line.planet]}30`,
                 color: PLANET_COLOR[line.planet],
-                boxShadow: `0 0 12px ${PLANET_COLOR[line.planet]}55`,
               }}
             >
               {line.angle}

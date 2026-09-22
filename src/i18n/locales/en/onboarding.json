@@ -22,7 +22,8 @@
     "ageConfirm": "I confirm I am at least 13 years old and agree to the Terms of Service.",
     "submit": "Create my account",
     "switchToSignIn": "Already have an account? Sign in",
-    "back": "Previous step"
+    "back": "Previous step",
+    "appleCta": "Continue with Apple"
   },
   "toast": {
     "invalidEmail": "That email doesn’t look right — check it and try again.",
@@ -81,7 +82,7 @@
       "dailyPromise": "One reminder a day, at the time you choose. No spam.",
       "webNote": "Reminders arrive in the Arcana app on your phone. Your choice is saved for when you install it."
     },
-    "next": "Save and continue",
+    "next": "Continue",
     "beginJourney": "Begin my first ritual",
     "toast": {
       "saveFailed": "Couldn’t save your details — check your connection and try again.",

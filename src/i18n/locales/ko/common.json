@@ -118,7 +118,10 @@
       "RATE_LIMITED": "시도 횟수가 너무 많아요.",
       "UNAUTHORIZED": "권한이 없어요.",
       "PROVIDER_NOT_ENABLED": "지금은 Google 로그인을 사용할 수 없어요 — 이메일로 로그인해 주세요.",
-      "UNKNOWN": "로그인이 완료되지 않았어요 — 다시 시도하거나 다른 로그인 방법을 사용해 주세요."
+      "UNKNOWN": "처리하지 못했어요 — 다시 시도해 주세요.",
+      "SAME_PASSWORD": "이전에 쓰지 않은 비밀번호를 정해 주세요.",
+      "WEAK_PASSWORD": "영문과 숫자를 포함해 8자 이상으로 정해 주세요.",
+      "LINK_EXPIRED": "이 링크는 만료됐어요 — 새 링크를 요청해 주세요."
     },
     "birthDateTooOld": "생년월일이 120년보다 더 전이에요 — 연도를 확인해 주세요.",
     "birthTimeInvalid": "시각은 14:30처럼 HH:MM 형식으로 입력해 주세요.",

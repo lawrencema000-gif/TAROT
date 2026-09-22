@@ -14,7 +14,7 @@
     "blog": "Blog",
     "cardMeanings": "Card meanings",
     "signIn": "Sign in",
-    "signOut": "Sign Out",
+    "signOut": "Sign out",
     "settings": "Settings",
     "search": "Search",
     "saved": "Saved",
@@ -118,7 +118,10 @@
       "RATE_LIMITED": "Too many attempts.",
       "UNAUTHORIZED": "You are not authorized.",
       "PROVIDER_NOT_ENABLED": "Google sign-in isn’t available right now — use email instead.",
-      "UNKNOWN": "Sign-in didn’t complete — try again, or use a different sign-in method."
+      "UNKNOWN": "That didn’t go through — try again.",
+      "SAME_PASSWORD": "Choose a password you haven’t used before.",
+      "WEAK_PASSWORD": "Use at least 8 characters, with letters and numbers.",
+      "LINK_EXPIRED": "This link has expired — request a new one."
     },
     "birthDateTooOld": "That birth date is more than 120 years ago — check the year.",
     "birthTimeInvalid": "Enter the time as HH:MM, like 14:30.",

@@ -67,7 +67,7 @@
     "checkEmail": "메일함을 확인해 주세요",
     "verificationSent": "인증 메일을 보냈어요.",
     "resendVerification": "인증 메일 다시 보내기",
-    "resendFailed": "인증 메일을 보내지 못했어요 — 주소를 확인하고 다시 시도해 주세요.",
+    "resendFailed": "인증 메일을 보내지 못했어요 — 잠시 후 다시 시도해 주세요.",
     "resetPassword": "비밀번호 재설정",
     "enterEmailForReset": "재설정 링크를 받을 이메일을 입력하세요",
     "enterEmail": "이메일을 입력해 주세요.",
@@ -291,7 +291,7 @@
       "readingSaved": "리딩이 저장되었습니다",
       "aiReady": "AI 해석 준비 완료",
       "interpretationReady": "해석 준비 완료",
-      "aiFailed": "해석을 생성하지 못했어요 — 문스톤은 차감되지 않았어요. 잠시 후 다시 시도해 주세요.",
+      "aiFailed": "해석을 생성하지 못했어요 — 잠시 후 다시 시도해 주세요.",
       "aiInsufficient": "AI 해석에 필요한 문스톤이 부족해요 — 홈 위젯에서 충전하거나 데일리 체크인으로 더 모으세요.",
       "aiLimit": "오늘의 AI 해석 한도에 도달했어요. 내일 다시 오세요."
     },
@@ -1471,7 +1471,7 @@
     "actionStep": "행동 단계",
     "showMore": "통찰 더 보기",
     "showLess": "간단히 보기",
-    "journalButton": "이것에 대해 쓰기",
+    "journalButton": "저널 열기",
     "birthChartCard": {
       "title": "출생 차트 분석",
       "subtitle": "개인 맞춤 트랜짓 노트",
@@ -1973,7 +1973,7 @@
         "startTrial": "{{days}}일 무료 체험 시작하기",
         "subscribe": "프리미엄 구독하기"
       },
-      "restorePurchase": "이전 구매 복원",
+      "restorePurchase": "구매 복원",
       "errors": {
         "loadFailed": "가격을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
         "notAvailableTitle": "지금은 프리미엄을 이용할 수 없어요",
@@ -4418,10 +4418,10 @@
       "number": "109"
     },
     "text": {
-      "title": "청소년전화",
-      "body": "1388 · 24시간",
+      "title": "정신건강위기상담전화",
+      "body": "1577-0199 · 24시간",
       "cta": "전화하기",
-      "number": "1388",
+      "number": "1577-0199",
       "scheme": "tel",
       "keyword": ""
     },
@@ -5103,9 +5103,6 @@
     "cta": "1강 보내 주기",
     "disclaimer": "스팸 없음. 클릭 한 번으로 구독 취소. 5일 동안 이메일 3통."
   },
-  "onboarding:createAccount": {
-    "appleCta": "Apple로 계속"
-  },
   "loveTree": {
     "shareText": "나의 Arcana 사랑의 나무: {{title}} — {{archetype}}. 당신의 나무는 arcana.app/love-tree에서",
     "title": "사랑의 나무",
@@ -5127,9 +5124,6 @@
     "growthLabel": "성장할 곳",
     "inLoveLabel": "사랑에서",
     "affirmationLabel": "당신의 확언"
-  },
-  "createAccount": {
-    "appleCta": "Apple로 계속"
   },
   "updateBanner": {
     "title": "새 버전이 나왔어요",

@@ -26,6 +26,30 @@ const ERROR_MAPPINGS: Array<{
   likelyCause?: string;
 }> = [
   {
+    patterns: ['should be different from the old password', 'same_password'],
+    code: 'SAME_PASSWORD',
+    message: "Choose a password you haven\u2019t used before.",
+    hint: 'This usually happens when the OAuth flow takes too long or is interrupted.',
+    isRetryable: true,
+    likelyCause: 'OAuth code expired before exchange. Try signing in again.',
+  },
+  {
+    patterns: ['password should contain at least', 'weak_password', 'password is too weak'],
+    code: 'WEAK_PASSWORD',
+    message: "Use at least 8 characters, with letters and numbers.",
+    hint: 'This usually happens when the OAuth flow takes too long or is interrupted.',
+    isRetryable: true,
+    likelyCause: 'OAuth code expired before exchange. Try signing in again.',
+  },
+  {
+    patterns: ['link is invalid or has expired', 'otp_expired', 'token has expired'],
+    code: 'LINK_EXPIRED',
+    message: "This link has expired \u2014 request a new one.",
+    hint: 'This usually happens when the OAuth flow takes too long or is interrupted.',
+    isRetryable: true,
+    likelyCause: 'OAuth code expired before exchange. Try signing in again.',
+  },
+  {
     patterns: ['invalid_grant', 'invalid grant'],
     code: 'INVALID_GRANT',
     message: 'The authorization code has expired or is invalid.',
@@ -146,7 +170,7 @@ const ERROR_MAPPINGS: Array<{
     likelyCause: 'User closed the sign in window.',
   },
   {
-    patterns: ['rate limit', 'too many requests', '429'],
+    patterns: ['rate limit', 'too many requests', '429', 'only request this after', 'for security purposes'],
     code: 'RATE_LIMITED',
     message: 'Too many attempts.',
     hint: 'Please wait a moment and try again.',

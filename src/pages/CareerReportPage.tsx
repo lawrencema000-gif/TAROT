@@ -257,11 +257,8 @@ export function CareerReportPage() {
             it told a non-paying user they were already premium and gave
             them no way to buy — which is the likeliest reason the
             subscriptions table is empty. */}
-        {/* No `feature` here: Premium does not unlock this report (the page
-            checks report_unlocks only, and neither the RPC nor the report
-            functions bypass for premium), so a "Career Archetype opens with
-            Premium" line would be untrue. The sheet shows its generic copy. */}
         <PaywallSheet
+          feature={t('careerReport.title', { defaultValue: 'Career Archetype' }) as string}
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
         />

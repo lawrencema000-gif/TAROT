@@ -289,12 +289,8 @@ export function YearAheadReportPage() {
             it told a non-paying user they were already premium and gave
             them no way to buy — which is the likeliest reason the
             subscriptions table is empty. */}
-        {/* No `feature` here: Premium does not unlock this forecast (the page
-            checks report_unlocks only, and astrology-year-ahead returns 402
-            for anyone without a row, premium included), so a "Year Ahead
-            opens with Premium" line would be untrue. The sheet shows its
-            generic copy. */}
         <PaywallSheet
+          feature={t('yearAhead.title', { defaultValue: 'Year Ahead' }) as string}
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
         />

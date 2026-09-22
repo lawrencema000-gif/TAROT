@@ -406,11 +406,8 @@ export function NatalChartReportPage() {
             it told a non-paying user they were already premium and gave
             them no way to buy — which is the likeliest reason the
             subscriptions table is empty. */}
-        {/* No `feature` here: Premium does not unlock this report (the page
-            checks report_unlocks only, and the RPC has no premium bypass),
-            so a "Full Natal Chart opens with Premium" line would be untrue.
-            The sheet shows its generic copy. */}
         <PaywallSheet
+          feature={t('natalReport.title', { defaultValue: 'Full Natal Chart' }) as string}
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
         />

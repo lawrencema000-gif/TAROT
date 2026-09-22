@@ -24,8 +24,8 @@
     "streak": "Day {{n}} of the streak.",
     "savedToday": "Saved today",
     "savedHighlights": "Saved Highlights",
-    "morningRitual": "Morning Ritual",
-    "eveningRitual": "Evening Ritual",
+    "morningRitual": "Morning ritual",
+    "eveningRitual": "Evening ritual",
     "savedToHighlights": "Saved to highlights",
     "copiedToClipboard": "Copied to clipboard",
     "dayStreakLabel": "day streak",
@@ -67,7 +67,7 @@
     "checkEmail": "Check your email",
     "verificationSent": "Verification email sent.",
     "resendVerification": "Resend verification email",
-    "resendFailed": "Couldn’t send the verification email — check the address and try again.",
+    "resendFailed": "Couldn’t send the verification email — try again in a moment.",
     "resetPassword": "Reset password",
     "enterEmailForReset": "Enter your email to receive a password reset link",
     "enterEmail": "Please enter your email address.",
@@ -425,7 +425,7 @@
       "readingSaved": "Reading saved",
       "aiReady": "AI interpretation ready",
       "interpretationReady": "Interpretation ready",
-      "aiFailed": "Couldn’t generate the interpretation — your Moonstones weren’t charged. Try again in a moment.",
+      "aiFailed": "Couldn’t generate the interpretation — try again in a moment.",
       "aiInsufficient": "Not enough Moonstones for an AI interpretation — top up from the home widget, or earn more from the daily check-in.",
       "aiLimit": "You’ve reached today’s limit for AI interpretations. Come back tomorrow for more."
     },
@@ -1605,7 +1605,7 @@
     "actionStep": "Action step",
     "showMore": "Show more insights",
     "showLess": "Show less",
-    "journalButton": "Write about this",
+    "journalButton": "Open the journal",
     "birthChartCard": {
       "title": "Birth chart analysis",
       "subtitle": "Personalized transit notes",
@@ -1972,7 +1972,7 @@
       "journalPrompt2": "What aspect of this card’s meaning challenges me most?",
       "journalPrompt3": "What small action can I take today to honor this card’s guidance?",
       "todaysAction": "Today’s action",
-      "todaysActionText": "Pick one small action that aligns with {{name}}'s energy. Make it easy enough to do in 10 minutes.",
+      "todaysActionText": "Pick one small action that aligns with {{name}}’s energy. Make it easy enough to do in 10 minutes.",
       "closeLabel": "Close"
     },
     "askOracleCta": "Read this card for me"
@@ -2088,7 +2088,7 @@
           "desc": "Four personas to talk with"
         },
         "shadowWork": {
-          "label": "Shadow Work spread",
+          "label": "Shadow work spread",
           "desc": "Seven cards for inner work"
         }
       },
@@ -2111,7 +2111,7 @@
         "startTrial": "Start your {{days}}-day free trial",
         "subscribe": "Subscribe to Premium"
       },
-      "restorePurchase": "Restore a previous purchase",
+      "restorePurchase": "Restore purchases",
       "errors": {
         "loadFailed": "Couldn’t load prices. Check your connection and try again.",
         "notAvailableTitle": "Premium isn’t available right now",
@@ -2136,19 +2136,19 @@
           "cta": "Unlock the Celtic Cross"
         },
         "relationship": {
-          "heading": "Read the Relationship Spread",
+          "heading": "Read the Relationship spread",
           "outcome": "Five cards on you, them, what holds you together and what to do next — and every other spread with it. Premium opens them all, with no ads.",
-          "cta": "Unlock the Relationship Spread"
+          "cta": "Unlock the Relationship spread"
         },
         "careerSpread": {
-          "heading": "Read the Career Decision spread",
+          "heading": "Read the Career decision spread",
           "outcome": "Six cards on where you stand, what drives you and the likely outcome — and every other spread with it. Premium opens them all, with no ads.",
-          "cta": "Unlock the Career Decision spread"
+          "cta": "Unlock the Career decision spread"
         },
         "shadow": {
-          "heading": "Read the Shadow Work spread",
+          "heading": "Read the Shadow work spread",
           "outcome": "Seven cards, from the mask you wear to the step that integrates it — and every other spread with it. Premium opens them all, with no ads.",
-          "cta": "Unlock the Shadow Work spread"
+          "cta": "Unlock the Shadow work spread"
         },
         "unlimitedReadings": {
           "heading": "Keep reading today",
@@ -2571,7 +2571,7 @@
             "content": "Each type uses eight cognitive functions in a specific order, determining how they perceive and judge the world."
           },
           {
-            "title": "Your type's strengths",
+            "title": "Your type’s strengths",
             "content": "Every type has unique gifts — INTJs excel at strategic thinking, ENFPs at inspiring others, ISTJs at reliability."
           },
           {
@@ -3449,7 +3449,7 @@
   },
   "iching": {
     "title": "I Ching Oracle",
-    "intro": "The I-Ching — the Book of Changes — is the oldest divination system in the world. Hold a question in mind. Throw the coins six times. The hexagram that appears reflects the moving energies around your question.",
+    "intro": "The I Ching — the Book of Changes — is the oldest divination system in the world. Hold a question in mind. Throw the coins six times. The hexagram that appears reflects the moving energies around your question.",
     "questionLabel": "Your question (optional)",
     "questionPlaceholder": "What would be most helpful for me to understand right now?",
     "castButton": "Cast the coins",
@@ -3837,11 +3837,11 @@
     },
     "mood-screener": {
       "title": "Mood screener",
-      "description": "A two-week mood signal read using non-diagnostic PHQ-2-style questions. not a diagnosis — a self-reflection mirror, with crisis resources surfaced if your answers suggest you need support.",
+      "description": "A two-week mood signal read using non-diagnostic PHQ-2-style questions. Not a diagnosis — a self-reflection mirror, with crisis resources surfaced if your answers suggest you need support.",
       "timeEstimate": "3 min",
       "whatYouGet": [
         "A 2-week mood signal read",
-        "non-diagnostic self-reflection",
+        "Non-diagnostic self-reflection",
         "Crisis resources if needed"
       ]
     },
@@ -3978,7 +3978,7 @@
     "another": "Check another",
     "compatibilityLabel": "Compatibility",
     "mbtiLabel": "MBTI fit",
-    "astroLabel": "Astrology Fit",
+    "astroLabel": "Astrology fit",
     "strengthsLabel": "Strengths",
     "growthLabel": "Growth edges",
     "adviceLabel": "Advice",
@@ -4413,7 +4413,7 @@
     }
   },
   "yearAhead": {
-    "title": "Year ahead",
+    "title": "Year Ahead",
     "cardTitle": "{{year}} — 12 monthly briefings",
     "cardSub": "A month-by-month map of the biggest transits to your natal chart.",
     "needsBirthData": "Add your full birth data first",
@@ -4444,7 +4444,7 @@
     "stripeFailed": "Couldn’t open checkout — check your connection and try again."
   },
   "natalReport": {
-    "title": "Full natal chart",
+    "title": "Full Natal Chart",
     "cardTitle": "Your complete birth chart — printable",
     "cardSub": "Every planet in its sign and house, every aspect, with interpretations.",
     "needsBirthData": "Add your birth data first",
@@ -4493,7 +4493,7 @@
     "stripeFailed": "Couldn’t open checkout — check your connection and try again."
   },
   "careerReport": {
-    "title": "Career archetype",
+    "title": "Career Archetype",
     "needsMbti": "Take the personality quiz first",
     "needsMbtiBody": "This report is derived from your MBTI personality type. Complete the 12-question Quick Personality quiz (or the full 70-question version) and your archetype will unlock.",
     "shareLabel": "Career archetype",
@@ -4893,9 +4893,6 @@
     "cta": "Send me Lesson 1",
     "disclaimer": "No spam. Unsubscribe with one click. 3 emails over 5 days."
   },
-  "onboarding:createAccount": {
-    "appleCta": "Continue with Apple"
-  },
   "loveTree": {
     "shareText": "My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at arcana.app/love-tree",
     "title": "Love Tree",
@@ -4917,9 +4914,6 @@
     "growthLabel": "Where to grow",
     "inLoveLabel": "In love",
     "affirmationLabel": "Your affirmation"
-  },
-  "createAccount": {
-    "appleCta": "Continue with Apple"
   },
   "updateBanner": {
     "title": "A new version is available",
@@ -4985,7 +4979,7 @@
       "delete": "Delete {{name}}",
       "editTitle": "Edit {{name}}",
       "deleteTitle": "Delete {{name}}?",
-      "deleteBody": "This deletes {{name}}'s saved birth data and chart. It can’t be undone.",
+      "deleteBody": "This deletes {{name}}’s saved birth data and chart. It can’t be undone.",
       "keep": "Keep {{name}}",
       "deleteConfirm": "Delete permanently"
     },

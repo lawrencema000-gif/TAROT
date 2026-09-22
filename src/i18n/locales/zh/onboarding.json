@@ -22,7 +22,8 @@
     "ageConfirm": "我已年满 13 岁,并同意服务条款。",
     "submit": "创建账号",
     "switchToSignIn": "已有账号?立即登录",
-    "back": "上一步"
+    "back": "上一步",
+    "appleCta": "使用 Apple 继续"
   },
   "toast": {
     "invalidEmail": "邮箱地址格式不正确，请检查后重试。",
@@ -81,7 +82,7 @@
       "dailyPromise": "每天一次提醒，时间由你定。绝无骚扰信息。",
       "webNote": "提醒会通过手机上的 Arcana 应用送达。你的选择已保存，安装后即生效。"
     },
-    "next": "保存并继续",
+    "next": "继续",
     "beginJourney": "开始我的第一次仪式",
     "toast": {
       "saveFailed": "无法保存你的资料，请检查网络连接后重试。",

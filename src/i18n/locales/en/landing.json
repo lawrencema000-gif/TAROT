@@ -10,7 +10,7 @@
     "headlineTop": "Know yourself.",
     "headlineBottom": "One ritual a day.",
     "sub": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
-    "cta": "Draw my free card",
+    "cta": "Create my free account",
     "note": "Free to start · No credit card required"
   },
   "features": {
@@ -108,7 +108,7 @@
   "finalCta": {
     "heading": "Begin your journey",
     "sub": "Start your first daily ritual today.",
-    "cta": "Create my free account"
+    "cta": "Start for free"
   },
   "footer": {
     "privacyPolicy": "Privacy Policy",

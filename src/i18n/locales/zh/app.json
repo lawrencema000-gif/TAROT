@@ -67,7 +67,7 @@
     "checkEmail": "请查收邮件",
     "verificationSent": "验证邮件已发送。",
     "resendVerification": "重新发送验证邮件",
-    "resendFailed": "无法发送验证邮件，请检查邮箱地址后重试。",
+    "resendFailed": "无法发送验证邮件，请稍后重试。",
     "resetPassword": "重置密码",
     "enterEmailForReset": "输入邮箱以接收重置链接",
     "enterEmail": "请输入邮箱地址。",
@@ -291,7 +291,7 @@
       "readingSaved": "解读已保存",
       "aiReady": "AI解读已就绪",
       "interpretationReady": "解读已就绪",
-      "aiFailed": "无法生成解读，未扣除你的月光石。请稍后再试。",
+      "aiFailed": "无法生成解读，请稍后再试。",
       "aiInsufficient": "月光石不足，无法获取 AI 解读。可在首页组件充值，或通过每日签到赚取。",
       "aiLimit": "今日 AI 解读次数已达上限，明天再来。"
     },
@@ -1471,7 +1471,7 @@
     "actionStep": "行动步骤",
     "showMore": "显示更多洞察",
     "showLess": "收起",
-    "journalButton": "写下感想",
+    "journalButton": "打开日记",
     "birthChartCard": {
       "title": "出生星盘分析",
       "subtitle": "个性化行运笔记",
@@ -1973,7 +1973,7 @@
         "startTrial": "开始 {{days}} 天免费试用",
         "subscribe": "订阅高级版"
       },
-      "restorePurchase": "恢复之前的购买",
+      "restorePurchase": "恢复购买",
       "errors": {
         "loadFailed": "无法加载价格。请检查网络连接后重试。",
         "notAvailableTitle": "高级版暂不可用",
@@ -5103,9 +5103,6 @@
     "cta": "给我寄第一课",
     "disclaimer": "无垃圾邮件。一键退订。5 天内 3 封邮件。"
   },
-  "onboarding:createAccount": {
-    "appleCta": "使用 Apple 继续"
-  },
   "loveTree": {
     "shareText": "我的 Arcana 爱之树：{{title}}——{{archetype}}。到 arcana.app/love-tree 找到你的",
     "title": "爱之树",
@@ -5127,9 +5124,6 @@
     "growthLabel": "成长空间",
     "inLoveLabel": "在爱里",
     "affirmationLabel": "你的肯定语"
-  },
-  "createAccount": {
-    "appleCta": "使用 Apple 继续"
   },
   "updateBanner": {
     "title": "有新版本可用",

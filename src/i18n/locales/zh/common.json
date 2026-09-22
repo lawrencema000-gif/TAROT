@@ -118,7 +118,10 @@
       "RATE_LIMITED": "尝试次数过多。",
       "UNAUTHORIZED": "未授权。",
       "PROVIDER_NOT_ENABLED": "Google 登录暂不可用，请改用邮箱登录。",
-      "UNKNOWN": "登录未完成，请重试或换一种登录方式。"
+      "UNKNOWN": "操作未完成，请再试一次。",
+      "SAME_PASSWORD": "请设置一个未曾使用过的密码。",
+      "WEAK_PASSWORD": "请使用至少 8 个字符，并包含字母和数字。",
+      "LINK_EXPIRED": "此链接已过期，请重新获取。"
     },
     "birthDateTooOld": "出生日期距今超过 120 年，请检查年份。",
     "birthTimeInvalid": "请按 HH:MM 格式输入时间，例如 14:30。",

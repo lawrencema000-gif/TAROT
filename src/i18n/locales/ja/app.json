@@ -67,7 +67,7 @@
     "checkEmail": "メールをご確認ください",
     "verificationSent": "認証メールを送信しました。",
     "resendVerification": "認証メールを再送",
-    "resendFailed": "認証メールを送信できませんでした。メールアドレスを確認して、もう一度お試しください。",
+    "resendFailed": "認証メールを送信できませんでした。しばらくしてからもう一度お試しください。",
     "resetPassword": "パスワードをリセット",
     "enterEmailForReset": "パスワードリセットリンクを受け取るメールアドレスを入力",
     "enterEmail": "メールアドレスを入力してください。",
@@ -291,7 +291,7 @@
       "readingSaved": "リーディングを保存しました",
       "aiReady": "AI解釈の準備ができました",
       "interpretationReady": "解釈の準備ができました",
-      "aiFailed": "解釈を生成できませんでした。ムーンストーンは消費されていません。少し待ってからもう一度お試しください。",
+      "aiFailed": "解釈を生成できませんでした。少し待ってからもう一度お試しください。",
       "aiInsufficient": "AI解釈に必要なムーンストーンが足りません。ホームのウィジェットからチャージするか、デイリーチェックインで貯めてください。",
       "aiLimit": "今日のAI解釈の上限に達しました。明日またお越しください。"
     },
@@ -1471,7 +1471,7 @@
     "actionStep": "アクションステップ",
     "showMore": "もっと洞察を見る",
     "showLess": "閉じる",
-    "journalButton": "このことを書く",
+    "journalButton": "ジャーナルを開く",
     "birthChartCard": {
       "title": "出生図の分析",
       "subtitle": "パーソナライズされたトランジットノート",
@@ -1973,7 +1973,7 @@
         "startTrial": "{{days}}日間の無料トライアルをはじめる",
         "subscribe": "プレミアムに登録する"
       },
-      "restorePurchase": "以前の購入を復元",
+      "restorePurchase": "購入を復元",
       "errors": {
         "loadFailed": "価格を読み込めませんでした。接続を確認して、もう一度お試しください。",
         "notAvailableTitle": "プレミアムは現在ご利用いただけません",
@@ -4410,7 +4410,7 @@
   },
   "crisis": {
     "title": "あなたはひとりではありません",
-    "subtitle": "あなたの文章から気づいたことがあります。いまつらいと感じるなら、こちらに手を伸ばしてください——無料で、匿名で相談できます。",
+    "subtitle": "あなたが書いたことに気づきました。いまつらいなら、下の窓口に相談してください。匿名で相談できます。",
     "phone": {
       "title": "よりそいホットライン",
       "body": "0120-279-338 · 24時間 · 通話無料",
@@ -4419,7 +4419,7 @@
     },
     "text": {
       "title": "こころの健康相談統一ダイヤル",
-      "body": "0570-064-556 · お住まいの地域の相談窓口につながります",
+      "body": "0570-064-556 · 通話料有料（ナビダイヤル）· 受付時間は地域により異なります",
       "cta": "電話する",
       "number": "0570-064-556",
       "scheme": "tel",
@@ -5103,9 +5103,6 @@
     "cta": "第1回を受け取る",
     "disclaimer": "迷惑メールはありません。ワンクリックで配信停止できます。5日間で3通のメールです。"
   },
-  "onboarding:createAccount": {
-    "appleCta": "Apple で続ける"
-  },
   "loveTree": {
     "shareText": "私のArcanaラブツリー：{{title}}——{{archetype}}。あなたのツリーは arcana.app/love-tree で",
     "title": "ラブツリー",
@@ -5127,9 +5124,6 @@
     "growthLabel": "伸びしろ",
     "inLoveLabel": "恋愛では",
     "affirmationLabel": "あなたのアファメーション"
-  },
-  "createAccount": {
-    "appleCta": "Apple で続ける"
   },
   "updateBanner": {
     "title": "新しいバージョンがあります",

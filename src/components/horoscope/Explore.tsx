@@ -184,7 +184,7 @@ function TransitExplorer({ data }: { data: LazyExploreData }) {
 
 function HouseExplorer({ data }: { data: LazyExploreData }) {
   const { t } = useT('app');
-  const { chart, loading } = useNatalChart();
+  const { chart, loading, error } = useNatalChart();
 
   // Memoize planet-by-house grouping and interpretation lookups
   const { planetsByHouse, houseInterps } = useMemo(() => {
@@ -220,6 +220,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
     );
   }
 
+  if (error) return <p className="text-ui text-mystic-400 text-center py-8">{error}</p>;
   if (!chart) {
     return <p className="text-ui text-mystic-400 text-center py-8">{t('settings.chartUnavailable')}</p>;
   }
@@ -268,7 +269,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
 
 function AspectExplorer({ data }: { data: LazyExploreData }) {
   const { t } = useT('app');
-  const { chart, loading } = useNatalChart();
+  const { chart, loading, error } = useNatalChart();
   const [aspectFilter, setAspectFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -282,6 +283,7 @@ function AspectExplorer({ data }: { data: LazyExploreData }) {
     );
   }
 
+  if (error) return <p className="text-ui text-mystic-400 text-center py-8">{error}</p>;
   if (!chart) {
     return <p className="text-ui text-mystic-400 text-center py-8">{t('settings.chartUnavailable')}</p>;
   }

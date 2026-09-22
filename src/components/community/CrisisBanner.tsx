@@ -70,7 +70,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-xl">
-            <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" />
+            {t('crisis.text.scheme', { defaultValue: 'sms' }) === 'sms' ? <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" /> : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
                 {t('crisis.text.title', { defaultValue: 'Crisis Text Line' })}

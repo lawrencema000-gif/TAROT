@@ -14,7 +14,9 @@ interface CrisisBannerProps {
  * moderation review — not hidden from them), but they also see this
  * card. The intent is harm reduction, not censorship.
  *
- * The 988 number and Crisis Text Line shortcodes are for US/UK/CA/IE.
+ * The numbers are locale copy (crisis.phone.number, crisis.text.number,
+ * crisis.text.scheme/keyword): 988 and the Crisis Text Line shortcode are
+ * for US/UK/CA/IE, and ja/ko/zh carry their own national lines.
  * findahelpline.com covers the rest of the world.
  */
 export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
@@ -60,7 +62,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
               </p>
             </div>
             <a
-              href="tel:988"
+              href={`tel:${t('crisis.phone.number', { defaultValue: '988' })}`}
               className="px-3 py-1.5 bg-gold/15 text-gold rounded-lg text-xs font-medium hover:bg-gold/25 transition-colors"
             >
               {t('crisis.phone.cta', { defaultValue: 'Call' })}
@@ -78,7 +80,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
               </p>
             </div>
             <a
-              href="sms:741741?body=HOME"
+              href={`${t('crisis.text.scheme', { defaultValue: 'sms' })}:${t('crisis.text.number', { defaultValue: '741741' })}${t('crisis.text.keyword', { defaultValue: 'HOME' }) ? `?body=${t('crisis.text.keyword', { defaultValue: 'HOME' })}` : ''}`}
               className="px-3 py-1.5 bg-cosmic-blue/15 text-cosmic-blue rounded-lg text-xs font-medium hover:bg-cosmic-blue/25 transition-colors"
             >
               {t('crisis.text.cta', { defaultValue: 'Text' })}

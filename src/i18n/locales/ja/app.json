@@ -8,7 +8,7 @@
     },
     "subtitle": "今日の宇宙があなたに届けるメッセージ",
     "level": "レベル {{n}}",
-    "xpProgress": "経験値の進捗",
+    "xpProgress": "XPの進捗",
     "todaysRitual": "今日のリチュアル",
     "ritualComplete": "リチュアル完了",
     "streak": "{{n}}日連続達成。このまま続けていきましょう。",
@@ -18,7 +18,6 @@
     "eveningRitual": "夜のリチュアル",
     "savedToHighlights": "ハイライトに保存しました",
     "copiedToClipboard": "クリップボードにコピーしました",
-    "seeker": "探求者",
     "dayStreakLabel": "日連続",
     "xpValue": "{{current}} / {{required}} XP",
     "ritualReady": {
@@ -45,7 +44,7 @@
       "share": "シェア",
       "meaning": "意味"
     },
-    "xpEarned": "+{{xp}} XPを獲得しました!",
+    "xpEarned": "+{{xp}} XPを獲得しました。",
     "removedFromSaved": "保存済みから削除しました",
     "quickReading": "3秒リーディング",
     "quickReadingSub": "何でも聞いて",
@@ -56,7 +55,9 @@
     "soulmateTitle": "ソウルメイトスコア",
     "soulmateSub": "誰とでも星盤を比較 — 100点満点のスコアに。",
     "loveTreeSub": "90秒、12問 → あなたの愛着スタイルが生きた木として現れます。",
-    "loveTreeTitle": "愛の木"
+    "loveTreeTitle": "愛の木",
+    "exploreMore": "今日のリチュアルのその先へ",
+    "seeAllSaved": "保存したものをすべて見る"
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -64,14 +65,14 @@
     "newToArcana": "Arcana をはじめてお使いですか?",
     "verifyEmail": "メールアドレスを認証",
     "checkEmail": "メールをご確認ください",
-    "verificationSent": "認証メールを送信しました!",
+    "verificationSent": "認証メールを送信しました。",
     "resendVerification": "認証メールを再送",
-    "resendFailed": "認証メールの再送に失敗しました。",
+    "resendFailed": "認証メールを送信できませんでした。メールアドレスを確認して、もう一度お試しください。",
     "resetPassword": "パスワードをリセット",
     "enterEmailForReset": "パスワードリセットリンクを受け取るメールアドレスを入力",
     "enterEmail": "メールアドレスを入力してください。",
     "resetSent": "リセットリンクを送信しました。受信トレイをご確認ください。",
-    "resetFailed": "リセットメールの送信に失敗しました。もう一度お試しください。",
+    "resetFailed": "リセット用リンクを送信できませんでした。メールアドレスを確認して、もう一度お試しください。",
     "sendResetLink": "リセットリンクを送る",
     "forgotPassword": "パスワードをお忘れですか?",
     "backToSignIn": "ログインに戻る",
@@ -81,7 +82,7 @@
     "enterNewPassword": "Arcana アカウントの新しいパスワードを設定してください。",
     "passwordTooShort": "パスワードは8文字以上で入力してください。",
     "passwordsMustMatch": "パスワードが一致しません。",
-    "passwordRequirementHint": "8文字以上。他で使い回していないものを推奨します。",
+    "passwordRequirementHint": "8文字以上。ほかで使い回していないものにしてください。",
     "resetSuccess": "パスワードを更新しました。",
     "resetSuccessHint": "アプリに戻ります…",
     "resetSuccessRecoveryHint": "サインアウトします。新しいパスワードで改めてサインインしてください。",
@@ -91,11 +92,14 @@
     "emailNotConfirmed": "ログインする前にメールアドレスを認証してください。",
     "verifySentTo": "{{email}} に認証リンクを送信しました。メールをご確認ください。",
     "checkSpam": "届かない場合は迷惑メールフォルダもご確認ください。",
-    "resetSentTo": "{{email}} にリセットリンクを送信しました",
-    "resetDidntReceive": "メールが届きませんか?迷惑メールフォルダをご確認いただくか、もう一度お試しください。",
+    "resetSentTo": "{{email}} にリセット用リンクを送信しました",
+    "resetDidntReceive": "メールが届きませんか？迷惑メールフォルダを確認するか、もう一度お試しください。",
     "tryAgain": "もう一度試す",
     "orDivider": "または",
-    "termsNotice": "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
+    "termsNotice": "続行すると、利用規約とプライバシーポリシーに同意したことになります。",
+    "bootstrap": {
+      "signInAgain": "もう一度ログイン"
+    }
   },
   "cardMeaning": {
     "yesNo": {
@@ -111,10 +115,22 @@
         "maybe": "{{name}}は状況依存です。答えは周囲のカードと具体的な状況に依存します。"
       },
       "explanationKeywords": {
-        "yes": "このカードの{{keywords}}のエネルギーはポジティブな結果に傾きます。",
-        "no": "このカードの{{keywords}}のエネルギーは課題や遅延を示唆します。"
+        "yes": "このカードが持つ{{keywords}}のエネルギーは、前向きな結果へと傾いています。",
+        "no": "このカードが持つ{{keywords}}のエネルギーは、課題や遅れを示唆しています。"
       }
-    }
+    },
+    "astrology": "占星術との対応",
+    "element": "エレメント",
+    "planet": "惑星",
+    "zodiac": "星座",
+    "decan": "デカン",
+    "hebrewLetter": "ヘブライ文字",
+    "numerology": "数秘術",
+    "reinforcingCards": "強め合うカード",
+    "reinforcingIntro": "{{name}}がこれらのカードと並ぶと、リーディングのエネルギーはいっそう強まります——{{reason}}",
+    "opposingCards": "対立するカード",
+    "opposingIntro": "これらのカードは{{name}}との間に緊張を生みます——{{reason}}",
+    "faq": "よくある質問"
   },
   "readings": {
     "title": "リーディング",
@@ -136,7 +152,7 @@
     "dailyRemaining": "今日の無料リーディング {{used}} / {{limit}}",
     "upgradeForUnlimited": "無制限にアップグレード",
     "limitReached": "1日の上限に達しました",
-    "limitReachedMsg": "今日の無料リーディングをすべて使用しました。アップグレードで無制限に、または明日また戻ってきてください。",
+    "limitReachedMsg": "今日の無料リーディングはすべて使いました。アップグレードすると無制限に。または明日またお越しください。",
     "resetsAt": "{{hours}}時間 {{minutes}}分後にリセット",
     "categories": {
       "daily": "デイリー",
@@ -147,7 +163,7 @@
       "celtic": "ケルト十字"
     },
     "focusArea": "フォーカス",
-    "focusPrompt": "今、何について知りたいですか?",
+    "focusPrompt": "今、何が気になっていますか？",
     "draw": "カードを引く",
     "drawAgain": "もう一度引く",
     "saveReading": "リーディングを保存",
@@ -178,7 +194,7 @@
     },
     "spreads": {
       "single": {
-        "name": "1枚引き(日々)",
+        "name": "1枚引き（デイリー）",
         "description": "クイックガイダンス"
       },
       "threeCard": {
@@ -220,12 +236,12 @@
     },
     "spreadsSection": "スプレッド",
     "focusView": {
-      "title": "テーマは何ですか?",
+      "title": "テーマは何ですか？",
       "subtitle": "リーディングを導くエリアを選んでください",
-      "continue": "続ける"
+      "continue": "このテーマでシャッフルする"
     },
     "shuffleView": {
-      "inProgress": "デッキをシャッフル中...",
+      "inProgress": "デッキをシャッフル中…",
       "clearMind": "心を澄ませて",
       "spreading": "全78枚を広げています",
       "focusQuestion": "質問に集中してください",
@@ -234,17 +250,18 @@
     "selectView": {
       "chooseMore_one": "あと{{count}}枚選んでください",
       "chooseMore_other": "あと{{count}}枚選んでください",
-      "readyReveal": "めくる準備ができました!",
+      "readyReveal": "めくる準備ができました。",
       "trustIntuition": "直感を信じて • 全78枚",
       "selectMore": "あと{{count}}枚選ぶ",
-      "revealCards": "カードをめくる"
+      "revealCards": "カードをめくる",
+      "chooseMore": "あと{{count}}枚選んでください"
     },
     "revealView": {
       "focusReading": "{{focus}}リーディング",
       "tapToReveal": "タップしてめくる",
       "revealAll": "すべてめくる",
-      "generating": "生成中...",
-      "getAIInsight": "AIインサイト取得",
+      "generating": "生成中…",
+      "getAIInsight": "AIインサイトを受け取る",
       "premiumAI": "プレミアムAI",
       "aiInterpretation": "AI解釈",
       "aiSubtitle": "あなたのカードとプロフィールに基づくパーソナライズされた洞察",
@@ -257,22 +274,25 @@
       "reversed": "逆位置",
       "upright": "正位置",
       "reversalNote": "逆位置ノート: {{text}}",
-      "save": "保存",
+      "save": "このリーディングを保存",
       "saved": "保存済み",
-      "newReading": "新しいリーディング"
+      "newReading": "新しいリーディングをはじめる",
+      "share": "このリーディングをシェア"
     },
     "status": {
-      "try": "お試し",
+      "try": "広告を見る",
       "unlocked": "ロック解除"
     },
-    "back": "← 戻る",
+    "back": "戻る",
     "toasts": {
       "cardsNotFound": "選択されたカードが見つかりませんでした。再シャッフルしてやり直してください。",
-      "saveFailed": "リーディングの保存に失敗しました",
+      "saveFailed": "リーディングを保存できませんでした。接続を確認して、もう一度お試しください。",
       "readingSaved": "リーディングを保存しました",
       "aiReady": "AI解釈の準備ができました",
       "interpretationReady": "解釈の準備ができました",
-      "aiFailed": "解釈の生成に失敗しました"
+      "aiFailed": "解釈を生成できませんでした。ムーンストーンは消費されていません。少し待ってからもう一度お試しください。",
+      "aiInsufficient": "AI解釈に必要なムーンストーンが足りません。ホームのウィジェットからチャージするか、デイリーチェックインで貯めてください。",
+      "aiLimit": "今日のAI解釈の上限に達しました。明日またお越しください。"
     },
     "positions": {
       "yourCard": "あなたのカード",
@@ -334,12 +354,15 @@
         "希望と恐れ",
         "最終結果"
       ]
-    }
+    },
+    "shareText": "Arcanaでの私の{{spread}}タロットリーディング",
+    "share": "リーディングをシェア",
+    "cardBackAlt": "カードの裏面"
   },
   "journal": {
     "title": "ジャーナル",
     "newEntry": "新しいエントリー",
-    "entryPlaceholder": "今日、心に残ったことは?",
+    "entryPlaceholder": "今日、心にあることは？",
     "titlePlaceholder": "タイトル(任意)",
     "moodLabel": "今日の気分は?",
     "tagsLabel": "タグ",
@@ -347,7 +370,7 @@
     "addPrompt": "プロンプトを追加",
     "linkToReading": "リーディングをリンク",
     "linkToCard": "カードをリンク",
-    "saveEntry": "エントリーを保存",
+    "saveEntry": "このエントリーを保存",
     "saved": "エントリーを保存しました。",
     "deleted": "エントリーを削除しました。",
     "noEntries": "エントリーがありません",
@@ -387,10 +410,10 @@
     "emptyState": "まだジャーナルがありません。",
     "emptyStateSub": "今日から振り返りの旅をはじめましょう。",
     "loadMore": "さらに読み込む",
-    "loadingMore": "読み込み中...",
+    "loadingMore": "読み込み中…",
     "totalEntries": "合計エントリー",
     "dayStreak": "連続日数",
-    "moodTrend": "ムードトレンド(7日間)",
+    "moodTrend": "ムードトレンド（7日間）",
     "mostCommonTags": "最も多いタグ",
     "moodDistribution": "ムード分布",
     "personalInsight": "パーソナルインサイト",
@@ -415,9 +438,14 @@
       "upgradeToLock": "エントリーをロックするにはプレミアムへアップグレードしてください",
       "savedLocked": "エントリーを保存してロックしました",
       "saved": "エントリーを保存しました",
-      "xpEarned": "+{{n}} XP 獲得!",
+      "xpEarned": "+{{n}} XPを獲得しました。",
       "deleteConfirm": "このジャーナルエントリーを削除しますか?",
       "deleted": "エントリーを削除しました"
+    },
+    "linkReading": "リーディングを紐付ける",
+    "startWriting": "最初のエントリーを書く",
+    "editor": {
+      "cancel": "キャンセル"
     }
   },
   "quizzes": {
@@ -634,7 +662,7 @@
               "1": "疑問を持つ——まだ学んでいる途中。",
               "2": "行動で挑戦していく。",
               "3": "周りを導く側にいる。",
-              "4": "自分が基準をつくる立場にある。"
+              "4": "自分がそれになった——基準をつくる側にいる。"
             }
           },
           "cr2": {
@@ -649,7 +677,7 @@
           "cr3": {
             "text": "変化との関係は——",
             "options": {
-              "1": "わくわくして、好奇心いっぱい。",
+              "1": "わくわくする——好奇心いっぱいで目を輝かせている。",
               "2": "自分から追いかけにいく。",
               "3": "適応しながら周りを支える。",
               "4": "何も壊さないよう船を安定させる。"
@@ -711,10 +739,10 @@
             "text": "規律とやり抜く力が、自分の芯を成している。"
           },
           "war3": {
-            "text": "自分で自分を守れない人のために、立ち上がることをいとわない。"
+            "text": "自分で自分を守れない人のために、立ち上がる。"
           },
           "mag1": {
-            "text": "表層の下にある隠された知識に強く惹かれる。"
+            "text": "隠された知識——物事の底にあるもの——に惹かれる。"
           },
           "mag2": {
             "text": "他人が見落とすパターンやつながりがよく見える。"
@@ -732,7 +760,7 @@
             "text": "自分は何のための旗印なのか、はっきりした感覚がある。"
           },
           "sag1": {
-            "text": "主役より、教える人・見守る人でいる方が自分らしい。"
+            "text": "主役でいるより、教える人・見守る人でいるほうが幸せだ。"
           },
           "sag2": {
             "text": "物事をきちんと考えるには、長い独りの時間が必要だ。"
@@ -762,7 +790,7 @@
       },
       "elementAffinity": {
         "title": "エレメント親和性",
-        "description": "4つの古典元素——火・水・風・地——のうち、実際の生き方にいちばん響いているのはどれか、10問でさっとわかります。あなたの星占い（ネイタル）の元素と並べれば「チャートはXだけど、ふるまいはY」という対比も見えます。",
+        "description": "4つの古典元素——火・水・風・地——のうち、実際の生き方にいちばん響いているのはどれか、10問でさっとわかります。あなたの出生図の元素と並べれば「チャートはXだけど、ふるまいはY」という対比も見えてきます。",
         "timeEstimate": "2分",
         "whatYouGet": [
           "ふるまいとしての元素（火／水／風／地）",
@@ -812,7 +840,7 @@
             "options": {
               "1": "じっと長く座らされるとき。",
               "2": "愛する人たちと切り離されたとき。",
-              "3": "何が起きているかが理解できないとき。",
+              "3": "何が起きているのか理解できないとき。",
               "4": "ルーティンや環境が散らかっていると感じるとき。"
             }
           },
@@ -906,7 +934,38 @@
       "gift": "贈り物",
       "integration": "統合",
       "tarotPairing": "タロットとの対応",
-      "whenDominant": "この元素が主役になっているとき"
+      "whenDominant": "この元素が主役になっているとき",
+      "commonTriggers": "よくある引き金",
+      "coreDesire": "根本の欲求",
+      "coreFear": "根本の恐れ",
+      "coreMotivation": "根本の動機",
+      "corePattern": "根本のパターン",
+      "discomfortWithClosenessAndDependence": "親密さと依存への居心地の悪さ",
+      "fearOfAbandonmentAndNeedForReassurance": "見捨てられる恐れと安心を求める気持ち",
+      "growthDirection": "成長の方向",
+      "growthLever": "成長のレバー",
+      "growthPractices": "成長のための実践",
+      "growthTips": "成長のヒント",
+      "healingPractices": "癒しの実践",
+      "howToAskForIt": "どう求めればいいか",
+      "journalPrompt": "ジャーナルプロンプト",
+      "journalPrompts": "ジャーナルプロンプト",
+      "miniRitual": "ミニリチュアル",
+      "pathToSecure": "安定型への道",
+      "reflection": "振り返り",
+      "stressDirection": "ストレスの方向",
+      "suggestionForYou": "あなたへの提案",
+      "tarotArchetype": "タロットの元型",
+      "tarotEnergy": "タロットのエネルギー",
+      "tryThisWeek": "今週試すこと",
+      "whatYouNeed": "あなたに必要なもの",
+      "whatToAvoid": "避けたいこと",
+      "whatToDoToday": "今日できること",
+      "whenThisLanguageGoesUnmet": "この言語が満たされないとき",
+      "whenThisLanguageIsWellFed": "この言語が満たされているとき",
+      "yourDimensions": "あなたの次元",
+      "yourScores": "あなたのスコア",
+      "yourTraitScores": "あなたの特性スコア"
     },
     "takeAnother": "別の診断を受ける",
     "courtCards": {
@@ -1192,17 +1251,17 @@
         "swords": "ソードのカードが形になってきています——風が主軸に。",
         "pentacles": "ペンタクルのカードが積み上がってきています——地が主軸に。"
       },
-      "loveLanguage": "あなたの一次ラブランゲージが見え始めています……",
+      "loveLanguage": "あなたの一次ラブランゲージが見え始めています…",
       "enneagram": "タイプの輪郭が出てきました——ウィングのために続けましょう。",
-      "attachment": "あなたの愛着スタイルが焦点を結び始めています……",
-      "bigFive": "特性プロファイルが形になってきています……",
-      "shadowArchetype": "元型のパターンが形になってきています……",
-      "elementAffinity": "エレメントの流れが立ち上がってきています……"
+      "attachment": "あなたのアタッチメントスタイルが焦点を結び始めています…",
+      "bigFive": "特性プロファイルが形になってきています…",
+      "shadowArchetype": "元型のパターンが形になってきています…",
+      "elementAffinity": "エレメントの流れが立ち上がってきています…"
     },
     "share": {
-      "button": "シェア",
+      "button": "結果をシェア",
       "downloaded": "端末に保存しました",
-      "failed": "シェア画像を作成できませんでした"
+      "failed": "シェア用の画像を作成できませんでした。少し待ってからもう一度お試しください。"
     },
     "backToQuizzes": "診断一覧に戻る",
     "shadowArchetypes": {
@@ -1256,7 +1315,7 @@
         "tagline": "信を保つ人。",
         "gift": "希望を守る。他人が腐敗を見るところに、あなたは善を見る。信頼、楽観、簡素さが、周囲への贈り物となる。",
         "shadow": "傷ついたイノセントは、影そのものを見ようとしない——危険にナイーブで、幻想に縛られ、「大丈夫さ」が現実の行動を妨げる。",
-        "integration": "信を保ちつつ、目を鍛える。希望的かつ澄んだ目でいられる。「どちらも」の姿勢を。",
+        "integration": "信を保ちつつ、目を鍛える。希望を持ちながら、澄んだ目でいられる。「どちらも」の姿勢を。",
         "affirmation": "目を開いたまま、希望を保つ。",
         "tarotPairing": "愚者 ／ 星"
       },
@@ -1348,9 +1407,13 @@
         "affirmation": "長い道のために築き、季節のめぐりを許す。"
       },
       "chartVsBehaviour": "チャート vs. ふるまい",
-      "matchNote": "ふるまいの元素はチャートと一致——ネイティブなエネルギーと揃って生きている。",
-      "differNote": "チャートは {{natal}} だけど、ふるまいは {{behaviour}}——どこで伸びているか、見ておく価値がある。"
-    }
+      "matchNote": "ふるまいの元素は出生図と一致しています——生まれ持ったエネルギーと揃って生きています。",
+      "differNote": "チャートは{{natal}}ですが、ふるまいは{{behaviour}}——どこで背伸びしているのか、見ておく価値があります。"
+    },
+    "askOracleCta": "この結果を読み解いてもらう",
+    "loading": "読み込み中…",
+    "saveToProfile": "プロフィールに保存",
+    "compareLocked": "友だちと比べる"
   },
   "horoscope": {
     "title": "星占い",
@@ -1405,13 +1468,13 @@
     "luckyNumbersLabel": "ラッキーナンバー",
     "miniRitual": "ミニリチュアル",
     "actionStep": "アクションステップ",
-    "showMore": "もっと見る",
+    "showMore": "もっと洞察を見る",
     "showLess": "閉じる",
-    "journalButton": "ジャーナル",
+    "journalButton": "このことを書く",
     "birthChartCard": {
       "title": "出生図の分析",
       "subtitle": "パーソナライズされたトランジットノート",
-      "upgrade": "アップグレード"
+      "upgrade": "出生図を解放する"
     },
     "paywallFeatures": {
       "birthChart": "出生図の分析"
@@ -1421,11 +1484,11 @@
       "template": "{{sign}}の今日のホロスコープ\n\n{{general}}\n\nアファメーション: {{affirmation}}\n\nArcanaで作成"
     },
     "toasts": {
-      "saveFailed": "保存に失敗しました",
+      "saveFailed": "ホロスコープを保存できませんでした。接続を確認して、もう一度お試しください。",
       "horoscopeSaved": "ホロスコープを保存しました",
       "shared": "共有しました",
       "copied": "クリップボードにコピーしました",
-      "unableToShare": "共有できませんでした"
+      "unableToShare": "共有画面を開けませんでした。少し待ってからもう一度お試しください。"
     },
     "birthChartView": {
       "noChartData": "チャートデータがありません",
@@ -1469,37 +1532,38 @@
       "newMoon": "新月",
       "fullMoon": "満月",
       "keyDates": "重要な日付",
-      "oneThingThisMonth": "今月の一つのこと",
+      "oneThingThisMonth": "今月のひとつ",
       "outerPlanetThemes": "外惑星のテーマ"
     },
     "todayForYou": {
       "heading": "今日のあなたへ",
       "noDailyContent": "本日のコンテンツがありません",
-      "tryAgain": "もう一度試す",
+      "tryAgain": "今日のリーディングを再読み込み",
       "moonIn": "月の位置",
       "houseParen": "(第{{num}}ハウス)",
       "activeTransits": "アクティブなトランジット",
       "powerMove": "パワームーブ",
       "doLabel": "する",
       "avoidLabel": "避ける",
-      "miniRitual": "ミニ儀式",
+      "miniRitual": "ミニリチュアル",
       "journalPrompt": "ジャーナルプロンプト",
       "categories": {
         "love": "恋愛",
         "career": "キャリア",
         "money": "お金",
         "energy": "エネルギー"
-      }
+      },
+      "loadFailed": "今日のリーディングを読み込めませんでした。接続を確認して、もう一度お試しください。"
     },
     "onboarding": {
-      "oneMoreDetail": "あともう一つ",
+      "oneMoreDetail": "あともうひとつ",
       "needBirthLocation": "正確な出生図を計算するために出生地が必要です。",
       "profileDetailsNote": "その他の出生情報はプロフィールから保存されています。",
       "dateLabel": "日付:",
       "timeLabel": "時刻:",
       "birthLocation": "出生地",
-      "searchCityPlaceholder": "都市や町を検索...",
-      "computeMyChart": "チャートを計算",
+      "searchCityPlaceholder": "都市や町を検索…",
+      "computeMyChart": "チャートを計算する",
       "selectLocationToContinue": "続けるには上で場所を選択してください",
       "chartComputationFailed": "チャート計算に失敗しました",
       "chartComputeFailDefault": "出生図を計算できませんでした。もう一度お試しいただくか、出生地を更新してください。",
@@ -1511,10 +1575,10 @@
         "couldNotCompute": "チャートを計算できませんでした。別の場所でお試しください。"
       },
       "computeSteps": {
-        "planetaryPositions": "惑星の位置を計算中...",
-        "houseCusps": "ハウスカスプを計算中...",
-        "aspects": "アスペクトを分析中...",
-        "preparing": "チャートを準備中..."
+        "planetaryPositions": "惑星の位置を計算中…",
+        "houseCusps": "ハウスカスプを計算中…",
+        "aspects": "アスペクトを分析中…",
+        "preparing": "チャートを準備中…"
       }
     },
     "exploreView": {
@@ -1549,11 +1613,11 @@
     "noSavedSub": "リーディングや気づきをブックマークすると、ここに表示されます",
     "dayStreak": "連続日数",
     "level": "レベル {{n}}",
-    "xpProgress": "XP の進捗",
-    "upgradeToPremium": "プレミアムへアップグレード",
-    "upgradeSub": "すべてのスプレッドとチャートを解放",
-    "premiumMember": "プレミアム会員",
-    "premiumSub": "すべての機能が利用可能",
+    "xpProgress": "XPの進捗",
+    "upgradeToPremium": "プレミアムにする",
+    "upgradeSub": "すべてのスプレッド、出生図の全体、広告なし",
+    "premiumMember": "プレミアム有効",
+    "premiumSub": "すべてのスプレッド、チャート、リーディングが使えます",
     "manageSubscription": "サブスクリプションを管理",
     "editProfile": "プロフィールを編集",
     "signOut": "ログアウト",
@@ -1588,9 +1652,10 @@
       "displayName": "表示名",
       "yourName": "あなたの名前",
       "birthTimeOptional": "出生時刻(任意)",
-      "searchCity": "都市を検索…"
+      "searchCity": "都市を検索…",
+      "save": "プロフィールを保存"
     },
-    "disclaimer": "このアプリはエンターテインメントと自己省察のためのものです。",
+    "disclaimer": "Arcana はエンターテインメントと自己省察のためのアプリです。",
     "elementSign": "{{element}}の星座",
     "cosmic": {
       "title": "コスミックプロファイル",
@@ -1610,17 +1675,23 @@
     "careerReportSub": "{{mbti}}向けの深いコーチングリード",
     "yearAheadTitle": "一年の運勢予報",
     "yearAheadSub": "あなたのチャートへの12か月のトランジット",
-    "natalReportTitle": "完全ネータルチャート",
+    "natalReportTitle": "完全ネイタルチャート",
     "natalReportSub": "印刷可能な深いチャートリーディング",
     "compatInviteTitle": "相性診断の招待",
-    "compatInviteSub": "リンクを共有して共同リーディングを受け取る"
+    "compatInviteSub": "リンクを共有して共同リーディングを受け取る",
+    "yourProgress": "あなたの進捗",
+    "saveProfile": "プロフィールを保存",
+    "toasts": {
+      "saveFailed": "プロフィールを保存できませんでした。接続を確認して、もう一度お試しください。"
+    },
+    "untitled": "あなたのプロフィール"
   },
   "achievements": {
     "title": "トロフィー",
     "noInCategory": "このカテゴリにはまだ実績がありません。",
     "errorLoading": "実績の読み込みに失敗しました:",
     "novicesSeeker": "ノービスシーカー",
-    "achievementsUnlocked": "実績解放",
+    "achievementsUnlocked": "解放した実績",
     "xpEarned": "{{n}} XP 獲得",
     "recentUnlocks": "最近の解放",
     "all": "すべて",
@@ -1650,13 +1721,14 @@
       "streakDays_other": "{{count}}日",
       "readings": "リーディング",
       "journal": "ジャーナル",
-      "quizzes": "診断"
+      "quizzes": "診断",
+      "streakDays": "連続日数"
     }
   },
   "blog": {
     "title": "ニュース & 知見",
     "subtitle": "タロット、占星術、そして自己発見",
-    "failedToLoad": "記事の読み込みに失敗しました。",
+    "failedToLoad": "記事を読み込めませんでした。接続を確認して、ページを再読み込みしてください。",
     "noArticles": "まだ記事がありません",
     "comeBackSoon": "タロットの知見や精神的なガイダンスをお楽しみに。",
     "articleNotFound": "記事が見つかりません。",
@@ -1664,7 +1736,7 @@
     "by": "著者: {{author}}"
   },
   "tarot": {
-    "title": "タロットカード意味一覧",
+    "title": "タロットカードの意味",
     "subtitle": "タロットのすべてのカードを完全ガイド — 正位置・逆位置、恋愛・仕事の解釈、振り返りのプロンプト。",
     "allCards": "すべてのカード",
     "backToAllCards": "すべてのカードに戻る",
@@ -1688,10 +1760,10 @@
     "experienceInReading": "{{name}} をリーディングで体験",
     "tryFreeReading": "無料リーディングを試す",
     "freeTarotGuide": "無料タロットガイド",
-    "freeTarotGuideDesc": "タロット初心者向け無料ガイドをお届けします。",
+    "freeTarotGuideDesc": "タロット初心者向けの無料ガイドを、メールでお届けします。",
     "getFreeGuide": "無料ガイドを受け取る",
     "noSpam": "迷惑メールなし。いつでも配信停止できます。",
-    "youreIn": "登録完了!メールで無料タロットガイドをお送りします。",
+    "youreIn": "登録が完了しました。無料タロットガイドは受信トレイをご確認ください。",
     "yourEmail": "メールアドレス",
     "heroBadge": "78枚 · 完全解説",
     "heroSub": "タロットのすべてのカードの完全ガイド — 正位置・逆位置、恋愛・仕事の解釈、そして振り返りのプロンプトまで。",
@@ -1762,12 +1834,13 @@
       "reflectionFallback": "このカードはあなたの旅にどんなメッセージを持っていますか?そのエネルギーは現状にどう響いていますか?",
       "journalPromptsLabel": "ジャーナルのプロンプト:",
       "journalPrompt1": "このカードのイメージは今日の私に何を語っていますか?",
-      "journalPrompt2": "このカードの意味のどの側面が最も私を試していますか?",
-      "journalPrompt3": "このカードの導きを尊重するために、今日取れる小さな行動は何ですか?",
+      "journalPrompt2": "このカードの意味のどの側面が、最も私を試していますか？",
+      "journalPrompt3": "このカードの導きを大切にするために、今日取れる小さな行動は何ですか？",
       "todaysAction": "今日のアクション",
       "todaysActionText": "{{name}}のエネルギーに沿った小さな行動を一つ選びましょう。10分以内にできるくらい簡単なものに。",
       "closeLabel": "閉じる"
-    }
+    },
+    "askOracleCta": "このカードを読み解いてもらう"
   },
   "admin": {
     "title": "管理",
@@ -1778,110 +1851,94 @@
       "ads": "広告",
       "users": "ユーザー",
       "content": "コンテンツ"
+    },
+    "verifications": {
+      "toasts": {
+        "loadFailed": "認証キューを読み込めませんでした。「更新」をタップしてもう一度お試しください。",
+        "previewFailed": "IDと動画のプレビューを読み込めませんでした。「プレビューを読み込む」をもう一度タップしてください。",
+        "decideFailed": "その判定を保存できませんでした。キューを更新して、もう一度お試しください。"
+      }
+    },
+    "moderation": {
+      "toasts": {
+        "loadEventsFailed": "モデレーションイベントを読み込めませんでした。「更新」をタップしてもう一度お試しください。",
+        "loadFlagsFailed": "危機フラグを読み込めませんでした。「更新」をタップしてもう一度お試しください。",
+        "markReviewedFailed": "そのイベントを確認済みにできませんでした。更新して、もう一度お試しください。",
+        "acknowledgeFailed": "そのフラグを確認済みにできませんでした。更新して、もう一度お試しください。"
+      }
+    },
+    "blog": {
+      "toasts": {
+        "updateFailed": "記事を更新できませんでした。更新して、もう一度お試しください。",
+        "deleteFailed": "記事を削除できませんでした。更新して、もう一度お試しください。"
+      }
     }
   },
   "premium": {
     "features": {
-      "unlimited_saves": {
-        "name": "無制限保存",
-        "description": "リーディングや洞察を何件でも保存できます"
-      },
-      "celtic_cross": {
-        "name": "ケルト十字スプレッド",
-        "description": "深い洞察のための究極の10枚カードスプレッド"
-      },
-      "three_card": {
-        "name": "スリーカードスプレッド",
-        "description": "過去・現在・未来のリーディング"
-      },
-      "compatibility_full": {
-        "name": "フル相性診断",
-        "description": "完全なパートナー相性分析"
-      },
-      "deep_interpretations": {
-        "name": "深層解釈",
-        "description": "拡張された意味とパーソナライズされたガイダンス"
-      },
-      "guided_prompts": {
-        "name": "ガイド付きプロンプト",
-        "description": "あなたのリーディングに基づくAI生成リフレクションプロンプト"
-      },
-      "journal_insights": {
-        "name": "ジャーナル分析",
-        "description": "高度な気分トラッキングとパターン分析"
-      },
-      "personalization": {
-        "name": "パーソナライゼーション",
-        "description": "あなたの個性と目標に合わせたコンテンツ"
-      },
-      "birth_chart": {
-        "name": "出生チャート分析",
-        "description": "占星術的な出生チャートの完全な解析"
-      },
-      "extra_reading": {
-        "name": "追加リーディング",
-        "description": "デイリー上限を超えてタロットリーディングを1回追加"
-      }
+      "unlimited_saves": {},
+      "celtic_cross": {},
+      "three_card": {},
+      "compatibility_full": {},
+      "deep_interpretations": {},
+      "guided_prompts": {},
+      "journal_insights": {},
+      "personalization": {},
+      "birth_chart": {},
+      "extra_reading": {}
     },
     "monthly": "月額",
     "yearly": "年額",
     "lifetime": "買い切り",
-    "restorePurchases": "購入を復元",
     "badge": "プレミアム",
     "paywall": {
-      "heading": "全てのカードを解き放つ",
-      "subheading": "深いスプレッド、無制限の保存、相性分析など",
-      "featureRequires": "{{feature}}にはプレミアムが必要です",
-      "whatYouUnlock": "解放される機能",
-      "loadingPrices": "価格を読み込み中...",
+      "heading": "すべてのリーディングを開く",
+      "subheading": "すべてのタロットスプレッド、出生図の全体、パートナーとのシナストリー、星占いの全タブ——広告なし、ムーンストーンの消費なしで。",
+      "featureRequires": "{{feature}}はプレミアムで使えます",
+      "whatYouUnlock": "プレミアムで開くもの",
+      "loadingPrices": "価格を読み込み中…",
       "unlocks": {
         "adFree": {
-          "label": "広告なし体験",
-          "desc": "中断のない純粋な集中"
+          "label": "広告なし",
+          "desc": "リーディングの合間に広告なし"
         },
         "allSpreads": {
           "label": "全タロットスプレッド",
-          "desc": "ケルト十字、3枚引きなど"
+          "desc": "最大10枚まで、すべてのスプレッド"
         },
-        "unlimitedSaves": {
-          "label": "無制限の保存",
-          "desc": "すべての洞察を永遠に保存"
-        },
+        "unlimitedSaves": {},
         "compatibility": {
           "label": "フル相性診断",
-          "desc": "深いパートナー分析"
+          "desc": "恋愛だけでなく、友情と仕事も"
         },
         "deepInterpretations": {
-          "label": "深い解釈",
-          "desc": "あなただけのガイダンス"
+          "label": "AI解釈",
+          "desc": "あなたの引きに合わせて、ムーンストーン不要"
         },
-        "guidedPrompts": {
-          "label": "ガイド付きプロンプト",
-          "desc": "AIが紡ぐ内省の言葉"
-        },
+        "guidedPrompts": {},
         "birthChart": {
-          "label": "バースチャート",
-          "desc": "あなたの宇宙の設計図"
+          "label": "出生図",
+          "desc": "すべての惑星、サイン、ハウス"
         },
         "partnerSynastry": {
           "label": "パートナー相性（シナストリー）",
-          "desc": "本格的なアスペクト占星術"
+          "desc": "ふたつのチャートを、アスペクトごとに"
         },
         "horoscopeFull": {
           "label": "フル星占い",
-          "desc": "星図・予測・詳細 — すべて解放"
+          "desc": "チャート・予報・探索"
         },
         "humanDesign": {
           "label": "ヒューマンデザイン",
-          "desc": "本物のボディグラフ・プロファイル・内的権威"
+          "desc": "ボディグラフ、プロファイル、オーソリティ"
         },
         "bazi": {
           "label": "八字（四柱推命）",
-          "desc": "中国古典の八字命理"
+          "desc": "あなたの四柱を読み解く"
         },
         "dreamAi": {
-          "label": "AI夢診断",
-          "desc": "あらゆる夢をユング心理学で読み解く"
+          "label": "夢解き",
+          "desc": "どんな夢もユング心理学で読む"
         },
         "moodLetter": {
           "label": "週間ムードレター",
@@ -1889,11 +1946,11 @@
         },
         "oracleChat": {
           "label": "オラクル・コンパニオン",
-          "desc": "4人格、無制限のチャット"
+          "desc": "語り合える4つの人格"
         },
         "shadowWork": {
           "label": "シャドウワーク・スプレッド",
-          "desc": "最も深いタロットの配置"
+          "desc": "内なる作業のための7枚"
         }
       },
       "plans": {
@@ -1908,93 +1965,188 @@
       },
       "badges": {
         "bestValue": "ベストバリュー",
-        "foreverAccess": "永久アクセス"
+        "foreverAccess": "買い切り"
       },
       "cta": {
-        "notAvailable": "プレミアムは現在ご利用いただけません",
-        "getLifetime": "買い切りで入手する",
-        "subscribeNow": "今すぐ登録"
+        "getLifetime": "プレミアムを永久に解放する",
+        "startTrial": "{{days}}日間の無料トライアルをはじめる",
+        "subscribe": "プレミアムに登録する"
       },
-      "restorePurchase": "購入を復元",
+      "restorePurchase": "以前の購入を復元",
       "errors": {
-        "loadFailed": "価格を読み込めません。接続をご確認ください。",
+        "loadFailed": "価格を読み込めませんでした。接続を確認して、もう一度お試しください。",
         "notAvailableTitle": "プレミアムは現在ご利用いただけません",
-        "notAvailableDesc": "RevenueCatの設定が必要です。セットアップ完了まで購入は無効です。"
+        "notAvailableDesc": "ストアからプランが返ってきませんでした。時間をおいてもう一度お試しください。すでに登録済みの場合は「購入を復元」をお使いください。"
       },
       "disclaimers": {
-        "lifetime": "一度限りのお支払い。継続課金はありません。すべてのプレミアム機能に永久アクセスできます。",
-        "subscription": "いつでもキャンセル可能。お支払いはアカウントに請求されます。期間終了の24時間以上前にキャンセルしない限り、サブスクリプションは自動更新されます。"
+        "lifetime": "一度限りのお支払いで、更新はありません。プレミアムはずっとあなたのものです。",
+        "subscription": "期間終了の24時間以上前にキャンセルしない限り、各期間の終わりに自動更新されます。いつでもキャンセルできます。"
       },
       "toasts": {
-        "productsUnavailable": "商品を読み込めませんでした。時間をおいて再度お試しください。",
-        "welcome": "プレミアムへようこそ!",
-        "purchaseFailed": "購入に失敗しました",
-        "purchasesRestored": "購入を復元しました!",
-        "noPurchases": "購入履歴が見つかりませんでした",
-        "restoreFailed": "復元に失敗しました"
+        "productsUnavailable": "このプランは現在ストアでご利用いただけません。時間をおいてもう一度お試しください。",
+        "purchaseFailed": "購入が完了しませんでした。もう一度お試しください。請求されている場合は「購入を復元」をお使いください。",
+        "purchasesRestored": "プレミアムを復元しました。すべてが再び使えます。",
+        "noPurchases": "このストアアカウントに以前の購入は見つかりませんでした。別のアカウントで登録した場合は、アカウントを切り替えてもう一度復元してください。",
+        "restoreFailed": "復元のためにストアに接続できませんでした。接続を確認して、もう一度お試しください。"
+      },
+      "trialLine": "{{days}}日間の無料トライアル。終了前にキャンセルすれば、料金はかかりません。",
+      "byFeature": {
+        "celticCross": {
+          "heading": "ケルト十字を読む",
+          "outcome": "ひとつの問いに10枚、位置ごとに読み解きます。ほかのすべてのスプレッドも一緒に。プレミアムなら広告なしで、すべてが開きます。",
+          "cta": "ケルト十字を解放する"
+        },
+        "relationship": {
+          "heading": "関係性スプレッドを読む",
+          "outcome": "あなた、相手、ふたりを結ぶもの、次にすること——5枚で読み解きます。ほかのすべてのスプレッドも一緒に。プレミアムなら広告なしで、すべてが開きます。",
+          "cta": "関係性スプレッドを解放する"
+        },
+        "careerSpread": {
+          "heading": "キャリアの決断スプレッドを読む",
+          "outcome": "今の立ち位置、原動力、起こりそうな結果——6枚で読み解きます。ほかのすべてのスプレッドも一緒に。プレミアムなら広告なしで、すべてが開きます。",
+          "cta": "キャリアの決断スプレッドを解放する"
+        },
+        "shadow": {
+          "heading": "シャドウワーク・スプレッドを読む",
+          "outcome": "かぶっている仮面から、それを統合する一歩まで——7枚で読み解きます。ほかのすべてのスプレッドも一緒に。プレミアムなら広告なしで、すべてが開きます。",
+          "cta": "シャドウワーク・スプレッドを解放する"
+        },
+        "unlimitedReadings": {
+          "heading": "今日も続けて読む",
+          "outcome": "無料アカウントでは1日3回のタロットリーディングができます。プレミアムはこの上限をなくし、すべてのスプレッドを広告なしで開きます。",
+          "cta": "1日の上限をなくす"
+        },
+        "horoscopeChart": {
+          "heading": "出生図の全体を見る",
+          "outcome": "すべての惑星のサインとハウス、惑星同士のアスペクト、そしてそれぞれがあなたにとって意味すること。プレミアムでチャート・予報・探索のタブがまとめて開きます。",
+          "cta": "出生図を解放する"
+        },
+        "horoscopeForecast": {
+          "heading": "今週と今月の先を見る",
+          "outcome": "太陽星座だけでなく、あなた自身のチャートから計算した週間・月間の予報。プレミアムでチャート・予報・探索のタブがまとめて開きます。",
+          "cta": "予報を解放する"
+        },
+        "horoscopeExplore": {
+          "heading": "チャートを探索する",
+          "outcome": "現在のトランジット、あなたのハウス、あなたのアスペクトを、それぞれ解説付きで。プレミアムでチャート・予報・探索のタブがまとめて開きます。",
+          "cta": "探索タブを解放する"
+        },
+        "humanDesign": {
+          "heading": "ヒューマンデザインを見る",
+          "outcome": "出生データから計算した、あなたのボディグラフ、タイプ、プロファイル、オーソリティ。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "ヒューマンデザインを解放する"
+        },
+        "bazi": {
+          "heading": "八字のチャートを見る",
+          "outcome": "生年月日と出生時刻から立てた四柱を、柱ごとに読み解きます。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "八字のチャートを解放する"
+        },
+        "dreams": {
+          "heading": "夢を読み解いてもらう",
+          "outcome": "どんな夢でも書けば、その象徴をユング心理学で読み解きます。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "夢解きを解放する"
+        },
+        "partnerSynastry": {
+          "heading": "シナストリーを見る",
+          "outcome": "パートナーの出生データを加えて、ふたつのチャートの間のアスペクトを読み解きます。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "パートナー相性を解放する"
+        },
+        "celestialMap": {
+          "heading": "セレスティアルマップの全体を見る",
+          "outcome": "40本すべての惑星ライン、都市ごとの解釈、AIトラベルリーディングがプレミアムで使えます。または、トラベルリーディング1回をムーンストーン250個で。",
+          "cta": "地図の全体を解放する"
+        },
+        "compatFull": {
+          "heading": "相性の全体を見る",
+          "outcome": "生年月日を知っている相手なら誰とでも、恋愛に加えて友情と仕事の相性も。プレミアムで3つすべてが開きます。",
+          "cta": "友情と仕事の相性を解放する"
+        },
+        "compatFriendship": {
+          "heading": "友人としての相性を見る",
+          "outcome": "ふたりの星座の組み合わせを、恋愛ではなく友情として読み解きます。仕事の相性も一緒に。プレミアムで両方が開きます。",
+          "cta": "友情の相性を解放する"
+        },
+        "compatWork": {
+          "heading": "仕事での相性を見る",
+          "outcome": "ふたりの星座の組み合わせを、一緒に働く相手として読み解きます。友情の相性も一緒に。プレミアムで両方が開きます。",
+          "cta": "仕事の相性を解放する"
+        }
       }
     },
-    "gate": {
-      "watchAdToTry": "広告を見て試す",
-      "unlockPremium": "プレミアムを解除"
-    },
+    "gate": {},
     "subscription": {
       "heading": "プレミアム有効",
-      "subheading": "すべてのプレミアム機能をフルにご利用いただけます",
+      "subheading": "すべてのスプレッド、チャート、リーディングが、広告なし、ムーンストーンの消費なしで使えます。",
       "planTitle": "プレミアムプラン",
       "memberFallback": "メンバー",
       "status": "ステータス",
       "statusActive": "有効",
       "billing": "お支払い方法",
-      "billingGooglePlay": "Google Play",
-      "yourBenefits": "プレミアム特典",
-      "manageOnGooglePlay": "Google Playで管理",
-      "syncStatus": "サブスクリプション状態を同期",
-      "disclaimer": "サブスクリプションの解約・変更は、Google Playストアアプリまたはウェブサイトから行ってください。変更の反映には数分かかる場合があります。",
-      "features": {
-        "adFree": "広告なし体験",
-        "allSpreads": "全タロットスプレッド",
-        "unlimitedSaves": "無制限の保存",
-        "compatibility": "フル相性診断",
-        "deepInterpretations": "深い解釈",
-        "guidedPrompts": "ガイド付きプロンプト",
-        "birthChart": "バースチャート",
-        "partnerSynastry": "パートナー相性",
-        "horoscopeFull": "フル星占い",
-        "humanDesign": "ヒューマンデザイン",
-        "bazi": "八字四柱",
-        "dreamAi": "AI夢診断",
-        "moodLetter": "週間ムードレター",
-        "oracleChat": "オラクル・コンパニオン",
-        "shadowWork": "シャドウワーク"
-      },
+      "yourBenefits": "プランに含まれるもの",
+      "syncStatus": "サブスクリプションを更新",
+      "features": {},
       "toasts": {
-        "verified": "サブスクリプションを確認しました!",
-        "active": "サブスクリプションは有効です",
-        "verifyFailed": "サブスクリプションを確認できませんでした"
+        "verified": "サブスクリプションを確認しました。",
+        "active": "更新はありません。サブスクリプションは表示のとおりです。",
+        "verifyFailed": "ストアでサブスクリプションを確認できませんでした。接続を確認して、もう一度お試しください。",
+        "portalFailed": "お支払い管理ページを開けませんでした。接続を確認して、もう一度お試しください。"
+      },
+      "billingVia": {
+        "android": "Google Play",
+        "ios": "App Store",
+        "web": "カード（Stripe経由）"
+      },
+      "manage": {
+        "android": "Google Playで管理",
+        "ios": "App Storeで管理",
+        "web": "サブスクリプションを管理"
+      },
+      "storeNote": {
+        "android": "サブスクリプションのキャンセルや変更は、Google Playストアのアプリまたはウェブサイトから行ってください。変更がここに反映されるまで数分かかることがあります。",
+        "ios": "サブスクリプションのキャンセルや変更は、「設定」を開き、自分の名前をタップして「サブスクリプション」から行ってください。変更がここに反映されるまで数分かかることがあります。",
+        "web": "サブスクリプションのキャンセルや変更は、このページからお支払い管理ページを開いて行ってください。変更がここに反映されるまで数分かかることがあります。"
       }
     },
     "watchAd": {
-      "getUnlimited": "無制限アクセスを取得",
+      "getUnlimited": "または、プレミアムですべてを開く",
       "notNow": "後で",
-      "footerDisclaimer": "プレミアム会員は広告なしで全機能を無制限にご利用いただけます",
+      "footerDisclaimer": "プレミアムなら何も消費しません。すべてのスプレッド、チャート、リーディングが広告なしで開きます。",
       "toasts": {
-        "unlocked": "機能を解放しました!無料トライアルをお楽しみください。",
-        "notAvailable": "広告を表示できませんでした。もう一度お試しください。",
-        "error": "エラーが発生しました。もう一度お試しください。"
-      }
+        "unlocked": "解放しました。リーディングが開きました。",
+        "notAvailable": "いま表示できる広告がありません。1分ほど待ってからもう一度お試しください。",
+        "error": "広告が最後まで再生されませんでした。何も消費されていません。少し待ってからもう一度お試しください。",
+        "credited": "ムーンストーンを{{n}}個追加しました。下で使って解放できます。",
+        "persistFailed": "広告は視聴されましたが、ムーンストーンを保存できませんでした。接続を確認して、もう一度お試しください。",
+        "spendFailed": "ムーンストーンを使えませんでした。何も引かれていません。接続を確認して、もう一度お試しください。",
+        "insufficient": "これにはムーンストーンが{{n}}個必要です。広告を見て貯めてください。",
+        "adsDisabled": "この端末では広告をご利用いただけません。",
+        "creditedEarnOnly": "ムーンストーンを{{n}}個追加しました。"
+      },
+      "unlockTitle": "このリーディングを解放",
+      "unlockSubtitle": "ムーンストーン{{cost}}個を使っていま読むか、短い広告を見て先に{{ad}}個貯めてください。",
+      "currentBalance": "ムーンストーン：{{n}}個",
+      "spendCta": "ムーンストーン{{n}}個で解放する",
+      "watchAdCta": "広告を見て、ムーンストーン{{n}}個を貯める",
+      "unlockNamed": "{{name}}を解放",
+      "earnOnlySubtitle": "ムーンストーン{{cost}}個が必要です。短い広告1本につき{{ad}}個貯まります。足りたら、このページから解放できます。"
     },
     "trialReminder": {
-      "badge": "3日間無料",
+      "badge": "{{days}}日間無料",
       "benefits": {
-        "adFree": "広告完全なし",
-        "allFeatures": "プレミアム機能をすべてアンロック",
-        "cancelAnytime": "いつでもキャンセル可、課金なし"
+        "spreads": "ケルト十字を含む、すべてのタロットスプレッド",
+        "chart": "惑星ひとつひとつまで、あなたの出生図の全体",
+        "noAds": "広告なし、ムーンストーンの消費なし"
       },
       "cta": "無料トライアルを始める",
       "dismiss": "あとで",
-      "subtitle": "3日間すべてアンロック、その後 $19.99/年。いつでもキャンセル可。",
-      "title": "プレミアムを3日間無料で試す"
+      "subtitle": "{{days}}日間すべてが使えて、その後は年額{{price}}。トライアル終了前にキャンセルすれば、料金はかかりません。",
+      "title": "プレミアムを{{days}}日間無料で試す",
+      "noTrial": {
+        "title": "プレミアムですべてを開く",
+        "subtitle": "年額{{price}}、または月払い。いつでもキャンセルできます。",
+        "subtitleNoPrice": "年払いまたは月払い。料金はストアの表示のとおりです。いつでもキャンセルできます。",
+        "cta": "プレミアムのプランを見る"
+      }
     }
   },
   "settings": {
@@ -2036,7 +2188,7 @@
       "notificationsEnabled": "通知を有効にしました",
       "notificationsDisabled": "通知を無効にしました",
       "themeChanged": "テーマを{{name}}に変更しました",
-      "updateFailed": "更新に失敗しました"
+      "updateFailed": "設定を変更できませんでした。接続を確認して、もう一度お試しください。"
     },
     "language": "言語",
     "languageSub": "お好みの言語を選んでください",
@@ -2085,7 +2237,7 @@
     "dailyReminders": "毎日のリマインダー",
     "getNotified": "日々のリチュアルの通知を受け取る",
     "noTransits": "この期間のトランジットは見つかりません",
-    "chartUnavailable": "チャートデータを利用できません",
+    "chartUnavailable": "チャートのデータはまだありません。出生情報を追加すると計算できます。",
     "birthCity": "出生地",
     "frequentlyAskedQuestions": "よくある質問",
     "faq": {
@@ -2098,10 +2250,10 @@
     "disclaimerBody": "最小限のデータのみを収集します。出生時刻と場所は任意です。",
     "actionCannotBeUndone": "この操作は取り消せません",
     "toasts": {
-      "exportPartial": "一部のデータをエクスポートできませんでした。もう一度お試しください。",
+      "exportPartial": "一部のデータをエクスポートできませんでした。少し待ってからもう一度お試しください。",
       "profileUpdated": "プロフィールを更新しました",
-      "profileUpdateFailed": "プロフィールの更新に失敗しました",
-      "updateFailed": "更新に失敗しました",
+      "profileUpdateFailed": "プロフィールを保存できませんでした。接続を確認して、もう一度お試しください。",
+      "updateFailed": "設定を変更できませんでした。接続を確認して、もう一度お試しください。",
       "devModeEnabled": "開発者モードを有効にしました"
     },
     "editProfile": {
@@ -2118,10 +2270,15 @@
       "title": "アカウントを削除",
       "dataWarning": "プロフィール、ジャーナル、タロットリーディング、保存済みアイテムを含め、すべてのデータが永久に削除されます。",
       "exportRecommendation": "アカウントを削除する前にデータをエクスポートすることをおすすめします。",
-      "exportFirst": "最初にデータをエクスポート",
-      "exporting": "エクスポート中...",
-      "deleteMyAccount": "アカウントを削除",
-      "deleting": "削除中..."
+      "exportFirst": "先にデータをエクスポート",
+      "exporting": "エクスポート中…",
+      "deleteMyAccount": "アカウントを削除する",
+      "deleting": "削除中…"
+    },
+    "legal": {
+      "entertainmentDisclaimer": "エンターテインメントに関する免責事項",
+      "acceptanceOfTerms": "規約への同意",
+      "notProfessionalAdvice": "専門的な助言ではありません"
     }
   },
   "search": {
@@ -2172,17 +2329,17 @@
       "friendship": "友情の相性",
       "work": "仕事の相性"
     },
-    "disclaimer": "このアプリは内省とエンターテインメントのためのものです。医療、法律、財務の助言は提供しません。",
+    "disclaimer": "Arcana は内省とエンターテインメントのためのアプリです。医療、法律、金融の助言は行いません。",
     "you": "あなた",
     "theirName": "お相手の名前",
     "theirNamePlaceholder": "お相手の名前を入力",
     "theirBirthDate": "お相手の生年月日",
     "requiredMark": "*",
-    "optionalLabel": "任意: より深い洞察のための追加情報",
+    "optionalLabel": "任意：より深い洞察のための追加情報",
     "theirMbti": "お相手のMBTIタイプ",
     "moreMbti": "他{{count}}件",
-    "theirLoveLanguage": "お相手の愛の言語",
-    "selectPlaceholder": "選択...",
+    "theirLoveLanguage": "お相手のラブランゲージ",
+    "selectPlaceholder": "選択…",
     "loveLanguages": {
       "words": "肯定的な言葉",
       "acts": "サービス行為",
@@ -2190,10 +2347,10 @@
       "quality": "特別な時間",
       "touch": "スキンシップ"
     },
-    "calculate": "相性を計算",
-    "bestMatches": "ベストマッチ",
-    "bestMatchesSubtitle": "{{sign}}として、最も相性が良いのは:",
-    "startOver": "やり直す",
+    "calculate": "相性を計算する",
+    "bestMatches": "あなたのベストマッチ",
+    "bestMatchesSubtitle": "{{sign}}のあなたと、最も相性が良いのは：",
+    "startOver": "別の星座で比べる",
     "match": "一致度",
     "famousPairing": "有名なカップル:",
     "dimensions": {
@@ -2206,7 +2363,7 @@
     "strengths": "強み",
     "frictionPoints": "摩擦ポイント",
     "doThisToday": "今日のアクション",
-    "reflectionDisclaimer": "これは内省のためのツールであり、判決ではありません。会話と理解のきっかけとして活用してください。",
+    "reflectionDisclaimer": "これは内省のためのツールであり、判定ではありません。会話と理解のきっかけとしてお使いください。",
     "connectionStyles": {
       "fire": "情熱的でダイナミック",
       "earth": "安定して地に足がついている",
@@ -2241,19 +2398,21 @@
     ]
   },
   "library": {
-    "loading": "読み込み中...",
+    "loading": "読み込み中…",
     "toasts": {
-      "loadSavedFailed": "保存済みアイテムを読み込めませんでした — オフラインの可能性があります",
-      "loadMoreFailed": "追加のアイテムの読み込みに失敗しました",
-      "deleteFailed": "削除に失敗しました",
-      "deleted": "削除しました"
+      "loadSavedFailed": "保存したアイテムを読み込めませんでした。接続を確認して、ライブラリをもう一度開いてください。",
+      "deleteFailed": "そのアイテムを削除できませんでした。接続を確認して、もう一度お試しください。",
+      "deleted": "削除しました",
+      "loadMoreSavedFailed": "保存したアイテムをさらに読み込めませんでした。接続を確認して、「さらに表示」をもう一度タップしてください。",
+      "loadMoreSpreadsFailed": "スプレッドをさらに読み込めませんでした。接続を確認して、「さらに表示」をもう一度タップしてください。",
+      "loadMoreReadingsFailed": "リーディングをさらに読み込めませんでした。接続を確認して、「さらに表示」をもう一度タップしてください。"
     },
     "empty": {
       "noAIReadings": "AIリーディングはまだありません",
       "getAIFromTarot": "タロットセクションからAI解釈を取得してください"
     },
     "reading": {
-      "yourQuestion": "質問",
+      "yourQuestion": "あなたの質問",
       "cardsDrawn": "引いたカード",
       "interpretation": "解釈"
     },
@@ -2303,7 +2462,7 @@
         ]
       },
       "love-languages": {
-        "title": "愛の言語",
+        "title": "ラブランゲージ",
         "description": "愛を伝え、受け取る5つのかたち",
         "sections": [
           {
@@ -2355,7 +2514,7 @@
         ]
       },
       "moon-phases": {
-        "title": "月の満ち欠けと儀式",
+        "title": "月の満ち欠けとリチュアル",
         "description": "月のリズムを日々の願いにつなげる",
         "sections": [
           {
@@ -2470,11 +2629,11 @@
     "loadMoreSpreads": "さらにスプレッドを表示",
     "loadMoreSaved": "さらに保存したアイテムを表示",
     "loadMoreReadings": "さらにリーディングを表示",
-    "contentComingSoon": "コンテンツ準備中...",
+    "contentComingSoon": "ガイドは順次追加しています。",
     "continueExploring": "ガイドを探求し続け、精神的な実践を深めましょう",
     "savedSpreads": "保存したスプレッド",
     "savedCards": "保存したカード",
-    "savedHoroscopes": "保存した占い",
+    "savedHoroscopes": "保存した星占い",
     "periodDaily": "デイリー",
     "tabs": {
       "saved": "保存済み",
@@ -2488,7 +2647,8 @@
       "spreads": "スプレッド"
     },
     "periodWeekly": "週間",
-    "periodMonthly": "月間"
+    "periodMonthly": "月間",
+    "aiReading": "AIリーディング"
   },
   "celebration": {
     "streak": {
@@ -2497,9 +2657,10 @@
       "keepFlowing": "明日も一回続ければ、記録は保たれます。"
     },
     "levelUp": {
-      "title": "レベルアップ!",
+      "title": "レベルアップ。",
       "level": "レベル",
-      "newAbilities": "新しい能力を獲得"
+      "newAbilities": "新しい能力を解放しました",
+      "rank": "ランク"
     }
   },
   "pageTitles": {
@@ -2863,10 +3024,10 @@
     ]
   },
   "errorBoundary": {
-    "title": "星々が移り変わりました",
+    "title": "この画面が止まりました",
     "message": "予期せぬ出来事があなたの宇宙の旅を妨げました。宇宙は不思議な仕方で働きますが、もう一度試せます。",
-    "tryAgain": "もう一度試す",
-    "returnHome": "ホームに戻る",
+    "tryAgain": "この画面を再読み込み",
+    "returnHome": "ホームへ",
     "viewDiagnostics": "診断を表示",
     "hideDetails": "詳細を隠す",
     "showDetails": "詳細を表示",
@@ -2877,34 +3038,51 @@
     "networkTitle": "星々への接続が途絶えました",
     "networkMessage": "宇宙のサーバーに到達できませんでした。接続を確認し、道がクリアになったら再試行してください。",
     "notFoundTitle": "この道は行き止まりです",
-    "notFoundMessage": "あなたが探しているページは消えてしまいました。星々は異なる目的地を心に描いているのかもしれません。"
+    "notFoundMessage": "あなたが探しているページは消えてしまいました。星々は異なる目的地を心に描いているのかもしれません。",
+    "retryContent": "このコンテンツを再読み込み",
+    "contentTitle": "この{{type}}を読み込めませんでした",
+    "contentMessage": "今回は読み込めませんでした。再読み込みしてもう一度お試しください。",
+    "contentRetry": "{{type}}を再読み込み"
   },
   "astrologyErrors": {
-    "noChart": "チャートが見つかりません",
-    "loadChart": "チャートの読み込みに失敗しました",
-    "computeChart": "チャートの計算に失敗しました",
-    "dailyHoroscope": "デイリー占いの読み込みに失敗しました",
-    "weeklyForecast": "週間予報の読み込みに失敗しました",
-    "monthlyForecast": "月間予報の読み込みに失敗しました",
-    "transits": "トランジットの読み込みに失敗しました"
+    "noChart": "チャートはまだありません。出生情報を追加すると計算できます。",
+    "loadChart": "チャートを読み込めませんでした。接続を確認して、もう一度お試しください。",
+    "computeChart": "チャートを計算できませんでした。出生情報を確認して、もう一度お試しください。",
+    "dailyHoroscope": "今日の星占いを読み込めませんでした。接続を確認して、もう一度お試しください。",
+    "weeklyForecast": "今週の予報を読み込めませんでした。接続を確認して、もう一度お試しください。",
+    "monthlyForecast": "今月の予報を読み込めませんでした。接続を確認して、もう一度お試しください。",
+    "transits": "トランジットを読み込めませんでした。接続を確認して、もう一度お試しください。",
+    "signedOut": "セッションが終了しました。もう一度ログインすると読み込めます。",
+    "timeout": "リクエストがタイムアウトしました。接続を確認して、もう一度お試しください。",
+    "rateLimited": "リクエストが多すぎます。少し待ってからもう一度お試しください。",
+    "contract": "サーバーから、このバージョンでは読めない応答が返りました。少し待ってからもう一度お試しください。",
+    "geocodeNone": "一致する場所がありませんでした。最寄りの都市で試すか、国名を加えてください。",
+    "geocodeUnavailable": "場所の検索が応答していません。接続を確認して、もう一度お試しください。"
   },
   "savedSheet": {
     "threeCardSpread": "3枚スプレッド",
     "morningReflection": "朝のリフレクション",
     "morningReflectionSub": "感謝と意図",
-    "loveLanguageResult": "愛の言語の結果",
+    "loveLanguageResult": "ラブランゲージの結果",
     "wordsOfAffirmation": "肯定の言葉"
   },
   "billing": {
-    "purchaseCancelled": "購入がキャンセルされました",
-    "purchaseFailed": "購入に失敗しました",
-    "webNotAvailableOnMobile": "ウェブ決済はモバイルでは利用できません。アプリストアをご利用ください。",
-    "userNotAuthenticated": "ユーザーが認証されていません",
-    "alreadyPremium": "すでにプレミアムをお持ちです",
-    "stripeNotConfigured": "Stripeが構成されていません。サポートにお問い合わせください。",
-    "notAuthenticated": "認証されていません",
-    "checkoutSessionFailed": "チェックアウトセッションの作成に失敗しました",
-    "noCheckoutUrl": "チェックアウトURLが返されませんでした"
+    "purchaseCancelled": "購入をキャンセルしました。請求はありません。",
+    "purchaseFailed": "購入が完了しませんでした。もう一度お試しください。請求されている場合は「購入を復元」をお使いください。",
+    "webNotAvailableOnMobile": "アプリではカード決済をご利用いただけません。Google Play から登録してください。",
+    "userNotAuthenticated": "登録するにはログインしてください。",
+    "alreadyPremium": "このアカウントはすでにプレミアムです。",
+    "stripeNotConfigured": "カード決済は現在ご利用いただけません。時間をおいてもう一度お試しください。",
+    "notAuthenticated": "登録するにはログインしてください。",
+    "checkoutSessionFailed": "チェックアウトを開けませんでした。接続を確認して、もう一度お試しください。",
+    "noCheckoutUrl": "チェックアウトを開けませんでした。少し待ってからもう一度お試しください。",
+    "paymentCancelled": "お支払いをキャンセルしました。請求はありません。",
+    "premiumActivated": "アカウントでプレミアムが有効になりました。",
+    "processingPayment": "サブスクリプションを処理しています…数秒かかることがあります。",
+    "processingTimeout": "お支払いは完了しましたが、プレミアムがまだ有効になっていません。1分ほどしてから再読み込みしてください。それでも有効にならない場合は、サポートにお問い合わせください。",
+    "alreadyPremiumWeb": "すでにウェブで登録済みです。設定から管理できます。",
+    "alreadyPremiumMobile": "すでにアプリで登録済みです。Google Play で管理できます。",
+    "productUnavailable": "このプランは現在ストアでご利用いただけません。時間をおいてもう一度お試しください。"
   },
   "lifePath": {
     "1": {
@@ -3065,7 +3243,7 @@
     "11": {
       "title": "直観の伝令",
       "tagline": "ビジョン・ひらめき・霊性の眼。",
-      "purpose": "マスターの道。他者には見えないものを見て、人が持ち帰れる言葉に翻訳する。ビジョンを地に降ろす——呑まれずに流す——それが課題です。",
+      "purpose": "マスターの道。他者には見えないものを見て、人が持ち帰れる言葉に翻訳する人。ビジョンを地に降ろすこと——呑まれずに流すこと——それが課題です。",
       "strengths": [
         "ビジョン",
         "霊性の感度",
@@ -3156,7 +3334,7 @@
     "questionLabel": "あなたの問い（任意）",
     "questionPlaceholder": "いま理解しておくと一番助けになることは何？",
     "castButton": "コインを投げる",
-    "casting": "占っています……",
+    "casting": "占っています…",
     "hexagramLabel": "第",
     "judgement": "彖辞",
     "interpretation": "読み解き",
@@ -3362,7 +3540,11 @@
         "name": "未濟・完成の前"
       }
     },
-    "readAsLiuYao": "この卦を六爻で読む"
+    "readAsLiuYao": "この卦を六爻で読む",
+    "castingLine": "6爻のうち第{{n}}爻",
+    "readFullReading": "リーディングの全文を読む",
+    "askOracleCta": "この卦を読み解いてもらう",
+    "share": "この卦をシェア"
   },
   "humanDesign": {
     "title": "ヒューマンデザイン",
@@ -3370,7 +3552,7 @@
     "birthDate": "生年月日",
     "birthTime": "出生時刻（任意、結果がより精密になります）",
     "calculate": "私のデザインを見る",
-    "calcFailed": "チャートを計算できませんでした",
+    "calcFailed": "デザインを計算できませんでした。出生情報を確認して、もう一度お試しください。",
     "needBirthDate": "生年月日が必要です",
     "disclaimer": "これは簡易版です。本格的なヒューマンデザインのチャートには、出生時点の正確な惑星位置が必要です。9センターのボディグラフ全体を見たい場合は、専用のHuman Designサイトへ出生データを持って行ってください。",
     "signatureLabel": "シグネチャー",
@@ -3382,7 +3564,7 @@
     "affirmationLabel": "あなたへのアファメーション",
     "tarotPairingLabel": "タロットとの対応",
     "backToInput": "再計算",
-    "recalculate": "再計算",
+    "recalculate": "別のチャートを計算する",
     "types": {
       "manifestor": {
         "name": "マニフェスター"
@@ -3399,7 +3581,27 @@
       "reflector": {
         "name": "リフレクター"
       }
-    }
+    },
+    "computing": "ボディグラフを計算中…",
+    "authorityHeading": "あなたの内的オーソリティ",
+    "bodygraphLabel": "あなたのボディグラフ",
+    "centersDefined": "センターが定義",
+    "channelsDefined": "チャネル",
+    "channelsHeading": "あなたの定義されたチャネル",
+    "channelsNote": "各チャネルはふたつのセンターをつなぎ、その間に一貫した生命力の流れを定義します。これはあなたという存在の固定された部分——いつでも使えるものです。",
+    "activationsLabel": "26のアクティベーションすべて",
+    "personalityLabel": "パーソナリティ（意識）——出生時",
+    "designLabel": "デザイン（無意識）——出生の88度（太陽弧）前",
+    "casesHeading": "戦略の実践",
+    "casesIntro": "あなたの戦略が、ごく普通の火曜日の午後のような日常でどう見えるかを、具体的な場面で示します。",
+    "scenarioLabel": "場面",
+    "wrongMoveLabel": "反応的な動き",
+    "alignedMoveLabel": "整った動き",
+    "signatureFelt": "感じられるシグネチャー",
+    "decisionScriptHeading": "決断のしかた：{{authority}}",
+    "commonMistakeLabel": "よくある間違い",
+    "realityCheckLabel": "現実チェック",
+    "share": "私のデザインをシェア"
   },
   "bazi": {
     "title": "八字（四柱推命）",
@@ -3407,7 +3609,7 @@
     "birthDate": "生年月日",
     "birthTime": "出生時刻（任意）",
     "calculate": "四柱を立てる",
-    "calcFailed": "八字を計算できませんでした",
+    "calcFailed": "四柱を立てられませんでした。出生情報を確認して、もう一度お試しください。",
     "needBirthDate": "生年月日が必要です",
     "pillarsLabel": "あなたの四柱",
     "year": "年柱",
@@ -3423,7 +3625,7 @@
     "strugglingLabel": "苦しむとき",
     "affirmationLabel": "アファメーション",
     "back": "再計算",
-    "recalculate": "再計算",
+    "recalculate": "別の生年月日で立てる",
     "elements": {
       "wood": "木",
       "fire": "火",
@@ -3438,9 +3640,9 @@
     "innerForcesSub": "各柱はあなたの内なる元素に対する古典的な十神の原型に対応します。",
     "luckyColorTodayLabel": "今日のラッキーカラー",
     "luckyNumbersLabel": "ラッキーナンバー",
-    "nayinLabel": "年柱の納音(魂の音)",
-    "premiumTeaserBody": "あなたの内なる力(古典十神)、蔵干の影響、納音、サポート元素とそのラッキーカラー・方角・数字、今日のラッキーカラーウィジェットをアンロック。",
-    "premiumTeaserCta": "プレミアムを見る",
+    "nayinLabel": "年柱の納音（魂の音）",
+    "premiumTeaserBody": "あなたの内なる力（古典の十神）、蔵干の影響、納音、サポート元素とそのラッキーカラー・方角・数字、そして今日のラッキーカラーのウィジェットを解放します。",
+    "premiumTeaserCta": "リーディングの全体を解放する",
     "premiumTeaserTitle": "プレミアムでさらに深く",
     "strength": {
       "balanced": {
@@ -3457,7 +3659,34 @@
       }
     },
     "supportingLabel": "あなたのサポート元素",
-    "supportingSub": "あなたのチャートがバランスのために傾く元素 — その色を着て、その方角を向き、その数字を身近に。"
+    "supportingSub": "あなたのチャートがバランスのために傾く元素 — その色を着て、その方角を向き、その数字を身近に。",
+    "gender": "出生時の性別——大運と年運の読みに必要です",
+    "selectGender": "選ぶと詳細モードが開きます",
+    "male": "男性",
+    "female": "女性",
+    "dominantNote": "あなたの最も強い元素は{{el}}です。もっとも自然にあなたらしくいられる形をつくっています。",
+    "weakNote": "あなたの最も弱い元素は{{el}}です。ここを支えると、あなたを養うことができます。{{el}}を育てるには、{{el}}を生む{{support}}を身のまわりに置いてください。",
+    "excessNote": "{{el}}が強く過剰です。その影の現れ方に気をつけ、{{el}}を制する{{control}}でバランスをとってください。",
+    "unlockDeepHint": "さらに深い層——10年ごとの大運、今年の運勢、神殺、地支の関係——を見るには、戻って出生時の性別を追加してください。大運の順逆は年柱の陰陽と性別で決まるため、計算には両方が必要です。",
+    "pillarsHeading": "それぞれの柱が表すもの",
+    "yearPillarLabel": "年柱",
+    "monthPillarLabel": "月柱",
+    "dayPillarLabel": "日柱",
+    "hourPillarLabel": "時柱",
+    "annualHeading": "{{year}}年——あなたの一年",
+    "currentLuckHeading": "現在の大運（{{a}}〜{{b}}）",
+    "luckPillarsHeading": "あなたの80年の大運タイムライン",
+    "ageRange": "{{a}}〜{{b}}歳",
+    "structureHeading": "あなたのチャートの格局",
+    "spiritStarsHeading": "チャートにある神殺",
+    "branchRelationsHeading": "地支の関係",
+    "climateHeading": "あなたの寒暖のバランス",
+    "careerHeading": "日主に合うキャリア",
+    "lifeAreasHeading": "財 · 縁 · 健康",
+    "wealthLabel": "財",
+    "spouseLabel": "パートナーシップ",
+    "healthLabel": "健康",
+    "share": "私の四柱をシェア"
   },
   "ayurveda": {
     "withSecondary": "（副ドーシャ：{{sec}}）",
@@ -3480,24 +3709,42 @@
     }
   },
   "dream": {
-    "title": "夢解きインタープリター",
-    "intro": "覚えている限り、夢の内容を詳しく書いてください。順番や整合性は気にしなくて大丈夫です——心は象徴で働きます。原型的なパターンを見つけ、そこに座って考えるための問いをお返しします。夢に「唯一の意味」はありません。夢は招待状です。",
+    "title": "夢解き",
+    "intro": "覚えている限り、夢の内容を詳しく書いてください。順番や整合性は気にしなくて大丈夫です——心は象徴で働きます。原型的なパターンを見つけ、じっくり向き合うための問いをお返しします。夢に「唯一の意味」はありません。夢は招待状です。",
     "label": "あなたの夢を教えてください",
-    "placeholder": "暗い海辺に立っていて、家への道が見つからなかった。鳥が何かをくちばしにくわえて飛んでいった……",
+    "placeholder": "暗い海辺に立っていて、家への道が見つからなかった。鳥が何かをくちばしにくわえて頭上を飛んでいった…",
     "privacy": "夢の文章は保存されません。あなたの端末内でのみ解析されます。",
     "interpret": "夢を読み解く",
     "needLonger": "もう少しだけ詳しく教えてください（数文程度）。",
     "yourDream": "象徴たちの声",
-    "noMatch": "よくある原型は今回の文章には表れませんでした——でも沈黙しているわけではありません。もっとも個人的な夢は、あなたの人生に固有の象徴を使います。夢の中で最も強い像のそばに座ってください。問うてみましょう：それは何の反対にある？　自分の人生のどこと韻を踏んでいる？",
+    "noMatch": "この夢の文章には、よくある原型はすぐには表れませんでした——でも、沈黙しているわけではありません。もっとも個人的な夢は、あなたの人生に固有の象徴を使うことが多いのです。夢の中でいちばん強く残った像とともに、しばらく座ってみてください。問うてみましょう。それは何の反対にあるのか。自分の人生のどこと韻を踏んでいるのか。",
     "symbolsLabel": "象徴",
     "reflectionLabel": "この問いを抱えて",
     "practiceLabel": "夢の練習",
     "practiceBody": "枕元にノートを置いて。目覚めた瞬間、消える前に夢を書き留めましょう。時間が経つと、繰り返し現れる象徴が、無意識があなたに話しかける言語を明かしてくれます。",
     "archetypeLabel": "夢の象徴の読み",
     "back": "もう一度夢を読む",
-    "another": "別の夢",
-    "genericTitle": "夢の読み",
-    "genericReflection": "夢はメッセージを運ぶ——残される問いを大切に。"
+    "another": "別の夢を読み解く",
+    "genericTitle": "夢のリーディング",
+    "genericReflection": "夢はメッセージを運ぶ——残される問いを大切に。",
+    "interpreting": "夢を読んでいます…",
+    "yourDreamLabel": "あなたの夢",
+    "coreThemeLabel": "中心のテーマ",
+    "emotionalToneLabel": "トーン",
+    "archetypesLabel": "働いている元型",
+    "shadowPromptLabel": "シャドウへの問い",
+    "integrationLabel": "統合の実践",
+    "compensatoryLabel": "目覚めているあなたに欠けているもの",
+    "compensatoryHint": "ユングいわく、夢は意識の態度を補償します。これは、あなたがまだ持っていないものとして夢が差し出しているものです。",
+    "symbolicLayersLabel": "象徴の層",
+    "colorsLabel": "現れた色",
+    "numbersLabel": "現れた数",
+    "directionsLabel": "動きの方向",
+    "resourcesLabel": "さらに深く",
+    "culturesLabel": "さまざまな伝統の夢の読み方",
+    "lucidLabel": "明晰夢の技法",
+    "nightmaresLabel": "悪夢との向き合い方",
+    "share": "この解釈をシェア"
   },
   "extraQuizzes": {
     "dark-triad": {
@@ -3532,7 +3779,7 @@
     },
     "boundaries": {
       "title": "境界線チェックイン",
-      "description": "あなたの境界線はどこが強く、どこが弱く、どこで相手によって変わる？　4つのパターン——硬い壁、透過的な開放、健康な柔軟性、状況依存——で見ます。",
+      "description": "あなたの境界線はどこが強く、どこが弱く、どこで相手によって変わるのでしょうか。4つのパターン——硬い壁、透過的な開放、健康な柔軟性、状況依存——で見ます。",
       "timeEstimate": "4分",
       "whatYouGet": [
         "あなたの境界線がしっかりしている所、緩い所、状況依存の所",
@@ -3542,7 +3789,7 @@
     },
     "burnout": {
       "title": "燃え尽きチェック",
-      "description": "燃え尽きには測定可能な3つの次元があります——消耗（エネルギー切れ）、シニシズム（仕事からの距離）、効力感の喪失（自分はもう効果的ではない）。今日どこにいるかを見ます。",
+      "description": "燃え尽きには測定できる3つの次元があります——消耗（エネルギー切れ）、シニシズム（仕事からの距離）、効力感の喪失（自分はもう役に立っていない）。今日のあなたがどこにいるかを見ます。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "疲弊 vs 冷笑 vs 効力感低下のプロファイル",
@@ -3552,7 +3799,7 @@
     },
     "communication": {
       "title": "コミュニケーション・スタイル",
-      "description": "困難な状況で現れる4つのスタイル——受動的（隠す）、攻撃的（攻める）、受動攻撃的（横からの抵抗）、アサーティブ（明確かつ敬意を持って）。デフォルトと、整っているときに使えるものを見ます。",
+      "description": "困難な状況で現れる4つのスタイル——受動的（隠す）、攻撃的（攻める）、受動攻撃的（横からの抵抗）、アサーティブ（明確かつ敬意を持って）。あなたのデフォルトと、心が整っているときに使えるスタイルを見ます。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "ストレス下でのあなたのデフォルトスタイル",
@@ -3615,7 +3862,7 @@
     },
     "love-styles": {
       "title": "愛のスタイル",
-      "description": "あなたが主に表す4つのギリシャ的愛 — Eros(情熱)、Philia(深い友愛)、Storge(安定した温かさ)、Agape(無条件の愛) — のどれか。優劣はなく、それぞれが異なるものを求めます。",
+      "description": "4つのギリシャ的な愛——Eros（情熱）、Philia（深い友愛）、Storge（安定した温かさ）、Agape（無条件の愛）——のうち、あなたが主に表すのはどれか。優劣はなく、それぞれがあなたに違うものを求めます。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "あなたが主に表す4つのギリシャ的な愛のスタイル",
@@ -3625,7 +3872,7 @@
     },
     "parenting-style": {
       "title": "育児スタイル",
-      "description": "あなたのデフォルトのBaumrind育児スタイル — 権威的/権威主義的/許容的/放任的 — ストレス下とベストな状態でどう違うか。研究が示すことと、持ち歩く一つのアファメーション。",
+      "description": "あなたのデフォルトのBaumrind育児スタイル——権威的、権威主義的、許容的、放任的——が、ストレス下とベストな状態でどう違うか。研究が示すことと、持ち歩けるひとつのアファメーション。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "あなたのデフォルト育児スタイル(権威的/権威主義的/許容的/放任的)",
@@ -3645,7 +3892,7 @@
     },
     "empath-hsp": {
       "title": "エンパス / HSP",
-      "description": "エンパス、HSP(高感受性者)、両方、またはどちらでもない。神経学的にそれぞれが意味するもの — 関連していますが同じではありません — と、あなたの配線に合わせた実用的なセルフケア。",
+      "description": "エンパス、HSP（高感受性者）、両方、またはどちらでもない。神経学的にそれぞれが意味するもの——関連はあっても同じではありません——と、あなたの配線に合わせた実用的なセルフケア。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "エンパス、HSP、両方、またはどちらでもない",
@@ -3655,7 +3902,7 @@
     },
     "self-compassion": {
       "title": "自己への思いやり",
-      "description": "あなたの主たる自己への思いやりの姿勢 — 自己親切、自己批判、マインドフル、過剰同一視。自分を支える所と支えない所、そして次の一歩のアファメーション。",
+      "description": "あなたの主たる自己への思いやりの姿勢——自己親切、自己批判、マインドフル、過剰同一視。自分を支えているところと支えていないところ、そして次の一歩のアファメーション。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "あなたの主たる自己への思いやりの姿勢",
@@ -3665,7 +3912,7 @@
     },
     "mood-screener": {
       "title": "気分シグナル・チェック",
-      "description": "非診断的なPHQ-2スタイルの質問による過去2週間の気分シグナル読み取り。診断ではなく、自己省察の鏡 — 答えがサポートが必要であることを示唆する場合、危機リソースを提示します。",
+      "description": "診断目的ではないPHQ-2形式の質問で、過去2週間の気分のシグナルを読み取ります。診断ではなく、自己省察の鏡です。回答からサポートが必要と思われる場合は、相談先をご案内します。",
       "timeEstimate": "3分",
       "whatYouGet": [
         "過去2週間の気分シグナルの読み取り",
@@ -3738,7 +3985,7 @@
     "saved": "今日の気分を記録しました",
     "historyTitle": "30日間の曲線",
     "entriesCount": "30日のうち {{n}} 日記録済み",
-    "noEntriesYet": "今日の気分を記録して、あなたの曲線を始めましょう。",
+    "noEntriesYet": "今日の気分を記録して、あなたの曲線をはじめましょう。",
     "dominantLabel": "いちばん多い気分",
     "avgIntensity": "平均強さ：{{n}} / 5",
     "backToLog": "記録に戻る",
@@ -3772,7 +4019,22 @@
       "curious": {
         "name": "好奇心"
       }
-    }
+    },
+    "needMoreForLetter": "週間レターには、3日以上の記録が必要です。",
+    "letterFailed": "いまは手紙を書けませんでした。少し待ってからもう一度お試しください。",
+    "letterHeading": "今週の手紙",
+    "letterIntro": "直近14日間の記録を読んで、温かく具体的な手紙を綴ります。ずっと見守ってくれていた賢い友人のような筆致で。",
+    "writingLetter": "書いています…",
+    "generateLetter": "手紙を書いてもらう",
+    "letterTitle": "あなたの週間レター",
+    "themeLabel": "テーマ",
+    "carePracticeLabel": "ひとつの実践",
+    "rewriteLetter": "別の手紙を書いてもらう",
+    "patternLabel": "今週",
+    "heaviestDayLabel": "いちばん重かった日",
+    "lightestDayLabel": "いちばん軽かった日",
+    "weekOverWeekLabel": "前週比",
+    "driftUnits": "気分のY値の変化"
   },
   "compat": {
     "title": "パートナー相性",
@@ -3786,7 +4048,7 @@
     "selectOrSkip": "選択または省略",
     "runButton": "相性を明かす",
     "needBothSides": "双方から少なくとも1つずつ必要です（MBTIまたは誕生日）。",
-    "failed": "相性を計算できませんでした",
+    "failed": "相性を計算できませんでした。接続を確認して、もう一度お試しください。",
     "back": "別のペアを確認",
     "another": "別のペア",
     "compatibilityLabel": "相性",
@@ -3794,14 +4056,29 @@
     "astroLabel": "占星術フィット",
     "strengthsLabel": "強み",
     "growthLabel": "成長の縁",
-    "adviceLabel": "アドバイス"
+    "adviceLabel": "アドバイス",
+    "yourBirthTime": "あなたの出生時刻（月も含めて、読みがより精密になります）",
+    "partnerBirthTime": "相手の出生時刻（任意）",
+    "computing": "アスペクトを計算中…",
+    "synastryLabel": "占星術シナストリー",
+    "harmoniousLabel": "調和",
+    "intenseLabel": "強烈",
+    "challengingLabel": "試練",
+    "synastryExplainer": "各アスペクトは、あなたの惑星と相手の惑星の間の実際の幾何学的な関係です。調和のアスペクトはなめらかに流れ、強烈なアスペクトは増幅し、試練のアスペクトは成長の作業を求めます。",
+    "topAspectsLabel": "もっとも雄弁なアスペクト",
+    "myPlanet": "あなたの",
+    "partnerPlanet": "相手の",
+    "elementalLabel": "エレメントの混ざり方",
+    "compositeLabel": "第三の存在としてのふたりの関係",
+    "compositeIntro": "コンポジットチャートは、関係そのものを、どちらか一人とは別の、固有の性格を持つ存在として扱います。ここに書かれているのは、そのパートナーシップという存在についての観察です。",
+    "share": "この相性をシェア"
   },
   "wisdom": {
     "title": "今日の智慧"
   },
   "fengshui": {
     "title": "風水の八卦",
-    "intro": "八卦の図は人生を9つの領域に分けます。あなたの人生の各領域が今どう感じるかを1〜5で評価してください。もっとも手当てを求めている領域と、それを養う風水の調整を示します。",
+    "intro": "八卦の図は人生を9つの領域に分けます。あなたの人生のそれぞれの領域が今どう感じられるかを、1〜5で評価してください。もっとも手当てを求めている領域と、それを養う風水の調整をお示しします。",
     "scale": "1 = 深く枯れている · 3 = まあまあ · 5 = よく咲いている",
     "reveal": "私の八卦を見る",
     "backToRate": "もう一度評価する",
@@ -3843,43 +4120,65 @@
       "helpers": {
         "name": "助け手・旅"
       }
-    }
+    },
+    "kuaHeading": "あなたの本命卦（任意）",
+    "kuaIntro": "生まれ年と性別を追加すると、本命卦の数——八宅風水の基礎——を計算します。ベッド、机、玄関の向きに使える、4つの吉方位と4つの凶方位をお示しします。",
+    "birthYearLabel": "生まれ年",
+    "genderLabel": "出生時の性別",
+    "selectOrSkip": "選択またはスキップ",
+    "male": "男性",
+    "female": "女性",
+    "kuaPreview": "本命卦 {{n}} · {{trigram}} · {{group}}グループ",
+    "kuaResultHeading": "あなたの8方位（本命卦 {{n}}）",
+    "kuaResultIntro": "あなたは{{group}}グループの{{trigram}}（{{element}}）です。ベッド、机、玄関は、4つの吉方位のいずれかを向くように置いてください。4つの凶方位——とくに絶命——は避けましょう。",
+    "kuaFavorable": "吉方位",
+    "kuaUnfavorable": "凶方位——避けましょう",
+    "annualHeading": "年の飛星 · {{year}}",
+    "annualIntro": "毎年、9つの星が家の9つの宮をめぐります。今年それぞれの方位にある星が、何を活かし、何を避けるべきかを教えてくれます。玄関から内側を向いて方位をとってください。",
+    "roomsHeading": "部屋ごとのガイダンス",
+    "rules": "ルール",
+    "avoid": "避けること",
+    "problemsHeading": "よくある問題チェックリスト",
+    "problemsIntro": "あなたの家に当てはまるものをタップしてください。それぞれに具体的な対処法がついています。多くの人は3〜5個が当てはまり、深刻度の高いものから直すと、数週間で目に見える変化が現れます。",
+    "why": "なぜ大切か",
+    "fix": "対処法",
+    "share": "私の八卦をシェア"
   },
   "community": {
     "title": "コミュニティ",
-    "postButton": "投稿",
-    "whisperButton": "ささやく",
+    "postButton": "投稿を書く",
+    "whisperButton": "ささやきを書く",
     "newPost": "新しい投稿",
     "topicLabel": "トピック",
-    "placeholder": "リーディング、思い、問い、なんでも。",
+    "placeholder": "リーディング、思い、問い、なんでも…",
     "postAnonymously": "匿名で投稿",
-    "send": "投稿する",
-    "posting": "投稿中……",
+    "send": "コメントを投稿",
+    "posting": "投稿中…",
     "posted": "投稿しました",
-    "postFailed": "投稿できませんでした",
+    "postFailed": "投稿できませんでした。接続を確認して、もう一度お試しください。",
     "contentTooLong": "長すぎます（最大2000文字）",
     "contentDisallowed": "この表現は使えません",
     "contentEmpty": "まず何か書いてください",
-    "anonymous": "名のないもとめ手",
-    "loadFailed": "フィードを読み込めませんでした",
+    "anonymous": "匿名",
+    "loadFailed": "フィードを読み込めませんでした。接続を確認して、もう一度お試しください。",
     "empty": "まだ投稿がありません。最初のひとりになってください。",
     "signInFirst": "リアクションにはサインインが必要です",
     "signInToPost": "投稿・リアクション・コメントにはサインインが必要です。",
-    "reactFailed": "リアクションできませんでした",
+    "reactFailed": "リアクションを追加できませんでした。もう一度お試しください。",
     "reported": "通報を受け付けました。ありがとうございます。",
-    "reportFailed": "通報できませんでした",
+    "reportFailed": "通報を送信できませんでした。接続を確認して、もう一度お試しください。",
     "report": "通報",
     "reportPostTitle": "投稿を通報",
     "blockUser": "ユーザーをブロック",
     "blocked": "ブロックしました",
-    "blockFailed": "ブロックできませんでした",
+    "blockFailed": "このメンバーをブロックできませんでした。もう一度お試しください。",
     "back": "フィードに戻る",
     "backToFeed": "フィードに戻る",
     "commentsHeading": "コメント",
     "noComments": "まだコメントがありません。最初の返答をどうぞ。",
-    "commentPlaceholder": "返答を書く……",
+    "commentPlaceholder": "返答を書く…",
     "commentAnonymously": "匿名でコメント",
-    "commentFailed": "コメントできませんでした",
+    "commentFailed": "コメントを投稿できませんでした。接続を確認して、もう一度お試しください。",
     "topics": {
       "all": "すべて",
       "general": "ぜんぱん",
@@ -3909,29 +4208,66 @@
     },
     "postedUnderReview": "投稿されました—まもなくチームが確認します。",
     "commentUnderReview": "コメントを投稿しました—まもなくチームが確認します。",
-    "contentBlocked": "このコンテンツはコミュニティガイドラインに反しています。"
+    "contentBlocked": "このコンテンツはコミュニティガイドラインに反しています。",
+    "publishPost": "投稿を公開"
   },
   "common": {
     "mainContent": "メインコンテンツ",
     "loading": "読み込み中……",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "back": "戻る"
   },
   "moonstones": {
     "balanceLabel": "ムーンストーン",
     "claimButton": "今日の分を受け取る",
-    "claiming": "受け取り中……",
+    "claiming": "受け取り中…",
     "alreadyClaimed": "また明日",
     "claimed": "+{{n}} ムーンストーン · {{d}}日目の連続ログイン",
-    "claimFailed": "今日の報酬を受け取れませんでした",
-    "topUp": "チャージ"
+    "claimFailed": "今日の報酬を受け取れませんでした。接続を確認して、もう一度お試しください。",
+    "topUp": "チャージ",
+    "premiumLabel": "プレミアム · すべてのリーディングが解放済み",
+    "earn": "ムーンストーンを貯める",
+    "costLine": "リーディング1回につき<gold>ムーンストーン{{n}}個</gold>",
+    "youHave": "所持：{{n}}個",
+    "earnSheet": {
+      "title": "ムーンストーンを貯める",
+      "titleSoftCap": "1日の上限に達しました",
+      "softCapBody": "直近24時間で50回のリーディングを行いました。これは、すべての人にAIの品質を保つための上限です。次のリーディングは<gold>{{when}}</gold>に開き、古いリーディングが期限を過ぎるごとに枠がひとつずつ空きます。その間もプレミアムは有効のままです。",
+      "softCapSoon": "数時間後",
+      "now": "今",
+      "timeHM": "{{h}}時間{{m}}分後",
+      "timeM": "{{m}}分後",
+      "browseBody": "AIリーディング1回につき<gold>ムーンストーン{{cost}}個</gold>が必要です。",
+      "insufficientBody": "このリーディングには<gold>ムーンストーン{{cost}}個</gold>が必要です。",
+      "youHave": "所持：<strong>{{n}}</strong>個。",
+      "earnBelow": "下で貯められます。",
+      "adCredited": "ムーンストーンを{{n}}個追加しました。",
+      "adNotReady": "広告の準備がまだできていません。少し待ってからもう一度お試しください。",
+      "adPersistFailed": "広告は視聴されましたが、ムーンストーンを保存できませんでした。接続を確認して、もう一度お試しください。",
+      "adDismissed": "広告が途中で閉じられました。ムーンストーンを貯めるには最後までご覧ください。",
+      "adsUnavailable": "この端末では広告をご利用いただけません。",
+      "checkinDone": "ムーンストーンを{{n}}個追加しました。連続{{day}}日目です。",
+      "checkinFailed": "チェックインできませんでした。接続を確認して、もう一度お試しください。",
+      "watchAdTitle": "短い動画を見る",
+      "watchAdSub": "ムーンストーン{{n}}個を貯める",
+      "watchAdNotReady": "いま表示できる広告がありません",
+      "checkinTitle": "デイリーチェックイン",
+      "checkinSub": "ムーンストーン{{min}}〜{{max}}個。連続日数とともに増えます",
+      "checkinRange": "+{{min}}〜+{{max}}",
+      "checkinClaimed": "今日はすでにチェックイン済みです。",
+      "premiumTitle": "プレミアムにする",
+      "premiumSub": "ムーンストーンの消費なし、広告なし、すべてのスプレッドとチャート",
+      "notNow": "あとで"
+    }
   },
   "companion": {
     "title": "コンパニオン",
-    "newConversation": "新規",
+    "newConversation": "新しい会話",
     "emptyState": "何でも尋ねて始めてください——胸に抱えている問い、読んでほしい夢、理解したい名前。",
-    "placeholder": "コンパニオンに問う……",
+    "placeholder": "コンパニオンに問う…",
     "thinking": "考えています……",
-    "sendFailed": "コンパニオンに届きませんでした：{{err}}",
+    "sendFailed": "コンパニオンに届きませんでした。接続を確認して、もう一度送信してください。",
     "dailyLimitReached": "今日の上限に達しました——また明日",
     "dailyRemaining": "本日残り {{remaining}} 通",
     "personas": {
@@ -3955,7 +4291,7 @@
   },
   "advisors": {
     "title": "アドバイザー",
-    "intro": "Arcanaに参加する読み手たち。有料セッションは段階的に公開中です。興味を伝えると、そのアドバイザーが予約を開くときに通知します。",
+    "intro": "Arcanaに参加する読み手たちをご紹介します。有料セッションは段階的に公開中です。興味を伝えて、またご覧ください。アドバイザーが予約を開くと、プロフィールに「セッションを予約」ボタンが表示されます。",
     "back": "アドバイザー一覧",
     "empty": "まだアドバイザーがいません。またお越しください。",
     "yearsLabel": "経験",
@@ -3964,12 +4300,12 @@
     "specialtiesLabel": "得意",
     "rateLabel": "参考レート",
     "expressInterest": "興味を伝える",
-    "bookingsComingSoon": "有料セッションは段階的に公開中です。何について助けが欲しいかを教えてください。このアドバイザーが予約を開いたときにお知らせします。",
+    "bookingsComingSoon": "有料セッションは段階的に公開中です。どんなことで助けが欲しいかを教えてください。このアドバイザーが予約を開くと、このページに「セッションを予約」ボタンが表示されます。",
     "topicPlaceholder": "何について相談したいですか？（任意）",
-    "notifyMe": "予約開始時に通知を受ける",
-    "submitting": "送信中……",
-    "interestSubmitted": "興味を記録しました——{{n}}が予約を開いたときにお知らせします。",
-    "interestFailed": "興味を送信できませんでした",
+    "notifyMe": "興味を登録する",
+    "submitting": "送信中…",
+    "interestSubmitted": "興味を記録しました。またこのプロフィールをご覧ください。{{n}}が予約を開くと、ここに「セッションを予約」ボタンが表示されます。",
+    "interestFailed": "興味を記録できませんでした。接続を確認して、もう一度お試しください。",
     "signInToExpress": "興味を伝えるにはサインインしてください",
     "specialties": {
       "tarot": "タロット",
@@ -3982,7 +4318,8 @@
       "shadow-work": "シャドウワーク",
       "creativity": "創造性",
       "breakup-recovery": "別れからの回復"
-    }
+    },
+    "bookCta": "セッションを予約"
   },
   "moon": {
     "title": "今夜の月",
@@ -4006,7 +4343,7 @@
         "ritual": "意図への道を塞ぐ障害を一つ挙げる。それを越える次の具体的行動を書く。"
       },
       "waxing-gibbous": {
-        "name": "十三夜（満ち欠け前）",
+        "name": "十三夜（満月前）",
         "guidance": "結果は近いが磨きが要る。編集・確認・修理など、地味で丁寧な仕事を今。",
         "ritual": "この周期で築いたものを見直す。一点だけ整えれば全体が変わる箇所はどこ？"
       },
@@ -4026,7 +4363,7 @@
         "ritual": "手放す習慣・物・約束を一つ挙げる。書き出し、線で消す。"
       },
       "waning-crescent": {
-        "name": "三日月（下弦後）",
+        "name": "二十六夜（下弦後）",
         "guidance": "減らす。多めに眠る。夢見る。先延ばしではなく、次の周期前の神経系の回復。",
         "ritual": "一時間オフラインに。画面も生産性もなし。座る、歩く、横になる。止まると何が浮かぶか観る。"
       }
@@ -4047,7 +4384,17 @@
     "meaningLabel": "意味",
     "journalPrompt": "記録のきっかけ",
     "shareButton": "この結果を共有",
-    "elementLabel": "エレメント"
+    "elementLabel": "エレメント",
+    "questionLabel": "あなたの問い（任意）",
+    "questionPlaceholder": "いま、私がいちばん理解しておくべきことは？",
+    "castLabel": "3本のルーン",
+    "back": "もう一度投じる",
+    "yourQuestion": "あなたの問い",
+    "reversed": "逆位置（メルクスタヴ）",
+    "whenItLandsLabel": "あなたに響くとき",
+    "promptLabel": "ジャーナルプロンプト",
+    "askOracleCta": "3本まとめて読み解いてもらう",
+    "share": "この結果をシェア"
   },
   "dice": {
     "title": "ダイスのオラクル",
@@ -4056,25 +4403,31 @@
     "promptLabel": "この問いを抱く",
     "rollButton": "サイコロを振る",
     "rollAgain": "もう一度振る",
-    "rolling": "振っています…"
+    "rolling": "振っています…",
+    "astroIntro": "占星術師のサイコロ——3つが同時に落ちます。惑星は「何を」、星座は「どのように」、ハウスは人生の「どこで」。問いを胸に、振ってください。",
+    "askOracle": "このことをオラクルに尋ねる"
   },
   "crisis": {
     "title": "あなたはひとりではありません",
     "subtitle": "あなたの文章から気づいたことがあります。いまつらいと感じるなら、こちらに手を伸ばしてください——無料で、匿名で相談できます。",
     "phone": {
-      "title": "988 自殺・危機ホットライン",
-      "body": "Call or text 988 · 24/7 · US",
-      "cta": "電話する"
+      "title": "よりそいホットライン",
+      "body": "0120-279-338 · 24時間 · 通話無料",
+      "cta": "電話する",
+      "number": "0120-279-338"
     },
     "text": {
-      "title": "Crisis Text Line（チャット相談）",
-      "body": "HOME と送信先 741741 · 米/英/加/アイルランド",
-      "cta": "メッセージ"
+      "title": "こころの健康相談統一ダイヤル",
+      "body": "0570-064-556 · お住まいの地域の相談窓口につながります",
+      "cta": "電話する",
+      "number": "0570-064-556",
+      "scheme": "tel",
+      "keyword": ""
     },
     "international": {
       "title": "各国のヘルプライン"
     },
-    "footer": "Arcana は医療サービスではありません。差し迫った危険がある場合は、地域の緊急通報先にお電話ください。",
+    "footer": "Arcana は医療サービスではありません。緊急時は 119 または 110 に電話してください。",
     "closeButton": "今は大丈夫です"
   },
   "referral": {
@@ -4084,23 +4437,23 @@
     "yourCodeLabel": "あなたのコード",
     "copy": "リンクをコピー",
     "copied": "リンクをコピーしました",
-    "copyFailed": "コピーできませんでした",
-    "share": "共有",
-    "shareText": "タロット＋占星術のArcanaを使ってるよ。コードでムーンストーン100個無料：{{url}}",
+    "copyFailed": "コードをコピーできませんでした。選択して手動でコピーしてください。",
+    "share": "コードをシェア",
+    "shareText": "タロットと占星術のArcanaを使っています。私のコードでムーンストーン100個が無料でもらえます：{{url}}",
     "invitesCount": "あなたのコードで{{n}}人が参加",
     "redeemLabel": "コードをお持ちですか？",
-    "redeemHelper": "最初の30日以内に友だちのコードを入力すると、100ムーンストーンを受け取れます。",
+    "redeemHelper": "最初の30日以内に友だちのコードを入力すると、ムーンストーン100個を受け取れます。",
     "codePlaceholder": "ABCD1234",
-    "redeem": "引き換える",
+    "redeem": "このコードを引き換える",
     "redeeming": "引き換え中…",
-    "redeemSuccess": "+{{n}} ムーンストーン — ようこそ！",
+    "redeemSuccess": "+{{n}} ムーンストーン——ようこそ。",
     "alreadyRedeemed": "紹介コードはすでに使用済みです。",
     "errors": {
       "alreadyRedeemed": "コードはすでに使用済みです。",
       "notFound": "コードが見つかりません。",
       "selfRedeem": "自分のコードは使えません。",
       "accountTooOld": "紹介コードは最初の30日間のみ有効です。",
-      "generic": "コードを引き換えできませんでした。"
+      "generic": "そのコードを引き換えできませんでした。コードを確認して、もう一度お試しください。"
     }
   },
   "yearAhead": {
@@ -4116,19 +4469,23 @@
       "feat4": "一年を通した全体の物語"
     },
     "unlockCta": "{{n}} Moonstonesでアンロック",
-    "unlocking": "アンロック中…",
     "unlocked": "予報をアンロックしました",
-    "unlockFailed": "アンロックできませんでした",
-    "insufficientBalance": "Moonstonesが不足しています — デイリーチェックインや招待で獲得できます",
-    "balance": "残高: {{n}} Moonstones",
+    "unlockFailed": "予報をアンロックできませんでした。接続を確認して、もう一度お試しください。",
+    "insufficientBalance": "ムーンストーンが足りません。{{n}}個必要です。デイリーチェックイン、広告、友だち招待で貯められます。",
     "computing": "あなたの一年をマッピング中…",
     "errorNatalMissing": "計算済みのネイタルチャートが見つかりません。プロフィールで出生データを再入力してください。",
     "errorGeneric": "予報を読み込めません。少し待ってからお試しください。",
     "overall": "全体のアーク",
     "emptyMonth": "占星的には静かな月。休息に充てて。",
     "disclaimer": "占星術は予言ではなく、象徴のレンズです。トランジットは元型的な天気を示すだけ—その中で何をするかはあなた次第。",
-    "stripeFailed": "チェックアウトを開始できませんでした",
-    "payWithStripe": "またはカードで${{price}}を支払う"
+    "stripeFailed": "チェックアウトを開けませんでした。接続を確認して、もう一度お試しください。",
+    "upgradeToPremium": "プレミアムに含まれるものを見る",
+    "orEarnMoonstones": "またはムーンストーン{{n}}個でアンロック",
+    "balanceShort": "残高：{{n}}",
+    "earnHint": "ムーンストーンはデイリーチェックイン、広告の視聴、友だち招待で貯められます。",
+    "earnNow": "広告を見て、ムーンストーン{{n}}個を貯める",
+    "eventCount": "{{n}}件のトランジット",
+    "retry": "予報を再読み込み"
   },
   "natalReport": {
     "title": "完全なネイタルチャート",
@@ -4143,11 +4500,9 @@
       "feat4": "PDF保存またはブラウザから印刷"
     },
     "unlockCta": "{{n}} Moonstonesでアンロック",
-    "unlocking": "アンロック中…",
     "unlocked": "チャートをアンロックしました",
-    "unlockFailed": "アンロックできませんでした",
-    "insufficientBalance": "Moonstonesが不足しています — デイリーチェックインや招待で獲得できます",
-    "balance": "残高: {{n}} Moonstones",
+    "unlockFailed": "レポートをアンロックできませんでした。接続を確認して、もう一度お試しください。",
+    "insufficientBalance": "ムーンストーンが足りません。{{n}}個必要です。デイリーチェックイン、広告、友だち招待で貯められます。",
     "errorChartMissing": "計算済みの出生図が見つかりません。プロフィールで出生データを再入力してください。",
     "printCta": "PDFとして保存",
     "bigThreeHeading": "ビッグスリー",
@@ -4170,15 +4525,16 @@
     "synastryPrompt": "相手の出生データ",
     "partnerNamePlaceholder": "相手の名前（任意）",
     "synastryCta": "相手のチャートを重ねる",
-    "synastryFailed": "シナストリーを計算できませんでした。",
-    "overlayFailed": "重ね合わせを読み込めませんでした。接続を確認して再度お試しください。",
+    "synastryFailed": "シナストリーを計算できませんでした。双方の出生情報を確認して、もう一度お試しください。",
+    "overlayFailed": "その重ね合わせを読み込めませんでした。接続を確認して、もう一度お試しください。",
     "balanceShort": "残高：{{n}}",
     "earnHint": "毎日のチェックインや友達招待で貯められます。",
     "orEarnMoonstones": "または{{n}}ムーンストーンで解放",
     "crossAspects": "主要クロスアスペクト",
     "disclaimer": "占星術は予言ではなく、象徴のレンズです。あなたのチャートは気質の地図—どう生かすかはあなた次第。",
-    "stripeFailed": "チェックアウトを開始できませんでした",
-    "payWithStripe": "またはカードで ${{price}} を支払う"
+    "stripeFailed": "チェックアウトを開けませんでした。接続を確認して、もう一度お試しください。",
+    "upgradeToPremium": "プレミアムに含まれるものを見る",
+    "earnNow": "広告を見て、ムーンストーン{{n}}個を貯める"
   },
   "careerReport": {
     "title": "キャリアのアーキタイプ",
@@ -4193,11 +4549,9 @@
       "feat4": "新しい役割での最初の90日プラン"
     },
     "unlockCta": "{{n}} Moonstonesで解放",
-    "unlocking": "解放中…",
     "unlocked": "レポートを解放しました",
-    "unlockFailed": "解放できませんでした",
-    "insufficientBalance": "Moonstonesが不足しています—デイリーチェックインや招待で獲得できます",
-    "balance": "残高: {{n}} Moonstones",
+    "unlockFailed": "レポートを解放できませんでした。接続を確認して、もう一度お試しください。",
+    "insufficientBalance": "ムーンストーンが足りません。{{n}}個必要です。デイリーチェックイン、広告、友だち招待で貯められます。",
     "bestFit": "最適職種",
     "drains": "消耗を招く環境",
     "collaboration": "協働パターン",
@@ -4206,13 +4560,18 @@
     "monthLabel": "{{n}}ヶ月目",
     "reflection": "この問いと向き合う",
     "share": "私のアーキタイプを共有",
-    "stripeFailed": "チェックアウトを開始できませんでした",
-    "payWithStripe": "またはカードで${{price}}を支払う"
+    "stripeFailed": "チェックアウトを開けませんでした。接続を確認して、もう一度お試しください。",
+    "upgradeToPremium": "プレミアムに含まれるものを見る",
+    "orEarnMoonstones": "またはムーンストーン{{n}}個で解放",
+    "balanceShort": "残高：{{n}}",
+    "earnHint": "ムーンストーンはデイリーチェックイン、広告の視聴、友だち招待で貯められます。",
+    "earnNow": "広告を見て、ムーンストーン{{n}}個を貯める",
+    "fullReport": "レポートの全文"
   },
   "compatInvite": {
     "createTitle": "招待する",
     "createSubtitle": "リンクを送信。相手が回答すると、二人のリーディングが見られます。",
-    "createFailed": "招待を作成できませんでした",
+    "createFailed": "招待リンクを作成できませんでした。接続を確認して、もう一度お試しください。",
     "pickKind": "相性の種類",
     "nothingToShare": "まず性格診断を受けるか、生年月日を追加してください。",
     "generateLink": "招待リンクを作成",
@@ -4232,7 +4591,7 @@
     "ownInvite": "これはあなた自身の招待です。リンクを友人やパートナーに共有してください—相手の回答が必要です。",
     "signInTitle": "サインインして相性を見る",
     "signInBody": "無料アカウントを作成、またはサインインして相性リーディングのあなたの側を完了しましょう。",
-    "signInCta": "続ける",
+    "signInCta": "ログインして相性を見る",
     "resultLabel": "相性",
     "mbtiSection": "性格の相性",
     "astroSection": "占星の相性",
@@ -4248,17 +4607,18 @@
       "selfInvite": "自分の招待には回答できません。",
       "expired": "この招待は期限切れです。",
       "notFound": "招待が見つかりません。",
-      "generic": "回答できませんでした。"
+      "generic": "回答を送信できませんでした。接続を確認して、もう一度お試しください。"
     },
     "kinds": {
       "mbti": "Personality (MBTI)",
-      "love-language": "Love Language",
-      "attachment": "Attachment Style",
+      "love-language": "ラブランゲージ",
+      "attachment": "アタッチメントスタイル",
       "big-five": "Big Five",
       "enneagram": "Enneagram",
       "zodiac": "Zodiac",
       "element": "Element"
-    }
+    },
+    "shareLink": "招待リンクをシェア"
   },
   "advisorBooking": {
     "back": "戻る",
@@ -4275,7 +4635,7 @@
     "bookedToast": "セッションを予約しました — {{n}} ムーンストーンを引き落としました。",
     "insufficientBalance": "ムーンストーンが不足しています。チャージして再試行してください。",
     "slotTaken": "その枠は今しがた埋まりました。別の時間を選んでください。",
-    "bookFailed": "その枠を予約できませんでした。",
+    "bookFailed": "その枠を予約できませんでした。直前に埋まった可能性があります。別の時間を選んでください。",
     "disclaimer": "セッション開始前なら、いつでも全額返金でキャンセルできます。"
   },
   "advisorSession": {
@@ -4284,7 +4644,7 @@
     "notFound": "セッションが見つかりません。",
     "startsIn": "{{n}}分後に開始。予定時刻の5分以内ならいつでも始められます。",
     "readyToStart": "準備ができたらどうぞ。",
-    "cancel": "キャンセル",
+    "cancel": "このセッションをキャンセル",
     "start": "セッションを開始",
     "started": "セッションを開始しました",
     "ended": "セッションは終了しました",
@@ -4293,7 +4653,7 @@
     "cancelledToast": "キャンセルしました。{{n}}ムーンストーンを返金しました。",
     "noMessages": "まずは挨拶してみましょう。",
     "composerPlaceholder": "メッセージを書く…",
-    "sendFailed": "送信できませんでした",
+    "sendFailed": "メッセージを送信できませんでした。接続を確認して、もう一度お試しください。",
     "rateTitle": "いかがでしたか？",
     "reviewPlaceholder": "共有したいことはありますか？（任意）",
     "submitRating": "評価を送信",
@@ -4327,13 +4687,13 @@
     "cashoutExceeds": "金額が換金可能残高を超えています。",
     "cashoutSent": "Stripeアカウントに${{usd}}を送金しました。",
     "cashoutMinNote": "最低100 Moonstones（総額$10 / あなたの受取は$7）。",
-    "stripeFailed": "Stripeのオンボーディングを開始できませんでした",
+    "stripeFailed": "Stripeのオンボーディングを開けませんでした。接続を確認して、もう一度お試しください。",
     "onboardingRequired": "先にStripeのオンボーディングを完了してください。"
   },
   "voice": {
     "join": "音声に参加",
     "joining": "参加中…",
-    "leave": "退出",
+    "leave": "音声から退出",
     "notConnected": "音声オフ",
     "state": {
       "idle": "",
@@ -4347,11 +4707,11 @@
   "liveRoom": {
     "back": "すべてのルーム",
     "notFound": "ルームが見つかりません。",
-    "listeners": "{{n}} RSVPd / cap {{cap}}",
-    "rsvp": "RSVP",
-    "rsvpd": "参加済み",
+    "listeners": "{{cap}}席中{{n}}席が埋まっています",
+    "rsvp": "席を確保する",
+    "rsvpd": "参加確定",
     "notLiveYet": "ホストが開始すると音声が開きます。",
-    "rsvpToJoin": "参加には先にRSVPしてください。",
+    "rsvpToJoin": "音声ルームに参加するには、先に席を確保してください。",
     "tipHost": "ホストにチップ",
     "tipSent": "ホストに{{n}}個のムーンストーンを送りました。",
     "replayHeading": "リプレイ",
@@ -4359,14 +4719,22 @@
     "unlockReplay": "リプレイを解放 — {{n}}個",
     "unlocking": "解放中…",
     "replayUnlocked": "リプレイを解放しました",
-    "replayInsufficient": "ムーンストーンが足りません。",
+    "replayInsufficient": "リプレイに必要なムーンストーンが足りません。ホームのウィジェットからチャージするか、デイリーチェックインで貯めてください。",
     "signInToUnlock": "リプレイを解放するにはサインイン",
-    "listenFree": "無料で聴く"
+    "listenFree": "無料で聴く",
+    "tipInsufficient": "そのチップに必要なムーンストーンが足りません。ホームのウィジェットからチャージするか、デイリーチェックインで貯めてください。",
+    "tipAmount": "ムーンストーン{{n}}個",
+    "toasts": {
+      "rsvpFailed": "席を確保できませんでした。接続を確認して、もう一度お試しください。",
+      "cancelFailed": "席を解放できませんでした。接続を確認して、もう一度お試しください。",
+      "unlockFailed": "リプレイを解放できませんでした。ムーンストーンは引かれていません。少し待ってからもう一度お試しください。",
+      "tipFailed": "チップを送れませんでした。ムーンストーンは引かれていません。少し待ってからもう一度お試しください。"
+    }
   },
   "advisorVerify": {
     "title": "アドバイザー認証",
     "startTitle": "認証して公開",
-    "startBody": "予約受付の前に本人確認を行います。政府発行IDと、氏名と本日の日付を述べる短いセルフィー動画をアップロードしてください。72時間以内に審査します。",
+    "startBody": "クライアントが予約できるようになる前に、本人確認を行います。政府発行のIDと、氏名と本日の日付を述べる短いセルフィー動画をアップロードしてください。72時間以内に審査します。",
     "pendingTitle": "審査中",
     "pendingBody": "{{date}}に提出。72時間以内に審査します。",
     "approvedTitle": "認証済み",
@@ -4379,28 +4747,32 @@
     "countryLabel": "国（2文字コード、例：US）",
     "idLabel": "政府発行ID（画像）",
     "uploadId": "IDをアップロード",
-    "selfieLabel": "セルフィー動画（氏名＋本日の日付を述べてください）",
-    "uploadSelfie": "動画をアップロード",
+    "selfieLabel": "セルフィー動画（氏名と本日の日付を述べてください）",
+    "uploadSelfie": "本人確認動画をアップロード",
     "submitCta": "審査に提出",
     "submitting": "送信中…",
     "submitted": "提出しました。72時間以内に審査します。",
     "incomplete": "すべての項目を入力し、両方のファイルをアップロードしてください。",
-    "privacyNote": "書類は暗号化され、管理者レビュアーのみが閲覧できます。"
+    "privacyNote": "書類は暗号化され、管理者レビュアーのみが閲覧できます。",
+    "uploadIdFailed": "IDをアップロードできませんでした。接続を確認して、もう一度お試しください。",
+    "uploadVideoFailed": "動画をアップロードできませんでした。接続を確認して、もう一度お試しください。"
   },
   "sandbox": {
     "title": "アーキタイプのサンドボックス",
     "intro": "象徴的なオブジェクトを選び、台座に置くと、オラクルが配置を読み解きます。プレビュー版 — 位置は自動で渦状に配置、ドラッグ＆ドロップは近日対応。",
     "pickObject": "オブジェクトを選ぶ",
     "place": "台座に置く",
-    "reset": "リセット",
+    "reset": "台座を空にする",
     "placedLabel": "台座上",
     "placeMore": "少なくとも2つ置いてください。",
     "interpretCta": "配置を読む",
     "reading": "配置を読み取り中…",
     "readingLabel": "オラクルが読んでいます",
-    "rearrange": "並べ替え",
-    "interpretFailed": "解釈できませんでした。",
-    "preview": "プレビュー — ドラッグ配置と保存/共有は近日対応。"
+    "rearrange": "空にして並べ直す",
+    "interpretFailed": "配置を読み取れませんでした。少し待ってからもう一度お試しください。",
+    "preview": "プレビュー — ドラッグ配置と保存/共有は近日対応。",
+    "webglUnavailableTitle": "3Dプレビューは利用できません",
+    "webglUnavailableBody": "お使いのブラウザまたは端末はWebGLに対応していません。それでも元型のオブジェクトを置いて解釈を受け取ることはできます。リーディングに3D表示は必要ありません。"
   },
   "quickReading": {
     "title": "3秒リーディング",
@@ -4415,7 +4787,7 @@
     "share": "共有",
     "askAnother": "もう一度聞く",
     "disclaimer": "リーディングは内省のためのもので、予言や専門的助言ではありません。",
-    "errorRateLimit": "少し早すぎます——落ち着いて、少し待ってからもう一度。",
+    "errorRateLimit": "少し早すぎます。落ち着いて、少し待ってからもう一度お試しください。",
     "errorUnavailable": "リーディングは一時的に利用できません。",
     "errorGeneric": "リーディングを生成できませんでした。もう一度お試しください。"
   },
@@ -4429,15 +4801,15 @@
     "reversed": "逆位置",
     "composerPlaceholder": "続けて聞く…",
     "seedMessage": "今{{card}}を引きました。いまそれが示しているかもしれないことと、どう向き合えばいいか手助けしてください。",
-    "aiFailed": "オラクルに接続できませんでした"
+    "aiFailed": "オラクルに接続できませんでした。接続を確認して、もう一度尋ねてください。"
   },
   "journalCoach": {
     "askCta": "ジャーナルコーチに聞く",
     "thinking": "読んでいます…",
-    "failed": "コーチに接続できません",
+    "failed": "コーチに接続できませんでした。接続を確認して、もう一度お試しください。",
     "observationLabel": "気づき",
     "promptsLabel": "これらと向き合う",
-    "dismiss": "閉じる"
+    "dismiss": "これらのプロンプトを隠す"
   },
   "chartWheel": {
     "tapPrompt": "惑星、ハウス、またはアスペクト線をタップ。",
@@ -4451,12 +4823,16 @@
     "intro": "満月のサークル、水星逆行のふり返り、ライブのタロットリーディングなど、予定されたライブ集会。まもなく音声優先で。席を確保するにはRSVPしてください。",
     "empty": "カレンダーにライブの予定はまだありません。もう少しお待ちください。",
     "capacity": "最大{{n}}人が聴取",
-    "rsvp": "RSVP",
+    "rsvp": "席を確保する",
     "rsvpd": "参加確定",
-    "rsvpConfirmed": "リストに追加しました—通知します。",
-    "rsvpCancelled": "RSVPをキャンセルしました",
-    "signInToRsvp": "RSVPするにはサインイン",
-    "voiceComingSoon": "音声配信は段階的に公開中です。RSVPすると、あなたのルームが開いたときにお知らせします。"
+    "rsvpConfirmed": "リストに追加しました。{{time}}にルームが開きますので、またここをご覧ください。",
+    "rsvpCancelled": "席を解放しました。いつでもまた確保できます。",
+    "signInToRsvp": "ログインして席を確保",
+    "voiceComingSoon": "音声は段階的に公開中です。席を確保して、またここをご覧ください。各ルームは予定時刻に開きます。",
+    "toasts": {
+      "rsvpFailed": "席を確保できませんでした。接続を確認して、もう一度お試しください。",
+      "cancelFailed": "席を解放できませんでした。接続を確認して、もう一度お試しください。"
+    }
   },
   "pickACard": {
     "title": "カードを選ぶ",
@@ -4466,8 +4842,8 @@
     "optionAria": "カード{{n}}",
     "upright": "正位置",
     "reversed": "逆位置",
-    "share": "シェア",
-    "learnMore": "詳しく見る",
+    "share": "カードをシェア",
+    "learnMore": "このカードの意味を読む",
     "comeBack": "新しいカードは深夜0時に更新されます。",
     "shareText": "今日は{{name}}（{{orientation}}）を引きました — {{keyword}}"
   },
@@ -4476,13 +4852,13 @@
     "subtitle": "古典的な相性診断を、1つの数字に。無料でシェアできる即時診断。",
     "needsBirthData": "まず生年月日を登録してください",
     "needsBirthDataBody": "チャートを比較するため、生年月日（時刻があればなお正確）が必要です。設定 → プロフィール編集から追加できます。",
-    "goToProfile": "プロフィールへ",
+    "goToProfile": "出生情報を追加する",
     "partnerNameLabel": "相手の名前",
     "partnerNamePlaceholder": "任意",
     "birthDateLabel": "生年月日",
     "birthTimeLabel": "生まれた時刻（任意 — スコアがより正確に）",
     "calculateCta": "スコアを見る",
-    "computeFailed": "計算できませんでした。接続を確認して再度お試しください。",
+    "computeFailed": "計算できませんでした。接続を確認して、もう一度お試しください。",
     "noAspects": "有意なアスペクトが見つかりません。生まれた時刻を追加してみてください。",
     "scoreWithPartner": "{{you}} と {{partner}}",
     "scoreNoName": "あなたの相性",
@@ -4493,7 +4869,7 @@
     "tryAnother": "別の相手で試す",
     "share": "スコアをシェア",
     "shareText": "Arcanaのソウルメイトスコアは {{score}}/100（{{vibe}}）。あなたもarcana.appで試してみて。",
-    "disclaimer": "スコアは答えではなく、対話のための鏡です。チャートは運命ではなくパターンを示します。",
+    "disclaimer": "スコアは判定ではなく、対話のための鏡です。チャートは運命ではなく、パターンを示します。",
     "vibes": {
       "transcendent": "超越",
       "strong": "強い",
@@ -4503,10 +4879,10 @@
     },
     "vibeDescriptions": {
       "transcendent": "二人のチャートは稀な調和を奏でています — 深い認識、自然な化学反応、一致した目的。",
-      "strong": "基本的な形が合っています。本物の惹かれと本物の安らぎ、そして関係を生き生きとさせる適度な違い。",
+      "strong": "基本的な形が合っています。本物の惹かれと本物の安らぎがあり、関係を生き生きとさせるだけの違いもあります。",
       "steady": "地に足のついた、実用的な組み合わせ。ある部分では出会い、ある部分ではすれ違う。努力次第で機能します。",
       "complex": "磁力があるが摩擦も多い。引き合いは本物、角もまた本物。熱を保てれば成長の宝庫。",
-      "testing": "パターンは自然には流れません。可能ではあるが、引力より意図が必要。"
+      "testing": "パターンは自然には流れません。可能ではありますが、引力よりも意図が必要です。"
     }
   },
   "askOracle": {
@@ -4514,12 +4890,14 @@
     "contextLabel": "あなたの質問",
     "cta": "オラクルに尋ねる",
     "drawing": "引いています…",
-    "errorGeneric": "オラクルに接続できませんでした。もう一度お試しください。",
+    "errorGeneric": "オラクルに接続できませんでした。接続を確認して、もう一度お試しください。",
     "question": "私のために読んでください — {{context}}。今、私の人生で何を指し示していますか?",
     "redraw": "もう一度引く",
-    "share": "共有",
+    "share": "このリーディングをシェア",
     "sheetTitle": "オラクルの読み解き",
-    "subtitle": "あなたのチャートと記憶に基づくパーソナライズされたリーディング"
+    "subtitle": "あなたのチャートと記憶に基づくパーソナライズされたリーディング",
+    "retry": "もう一度オラクルに尋ねる",
+    "close": "オラクルを閉じる"
   },
   "dailyMission": {
     "doneSub": "新しいミッションは深夜0時に届きます。",
@@ -4528,18 +4906,18 @@
     "markDone": "完了にする"
   },
   "moonstoneTopUp": {
-    "generic": "購入に失敗しました",
+    "generic": "購入が完了しませんでした。少し待ってからもう一度お試しください。",
     "packLabel": {
       "devotee": "デヴォーティー",
       "generous": "ジェネラス",
       "regular": "レギュラー",
       "starter": "スターター"
     },
-    "packNotFound": "このパックはストアで利用できません。",
+    "packNotFound": "このパックは現在ストアにありません。別のパックを選ぶか、時間をおいてもう一度お試しください。",
     "playStorePurchase": "Google Play で請求されます。Google アカウントで購入を管理してください。",
     "popular": "人気",
-    "securePayment": "Stripe による安全な決済。一回限りの購入 — いつでもキャンセル可能。",
-    "stripeFailed": "決済を開けませんでした",
+    "securePayment": "Stripe による安全な決済。一回限りの購入で、サブスクリプションではありません。",
+    "stripeFailed": "チェックアウトを開けませんでした。接続を確認して、もう一度お試しください。",
     "subtitle": "リーディングをアンロック、ライブホストにチップ、アドバイザーセッションの予約。",
     "success": "{{n}} のムーンストーンが届きます — 数秒でアカウントに反映されます。",
     "title": "ムーンストーンをチャージ"
@@ -4570,6 +4948,405 @@
     "whatFor": "何のために日を選びますか？",
     "best": "これからの吉日",
     "avoid": "避けたい日",
-    "export": "カレンダー"
+    "export": "カレンダーに追加",
+    "intro": "中国の択日は、出生図とは別の問いを立てます。あなたがどんな人かではなく、あることをいつ行うか。それぞれの日は、その日を司る二十八宿から読みます。あなたの生年月日がわかれば、その日があなた自身の柱とどう向き合うかからも読みます。",
+    "noBirth": "ここに表示しているのは暦の読みで、誰にとっても同じです。プロフィールに生年月日を追加すると、それぞれの日をあなた自身の柱とも照らし合わせます。伝統的な暦が別の日を勧める理由として、いちばん多いのはそこでの衝突です。",
+    "disclaimer": "伝統的な習わしを、習わしとしてお届けしています。健康、お金、法律について述べるものではありません。スコアは一行ずつ確かめられる単純な集計であって、お告げではありません。",
+    "windowNote": "これから{{days}}日間を見ています。日をタップすると、そのスコアになった理由がそのまま見られます。"
+  },
+  "celestial": {
+    "needBirthDate": {
+      "cta": "プロフィールへ",
+      "secondary": "プロフィール全体を編集する"
+    },
+    "previewLock": {
+      "title": "いま見えているのは太陽と月のプレビューです。"
+    },
+    "city": {
+      "aiReading": {
+        "body": "これらのラインを、あなたの出生図と求めているものに織り合わせた解釈をお届けします。あなたのためだけに書かれたリーディングです。"
+      },
+      "lockedCount": "ほかに{{count}}本の惑星ラインがここを通っています"
+    },
+    "form": {
+      "dateRequired": "生年月日を入力してください。",
+      "dateInvalid": "日付の形式が正しくないようです。YYYY-MM-DD の形でお試しください。",
+      "dateLabel": "生年月日",
+      "timeLabel": "出生時刻（任意）",
+      "placeLabel": "出生地（任意）",
+      "placePlaceholder": "例：東京、日本",
+      "accuracyHint": "ここでは出生時刻がとても重要です。時刻がないと正午として計算するため、アセンダントやMCのラインが別の大陸に落ちてしまうこともあります。おおよそでも時刻を入れると、信頼できる地図になります。",
+      "saving": "保存中…",
+      "cta": "私の地図を描く",
+      "saveFailed": "出生情報を保存できませんでした。接続を確認して、もう一度お試しください。"
+    },
+    "search": {
+      "placeholder": "都市や国を検索…",
+      "label": "都市を検索"
+    },
+    "about": {
+      "eyebrow": "アストロカートグラフィー",
+      "body": "アストロカートグラフィーは、あなたが生まれたまさにその瞬間に、それぞれの惑星が昇り、沈み、あるいは天頂にあった場所を地図にし、その位置を世界中に投影します。できあがるのは、あなたのさまざまな側面と響き合う場所を集めた、あなただけの地図帳です。キャリアのラインが輝く都市もあれば、恋愛のライン、癒しのライン、脚光のラインの上にある都市もあります。そこへ移れば、エネルギーもついてきます。",
+      "tradition": "1970年代に占星術師ジム・ルイスが体系化したアストロカートグラフィーは、いまでは移住コンサルタントや旅する占星術師、次の章を計画する好奇心旺盛な人々に使われています。"
+    },
+    "use": {
+      "eyebrow": "ここでわかること",
+      "subtitle": "テーマをタップすると、その目的に合わせて地図が絞り込まれます。",
+      "love": {
+        "body": "恋が訪れやすく、惹かれ合いが深まり、そこで結ばれたパートナーシップが長く続きやすい場所を地図にします。"
+      }
+    },
+    "angles": {
+      "title": "ラインの読み方"
+    },
+    "controls": {
+      "flat": "平面地図",
+      "globe": "地球儀表示",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "reset": "表示をリセット",
+      "findMe": "出生地を表示"
+    },
+    "intro": {
+      "title": "あなたの星の地図を描いています",
+      "body": "あなたが生まれたとき、それぞれの惑星が昇り、沈み、子午線にあった場所を配置しています…",
+      "ready": "まもなく完成します"
+    },
+    "power": {
+      "title": "あなたのパワースポット",
+      "subtitle": "あなたのチャートで、もっとも多くの惑星ラインが交わる場所です。訪れる、移り住む、また戻る——そんな候補になる強い場所です。",
+      "lockedHint": "解放して、あなたの場所を見る"
+    },
+    "destinedPlace": {
+      "eyebrow": "あなたの運命の場所",
+      "clear": "運命の場所をクリア"
+    },
+    "findPlace": {
+      "cta": {
+        "title": "運命の場所を見つける",
+        "premiumBadge": "プレミアム",
+        "body": "ワンタップで、すべての都市をあなたの出生図全体と照らし合わせ、いちばん合う場所をひとつ、詳しい理由とともにお見せします。"
+      },
+      "error": {
+        "title": "リーディングを完了できませんでした",
+        "retry": "もう一度リーディングする",
+        "body": "接続を確認して、もう一度お試しください。",
+        "noPlace": "この目的に強く合う場所は見つかりませんでした。別のテーマでお試しください。"
+      },
+      "hero": {
+        "eyebrow": "あなたの運命の場所"
+      },
+      "reading": {
+        "loading": "リーディングを書いています…",
+        "linesLabel": "この場所である理由",
+        "practiceLabel": "最初のひと月",
+        "cautionsLabel": "正直なところ",
+        "rerollCta": "別の場所を見る",
+        "saving": "保存中…",
+        "saved": "保存済み",
+        "saveCta": "この場所を保存"
+      },
+      "eyebrow": "あなたの場所を探す",
+      "needsTimeTitle": "出生時刻を追加すると使えます",
+      "needsTimeBody": "「運命の場所を探す」は、アセンダントとMCのラインに都市を照らし合わせます。このふたつは出生時刻だけで決まるため、時刻がないと推測になってしまいます。地図が本物になるまでお待ちいただくほうが誠実だと考えています。おおよその時刻でも役に立ちます。"
+    },
+    "hero": {
+      "subtitle": "暮らす、愛する、働く、癒える——あなたに最も合う場所を、生まれた瞬間の空から読み解きます。"
+    },
+    "mapSection": {
+      "title": "あなたの地図",
+      "subtitle": "地図をタップすると、その場所を通るラインが見えます。下で特定の都市を検索することもできます。"
+    }
+  },
+  "freeCourse": {
+    "errors": {
+      "invalidEmail": "有効なメールアドレスを入力してください。",
+      "signupFailed": "登録できませんでした。少し時間をおいてもう一度お試しください。"
+    },
+    "badge": "無料の3回メールコース",
+    "title": "3通のメールでタロットを学ぶ",
+    "subtitle": "キーワード、スートの対応、数秘術の基礎をカバーする無料メールシリーズ——すべての読み手に必要な基本です。",
+    "success": "登録完了です。受信トレイをご確認ください。",
+    "emailPlaceholder": "your@email.com",
+    "sending": "送信中…",
+    "cta": "第1回を受け取る",
+    "disclaimer": "迷惑メールはありません。ワンクリックで配信停止できます。5日間で3通のメールです。"
+  },
+  "onboarding:createAccount": {
+    "appleCta": "Apple で続ける"
+  },
+  "loveTree": {
+    "shareText": "私のArcanaラブツリー：{{title}}——{{archetype}}。あなたのツリーは arcana.app/love-tree で",
+    "title": "ラブツリー",
+    "intro": "12の質問、90秒、1本の木。あなたのアタッチメントスタイルを生きた形として描き、あなたの愛し方を率直に読み解きます。",
+    "howItWorksLabel": "しくみ",
+    "how1": "12の短い文を「まったくそう思わない」から「とてもそう思う」まで評価します。",
+    "how2": "古典的なアタッチメントの座標で、あなたの不安と回避のスコアを計算します。",
+    "how3": "4つの象限のいずれかに落ち着き、それぞれ異なるアニメーションの木として描かれます。",
+    "startCta": "私の木を育てる",
+    "disclaimer": "自己理解のためのツールであり、臨床的な診断ではありません。アタッチメントのパターンは変わりうるもの——これはスナップショットであって、判定ではありません。",
+    "back": "戻る",
+    "progress": "{{n}}問中{{i}}問目",
+    "retake": "もう一度受ける",
+    "yourStyle": "あなたのアタッチメントスタイル",
+    "share": "私の木をシェア",
+    "anxietyLabel": "不安",
+    "avoidanceLabel": "回避",
+    "strengthsLabel": "あなたの自然な強み",
+    "growthLabel": "伸びしろ",
+    "inLoveLabel": "恋愛では",
+    "affirmationLabel": "あなたのアファメーション"
+  },
+  "createAccount": {
+    "appleCta": "Apple で続ける"
+  },
+  "updateBanner": {
+    "title": "新しいバージョンがあります",
+    "body": "最近の修正と改善が含まれています。Google Play から更新すると利用できます。",
+    "update": "Google Play で更新",
+    "later": "2日後にまた知らせる",
+    "dismiss": "閉じる"
+  },
+  "rateApp": {
+    "title": "私の初めてのアプリを試してくれてありがとうございます",
+    "body1": "このアプリは学業のかたわら作っているので、時間もリソースも限られています。まだ完璧ではないと分かっていますが、少しずつ改善を続けています。",
+    "body2": "何か気になることやバグがあれば、ぜひ教えてください。そして楽しんでいただけているなら、5つ星のレビューがとても励みになります。",
+    "rate": "Google Play でArcanaを評価する",
+    "feedback": "メールで問題を報告する",
+    "later": "また今度"
+  },
+  "people": {
+    "eyebrow": "あなたの大切な人たち",
+    "title": "大切な人",
+    "subtitle": "大切な人の出生情報を保存して、その人のチャートとあなたとの相性を見てみましょう。",
+    "addPerson": "人を追加",
+    "emptyTitle": "まだ誰もいません",
+    "emptyBody": "パートナー、親、友だちを追加すると、その人の出生図と、あなたとの星の重なりが見えます。",
+    "timeUnknown": "時刻不明",
+    "savedCount": "50人中{{n}}人を保存済み",
+    "notFound": "この人は、あなたの大切な人の中に見つかりませんでした。",
+    "relationship": {
+      "self": "あなた",
+      "partner": "パートナー",
+      "family": "家族",
+      "friend": "友だち",
+      "other": "その他",
+      "pet": "ペット"
+    },
+    "form": {
+      "name": "名前",
+      "namePlaceholder": "例：お母さん、アレックス、ジェイミー",
+      "relationship": "関係",
+      "species": "種類",
+      "birthDate": "生年月日",
+      "birthTime": "出生時刻（任意——チャートがより精密になります）",
+      "petTime": "時刻（任意——保護された動物の多くは不明です）",
+      "birthPlace": "出生地（任意）",
+      "nameRequired": "この人の名前を入力してください。",
+      "dateRequired": "生年月日を入力してください。",
+      "limit": "上限の50人に達しました。",
+      "saveFailed": "この人を保存できませんでした。接続を確認して、もう一度お試しください。",
+      "updated": "{{name}}を更新しました",
+      "added": "{{name}}を追加しました",
+      "cancel": "キャンセル",
+      "saving": "保存中…",
+      "saveChanges": "出生情報を保存",
+      "add": "この人を追加"
+    },
+    "detail": {
+      "chartFailed": "チャートを立てられませんでした。接続を確認して、もう一度お試しください。",
+      "deleted": "{{name}}を削除しました",
+      "deleteFailed": "{{name}}を削除できませんでした。もう一度お試しください。",
+      "backToPeople": "大切な人の一覧に戻る",
+      "birthTimeUnknown": "出生時刻が不明のため、ハウスとアセンダントはおおよそのものです。",
+      "compare": "ふたりのチャートを比べる",
+      "edit": "出生情報を編集",
+      "delete": "{{name}}を削除",
+      "editTitle": "{{name}}を編集",
+      "deleteTitle": "{{name}}を削除しますか？",
+      "deleteBody": "{{name}}の保存された出生データとチャートを削除します。元に戻すことはできません。",
+      "keep": "{{name}}を残す",
+      "deleteConfirm": "完全に削除する"
+    },
+    "compare": {
+      "needOwnBirth": "チャートを比べるには、プロフィールにあなたの生年月日を追加してください。",
+      "castFailed": "ふたつのチャートを立てられませんでした。接続を確認して、もう一度お試しください。",
+      "tabFailed": "このチャートを立てられませんでした。接続を確認して、もう一度お試しください。",
+      "goBack": "戻る",
+      "eyebrow": "シナストリー",
+      "title": "あなたと{{name}}",
+      "chartTypeAria": "チャートの種類",
+      "disclaimer": "内省とエンターテインメントのためのものです。これらのチャートは運命ではなく、力学を描きます。",
+      "tabs": {
+        "synastry": {
+          "label": "シナストリー",
+          "blurb": "ふたつのチャートがどう語り合うか"
+        },
+        "composite": {
+          "label": "コンポジット",
+          "blurb": "関係そのものの中点チャート"
+        },
+        "davison": {
+          "label": "デイヴィソン",
+          "blurb": "ふたりの誕生の、時間と空間のちょうど中間にある実際の空"
+        },
+        "progressed-composite": {
+          "label": "進行",
+          "blurb": "関係のチャートが今どこまで進んだか"
+        }
+      }
+    }
+  },
+  "mirror": {
+    "signIn": "ログインすると、あなたの鏡が見られます。",
+    "title": "鏡",
+    "subtitle": "リーディングの履歴があなたについて明かすこと。保存したタロットの引きから、パターンを集計します。",
+    "period": {
+      "week": "直近7日間",
+      "month": "直近30日間",
+      "all": "全期間"
+    },
+    "periodAria": "期間",
+    "loading": "鏡を読んでいます…",
+    "emptyTitle": "この期間のリーディングはまだありません。",
+    "emptyBody": "今日カードを引けば、ここにあなたのパターンが現れはじめます。",
+    "stats": {
+      "readings": "リーディング",
+      "cardsDrawn": "引いたカード",
+      "reversals": "逆位置",
+      "streak": "連続日数"
+    },
+    "highlights": {
+      "cardNow": "いまのあなたのカード",
+      "dominantSuit": "目立つスート",
+      "recurringNumber": "繰り返し現れる数"
+    },
+    "sections": {
+      "topCards": "上位5枚のカード",
+      "suitBalance": "スートのバランス（小アルカナ）",
+      "majorMinor": "大アルカナと小アルカナ",
+      "majorMinorNote": "大アルカナ＝人生のテーマ、小アルカナ＝日々のエネルギー。"
+    }
+  },
+  "spreadDetail": {
+    "notFound": "スプレッドが見つかりません",
+    "backToAll": "すべてのスプレッドに戻る",
+    "allSpreads": "すべてのスプレッド"
+  },
+  "chartSuite": {
+    "eyebrow": "チャートライブラリ",
+    "title": "すべての空を、すべての角度から",
+    "subtitle": "生まれたときのチャートから、いまこの瞬間の空まで——ひとつの時を読む13の方法。",
+    "needBirth": "このチャートを立てるには、プロフィールに生年月日を追加してください。",
+    "addBirth": "出生情報を追加する",
+    "castFailed": "このチャートを立てられませんでした。接続を確認して、もう一度お試しください。",
+    "retry": "もう一度チャートを立てる"
+  },
+  "foolsJourney": {
+    "signInHint": "ログインすると、あなたの愚者の旅が見られます。",
+    "signIn": "ログインして旅を歩む"
+  },
+  "soulmatePortrait": {
+    "title": "あなたのソウルメイトの肖像",
+    "intro": "あなたのチャートが恋愛で求める資質を、ディセンダント、金星、火星、月から描いたイラストの肖像です。象徴としてのアートであり、実在の人物の写真ではありません。",
+    "vibe": {
+      "romantic": "ロマンティック",
+      "grounded": "地に足のついた",
+      "electric": "電撃的",
+      "soulful": "魂のこもった"
+    },
+    "paint": "肖像を描く",
+    "painting": "肖像を描いています…",
+    "notEnough": "ムーンストーンが足りません",
+    "failed": "肖像を描けませんでした。もう一度お試しください。",
+    "saved": "保存済み",
+    "alt": "あなたのチャートの関係性の象徴から生成した、象徴的なイラストの肖像",
+    "why": "なぜこの姿なのか",
+    "save": "画像を保存",
+    "repaint": "もう一度描く",
+    "disclaimer": "あなたのチャートの象徴を芸術的に解釈したものであり、実在の人物を描いたものではありません。"
+  },
+  "wishingSky": {
+    "eyebrow": "願いの星空",
+    "title": "みんなの願いが、ひとつの空に",
+    "subtitle": "ここにある星はどれも、誰かの願いです。願いごとをすると、あなたの星も仲間に加わります。誰かの願いに「私も願う」と応えると、あなたの星とその人の星の間に線が引かれます。",
+    "loading": "空に灯をともしています…",
+    "emptyTitle": "今夜の空はまだ空っぽです。",
+    "emptyBody": "最初の願いごとをして、星をともしてください。",
+    "makeWish": "願いごとをする",
+    "signInHint": "ログインすると、自分の星を加えたり、ほかの人の願いに応えたりできます。",
+    "recent": "最近の願い",
+    "openToHelp": "助けを受け付け中",
+    "yours": "あなたの願い",
+    "noWishes": "まだ願いはありません。",
+    "themeOther": "その他",
+    "placeholder": "願わくは…",
+    "publicNote": "Arcanaを使っているすべての人が読めます。",
+    "contactWarning": "{{what}}が含まれているようです。削除してください。願いは公開されるため、連絡先を書くと詐欺の標的になりかねません。代わりに下の「助けを受け付ける」をオンにすれば、親切な人がプライベートに連絡できます。",
+    "anEmail": "メールアドレス",
+    "aPhone": "電話番号",
+    "themeLabel": "何についての願いですか？",
+    "openToHelpLabel": "助けの申し出を受け付ける",
+    "openToHelpBody": "この願いについて、誰でもあなたにプライベートなメッセージを送れます。相手にはあなたの連絡先は見えません。届いた内容を読んで、返事をするかどうかはあなたが決められます。",
+    "nameLabel": "名乗る名前（任意）",
+    "namePlaceholder": "下の名前、ニックネーム、または空欄のまま",
+    "lightStar": "私の星をともす",
+    "lighting": "ともしています…",
+    "starLit": "あなたの星がともりました。",
+    "signInToEcho": "願いに応えるにはログインしてください。",
+    "wishTitle": "願い",
+    "echo": "私も願う",
+    "echoed": "応えました",
+    "offerHelp": "助けを申し出る",
+    "report": "この願いを通報",
+    "thisIsYours": "これはあなたの願いです。",
+    "linked": "あなたの星とその人の星が、空でつながりました。",
+    "offerIntro": "これは相手にだけ届きます。相手はあなたのメッセージを読んで、望めば返事ができます。どちらも、話したくないことを話す必要はありません。",
+    "offerPlaceholder": "あなたにできること、どう助けたいか…",
+    "sendPrivately": "プライベートに送る",
+    "sending": "送信中…",
+    "offerSent": "送信しました。相手だけが読めて、望めば返事ができます。",
+    "neverMind": "やめておく",
+    "reported": "通報しました。ありがとうございます。確認します。",
+    "reportFailed": "通報を送信できませんでした。もう一度お試しください。",
+    "footer": "願いは公開され、誰でも読めます。電話番号、住所、メールアドレスは決して書かないでください。助けを受け付けるにしておけば、相手はプライベートに連絡できます。",
+    "errors": {
+      "loadSky": "空を読み込めませんでした。接続を確認して、もう一度お試しください。",
+      "lightStar": "星をともせませんでした。接続を確認して、もう一度お試しください。",
+      "loadLinks": "つながりを読み込めませんでした。接続を確認して、もう一度お試しください。",
+      "addEcho": "応えを追加できませんでした。少し待ってからもう一度お試しください。",
+      "removeEcho": "応えを取り消せませんでした。少し待ってからもう一度お試しください。",
+      "alreadyOffered": "この願いには、すでに助けを申し出ています。",
+      "sendOffer": "申し出を送信できませんでした。接続を確認して、もう一度お試しください。",
+      "loadOffers": "申し出を読み込めませんでした。接続を確認して、もう一度お試しください。",
+      "respond": "返事を送信できませんでした。少し待ってからもう一度お試しください。",
+      "sendReport": "通報を送信できませんでした。接続を確認して、もう一度お試しください。"
+    }
+  },
+  "spreadBuilder": {
+    "signIn": "ログインしてスプレッドを作る",
+    "signInPrompt": "カスタムスプレッドはアカウントに保存されます。",
+    "signInCta": "ログインしてスプレッドを作る",
+    "toasts": {
+      "signInToSave": "このスプレッドを保存するにはログインしてください。",
+      "nameRequired": "保存する前に、スプレッドに名前をつけてください。",
+      "positionRequired": "名前と意味の両方を持つ位置を、少なくともひとつ追加してください。",
+      "saveFailed": "スプレッドを保存できませんでした。接続を確認して、もう一度お試しください。",
+      "saved": "スプレッドを保存しました。「保存したスプレッド」に表示されます。",
+      "deleteFailed": "そのスプレッドを削除できませんでした。接続を確認して、もう一度お試しください。",
+      "deleted": "スプレッドを削除しました。"
+    }
+  },
+  "authBootstrap": {
+    "backToSignIn": "ログインに戻る"
+  },
+  "publicNav": {
+    "signIn": "ログイン"
+  },
+  "astrologyLearn": {
+    "title": "占星術"
+  },
+  "spreads": {
+    "pageTitle": "タロットスプレッド"
   }
 }

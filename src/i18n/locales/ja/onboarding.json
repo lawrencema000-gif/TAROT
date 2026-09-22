@@ -1,12 +1,14 @@
 {
   "language": {
     "title": "言語を選択",
-    "subtitle": "後で設定からいつでも変更できます。"
+    "subtitle": "後で設定からいつでも変更できます。",
+    "saveCta": "この言語で保存",
+    "cta": "この言語で続ける"
   },
   "welcome": {
     "heading": "毎日のリチュアル、はじまる。",
     "subheading": "タロット、占星術、性格診断——ぜんぶを、ひとつの美しい場所に。",
-    "cta": "はじめる",
+    "cta": "アカウントを設定する",
     "alreadyHaveAccount": "すでにアカウントをお持ちの方"
   },
   "createAccount": {
@@ -20,14 +22,14 @@
     "ageConfirm": "13歳以上であることを確認し、利用規約に同意します。",
     "submit": "アカウントを作成",
     "switchToSignIn": "すでにアカウントをお持ちですか? ログイン",
-    "back": "戻る"
+    "back": "前のステップへ"
   },
   "toast": {
-    "invalidEmail": "有効なメールアドレスを入力してください。",
-    "invalidPassword": "パスワードが正しくありません。",
+    "invalidEmail": "メールアドレスの形式が正しくないようです。確認して、もう一度お試しください。",
+    "invalidPassword": "英字と数字の両方を含む、8文字以上のパスワードにしてください。",
     "userExists": "ログインをお試しください。",
-    "profileSaveFailed": "プロフィールの保存に失敗しました。もう一度お試しください。",
-    "accountCreated": "アカウントを作成しました!さっそくカスタマイズしましょう。"
+    "profileSaveFailed": "アカウントは作成されましたが、プロフィールを保存できませんでした。接続を確認して、ログインして続けてください。",
+    "accountCreated": "アカウントを作成しました。さっそくあなた好みにしていきましょう。"
   },
   "signIn": {
     "heading": "お帰りなさい",
@@ -36,10 +38,10 @@
     "divider": "またはメールでログイン",
     "submit": "ログイン",
     "forgotPassword": "パスワードをお忘れですか?",
-    "switchToSignUp": "アカウントをお持ちでないですか? 新規登録"
+    "switchToSignUp": "アカウントをお持ちでないですか？ 新規登録"
   },
   "oauth": {
-    "welcome": "ようこそ、{{name}} さん!",
+    "welcome": "ようこそ、{{name}} さん。",
     "welcomeSub": "いくつかのステップで、あなただけの体験をつくっていきます",
     "goals": {
       "heading": "どんなサポートが必要ですか?",
@@ -54,9 +56,9 @@
       "birthTimeHint": "より正確な出生図のために",
       "birthPlace": "出生地",
       "birthPlaceHint": "のちほど出生図の計算に使います",
-      "searchPlaceholder": "都市や町を検索...",
+      "searchPlaceholder": "都市や町を検索…",
       "locationVerified": "位置情報を確認しました",
-      "invalidBirthDate": "生年月日が正しくありません"
+      "invalidBirthDate": "生年月日が正しくないようです。確認して、もう一度お試しください。"
     },
     "tone": {
       "heading": "言葉のトーン",
@@ -75,13 +77,16 @@
       }
     },
     "notifications": {
-      "reminderTime": "リマインダー時刻"
+      "reminderTime": "リマインダー時刻",
+      "dailyPromise": "1日1回、あなたが選んだ時刻に。迷惑な通知はありません。",
+      "webNote": "リマインダーはスマートフォンのArcanaアプリに届きます。設定は保存され、アプリをインストールしたときに反映されます。"
     },
-    "next": "次へ",
-    "beginJourney": "旅をはじめる",
+    "next": "保存して続ける",
+    "beginJourney": "最初のリチュアルをはじめる",
     "toast": {
-      "saveFailed": "プロフィールの保存に失敗しました。もう一度お試しください。",
-      "welcome": "Arcana へようこそ!"
-    }
+      "saveFailed": "情報を保存できませんでした。接続を確認して、もう一度お試しください。",
+      "welcome": "Arcana へようこそ。"
+    },
+    "back": "前のステップへ"
   }
 }

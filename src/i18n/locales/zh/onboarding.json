@@ -1,12 +1,14 @@
 {
   "language": {
     "title": "选择语言",
-    "subtitle": "稍后可在设置中更改。"
+    "subtitle": "稍后可在设置中更改。",
+    "saveCta": "保存语言",
+    "cta": "使用此语言继续"
   },
   "welcome": {
     "heading": "你的每日仪式,从这里开始。",
     "subheading": "塔罗、占星、性格洞察——合成一个温柔的空间。",
-    "cta": "开始使用",
+    "cta": "开始设置账号",
     "alreadyHaveAccount": "我已有账号"
   },
   "createAccount": {
@@ -20,14 +22,14 @@
     "ageConfirm": "我已年满 13 岁,并同意服务条款。",
     "submit": "创建账号",
     "switchToSignIn": "已有账号?立即登录",
-    "back": "返回"
+    "back": "上一步"
   },
   "toast": {
-    "invalidEmail": "请输入有效的邮箱地址。",
-    "invalidPassword": "密码无效。",
+    "invalidEmail": "邮箱地址格式不正确，请检查后重试。",
+    "invalidPassword": "密码至少 8 位，需同时包含字母和数字。",
     "userExists": "这个邮箱已经注册过了,直接登录就好。",
-    "profileSaveFailed": "保存资料失败,请稍后重试。",
-    "accountCreated": "账号建好了!来把这里打造成你的专属空间吧。"
+    "profileSaveFailed": "账号已创建，但资料未能保存。请检查网络连接后登录继续。",
+    "accountCreated": "账号已创建。接下来为你定制专属体验。"
   },
   "signIn": {
     "heading": "欢迎回来",
@@ -36,11 +38,11 @@
     "divider": "或使用邮箱登录",
     "submit": "登录",
     "forgotPassword": "忘记密码?",
-    "switchToSignUp": "还没有账号?立即注册"
+    "switchToSignUp": "还没有账号？立即注册"
   },
   "oauth": {
-    "welcome": "欢迎,{{name}}!",
-    "welcomeSub": "只要几个步骤,就能做出专属你的体验",
+    "welcome": "欢迎，{{name}}。",
+    "welcomeSub": "只需几步，为你定制专属体验",
     "goals": {
       "heading": "你想要什么样的帮助?",
       "hint": "可多选"
@@ -54,9 +56,9 @@
       "birthTimeHint": "让星盘更精准",
       "birthPlace": "出生地",
       "birthPlaceHint": "之后会用来计算你的本命星盘",
-      "searchPlaceholder": "搜索城市或城镇...",
+      "searchPlaceholder": "搜索城市或城镇…",
       "locationVerified": "位置已确认",
-      "invalidBirthDate": "出生日期不正确"
+      "invalidBirthDate": "出生日期格式不正确，请检查后重试。"
     },
     "tone": {
       "heading": "你喜欢的语气",
@@ -75,13 +77,16 @@
       }
     },
     "notifications": {
-      "reminderTime": "提醒时间"
+      "reminderTime": "提醒时间",
+      "dailyPromise": "每天一次提醒，时间由你定。绝无骚扰信息。",
+      "webNote": "提醒会通过手机上的 Arcana 应用送达。你的选择已保存，安装后即生效。"
     },
-    "next": "下一步",
-    "beginJourney": "开启旅程",
+    "next": "保存并继续",
+    "beginJourney": "开始我的第一次仪式",
     "toast": {
-      "saveFailed": "保存资料失败,请稍后重试。",
-      "welcome": "欢迎来到 Arcana!"
-    }
+      "saveFailed": "无法保存你的资料，请检查网络连接后重试。",
+      "welcome": "欢迎来到 Arcana。"
+    },
+    "back": "上一步"
   }
 }

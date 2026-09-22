@@ -34,7 +34,7 @@
       "title": "Your ritual is ready.",
       "sub": "Pull one card, then write one honest sentence."
     },
-    "startTodaysRitual": "Start today's ritual",
+    "startTodaysRitual": "Start today’s ritual",
     "ritualCards": {
       "todaysEnergy": "Today’s energy",
       "yourPrompt": "Your prompt",
@@ -56,7 +56,7 @@
     },
     "xpEarned": "+{{xp}} XP earned.",
     "removedFromSaved": "Removed from saved",
-    "exploreMore": "Beyond today's ritual",
+    "exploreMore": "Beyond today’s ritual",
     "seeAllSaved": "See all saved"
   },
   "auth": {
@@ -127,7 +127,7 @@
     "hebrewLetter": "Hebrew letter",
     "numerology": "Numerology",
     "reinforcingCards": "Reinforcing cards",
-    "reinforcingIntro": "When {{name}} appears alongside these cards, the reading's energy intensifies — {{reason}}",
+    "reinforcingIntro": "When {{name}} appears alongside these cards, the reading’s energy intensifies — {{reason}}",
     "opposingCards": "Opposing cards",
     "opposingIntro": "These cards create tension with {{name}} — {{reason}}",
     "faq": "Frequently asked questions"
@@ -236,7 +236,7 @@
         "body": "One tap. We read every city against your full birth chart and reveal the single best place for you — with the long-form why."
       },
       "error": {
-        "title": "We couldn't finish your reading",
+        "title": "We couldn’t finish your reading",
         "retry": "Try the reading again",
         "body": "Check your connection and try again.",
         "noPlace": "No strong place found for this intent — try a different life area."
@@ -1546,7 +1546,7 @@
       "differNote": "Your chart says {{natal}} but your behaviour says {{behaviour}} — worth noticing where you’re stretching."
     },
     "askOracleCta": "Read this result for me",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "saveToProfile": "Save to my profile",
     "compareLocked": "Compare with a friend"
   },
@@ -1673,7 +1673,7 @@
     "todayForYou": {
       "heading": "Today for you",
       "noDailyContent": "No daily content available",
-      "tryAgain": "Reload today's reading",
+      "tryAgain": "Reload today’s reading",
       "moonIn": "Moon in",
       "houseParen": "(House {{num}})",
       "activeTransits": "Active transits",
@@ -1688,7 +1688,7 @@
         "money": "Money",
         "energy": "Energy"
       },
-      "loadFailed": "Couldn't load today's reading — check your connection and try again."
+      "loadFailed": "Couldn’t load today’s reading — check your connection and try again."
     },
     "onboarding": {
       "oneMoreDetail": "One more detail",
@@ -3592,7 +3592,7 @@
     "dominantNote": "Your dominant element is {{el}} — it shapes how you are most naturally yourself.",
     "weakNote": "Your weakest element is {{el}} — this is where more support can nourish you. To build {{el}}, surround yourself with {{support}} (which produces {{el}}).",
     "excessNote": "You have a strong excess of {{el}}. Watch for its shadow expressions, and balance with {{control}} (which controls {{el}}).",
-    "unlockDeepHint": "For the deeper layers — 10-year luck pillars, this year's reading, spirit stars, branch relations — go back and add your birth gender. Luck-pillar direction is determined by year polarity × gender, so the calculation needs both.",
+    "unlockDeepHint": "For the deeper layers — 10-year luck pillars, this year’s reading, spirit stars, branch relations — go back and add your birth gender. Luck-pillar direction is determined by year polarity × gender, so the calculation needs both.",
     "pillarsHeading": "What each pillar represents",
     "yearPillarLabel": "Year",
     "monthPillarLabel": "Month",
@@ -3660,7 +3660,7 @@
     "shadowPromptLabel": "Shadow question",
     "integrationLabel": "Integration practice",
     "compensatoryLabel": "What your waking self is missing",
-    "compensatoryHint": "Jung: dreams compensate for the conscious attitude. This is what the dream offers that you don't already have.",
+    "compensatoryHint": "Jung: dreams compensate for the conscious attitude. This is what the dream offers that you don’t already have.",
     "symbolicLayersLabel": "Symbolic layers",
     "colorsLabel": "Colours present",
     "numbersLabel": "Numbers present",
@@ -3946,7 +3946,7 @@
       }
     },
     "needMoreForLetter": "Log at least 3 days for a weekly letter.",
-    "letterFailed": "Couldn't write your letter right now. Try again in a moment.",
+    "letterFailed": "Couldn’t write your letter right now. Try again in a moment.",
     "letterHeading": "A letter for this week",
     "letterIntro": "Generate a warm, specific letter reading your last 14 days of entries — written like a wise friend who has been paying attention.",
     "writingLetter": "Writing…",
@@ -3983,16 +3983,16 @@
     "growthLabel": "Growth edges",
     "adviceLabel": "Advice",
     "yourBirthTime": "Your birth time (sharpens the reading — includes the Moon)",
-    "partnerBirthTime": "Partner's birth time (optional)",
+    "partnerBirthTime": "Partner’s birth time (optional)",
     "computing": "Computing the aspects…",
     "synastryLabel": "Astrology synastry",
     "harmoniousLabel": "Harmonious",
     "intenseLabel": "Intense",
     "challengingLabel": "Challenging",
-    "synastryExplainer": "Each aspect is a real geometric relationship between your planets and your partner's. Harmonious aspects flow easily; intense ones amplify; challenging ones ask for growth work.",
+    "synastryExplainer": "Each aspect is a real geometric relationship between your planets and your partner’s. Harmonious aspects flow easily; intense ones amplify; challenging ones ask for growth work.",
     "topAspectsLabel": "Your most telling aspects",
     "myPlanet": "Your",
-    "partnerPlanet": "Partner's",
+    "partnerPlanet": "Partner’s",
     "elementalLabel": "Elemental blend",
     "compositeLabel": "Your relationship as a third entity",
     "compositeIntro": "A composite chart treats the relationship itself as something with its own character — separate from either of you alone. These observations describe the partnership entity.",
@@ -4047,7 +4047,7 @@
       }
     },
     "kuaHeading": "Your personal Kua (optional)",
-    "kuaIntro": "Add your birth year + gender to compute your personal Kua number — the basis of Eight Mansions feng shui. We'll show your 4 favourable + 4 unfavourable directions for placing the bed, desk, and front door.",
+    "kuaIntro": "Add your birth year + gender to compute your personal Kua number — the basis of Eight Mansions feng shui. We’ll show your 4 favourable + 4 unfavourable directions for placing the bed, desk, and front door.",
     "birthYearLabel": "Birth year",
     "genderLabel": "Birth gender",
     "selectOrSkip": "Select or skip",
@@ -4194,7 +4194,7 @@
     "contextLabel": "Your question",
     "cardLabel": "Card drawn",
     "drawing": "Drawing…",
-    "errorGeneric": "Couldn't reach the Oracle — check your connection and try again.",
+    "errorGeneric": "Couldn’t reach the Oracle — check your connection and try again.",
     "share": "Share this reading",
     "redraw": "Draw again",
     "retry": "Ask the Oracle again",
@@ -4360,7 +4360,7 @@
     "rollButton": "Roll the dice",
     "rollAgain": "Roll again",
     "rolling": "Rolling…",
-    "astroIntro": "The astrologer's dice — three fall at once: a planet for WHAT, a sign for HOW, a house for WHERE in your life. Hold a question, then roll.",
+    "astroIntro": "The astrologer’s dice — three fall at once: a planet for WHAT, a sign for HOW, a house for WHERE in your life. Hold a question, then roll.",
     "askOracle": "Ask the Oracle about this"
   },
   "crisis": {
@@ -4369,12 +4369,16 @@
     "phone": {
       "title": "988 Suicide & Crisis Lifeline",
       "body": "Call or text 988 · 24/7 · US",
-      "cta": "Call"
+      "cta": "Call",
+      "number": "988"
     },
     "text": {
       "title": "Crisis Text Line",
       "body": "Text HOME to 741741 · US/UK/CA/IE",
-      "cta": "Text"
+      "cta": "Text",
+      "number": "741741",
+      "scheme": "sms",
+      "keyword": "HOME"
     },
     "international": {
       "title": "International helplines"
@@ -4706,8 +4710,8 @@
     "submitted": "Submitted. We’ll review within 72 hours.",
     "incomplete": "Fill in every field and upload both files.",
     "privacyNote": "Documents are encrypted and only visible to admin reviewers.",
-    "uploadIdFailed": "Couldn't upload your ID — check your connection and try again.",
-    "uploadVideoFailed": "Couldn't upload your video — check your connection and try again."
+    "uploadIdFailed": "Couldn’t upload your ID — check your connection and try again.",
+    "uploadVideoFailed": "Couldn’t upload your video — check your connection and try again."
   },
   "sandbox": {
     "title": "Archetypal sandbox",
@@ -4724,7 +4728,7 @@
     "interpretFailed": "Couldn’t read the arrangement — try again in a moment.",
     "preview": "Preview — drag-to-place and save/share are coming.",
     "webglUnavailableTitle": "3D preview is not available",
-    "webglUnavailableBody": "Your browser or device doesn't support WebGL. You can still place archetypal objects and get an interpretation — the reading doesn't require the 3D view."
+    "webglUnavailableBody": "Your browser or device doesn’t support WebGL. You can still place archetypal objects and get an interpretation — the reading doesn’t require the 3D view."
   },
   "quickReading": {
     "title": "3-second reading",
@@ -4795,7 +4799,7 @@
     "upright": "Upright",
     "reversed": "Reversed",
     "share": "Share my card",
-    "learnMore": "Read this card's meaning",
+    "learnMore": "Read this card’s meaning",
     "comeBack": "New cards arrive at midnight.",
     "shareText": "Today I drew {{name}} ({{orientation}}) — {{keyword}}"
   },
@@ -4878,12 +4882,12 @@
   "freeCourse": {
     "errors": {
       "invalidEmail": "Please enter a valid email.",
-      "signupFailed": "Couldn't sign you up — please try again in a moment."
+      "signupFailed": "Couldn’t sign you up — please try again in a moment."
     },
     "badge": "Free 3-part email course",
     "title": "Learn tarot in 3 emails",
     "subtitle": "A free email series covering keywords, suit correspondences, and numerology basics — the foundation every reader needs.",
-    "success": "You're in. Check your inbox.",
+    "success": "You’re in. Check your inbox.",
     "emailPlaceholder": "your@email.com",
     "sending": "Sending…",
     "cta": "Send me Lesson 1",
@@ -4926,8 +4930,8 @@
   },
   "rateApp": {
     "title": "Thank you for trying my first app",
-    "body1": "I built this while studying, so I'm working with limited time and resources. I know it isn't perfect yet, but I'm actively improving it.",
-    "body2": "If anything feels off or you spot a bug, please let me know. And if you're enjoying it, a 5-star review helps a lot.",
+    "body1": "I built this while studying, so I’m working with limited time and resources. I know it isn’t perfect yet, but I’m actively improving it.",
+    "body2": "If anything feels off or you spot a bug, please let me know. And if you’re enjoying it, a 5-star review helps a lot.",
     "rate": "Rate Arcana on Google Play",
     "feedback": "Report a problem by email",
     "later": "Ask me another time"
@@ -4941,7 +4945,7 @@
     "emptyBody": "Add your partner, a parent, or a friend to reveal their natal chart and see how your stars align.",
     "timeUnknown": "time unknown",
     "savedCount": "{{n}} of 50 saved",
-    "notFound": "We couldn't find this person in your circle.",
+    "notFound": "We couldn’t find this person in your circle.",
     "relationship": {
       "self": "You",
       "partner": "Partner",
@@ -4961,8 +4965,8 @@
       "birthPlace": "Birth place (optional)",
       "nameRequired": "Give this person a name.",
       "dateRequired": "Enter their birth date.",
-      "limit": "You've reached the 50-person limit.",
-      "saveFailed": "Couldn't save this person — check your connection and try again.",
+      "limit": "You’ve reached the 50-person limit.",
+      "saveFailed": "Couldn’t save this person — check your connection and try again.",
       "updated": "{{name}} updated",
       "added": "{{name}} added",
       "cancel": "Cancel",
@@ -4971,9 +4975,9 @@
       "add": "Add this person"
     },
     "detail": {
-      "chartFailed": "Couldn't cast the chart — check your connection and try again.",
+      "chartFailed": "Couldn’t cast the chart — check your connection and try again.",
       "deleted": "{{name}} deleted",
-      "deleteFailed": "Couldn't delete {{name}} — try again.",
+      "deleteFailed": "Couldn’t delete {{name}} — try again.",
       "backToPeople": "Back to people",
       "birthTimeUnknown": "Birth time unknown — houses and rising sign are approximate.",
       "compare": "Compare our charts",
@@ -4981,14 +4985,14 @@
       "delete": "Delete {{name}}",
       "editTitle": "Edit {{name}}",
       "deleteTitle": "Delete {{name}}?",
-      "deleteBody": "This deletes {{name}}'s saved birth data and chart. It can't be undone.",
+      "deleteBody": "This deletes {{name}}'s saved birth data and chart. It can’t be undone.",
       "keep": "Keep {{name}}",
       "deleteConfirm": "Delete permanently"
     },
     "compare": {
       "needOwnBirth": "Add your own birth date in your profile to compare charts.",
-      "castFailed": "Couldn't cast both charts — check your connection and try again.",
-      "tabFailed": "Couldn't cast this chart — check your connection and try again.",
+      "castFailed": "Couldn’t cast both charts — check your connection and try again.",
+      "tabFailed": "Couldn’t cast this chart — check your connection and try again.",
       "goBack": "Go back",
       "eyebrow": "Synastry",
       "title": "You and {{name}}",
@@ -5056,11 +5060,11 @@
     "subtitle": "Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.",
     "needBirth": "Add your birth date in your profile to cast this chart.",
     "addBirth": "Add my birth details",
-    "castFailed": "Couldn't cast this chart — check your connection and try again.",
+    "castFailed": "Couldn’t cast this chart — check your connection and try again.",
     "retry": "Cast the chart again"
   },
   "foolsJourney": {
-    "signInHint": "Sign in to see your Fool's Journey.",
+    "signInHint": "Sign in to see your Fool’s Journey.",
     "signIn": "Sign in to walk the journey"
   },
   "soulmatePortrait": {
@@ -5075,23 +5079,23 @@
     "paint": "Paint the portrait",
     "painting": "Painting your portrait…",
     "notEnough": "Not enough Moonstones",
-    "failed": "The portrait couldn't be painted — try again.",
+    "failed": "The portrait couldn’t be painted — try again.",
     "saved": "Saved",
-    "alt": "Symbolic illustrated portrait generated from your chart's relationship symbolism",
+    "alt": "Symbolic illustrated portrait generated from your chart’s relationship symbolism",
     "why": "Why it looks like this",
     "save": "Save the image",
     "repaint": "Paint it again",
-    "disclaimer": "An artistic interpretation of your chart's symbolism — not a depiction of a real person."
+    "disclaimer": "An artistic interpretation of your chart’s symbolism — not a depiction of a real person."
   },
   "wishingSky": {
     "eyebrow": "The Wishing Sky",
-    "title": "Everyone's wishes, in one sky",
-    "subtitle": "Every star here is someone's wish. Make one and yours joins them. When you echo a wish — say you want it for them too — a line is drawn between your star and theirs.",
+    "title": "Everyone’s wishes, in one sky",
+    "subtitle": "Every star here is someone’s wish. Make one and yours joins them. When you echo a wish — say you want it for them too — a line is drawn between your star and theirs.",
     "loading": "Lighting the sky…",
     "emptyTitle": "The sky is empty tonight.",
     "emptyBody": "Make the first wish and light it.",
     "makeWish": "Make a wish",
-    "signInHint": "Sign in to add your own star and to echo other people's wishes.",
+    "signInHint": "Sign in to add your own star and to echo other people’s wishes.",
     "recent": "Recent wishes",
     "openToHelp": "open to help",
     "yours": "yours",
@@ -5125,19 +5129,19 @@
     "offerSent": "Sent. They will see it privately and can reply if they want to.",
     "neverMind": "Never mind",
     "reported": "Reported. Thank you — we will look at it.",
-    "reportFailed": "Couldn't send the report — try again.",
+    "reportFailed": "Couldn’t send the report — try again.",
     "footer": "Wishes are public and anyone can read them. Never put a phone number, an address or an email in one — if you are open to help, people can reach you privately instead.",
     "errors": {
-      "loadSky": "Couldn't load the sky — check your connection and try again.",
-      "lightStar": "Couldn't light your star — check your connection and try again.",
-      "loadLinks": "Couldn't load the links — check your connection and try again.",
-      "addEcho": "Couldn't add your echo — try again in a moment.",
-      "removeEcho": "Couldn't remove your echo — try again in a moment.",
-      "alreadyOffered": "You've already offered to help with this wish.",
-      "sendOffer": "Couldn't send your offer — check your connection and try again.",
-      "loadOffers": "Couldn't load the offers — check your connection and try again.",
-      "respond": "Couldn't send your reply — try again in a moment.",
-      "sendReport": "Couldn't send the report — check your connection and try again."
+      "loadSky": "Couldn’t load the sky — check your connection and try again.",
+      "lightStar": "Couldn’t light your star — check your connection and try again.",
+      "loadLinks": "Couldn’t load the links — check your connection and try again.",
+      "addEcho": "Couldn’t add your echo — try again in a moment.",
+      "removeEcho": "Couldn’t remove your echo — try again in a moment.",
+      "alreadyOffered": "You’ve already offered to help with this wish.",
+      "sendOffer": "Couldn’t send your offer — check your connection and try again.",
+      "loadOffers": "Couldn’t load the offers — check your connection and try again.",
+      "respond": "Couldn’t send your reply — try again in a moment.",
+      "sendReport": "Couldn’t send the report — check your connection and try again."
     }
   },
   "spreadBuilder": {

@@ -94,7 +94,7 @@ export function MansionsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-28">
+    <div className="space-y-6">
       <PageHeader
         eyebrow="二十八宿"
         title={t('mansions.title', { defaultValue: 'The Lunar Mansions' })}

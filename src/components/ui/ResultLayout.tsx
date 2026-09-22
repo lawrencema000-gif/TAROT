@@ -41,6 +41,12 @@ export interface ResultLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   summary?: ReactNode;
   /** Sigil, emoji or type badge, rendered in a medallion above the verdict. */
   glyph?: ReactNode;
+  /**
+   * The medallion is decorative by default (an emoji, a sigil) and hidden
+   * from assistive tech. Pass false when the glyph carries information of
+   * its own — a ProgressRing with a score — so its role and value are read.
+   */
+  glyphHidden?: boolean;
   /** Back handler, usually "start over" or "back to quizzes". */
   onBack?: () => void;
   backLabel?: string;
@@ -66,6 +72,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
       subtitle,
       summary,
       glyph,
+      glyphHidden = true,
       onBack,
       backLabel = 'Back',
       actions,
@@ -100,8 +107,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
         )}
 
         {/* The verdict block is the one place on a result screen that is
-            allowed to be loud: a gold hairline and a black drop-shadow,
-            no halo. Everything below it stays flat so this reads as the
+            allowed to be loud: a gold hairline and one step up the surface ramp (800 over the page's 850), no shadow, no halo. Everything below it stays flat so this reads as the
             top of the hierarchy rather than one card among many. */}
         <section
           className="
@@ -117,7 +123,7 @@ export const ResultLayout = forwardRef<HTMLDivElement, ResultLayoutProps>(
                 text-gold font-display text-3xl
                 [&>svg]:w-10 [&>svg]:h-10
               "
-              aria-hidden
+              aria-hidden={glyphHidden || undefined}
             >
               {glyph}
             </div>

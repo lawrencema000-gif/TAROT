@@ -71,7 +71,7 @@ export function TarotSelectView({
                     aspect-[2/3] rounded-lg border-2 overflow-hidden
                     transition-[transform,border-color,background-color] duration-base ease-out
                     ${isSelected
-                      ? 'border-gold/50 bg-gold/10 scale-[1.06] -translate-y-1'
+                      ? 'border-gold bg-gold/10 scale-[1.06] -translate-y-1'
                       : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
                     }
                     flex items-center justify-center

@@ -126,7 +126,7 @@ export function AchievementsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900 pb-24">
+      <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900">
         <Page spacing="md" className="max-w-lg mx-auto">
           <PageHeader title={t('pageTitles.achievements.title')} />
           <Skeleton className="h-48 rounded-2xl" />
@@ -147,7 +147,7 @@ export function AchievementsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900">
       <div className="max-w-lg mx-auto">
         <PageHeader title={t('pageTitles.achievements.title')} className="mb-6" />
         <div className="relative p-6 bg-gradient-to-br from-mystic-800/80 to-mystic-900/80 border-b border-mystic-700/30">

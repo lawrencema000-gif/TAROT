@@ -568,7 +568,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     key={i}
                     size="md"
                     icon={<MapPin />}
-                    label={r.displayName}
+                    label={r.displayName.split(', ')[0]}
+                    meta={r.displayName.split(', ').slice(1).join(', ') || undefined}
                     trailing="none"
                     onClick={() => handleSelectGeoResult(r)}
                   />

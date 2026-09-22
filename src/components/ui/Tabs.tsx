@@ -1,5 +1,5 @@
-import { useEffect, useRef, type ComponentType, type KeyboardEvent, type ReactNode } from 'react';
-import { Lock } from 'lucide-react';
+import { useEffect, useRef, useState, type ComponentType, type KeyboardEvent, type ReactNode } from 'react';
+import { ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 
 /**
  * Tabs: one row of choices, one of them current, an underline saying which.
@@ -51,6 +51,15 @@ export interface TabsProps<T extends string = string> {
   size?: 'sm' | 'md';
   /** Prefix for tab and panel ids so `TabPanel` can point back at its tab. */
   idPrefix?: string;
+  /**
+   * The page renders its content in `TabPanel`s, so the current tab may
+   * point at its panel with `aria-controls`. Off by default: most pages
+   * switch content with a plain conditional, and a reference to an id that
+   * is not in the document is worse than none — assistive tech offers a
+   * jump that lands nowhere. Only the current tab ever carries the
+   * reference, because `TabPanel` unmounts the others.
+   */
+  panels?: boolean;
   className?: string;
 }
 
@@ -83,6 +92,7 @@ export function Tabs<T extends string = string>({
   fill = true,
   size = 'md',
   idPrefix = 'tabs',
+  panels = false,
   className = '',
 }: TabsProps<T>) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -90,11 +100,12 @@ export function Tabs<T extends string = string>({
 
   // A scrolling strip brings the current tab into view — a deep link into
   // the eighth of nine tabs would otherwise land on a strip showing the
-  // first four. `nearest` so it does not yank the page vertically.
+  // first four. `nearest` so it does not yank the page vertically. Guarded:
+  // jsdom and some old WebViews have no scrollIntoView.
   useEffect(() => {
     if (fill || !listRef.current) return;
     const el = listRef.current.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
-    el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }, [value, fill]);
 
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
@@ -114,13 +125,13 @@ export function Tabs<T extends string = string>({
     tabs[next].focus();
   }
 
-  return (
+  const list = (
     <div
       ref={listRef}
       role="tablist"
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
-      className={`flex border-b border-mystic-700 ${fill ? '' : 'overflow-x-auto scrollbar-hide'} ${className}`.trim()}
+      className={`flex border-b border-mystic-700 ${fill ? className : 'w-max min-w-full'}`.trim()}
     >
       {items.map((item) => {
         const active = item.id === value;
@@ -133,7 +144,7 @@ export function Tabs<T extends string = string>({
             id={`${idPrefix}-tab-${item.id}`}
             aria-selected={active}
             aria-label={item['aria-label']}
-            aria-controls={`${idPrefix}-panel-${item.id}`}
+            aria-controls={panels && active ? `${idPrefix}-panel-${item.id}` : undefined}
             tabIndex={active ? 0 : -1}
             disabled={item.disabled}
             onClick={() => onChange(item.id)}
@@ -147,6 +158,99 @@ export function Tabs<T extends string = string>({
           </button>
         );
       })}
+    </div>
+  );
+
+  if (fill) return list;
+  return (
+    <Scroller className={className} onKeyDown={undefined}>
+      {list}
+    </Scroller>
+  );
+}
+
+/**
+ * The scrolling strip. The list itself keeps its hairline and underline
+ * inside the scroller's clip box — an `overflow-x-auto` on the list would
+ * clip the underline's lower pixel, the one that sits on the hairline.
+ *
+ * A mouse has no natural way to scroll sideways, so on hover-capable
+ * devices the wheel is translated to horizontal travel while the pointer
+ * is over the strip (page scroll is untouched unless the strip can move),
+ * and a chevron appears at whichever edge has more tabs behind it. Touch
+ * devices get neither: a finger already knows how to swipe.
+ */
+function Scroller({ className = '', children }: { className?: string; children: ReactNode; onKeyDown?: undefined }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ left: false, right: false });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const max = el.scrollWidth - el.clientWidth;
+      setEdges({ left: el.scrollLeft > 2, right: el.scrollLeft < max - 2 });
+    };
+    measure();
+    el.addEventListener('scroll', measure, { passive: true });
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    // Native, non-passive: React's onWheel cannot preventDefault, and without
+    // it the page scrolls too.
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      const next = Math.max(0, Math.min(max, el.scrollLeft + e.deltaY));
+      if (next === el.scrollLeft) return;
+      e.preventDefault();
+      el.scrollLeft = next;
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('scroll', measure);
+      el.removeEventListener('wheel', onWheel);
+      ro?.disconnect();
+    };
+  }, []);
+
+  const nudge = (dir: -1 | 1) => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * Math.round(el.clientWidth * 0.6), behavior: 'smooth' });
+  };
+
+  const CHEVRON =
+    'absolute top-0 bottom-px w-9 hidden [@media(hover:hover)]:flex items-center bg-gradient-to-r ' +
+    'text-mystic-300 [@media(hover:hover)]:[&:hover]:text-mystic-100';
+
+  return (
+    <div className={`relative ${className}`.trim()}>
+      <div ref={ref} className="overflow-x-auto scrollbar-hide">
+        {children}
+      </div>
+      {edges.left && (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-hidden
+          onClick={() => nudge(-1)}
+          className={`${CHEVRON} left-0 justify-start from-mystic-950 to-transparent`}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      )}
+      {edges.right && (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-hidden
+          onClick={() => nudge(1)}
+          className={`${CHEVRON} right-0 justify-end from-transparent to-mystic-950`}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }

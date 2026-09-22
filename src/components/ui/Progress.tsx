@@ -40,12 +40,8 @@ export interface ProgressProps {
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   tone?: ProgressTone;
-  /**
-   * `gradient` keeps the gold sweep for the one bar that earns it (a level
-   * bar); `default` and `gold` both mean the gold tone and exist so older
-   * call sites keep working.
-   */
-  variant?: 'default' | 'gold' | 'gradient';
+  /** `gradient` keeps the gold sweep for the one bar that earns it (a level bar). Colour is `tone`. */
+  variant?: 'gradient';
   /** Accessible name, e.g. "Level progress". */
   label?: string;
   className?: string;
@@ -122,7 +118,7 @@ export function ProgressRing({ value, max = 100, size = 80, strokeWidth = 6, ton
     >
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle
-          className="text-mystic-800"
+          className="text-mystic-700"
           strokeWidth={strokeWidth}
           stroke="currentColor"
           fill="transparent"

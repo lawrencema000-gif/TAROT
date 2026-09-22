@@ -14,6 +14,7 @@ function Harness({ onChange }: { onChange?: (id: Id) => void }) {
       <Tabs<Id>
         aria-label="Horoscope sections"
         idPrefix="h"
+        panels
         value={value}
         onChange={(id) => { onChange?.(id); setValue(id); }}
         items={[
@@ -40,6 +41,8 @@ describe('Tabs', () => {
     expect(tabs[1].getAttribute('aria-selected')).toBe('false');
     expect(tabs[0].id).toBe('h-tab-today');
     expect(tabs[0].getAttribute('aria-controls')).toBe('h-panel-today');
+    // Only the current tab points at a panel: the others' panels are unmounted.
+    expect(tabs[1].hasAttribute('aria-controls')).toBe(false);
     // Only the current panel exists, and it names its tab.
     const panels = screen.getAllByRole('tabpanel');
     expect(panels).toHaveLength(1);
@@ -89,6 +92,18 @@ describe('Tabs', () => {
     await user.click(today);
     expect(onChange).toHaveBeenLastCalledWith('today');
     expect(screen.getByRole('tabpanel').textContent).toBe('Today panel');
+  });
+
+  it('without panels, no tab claims to control anything', () => {
+    render(
+      <Tabs<Id>
+        aria-label="Plain"
+        value="today"
+        onChange={() => {}}
+        items={[{ id: 'today', label: 'Today' }, { id: 'chart', label: 'Chart' }, { id: 'forecast', label: 'Forecast' }]}
+      />,
+    );
+    for (const tab of screen.getAllByRole('tab')) expect(tab.hasAttribute('aria-controls')).toBe(false);
   });
 
   it('a locked tab shows the lock, stays selectable, and a disabled tab is inert', async () => {

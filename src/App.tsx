@@ -552,7 +552,7 @@ function AppContent() {
             of a 1920px screen, which reads as a phone emulator rather than a
             web product. Native is unaffected: a Capacitor webview never
             clears 1024px on a phone, so the `lg:` rules simply never fire. */}
-        <main className="relative z-10 max-w-lg lg:max-w-4xl mx-auto px-4 lg:px-8 pt-4 pb-28 safe-top" aria-label={t('common.mainContent', { defaultValue: 'Main content' })}>
+        <main className="relative z-10 max-w-lg lg:max-w-4xl mx-auto px-4 lg:px-8 pt-4 safe-top" aria-label={t('common.mainContent', { defaultValue: 'Main content' })}>
           <Header
             onSearchClick={() => openOverlay('search')}
             onSavedClick={() => openOverlay('saved')}

@@ -23,8 +23,8 @@ export type ListRowTone = 'neutral' | 'gold' | 'violet' | 'blue' | 'rose' | 'tea
 const TILE: Record<ListRowTone, string> = {
   neutral: 'bg-mystic-800 text-mystic-300',
   gold: 'bg-gold/10 text-gold',
-  violet: 'bg-cosmic-violet/15 text-cosmic-violet',
-  blue: 'bg-cosmic-blue/15 text-cosmic-blue',
+  violet: 'bg-cosmic-violet/15 text-cosmic-violet-ink',
+  blue: 'bg-cosmic-blue/15 text-cosmic-blue-ink',
   rose: 'bg-cosmic-rose/15 text-cosmic-rose',
   teal: 'bg-teal/15 text-teal',
   coral: 'bg-coral/15 text-coral',

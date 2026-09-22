@@ -35,10 +35,10 @@ function strip(src: string): string {
 
 /** Gold or coloured glows, and the two utilities that used to define them. */
 const HALO =
-  /\b(?:hover:|active:|group-hover:)?(?:shadow-glow(?:-md|-lg)?|shadow-gold(?:\/\d+)?|shadow-inner-glow|shadow-card(?:-hover)?|shadow-(?:fuchsia|amber|blue|mystic|violet|rose|teal|coral)-\d{3}\/\d+|shadow-\[0_0_\d+px_rgba\(212,175,55[^\]]*\]|drop-shadow-\[0_0_[^\]]*\]|glow-gold(?:-subtle)?|border-glow)\b/g;
+  /\b(?:hover:|active:|group-hover:)?(?:shadow-glow(?:-md|-lg)?|shadow-gold(?:\/\d+)?|shadow-inner-glow|shadow-card(?:-hover)?|shadow-(?:fuchsia|amber|blue|mystic|violet|rose|teal|coral)-\d{3}\/\d+|shadow-\[0_0_\d+px_rgba\(212,175,55[^\]]*\]|drop-shadow-\[0_0_[^\]]*\]|glow-gold(?:-subtle)?|border-glow)(?![\w-])/g;
 
 /** Neutral drop shadows. Allowed only where something floats over content. */
-const LIFT = /\b(?:hover:|active:)?(?:shadow-(?:sm|md|lg|xl|2xl|inner)|shadow-black\/\d+|shadow-\[0_\d+px_\d+px[^\]]*\]|drop-shadow-(?:sm|md|lg|xl))\b/g;
+const LIFT = /\b(?:hover:|active:)?(?:shadow-(?:sm|md|lg|xl|2xl|inner)|shadow-black\/\d+|shadow-\[0_\d+px_\d+px[^\]]*\]|drop-shadow-(?:sm|md|lg|xl))(?![\w-])/g;
 
 /**
  * Radius off the scale: 2px (`-sm`), 6px (`-md`), and 24px (`-3xl`) outside
@@ -52,6 +52,28 @@ const LIFT_ALLOWED = new Set([
   'src/components/dev/DevicePreview.tsx', // a fixed dev control and its dropdown, over the app
 ]);
 
+/**
+ * Hero screens rebuilt wholesale in Phase 5; their brand-glyph glow goes
+ * with the rebuild. A debt, not a permission: remove the entry then.
+ */
+const HALO_ALLOWED = new Set([
+  'src/pages/AuthPage.tsx',
+  'src/pages/LandingPage.tsx',
+]);
+
+/**
+ * A shadow written as an inline style is invisible to the class scans.
+ * `inset` rings (a selected-swatch outline) are not elevation and pass;
+ * anything else must be listed here with its reason.
+ */
+const INLINE = /boxShadow:\s*[`'"](?!inset)|drop-shadow\(/g;
+const INLINE_ALLOWED = new Set([
+  'src/components/celestial/CelestialDestinedBeacon.tsx',  // a planet's glow: the star field
+  'src/components/celestial/CelestialMapIntroLoader.tsx',  // the star field
+  'src/components/celestial/CityInsightPanel.tsx',         // planet dots in the star field
+  'src/components/dev/DevicePreview.tsx',                  // the dev frame's chrome
+]);
+
 /** Files that may use the 24px sheet radius by its numeric name. */
 const SHEET_ALLOWED = new Set<string>([]);
 
@@ -62,10 +84,29 @@ function hits(re: RegExp, code: string): string[] {
 }
 
 describe('elevation is fill', () => {
-  it('no halo class survives anywhere in src', () => {
+  it('no halo class survives outside the Phase 5 hero screens', () => {
     const found: string[] = [];
-    for (const f of files) for (const h of hits(HALO, f.code)) found.push(`${f.path}: ${h}`);
+    const stale: string[] = [];
+    for (const f of files) {
+      const h = hits(HALO, f.code);
+      if (HALO_ALLOWED.has(f.path)) { if (!h.length) stale.push(f.path); continue; }
+      for (const x of h) found.push(`${f.path}: ${x}`);
+    }
     expect(found).toEqual([]);
+    expect(stale).toEqual([]);
+  });
+
+  it('no shadow hides in an inline style outside the star field', () => {
+    const found: string[] = [];
+    const stale: string[] = [];
+    for (const f of files) {
+      if (!f.path.endsWith('.tsx')) continue;
+      const h = hits(INLINE, f.code);
+      if (INLINE_ALLOWED.has(f.path)) { if (!h.length) stale.push(f.path); continue; }
+      for (const x of h) found.push(`${f.path}: ${x}`);
+    }
+    expect(found).toEqual([]);
+    expect(stale).toEqual([]);
   });
 
   it('no neutral drop shadow outside the allowlist', () => {

@@ -609,7 +609,7 @@ export function QuizzesPage() {
               <p className="text-sm font-medium text-mystic-200">{currentQ} / {totalQuestions}</p>
               <p className="text-xs text-mystic-500">{Math.round(progressPercent)}%</p>
             </div>
-            <Progress value={progressPercent} variant="gold" size="sm" />
+            <Progress value={progressPercent} tone="gold" size="sm" label="Quiz progress" />
           </div>
         </div>
 
@@ -665,10 +665,11 @@ export function QuizzesPage() {
         <ResultLayout
           eyebrow={result.quiz.title}
           glyph={
-            <ProgressRing value={moodResult.moodScore} size={96} strokeWidth={6} tone="gold" label="Mood score">
+            <ProgressRing value={moodResult.moodScore} size={80} strokeWidth={6} tone="gold" label="Mood score">
               <span className="text-2xl font-display text-gold">{moodResult.moodScore}%</span>
             </ProgressRing>
           }
+          glyphHidden={false}
           verdict={moodResult.overallMood}
           subtitle={<Smile className={`inline-block w-5 h-5 ${moodInfo.color}`} aria-hidden />}
           summary={moodInfo.message}
@@ -698,7 +699,7 @@ export function QuizzesPage() {
                     <div className="flex-1">
                       <p className="text-xs text-mystic-500 capitalize">{dim}</p>
                       <div className="flex items-center gap-2">
-                        <Progress value={(value / 5) * 100} variant="gold" size="sm" className="flex-1" />
+                        <Progress value={(value / 5) * 100} tone="gold" size="sm" className="flex-1" label={dim} />
                         <span className="text-sm text-mystic-300">{value}/5</span>
                       </div>
                     </div>
@@ -1326,6 +1327,7 @@ export function QuizzesPage() {
         <ResultLayout
           eyebrow={result.quiz.title}
           glyph={mbtiResult.type}
+          glyphHidden={false}
           verdict={typeInfo?.title}
           subtitle={typeInfo?.subtitle}
           summary={typeInfo?.description}
@@ -1537,7 +1539,7 @@ export function QuizzesPage() {
                       <span className="text-mystic-300">{label}</span>
                       <span className={color}>{score}%</span>
                     </div>
-                    <Progress value={score} variant={score >= 50 ? 'gold' : 'default'} size="sm" />
+                    <Progress value={score} tone={score >= 50 ? 'gold' : 'neutral'} size="sm" label={label} />
                     <p className="text-xs text-mystic-500 mt-1">
                       {isHigh ? tApp('quizzes.resultSections.higherThanAverage') : isLow ? tApp('quizzes.resultSections.lowerThanAverage') : tApp('quizzes.resultSections.averageRange')}
                     </p>
@@ -1602,7 +1604,7 @@ export function QuizzesPage() {
         <ResultLayout
           eyebrow={result.quiz.title}
           glyph={enResult.primaryType}
-          verdict={typeInfo.name}
+          verdict={<><span className="sr-only">Type {enResult.primaryType} · </span>{typeInfo.name}</>}
           subtitle={
             <>
               <span className="block">{typeInfo.title}</span>
@@ -1820,7 +1822,7 @@ export function QuizzesPage() {
                   <span className="text-mystic-300">Anxiety</span>
                   <span className="text-cosmic-rose">{atResult.anxiety}%</span>
                 </div>
-                <Progress value={atResult.anxiety} variant="default" size="sm" />
+                <Progress value={atResult.anxiety} tone="neutral" size="sm" label="Anxiety" />
                 <p className="text-xs text-mystic-500 mt-1">Fear of abandonment and need for reassurance</p>
               </div>
               <div>
@@ -1828,7 +1830,7 @@ export function QuizzesPage() {
                   <span className="text-mystic-300">Avoidance</span>
                   <span className="text-cosmic-blue">{atResult.avoidance}%</span>
                 </div>
-                <Progress value={atResult.avoidance} variant="default" size="sm" />
+                <Progress value={atResult.avoidance} tone="neutral" size="sm" label="Avoidance" />
                 <p className="text-xs text-mystic-500 mt-1">Discomfort with closeness and dependence</p>
               </div>
             </div>
@@ -2000,7 +2002,7 @@ export function QuizzesPage() {
                     </span>
                     <span className="text-gold">{score}</span>
                   </div>
-                  <Progress value={score} max={15} variant={isPrimary ? 'gold' : 'default'} size="sm" />
+                  <Progress value={score} max={15} tone={isPrimary ? 'gold' : 'neutral'} size="sm" label={info?.title || lang} />
                 </div>
               );
             })}

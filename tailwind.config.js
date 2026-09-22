@@ -65,7 +65,12 @@ export default {
           // fails AA as text.
           violet: '#8e6eb5',
           violetLight: '#a98fd0',
-        },
+                  // Text inks for the two cool tones. #4a7eb8 and #8e6eb5 are fills — on
+          // their own 15% tints over surface-1 they read 3.5:1, under AA for small
+          // text — so a Tag, Badge or tile label uses these (5.3:1 / 5.0:1).
+          'blue-ink': '#779eca',
+          'violet-ink': '#a58bc4',
+},
       },
       fontFamily: {
         display: ['Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],

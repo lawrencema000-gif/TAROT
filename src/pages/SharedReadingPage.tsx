@@ -57,7 +57,7 @@ export function SharedReadingPage() {
   };
 
   return (
-    <Page className="py-6 sm:py-10">
+    <Page className="max-w-2xl mx-auto py-6 sm:py-10">
       <PageHeader
         align="center"
         eyebrow="Shared reading"

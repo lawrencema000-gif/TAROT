@@ -806,3 +806,15 @@
     font-size: 0.8rem;
   }
 }
+
+/* ── The deck rail (PageGrid aside, desktop) ──────────────────────
+   Beside the reading the deck sits in a 320px column: four thumbnails a
+   row instead of three keeps the 22 Major Arcana to six rows, and the
+   previous/next pair drops its page-width spacing. Phone widths keep the
+   single-column rules above. */
+@media (min-width: 1024px) {
+  aside .tm-card-nav { margin-bottom: 20px; padding: 0 0 16px; border-top: 0; }
+  aside .tm-card-nav-btn { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  aside .tm-related-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  aside .tm-related { margin-bottom: 0; }
+}

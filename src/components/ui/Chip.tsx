@@ -25,8 +25,8 @@ const TINT: Record<Tone, string> = {
   gold: 'bg-gold/10 text-gold',
   teal: 'bg-teal/10 text-teal',
   coral: 'bg-coral/10 text-coral',
-  blue: 'bg-cosmic-blue/15 text-cosmic-blue',
-  violet: 'bg-cosmic-violet/15 text-cosmic-violet',
+  blue: 'bg-cosmic-blue/15 text-cosmic-blue-ink',
+  violet: 'bg-cosmic-violet/15 text-cosmic-violet-ink',
   rose: 'bg-cosmic-rose/15 text-cosmic-rose',
 };
 

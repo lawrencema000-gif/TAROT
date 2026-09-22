@@ -7,8 +7,9 @@ import type { HTMLAttributes } from 'react';
  * nine combinations of two numbers, chosen per page. The bottom padding
  * was each page's private guess at how much room the fixed bottom nav
  * needs; three guessed differently and one guessed wrong (`pb-6` leaves
- * the last card under the nav). The shell owns that clearance now
- * (App.tsx `<main>`), so a page declares only its rhythm.
+ * the last card under the nav). The shell owns that clearance — its
+ * wrapper carries `pb-nav`, 6rem plus the safe-area inset — so a page
+ * declares only its rhythm.
  *
  * Width is not a prop on purpose: the shell sets the measure, and the SEO
  * pages that re-declared `max-w-3xl mx-auto px-4` inside a `<main>` that

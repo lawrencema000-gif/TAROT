@@ -203,7 +203,6 @@
   }
 
 
-
   .constellation-bg {
     position: relative;
   }
@@ -291,14 +290,6 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  .device-frame {
-    position: relative;
-    max-width: 375px;
-    margin: 0 auto;
-    border-radius: 40px;
-    overflow: hidden;
-  outline: 1px solid rgba(255, 255, 255, 0.08);
-  }
 
   .device-frame::before {
     content: '';
@@ -800,8 +791,6 @@
     background: rgba(var(--gold-primary), 0.5);
   }
 
-  /* Soft inset frame — used inside ritual cards to host a quote or
-     micro-stat. Hairline gold border + faint warm glow. */
 
   /* Horoscope chart — outer rim slow spin.
      Applied to just the decorative bead-and-diamond ring on the
@@ -1101,14 +1090,6 @@
   mix-blend-mode: overlay;
 }
 
-/* A single breath of light on arrival, then a steady halo. Good on a
-   primary CTA. */
-
-/* Interactive hover lift — put `.hover-lift` on a child of a `.group`
-   container to get a rise plus glow on hover. Kept although it has no
-   call sites yet: it is the counterpart to `.card-ritual` for rows that
-   are not cards, and it is where a hover treatment should be added
-   rather than pasting another cubic-bezier. */
 
 /* Floating particles — place inside any relative container to drift a
    couple of sparks upward. Pseudo-elements, so no extra DOM. */
@@ -1219,7 +1200,6 @@
 [data-stagger] > *:nth-child(8)  { animation-delay: calc(var(--stagger-step, 40ms) * 7); }
 [data-stagger] > *:nth-child(9)  { animation-delay: calc(var(--stagger-step, 40ms) * 8); }
 [data-stagger] > *:nth-child(n + 10) { animation-delay: calc(var(--stagger-step, 40ms) * 9); }
-
 
 
 .hover\:scale-102:hover {

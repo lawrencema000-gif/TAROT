@@ -2274,13 +2274,15 @@
       "exportFirst": "先导出数据",
       "exporting": "导出中…",
       "deleteMyAccount": "删除我的账号",
-      "deleting": "删除中…"
+      "deleting": "删除中…",
+      "typeToConfirm": "请输入 DELETE 以确认"
     },
     "legal": {
       "entertainmentDisclaimer": "娱乐性声明",
       "acceptanceOfTerms": "条款的接受",
       "notProfessionalAdvice": "不构成专业建议"
-    }
+    },
+    "celestialLabel": "天体"
   },
   "search": {
     "placeholder": "搜索卡牌、日记、运势…",

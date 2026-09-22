@@ -930,7 +930,7 @@
         "whatYouGet": [
           "Your behavioural element (fire/water/air/earth)",
           "How it differs from your astrology chart element",
-          "Strengths, shadow, and when it's running the show",
+          "Strengths, shadow, and when it’s running the show",
           "An affirmation to carry"
         ],
         "questions": {
@@ -1032,9 +1032,9 @@
         "timeEstimate": "5-7 min",
         "whatYouGet": [
           "Your primary dosha (Vata, Pitta, or Kapha)",
-          "Your secondary dosha if you're dual-type",
+          "Your secondary dosha if you’re dual-type",
           "Diet and lifestyle tips that actually suit you",
-          "Warning signs you're out of balance"
+          "Warning signs you’re out of balance"
         ]
       }
     },
@@ -2392,13 +2392,15 @@
       "exportFirst": "Export data first",
       "exporting": "Exporting…",
       "deleteMyAccount": "Delete my account",
-      "deleting": "Deleting…"
+      "deleting": "Deleting…",
+      "typeToConfirm": "Type DELETE to confirm"
     },
     "legal": {
       "entertainmentDisclaimer": "Entertainment disclaimer",
       "acceptanceOfTerms": "Acceptance of terms",
       "notProfessionalAdvice": "Not professional advice"
-    }
+    },
+    "celestialLabel": "Celestial"
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",
@@ -2542,7 +2544,7 @@
         "sections": [
           {
             "title": "Major vs Minor Arcana",
-            "content": "The Major Arcana consists of 22 cards representing life's major themes and spiritual lessons. The Minor Arcana has 56 cards divided into four suits, representing day-to-day experiences."
+            "content": "The Major Arcana consists of 22 cards representing life’s major themes and spiritual lessons. The Minor Arcana has 56 cards divided into four suits, representing day-to-day experiences."
           },
           {
             "title": "The four suits",
@@ -2724,7 +2726,7 @@
         "sections": [
           {
             "title": "Life path number",
-            "content": "Calculated from birthdate — reveals your life's purpose and the path you're meant to walk."
+            "content": "Calculated from birthdate — reveals your life’s purpose and the path you’re meant to walk."
           },
           {
             "title": "Expression number",
@@ -2814,7 +2816,7 @@
   "dailyInsights": {
     "general": [
       "Today runs on {focus}. Start there.",
-      "Your sign's home territory is {theme}. That is where your attention keeps landing today.",
+      "Your sign’s home territory is {theme}. That is where your attention keeps landing today.",
       "Nothing lands if you rush it today. Give one thing your full attention and let the rest wait until tomorrow.",
       "Your {element} side is running the day. Notice when that helps and when it is only familiar.",
       "The day favors {area} over anything else on your list.",
@@ -3698,7 +3700,7 @@
       "timeEstimate": "4 min",
       "whatYouGet": [
         "Your money script",
-        "When it serves you and when it doesn't",
+        "When it serves you and when it doesn’t",
         "Reframe affirmation"
       ]
     },

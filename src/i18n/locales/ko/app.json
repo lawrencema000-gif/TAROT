@@ -2274,13 +2274,15 @@
       "exportFirst": "먼저 데이터 내보내기",
       "exporting": "내보내는 중…",
       "deleteMyAccount": "내 계정 삭제",
-      "deleting": "삭제 중…"
+      "deleting": "삭제 중…",
+      "typeToConfirm": "확인을 위해 DELETE를 입력하세요"
     },
     "legal": {
       "entertainmentDisclaimer": "엔터테인먼트 고지",
       "acceptanceOfTerms": "약관 동의",
       "notProfessionalAdvice": "전문적 조언이 아님"
-    }
+    },
+    "celestialLabel": "천체"
   },
   "search": {
     "placeholder": "카드, 저널, 별자리 운세 검색…",

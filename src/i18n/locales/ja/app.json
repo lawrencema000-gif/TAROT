@@ -2274,13 +2274,15 @@
       "exportFirst": "先にデータをエクスポート",
       "exporting": "エクスポート中…",
       "deleteMyAccount": "アカウントを削除する",
-      "deleting": "削除中…"
+      "deleting": "削除中…",
+      "typeToConfirm": "確認のため DELETE と入力してください"
     },
     "legal": {
       "entertainmentDisclaimer": "エンターテインメントに関する免責事項",
       "acceptanceOfTerms": "規約への同意",
       "notProfessionalAdvice": "専門的な助言ではありません"
-    }
+    },
+    "celestialLabel": "セレスティアル"
   },
   "search": {
     "placeholder": "カード、ジャーナル、星占いを検索…",

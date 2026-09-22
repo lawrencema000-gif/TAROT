@@ -5,11 +5,13 @@
 // pay; showing a cost would be misleading).
 
 import { useEffect, useState } from 'react';
+import { Trans } from 'react-i18next';
 import { Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { moonstones } from '../../dal';
 import { onBalanceChange } from '../../dal/moonstoneSpend';
 import { ACTION_COST } from '../../dal/moonstoneSpend';
+import { useT } from '../../i18n/useT';
 
 interface Props {
   cost?: number;
@@ -17,6 +19,7 @@ interface Props {
 }
 
 export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props) {
+  const { t } = useT('app');
   const { user, profile } = useAuth();
   const [balance, setBalance] = useState<number | null>(null);
 
@@ -41,12 +44,18 @@ export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props)
     <div className={`flex items-center gap-2 text-xs text-mystic-400 ${className}`}>
       <Moon className="h-3.5 w-3.5 flex-none text-gold/70" />
       <span>
-        Each reading uses <span className="font-semibold text-gold">{cost} moonstones</span>
+        <Trans
+          t={t}
+          i18nKey="moonstones.costLine"
+          defaults="Each reading uses <gold>{{n}} Moonstones</gold>"
+          values={{ n: cost }}
+          components={{ gold: <span className="font-semibold text-gold" /> }}
+        />
         {balance !== null && (
           <>
             {' · '}
             <span className={insufficient ? 'text-pink-400' : ''}>
-              You have {balance}
+              {t('moonstones.youHave', { defaultValue: 'You have {{n}}', n: balance })}
             </span>
           </>
         )}

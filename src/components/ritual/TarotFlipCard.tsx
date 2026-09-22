@@ -146,7 +146,7 @@ export function TarotFlipCard({
           <div className="absolute inset-0" style={BACKFACE}>
             <div className="relative w-full h-full bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900 rounded-xl border-2 border-gold/30 overflow-hidden">
               {cardBackUrl || backImageUrl ? (
-                <img src={backImageUrl} alt="Card Back" className="absolute inset-0 w-full h-full object-cover" />
+                <img src={backImageUrl} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="absolute inset-0 w-full h-full object-cover" />
               ) : (
                 <>
                   <div className="absolute inset-0 opacity-20">

@@ -420,7 +420,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
               onClick={handleCopyReport}
             >
               <Copy className="w-4 h-4" />
-              Copy Diagnostics
+              Copy diagnostics
             </Button>
             <Button
               variant="outline"
@@ -428,7 +428,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
               onClick={handleExportJson}
             >
               <Download className="w-4 h-4" />
-              Export JSON
+              Export as JSON
             </Button>
           </div>
           <Button
@@ -438,7 +438,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
             className="text-coral hover:bg-coral/10"
           >
             <Trash2 className="w-4 h-4" />
-            Clear Logs
+            Clear logs
           </Button>
         </div>
       </div>

@@ -16,6 +16,7 @@ import {
 import { Button, Input, Chip, Progress, toast } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
+import { isNative } from '../utils/platform';
 import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
 import { getAttribution, clearAttribution } from '../utils/attribution';
@@ -138,7 +139,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     if (value) {
       const validation = validateBirthDate(value);
       if (!validation.valid) {
-        setBirthDateError(validation.error || t('oauth.basics.invalidBirthDate'));
+        setBirthDateError(t(validation.error ?? 'oauth.basics.invalidBirthDate'));
       } else {
         setBirthDateError('');
       }
@@ -406,7 +407,9 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   Daily reminder?
                 </h2>
                 <p className="text-mystic-400">
-                  We'll remind you once per day. No spam.
+                  {isNative()
+                    ? t('oauth.notifications.dailyPromise', { defaultValue: 'One reminder a day, at the time you choose. No spam.' })
+                    : t('oauth.notifications.webNote', { defaultValue: 'Reminders arrive in the Arcana app on your phone. Your choice is saved for when you install it.' })}
                 </p>
               </div>
 
@@ -457,7 +460,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
         {step > 0 && (
           <Button size="lg" variant="ghost" onClick={prevStep} >
             <ChevronLeft className="w-4 h-4" />
-            Back
+            {t('oauth.back', { defaultValue: 'Previous step' })}
           </Button>
         )}
         <Button size="lg"

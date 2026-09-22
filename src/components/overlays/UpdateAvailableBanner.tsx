@@ -13,6 +13,7 @@
 import { useEffect, useState } from 'react';
 import { X, Download } from 'lucide-react';
 import { Chip } from '../ui';
+import { useT } from '../../i18n/useT';
 import { useVersionCheck } from '../../hooks/useVersionCheck';
 import { appStorage } from '../../lib/appStorage';
 
@@ -23,6 +24,7 @@ const DISMISS_HOURS = 48;
 export function UpdateAvailableBanner() {
   const { shouldPrompt } = useVersionCheck();
   const [dismissed, setDismissed] = useState<boolean>(false);
+  const { t } = useT('app');
 
   useEffect(() => {
     appStorage.get(DISMISS_KEY).then((val) => {
@@ -54,18 +56,18 @@ export function UpdateAvailableBanner() {
           <Download className="h-4 w-4 text-gold" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-mystic-100">A new version is available</p>
+          <p className="text-sm font-medium text-mystic-100">{t('updateBanner.title', { defaultValue: 'A new version is available' })}</p>
           <p className="mt-0.5 text-xs leading-relaxed text-mystic-300">
-            Includes recent fixes and improvements. Update from Play Store to get them.
+            {t('updateBanner.body', { defaultValue: 'Includes recent fixes and improvements. Update from Google Play to get them.' })}
           </p>
           <div className="mt-2 flex gap-2">
-            <Chip variant="gold" size="sm" onClick={handleUpdate} label="Update now" />
-            <Chip variant="outline" size="sm" onClick={handleDismiss} label="Later" />
+            <Chip variant="gold" size="sm" onClick={handleUpdate} label={t('updateBanner.update', { defaultValue: 'Update on Google Play' })} />
+            <Chip variant="outline" size="sm" onClick={handleDismiss} label={t('updateBanner.later', { defaultValue: 'Remind me in two days' })} />
           </div>
         </div>
         <button
           onClick={handleDismiss}
-          aria-label="Dismiss"
+          aria-label={t('updateBanner.dismiss', { defaultValue: 'Dismiss' })}
           className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-mystic-500 hover:bg-mystic-800 hover:text-mystic-300 transition-colors"
         >
           <X className="h-4 w-4" />

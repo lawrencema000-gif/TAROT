@@ -419,7 +419,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       const { error } = await updateProfile(updates);
 
       if (error) {
-        toast(error.message, 'error');
+        console.error('[Settings] Profile save failed:', error.message);
+        toast(tAppSettings('settings.toasts.profileUpdateFailed', { defaultValue: 'Couldn’t save your profile — check your connection and try again.' }), 'error');
       } else {
         toast(tAppSettings('settings.toasts.profileUpdated'), 'success');
         await refreshProfile();
@@ -790,21 +791,21 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         {renderBackButton()}
         <div className="space-y-4 text-sm text-mystic-300">
           <div className="p-4 bg-mystic-800/30 rounded-xl">
-            <h4 className="font-medium text-gold mb-2">Entertainment Disclaimer</h4>
+            <h4 className="font-medium text-gold mb-2">{tAppSettings('settings.legal.entertainmentDisclaimer', { defaultValue: 'Entertainment disclaimer' })}</h4>
             <p>
               Arcana is designed for entertainment and self-reflection purposes only. All readings, horoscopes, and personality assessments should not be considered professional advice.
             </p>
           </div>
 
           <div className="p-4 bg-mystic-800/30 rounded-xl">
-            <h4 className="font-medium text-mystic-100 mb-2">Acceptance of Terms</h4>
+            <h4 className="font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.acceptanceOfTerms', { defaultValue: 'Acceptance of terms' })}</h4>
             <p>
               By using this app, you agree to use it responsibly and acknowledge that all content is for entertainment purposes only.
             </p>
           </div>
 
           <div className="p-4 bg-mystic-800/30 rounded-xl">
-            <h4 className="font-medium text-mystic-100 mb-2">Not Professional Advice</h4>
+            <h4 className="font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.notProfessionalAdvice', { defaultValue: 'Not professional advice' })}</h4>
             <ul className="space-y-2 text-mystic-400">
               <li>- Medical or mental health diagnosis</li>
               <li>- Financial or investment advice</li>

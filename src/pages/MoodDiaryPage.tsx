@@ -426,7 +426,7 @@ export function MoodDiaryPage() {
             className="mt-4"
             size="sm"
           >
-            {t('mood.rewriteLetter', { defaultValue: 'Rewrite' })}
+            {t('mood.rewriteLetter', { defaultValue: 'Write me another letter' })}
           </Button>
         </Card>
       )}

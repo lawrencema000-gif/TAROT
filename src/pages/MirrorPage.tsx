@@ -4,6 +4,7 @@ import { PageHeader, Page, Tabs, Progress } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getMirrorStats, type MirrorPeriod, type MirrorStats } from '../services/mirror';
 import { setPageMeta } from '../utils/seo';
+import { useT } from '../i18n/useT';
 
 const PERIODS: { id: MirrorPeriod; label: string }[] = [
   { id: 'week', label: 'Last 7 days' },
@@ -13,6 +14,7 @@ const PERIODS: { id: MirrorPeriod; label: string }[] = [
 
 export function MirrorPage() {
   const { user } = useAuth();
+  const { t } = useT('app');
   const [period, setPeriod] = useState<MirrorPeriod>('month');
   const [stats, setStats] = useState<MirrorStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export function MirrorPage() {
   if (!user) {
     return (
       <Page className="py-10 text-center">
-        <p className="text-mystic-300">Sign in to see your Mirror.</p>
+        <p className="text-mystic-300">{t('mirror.signIn', { defaultValue: 'Sign in to see your Mirror.' })}</p>
       </Page>
     );
   }
@@ -43,39 +45,39 @@ export function MirrorPage() {
     <Page className="py-6 sm:py-10">
       <PageHeader
         icon={<Aperture />}
-        title="Mirror"
-        subtitle="What your reading history reveals about you. Aggregated patterns over your saved tarot pulls."
+        title={t('mirror.title', { defaultValue: 'Mirror' })}
+        subtitle={t('mirror.subtitle', { defaultValue: 'What your reading history reveals about you. Aggregated patterns over your saved tarot pulls.' })}
       />
 
       <Tabs<MirrorPeriod>
-        items={PERIODS.map((p) => ({ id: p.id, label: p.label }))}
+        items={PERIODS.map((p) => ({ id: p.id, label: t(`mirror.period.${p.id}`, { defaultValue: p.label }) }))}
         value={period}
         onChange={setPeriod}
-        aria-label="Period"
+        aria-label={t('mirror.periodAria', { defaultValue: 'Period' })}
         size="sm"
         idPrefix="mirror-period"
       />
 
       {loading || !stats ? (
-        <div className="text-center py-16 text-mystic-500">Reading the mirror…</div>
+        <div className="text-center py-16 text-mystic-500">{t('mirror.loading', { defaultValue: 'Reading the mirror…' })}</div>
       ) : stats.totalReadings === 0 ? (
         <div className="text-center py-16">
-          <p className="text-mystic-300 mb-2">No readings in this period yet.</p>
-          <p className="text-sm text-mystic-500">Pull a card today and your patterns will start to surface here.</p>
+          <p className="text-mystic-300 mb-2">{t('mirror.emptyTitle', { defaultValue: 'No readings in this period yet.' })}</p>
+          <p className="text-sm text-mystic-500">{t('mirror.emptyBody', { defaultValue: 'Pull a card today and your patterns will start to surface here.' })}</p>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatCard icon={Calendar} label="Readings" value={String(stats.totalReadings)} />
-            <StatCard icon={Layers} label="Cards drawn" value={String(stats.totalCardsDrawn)} />
-            <StatCard icon={RotateCcw} label="Reversals" value={`${stats.reversalPercent}%`} />
-            <StatCard icon={Flame} label="Streak" value={`${stats.streakDays}d`} />
+            <StatCard icon={Calendar} label={t('mirror.stats.readings', { defaultValue: 'Readings' })} value={String(stats.totalReadings)} />
+            <StatCard icon={Layers} label={t('mirror.stats.cardsDrawn', { defaultValue: 'Cards drawn' })} value={String(stats.totalCardsDrawn)} />
+            <StatCard icon={RotateCcw} label={t('mirror.stats.reversals', { defaultValue: 'Reversals' })} value={`${stats.reversalPercent}%`} />
+            <StatCard icon={Flame} label={t('mirror.stats.streak', { defaultValue: 'Streak' })} value={`${stats.streakDays}d`} />
           </div>
 
           {stats.mostDrawnCard && (
             <Highlight
               icon={TrendingUp}
-              label="Your card right now"
+              label={t('mirror.highlights.cardNow', { defaultValue: 'Your card right now' })}
               value={stats.mostDrawnCard.name}
               caption={`${stats.mostDrawnCard.count} appearance${stats.mostDrawnCard.count > 1 ? 's' : ''}`}
             />
@@ -85,7 +87,7 @@ export function MirrorPage() {
             {stats.mostDrawnSuit && (
               <Highlight
                 icon={Layers}
-                label="Dominant suit"
+                label={t('mirror.highlights.dominantSuit', { defaultValue: 'Dominant suit' })}
                 value={stats.mostDrawnSuit.suit}
                 caption={`${stats.mostDrawnSuit.count} cards from this suit`}
               />
@@ -93,7 +95,7 @@ export function MirrorPage() {
             {stats.mostDrawnNumber && (
               <Highlight
                 icon={Hash}
-                label="Recurring number"
+                label={t('mirror.highlights.recurringNumber', { defaultValue: 'Recurring number' })}
                 value={stats.mostDrawnNumber.value}
                 caption={`${stats.mostDrawnNumber.count} occurrence${stats.mostDrawnNumber.count > 1 ? 's' : ''}`}
               />
@@ -102,7 +104,7 @@ export function MirrorPage() {
 
           {stats.topCards.length > 1 && (
             <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
-              <h2 className="text-sm font-medium text-mystic-300 mb-3">Top 5 cards</h2>
+              <h2 className="text-sm font-medium text-mystic-300 mb-3">{t('mirror.sections.topCards', { defaultValue: 'Top 5 cards' })}</h2>
               <ul className="space-y-2">
                 {stats.topCards.map((c, i) => (
                   <li key={c.name} className="flex items-center gap-3 text-sm">
@@ -116,13 +118,13 @@ export function MirrorPage() {
           )}
 
           <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
-            <h2 className="text-sm font-medium text-mystic-300 mb-3">Suit balance (Minor Arcana)</h2>
+            <h2 className="text-sm font-medium text-mystic-300 mb-3">{t('mirror.sections.suitBalance', { defaultValue: 'Suit balance (Minor Arcana)' })}</h2>
             <SuitBars breakdown={stats.suitBreakdown} />
           </section>
 
           <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
-            <h2 className="text-sm font-medium text-mystic-300 mb-2">Major vs Minor</h2>
-            <p className="text-xs text-mystic-500 mb-3">Major Arcana = life themes; Minor = day-to-day energies.</p>
+            <h2 className="text-sm font-medium text-mystic-300 mb-2">{t('mirror.sections.majorMinor', { defaultValue: 'Major vs Minor' })}</h2>
+            <p className="text-xs text-mystic-500 mb-3">{t('mirror.sections.majorMinorNote', { defaultValue: 'Major Arcana = life themes; Minor = day-to-day energies.' })}</p>
             <ArcanaBar major={stats.arcanaBreakdown.major} minor={stats.arcanaBreakdown.minor} />
           </section>
         </div>

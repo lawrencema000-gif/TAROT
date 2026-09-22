@@ -182,7 +182,8 @@ export function ProfilePage() {
 
     setSaving(false);
     if (error) {
-      toast(error.message, 'error');
+      console.error('[Profile] Save failed:', error.message);
+      toast(t('profile.toasts.saveFailed', { defaultValue: 'Couldn’t save your profile — check your connection and try again.' }), 'error');
     } else {
       toast(t('profile.profileUpdated'), 'success');
       setShowEditProfile(false);
@@ -226,7 +227,7 @@ export function ProfilePage() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="heading-display-md text-mystic-100 truncate">{profile?.displayName || t('home.seeker')}</h2>
+            <h2 className="heading-display-md text-mystic-100 truncate">{profile?.displayName || t('profile.untitled', { defaultValue: 'Your profile' })}</h2>
             {zodiacInfo && (
               <p className="text-gold text-sm mt-0.5">{zodiacInfo.name}</p>
             )}
@@ -485,7 +486,7 @@ export function ProfilePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-3">Your Goals</label>
+            <label className="block text-sm font-medium text-mystic-300 mb-3">{t('profile.yourGoals')}</label>
             <ChipGroup
               options={goalOptions}
               selected={editData.goals}
@@ -496,10 +497,10 @@ export function ProfilePage() {
 
           <div className="flex gap-3 pt-4">
             <Button variant="ghost" fullWidth onClick={() => setShowEditProfile(false)}>
-              Cancel
+              {t('common:actions.cancel', { defaultValue: 'Cancel' })}
             </Button>
             <Button variant="primary" fullWidth onClick={handleSaveProfile} loading={saving}>
-              Save Changes
+              {t('profile.editProfileSheet.save', { defaultValue: 'Save my profile' })}
             </Button>
           </div>
         </div>

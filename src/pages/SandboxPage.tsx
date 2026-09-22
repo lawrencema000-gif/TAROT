@@ -344,13 +344,13 @@ export function SandboxPage() {
           ))}
         </div>
         <div className="flex gap-2 mt-3">
-          <Button variant="primary" onClick={place} disabled={!selectedArchetype} className="flex-1">
+          <Button variant="outline" onClick={place} disabled={!selectedArchetype} className="flex-1">
             <Plus className="w-4 h-4 mr-2" />
             {t('sandbox.place', { defaultValue: 'Place on plinth' })}
           </Button>
           <Button variant="outline" onClick={reset} disabled={placed.length === 0}>
             <Trash2 className="w-4 h-4 mr-2" />
-            {t('sandbox.reset', { defaultValue: 'Reset' })}
+            {t('sandbox.reset', { defaultValue: 'Clear the plinth' })}
           </Button>
         </div>
       </Card>
@@ -397,7 +397,7 @@ export function SandboxPage() {
           <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">{interpretation}</p>
           <Button variant="outline" size="sm" onClick={reset} className="mt-3">
             <RotateCcw className="w-3 h-3 mr-1" />
-            {t('sandbox.rearrange', { defaultValue: 'Rearrange' })}
+            {t('sandbox.rearrange', { defaultValue: 'Clear and arrange again' })}
           </Button>
         </Card>
       )}

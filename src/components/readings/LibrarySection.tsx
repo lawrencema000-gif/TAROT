@@ -122,8 +122,16 @@ export function LibrarySection() {
         premiumReadingsDal.listRawForUser(user.id, { limit: PAGE_SIZE }),
       ]);
 
-      if (!highlightsRes.ok || !readingsRes.ok || !premiumRes.ok) {
-        toast(t('library.toasts.loadSavedFailed'), 'error');
+      // Partial results are still rendered below, so only tell the user when
+      // nothing at all came back. A single failed read is logged, not toasted.
+      if (!highlightsRes.ok && !readingsRes.ok && !premiumRes.ok) {
+        toast(t('library.toasts.loadSavedFailed', { defaultValue: 'Couldn’t load your saved items — check your connection and open the library again.' }), 'error');
+      } else if (!highlightsRes.ok || !readingsRes.ok || !premiumRes.ok) {
+        console.error('[Library] Some saved items did not load', {
+          highlights: highlightsRes.ok,
+          readings: readingsRes.ok,
+          premium: premiumRes.ok,
+        });
       }
 
       if (highlightsRes.ok) {
@@ -157,7 +165,7 @@ export function LibrarySection() {
           setSavedHighlights(prev => [...prev, ...(res.data as SavedItem[])]);
           setHasMoreHighlights(res.data.length === PAGE_SIZE);
         } else {
-          toast(t('library.toasts.loadMoreFailed'), 'error');
+          toast(t('library.toasts.loadMoreSavedFailed', { defaultValue: 'Couldn’t load more saved items — check your connection and tap Load more again.' }), 'error');
         }
       } else if (type === 'readings') {
         const offset = tarotReadings.length;
@@ -166,7 +174,7 @@ export function LibrarySection() {
           setTarotReadings(prev => [...prev, ...(res.data as TarotReading[])]);
           setHasMoreReadings(res.data.length === PAGE_SIZE);
         } else {
-          toast(t('library.toasts.loadMoreFailed'), 'error');
+          toast(t('library.toasts.loadMoreSpreadsFailed', { defaultValue: 'Couldn’t load more spreads — check your connection and tap Load more again.' }), 'error');
         }
       } else {
         const offset = premiumReadings.length;
@@ -175,7 +183,7 @@ export function LibrarySection() {
           setPremiumReadings(prev => [...prev, ...(res.data as PremiumReading[])]);
           setHasMorePremium(res.data.length === PAGE_SIZE);
         } else {
-          toast(t('library.toasts.loadMoreFailed'), 'error');
+          toast(t('library.toasts.loadMoreReadingsFailed', { defaultValue: 'Couldn’t load more readings — check your connection and tap Load more again.' }), 'error');
         }
       }
     } finally {
@@ -192,7 +200,7 @@ export function LibrarySection() {
         : await tarotReadingsDal.deleteById(id, user.id);
 
     if (!res.ok) {
-      toast(t('library.toasts.deleteFailed'), 'error');
+      toast(t('library.toasts.deleteFailed', { defaultValue: 'Couldn’t delete that item — check your connection and try again.' }), 'error');
     } else {
       if (type === 'highlight') {
         setSavedHighlights(prev => prev.filter(h => h.id !== id));
@@ -647,7 +655,7 @@ export function LibrarySection() {
       <Sheet
         open={!!selectedReading}
         onClose={() => setSelectedReading(null)}
-        title="AI Reading"
+        title={t('library.aiReading', { defaultValue: 'AI reading' })}
       >
         {selectedReading && (
           <div className="space-y-6">

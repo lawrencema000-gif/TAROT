@@ -150,9 +150,8 @@ export function AiCompanionPage() {
       setHistory(finalHistory);
       saveHistory(persona, finalHistory);
       incDailyUsed();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      toast(t('companion.sendFailed', { defaultValue: 'Could not reach the companion: {{err}}', err: msg }), 'error');
+    } catch {
+      toast(t('companion.sendFailed', { defaultValue: "Couldn't reach your companion — check your connection and try again." }), 'error');
       setHistory(newHistory); // keep user message so they can retry
     } finally {
       setSending(false);
@@ -177,7 +176,7 @@ export function AiCompanionPage() {
             onClick={clearConversation}
             className="text-xs text-mystic-500 hover:text-mystic-300 px-2 py-1"
           >
-            {t('companion.newConversation', { defaultValue: 'New' })}
+            {t('companion.newConversation', { defaultValue: 'New conversation' })}
           </button>
         }
       />

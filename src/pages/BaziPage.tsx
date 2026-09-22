@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Lock, Crown, Compass, Palette, Feather, Share2 } from 'lucide-react';
 import { Card, Button, Input, toast, Page, PageHeader, Progress, ResultLayout, Section } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
+import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   computeBazi,
   deepenBazi,
@@ -44,7 +44,7 @@ const ELEMENT_EMOJI: Record<FiveElement, string> = {
 export function BaziPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
-  const navigate = useNavigate();
+  const [showPaywall, setShowPaywall] = useState(false);
   const depthEnabled = useFeatureFlag('bazi-depth');
   const [stage, setStage] = useState<Stage>('input');
   const [birthDate, setBirthDate] = useState('');
@@ -192,6 +192,7 @@ export function BaziPage() {
     };
 
     return (
+      <>
       <ResultLayout
         onBack={reset}
         backLabel={t('bazi.back', { defaultValue: 'Recalculate' }) as string}
@@ -204,10 +205,10 @@ export function BaziPage() {
           <>
             <Button variant="outline" fullWidth onClick={handleShare}>
               <Share2 className="w-4 h-4 mr-2" />
-              {t('quizzes.share.button', { defaultValue: 'Share' })}
+              {t('bazi.share', { defaultValue: 'Share my pillars' })}
             </Button>
             <Button variant="outline" fullWidth onClick={reset}>
-              {t('bazi.recalculate', { defaultValue: 'Recalculate' })}
+              {t('bazi.recalculate', { defaultValue: 'Cast for another birth date' })}
             </Button>
           </>
         }
@@ -458,9 +459,9 @@ export function BaziPage() {
                       "Unlock your Inner Forces (classical Ten-Gods), Hidden Influences, Soul Sound, your Supporting Element with lucky color + direction + numbers, and Today's Lucky Color widget.",
                   })}
                 </p>
-                <Button variant="gold" onClick={() => navigate('/profile')}>
+                <Button variant="gold" onClick={() => setShowPaywall(true)}>
                   <Crown className="w-4 h-4 mr-2" />
-                  {t('bazi.premiumTeaserCta', { defaultValue: 'See Premium' })}
+                  {t('bazi.premiumTeaserCta', { defaultValue: 'Unlock the full reading' })}
                 </Button>
               </Card>
             )}
@@ -755,10 +756,12 @@ export function BaziPage() {
             birthTime={birthTime || null}
             gender={gender}
             isPremium={isPremium}
-            onUpgradeClick={() => navigate('/profile')}
+            onUpgradeClick={() => setShowPaywall(true)}
           />
         )}
       </ResultLayout>
+      <PaywallSheet open={showPaywall} onClose={() => setShowPaywall(false)} feature={t('readings.tabs.bazi', { defaultValue: 'Bazi' }) as string} />
+      </>
     );
   }
 

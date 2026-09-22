@@ -2,17 +2,29 @@ import { useEffect, useState } from 'react';
 import { X, Crown, Check, Gift } from 'lucide-react';
 import { MysticalStar, Badge } from '../ui';
 import { useAuth } from '../../context/AuthContext';
+import { getBillingService, PRODUCT_IDS } from '../../services/billing';
 import { useT } from '../../i18n/useT';
 import { PaywallSheet } from './PaywallSheet';
 
 const SESSION_KEY = 'trialReminder.shownThisSession.v1';
 const SHOW_AFTER_MS = 30_000;
 
+/**
+ * The yearly plan as the store reports it. The modal only promises a trial
+ * when the store says one exists, and only quotes a price it has read; until
+ * the product loads it says "the price shown in the store" instead.
+ */
+interface YearlyOffer {
+  price: string;
+  trialDays: number | null;
+}
+
 export function TrialReminderModal() {
   const { user, profile } = useAuth();
   const { t } = useT('app');
   const [open, setOpen] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [yearly, setYearly] = useState<YearlyOffer | null>(null);
 
   useEffect(() => {
     if (!user || !profile) return;
@@ -35,17 +47,64 @@ export function TrialReminderModal() {
     return () => window.clearTimeout(timer);
   }, [user, profile]);
 
+  // Read the yearly plan so the copy can quote the live price and the real
+  // trial length. Starts with the timer above, so it has 30s to land.
+  useEffect(() => {
+    if (!user || !profile || profile.isPremium) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const billing = getBillingService();
+        await billing.initialize();
+        const products = await billing.getProducts([PRODUCT_IDS.PREMIUM_YEARLY]);
+        const product = products.find(
+          (p) => p.period === 'year' || /yearly|annual/.test(p.id.split(':')[0]),
+        );
+        if (!cancelled && product) {
+          setYearly({
+            price: product.price,
+            trialDays: product.hasTrial && product.trialDays ? product.trialDays : null,
+          });
+        }
+      } catch {
+        // Store unreachable — the copy falls back to "the price shown in the store".
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, profile]);
+
   if (showPaywall) {
     return <PaywallSheet open onClose={() => { setShowPaywall(false); setOpen(false); }} />;
   }
 
   if (!open) return null;
 
+  const trialDays = yearly?.trialDays ?? null;
+  const hasTrial = trialDays !== null;
+
   const benefits = [
-    t('premium.trialReminder.benefits.allFeatures', { defaultValue: 'All premium features unlocked' }),
-    t('premium.trialReminder.benefits.adFree', { defaultValue: 'Completely ad-free' }),
-    t('premium.trialReminder.benefits.cancelAnytime', { defaultValue: 'Cancel anytime, no charge' }),
+    t('premium.trialReminder.benefits.spreads', { defaultValue: 'Every tarot spread, Celtic Cross included' }),
+    t('premium.trialReminder.benefits.chart', { defaultValue: 'Your full birth chart, planet by planet' }),
+    t('premium.trialReminder.benefits.noAds', { defaultValue: 'No ads, and no Moonstones to spend' }),
   ];
+
+  const subtitle = hasTrial
+    ? t('premium.trialReminder.subtitle', {
+        defaultValue:
+          'Everything opens for {{days}} days, then {{price}} a year. Cancel before the trial ends and you pay nothing.',
+        days: trialDays,
+        price: yearly?.price,
+      })
+    : yearly
+      ? t('premium.trialReminder.noTrial.subtitle', {
+          defaultValue: '{{price}} a year, or pay monthly. Cancel anytime.',
+          price: yearly.price,
+        })
+      : t('premium.trialReminder.noTrial.subtitleNoPrice', {
+          defaultValue: 'Yearly or monthly, at the prices shown in the store. Cancel anytime.',
+        });
 
   return (
     <div
@@ -64,7 +123,7 @@ export function TrialReminderModal() {
 
         <button
           onClick={() => setOpen(false)}
-          aria-label={t('common.close', { defaultValue: 'Close' })}
+          aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
           className="absolute top-3 right-3 z-10 p-2 rounded-full bg-mystic-800/60 hover:bg-mystic-800 transition-colors"
         >
           <X className="w-4 h-4 text-mystic-300" />
@@ -80,21 +139,23 @@ export function TrialReminderModal() {
             </div>
           </div>
 
-          <Badge tone="gold" className="mb-3">
-            <Gift className="w-3.5 h-3.5" aria-hidden />
-            {t('premium.trialReminder.badge', { defaultValue: '3 days free' })}
-          </Badge>
+          {hasTrial && (
+            <Badge tone="gold" className="mb-3">
+              <Gift className="w-3.5 h-3.5" aria-hidden />
+              {t('premium.trialReminder.badge', { defaultValue: '{{days}} days free', days: trialDays })}
+            </Badge>
+          )}
 
           <h2
             id="trial-reminder-title"
             className="font-display text-2xl text-center text-mystic-100 mb-2"
           >
-            {t('premium.trialReminder.title', { defaultValue: 'Try Premium free for 3 days' })}
+            {hasTrial
+              ? t('premium.trialReminder.title', { defaultValue: 'Try Premium free for {{days}} days', days: trialDays })
+              : t('premium.trialReminder.noTrial.title', { defaultValue: 'Open everything with Premium' })}
           </h2>
           <p className="text-sm text-mystic-400 text-center max-w-xs mb-5">
-            {t('premium.trialReminder.subtitle', {
-              defaultValue: 'Unlock everything for 3 days, then $19.99/year. Cancel anytime.',
-            })}
+            {subtitle}
           </p>
 
           <ul className="w-full space-y-2 mb-6">
@@ -112,13 +173,15 @@ export function TrialReminderModal() {
             onClick={() => setShowPaywall(true)}
             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-base"
           >
-            {t('premium.trialReminder.cta', { defaultValue: 'Start free trial' })}
+            {hasTrial
+              ? t('premium.trialReminder.cta', { defaultValue: 'Start free trial' })
+              : t('premium.trialReminder.noTrial.cta', { defaultValue: 'See Premium plans' })}
           </button>
           <button
             onClick={() => setOpen(false)}
             className="mt-2 py-2 text-sm text-mystic-500 hover:text-mystic-300 transition-colors"
           >
-            {t('premium.trialReminder.dismiss', { defaultValue: 'Maybe later' })}
+            {t('premium.trialReminder.dismiss', { defaultValue: 'Not now' })}
           </button>
         </div>
       </div>

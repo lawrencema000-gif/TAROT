@@ -498,7 +498,7 @@ export function JournalPage() {
         action={
           <Button variant="primary" size="sm" onClick={openNewEntry}>
             <Plus className="w-4 h-4" />
-            New
+            {t('journal.newEntry', { defaultValue: 'New entry' })}
           </Button>
         }
       />
@@ -920,7 +920,7 @@ export function JournalPage() {
               title={t('journal.insightsEmpty')}
               action={
                 <Button variant="primary" onClick={openNewEntry}>
-                  Start Writing
+                  {t('journal.startWriting', { defaultValue: 'Write my first entry' })}
                 </Button>
               }
             />
@@ -978,7 +978,7 @@ export function JournalPage() {
 
             {!editingEntry && !selectedTemplate && (
               <div className="p-4 bg-mystic-800/30 rounded-xl">
-                <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">Today&apos;s Prompt</p>
+                <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{t('journal.todaysPrompt')}</p>
                 <p className="text-mystic-200 text-sm">{todayPrompt}</p>
               </div>
             )}
@@ -1018,7 +1018,7 @@ export function JournalPage() {
                     });
                     setCoachLoading(false);
                     if (error) {
-                      toast(t('journalCoach.failed', { defaultValue: 'Could not reach coach' }), 'error');
+                      toast(t('journalCoach.failed', { defaultValue: "Couldn't reach the journal coach — check your connection and try again." }), 'error');
                       return;
                     }
                     const payload = (data?.data ?? data) as { observation: string; prompts: string[] } | null;
@@ -1059,7 +1059,7 @@ export function JournalPage() {
                     onClick={() => setCoachResult(null)}
                     className="text-[10px] text-mystic-500 hover:text-mystic-300 mt-2 underline underline-offset-2"
                   >
-                    {t('journalCoach.dismiss', { defaultValue: 'Dismiss' })}
+                    {t('journalCoach.dismiss', { defaultValue: 'Hide these prompts' })}
                   </button>
                 </div>
               )}
@@ -1127,10 +1127,10 @@ export function JournalPage() {
           <div className="border-t border-mystic-800 p-6 pb-24 space-y-3 bg-mystic-900 safe-bottom">
             <div className="flex gap-3">
               <Button variant="ghost" fullWidth onClick={() => setShowEditor(false)}>
-                Cancel
+                {t('journal.editor.cancel', { defaultValue: 'Cancel' })}
               </Button>
               <Button variant="primary" fullWidth onClick={() => saveEntry(false)} disabled={!content.trim()}>
-                Save
+                {t('journal.saveEntry', { defaultValue: 'Save this entry' })}
               </Button>
             </div>
 

@@ -87,7 +87,8 @@ export function LiveRoomPage() {
     if (rsvpd) {
       const { error } = await supabase.from('live_room_rsvps').delete().eq('room_id', id).eq('user_id', user.id);
       if (error) {
-        toast(error.message, 'error');
+        console.error('[LiveRoom] RSVP cancel failed:', error.message);
+        toast(t('liveRoom.toasts.cancelFailed', { defaultValue: 'Couldn’t release your seat — check your connection and try again.' }), 'error');
         return;
       }
       setRsvpd(false);
@@ -95,7 +96,8 @@ export function LiveRoomPage() {
     } else {
       const { error } = await supabase.from('live_room_rsvps').insert({ room_id: id, user_id: user.id });
       if (error) {
-        toast(error.message, 'error');
+        console.error('[LiveRoom] RSVP failed:', error.message);
+        toast(t('liveRoom.toasts.rsvpFailed', { defaultValue: 'Couldn’t save your seat — check your connection and try again.' }), 'error');
         return;
       }
       setRsvpd(true);
@@ -109,11 +111,12 @@ export function LiveRoomPage() {
     const { error } = await supabase.rpc('live_room_replay_unlock_moonstones', { p_room_id: id });
     setUnlockingReplay(false);
     if (error) {
+      console.error('[LiveRoom] Replay unlock failed:', error.message);
       const msg = error.message.toLowerCase();
       if (msg.includes('insufficient')) {
-        toast(t('liveRoom.replayInsufficient', { defaultValue: 'Not enough Moonstones to unlock.' }), 'error');
+        toast(t('liveRoom.replayInsufficient', { defaultValue: 'Not enough Moonstones for the replay — top up from the home widget, or earn more from the daily check-in.' }), 'error');
       } else {
-        toast(error.message, 'error');
+        toast(t('liveRoom.toasts.unlockFailed', { defaultValue: 'Couldn’t unlock the replay — your Moonstones weren’t taken. Try again in a moment.' }), 'error');
       }
       return;
     }
@@ -127,7 +130,12 @@ export function LiveRoomPage() {
     const { error } = await supabase.rpc('live_room_tip', { p_room_id: id, p_moonstones: amount, p_note: null });
     setTipping(null);
     if (error) {
-      toast(error.message, 'error');
+      console.error('[LiveRoom] Tip failed:', error.message);
+      if (error.message.toLowerCase().includes('insufficient')) {
+        toast(t('liveRoom.tipInsufficient', { defaultValue: 'Not enough Moonstones for that tip — top up from the home widget, or earn more from the daily check-in.' }), 'error');
+      } else {
+        toast(t('liveRoom.toasts.tipFailed', { defaultValue: 'Couldn’t send the tip — your Moonstones weren’t taken. Try again in a moment.' }), 'error');
+      }
       return;
     }
     toast(
@@ -186,13 +194,13 @@ export function LiveRoomPage() {
         <div className="flex items-center justify-between">
           <p className="text-xs text-mystic-400 flex items-center gap-1">
             <Users className="w-3 h-3" />
-            {t('liveRoom.listeners', { defaultValue: '{{n}} RSVPd / cap {{cap}}', n: listenerCount, cap: room.capacity })}
+            {t('liveRoom.listeners', { defaultValue: '{{n}} of {{cap}} seats taken', n: listenerCount, cap: room.capacity })}
           </p>
           {user && !isHost && (
             <Button variant={rsvpd ? 'outline' : 'primary'} size="sm" onClick={toggleRsvp}>
               {rsvpd
                 ? t('liveRoom.rsvpd', { defaultValue: 'You\'re in' })
-                : t('liveRoom.rsvp', { defaultValue: 'RSVP' })}
+                : t('liveRoom.rsvp', { defaultValue: 'Save my seat' })}
             </Button>
           )}
         </div>
@@ -209,7 +217,7 @@ export function LiveRoomPage() {
       ) : !rsvpd ? (
         <Card padding="md" className="bg-mystic-800/30">
           <p className="text-xs text-mystic-500 text-center italic">
-            {t('liveRoom.rsvpToJoin', { defaultValue: 'RSVP first to join voice.' })}
+            {t('liveRoom.rsvpToJoin', { defaultValue: 'Save a seat first to join the voice room.' })}
           </p>
         </Card>
       ) : null}
@@ -273,7 +281,7 @@ export function LiveRoomPage() {
                 onClick={() => sendTip(n)}
                 disabled={tipping !== null}
               >
-                {tipping === n ? '…' : `✨ ${n}`}
+                {tipping === n ? '…' : t('liveRoom.tipAmount', { defaultValue: '{{n}} Moonstones', n })}
               </Button>
             ))}
           </div>

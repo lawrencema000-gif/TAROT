@@ -55,7 +55,8 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
 
     if (errorDescription || errorParam) {
       const decodedError = (errorDescription || errorParam || '').replace(/\+/g, ' ');
-      toast(decodedError, 'error');
+      console.error('[Auth] Sign-in callback returned an error:', decodedError);
+      toast(getAuthErrorMessage(decodedError), 'error');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);

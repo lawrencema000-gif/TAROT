@@ -21,7 +21,7 @@ export function DailyWisdomCard() {
         </h3>
       </div>
 
-      <p className="text-mystic-200 leading-relaxed italic mb-3">
+      <p className="text-mystic-200 leading-relaxed mb-3">
         "{t(`wisdom.quotes.${quote.id}.text`, { defaultValue: quote.text })}"
       </p>
 
@@ -31,7 +31,7 @@ export function DailyWisdomCard() {
 
       <div className="pt-3 border-t border-mystic-800/50 flex items-start gap-2">
         <Feather className="w-3 h-3 text-gold mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-mystic-400 leading-relaxed italic">
+        <p className="text-xs text-mystic-400 leading-relaxed">
           {t(`wisdom.quotes.${quote.id}.reflection`, { defaultValue: quote.reflection })}
         </p>
       </div>

@@ -9,10 +9,8 @@ import {
   CheckCircle2,
   X,
   Layers,
-  Infinity as InfinityIcon,
   Heart,
   Brain,
-  Star,
   Moon,
   Ban,
   Users,
@@ -24,8 +22,8 @@ import {
 } from 'lucide-react';
 import { Button, toast, OrnateDivider, MysticalStar, ListRow } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { getBillingService } from '../../services/billing';
-import { isNative, isAndroid } from '../../utils/platform';
+import { getBillingService, type BillingService } from '../../services/billing';
+import { getPlatform } from '../../utils/platform';
 import { useT } from '../../i18n/useT';
 
 interface SubscriptionSheetProps {
@@ -33,14 +31,18 @@ interface SubscriptionSheetProps {
   onClose: () => void;
 }
 
+/** Only the web (Stripe) service can open a billing portal; the interface
+ *  doesn't declare it, so it is probed rather than assumed. */
+type PortalCapable = BillingService & { openCustomerPortal?: () => Promise<boolean> };
+
+// The same list the paywall shows, so a subscriber sees exactly what they
+// were promised; the labels come from premium.paywall.unlocks.*.
 const premiumFeatures = [
   { icon: Ban, key: 'adFree' },
   { icon: Layers, key: 'allSpreads' },
-  { icon: InfinityIcon, key: 'unlimitedSaves' },
   { icon: Heart, key: 'compatibility' },
   { icon: Users, key: 'partnerSynastry' },
   { icon: Brain, key: 'deepInterpretations' },
-  { icon: Star, key: 'guidedPrompts' },
   { icon: Moon, key: 'birthChart' },
   { icon: Sun, key: 'horoscopeFull' },
   { icon: Compass, key: 'humanDesign' },
@@ -55,14 +57,30 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
   const { t } = useT('app');
   const { profile, refreshProfile } = useAuth();
   const [restoring, setRestoring] = useState(false);
+  // Where the subscription is billed decides where it can be managed:
+  // Google Play on Android, the App Store on iOS, Stripe's portal on the web.
+  const platform = getPlatform();
 
   if (!open) return null;
 
-  const handleManageSubscription = () => {
-    if (isNative() && isAndroid()) {
+  const handleManageSubscription = async () => {
+    if (platform === 'android') {
       window.open('https://play.google.com/store/account/subscriptions', '_blank');
-    } else {
-      window.open('https://play.google.com/store/account/subscriptions', '_blank');
+      return;
+    }
+    if (platform === 'ios') {
+      window.open('https://apps.apple.com/account/subscriptions', '_blank');
+      return;
+    }
+    const billing = getBillingService() as PortalCapable;
+    const opened = billing.openCustomerPortal ? await billing.openCustomerPortal() : false;
+    if (!opened) {
+      toast(
+        t('premium.subscription.toasts.portalFailed', {
+          defaultValue: 'Couldn’t open the billing portal. Check your connection and try again.',
+        }),
+        'error',
+      );
     }
   };
 
@@ -74,12 +92,25 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
       if (purchases.some(p => p.success)) {
         await refreshProfile();
-        toast(t('premium.subscription.toasts.verified'), 'success');
+        toast(
+          t('premium.subscription.toasts.verified', { defaultValue: 'Your subscription is confirmed.' }),
+          'success',
+        );
       } else {
-        toast(t('premium.subscription.toasts.active'), 'info');
+        toast(
+          t('premium.subscription.toasts.active', {
+            defaultValue: 'Nothing to update — your subscription is as shown.',
+          }),
+          'info',
+        );
       }
     } catch {
-      toast(t('premium.subscription.toasts.verifyFailed'), 'error');
+      toast(
+        t('premium.subscription.toasts.verifyFailed', {
+          defaultValue: 'Couldn’t reach the store to check your subscription. Check your connection and try again.',
+        }),
+        'error',
+      );
     } finally {
       setRestoring(false);
     }
@@ -96,6 +127,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
+          aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
         >
           <X className="w-5 h-5 text-mystic-400" />
         </button>
@@ -113,7 +145,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
           <div className="flex items-center gap-2 mb-2">
             <MysticalStar size={20} className="text-gold" />
             <h1 className="font-display-hero text-4xl text-mystic-100 text-center">
-              {t('premium.subscription.heading')}
+              {t('premium.subscription.heading', { defaultValue: 'Premium is on' })}
             </h1>
             <MysticalStar size={20} className="text-gold" />
           </div>
@@ -122,7 +154,9 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
           </div>
 
           <p className="text-mystic-300 text-center max-w-xs mb-8">
-            {t('premium.subscription.subheading')}
+            {t('premium.subscription.subheading', {
+              defaultValue: 'Every spread, chart and reading is open to you, with no ads and no Moonstones to spend.',
+            })}
           </p>
 
           <div className="w-full max-w-sm mb-8">
@@ -153,7 +187,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
                     size="md"
                     icon={<CreditCard />}
                     label={t('premium.subscription.billing')}
-                    value={<span className="text-mystic-300">{t('premium.subscription.billingGooglePlay')}</span>}
+                    value={<span className="text-mystic-300">{t(`premium.subscription.billingVia.${platform}`)}</span>}
                   />
                 </div>
               </div>
@@ -162,7 +196,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
 
           <div className="w-full max-w-sm mb-8">
             <p className="text-xs font-medium text-mystic-500 uppercase tracking-wider text-center mb-4">
-              {t('premium.subscription.yourBenefits')}
+              {t('premium.subscription.yourBenefits', { defaultValue: 'Included in your plan' })}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {premiumFeatures.map((feature, i) => {
@@ -175,7 +209,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 flex items-center justify-center flex-shrink-0">
                       <Icon className="w-4 h-4 text-emerald-400" />
                     </div>
-                    <span className="text-sm text-mystic-200">{t(`premium.subscription.features.${feature.key}`)}</span>
+                    <span className="text-sm text-mystic-200">{t(`premium.paywall.unlocks.${feature.key}.label`)}</span>
                   </div>
                 );
               })}
@@ -190,7 +224,7 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
               onClick={handleManageSubscription}
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              {t('premium.subscription.manageOnGooglePlay')}
+              {t(`premium.subscription.manage.${platform}`)}
             </Button>
 
             <button
@@ -203,14 +237,14 @@ export function SubscriptionSheet({ open, onClose }: SubscriptionSheetProps) {
               ) : (
                 <RotateCcw className="w-4 h-4" />
               )}
-              {t('premium.subscription.syncStatus')}
+              {t('premium.subscription.syncStatus', { defaultValue: 'Refresh my subscription' })}
             </button>
           </div>
         </div>
 
         <div className="px-6 pb-8 pt-4 border-t border-mystic-800/50">
           <p className="text-xs text-mystic-600 text-center leading-relaxed">
-            {t('premium.subscription.disclaimer')}
+            {t(`premium.subscription.storeNote.${platform}`)}
           </p>
         </div>
       </div>

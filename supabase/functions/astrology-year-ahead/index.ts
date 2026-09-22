@@ -206,7 +206,13 @@ Deno.serve(handler<Request, YearAheadResponse>({
       .eq("user_id", ctx.userId!)
       .eq("report_key", "year-ahead")
       .maybeSingle();
-    if (!unlock) {
+    // Premium includes every report; a subscriber needs no unlock row.
+    const { data: prof } = await ctx.supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", ctx.userId!)
+      .maybeSingle();
+    if (!unlock && !prof?.is_premium) {
       throw new AppError("REPORT_NOT_UNLOCKED", "Unlock the Year Ahead report first", 402);
     }
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Newspaper, ChevronDown, ChevronUp, Trash2, Archive, Eye, EyeOff } from 'lucide-react';
 import { toast, Chip } from '../ui';
 import { blogPosts } from '../../dal';
+import { useT } from '../../i18n/useT';
 import type { BlogPost } from '../../types/blog';
 
 interface BlogManagerProps {
@@ -10,6 +11,7 @@ interface BlogManagerProps {
 }
 
 export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
+  const { t } = useT('app');
   const [expanded, setExpanded] = useState(false);
   const [filter, setFilter] = useState<'all' | 'published' | 'archived'>('all');
 
@@ -22,7 +24,7 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
   const toggleArchive = async (post: BlogPost) => {
     const res = await blogPosts.setArchived(post.id, !post.archived);
     if (!res.ok) {
-      toast('Failed to update post', 'error');
+      toast(t('admin.blog.toasts.updateFailed', { defaultValue: 'Couldn’t update the post — refresh and try again.' }), 'error');
     } else {
       toast(post.archived ? 'Post restored' : 'Post archived', 'success');
       onRefresh();
@@ -32,7 +34,7 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
   const togglePublish = async (post: BlogPost) => {
     const res = await blogPosts.setPublished(post.id, !post.published, post.published_at);
     if (!res.ok) {
-      toast('Failed to update post', 'error');
+      toast(t('admin.blog.toasts.updateFailed', { defaultValue: 'Couldn’t update the post — refresh and try again.' }), 'error');
     } else {
       toast(post.published ? 'Post unpublished' : 'Post published', 'success');
       onRefresh();
@@ -43,7 +45,7 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
     if (!confirm(`Delete "${post.title}" permanently? This cannot be undone.`)) return;
     const res = await blogPosts.deleteById(post.id);
     if (!res.ok) {
-      toast('Failed to delete post', 'error');
+      toast(t('admin.blog.toasts.deleteFailed', { defaultValue: 'Couldn’t delete the post — refresh and try again.' }), 'error');
     } else {
       toast('Post deleted', 'success');
       onRefresh();

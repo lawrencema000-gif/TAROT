@@ -256,12 +256,14 @@ export function ContentErrorFallback({
   onRetry?: () => void;
   contentType?: string;
 }) {
+  const { t } = useT('app');
+  const type = contentType.toLowerCase();
   return (
     <div className="bg-mystic-900/50 rounded-2xl p-6 border border-mystic-700/20 text-center">
       <AlertTriangle className="w-10 h-10 text-gold/60 mx-auto mb-3" />
-      <h3 className="text-mystic-100 font-medium mb-2">Unable to Load {contentType}</h3>
+      <h3 className="text-mystic-100 font-medium mb-2">{t('errorBoundary.contentTitle', { defaultValue: 'Couldn’t load this {{type}}', type })}</h3>
       <p className="text-mystic-500 text-sm mb-4">
-        The {contentType.toLowerCase()} is temporarily hidden from view.
+        {t('errorBoundary.contentMessage', { defaultValue: 'It didn’t load this time. Reload to try again.' })}
       </p>
       {onRetry && (
         <button
@@ -269,7 +271,7 @@ export function ContentErrorFallback({
           className="text-gold text-sm hover:text-gold flex items-center gap-1.5 mx-auto"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          Retry
+          {t('errorBoundary.contentRetry', { defaultValue: 'Reload {{type}}', type })}
         </button>
       )}
     </div>

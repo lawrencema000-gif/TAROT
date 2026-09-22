@@ -25,7 +25,7 @@ const WINDOW_DAYS = 90;
  */
 export function AuspiciousDatesPage() {
   const navigate = useNavigate();
-  const { t } = useT();
+  const { t } = useT('app');
   const { profile } = useAuth();
   const [intention, setIntention] = useState<Intention>('wedding');
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -153,14 +153,14 @@ export function AuspiciousDatesPage() {
         action={
           <Button variant="ghost" size="sm" onClick={download}>
             <Download className="w-3.5 h-3.5 mr-1.5" />
-            {t('dates.export', { defaultValue: 'Calendar' })}
+            {t('dates.export', { defaultValue: 'Add to my calendar' })}
           </Button>
         }
       >
         {best.map((d) => <DayRow key={d.date} d={d} tone="good" />)}
         <p className="text-[11px] text-mystic-600 pt-2">
           <CalendarDays className="w-3 h-3 inline mr-1" />
-          {t('dates.windowNote', { defaultValue: `Looking at the next ${WINDOW_DAYS} days. Tap a day to see exactly why it scored the way it did.` })}
+          {t('dates.windowNote', { defaultValue: 'Looking at the next {{days}} days. Tap a day to see exactly why it scored the way it did.', days: WINDOW_DAYS })}
         </p>
       </Section>
 

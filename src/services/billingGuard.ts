@@ -42,7 +42,7 @@ export async function checkPurchaseStatus(userId: string): Promise<PurchaseInfo>
         productId: null,
         status: null,
         canPurchase: false,
-        warning: 'You already have premium access.',
+        warning: 'You already have Premium on this account.',
       };
     }
 
@@ -56,10 +56,10 @@ export async function checkPurchaseStatus(userId: string): Promise<PurchaseInfo>
       status: subscription.status,
       canPurchase: false,
       warning: isWebPurchase
-        ? 'You purchased premium on the web. Manage your subscription in Settings.'
+        ? 'You subscribed on the web — manage it from Settings.'
         : isAppPurchase
-        ? 'You purchased premium in the mobile app. Manage your subscription in the Google Play Store.'
-        : 'You already have premium access.',
+        ? 'You subscribed in the mobile app — manage it in Google Play.'
+        : 'You already have Premium on this account.',
     };
   } catch (error) {
     console.error('[BillingGuard] Error checking purchase status:', error);
@@ -75,17 +75,25 @@ export async function checkPurchaseStatus(userId: string): Promise<PurchaseInfo>
 
 export function getPlatformWarning(currentPlatform: 'web' | 'mobile', purchasePlatform: 'stripe' | 'google' | 'web'): string | null {
   if (currentPlatform === 'web' && (purchasePlatform === 'google')) {
-    return '⚠️ You already purchased premium in the mobile app. You don\'t need to purchase again.';
+    return 'You already have Premium from the mobile app — no need to buy it again.';
   }
 
   if (currentPlatform === 'mobile' && (purchasePlatform === 'stripe' || purchasePlatform === 'web')) {
-    return '⚠️ You already purchased premium on the web. You don\'t need to purchase again.';
+    return 'You already have Premium from the web — no need to buy it again.';
   }
 
   return null;
 }
 
-export async function preventDoubleBilling(userId: string, attemptingPlatform: 'web' | 'mobile'): Promise<{ allowed: boolean; reason?: string }> {
+/**
+ * `code` says where the existing Premium came from so the UI can pick a
+ * translated message (billing.alreadyPremiumWeb / alreadyPremiumMobile /
+ * alreadyPremium); `reason` is the English diagnostic for logs.
+ */
+export async function preventDoubleBilling(
+  userId: string,
+  attemptingPlatform: 'web' | 'mobile',
+): Promise<{ allowed: boolean; reason?: string; code?: 'web' | 'mobile' | 'active' }> {
   const status = await checkPurchaseStatus(userId);
 
   if (!status.isPremium) {
@@ -95,19 +103,22 @@ export async function preventDoubleBilling(userId: string, attemptingPlatform: '
   if (status.provider === 'stripe' && attemptingPlatform === 'mobile') {
     return {
       allowed: false,
-      reason: 'You already have premium via web purchase. No need to buy again in the app.',
+      code: 'web',
+      reason: 'You already have Premium from the web — no need to buy it again in the app.',
     };
   }
 
   if (status.provider === 'google' && attemptingPlatform === 'web') {
     return {
       allowed: false,
-      reason: 'You already have premium via mobile app purchase. No need to buy again on web.',
+      code: 'mobile',
+      reason: 'You already have Premium from the mobile app — no need to buy it again on the web.',
     };
   }
 
   return {
     allowed: false,
-    reason: 'You already have an active premium subscription.',
+    code: 'active',
+    reason: 'You already have an active Premium subscription.',
   };
 }

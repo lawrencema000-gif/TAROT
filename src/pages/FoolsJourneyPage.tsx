@@ -7,10 +7,12 @@ import { FOOLS_JOURNEY, getCurrentJourney } from '../data/foolsJourney';
 import { fullDeck } from '../data/tarotDeck';
 import { getBundledFullPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
+import { useT } from '../i18n/useT';
 
 export function FoolsJourneyPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { t } = useT('app');
 
   useEffect(() => {
     setPageMeta(
@@ -22,9 +24,9 @@ export function FoolsJourneyPage() {
   if (!user || !profile) {
     return (
       <Page className="py-16 text-center">
-        <p className="text-mystic-300 mb-4">Sign in to see your Fool\'s Journey.</p>
+        <p className="text-mystic-300 mb-4">{t('foolsJourney.signInHint', { defaultValue: "Sign in to see your Fool's Journey." })}</p>
         <button onClick={() => navigate('/signin')} className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
-          Sign in
+          {t('foolsJourney.signIn', { defaultValue: 'Sign in to walk the journey' })}
         </button>
       </Page>
     );

@@ -6,7 +6,7 @@
  * component. All state is owned by the parent; this component is pure
  * presentation + event forwarding.
  */
-import { Compass, ChevronRight } from 'lucide-react';
+import { ChevronLeft, Compass, ChevronRight } from 'lucide-react';
 import { Chip, Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { FOCUS_AREAS, FOCUS_AREA_I18N_KEY, type FocusArea } from './types';
@@ -27,6 +27,7 @@ export function TarotFocusView({ selectedFocus, onBack, onSelect, onContinue }: 
         onClick={onBack}
         className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
       >
+        <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}
       </button>
 

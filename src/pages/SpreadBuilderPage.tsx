@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Page, PageHeader, toast } from '../components/ui';
 import { setPageMeta } from '../utils/seo';
+import { useT } from '../i18n/useT';
 
 interface Position {
   name: string;
@@ -23,6 +24,7 @@ interface SavedSpread {
 const MAX_POSITIONS = 13;
 
 export function SpreadBuilderPage() {
+  const { t } = useT('app');
   const { user } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -70,16 +72,16 @@ export function SpreadBuilderPage() {
 
   const handleSave = async () => {
     if (!user) {
-      toast('Sign in to save spreads', 'error');
+      toast(t('spreadBuilder.toasts.signInToSave', { defaultValue: 'Sign in to save this spread.' }), 'error');
       return;
     }
     if (!name.trim()) {
-      toast('Give your spread a name', 'error');
+      toast(t('spreadBuilder.toasts.nameRequired', { defaultValue: 'Give your spread a name before saving.' }), 'error');
       return;
     }
     const cleaned = positions.filter((p) => p.name.trim() && p.meaning.trim());
     if (cleaned.length < 1) {
-      toast('Add at least one position with a name and meaning', 'error');
+      toast(t('spreadBuilder.toasts.positionRequired', { defaultValue: 'Add at least one position with both a name and a meaning.' }), 'error');
       return;
     }
     setSaving(true);
@@ -95,7 +97,8 @@ export function SpreadBuilderPage() {
       .single();
     setSaving(false);
     if (error) {
-      toast(error.message, 'error');
+      console.error('[SpreadBuilder] Save failed:', error.message);
+      toast(t('spreadBuilder.toasts.saveFailed', { defaultValue: 'Couldn’t save your spread — check your connection and try again.' }), 'error');
       return;
     }
     if (data) {
@@ -103,26 +106,27 @@ export function SpreadBuilderPage() {
       setName('');
       setDescription('');
       setPositions([{ name: '', meaning: '' }, { name: '', meaning: '' }, { name: '', meaning: '' }]);
-      toast('Spread saved', 'success');
+      toast(t('spreadBuilder.toasts.saved', { defaultValue: 'Spread saved — it’s listed under Your saved spreads.' }), 'success');
     }
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('custom_spreads').delete().eq('id', id);
     if (error) {
-      toast(error.message, 'error');
+      console.error('[SpreadBuilder] Delete failed:', error.message);
+      toast(t('spreadBuilder.toasts.deleteFailed', { defaultValue: 'Couldn’t delete that spread — check your connection and try again.' }), 'error');
       return;
     }
     setSavedSpreads((prev) => prev.filter((s) => s.id !== id));
-    toast('Spread deleted', 'info');
+    toast(t('spreadBuilder.toasts.deleted', { defaultValue: 'Spread deleted.' }), 'info');
   };
 
   if (!user) {
     return (
       <Page className="py-16 text-center">
-        <p className="text-mystic-300 mb-4">Sign in to design custom spreads.</p>
+        <p className="text-mystic-300 mb-4">{t('spreadBuilder.signInPrompt', { defaultValue: 'Custom spreads are saved to your account.' })}</p>
         <button onClick={() => navigate('/signin')} className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
-          Sign in
+          {t('spreadBuilder.signInCta', { defaultValue: 'Sign in to build a spread' })}
         </button>
       </Page>
     );

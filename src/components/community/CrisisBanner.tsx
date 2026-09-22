@@ -14,7 +14,9 @@ interface CrisisBannerProps {
  * moderation review — not hidden from them), but they also see this
  * card. The intent is harm reduction, not censorship.
  *
- * The 988 number and Crisis Text Line shortcodes are for US/UK/CA/IE.
+ * The numbers are locale copy (crisis.phone.number, crisis.text.number,
+ * crisis.text.scheme/keyword): 988 and the Crisis Text Line shortcode are
+ * for US/UK/CA/IE, and ja/ko/zh carry their own national lines.
  * findahelpline.com covers the rest of the world.
  */
 export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
@@ -60,7 +62,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
               </p>
             </div>
             <a
-              href="tel:988"
+              href={`tel:${t('crisis.phone.number', { defaultValue: '988' })}`}
               className="px-3 py-1.5 bg-gold/15 text-gold rounded-lg text-xs font-medium hover:bg-gold/25 transition-colors"
             >
               {t('crisis.phone.cta', { defaultValue: 'Call' })}
@@ -68,7 +70,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-xl">
-            <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" />
+            {t('crisis.text.scheme', { defaultValue: 'sms' }) === 'sms' ? <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" /> : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
                 {t('crisis.text.title', { defaultValue: 'Crisis Text Line' })}
@@ -78,7 +80,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
               </p>
             </div>
             <a
-              href="sms:741741?body=HOME"
+              href={`${t('crisis.text.scheme', { defaultValue: 'sms' })}:${t('crisis.text.number', { defaultValue: '741741' })}${t('crisis.text.keyword', { defaultValue: 'HOME' }) ? `?body=${t('crisis.text.keyword', { defaultValue: 'HOME' })}` : ''}`}
               className="px-3 py-1.5 bg-cosmic-blue/15 text-cosmic-blue rounded-lg text-xs font-medium hover:bg-cosmic-blue/25 transition-colors"
             >
               {t('crisis.text.cta', { defaultValue: 'Text' })}
@@ -103,7 +105,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
           </a>
         </div>
 
-        <p className="text-[11px] text-mystic-500 leading-relaxed mt-4 italic">
+        <p className="text-meta text-mystic-400 leading-relaxed mt-4">
           {t('crisis.footer', {
             defaultValue:
               'Arcana is not a medical service. If you are in immediate danger, please call your local emergency number.',

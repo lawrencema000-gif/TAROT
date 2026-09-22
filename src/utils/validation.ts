@@ -1,5 +1,11 @@
+/**
+ * Form validation. Every `error` is an i18n KEY (in the `common` namespace,
+ * written with its prefix so any `t` can resolve it), never display text —
+ * callers render it with `t(result.error)`.
+ */
 export interface ValidationResult {
   valid: boolean;
+  /** i18n key, e.g. `common:errors.emailRequired`. Render with `t(error)`. */
   error?: string;
 }
 
@@ -10,18 +16,20 @@ export interface FieldValidation {
   maxLength?: number;
 }
 
+const E = (key: string) => `common:errors.${key}`;
+
 export function validateEmail(email: string): ValidationResult {
   if (!email || email.trim().length === 0) {
-    return { valid: false, error: 'Email is required' };
+    return { valid: false, error: E('emailRequired') };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email.trim())) {
-    return { valid: false, error: 'Please enter a valid email address' };
+    return { valid: false, error: E('invalidEmail') };
   }
 
   if (email.length > 254) {
-    return { valid: false, error: 'Email address is too long' };
+    return { valid: false, error: E('emailTooLong') };
   }
 
   return { valid: true };
@@ -29,22 +37,22 @@ export function validateEmail(email: string): ValidationResult {
 
 export function validatePassword(password: string): ValidationResult {
   if (!password || password.length === 0) {
-    return { valid: false, error: 'Password is required' };
+    return { valid: false, error: E('passwordRequired') };
   }
 
   if (password.length < 8) {
-    return { valid: false, error: 'Password must be at least 8 characters' };
+    return { valid: false, error: E('passwordTooShort') };
   }
 
   if (password.length > 128) {
-    return { valid: false, error: 'Password is too long' };
+    return { valid: false, error: E('passwordTooLong') };
   }
 
   const hasLetter = /[a-zA-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
 
   if (!hasLetter || !hasNumber) {
-    return { valid: false, error: 'Password must contain both letters and numbers' };
+    return { valid: false, error: E('passwordNeedsLetter') };
   }
 
   return { valid: true };
@@ -52,22 +60,22 @@ export function validatePassword(password: string): ValidationResult {
 
 export function validateDisplayName(name: string): ValidationResult {
   if (!name || name.trim().length === 0) {
-    return { valid: false, error: 'Display name is required' };
+    return { valid: false, error: E('nameRequired') };
   }
 
   const trimmed = name.trim();
 
   if (trimmed.length < 2) {
-    return { valid: false, error: 'Name must be at least 2 characters' };
+    return { valid: false, error: E('nameTooShort') };
   }
 
   if (trimmed.length > 50) {
-    return { valid: false, error: 'Name must be less than 50 characters' };
+    return { valid: false, error: E('nameTooLong') };
   }
 
   const validNameRegex = /^[\p{L}\p{N}\s'-]+$/u;
   if (!validNameRegex.test(trimmed)) {
-    return { valid: false, error: 'Name contains invalid characters' };
+    return { valid: false, error: E('nameInvalidChars') };
   }
 
   return { valid: true };
@@ -75,12 +83,12 @@ export function validateDisplayName(name: string): ValidationResult {
 
 export function validateBirthDate(dateStr: string): ValidationResult {
   if (!dateStr) {
-    return { valid: false, error: 'Birth date is required' };
+    return { valid: false, error: E('birthDateRequired') };
   }
 
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) {
-    return { valid: false, error: 'Please enter a valid date' };
+    return { valid: false, error: E('birthDateInvalid') };
   }
 
   const now = new Date();
@@ -88,16 +96,16 @@ export function validateBirthDate(dateStr: string): ValidationResult {
   minDate.setFullYear(minDate.getFullYear() - 120);
 
   if (date > now) {
-    return { valid: false, error: 'Birth date cannot be in the future' };
+    return { valid: false, error: E('birthDateFuture') };
   }
 
   if (date < minDate) {
-    return { valid: false, error: 'Please enter a valid birth date' };
+    return { valid: false, error: E('birthDateTooOld') };
   }
 
   const age = Math.floor((now.getTime() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
   if (age < 13) {
-    return { valid: false, error: 'You must be at least 13 years old' };
+    return { valid: false, error: E('minAge') };
   }
 
   return { valid: true };
@@ -110,7 +118,7 @@ export function validateBirthTime(timeStr: string): ValidationResult {
 
   const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
   if (!timeRegex.test(timeStr)) {
-    return { valid: false, error: 'Please enter a valid time (HH:MM)' };
+    return { valid: false, error: E('birthTimeInvalid') };
   }
 
   return { valid: true };
@@ -118,11 +126,11 @@ export function validateBirthTime(timeStr: string): ValidationResult {
 
 export function validateJournalEntry(content: string): ValidationResult {
   if (!content || content.trim().length === 0) {
-    return { valid: false, error: 'Journal entry cannot be empty' };
+    return { valid: false, error: E('journalEmpty') };
   }
 
   if (content.length > 10000) {
-    return { valid: false, error: 'Journal entry is too long (max 10,000 characters)' };
+    return { valid: false, error: E('journalTooLong') };
   }
 
   return { valid: true };
@@ -130,15 +138,15 @@ export function validateJournalEntry(content: string): ValidationResult {
 
 export function validateTags(tags: string[]): ValidationResult {
   if (tags.length > 10) {
-    return { valid: false, error: 'Maximum 10 tags allowed' };
+    return { valid: false, error: E('tagsTooMany') };
   }
 
   for (const tag of tags) {
     if (tag.length > 30) {
-      return { valid: false, error: 'Tags must be less than 30 characters each' };
+      return { valid: false, error: E('tagTooLong') };
     }
     if (!/^[\w\s-]+$/.test(tag)) {
-      return { valid: false, error: 'Tags can only contain letters, numbers, and hyphens' };
+      return { valid: false, error: E('tagInvalidChars') };
     }
   }
 
@@ -147,7 +155,7 @@ export function validateTags(tags: string[]): ValidationResult {
 
 export function validateNotes(notes: string): ValidationResult {
   if (notes.length > 5000) {
-    return { valid: false, error: 'Notes are too long (max 5,000 characters)' };
+    return { valid: false, error: E('notesTooLong') };
   }
 
   return { valid: true };
@@ -189,26 +197,26 @@ export function validateForm(
     const value = values[field] || '';
 
     if (validation.required && !value.trim()) {
-      errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+      errors[field] = E('fieldRequired');
       valid = false;
       continue;
     }
 
     if (validation.minLength && value.length < validation.minLength) {
-      errors[field] = `Must be at least ${validation.minLength} characters`;
+      errors[field] = E('tooShort');
       valid = false;
       continue;
     }
 
     if (validation.maxLength && value.length > validation.maxLength) {
-      errors[field] = `Must be less than ${validation.maxLength} characters`;
+      errors[field] = E('tooLong');
       valid = false;
       continue;
     }
 
     const result = validation.validate(value);
     if (!result.valid) {
-      errors[field] = result.error || 'Invalid value';
+      errors[field] = result.error || E('invalidValue');
       valid = false;
     }
   }

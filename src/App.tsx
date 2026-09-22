@@ -396,7 +396,7 @@ function AppContent() {
                 onClick={cancelOAuth}
                 className="px-4 py-2 text-sm text-mystic-300 hover:text-mystic-100 underline underline-offset-2 transition-colors"
               >
-                Cancel and try again
+                {t('authBootstrap.backToSignIn', { defaultValue: 'Back to sign in' })}
               </button>
             </div>
           )}
@@ -432,10 +432,10 @@ function AppContent() {
               <BrandWordmark size={20} sparkle={false} />
             </a>
             <div className="flex items-center gap-4">
-              <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Card Meanings</a>
-              <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">Blog</a>
+              <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cardMeanings', { defaultValue: 'Card meanings' })}</a>
+              <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.blog', { defaultValue: 'Blog' })}</a>
               <button onClick={() => navigate('/signin')} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
-                Sign In
+                {t('publicNav.signIn', { defaultValue: 'Sign in' })}
               </button>
             </div>
           </nav>
@@ -458,7 +458,7 @@ function AppContent() {
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
-                <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
+                {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
               </Routes>
             </Suspense>
           </main>
@@ -626,7 +626,7 @@ function AppContent() {
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
-                  <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />
+                  {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </motion.div>

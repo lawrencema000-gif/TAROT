@@ -116,7 +116,7 @@ export function CompatInvitePage() {
               })}
             </p>
             <Button variant="gold" onClick={() => navigate('/')}>
-              {t('compatInvite.signInCta', { defaultValue: 'Continue' })}
+              {t('compatInvite.signInCta', { defaultValue: 'Sign in to see the match' })}
             </Button>
           </div>
         </div>

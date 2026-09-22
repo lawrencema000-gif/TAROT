@@ -316,7 +316,7 @@ export function PickACardPage() {
                   <>
                     <Button variant="outline" onClick={handleShare} className="flex-1">
                       <Share2 className="w-4 h-4 mr-2" />
-                      {t('pickACard.share', { defaultValue: 'Share' })}
+                      {t('pickACard.share', { defaultValue: 'Share my card' })}
                     </Button>
                     <Button
                       variant="gold"
@@ -324,7 +324,7 @@ export function PickACardPage() {
                       className="flex-1"
                     >
                       <BookOpen className="w-4 h-4 mr-2" />
-                      {t('pickACard.learnMore', { defaultValue: 'Learn more' })}
+                      {t('pickACard.learnMore', { defaultValue: "Read this card's meaning" })}
                     </Button>
                   </>
                 }

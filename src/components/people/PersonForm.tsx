@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
 import { Button, Chip, Input, toast } from '../ui';
+import { useT } from '../../i18n/useT';
 import { CelestialCitySearch } from '../celestial/CelestialCitySearch';
 import { deriveBirthTz } from '../../utils/birthTz';
 import { people } from '../../dal';
@@ -29,6 +30,7 @@ interface Props {
  *  city pick (Sprint-B pipeline) so the DB computes birth_utc correctly. */
 export function PersonForm({ existing, onSaved, onCancel }: Props) {
   const { user } = useAuth();
+  const { t } = useT('app');
   const [name, setName] = useState(existing?.name ?? '');
   const [relationship, setRelationship] = useState<Relationship>(existing?.relationship ?? 'friend');
   const [species, setSpecies] = useState<Species>(existing?.species ?? 'dog');
@@ -48,8 +50,8 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
 
   const handleSave = async () => {
     if (!user) return;
-    if (!name.trim()) { setError('Give this person a name.'); return; }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) { setError('A valid birth date is required.'); return; }
+    if (!name.trim()) { setError(t('people.form.nameRequired', { defaultValue: 'Give this person a name.' })); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) { setError(t('people.form.dateRequired', { defaultValue: 'Enter their birth date.' })); return; }
     setError(null);
     setSaving(true);
     let birthTz: string | null = null;
@@ -71,29 +73,38 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
       : await people.create(user.id, input);
     setSaving(false);
     if (!res.ok) {
-      setError(res.error.includes('PEOPLE_LIMIT') ? 'You’ve reached the 50-person limit.' : res.error);
+      setError(
+        res.error.includes('PEOPLE_LIMIT')
+          ? t('people.form.limit', { defaultValue: "You've reached the 50-person limit." })
+          : t('people.form.saveFailed', { defaultValue: "Couldn't save this person — check your connection and try again." }),
+      );
       return;
     }
-    toast(existing ? 'Updated' : `${input.name} added`, 'success');
+    toast(
+      existing
+        ? t('people.form.updated', { defaultValue: '{{name}} updated', name: input.name })
+        : t('people.form.added', { defaultValue: '{{name}} added', name: input.name }),
+      'success',
+    );
     onSaved(res.data);
   };
 
   return (
     <div className="space-y-4">
-      <Input label="Name" icon={<User className="w-4 h-4" />} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Mom, Alex, Jamie" maxLength={80} />
+      <Input label={t('people.form.name', { defaultValue: 'Name' })} icon={<User className="w-4 h-4" />} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('people.form.namePlaceholder', { defaultValue: 'e.g. Mom, Alex, Jamie' })} maxLength={80} />
 
       <div>
-        <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">Relationship</label>
+        <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">{t('people.form.relationship', { defaultValue: 'Relationship' })}</label>
         <div className="flex flex-wrap gap-2">
           {RELATIONSHIPS.map((r) => (
-            <Chip key={r.key} label={r.label} selected={relationship === r.key} onSelect={() => setRelationship(r.key)} />
+            <Chip key={r.key} label={t(`people.relationship.${r.key}`, { defaultValue: r.label })} selected={relationship === r.key} onSelect={() => setRelationship(r.key)} />
           ))}
         </div>
       </div>
 
       {relationship === 'pet' && (
         <div>
-          <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">Species</label>
+          <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">{t('people.form.species', { defaultValue: 'Species' })}</label>
           <div className="flex flex-wrap gap-2">
             {SPECIES_KEYS.map((k) => (
               <Chip key={k} label={SPECIES_INFO[k].label} selected={species === k} onSelect={() => setSpecies(k)} />
@@ -102,11 +113,11 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
         </div>
       )}
 
-      <Input type="date" label="Birth date" icon={<Calendar className="w-4 h-4" />} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().slice(0, 10)} />
-      <Input type="time" label={relationship === 'pet' ? 'Time (optional — most adopted animals have none)' : 'Birth time (optional — sharpens the chart)'} icon={<Clock className="w-4 h-4" />} value={birthTime} onChange={(e) => setBirthTime(e.target.value)} placeholder="--:--" />
+      <Input type="date" label={t('people.form.birthDate', { defaultValue: 'Birth date' })} icon={<Calendar className="w-4 h-4" />} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().slice(0, 10)} />
+      <Input type="time" label={relationship === 'pet' ? t('people.form.petTime', { defaultValue: 'Time (optional — most adopted animals have none)' }) : t('people.form.birthTime', { defaultValue: 'Birth time (optional — sharpens the chart)' })} icon={<Clock className="w-4 h-4" />} value={birthTime} onChange={(e) => setBirthTime(e.target.value)} placeholder="--:--" />
 
       <div>
-        <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Birth place (optional)</label>
+        <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {t('people.form.birthPlace', { defaultValue: 'Birth place (optional)' })}</label>
         {place && <p className="text-sm text-gold mb-2">{place.name}</p>}
         <CelestialCitySearch onPick={handlePickCity} />
       </div>
@@ -114,9 +125,11 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
       {error && <p className="text-xs text-red-300 bg-red-900/30 border border-red-700/40 rounded-xl p-3">{error}</p>}
 
       <div className="flex gap-2 pt-1">
-        <Button variant="ghost" size="md" onClick={onCancel} className="flex-1">Cancel</Button>
+        <Button variant="ghost" size="md" onClick={onCancel} className="flex-1">{t('people.form.cancel', { defaultValue: 'Cancel' })}</Button>
         <Button variant="primary" size="md" onClick={handleSave} disabled={saving} className="flex-1">
-          {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving…</> : (existing ? 'Save changes' : 'Add person')}
+          {saving
+            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('people.form.saving', { defaultValue: 'Saving…' })}</>
+            : (existing ? t('people.form.saveChanges', { defaultValue: 'Save birth details' }) : t('people.form.add', { defaultValue: 'Add this person' }))}
         </Button>
       </div>
     </div>

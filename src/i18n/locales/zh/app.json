@@ -10,7 +10,7 @@
     "level": "等级 {{n}}",
     "xpProgress": "经验进度",
     "todaysRitual": "今日仪式",
-    "ritualComplete": "仪式完成!",
+    "ritualComplete": "仪式完成",
     "streak": "已连续 {{n}} 天,继续保持。",
     "savedToday": "今日已保存",
     "savedHighlights": "已保存的亮点",
@@ -18,7 +18,6 @@
     "eveningRitual": "夜晚仪式",
     "savedToHighlights": "已保存到亮点",
     "copiedToClipboard": "已复制到剪贴板",
-    "seeker": "探寻者",
     "dayStreakLabel": "天连续",
     "xpValue": "{{current}} / {{required}} 经验值",
     "ritualReady": {
@@ -45,7 +44,7 @@
       "share": "分享",
       "meaning": "牌意"
     },
-    "xpEarned": "获得 +{{xp}} XP!",
+    "xpEarned": "获得 +{{xp}} XP。",
     "removedFromSaved": "已从收藏中移除",
     "quickReading": "3秒解读",
     "quickReadingSub": "随便问",
@@ -56,7 +55,9 @@
     "soulmateTitle": "灵魂伴侣分数",
     "soulmateSub": "与任何人对比星盘 — 得出 100 分制的契合度。",
     "loveTreeSub": "90 秒,12 道题 → 你的依恋风格化为一棵活树。",
-    "loveTreeTitle": "爱之树"
+    "loveTreeTitle": "爱之树",
+    "exploreMore": "今日仪式之外",
+    "seeAllSaved": "查看全部收藏"
   },
   "auth": {
     "welcomeBack": "欢迎回来",
@@ -64,14 +65,14 @@
     "newToArcana": "第一次使用 Arcana?",
     "verifyEmail": "验证邮箱",
     "checkEmail": "请查收邮件",
-    "verificationSent": "验证邮件已发送!",
+    "verificationSent": "验证邮件已发送。",
     "resendVerification": "重新发送验证邮件",
-    "resendFailed": "重新发送验证邮件失败。",
+    "resendFailed": "无法发送验证邮件，请稍后重试。",
     "resetPassword": "重置密码",
     "enterEmailForReset": "输入邮箱以接收重置链接",
     "enterEmail": "请输入邮箱地址。",
     "resetSent": "重置链接已发送,请查收邮件。",
-    "resetFailed": "发送重置邮件失败,请重试。",
+    "resetFailed": "无法发送重置链接，请检查邮箱地址后重试。",
     "sendResetLink": "发送重置链接",
     "forgotPassword": "忘记密码?",
     "backToSignIn": "返回登录",
@@ -81,7 +82,7 @@
     "enterNewPassword": "为您的 Arcana 账户设置新密码。",
     "passwordTooShort": "密码至少需要 8 个字符。",
     "passwordsMustMatch": "两次输入的密码不一致。",
-    "passwordRequirementHint": "至少 8 个字符,建议不要与其他网站重复使用。",
+    "passwordRequirementHint": "至少 8 个字符，建议不要与其他网站重复使用。",
     "resetSuccess": "密码已更新。",
     "resetSuccessHint": "正在返回应用…",
     "resetSuccessRecoveryHint": "正在退出登录,请使用新密码重新登录。",
@@ -90,12 +91,15 @@
     "signUpLink": "注册",
     "emailNotConfirmed": "请先验证邮箱再登录。",
     "verifySentTo": "已向 {{email}} 发送验证链接,请查收邮件。",
-    "checkSpam": "如果看不到邮件,请检查垃圾邮件文件夹。",
+    "checkSpam": "如果没有看到邮件，请检查垃圾邮件文件夹。",
     "resetSentTo": "已向 {{email}} 发送重置链接",
-    "resetDidntReceive": "没收到邮件?请检查垃圾邮件文件夹或再试一次。",
+    "resetDidntReceive": "没收到邮件？请检查垃圾邮件文件夹或再试一次。",
     "tryAgain": "重试",
     "orDivider": "或",
-    "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。"
+    "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。",
+    "bootstrap": {
+      "signInAgain": "重新登录"
+    }
   },
   "cardMeaning": {
     "yesNo": {
@@ -114,11 +118,22 @@
         "yes": "这张牌{{keywords}}的能量偏向正面的结果。",
         "no": "这张牌{{keywords}}的能量暗示挑战或延迟。"
       }
-    }
+    },
+    "astrology": "占星对应",
+    "element": "元素",
+    "planet": "行星",
+    "zodiac": "星座",
+    "decan": "十度区间",
+    "hebrewLetter": "希伯来字母",
+    "numerology": "数字学",
+    "reinforcingCards": "强化牌",
+    "reinforcingIntro": "当{{name}}与这些牌同时出现时，解读的能量会更强——{{reason}}",
+    "opposingCards": "对立牌",
+    "opposingIntro": "这些牌与{{name}}形成张力——{{reason}}",
+    "faq": "常见问题"
   },
   "readings": {
     "title": "牌阵",
-    "subtitle": "选择今日的牌阵",
     "tabs": {
       "tarot": "塔罗",
       "horoscope": "星座",
@@ -132,12 +147,13 @@
       "partner": "契合",
       "fengshui": "风水",
       "runes": "符文",
-      "dice": "骰子"
+      "dice": "骰子",
+      "celestial": "天体地图"
     },
     "dailyRemaining": "今日免费牌阵 {{used}} / {{limit}}",
     "upgradeForUnlimited": "升级解锁无限",
     "limitReached": "已达每日上限",
-    "limitReachedMsg": "今日免费牌阵已用完。升级解锁无限,或明日再来。",
+    "limitReachedMsg": "今日免费解读已用完。升级解锁无限次，或明天再来。",
     "resetsAt": "{{hours}} 小时 {{minutes}} 分后重置",
     "categories": {
       "daily": "每日",
@@ -148,7 +164,7 @@
       "celtic": "凯尔特十字"
     },
     "focusArea": "焦点",
-    "focusPrompt": "你在想些什么?",
+    "focusPrompt": "你在想些什么？",
     "draw": "抽牌",
     "drawAgain": "再抽一次",
     "saveReading": "保存牌阵",
@@ -204,12 +220,11 @@
       }
     },
     "dailyDraw": {
-      "title": "每日抽牌",
-      "subtitle": "点击开始你的解读"
+      "title": "每日抽牌"
     },
     "browse": {
       "title": "浏览牌组",
-      "allCards": "全部78张",
+      "allCards": "全部 78 张",
       "learnMeanings": "学习牌意",
       "filters": {
         "all": "全部",
@@ -222,12 +237,12 @@
     },
     "spreadsSection": "牌阵",
     "focusView": {
-      "title": "你的焦点是什么?",
+      "title": "你的焦点是什么？",
       "subtitle": "选择一个领域来引导你的解读",
-      "continue": "继续"
+      "continue": "带着这个焦点洗牌"
     },
     "shuffleView": {
-      "inProgress": "正在洗牌...",
+      "inProgress": "正在洗牌…",
       "clearMind": "清空思绪",
       "spreading": "展开全部78张牌",
       "focusQuestion": "专注于你的问题",
@@ -236,19 +251,20 @@
     "selectView": {
       "chooseMore_one": "再选{{count}}张牌",
       "chooseMore_other": "再选{{count}}张牌",
-      "readyReveal": "准备揭示!",
+      "readyReveal": "准备揭示。",
       "trustIntuition": "相信你的直觉 • 全78张",
-      "selectMore": "再选{{count}}张",
-      "revealCards": "揭示牌面"
+      "selectMore": "再选 {{count}} 张",
+      "revealCards": "揭示牌面",
+      "chooseMore": "再选 {{count}} 张"
     },
     "revealView": {
       "focusReading": "{{focus}}解读",
       "tapToReveal": "点击揭示",
       "revealAll": "全部揭示",
-      "generating": "生成中...",
-      "getAIInsight": "获取AI洞察",
+      "generating": "生成中…",
+      "getAIInsight": "获取 AI 洞察",
       "premiumAI": "高级AI",
-      "aiInterpretation": "AI解读",
+      "aiInterpretation": "AI 解读",
       "aiSubtitle": "基于你的牌和个人资料的个性化洞察",
       "showCardMeanings": "← 显示牌意",
       "loveFocus": "爱情焦点",
@@ -259,23 +275,25 @@
       "reversed": "逆位",
       "upright": "正位",
       "reversalNote": "逆位说明: {{text}}",
-      "save": "保存",
+      "save": "保存这次解读",
       "saved": "已保存",
-      "newReading": "新解读",
-      "cardsSpoken": "\"牌已说话。遵循这份指引,你今天可以采取哪个小小的行动?\""
+      "newReading": "开始新的解读",
+      "share": "分享这次解读"
     },
     "status": {
-      "try": "试用",
+      "try": "观看广告",
       "unlocked": "已解锁"
     },
-    "back": "← 返回",
+    "back": "返回",
     "toasts": {
       "cardsNotFound": "部分选中的牌无法找到。请重新洗牌后再试。",
-      "saveFailed": "保存解读失败",
+      "saveFailed": "无法保存这次解读，请检查网络连接后重试。",
       "readingSaved": "解读已保存",
       "aiReady": "AI解读已就绪",
       "interpretationReady": "解读已就绪",
-      "aiFailed": "生成解读失败"
+      "aiFailed": "无法生成解读，请稍后再试。",
+      "aiInsufficient": "月光石不足，无法获取 AI 解读。可在首页组件充值，或通过每日签到赚取。",
+      "aiLimit": "今日 AI 解读次数已达上限，明天再来。"
     },
     "positions": {
       "yourCard": "你的牌",
@@ -337,13 +355,15 @@
         "希望与恐惧",
         "最终结果"
       ]
-    }
+    },
+    "shareText": "我在 Arcana 的{{spread}}塔罗解读",
+    "share": "分享解读",
+    "cardBackAlt": "牌背"
   },
   "journal": {
     "title": "日记",
-    "subtitle": "回望、记住、成长。",
     "newEntry": "新条目",
-    "entryPlaceholder": "今天心里有什么?",
+    "entryPlaceholder": "今天心里有什么？",
     "titlePlaceholder": "标题(可选)",
     "moodLabel": "今天的心情如何?",
     "tagsLabel": "标签",
@@ -351,7 +371,7 @@
     "addPrompt": "添加提示语",
     "linkToReading": "关联牌阵",
     "linkToCard": "关联卡牌",
-    "saveEntry": "保存",
+    "saveEntry": "保存这条日记",
     "saved": "已保存。",
     "deleted": "已删除。",
     "noEntries": "暂无日记",
@@ -391,10 +411,10 @@
     "emptyState": "还没有日记。",
     "emptyStateSub": "今天就开始你的反思旅程吧。",
     "loadMore": "加载更多",
-    "loadingMore": "加载中...",
+    "loadingMore": "加载中…",
     "totalEntries": "总条目",
     "dayStreak": "连续天数",
-    "moodTrend": "心情趋势 (7 天)",
+    "moodTrend": "心情趋势（7 天）",
     "mostCommonTags": "最常用标签",
     "moodDistribution": "心情分布",
     "personalInsight": "个性化洞察",
@@ -419,14 +439,18 @@
       "upgradeToLock": "升级高级版才能锁定条目",
       "savedLocked": "条目已保存并锁定",
       "saved": "条目已保存",
-      "xpEarned": "+{{n}} 经验值!",
+      "xpEarned": "获得 +{{n}} XP。",
       "deleteConfirm": "删除此日记条目?",
       "deleted": "条目已删除"
+    },
+    "linkReading": "关联一次解读",
+    "startWriting": "写下我的第一条日记",
+    "editor": {
+      "cancel": "取消"
     }
   },
   "quizzes": {
     "title": "测试",
-    "subtitle": "探索你的内心版图",
     "questions": "题",
     "takes": "耗时",
     "minutes": "分钟",
@@ -520,7 +544,7 @@
         ]
       },
       "mbtiQuick": {
-        "title": "快速人格类型测评",
+        "title": "快速性格类型",
         "description": "12 道题，快速读取你充电、感知、决策与规划日常的方式。作为入门正合适；想要更精准的结果时，可随时升级到 70 题的完整深度版。",
         "timeEstimate": "3 分钟",
         "whatYouGet": [
@@ -636,7 +660,7 @@
           "cr1": {
             "text": "我与权威的关系是…",
             "options": {
-              "1": "会质疑——还在学习的阶段。",
+              "1": "我会质疑——我还在摸索。",
               "2": "用行动挑战它。",
               "3": "引导身边的人。",
               "4": "我已成为标准本身。"
@@ -654,7 +678,7 @@
           "cr3": {
             "text": "我与变化的关系是…",
             "options": {
-              "1": "兴奋——充满好奇。",
+              "1": "兴奋——我充满好奇，睁大了眼睛。",
               "2": "我主动追逐变化。",
               "3": "一边适应，一边照顾他人。",
               "4": "稳住整艘船，不让任何东西破碎。"
@@ -690,7 +714,7 @@
         }
       },
       "shadowArchetype": {
-        "title": "影子原型测评",
+        "title": "影子原型",
         "description": "此刻你的内在由哪一位原型在指挥这个房间？此测评把你对应到七个深层模式之一——情人、战士、魔法师、君主、贤者、天真者、探险者——并告诉你它健康时的礼物、受伤时的阴影，以及走向整合的路径。",
         "timeEstimate": "6 分钟",
         "whatYouGet": [
@@ -719,7 +743,7 @@
             "text": "我会为那些无法保护自己的人挺身而出。"
           },
           "mag1": {
-            "text": "我被藏在表面之下的知识所吸引。"
+            "text": "我被隐秘的知识所吸引——事物表面之下的东西。"
           },
           "mag2": {
             "text": "我常看到别人错过的模式与关联。"
@@ -758,7 +782,7 @@
             "text": "固定的日常让我感到缓慢的窒息。"
           },
           "exp2": {
-            "text": "我不止一次重塑自己的生活。"
+            "text": "我不止一次重塑过自己的生活。"
           },
           "exp3": {
             "text": "处在陌生之地，是我最喜欢的感觉之一。"
@@ -898,7 +922,7 @@
       "stressSignature": "压力特征",
       "recoveryPath": "恢复路径",
       "realLifeExamples": "真实案例",
-      "bigFiveProfile": "五大性格档案",
+      "bigFiveProfile": "大五人格档案",
       "emotionalStability": "情绪稳定性",
       "higherThanAverage": "高于平均",
       "lowerThanAverage": "低于平均",
@@ -911,9 +935,40 @@
       "gift": "礼物",
       "integration": "整合",
       "tarotPairing": "塔罗对应",
-      "whenDominant": "当此元素主导时"
+      "whenDominant": "当此元素主导时",
+      "commonTriggers": "常见触发点",
+      "coreDesire": "核心渴望",
+      "coreFear": "核心恐惧",
+      "coreMotivation": "核心动机",
+      "corePattern": "核心模式",
+      "discomfortWithClosenessAndDependence": "对亲密与依赖的不适",
+      "fearOfAbandonmentAndNeedForReassurance": "对被抛弃的恐惧与对安抚的需要",
+      "growthDirection": "成长方向",
+      "growthLever": "成长杠杆",
+      "growthPractices": "成长练习",
+      "growthTips": "成长建议",
+      "healingPractices": "疗愈练习",
+      "howToAskForIt": "如何开口要",
+      "journalPrompt": "日记提示",
+      "journalPrompts": "日记提示",
+      "miniRitual": "小仪式",
+      "pathToSecure": "通往安全型的路",
+      "reflection": "反思",
+      "stressDirection": "压力方向",
+      "suggestionForYou": "给你的建议",
+      "tarotArchetype": "塔罗原型",
+      "tarotEnergy": "塔罗能量",
+      "tryThisWeek": "本周试试",
+      "whatYouNeed": "你需要什么",
+      "whatToAvoid": "要避免什么",
+      "whatToDoToday": "今天可以做什么",
+      "whenThisLanguageGoesUnmet": "当这种语言未被满足时",
+      "whenThisLanguageIsWellFed": "当这种语言被充分滋养时",
+      "yourDimensions": "你的维度",
+      "yourScores": "你的得分",
+      "yourTraitScores": "你的特质得分"
     },
-    "takeAnother": "进行另一个测试",
+    "takeAnother": "再做一个测试",
     "courtCards": {
       "page-of-wands": {
         "name": "权杖侍从",
@@ -1190,26 +1245,26 @@
     },
     "sneakPeek": {
       "label": "阶段读数：",
-      "mbti": "目前正倾向 {{letters}}——继续作答以确认。",
+      "mbti": "目前你正倾向 {{letters}}——继续作答以确认。",
       "courtMatchElement": {
         "wands": "权杖牌正在显形——火的能量走在前面。",
         "cups": "圣杯牌正在浮现——水走在前面。",
         "swords": "宝剑牌正在成形——风走在前面。",
         "pentacles": "金币牌正在累积——土走在前面。"
       },
-      "loveLanguage": "你的主要爱的语言正逐渐浮现……",
+      "loveLanguage": "你的主要爱的语言正逐渐浮现…",
       "enneagram": "类型轮廓正在形成——继续作答以找出你的侧翼。",
-      "attachment": "你的依恋风格正逐渐聚焦……",
-      "bigFive": "你的特质轮廓正在成形……",
-      "shadowArchetype": "一个原型模式正在形成……",
-      "elementAffinity": "一股元素之流正在浮现……"
+      "attachment": "你的依恋类型正逐渐清晰…",
+      "bigFive": "你的特质轮廓正在成形…",
+      "shadowArchetype": "一个原型模式正在形成…",
+      "elementAffinity": "一股元素之流正在浮现…"
     },
     "share": {
-      "button": "分享",
+      "button": "分享我的结果",
       "downloaded": "已保存到设备",
-      "failed": "无法创建分享图片"
+      "failed": "无法生成分享图片，请稍后再试。"
     },
-    "backToQuizzes": "返回测评列表",
+    "backToQuizzes": "返回测试列表",
     "shadowArchetypes": {
       "lover": {
         "name": "情人",
@@ -1232,7 +1287,7 @@
       "magician": {
         "name": "魔法师",
         "tagline": "看得见表面之下的人。",
-        "gift": "你读懂隐藏的模式。你通过看见别人看不见之物，去转化——自己、一个房间、一段关系、一道难题。知识是你的武器，也是你的礼物。",
+        "gift": "你读懂隐藏的模式。你通过看见别人看不见之物去转化——自己、一个房间、一段关系、一道难题。知识是你的武器，也是你的礼物。",
         "shadow": "受伤的魔法师开始操纵：把洞见用于掌控、把真相当作权力来扣留、或变成拒绝活着的冷眼旁观者。也可能成为把「知道关于」当成「真正理解」的江湖术士。",
         "integration": "把你的洞见翻译成对他人的实际服务。去教授。让自己也被转化，而不是只做那位转化他人的人。",
         "affirmation": "我用我的视线去照亮，而不是去掌控。",
@@ -1251,7 +1306,7 @@
         "name": "贤者",
         "tagline": "从边缘看得清的人。",
         "gift": "你在混乱中保持安静。你发问无人发问的问题。你带来长程的智慧，以及不需要功劳也能说出真相的耐心。",
-        "shadow": "受伤的贤者变成犬儒——知、且疏离、既不行动也不动情；或成为不下山的象牙塔隐士。",
+        "shadow": "受伤的贤者变成犬儒——通透、疏离，拒绝行动也拒绝感受；或成为不肯下山的象牙塔隐士。",
         "integration": "只留在内里的智慧会变苦。去教。去靠近。去承担犯错的风险。",
         "affirmation": "我从山上走下来，走进我所爱的人群。",
         "tarotPairing": "隐士 ／ 教皇"
@@ -1261,7 +1316,7 @@
         "tagline": "守住信念的人。",
         "gift": "你守护希望。在他人看见腐败之处，你看见善意。你的信任、乐观与简朴，是送给周围人的礼物。",
         "shadow": "受伤的天真者拒绝去看阴影——对伤害天真、困在幻想里、被一句\"没事会好起来\"永久卡住，阻碍真实的行动。",
-        "integration": "保有信念，同时锻炼你的眼。你可以既怀抱希望、又目光清明。兼得。",
+        "integration": "保有信念，同时练就你的眼力。你可以既怀抱希望，又目光清明。两者兼得。",
         "affirmation": "我睁着眼，同时守住希望。",
         "tarotPairing": "愚者 ／ 星"
       },
@@ -1355,15 +1410,15 @@
       "chartVsBehaviour": "星盘 vs. 行为",
       "matchNote": "你的行为元素与星盘一致——你与自己本来的能量同步地生活着。",
       "differNote": "星盘说 {{natal}}，行为却说 {{behaviour}}——值得留意你正在哪里伸展。"
-    }
+    },
+    "askOracleCta": "请为我解读这个结果",
+    "loading": "加载中…",
+    "saveToProfile": "保存到我的资料",
+    "compareLocked": "和朋友比一比"
   },
   "horoscope": {
     "title": "星座运势",
-    "subtitle": "今日宇宙的预报",
     "today": "今天",
-    "week": "本周",
-    "month": "本月",
-    "year": "今年",
     "energyScore": "能量评分",
     "sections": {
       "overview": "综合",
@@ -1377,9 +1432,6 @@
     "birthChart": "出生星盘",
     "compatibility": "配对",
     "transits": "行运",
-    "yourPersonalHoroscope": "你的专属运势",
-    "whatUnlocks": "解锁内容",
-    "premiumLocked": "高级版",
     "completeBirthChart": "完成出生信息以解锁",
     "enterBirthInfo": "填写出生信息",
     "tabs": {
@@ -1389,31 +1441,6 @@
       "explore": "探索"
     },
     "unlockPremium": "解锁高级版",
-    "unlockIntro": "解锁你的专属占星资料,包括个性化每日洞察、出生星盘解读与宇宙预报。",
-    "joinThousands": "成千上万的人正在发现自己的宇宙潜能",
-    "features": {
-      "dailyForecast": {
-        "title": "个性化每日预报",
-        "desc": "基于你出生星盘的专属每日运势"
-      },
-      "fullChart": {
-        "title": "完整出生星盘",
-        "desc": "包含所有行星位置与相位的完整本命盘"
-      },
-      "transits": {
-        "title": "行运日历",
-        "desc": "追踪影响你星盘的宇宙变化"
-      },
-      "forecasts": {
-        "title": "每周与每月预报",
-        "desc": "长线预测,把握宇宙时机"
-      }
-    },
-    "periods": {
-      "today": "今天",
-      "week": "本周",
-      "month": "本月"
-    },
     "general": "综合",
     "love": "爱情",
     "work": "工作",
@@ -1440,64 +1467,29 @@
     "dailyAffirmation": "每日肯定语",
     "cardOfTheDay": "今日之牌",
     "luckyNumbersLabel": "幸运数字",
-    "miniRitual": "迷你仪式",
+    "miniRitual": "小仪式",
     "actionStep": "行动步骤",
     "showMore": "显示更多洞察",
     "showLess": "收起",
-    "weeklyOverview": "本周概览",
-    "weekdayInitials": {
-      "mon": "一",
-      "tue": "二",
-      "wed": "三",
-      "thu": "四",
-      "fri": "五",
-      "sat": "六",
-      "sun": "日"
-    },
-    "lovePeak": "爱情高峰",
-    "careerPeak": "事业高峰",
-    "bestDay": "最佳日",
-    "peakDays": {
-      "wednesday": "周三",
-      "thursday": "周四",
-      "friday": "周五"
-    },
-    "monthlyTheme": "本月主题",
-    "moonPhaseInfluence": "月相影响",
-    "moonPhaseText": "12日的新月放大新的开始",
-    "keyDates": "关键日期",
-    "keyDatesText": "7日、15日、23日 - 高能量日",
-    "weeklyInsights": [
-      "周初带来沟通的清晰。周中有利于果断决策。周末需要休息。",
-      "周初专注于人际关系。事业问题在周中达到高峰。周五前需要财务审视。",
-      "周一开始缓慢但势头渐增。周三带来意外消息。周末有浪漫的可能。",
-      "周初创意能量高涨。周中实际事务需要关注。周六适合社交活动。"
-    ],
-    "monthlyThemes": [
-      "本月强调个人转变。15日左右出现事业机会。月底前感情生活稳定。",
-      "月初财务问题为主。月中关系发展。最后一周个人成长加速。",
-      "健康与身心占据中心。专业认可意外到来。20日前情感清晰到位。"
-    ],
-    "journalButton": "日记",
+    "journalButton": "打开日记",
     "birthChartCard": {
       "title": "出生星盘分析",
       "subtitle": "个性化行运笔记",
-      "upgrade": "升级"
+      "upgrade": "解锁我的出生星盘"
     },
     "paywallFeatures": {
-      "monthly": "每月星座运势",
       "birthChart": "出生星盘分析"
     },
     "share": {
       "title": "我的每日星座运势",
-      "template": "{{sign}}今日运势\n\n{{general}}\n\n肯定语:{{affirmation}}\n\n由 Arcana 生成 ✨"
+      "template": "{{sign}}今日运势\n\n{{general}}\n\n肯定语：{{affirmation}}\n\n由 Arcana 生成"
     },
     "toasts": {
-      "saveFailed": "保存失败",
+      "saveFailed": "无法保存这份运势，请检查网络连接后重试。",
       "horoscopeSaved": "运势已保存",
       "shared": "分享成功",
       "copied": "已复制到剪贴板",
-      "unableToShare": "无法分享"
+      "unableToShare": "无法打开分享，请稍后再试。"
     },
     "birthChartView": {
       "noChartData": "暂无星盘数据",
@@ -1515,7 +1507,7 @@
       "blindSpots": "盲点",
       "underStress": "压力之下",
       "growthPath": "成长路径",
-      "inHouse": "在第{{num}}宫",
+      "inHouse": "在第 {{num}} 宫",
       "atItsBest": "最佳状态",
       "shadowSide": "阴影面",
       "houseLabel": "第{{num}}宫",
@@ -1534,7 +1526,7 @@
       "thisMonth": "本月",
       "weeklyUnavailable": "周运势暂不可用",
       "monthlyUnavailable": "月运势暂不可用",
-      "weeklyTheme": "周主题",
+      "weeklyTheme": "本周主题",
       "keyMoments": "关键时刻",
       "bestDaysFor": "最佳日期",
       "monthlyOverview": "月度概览",
@@ -1545,12 +1537,12 @@
       "outerPlanetThemes": "外行星主题"
     },
     "todayForYou": {
-      "heading": "今日运势",
+      "heading": "今日专属",
       "noDailyContent": "暂无每日内容",
-      "tryAgain": "重试",
+      "tryAgain": "重新加载今日解读",
       "moonIn": "月亮位于",
       "houseParen": "(第{{num}}宫)",
-      "activeTransits": "当前流年",
+      "activeTransits": "当前行运",
       "powerMove": "强势行动",
       "doLabel": "宜",
       "avoidLabel": "忌",
@@ -1561,7 +1553,8 @@
         "career": "事业",
         "money": "财运",
         "energy": "能量"
-      }
+      },
+      "loadFailed": "无法加载今日解读，请检查网络连接后重试。"
     },
     "onboarding": {
       "oneMoreDetail": "还差一步",
@@ -1570,7 +1563,7 @@
       "dateLabel": "日期:",
       "timeLabel": "时间:",
       "birthLocation": "出生地点",
-      "searchCityPlaceholder": "搜索城市或城镇...",
+      "searchCityPlaceholder": "搜索城市或城镇…",
       "computeMyChart": "计算我的星盘",
       "selectLocationToContinue": "请在上方选择地点以继续",
       "chartComputationFailed": "星盘计算失败",
@@ -1583,10 +1576,10 @@
         "couldNotCompute": "无法计算你的星盘。请尝试其他地点。"
       },
       "computeSteps": {
-        "planetaryPositions": "正在计算行星位置...",
-        "houseCusps": "正在计算宫位起点...",
-        "aspects": "正在分析相位...",
-        "preparing": "正在准备你的星盘..."
+        "planetaryPositions": "正在计算行星位置…",
+        "houseCusps": "正在计算宫位起点…",
+        "aspects": "正在分析相位…",
+        "preparing": "正在准备你的星盘…"
       }
     },
     "exploreView": {
@@ -1612,7 +1605,7 @@
   "profile": {
     "title": "个人资料",
     "birthProfile": "出生信息",
-    "birthPlaceOptional": "出生地(可选)",
+    "birthPlaceOptional": "出生地（可选）",
     "yourGoals": "你的目标",
     "personalityBadges": "人格徽章",
     "saved": "已收藏",
@@ -1622,10 +1615,10 @@
     "dayStreak": "连续天数",
     "level": "等级 {{n}}",
     "xpProgress": "经验进度",
-    "upgradeToPremium": "升级高级版",
-    "upgradeSub": "解锁全部牌阵、星盘等",
-    "premiumMember": "高级会员",
-    "premiumSub": "解锁所有功能",
+    "upgradeToPremium": "获取高级版",
+    "upgradeSub": "全部牌阵、完整出生星盘、无广告",
+    "premiumMember": "高级版已开启",
+    "premiumSub": "所有牌阵、星盘和解读都已向你开放",
     "manageSubscription": "管理订阅",
     "editProfile": "编辑资料",
     "signOut": "退出登录",
@@ -1659,10 +1652,11 @@
       "title": "编辑资料",
       "displayName": "显示名称",
       "yourName": "你的名字",
-      "birthTimeOptional": "出生时间(可选)",
-      "searchCity": "搜索城市…"
+      "birthTimeOptional": "出生时间（可选）",
+      "searchCity": "搜索城市…",
+      "save": "保存我的资料"
     },
-    "disclaimer": "本应用仅供娱乐与自我反思之用。",
+    "disclaimer": "Arcana 仅供娱乐与自我反思之用。",
     "elementSign": "{{element}}象星座",
     "cosmic": {
       "title": "宇宙档案",
@@ -1685,11 +1679,16 @@
     "natalReportTitle": "完整本命盘",
     "natalReportSub": "可打印的深度命盘解读",
     "compatInviteTitle": "合盘邀请",
-    "compatInviteSub": "分享链接获取联合解读"
+    "compatInviteSub": "分享链接获取联合解读",
+    "yourProgress": "你的进度",
+    "saveProfile": "保存我的资料",
+    "toasts": {
+      "saveFailed": "无法保存你的资料，请检查网络连接后重试。"
+    },
+    "untitled": "你的资料"
   },
   "achievements": {
     "title": "成就",
-    "subtitle": "至此的旅程",
     "noInCategory": "该类别暂无成就。",
     "errorLoading": "加载成就失败:",
     "novicesSeeker": "新手探寻者",
@@ -1723,13 +1722,14 @@
       "streakDays_other": "{{count}}天",
       "readings": "解读",
       "journal": "日记",
-      "quizzes": "测试"
+      "quizzes": "测试",
+      "streakDays": "连续天数"
     }
   },
   "blog": {
-    "title": "资讯 & 洞察",
+    "title": "资讯与洞察",
     "subtitle": "塔罗、占星与自我发现",
-    "failedToLoad": "加载文章失败。",
+    "failedToLoad": "无法加载文章，请检查网络连接后刷新页面。",
     "noArticles": "还没有文章",
     "comeBackSoon": "塔罗洞察与心灵指引,敬请期待。",
     "articleNotFound": "未找到文章。",
@@ -1737,7 +1737,7 @@
     "by": "作者:{{author}}"
   },
   "tarot": {
-    "title": "塔罗牌意义",
+    "title": "塔罗牌意解读",
     "subtitle": "塔罗每一张牌的完整指南 — 正位与逆位含义,爱情与事业解读,自省提示。",
     "allCards": "全部牌",
     "backToAllCards": "返回全部牌",
@@ -1759,34 +1759,34 @@
     "careerAndFinances": "事业与财务",
     "reflectionPrompt": "自省提示",
     "experienceInReading": "在牌阵中体验 {{name}}",
-    "tryFreeReading": "免费试一次",
+    "tryFreeReading": "免费试一次解读",
     "freeTarotGuide": "免费塔罗指南",
-    "freeTarotGuideDesc": "塔罗入门指南,直接发到你的邮箱。",
+    "freeTarotGuideDesc": "免费领取塔罗入门指南，直接发到你的邮箱。",
     "getFreeGuide": "领取免费指南",
     "noSpam": "无骚扰邮件,可随时退订。",
-    "youreIn": "成功!请查收邮箱领取免费塔罗指南。",
+    "youreIn": "订阅成功。请查收邮箱领取免费塔罗指南。",
     "yourEmail": "邮箱地址",
     "heroBadge": "78 张 · 完整解读",
     "heroSub": "塔罗每一张牌的完整指南 — 正位与逆位含义、爱情与事业解读,以及自省提示。",
     "bottomText": "准备好把这些含义用到实践中了吗?",
     "pageTitle": "塔罗牌意义 — 78 张全解",
     "pageDesc": "探索所有 78 张塔罗牌的含义。每张牌都有正位与逆位释义、爱情与事业解读、关键词和自省提示。",
-    "yesOrNoReading": "是 / 否 牌阵",
+    "yesOrNoReading": "是 / 否解读",
     "allMajorCards": "全部大阿卡纳",
     "allSuitCards": "全部{{suit}}",
     "suitMinorLabel": "{{suit}} · 小阿卡纳",
     "elements": {
-      "fire": "火 🔥",
-      "water": "水 💧",
-      "air": "风 💨",
-      "earth": "土 🌍",
-      "spirit": "灵 ✨"
+      "fire": "火",
+      "water": "水",
+      "air": "风",
+      "earth": "土",
+      "spirit": "灵"
     },
     "suits": {
       "major": {
         "title": "大阿卡纳",
         "subtitle": "愚者之旅",
-        "desc": "22 张大阿卡纳代表人生的重大主题、精神课题与转折点。从愚者天真的起步到世界的圆满,这些牌讲述了灵魂演化的故事。"
+        "desc": "22 张大阿卡纳代表人生的重大主题、精神课题与转折点。从愚者天真的起步到世界的圆满，这些牌讲述了灵魂演化的故事。"
       },
       "wands": {
         "title": "权杖牌组",
@@ -1835,149 +1835,123 @@
       "reflectionFallback": "这张牌对你的旅程持有什么信息?它的能量如何与你当前情境共鸣?",
       "journalPromptsLabel": "日记提示:",
       "journalPrompt1": "这张牌的图像今天对我有何诉说?",
-      "journalPrompt2": "这张牌含义的哪个方面最具挑战性?",
-      "journalPrompt3": "为尊重这张牌的指引,我今天可以采取哪个小行动?",
+      "journalPrompt2": "这张牌含义的哪个方面最让我感到挑战？",
+      "journalPrompt3": "为了回应这张牌的指引，我今天可以采取哪个小行动？",
       "todaysAction": "今日行动",
       "todaysActionText": "选择一个与{{name}}能量一致的小行动。让它简单到10分钟内可以完成。",
       "closeLabel": "关闭"
-    }
+    },
+    "askOracleCta": "请为我解读这张牌"
   },
   "admin": {
     "title": "管理",
     "subtitle": "管理站点内容与配置",
-    "unauthorized": "你没有管理员面板的访问权限。",
+    "unauthorized": "你没有管理面板的访问权限。",
     "tabs": {
       "blog": "博客",
       "ads": "广告",
       "users": "用户",
       "content": "内容"
+    },
+    "verifications": {
+      "toasts": {
+        "loadFailed": "无法加载审核队列，请点击「刷新」重试。",
+        "previewFailed": "无法加载证件和视频预览，请再次点击「加载预览」。",
+        "decideFailed": "无法保存该决定，请刷新队列后重试。"
+      }
+    },
+    "moderation": {
+      "toasts": {
+        "loadEventsFailed": "无法加载审核事件，请点击「刷新」重试。",
+        "loadFlagsFailed": "无法加载危机标记，请点击「刷新」重试。",
+        "markReviewedFailed": "无法将该事件标记为已审核，请刷新后重试。",
+        "acknowledgeFailed": "无法确认该标记，请刷新后重试。"
+      }
+    },
+    "blog": {
+      "toasts": {
+        "updateFailed": "无法更新文章，请刷新后重试。",
+        "deleteFailed": "无法删除文章，请刷新后重试。"
+      }
     }
   },
   "premium": {
-    "title": "解锁高级版",
-    "subtitle": "让每日修习走得更深。",
     "features": {
-      "unlimited_saves": {
-        "name": "无限保存",
-        "description": "想保存多少解读和洞察就保存多少"
-      },
-      "celtic_cross": {
-        "name": "凯尔特十字牌阵",
-        "description": "深度洞察的终极十张牌阵"
-      },
-      "three_card": {
-        "name": "三张牌阵",
-        "description": "过去、现在、未来解读"
-      },
-      "compatibility_full": {
-        "name": "完整配对分析",
-        "description": "完整的伴侣配对分析"
-      },
-      "deep_interpretations": {
-        "name": "深度解读",
-        "description": "扩展的含义和个性化指导"
-      },
-      "guided_prompts": {
-        "name": "引导性提示",
-        "description": "基于你的解读由AI生成的反思提示"
-      },
-      "journal_insights": {
-        "name": "日记洞察",
-        "description": "高级情绪追踪与模式分析"
-      },
-      "personalization": {
-        "name": "个性化引擎",
-        "description": "根据你的风格和目标量身定制的内容"
-      },
-      "birth_chart": {
-        "name": "出生星盘分析",
-        "description": "完整的占星出生星盘解析"
-      },
-      "extra_reading": {
-        "name": "额外解读",
-        "description": "超出每日限制的一次额外塔罗解读"
-      }
+      "unlimited_saves": {},
+      "celtic_cross": {},
+      "three_card": {},
+      "compatibility_full": {},
+      "deep_interpretations": {},
+      "guided_prompts": {},
+      "journal_insights": {},
+      "personalization": {},
+      "birth_chart": {},
+      "extra_reading": {}
     },
     "monthly": "月付",
     "yearly": "年付",
     "lifetime": "永久",
-    "bestValue": "最划算",
-    "save": "省 {{pct}}%",
-    "perMonth": "/月",
-    "perYear": "/年",
-    "oneTime": "一次性",
-    "subscribe": "开始订阅",
-    "startFreeTrial": "开始免费试用",
-    "restorePurchases": "恢复购买",
-    "termsNotice": "自动续费,可随时取消。",
-    "activeUntil": "有效期至 {{date}}",
     "badge": "高级版",
     "paywall": {
-      "heading": "解锁完整牌组",
-      "subheading": "更深度的牌阵、无限保存、合盘洞察等等",
-      "featureRequires": "{{feature}}需要高级版",
-      "whatYouUnlock": "你将解锁",
-      "loadingPrices": "正在加载价格...",
+      "heading": "开启每一种解读",
+      "subheading": "全部塔罗牌阵、完整出生星盘、伴侣合盘和运势各分页——无广告，也无需消耗月光石。",
+      "featureRequires": "{{feature}}需高级版解锁",
+      "whatYouUnlock": "高级版为你开启",
+      "loadingPrices": "正在加载价格…",
       "unlocks": {
         "adFree": {
-          "label": "无广告体验",
-          "desc": "纯粹专注,毫无打扰"
+          "label": "无广告",
+          "desc": "解读之间没有广告"
         },
         "allSpreads": {
           "label": "全部塔罗牌阵",
-          "desc": "凯尔特十字、三张牌阵等"
+          "desc": "每种牌阵，最多十张牌"
         },
-        "unlimitedSaves": {
-          "label": "无限保存",
-          "desc": "永久保留每一份洞察"
-        },
+        "unlimitedSaves": {},
         "compatibility": {
           "label": "完整合盘",
-          "desc": "深入分析伴侣关系"
+          "desc": "不止爱情，还有友情与工作"
         },
         "deepInterpretations": {
-          "label": "深度解读",
-          "desc": "量身定制的指引"
+          "label": "AI 解读",
+          "desc": "为你的抽牌专门撰写，无需月光石"
         },
-        "guidedPrompts": {
-          "label": "引导式提示",
-          "desc": "AI 精心打造的内省"
-        },
+        "guidedPrompts": {},
         "birthChart": {
-          "label": "本命盘",
-          "desc": "你的宇宙蓝图"
+          "label": "出生星盘",
+          "desc": "每颗行星、星座与宫位"
         },
         "partnerSynastry": {
           "label": "伴侣合盘",
-          "desc": "真实的交互相位占星"
+          "desc": "两张星盘，逐个相位解读"
         },
         "horoscopeFull": {
           "label": "完整星座运势",
-          "desc": "星图、预报、探索全部解锁"
+          "desc": "星盘、预报与探索"
         },
         "humanDesign": {
           "label": "人类图",
-          "desc": "真实的人生角色图、类型与权威"
+          "desc": "人体图、人生角色、内在权威"
         },
         "bazi": {
           "label": "八字四柱",
-          "desc": "中国传统八字命理"
+          "desc": "你的四柱，逐柱解读"
         },
         "dreamAi": {
-          "label": "AI 解梦",
+          "label": "解梦师",
           "desc": "用荣格心理学解读任何梦境"
         },
         "moodLetter": {
-          "label": "每周情绪信",
-          "desc": "根据你的记录撰写的私人信件"
+          "label": "每周心情信",
+          "desc": "根据你的记录写成的一封信"
         },
         "oracleChat": {
           "label": "神谕伙伴",
-          "desc": "四种角色、无限对话"
+          "desc": "四种角色可以对话"
         },
         "shadowWork": {
-          "label": "阴影整合牌阵",
-          "desc": "最深度的塔罗牌阵"
+          "label": "阴影工作牌阵",
+          "desc": "七张牌，探索内在"
         }
       },
       "plans": {
@@ -1992,109 +1966,188 @@
       },
       "badges": {
         "bestValue": "最超值",
-        "foreverAccess": "永久使用"
+        "foreverAccess": "一次付费"
       },
       "cta": {
-        "notAvailable": "高级版暂不可用",
-        "getLifetime": "获取终身权限",
-        "subscribeNow": "立即订阅"
+        "getLifetime": "终身解锁高级版",
+        "startTrial": "开始 {{days}} 天免费试用",
+        "subscribe": "订阅高级版"
       },
       "restorePurchase": "恢复购买",
       "errors": {
-        "loadFailed": "无法加载价格,请检查网络连接。",
+        "loadFailed": "无法加载价格。请检查网络连接后重试。",
         "notAvailableTitle": "高级版暂不可用",
-        "notAvailableDesc": "RevenueCat 产品尚未配置,购买将暂时停用,直到配置完成。"
+        "notAvailableDesc": "商店未返回任何方案。请稍后再试——如果你已订阅，请使用「恢复购买」。"
       },
       "disclaimers": {
-        "lifetime": "一次性付款,无自动续费。永久使用所有高级功能。",
-        "subscription": "可随时取消。费用将从你的账户扣除。除非在当前周期结束前至少24小时取消,否则订阅将自动续订。"
+        "lifetime": "一次付费，不会续费。高级版永久属于你。",
+        "subscription": "除非在当前周期结束前至少 24 小时取消，否则订阅将在每个周期结束时自动续订。可随时取消。"
       },
       "toasts": {
-        "productsUnavailable": "产品暂不可用,请稍后再试。",
-        "welcome": "欢迎加入高级版!",
-        "purchaseFailed": "购买失败",
-        "purchasesRestored": "已恢复购买!",
-        "noPurchases": "未找到购买记录",
-        "restoreFailed": "恢复失败"
+        "productsUnavailable": "该方案目前在商店中不可用，请稍后再试。",
+        "purchaseFailed": "购买未完成。请重试——如果已被扣款，请使用「恢复购买」。",
+        "purchasesRestored": "高级版已恢复，全部功能重新开放。",
+        "noPurchases": "此商店账号下未找到之前的购买记录。如果你用其他账号订阅过，请切换账号后再次恢复。",
+        "restoreFailed": "无法连接商店进行恢复，请检查网络连接后重试。"
+      },
+      "trialLine": "{{days}} 天免费试用。试用期结束前取消，无需付费。",
+      "byFeature": {
+        "celticCross": {
+          "heading": "解读凯尔特十字",
+          "outcome": "十张牌解答一个问题，逐个位置解读——其他所有牌阵也一并开放。高级版开启全部牌阵，无广告。",
+          "cta": "解锁凯尔特十字"
+        },
+        "relationship": {
+          "heading": "解读关系牌阵",
+          "outcome": "五张牌看你、对方、维系你们的东西和下一步该怎么做——其他所有牌阵也一并开放。高级版开启全部牌阵，无广告。",
+          "cta": "解锁关系牌阵"
+        },
+        "careerSpread": {
+          "heading": "解读事业抉择牌阵",
+          "outcome": "六张牌看你的现状、驱动你的东西和可能的结果——其他所有牌阵也一并开放。高级版开启全部牌阵，无广告。",
+          "cta": "解锁事业抉择牌阵"
+        },
+        "shadow": {
+          "heading": "解读阴影工作牌阵",
+          "outcome": "七张牌，从你戴的面具到整合它的那一步——其他所有牌阵也一并开放。高级版开启全部牌阵，无广告。",
+          "cta": "解锁阴影工作牌阵"
+        },
+        "unlimitedReadings": {
+          "heading": "今天继续解读",
+          "outcome": "免费账号每天可进行三次塔罗解读。高级版取消这一限制，并开启全部牌阵，无广告。",
+          "cta": "取消每日限制"
+        },
+        "horoscopeChart": {
+          "heading": "查看你的完整出生星盘",
+          "outcome": "每颗行星所在的星座与宫位、它们之间的相位，以及各自对你的意义。高级版同时开启星盘、预报和探索三个分页。",
+          "cta": "解锁我的出生星盘"
+        },
+        "horoscopeForecast": {
+          "heading": "查看你未来一周和一月",
+          "outcome": "根据你自己的星盘（而不只是太阳星座）计算的每周和每月预报。高级版同时开启星盘、预报和探索三个分页。",
+          "cta": "解锁我的预报"
+        },
+        "horoscopeExplore": {
+          "heading": "探索你的星盘",
+          "outcome": "当前行运、你的宫位和相位，逐一解释。高级版同时开启星盘、预报和探索三个分页。",
+          "cta": "解锁探索分页"
+        },
+        "humanDesign": {
+          "heading": "查看你的人类图",
+          "outcome": "根据你的出生资料计算的人体图、类型、人生角色和内在权威。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁我的人类图"
+        },
+        "bazi": {
+          "heading": "查看你的八字命盘",
+          "outcome": "根据你的出生日期和时辰排出的四柱，逐柱解读。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁我的八字命盘"
+        },
+        "dreams": {
+          "heading": "让梦境得到解读",
+          "outcome": "描述任何一个梦，阅读对其象征的荣格式解读。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁梦境解读"
+        },
+        "partnerSynastry": {
+          "heading": "查看你们的合盘",
+          "outcome": "添加伴侣的出生资料，解读你们两张星盘之间的相位。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁伴侣合盘"
+        },
+        "celestialMap": {
+          "heading": "查看你完整的天体地图",
+          "outcome": "高级版包含全部 40 条行星线、城市解读和 AI 旅行解读——或用 250 月光石获取单次旅行解读。",
+          "cta": "解锁完整地图"
+        },
+        "compatFull": {
+          "heading": "查看完整配对",
+          "outcome": "除爱情外，还有友情和工作契合度，适用于任何你知道生日的人。高级版开启全部三项。",
+          "cta": "解锁友情与工作配对"
+        },
+        "compatFriendship": {
+          "heading": "作为朋友配对",
+          "outcome": "从友情而非爱情的角度解读你们的星座组合，并附工作契合度。高级版同时开启两项。",
+          "cta": "解锁友情契合度"
+        },
+        "compatWork": {
+          "heading": "作为同事配对",
+          "outcome": "从共事的角度解读你们的星座组合，并附友情契合度。高级版同时开启两项。",
+          "cta": "解锁工作契合度"
+        }
       }
     },
-    "gate": {
-      "watchAdToTry": "观看广告试用",
-      "unlockPremium": "解锁高级版"
-    },
+    "gate": {},
     "subscription": {
-      "heading": "高级版已激活",
-      "subheading": "你拥有所有高级功能的完整权限",
+      "heading": "高级版已开启",
+      "subheading": "所有牌阵、星盘和解读都已向你开放，无广告，也无需消耗月光石。",
       "planTitle": "高级版方案",
       "memberFallback": "会员",
       "status": "状态",
       "statusActive": "已激活",
       "billing": "付款方式",
-      "billingGooglePlay": "Google Play",
-      "yourBenefits": "你的高级权益",
-      "manageOnGooglePlay": "在 Google Play 管理",
-      "syncStatus": "同步订阅状态",
-      "disclaimer": "如需取消或修改订阅,请使用 Google Play 商店应用或网页。变更可能需要几分钟才会在应用中生效。",
-      "features": {
-        "adFree": "无广告体验",
-        "allSpreads": "全部塔罗牌阵",
-        "unlimitedSaves": "无限保存",
-        "compatibility": "完整合盘",
-        "deepInterpretations": "深度解读",
-        "guidedPrompts": "引导式提示",
-        "birthChart": "本命盘",
-        "partnerSynastry": "伴侣合盘",
-        "horoscopeFull": "完整星座运势",
-        "humanDesign": "人类图",
-        "bazi": "八字四柱",
-        "dreamAi": "AI 解梦",
-        "moodLetter": "每周情绪信",
-        "oracleChat": "神谕伙伴",
-        "shadowWork": "阴影整合牌阵"
-      },
+      "yourBenefits": "你的方案包含",
+      "syncStatus": "刷新我的订阅",
+      "features": {},
       "toasts": {
-        "verified": "订阅已验证!",
-        "active": "订阅处于激活状态",
-        "verifyFailed": "无法验证订阅"
+        "verified": "你的订阅已确认。",
+        "active": "无需更新，你的订阅状态如显示。",
+        "verifyFailed": "无法向商店确认你的订阅，请检查网络连接后重试。",
+        "portalFailed": "无法打开账单门户。请检查网络连接后重试。"
+      },
+      "billingVia": {
+        "android": "Google Play",
+        "ios": "App Store",
+        "web": "银行卡，通过 Stripe"
+      },
+      "manage": {
+        "android": "在 Google Play 管理",
+        "ios": "在 App Store 管理",
+        "web": "管理订阅"
+      },
+      "storeNote": {
+        "android": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
+        "ios": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
+        "web": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。"
       }
     },
     "watchAd": {
-      "defaultTitle": "试用{{feature}}",
-      "defaultSubtitle": "观看一则短广告即可解锁此高级功能一次",
-      "contexts": {
-        "extraReading": {
-          "title": "获取额外一次解读",
-          "subtitle": "观看一则短广告,今日再解锁一次塔罗解读"
-        },
-        "deepInterpretations": {
-          "title": "解锁扩展解读",
-          "subtitle": "观看一则短广告,获得更深入的牌面解读"
-        }
-      },
-      "unlocksRemaining": "今日剩余免费解锁次数:{{remaining}}/{{total}}",
-      "watchAdToUnlock": "观看广告解锁",
-      "usedAllUnlocks": "今日免费解锁次数已用完",
-      "comeBackTomorrow": "明天再来或升级到高级版",
-      "getUnlimited": "获取无限访问",
+      "getUnlimited": "或用高级版开启全部功能",
       "notNow": "暂不",
-      "footerDisclaimer": "高级会员可无广告无限制使用全部功能",
+      "footerDisclaimer": "高级版无需任何消耗：所有牌阵、星盘和解读全部开放，无广告。",
       "toasts": {
-        "unlocked": "功能已解锁!享受你的免费试用。",
-        "notAvailable": "广告暂不可用,请稍后再试。",
-        "error": "出错了,请稍后再试。"
-      }
+        "unlocked": "已解锁。你的解读已开放。",
+        "notAvailable": "目前没有可用的广告，请一分钟后再试。",
+        "error": "广告未播放完毕，没有任何消耗。请稍后再试。",
+        "credited": "已添加 {{n}} 月光石。在下方消耗即可解锁。",
+        "persistFailed": "你已看完广告，但月光石未能保存。请检查网络连接后重试。",
+        "spendFailed": "无法消耗月光石，没有任何扣除。请检查网络连接后重试。",
+        "insufficient": "此项需要 {{n}} 月光石。观看广告可赚取更多。",
+        "adsDisabled": "此设备不支持广告。",
+        "creditedEarnOnly": "已添加 {{n}} 月光石。"
+      },
+      "unlockTitle": "解锁这次解读",
+      "unlockSubtitle": "消耗 {{cost}} 月光石立即阅读，或先看一段短广告赚取 {{ad}} 月光石。",
+      "currentBalance": "你有 {{n}} 月光石",
+      "spendCta": "消耗 {{n}} 月光石解锁",
+      "watchAdCta": "看广告，赚 {{n}} 月光石",
+      "unlockNamed": "解锁{{name}}",
+      "earnOnlySubtitle": "需要 {{cost}} 月光石。每段短广告可赚取 {{ad}} 月光石；攒够后即可在本页解锁。"
     },
     "trialReminder": {
-      "badge": "3 天免费",
+      "badge": "免费 {{days}} 天",
       "benefits": {
-        "adFree": "完全无广告",
-        "allFeatures": "解锁全部高级功能",
-        "cancelAnytime": "可随时取消,无需付费"
+        "spreads": "全部塔罗牌阵，含凯尔特十字",
+        "chart": "你的完整出生星盘，逐颗行星解读",
+        "noAds": "无广告，也无需消耗月光石"
       },
       "cta": "开始免费试用",
-      "dismiss": "稍后再说",
-      "subtitle": "免费解锁全部 3 天,之后 $19.99/年。可随时取消。",
-      "title": "免费试用高级版 3 天"
+      "dismiss": "暂不需要",
+      "subtitle": "{{days}} 天内全部功能开放，之后每年 {{price}}。试用期结束前取消，无需付费。",
+      "title": "免费试用高级版 {{days}} 天",
+      "noTrial": {
+        "title": "用高级版开启全部功能",
+        "subtitle": "每年 {{price}}，或按月付费。可随时取消。",
+        "subtitleNoPrice": "按年或按月付费，价格以商店显示为准。可随时取消。",
+        "cta": "查看高级版方案"
+      }
     }
   },
   "settings": {
@@ -2136,7 +2189,7 @@
       "notificationsEnabled": "已启用通知",
       "notificationsDisabled": "已关闭通知",
       "themeChanged": "主题已切换为 {{name}}",
-      "updateFailed": "更新失败"
+      "updateFailed": "无法更改该设置，请检查网络连接后重试。"
     },
     "language": "语言",
     "languageSub": "选择你喜欢的语言",
@@ -2185,8 +2238,8 @@
     "dailyReminders": "每日提醒",
     "getNotified": "接收每日仪式的提醒",
     "noTransits": "此期间未找到流年",
-    "chartUnavailable": "星盘数据不可用",
-    "birthCity": "出生地",
+    "chartUnavailable": "尚无星盘数据，请添加出生信息以计算。",
+    "birthCity": "出生城市",
     "frequentlyAskedQuestions": "常见问题",
     "faq": {
       "accuracyQ": "解读的准确度如何?",
@@ -2198,30 +2251,35 @@
     "disclaimerBody": "我们仅收集最少的数据。出生时间和地点是可选的。",
     "actionCannotBeUndone": "此操作无法撤消",
     "toasts": {
-      "exportPartial": "部分数据无法导出。请重试。",
+      "exportPartial": "部分数据未能导出，请稍后再试。",
       "profileUpdated": "个人资料已更新",
-      "profileUpdateFailed": "更新个人资料失败",
-      "updateFailed": "更新失败",
+      "profileUpdateFailed": "无法保存你的资料，请检查网络连接后重试。",
+      "updateFailed": "无法更改该设置，请检查网络连接后重试。",
       "devModeEnabled": "已启用开发者模式"
     },
     "editProfile": {
-      "title": "编辑个人资料",
+      "title": "编辑资料",
       "displayName": "显示名称",
       "displayNamePlaceholder": "你的名字",
       "birthDate": "出生日期",
-      "birthTime": "出生时间(可选)"
+      "birthTime": "出生时间（可选）"
     },
     "helpCenter": {
       "title": "帮助中心"
     },
     "deleteAccount": {
-      "title": "删除账户",
+      "title": "删除账号",
       "dataWarning": "你的所有数据将被永久删除，包括个人资料、日记条目、塔罗解读和已保存项目。",
       "exportRecommendation": "我们建议在删除账户前导出你的数据。",
       "exportFirst": "先导出数据",
-      "exporting": "导出中...",
-      "deleteMyAccount": "删除我的账户",
-      "deleting": "删除中..."
+      "exporting": "导出中…",
+      "deleteMyAccount": "删除我的账号",
+      "deleting": "删除中…"
+    },
+    "legal": {
+      "entertainmentDisclaimer": "娱乐性声明",
+      "acceptanceOfTerms": "条款的接受",
+      "notProfessionalAdvice": "不构成专业建议"
     }
   },
   "search": {
@@ -2251,7 +2309,6 @@
   },
   "saved": {
     "title": "已收藏",
-    "subtitle": "你收藏的瞬间",
     "empty": "还没有收藏项",
     "emptySub": "点击任意牌阵、卡牌或洞察旁的星标即可收藏。",
     "emptySubAlt": "给牌阵、日记、测试结果点星,就会保存到这里",
@@ -2273,17 +2330,17 @@
       "friendship": "友情相配",
       "work": "工作相配"
     },
-    "disclaimer": "此应用用于自我反思和娱乐。不提供医疗、法律或财务建议。",
+    "disclaimer": "Arcana 仅供自我反思与娱乐，不提供医疗、法律或财务建议。",
     "you": "你",
     "theirName": "对方姓名",
     "theirNamePlaceholder": "输入对方姓名",
     "theirBirthDate": "对方生日",
     "requiredMark": "*",
-    "optionalLabel": "可选:更多细节以获得更深洞察",
-    "theirMbti": "对方的MBTI类型",
+    "optionalLabel": "可选：填写更多细节，获得更深洞察",
+    "theirMbti": "对方的 MBTI 类型",
     "moreMbti": "+{{count}}个",
-    "theirLoveLanguage": "对方的爱之语言",
-    "selectPlaceholder": "选择...",
+    "theirLoveLanguage": "对方的爱的语言",
+    "selectPlaceholder": "请选择…",
     "loveLanguages": {
       "words": "肯定的言语",
       "acts": "服务的行动",
@@ -2291,10 +2348,10 @@
       "quality": "优质时光",
       "touch": "身体接触"
     },
-    "calculate": "计算相配度",
+    "calculate": "计算契合度",
     "bestMatches": "你的最佳配对",
-    "bestMatchesSubtitle": "作为{{sign}},你最适合的是:",
-    "startOver": "重新开始",
+    "bestMatchesSubtitle": "作为{{sign}}，你最契合的是：",
+    "startOver": "比较另外两个星座",
     "match": "匹配",
     "famousPairing": "著名配对:",
     "dimensions": {
@@ -2307,7 +2364,7 @@
     "strengths": "优势",
     "frictionPoints": "摩擦点",
     "doThisToday": "今日可做",
-    "reflectionDisclaimer": "这是反思工具,而非判决。用它激发对话与理解。",
+    "reflectionDisclaimer": "这是反思工具，而非判决。用它来激发对话与理解。",
     "connectionStyles": {
       "fire": "热情而充满活力",
       "earth": "稳定而踏实",
@@ -2342,12 +2399,14 @@
     ]
   },
   "library": {
-    "loading": "加载中...",
+    "loading": "加载中…",
     "toasts": {
-      "loadSavedFailed": "无法加载已保存项目 — 您可能处于离线状态",
-      "loadMoreFailed": "加载更多项目失败",
-      "deleteFailed": "删除失败",
-      "deleted": "已删除"
+      "loadSavedFailed": "无法加载你的收藏，请检查网络连接后重新打开收藏库。",
+      "deleteFailed": "无法删除该项目，请检查网络连接后重试。",
+      "deleted": "已删除",
+      "loadMoreSavedFailed": "无法加载更多收藏，请检查网络连接后再次点击「加载更多」。",
+      "loadMoreSpreadsFailed": "无法加载更多牌阵，请检查网络连接后再次点击「加载更多」。",
+      "loadMoreReadingsFailed": "无法加载更多解读，请检查网络连接后再次点击「加载更多」。"
     },
     "empty": {
       "noAIReadings": "暂无AI解读",
@@ -2508,7 +2567,7 @@
         ]
       },
       "chakras": {
-        "title": "脉轮的地图",
+        "title": "脉轮系统",
         "description": "一个个地照顾能量中心",
         "sections": [
           {
@@ -2571,7 +2630,7 @@
     "loadMoreSpreads": "加载更多牌阵",
     "loadMoreSaved": "加载更多已保存项目",
     "loadMoreReadings": "加载更多解读",
-    "contentComingSoon": "内容即将推出...",
+    "contentComingSoon": "更多指南即将推出。",
     "continueExploring": "继续探索指南，深化你的灵性实践",
     "savedSpreads": "已保存的牌阵",
     "savedCards": "已保存的牌",
@@ -2579,7 +2638,7 @@
     "periodDaily": "每日",
     "tabs": {
       "saved": "已保存",
-      "aiReadings": "AI解读",
+      "aiReadings": "AI 解读",
       "guides": "指南"
     },
     "filters": {
@@ -2589,18 +2648,20 @@
       "spreads": "牌阵"
     },
     "periodWeekly": "每周",
-    "periodMonthly": "每月"
+    "periodMonthly": "每月",
+    "aiReading": "AI 解读"
   },
   "celebration": {
     "streak": {
-      "dedication": "令人惊叹的坚持!",
-      "ritualComplete": "仪式完成!",
-      "keepFlowing": "继续保持宇宙能量的流动!"
+      "dedication": "从开始那天起，每天都没有间断。",
+      "ritualComplete": "仪式完成",
+      "keepFlowing": "明天再来一次，记录就会延续。"
     },
     "levelUp": {
-      "title": "升级!",
+      "title": "升级了。",
       "level": "等级",
-      "newAbilities": "新能力解锁"
+      "newAbilities": "新能力已解锁",
+      "rank": "等级"
     }
   },
   "pageTitles": {
@@ -2964,10 +3025,10 @@
     ]
   },
   "errorBoundary": {
-    "title": "星辰已经移位",
+    "title": "此页面停止响应了",
     "message": "意外的事情打断了你的宇宙旅程。宇宙以神秘的方式运作，但我们可以再试一次。",
-    "tryAgain": "再试一次",
-    "returnHome": "返回首页",
+    "tryAgain": "重新加载此页面",
+    "returnHome": "回到首页",
     "viewDiagnostics": "查看诊断",
     "hideDetails": "隐藏详情",
     "showDetails": "显示详情",
@@ -2978,16 +3039,26 @@
     "networkTitle": "与星辰的连接已中断",
     "networkMessage": "我们无法到达宇宙服务器。请检查你的连接，道路畅通时再试。",
     "notFoundTitle": "此路不通",
-    "notFoundMessage": "你寻找的页面已消失于虚空。也许星辰心中另有目的地。"
+    "notFoundMessage": "你寻找的页面已消失于虚空。也许星辰心中另有目的地。",
+    "retryContent": "重新加载此内容",
+    "contentTitle": "无法加载此{{type}}",
+    "contentMessage": "这次没有加载成功。请重新加载再试。",
+    "contentRetry": "重新加载{{type}}"
   },
   "astrologyErrors": {
-    "noChart": "未找到星盘",
-    "loadChart": "星盘加载失败",
-    "computeChart": "星盘计算失败",
-    "dailyHoroscope": "每日运势加载失败",
-    "weeklyForecast": "每周预报加载失败",
-    "monthlyForecast": "每月预报加载失败",
-    "transits": "过境加载失败"
+    "noChart": "尚无星盘，请添加出生信息以计算。",
+    "loadChart": "无法加载你的星盘，请检查网络连接后重试。",
+    "computeChart": "无法计算你的星盘，请检查出生信息后重试。",
+    "dailyHoroscope": "无法加载今日运势，请检查网络连接后重试。",
+    "weeklyForecast": "无法加载本周预报，请检查网络连接后重试。",
+    "monthlyForecast": "无法加载本月预报，请检查网络连接后重试。",
+    "transits": "无法加载你的行运，请检查网络连接后重试。",
+    "signedOut": "你的登录已过期，请重新登录后加载。",
+    "timeout": "请求超时，请检查网络连接后重试。",
+    "rateLimited": "请求过于频繁，请稍等片刻后重试。",
+    "contract": "服务器返回了此版本无法读取的内容，请稍后再试。",
+    "geocodeNone": "没有匹配的地点，请试试最近的城市，或加上国家名。",
+    "geocodeUnavailable": "地点搜索无响应，请检查网络连接后重试。"
   },
   "savedSheet": {
     "threeCardSpread": "三张牌阵",
@@ -2997,15 +3068,22 @@
     "wordsOfAffirmation": "肯定的话语"
   },
   "billing": {
-    "purchaseCancelled": "购买已取消",
-    "purchaseFailed": "购买失败",
-    "webNotAvailableOnMobile": "网页结算在移动设备上不可用。请使用应用商店。",
-    "userNotAuthenticated": "用户未认证",
-    "alreadyPremium": "已经拥有高级会员",
-    "stripeNotConfigured": "Stripe未配置。请联系支持。",
-    "notAuthenticated": "未认证",
-    "checkoutSessionFailed": "创建结账会话失败",
-    "noCheckoutUrl": "未返回结账URL"
+    "purchaseCancelled": "购买已取消，未产生任何扣款。",
+    "purchaseFailed": "购买未完成。请重试——如果已被扣款，请使用「恢复购买」。",
+    "webNotAvailableOnMobile": "应用内不支持银行卡结账，请通过 Google Play 订阅。",
+    "userNotAuthenticated": "请登录后订阅。",
+    "alreadyPremium": "此账号已拥有高级版。",
+    "stripeNotConfigured": "银行卡结账暂不可用，请稍后再试。",
+    "notAuthenticated": "请登录后订阅。",
+    "checkoutSessionFailed": "无法打开结账页面，请检查网络连接后重试。",
+    "noCheckoutUrl": "无法打开结账页面，请稍后再试。",
+    "paymentCancelled": "付款已取消，未产生任何扣款。",
+    "premiumActivated": "你的账号已开启高级版。",
+    "processingPayment": "正在处理你的订阅…可能需要几秒钟。",
+    "processingTimeout": "付款已成功，但高级版尚未开启。请一分钟后刷新——如果仍未开启，请联系支持。",
+    "alreadyPremiumWeb": "你已在网页端订阅，请在「设置」中管理。",
+    "alreadyPremiumMobile": "你已在应用内订阅，请在 Google Play 中管理。",
+    "productUnavailable": "该方案目前在商店中不可用，请稍后再试。"
   },
   "lifePath": {
     "1": {
@@ -3257,7 +3335,7 @@
     "questionLabel": "你的问题（可选）",
     "questionPlaceholder": "此刻对我最有帮助的是理解什么？",
     "castButton": "掷硬币",
-    "casting": "占卜中……",
+    "casting": "占卜中…",
     "hexagramLabel": "第",
     "judgement": "彖",
     "interpretation": "解读",
@@ -3463,7 +3541,11 @@
         "name": "未济·未济"
       }
     },
-    "readAsLiuYao": "以六爻解此卦"
+    "readAsLiuYao": "以六爻解此卦",
+    "castingLine": "第 {{n}} 爻，共 6 爻",
+    "readFullReading": "阅读完整解读",
+    "askOracleCta": "请为我解读这一卦",
+    "share": "分享这一卦"
   },
   "humanDesign": {
     "title": "人类图",
@@ -3471,7 +3553,7 @@
     "birthDate": "出生日期",
     "birthTime": "出生时间（可选，让结果更精准）",
     "calculate": "揭示我的设计",
-    "calcFailed": "未能计算图表",
+    "calcFailed": "无法计算你的人类图，请检查出生信息后重试。",
     "needBirthDate": "请填写出生日期",
     "disclaimer": "这是简化版本。完整的人类图需要出生时刻准确的行星位置。若想看完整的九中心 bodygraph，请把出生数据带到专门的人类图网站。",
     "signatureLabel": "标志",
@@ -3483,7 +3565,7 @@
     "affirmationLabel": "你的肯定语",
     "tarotPairingLabel": "塔罗对应",
     "backToInput": "重新计算",
-    "recalculate": "重新计算",
+    "recalculate": "计算另一张图",
     "types": {
       "manifestor": {
         "name": "显示者"
@@ -3500,7 +3582,27 @@
       "reflector": {
         "name": "反映者"
       }
-    }
+    },
+    "computing": "正在计算你的人体图…",
+    "authorityHeading": "你的内在权威",
+    "bodygraphLabel": "你的人体图",
+    "centersDefined": "个能量中心已定义",
+    "channelsDefined": "条通道",
+    "channelsHeading": "你已定义的通道",
+    "channelsNote": "每条通道连接两个能量中心，并在它们之间形成稳定的生命力流动。这些是你固定不变的部分——始终为你所用。",
+    "activationsLabel": "全部 26 个激活",
+    "personalityLabel": "人格（意识）——出生时",
+    "designLabel": "设计（潜意识）——出生前太阳弧 88°",
+    "casesHeading": "策略的实践",
+    "casesIntro": "具体场景，展示你的策略在平常的周二下午会是什么样子。",
+    "scenarioLabel": "场景",
+    "wrongMoveLabel": "反应式做法",
+    "alignedMoveLabel": "顺应式做法",
+    "signatureFelt": "感受到的标志",
+    "decisionScriptHeading": "如何做决定：{{authority}}",
+    "commonMistakeLabel": "常见误区",
+    "realityCheckLabel": "现实检验",
+    "share": "分享我的人类图"
   },
   "bazi": {
     "title": "八字——四柱命理",
@@ -3508,7 +3610,7 @@
     "birthDate": "出生日期",
     "birthTime": "出生时间（可选）",
     "calculate": "起四柱",
-    "calcFailed": "无法计算八字",
+    "calcFailed": "无法排出你的四柱，请检查出生信息后重试。",
     "needBirthDate": "请填写出生日期",
     "pillarsLabel": "你的四柱",
     "year": "年柱",
@@ -3524,7 +3626,7 @@
     "strugglingLabel": "困顿之时",
     "affirmationLabel": "你的肯定语",
     "back": "重新计算",
-    "recalculate": "重新计算",
+    "recalculate": "为另一个生日排盘",
     "elements": {
       "wood": "木",
       "fire": "火",
@@ -3540,8 +3642,8 @@
     "luckyColorTodayLabel": "今日幸运色",
     "luckyNumbersLabel": "幸运数字",
     "nayinLabel": "你年柱的纳音",
-    "premiumTeaserBody": "解锁你的内在力量(经典十神)、藏干影响、纳音、辅助元素及其幸运色、方位、数字,以及今日幸运色组件。",
-    "premiumTeaserCta": "查看高级版",
+    "premiumTeaserBody": "解锁你的内在力量（经典十神）、藏干影响、纳音、辅助元素及其幸运色、方位、数字，以及今日幸运色组件。",
+    "premiumTeaserCta": "解锁完整解读",
     "premiumTeaserTitle": "用高级版深入了解",
     "strength": {
       "balanced": {
@@ -3558,12 +3660,39 @@
       }
     },
     "supportingLabel": "你的辅助元素",
-    "supportingSub": "你的命盘倾向于这个元素以求平衡——穿它的颜色、面向它的方位、记住它的数字。"
+    "supportingSub": "你的命盘倾向于这个元素以求平衡——穿它的颜色、面向它的方位、记住它的数字。",
+    "gender": "出生性别——大运和流年解读所需",
+    "selectGender": "选择以解锁深度模式",
+    "male": "男",
+    "female": "女",
+    "dominantNote": "你的主导元素是{{el}}——它塑造了你最自然的样子。",
+    "weakNote": "你最弱的元素是{{el}}——这里最需要补充和滋养。要增强{{el}}，多接触{{support}}（它生{{el}}）。",
+    "excessNote": "你的{{el}}过旺。留意它的阴影表现，并用{{control}}来平衡（它克{{el}}）。",
+    "unlockDeepHint": "要查看更深的层次——十年大运、今年流年、神煞、地支关系——请返回并添加你的出生性别。大运顺逆由年柱阴阳 × 性别决定，所以计算两者都需要。",
+    "pillarsHeading": "每一柱代表什么",
+    "yearPillarLabel": "年柱",
+    "monthPillarLabel": "月柱",
+    "dayPillarLabel": "日柱",
+    "hourPillarLabel": "时柱",
+    "annualHeading": "{{year}} 年——你的流年",
+    "currentLuckHeading": "你当前的十年大运（{{a}}-{{b}}）",
+    "luckPillarsHeading": "你的 80 年大运时间线",
+    "ageRange": "{{a}}-{{b}} 岁",
+    "structureHeading": "你的命局格局",
+    "spiritStarsHeading": "你命盘中的神煞",
+    "branchRelationsHeading": "地支关系",
+    "climateHeading": "你的调候平衡",
+    "careerHeading": "日主的事业倾向",
+    "lifeAreasHeading": "财富 · 姻缘 · 健康",
+    "wealthLabel": "财富",
+    "spouseLabel": "姻缘",
+    "healthLabel": "健康",
+    "share": "分享我的四柱"
   },
   "ayurveda": {
     "withSecondary": "（次要道夏：{{sec}}）",
     "scoresLabel": "你的道夏平衡",
-    "thrivingLabel": "当你处在平衡中",
+    "thrivingLabel": "当你处于平衡中",
     "imbalancedLabel": "当你失衡时",
     "dietLabel": "适合你的饮食",
     "lifestyleLabel": "让你平衡的生活方式",
@@ -3581,28 +3710,46 @@
     }
   },
   "dream": {
-    "title": "梦境解读",
-    "intro": "尽你所能，把梦的细节写出来。不必在意顺序或清晰度——心灵用象征工作。我们会匹配原型模式，为你准备可以长坐其中的问题。梦没有单一的意义，梦带来邀请。",
+    "title": "解梦师",
+    "intro": "尽你所能，把梦的细节写出来。不必在意顺序或清晰度——心灵用象征工作。我们会匹配原型模式，为你准备可以静静思索的问题。梦没有单一的意义，梦带来的是邀请。",
     "label": "告诉我你的梦",
-    "placeholder": "我站在一片黑暗的海边，找不到回家的路。一只鸟从头顶飞过，嘴里叼着什么……",
+    "placeholder": "我站在一片黑暗的海边，找不到回家的路。一只鸟从头顶飞过，嘴里叼着什么…",
     "privacy": "你的梦境文字不会被保存，仅在本机内进行解读。",
     "interpret": "解读我的梦",
     "needLonger": "请再多说一点梦的内容（至少几句话）。",
     "yourDream": "象征在说什么",
-    "noMatch": "此次文本中没有立即浮现常见的原型——但这并不表示它在沉默。最私人的梦常使用只属于你生活的象征。在梦中最强烈的那个意象旁坐下，问：它是什么的反面？我生活里有什么与它押韵？",
+    "noMatch": "这段梦境文本里没有立即浮现常见的原型——但这并不表示它在沉默。最私人的梦常常使用只属于你生活的象征。在梦中最强烈的那个意象旁坐下，问：它是什么的反面？我生活里有什么与它押韵？",
     "symbolsLabel": "这些象征",
     "reflectionLabel": "带着这个问题",
     "practiceLabel": "梦的练习",
     "practiceBody": "床边放一本笔记。醒来的瞬间，趁它还没散，就把梦写下。时间久了，反复出现的象征会揭示你的无意识使用的语言。",
     "archetypeLabel": "梦的象征解读",
     "back": "解读另一个梦",
-    "another": "另一个梦",
-    "genericTitle": "梦的解读",
-    "genericReflection": "梦带来讯息——珍惜它留下的问题。"
+    "another": "解读另一个梦",
+    "genericTitle": "梦境解读",
+    "genericReflection": "梦带来讯息——珍惜它留下的问题。",
+    "interpreting": "正在解读梦境…",
+    "yourDreamLabel": "你的梦",
+    "coreThemeLabel": "核心主题",
+    "emotionalToneLabel": "情绪基调",
+    "archetypesLabel": "运作中的原型",
+    "shadowPromptLabel": "阴影之问",
+    "integrationLabel": "整合练习",
+    "compensatoryLabel": "你清醒的自我所缺少的",
+    "compensatoryHint": "荣格：梦是对意识态度的补偿。这是梦提供给你、而你尚未拥有的东西。",
+    "symbolicLayersLabel": "象征层次",
+    "colorsLabel": "出现的颜色",
+    "numbersLabel": "出现的数字",
+    "directionsLabel": "运动的方向",
+    "resourcesLabel": "更进一步",
+    "culturesLabel": "不同传统如何解梦",
+    "lucidLabel": "清醒梦技巧",
+    "nightmaresLabel": "面对噩梦",
+    "share": "分享这份解读"
   },
   "extraQuizzes": {
     "dark-triad": {
-      "title": "暗黑三角（阴影三性）",
+      "title": "暗黑三角阴影",
       "description": "心理学称作\"暗黑三角\"的三种阴影特质——自恋、马基雅维利主义、精神病态——存在于每个人身上，只是程度不同。看看你的阴影最强烈地跑在何处。",
       "timeEstimate": "4 分钟",
       "whatYouGet": [
@@ -3632,7 +3779,7 @@
       ]
     },
     "boundaries": {
-      "title": "界限体检",
+      "title": "界限自查",
       "description": "你的界限在哪里坚固、哪里薄弱、在哪里依对方而变？四种模式——坚墙、渗透式开放、健康弹性、随情境切换——逐一看清。",
       "timeEstimate": "4 分钟",
       "whatYouGet": [
@@ -3653,7 +3800,7 @@
     },
     "communication": {
       "title": "沟通风格",
-      "description": "困境中出现四种风格——被动（退避）、攻击（进攻）、被动攻击（侧面绊）、自信而尊重。看看你的默认风格，以及当你状态好时还能调用哪些。",
+      "description": "困境中会出现四种风格——被动（退避）、攻击（进攻）、被动攻击（旁敲侧击）、坚定（清晰且尊重）。看看你的默认风格，以及当你状态平稳时还能调用哪一种。",
       "timeEstimate": "3 分钟",
       "whatYouGet": [
         "压力下的默认风格",
@@ -3672,7 +3819,7 @@
       ]
     },
     "chronotype": {
-      "title": "睡眠时型（Chronotype）",
+      "title": "睡眠时型",
       "description": "迈克尔·布鲁斯博士提出的四种睡眠-清醒人格——狮子（晨型）、熊（日型）、狼（夜型）、海豚（浅眠型）。找到你的节律与真正的高峰时段。",
       "timeEstimate": "4 分钟",
       "whatYouGet": [
@@ -3716,7 +3863,7 @@
     },
     "love-styles": {
       "title": "爱的风格",
-      "description": "四种希腊式爱中你主导的是哪一种:Eros(激情)、Philia(深厚友谊)、Storge(稳定的温暖)、Agape(无条件)。没有谁更好——它们对你的要求不同。",
+      "description": "四种希腊式的爱中你主导的是哪一种：Eros（激情）、Philia（深厚友谊）、Storge（稳定的温暖）或 Agape（无条件的爱）。没有哪一种更好——它们对你的要求各不相同。",
       "timeEstimate": "3 分钟",
       "whatYouGet": [
         "你主导的 4 种希腊爱之风格中是哪一种",
@@ -3726,7 +3873,7 @@
     },
     "parenting-style": {
       "title": "育儿风格",
-      "description": "你的默认 Baumrind 育儿风格——权威型、专制型、放纵型或忽视型——在压力下,以及在你状态最好时的差异。研究怎么说,以及一句可随身的肯定语。",
+      "description": "你默认的 Baumrind 育儿风格——权威型、专制型、放任型或忽视型——在压力下与状态最好时的差异。研究对每一种怎么说，以及一句可以随身带走的肯定语。",
       "timeEstimate": "3 分钟",
       "whatYouGet": [
         "你的默认育儿风格(权威/专制/放纵/忽视)",
@@ -3746,7 +3893,7 @@
     },
     "empath-hsp": {
       "title": "共情者 / HSP",
-      "description": "共情者、高敏感人(HSP)、两者皆是,还是都不是。从神经层面分别意味着什么——它们相关但不相同——以及针对你的线路的实用自我照护。",
+      "description": "共情者、高敏感人（HSP）、两者皆是，还是都不是。从神经层面看各自意味着什么——它们相关但不相同——以及适合你这种特质的实用自我照护。",
       "timeEstimate": "3 分钟",
       "whatYouGet": [
         "共情者、HSP、两者皆是、还是都不是",
@@ -3756,7 +3903,7 @@
     },
     "self-compassion": {
       "title": "自我慈悲",
-      "description": "你的主导自我慈悲态度——自我善待、自我评判、正念、过度认同。你在哪里支持自己、在哪里不支持自己,以及一句下一步的肯定语。",
+      "description": "你的主导自我慈悲态度——自我善待、自我评判、正念或过度认同。你在哪里支持自己、在哪里没有，以及一句下一步的肯定语。",
       "timeEstimate": "3 分钟",
       "whatYouGet": [
         "你的主导自我慈悲态度",
@@ -3765,8 +3912,8 @@
       ]
     },
     "mood-screener": {
-      "title": "心境信号检查",
-      "description": "通过非诊断式 PHQ-2 风格问题对近两周心境的信号读取。这不是诊断——是一面自我反思的镜子,若回答提示你需要支持,会显示求助资源。",
+      "title": "心境筛查",
+      "description": "用非诊断性的 PHQ-2 式问题读取近两周的心境信号。这不是诊断，而是一面自我反思的镜子；如果你的回答显示你需要支持，会显示求助资源。",
       "timeEstimate": "3 分钟",
       "whatYouGet": [
         "近两周心情信号读数",
@@ -3873,7 +4020,22 @@
       "curious": {
         "name": "好奇"
       }
-    }
+    },
+    "needMoreForLetter": "至少记录 3 天，才能生成每周来信。",
+    "letterFailed": "暂时无法写出你的信，请稍后再试。",
+    "letterHeading": "写给这一周的信",
+    "letterIntro": "根据你最近 14 天的记录，生成一封温暖而具体的信——像一位一直在留意你的智慧朋友写的那样。",
+    "writingLetter": "撰写中…",
+    "generateLetter": "写我的信",
+    "letterTitle": "你的每周来信",
+    "themeLabel": "主题",
+    "carePracticeLabel": "一个练习",
+    "rewriteLetter": "再写一封给我",
+    "patternLabel": "本周",
+    "heaviestDayLabel": "最沉重的一天",
+    "lightestDayLabel": "最轻松的一天",
+    "weekOverWeekLabel": "周环比",
+    "driftUnits": "心情 y 值变化"
   },
   "compat": {
     "title": "伴侣契合",
@@ -3887,7 +4049,7 @@
     "selectOrSkip": "选择或跳过",
     "runButton": "揭晓我们的契合度",
     "needBothSides": "双方至少各需要一个数据点（MBTI 或出生日期）。",
-    "failed": "无法计算契合度",
+    "failed": "无法计算契合度，请检查网络连接后重试。",
     "back": "查看另一对",
     "another": "另一对",
     "compatibilityLabel": "契合度",
@@ -3895,18 +4057,33 @@
     "astroLabel": "占星契合",
     "strengthsLabel": "优势",
     "growthLabel": "成长边缘",
-    "adviceLabel": "建议"
+    "adviceLabel": "建议",
+    "yourBirthTime": "你的出生时间（让解读更精准——包含月亮）",
+    "partnerBirthTime": "伴侣的出生时间（可选）",
+    "computing": "正在计算相位…",
+    "synastryLabel": "占星合盘",
+    "harmoniousLabel": "和谐",
+    "intenseLabel": "强烈",
+    "challengingLabel": "挑战",
+    "synastryExplainer": "每个相位都是你与伴侣行星之间真实的几何关系。和谐相位流动顺畅；强烈相位相互放大；挑战相位则需要成长的功课。",
+    "topAspectsLabel": "最能说明问题的相位",
+    "myPlanet": "你的",
+    "partnerPlanet": "伴侣的",
+    "elementalLabel": "元素融合",
+    "compositeLabel": "你们的关系作为第三个存在",
+    "compositeIntro": "组合盘把关系本身视为拥有独立性格的存在——与你们任何一人都不同。这些观察描述的是这段关系这个整体。",
+    "share": "分享这份配对"
   },
   "wisdom": {
-    "title": "今日智慧"
+    "title": "每日智慧"
   },
   "fengshui": {
     "title": "风水八卦",
-    "intro": "八卦图把人生分为九个领域。请按 1-5 为你生活中每个领域\"此刻的感觉\"打分。我们会指出最需要照料的领域，以及滋养它的风水调整。",
+    "intro": "八卦图把人生分为九个领域。请按 1-5 分为你生活中每个领域此刻的感受打分。我们会指出最需要关注的领域，以及滋养它的风水调整。",
     "scale": "1 = 严重枯竭 · 3 = 一般 · 5 = 繁茂",
     "reveal": "揭示我的八卦",
     "backToRate": "重新评分",
-    "reRate": "重新评分",
+    "reRate": "重新为各领域打分",
     "mapLabel": "你的八卦地图",
     "overallScore": "整体：{{n}} / 5",
     "focusLabel": "需要关照的领域",
@@ -3944,43 +4121,65 @@
       "helpers": {
         "name": "贵人·远行"
       }
-    }
+    },
+    "kuaHeading": "你的命卦（可选）",
+    "kuaIntro": "添加你的出生年份和性别，计算你的命卦数——八宅风水的基础。我们会显示你的 4 个吉方和 4 个凶方，用于安排床、书桌和大门的朝向。",
+    "birthYearLabel": "出生年份",
+    "genderLabel": "出生性别",
+    "selectOrSkip": "选择或跳过",
+    "male": "男",
+    "female": "女",
+    "kuaPreview": "命卦 {{n}} · {{trigram}} · {{group}}组",
+    "kuaResultHeading": "你的 8 个方位（命卦 {{n}}）",
+    "kuaResultIntro": "你是{{group}}组的{{trigram}}（{{element}}）。把床、书桌和大门安排为朝向你 4 个吉方之一，避开 4 个凶方——尤其是绝命。",
+    "kuaFavorable": "吉方",
+    "kuaUnfavorable": "凶方——请避开",
+    "annualHeading": "{{year}} 年流年飞星",
+    "annualIntro": "每年九星轮转于家中九宫。今年各方位的飞星告诉你该催旺什么、避开什么。以大门为准，面向屋内确定方位。",
+    "roomsHeading": "分房间指引",
+    "rules": "宜",
+    "avoid": "忌",
+    "problemsHeading": "常见问题清单",
+    "problemsIntro": "点选你家中存在的问题，每一项都附有具体的化解方法。大多数人会找到 3-5 项，先化解严重程度高的，几周内就能看到明显效果。",
+    "why": "为何重要",
+    "fix": "化解",
+    "share": "分享我的八卦图"
   },
   "community": {
     "title": "社区",
-    "postButton": "发布",
-    "whisperButton": "悄悄话",
+    "postButton": "写一篇帖子",
+    "whisperButton": "写一句悄悄话",
     "newPost": "新帖",
     "topicLabel": "话题",
-    "placeholder": "分享一次读牌、一个念头、一个问题……",
+    "placeholder": "分享一次解读、一个念头、一个问题…",
     "postAnonymously": "以匿名发布",
-    "send": "发布",
+    "send": "发布我的评论",
     "posting": "发布中…",
     "posted": "已发布",
-    "postFailed": "发布失败",
+    "postFailed": "无法发布，请检查网络连接后重试。",
     "contentTooLong": "太长了（上限 2000 字）",
     "contentDisallowed": "这一短语不被允许",
     "contentEmpty": "请先写一点",
-    "anonymous": "无名的寻路人",
-    "loadFailed": "无法加载动态",
+    "anonymous": "匿名",
+    "loadFailed": "无法加载动态，请检查网络连接后重试。",
     "empty": "这里还没有帖子，做第一个吧。",
     "signInFirst": "需要登录才能反应",
     "signInToPost": "登录后即可发布、反应、评论。",
-    "reactFailed": "无法完成反应",
+    "reactFailed": "无法添加你的反应，请重试。",
     "reported": "举报已提交，感谢。",
-    "reportFailed": "举报提交失败",
+    "reportFailed": "无法发送举报，请检查网络连接后重试。",
     "report": "举报",
     "reportPostTitle": "举报此帖",
     "blockUser": "屏蔽用户",
     "blocked": "已屏蔽",
-    "blockFailed": "无法屏蔽",
+    "blockFailed": "无法屏蔽该成员，请重试。",
     "back": "返回动态",
     "backToFeed": "返回动态",
     "commentsHeading": "评论",
     "noComments": "还没有评论，第一个回应吧。",
     "commentPlaceholder": "写下回应…",
     "commentAnonymously": "匿名评论",
-    "commentFailed": "无法发表评论",
+    "commentFailed": "无法发布你的评论，请检查网络连接后重试。",
     "topics": {
       "all": "全部",
       "general": "日常",
@@ -4010,12 +4209,15 @@
     },
     "postedUnderReview": "已发布——我们团队将尽快审核。",
     "commentUnderReview": "评论已发布——我们团队将尽快审核。",
-    "contentBlocked": "此内容与我们的社区指南相冲突。"
+    "contentBlocked": "此内容与我们的社区指南相冲突。",
+    "publishPost": "发布我的帖子"
   },
   "common": {
     "mainContent": "主要内容",
     "loading": "加载中…",
-    "cancel": "取消"
+    "cancel": "取消",
+    "close": "关闭",
+    "back": "返回"
   },
   "moonstones": {
     "balanceLabel": "月光石",
@@ -4023,16 +4225,50 @@
     "claiming": "领取中…",
     "alreadyClaimed": "明天再来",
     "claimed": "+{{n}} 月光石 · 连续第 {{d}} 天",
-    "claimFailed": "无法领取今日奖励",
-    "topUp": "充值"
+    "claimFailed": "无法领取今日奖励，请检查网络连接后重试。",
+    "topUp": "充值",
+    "premiumLabel": "高级版 · 全部解读已解锁",
+    "earn": "赚取月光石",
+    "costLine": "每次解读消耗 <gold>{{n}} 月光石</gold>",
+    "youHave": "你有 {{n}}",
+    "earnSheet": {
+      "title": "赚取月光石",
+      "titleSoftCap": "已达每日上限",
+      "softCapBody": "你在过去 24 小时内已完成 50 次解读——这是为了保证每个人的 AI 质量而设的上限。你的下一次解读将在 <gold>{{when}}</gold>后开放，随着较早的解读过期，名额会逐个释放。高级版在此期间保持有效。",
+      "softCapSoon": "几小时",
+      "now": "现在",
+      "timeHM": "{{h}} 小时 {{m}} 分",
+      "timeM": "{{m}} 分",
+      "browseBody": "每次 AI 解读消耗 <gold>{{cost}} 月光石</gold>。",
+      "insufficientBody": "这次解读需要 <gold>{{cost}} 月光石</gold>。",
+      "youHave": "你有 <strong>{{n}}</strong>。",
+      "earnBelow": "在下方赚取更多。",
+      "adCredited": "已添加 {{n}} 月光石。",
+      "adNotReady": "广告尚未准备好，请稍后再试。",
+      "adPersistFailed": "你已看完广告，但月光石未能保存。请检查网络连接后重试。",
+      "adDismissed": "广告提前关闭了，看到最后才能赚取月光石。",
+      "adsUnavailable": "此设备不支持广告。",
+      "checkinDone": "已添加 {{n}} 月光石——连续签到第 {{day}} 天。",
+      "checkinFailed": "签到失败。请检查网络连接后重试。",
+      "watchAdTitle": "观看一段短视频",
+      "watchAdSub": "赚取 {{n}} 月光石",
+      "watchAdNotReady": "目前没有可用的广告",
+      "checkinTitle": "每日签到",
+      "checkinSub": "{{min}} 到 {{max}} 月光石，随连续天数递增",
+      "checkinRange": "+{{min}} 到 +{{max}}",
+      "checkinClaimed": "你今天已经签到过了。",
+      "premiumTitle": "获取高级版",
+      "premiumSub": "无需月光石，无广告，全部牌阵与星盘",
+      "notNow": "暂不需要"
+    }
   },
   "companion": {
     "title": "灵伴",
-    "newConversation": "重新开始",
+    "newConversation": "新对话",
     "emptyState": "就从任何问题开始吧——压在你心口的一个疑问，一个想被读懂的梦，一个想理解的名字。",
-    "placeholder": "向灵伴发问……",
+    "placeholder": "向灵伴发问…",
     "thinking": "思考中……",
-    "sendFailed": "没能连上灵伴：{{err}}",
+    "sendFailed": "无法连接灵伴，请检查网络连接后重新发送。",
     "dailyLimitReached": "今日消息已达上限——明天再来",
     "dailyRemaining": "今日剩余 {{remaining}} 条",
     "personas": {
@@ -4056,7 +4292,7 @@
   },
   "advisors": {
     "title": "顾问",
-    "intro": "来见见加入 Arcana 的读者。付费会话正逐步开放。表达兴趣，当该顾问开启预约时我们会通知你。",
+    "intro": "来认识加入 Arcana 的解读者。付费咨询正逐步开放。先登记兴趣，之后再回来看看——当顾问开放预约时，其个人页面会出现「预约咨询」按钮。",
     "back": "全部顾问",
     "empty": "暂时还没有顾问，稍后再来。",
     "yearsLabel": "经验",
@@ -4065,12 +4301,12 @@
     "specialtiesLabel": "专长",
     "rateLabel": "参考价",
     "expressInterest": "表达兴趣",
-    "bookingsComingSoon": "付费会话正在逐步开放。告诉我们你想处理什么，当这位顾问开启预约时我们会通知你。",
+    "bookingsComingSoon": "付费咨询正逐步开放。告诉我们你想得到哪方面的帮助——当这位顾问开放预约时，本页会出现「预约咨询」按钮。",
     "topicPlaceholder": "你希望就哪方面被支持？（可选）",
-    "notifyMe": "开放预约时通知我",
+    "notifyMe": "登记我的兴趣",
     "submitting": "提交中…",
-    "interestSubmitted": "兴趣已记录——当 {{n}} 开放预约时会通知你。",
-    "interestFailed": "无法提交兴趣",
+    "interestSubmitted": "兴趣已登记。请之后再回到此页面——当 {{n}} 开放预约时，这里会出现「预约咨询」按钮。",
+    "interestFailed": "无法登记你的兴趣，请检查网络连接后重试。",
     "signInToExpress": "请登录后表达兴趣",
     "specialties": {
       "tarot": "塔罗",
@@ -4083,7 +4319,8 @@
       "shadow-work": "阴影工作",
       "creativity": "创造力",
       "breakup-recovery": "分手复原"
-    }
+    },
+    "bookCta": "预约咨询"
   },
   "moon": {
     "title": "今夜的月亮",
@@ -4097,7 +4334,7 @@
         "ritual": "为新一轮周期写下三条意图。把纸折好，在满月前私下保存。"
       },
       "waxing-crescent": {
-        "name": "娥眉月（上弦钩）",
+        "name": "娥眉月",
         "guidance": "朝新月时所命名之事迈出第一小步。此时重在持续，不在强度。",
         "ritual": "点一支蜡烛，列出本周可做的三个微小步骤。今天先做第一步。"
       },
@@ -4148,7 +4385,17 @@
     "meaningLabel": "含义",
     "journalPrompt": "写作提示",
     "shareButton": "分享此卜局",
-    "elementLabel": "元素"
+    "elementLabel": "元素",
+    "questionLabel": "你的问题（可选）",
+    "questionPlaceholder": "此刻我最需要理解的是什么？",
+    "castLabel": "三符文占卜",
+    "back": "再抛一次",
+    "yourQuestion": "你的问题",
+    "reversed": "逆位",
+    "whenItLandsLabel": "当它落在你身上时",
+    "promptLabel": "日记提示",
+    "askOracleCta": "整体解读这次占卜",
+    "share": "分享这次占卜"
   },
   "dice": {
     "title": "骰子占卜",
@@ -4157,25 +4404,31 @@
     "promptLabel": "记住这个问题",
     "rollButton": "掷骰子",
     "rollAgain": "再掷一次",
-    "rolling": "正在掷骰…"
+    "rolling": "正在掷骰…",
+    "astroIntro": "占星骰子——三颗同时落下：行星说明「是什么」，星座说明「如何」，宫位说明「在你生活的哪里」。心中默想一个问题，然后掷骰。",
+    "askOracle": "向神谕请教这个"
   },
   "crisis": {
     "title": "你并不孤单",
     "subtitle": "我们注意到你写下的一些内容。如果你此刻正感到痛苦，请求助于以下方式——它们免费且保密。",
     "phone": {
-      "title": "988 自杀与危机生命线",
-      "body": "Call or text 988 · 24/7 · US",
-      "cta": "拨打"
+      "title": "希望24热线",
+      "body": "400-161-9995 · 24小时 · 中国大陆",
+      "cta": "拨打",
+      "number": "400-161-9995"
     },
     "text": {
-      "title": "Crisis Text Line",
-      "body": "短信发送 HOME 至 741741 · US/UK/CA/IE",
-      "cta": "短信"
+      "title": "北京心理危机研究与干预中心",
+      "body": "010-82951332 · 24小时",
+      "cta": "拨打",
+      "number": "010-82951332",
+      "scheme": "tel",
+      "keyword": ""
     },
     "international": {
       "title": "国际求助热线"
     },
-    "footer": "Arcana 不是医疗服务。如果你正处于紧急危险中，请拨打你所在地的紧急电话。",
+    "footer": "Arcana 不是医疗服务。紧急情况请拨打 120 或 110。",
     "closeButton": "我暂时没事"
   },
   "referral": {
@@ -4185,23 +4438,23 @@
     "yourCodeLabel": "你的邀请码",
     "copy": "复制链接",
     "copied": "已复制链接",
-    "copyFailed": "无法复制",
-    "share": "分享",
-    "shareText": "我在用 Arcana 做塔罗与占星——用我的邀请码领取100枚免费月石：{{url}}",
+    "copyFailed": "无法复制邀请码，请手动选中后复制。",
+    "share": "分享我的邀请码",
+    "shareText": "我在用 Arcana 做塔罗与占星——用我的邀请码领取 100 枚免费月光石：{{url}}",
     "invitesCount": "已有{{n}}位好友使用你的邀请码加入",
     "redeemLabel": "有邀请码？",
-    "redeemHelper": "在注册后30天内输入好友的邀请码，可领取100枚月石。",
+    "redeemHelper": "在注册后 30 天内输入好友的邀请码，可领取 100 枚月光石。",
     "codePlaceholder": "ABCD1234",
-    "redeem": "兑换",
+    "redeem": "兑换此邀请码",
     "redeeming": "正在兑换…",
-    "redeemSuccess": "+{{n}} 月石——欢迎！",
-    "alreadyRedeemed": "你已兑换过推荐码。",
+    "redeemSuccess": "+{{n}} 月光石——欢迎。",
+    "alreadyRedeemed": "你已兑换过邀请码。",
     "errors": {
       "alreadyRedeemed": "你已兑换过邀请码。",
       "notFound": "未找到该邀请码。",
       "selfRedeem": "不能使用你自己的邀请码。",
       "accountTooOld": "邀请码仅在注册后30天内有效。",
-      "generic": "无法兑换邀请码。"
+      "generic": "无法兑换该邀请码，请检查后重试。"
     }
   },
   "yearAhead": {
@@ -4217,20 +4470,23 @@
       "feat4": "全年叙事主线"
     },
     "unlockCta": "用{{n}} Moonstones解锁",
-    "unlocking": "正在解锁…",
     "unlocked": "预测已解锁",
-    "unlockFailed": "无法解锁",
-    "insufficientBalance": "Moonstones不足——可通过每日签到或邀请获取",
-    "balance": "余额：{{n}} Moonstones",
-    "priceNote": "也可通过 Stripe 以${{price}} 购买（即将推出）",
+    "unlockFailed": "无法解锁预报，请检查网络连接后重试。",
+    "insufficientBalance": "月光石不足，需要 {{n}} 枚。可通过每日签到、观看广告或邀请好友赚取。",
     "computing": "正在绘制你的年度地图…",
     "errorNatalMissing": "未找到你的本命盘计算结果。请在“个人资料”中重新输入出生信息。",
     "errorGeneric": "无法加载预测。稍后重试。",
     "overall": "整体走向",
     "emptyMonth": "本月行星动向平静。用来休息吧。",
     "disclaimer": "占星是一种象征性的视角，而非预言。行运描述的是原型层面的“天气”——你如何行动，取决于你自己。",
-    "stripeFailed": "无法开始结账",
-    "payWithStripe": "或使用银行卡支付 ${{price}}"
+    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
+    "upgradeToPremium": "看看高级版包含什么",
+    "orEarnMoonstones": "或用 {{n}} 月光石解锁",
+    "balanceShort": "余额：{{n}}",
+    "earnHint": "通过每日签到、观看广告或邀请好友赚取月光石。",
+    "earnNow": "看广告，赚 {{n}} 月光石",
+    "eventCount": "{{n}} 次行运",
+    "retry": "重新加载预报"
   },
   "natalReport": {
     "title": "完整本命盘",
@@ -4245,12 +4501,9 @@
       "feat4": "保存为 PDF 或在浏览器中打印"
     },
     "unlockCta": "用 {{n}} Moonstones 解锁",
-    "unlocking": "正在解锁…",
     "unlocked": "已解锁本命盘",
-    "unlockFailed": "无法解锁",
-    "insufficientBalance": "Moonstones 不足——可通过每日签到或邀请获取",
-    "balance": "余额：{{n}} Moonstones",
-    "priceNote": "也可通过 Stripe 以 ${{price}} 购买（即将上线）",
+    "unlockFailed": "无法解锁报告，请检查网络连接后重试。",
+    "insufficientBalance": "月光石不足，需要 {{n}} 枚。可通过每日签到、观看广告或邀请好友赚取。",
     "errorChartMissing": "未找到你的已计算本命盘。请在“个人资料”中重新输入出生信息。",
     "printCta": "保存为 PDF",
     "bigThreeHeading": "三大主轴",
@@ -4273,15 +4526,16 @@
     "synastryPrompt": "对方的出生信息",
     "partnerNamePlaceholder": "对方姓名（可选）",
     "synastryCta": "叠加对方星盘",
-    "synastryFailed": "无法计算合盘。",
-    "overlayFailed": "无法加载叠加图层，请检查网络后重试。",
+    "synastryFailed": "无法计算合盘，请检查双方的出生信息后重试。",
+    "overlayFailed": "无法加载该叠加图层。请检查网络连接后重试。",
     "balanceShort": "余额：{{n}}",
     "earnHint": "通过每日签到和邀请好友赚取。",
     "orEarnMoonstones": "或使用 {{n}} 月光石解锁",
     "crossAspects": "重点交互相位",
     "disclaimer": "占星是一种象征性的视角，而非预言。你的星盘映照你的气质——如何运用，全由你定。",
-    "stripeFailed": "无法启动结账",
-    "payWithStripe": "或使用银行卡通过 Stripe 以 ${{price}} 支付"
+    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
+    "upgradeToPremium": "看看高级版包含什么",
+    "earnNow": "看广告，赚 {{n}} 月光石"
   },
   "careerReport": {
     "title": "职业原型",
@@ -4296,12 +4550,9 @@
       "feat4": "新岗位的前90天计划"
     },
     "unlockCta": "用 {{n}} Moonstones 解锁",
-    "unlocking": "正在解锁…",
     "unlocked": "报告已解锁",
-    "unlockFailed": "无法解锁",
-    "insufficientBalance": "Moonstones 不足——可通过每日签到或邀请获取",
-    "balance": "余额：{{n}} Moonstones",
-    "priceNote": "也可通过 Stripe 以 ${{price}} 购买（即将推出）",
+    "unlockFailed": "无法解锁报告，请检查网络连接后重试。",
+    "insufficientBalance": "月光石不足，需要 {{n}} 枚。可通过每日签到、观看广告或邀请好友赚取。",
     "bestFit": "最佳匹配岗位",
     "drains": "让你耗竭的环境",
     "collaboration": "协作模式",
@@ -4310,13 +4561,18 @@
     "monthLabel": "第 {{n}} 月",
     "reflection": "静心思考这些问题",
     "share": "分享我的原型",
-    "stripeFailed": "无法开始结账",
-    "payWithStripe": "或用银行卡支付 ${{price}}"
+    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
+    "upgradeToPremium": "看看高级版包含什么",
+    "orEarnMoonstones": "或用 {{n}} 月光石解锁",
+    "balanceShort": "余额：{{n}}",
+    "earnHint": "通过每日签到、观看广告或邀请好友赚取月光石。",
+    "earnNow": "看广告，赚 {{n}} 月光石",
+    "fullReport": "完整报告"
   },
   "compatInvite": {
     "createTitle": "邀请某人",
     "createSubtitle": "发送一个链接。对方完成TA的一侧；你们将看到联合解读。",
-    "createFailed": "无法创建邀请",
+    "createFailed": "无法创建邀请链接，请检查网络连接后重试。",
     "pickKind": "兼容性类型",
     "nothingToShare": "请先做性格测试或添加你的出生日期。",
     "generateLink": "生成邀请链接",
@@ -4336,7 +4592,7 @@
     "ownInvite": "这是你自己的邀请。将链接分享给好友或伴侣——需要对方来回应。",
     "signInTitle": "登录以查看你的匹配",
     "signInBody": "创建免费账户或登录，完成你这边的契合度解读。",
-    "signInCta": "继续",
+    "signInCta": "登录查看配对结果",
     "resultLabel": "契合度",
     "mbtiSection": "性格契合度",
     "astroSection": "占星契合度",
@@ -4349,10 +4605,10 @@
     "responderDefault": "你",
     "shareText": "和我一起在 Arcana 做这份契合度解读：{{url}}",
     "errors": {
-      "selfInvite": "你不能回应你自己的邀请。",
+      "selfInvite": "你不能回应自己的邀请。",
       "expired": "该邀请已过期。",
       "notFound": "未找到邀请。",
-      "generic": "无法提交回应。"
+      "generic": "无法发送你的回应，请检查网络连接后重试。"
     },
     "kinds": {
       "mbti": "性格（MBTI）",
@@ -4362,7 +4618,8 @@
       "enneagram": "九型人格",
       "zodiac": "星座",
       "element": "元素"
-    }
+    },
+    "shareLink": "分享我的邀请链接"
   },
   "advisorBooking": {
     "back": "返回",
@@ -4379,7 +4636,7 @@
     "bookedToast": "已预订会话——我们已扣除 {{n}} Moonstones。",
     "insufficientBalance": "Moonstones 余额不足。请充值后重试。",
     "slotTaken": "该时段刚被占用。请另选时间。",
-    "bookFailed": "无法预订该时段。",
+    "bookFailed": "无法预订该时段，可能刚被别人订走了。请选择其他时间。",
     "disclaimer": "在会话开始前随时取消可全额退款。"
   },
   "advisorSession": {
@@ -4388,7 +4645,7 @@
     "notFound": "未找到会话。",
     "startsIn": "将在 {{n}} 分钟后开始。可在预定时间前后 5 分钟内开始。",
     "readyToStart": "你准备好时就开始。",
-    "cancel": "取消",
+    "cancel": "取消此次咨询",
     "start": "开始会话",
     "started": "会话已开始",
     "ended": "会话已结束",
@@ -4397,10 +4654,10 @@
     "cancelledToast": "已取消。已退还 {{n}} Moonstones。",
     "noMessages": "打个招呼开始吧。",
     "composerPlaceholder": "写条消息…",
-    "sendFailed": "发送失败",
+    "sendFailed": "无法发送你的消息，请检查网络连接后重试。",
     "rateTitle": "感觉如何？",
     "reviewPlaceholder": "想分享点什么吗？（可选）",
-    "submitRating": "提交评分",
+    "submitRating": "提交我的评分",
     "ratingThanks": "感谢你的反馈"
   },
   "advisorDashboard": {
@@ -4431,13 +4688,13 @@
     "cashoutExceeds": "金额超出可提现余额。",
     "cashoutSent": "已向你的 Stripe 账户发送 ${{usd}}。",
     "cashoutMinNote": "最低 100 Moonstones（税前 $10 / 实得 $7）。",
-    "stripeFailed": "无法启动 Stripe 注册",
+    "stripeFailed": "无法打开 Stripe 注册流程，请检查网络连接后重试。",
     "onboardingRequired": "请先完成 Stripe 注册。"
   },
   "voice": {
     "join": "加入语音",
     "joining": "正在加入…",
-    "leave": "离开",
+    "leave": "离开语音",
     "notConnected": "语音已关",
     "state": {
       "idle": "",
@@ -4451,11 +4708,11 @@
   "liveRoom": {
     "back": "所有房间",
     "notFound": "未找到房间。",
-    "listeners": "{{n}} RSVPd / cap {{cap}}",
-    "rsvp": "RSVP",
+    "listeners": "已占 {{n}} 个座位，共 {{cap}} 个",
+    "rsvp": "为我留座",
     "rsvpd": "你已加入",
     "notLiveYet": "主持人开始后将开启语音。",
-    "rsvpToJoin": "先 RSVP 后才能加入语音。",
+    "rsvpToJoin": "先留座才能加入语音房间。",
     "tipHost": "打赏主持人",
     "tipSent": "已向主持人发送 {{n}} 颗月石。",
     "replayHeading": "回放",
@@ -4463,14 +4720,22 @@
     "unlockReplay": "解锁回放 — {{n}} 颗月石",
     "unlocking": "正在解锁…",
     "replayUnlocked": "已解锁回放",
-    "replayInsufficient": "月石不足，无法解锁。",
+    "replayInsufficient": "月光石不足，无法解锁回放。可在首页组件充值，或通过每日签到赚取。",
     "signInToUnlock": "登录以解锁回放",
-    "listenFree": "收听 — 免费"
+    "listenFree": "收听 — 免费",
+    "tipInsufficient": "月光石不足，无法打赏。可在首页组件充值，或通过每日签到赚取。",
+    "tipAmount": "{{n}} 月光石",
+    "toasts": {
+      "rsvpFailed": "无法为你留座，请检查网络连接后重试。",
+      "cancelFailed": "无法释放你的座位，请检查网络连接后重试。",
+      "unlockFailed": "无法解锁回放，未扣除你的月光石。请稍后再试。",
+      "tipFailed": "无法发送打赏，未扣除你的月光石。请稍后再试。"
+    }
   },
   "advisorVerify": {
     "title": "顾问验证",
     "startTitle": "验证后即可上线",
-    "startBody": "在客户预约你之前，我们需要确认身份。请上传政府签发的身份证件，以及一段自我拍摄视频，清晰说出你的全名和今天的日期。我们将在72小时内审核。",
+    "startBody": "在客户可以预约你之前，我们需要确认你的身份。请上传政府签发的身份证件，以及一段自拍短视频，说出你的全名和今天的日期。我们将在 72 小时内审核。",
     "pendingTitle": "审核中",
     "pendingBody": "提交于{{date}}。我们会在72小时内审核。",
     "approvedTitle": "已验证",
@@ -4484,27 +4749,31 @@
     "idLabel": "政府身份证件（图片）",
     "uploadId": "上传证件",
     "selfieLabel": "自拍视频（说出你的姓名和今天的日期）",
-    "uploadSelfie": "上传视频",
+    "uploadSelfie": "上传我的验证视频",
     "submitCta": "提交审核",
     "submitting": "正在提交…",
-    "submitted": "已提交。我们将在72小时内审核。",
+    "submitted": "已提交。我们将在 72 小时内审核。",
     "incomplete": "请填写所有字段并上传两个文件。",
-    "privacyNote": "文件将被加密，仅管理员审核员可见。"
+    "privacyNote": "文件将被加密，仅管理员审核员可见。",
+    "uploadIdFailed": "无法上传你的证件，请检查网络连接后重试。",
+    "uploadVideoFailed": "无法上传你的视频，请检查网络连接后重试。"
   },
   "sandbox": {
     "title": "原型沙盒",
     "intro": "挑选象征物，把它们放到基座上，神谕会解读其排列。预览版——位置将自动呈螺旋排列，拖放功能即将上线。",
     "pickObject": "选择一个物件",
     "place": "放到基座",
-    "reset": "重置",
+    "reset": "清空台座",
     "placedLabel": "已在基座上",
     "placeMore": "至少放置两个物件。",
     "interpretCta": "解读此排列",
     "reading": "正在解读排列…",
     "readingLabel": "神谕正在解读",
-    "rearrange": "重新排列",
-    "interpretFailed": "无法解读。",
-    "preview": "预览——拖拽放置与保存/分享功能即将上线。"
+    "rearrange": "清空并重新排列",
+    "interpretFailed": "无法解读这个排列，请稍后再试。",
+    "preview": "预览——拖拽放置与保存/分享功能即将上线。",
+    "webglUnavailableTitle": "3D 预览不可用",
+    "webglUnavailableBody": "你的浏览器或设备不支持 WebGL。你仍然可以摆放原型物件并获得解读——解读并不依赖 3D 视图。"
   },
   "quickReading": {
     "title": "3秒解读",
@@ -4515,11 +4784,11 @@
     "drawing": "正在抽牌…",
     "yourQuestion": "你的问题",
     "cardLabel": "抽到的牌",
-    "memoryUsed": "参考了我们之前的对话。",
+    "memoryUsed": "参考了我们之前聊过的内容。",
     "share": "分享",
     "askAnother": "再问一个",
     "disclaimer": "解读用于自我反思，不是预言或专业建议。",
-    "errorRateLimit": "你提问得有点快——放慢些，稍后再试。",
+    "errorRateLimit": "你提问得有点快——放慢一些，稍后再试。",
     "errorUnavailable": "解读暂时不可用。",
     "errorGeneric": "未能生成解读。请重试。"
   },
@@ -4533,15 +4802,15 @@
     "reversed": "逆位",
     "composerPlaceholder": "追问一下…",
     "seedMessage": "我刚抽到{{card}}。请帮我静心体会它此刻指向的内容。",
-    "aiFailed": "无法连接到神谕"
+    "aiFailed": "无法连接神谕，请检查网络连接后再问一次。"
   },
   "journalCoach": {
     "askCta": "向日记教练提问",
     "thinking": "读取中…",
-    "failed": "无法联系教练",
+    "failed": "无法连接教练，请检查网络连接后重试。",
     "observationLabel": "一个观察",
     "promptsLabel": "请细细体会",
-    "dismiss": "忽略"
+    "dismiss": "隐藏这些提示"
   },
   "chartWheel": {
     "tapPrompt": "点按行星、宫位或相位线。",
@@ -4555,12 +4824,16 @@
     "intro": "预定的直播聚会——满月圈、Mercury逆行回顾、直播塔罗抽牌。以音频为主，即将上线。RSVP 以保留席位。",
     "empty": "日程上还没有直播房间——稍后再来看看。",
     "capacity": "最多 {{n}} 位听众",
-    "rsvp": "RSVP",
-    "rsvpd": "已加入",
-    "rsvpConfirmed": "已在名单中——开启时会通知你。",
-    "rsvpCancelled": "已取消 RSVP",
-    "signInToRsvp": "登录以 RSVP",
-    "voiceComingSoon": "音频直播正逐步上线。先 RSVP，我们会在你的房间开放时通知你。"
+    "rsvp": "为我留座",
+    "rsvpd": "你已加入",
+    "rsvpConfirmed": "你已在名单上。之后回到这里——房间将于 {{time}} 开放。",
+    "rsvpCancelled": "座位已释放，你可以随时再次留座。",
+    "signInToRsvp": "登录以留座",
+    "voiceComingSoon": "音频功能正逐步上线。先留座，之后再回到这里——每个房间会在预定时间开放。",
+    "toasts": {
+      "rsvpFailed": "无法为你留座，请检查网络连接后重试。",
+      "cancelFailed": "无法释放你的座位，请检查网络连接后重试。"
+    }
   },
   "pickACard": {
     "title": "抽一张牌",
@@ -4570,8 +4843,8 @@
     "optionAria": "牌 {{n}}",
     "upright": "正位",
     "reversed": "逆位",
-    "share": "分享",
-    "learnMore": "详细解读",
+    "share": "分享我的牌",
+    "learnMore": "阅读这张牌的含义",
     "comeBack": "新的牌将在午夜刷新。",
     "shareText": "今日抽到：{{name}}（{{orientation}}）— {{keyword}}"
   },
@@ -4580,13 +4853,13 @@
     "subtitle": "将经典合盘浓缩为一个数字。免费、可分享、快速。",
     "needsBirthData": "请先补充出生信息",
     "needsBirthDataBody": "我们需要你的出生日期（有时刻更精准）来对比星盘。请在 设置 → 编辑资料 中添加。",
-    "goToProfile": "前往资料",
+    "goToProfile": "添加我的出生信息",
     "partnerNameLabel": "对方姓名",
     "partnerNamePlaceholder": "可选",
     "birthDateLabel": "出生日期",
     "birthTimeLabel": "出生时刻（可选 — 让分数更精准）",
     "calculateCta": "揭晓分数",
-    "computeFailed": "计算失败，请检查网络后重试。",
+    "computeFailed": "无法计算。请检查网络连接后重试。",
     "noAspects": "没有找到显著的相位，试试补上出生时刻。",
     "scoreWithPartner": "{{you}} 与 {{partner}}",
     "scoreNoName": "你们的契合度",
@@ -4594,7 +4867,7 @@
     "noTimeHint": "加上出生时刻可以让分数更精准。",
     "harmoniesHeading": "你们契合之处",
     "frictionsHeading": "彼此磨合之处",
-    "tryAnother": "换一位试试",
+    "tryAnother": "换一个人试试",
     "share": "分享分数",
     "shareText": "我们的 Arcana 灵魂伴侣分数是 {{score}}/100（{{vibe}}）。来 arcana.app 试试你的吧",
     "disclaimer": "分数不是结论，而是对话的镜子。星盘描绘的是模式，不是命运。",
@@ -4610,7 +4883,7 @@
       "strong": "基本形貌相契。有真实的吸引与自在，也有足够的差异让关系保持生动。",
       "steady": "踏实可行的组合。某些地方相遇，某些地方错过。用心经营可以走远。",
       "complex": "磁性强但摩擦多。吸引是真的，棱角也是。能扛住火候，则成长丰盈。",
-      "testing": "模式不易自然流动。可行，但需要更多意图而非重力。"
+      "testing": "这些模式不容易自然流动。并非不可能——但需要的是有意的经营，而不是顺势的吸引。"
     }
   },
   "askOracle": {
@@ -4618,12 +4891,14 @@
     "contextLabel": "你的问题",
     "cta": "请神谕为我读这个",
     "drawing": "抽牌中…",
-    "errorGeneric": "无法连接神谕,请重试。",
+    "errorGeneric": "无法连接神谕，请检查网络连接后重试。",
     "question": "请为我解读 — {{context}}。它在我的生活中指向什么?",
-    "redraw": "重新解读",
-    "share": "分享",
+    "redraw": "再抽一次",
+    "share": "分享这次解读",
     "sheetTitle": "神谕在解读",
-    "subtitle": "基于你的命盘与记忆的个性化解读"
+    "subtitle": "基于你的命盘与记忆的个性化解读",
+    "retry": "再问一次神谕",
+    "close": "关闭神谕"
   },
   "dailyMission": {
     "doneSub": "新任务将于午夜到来。",
@@ -4632,18 +4907,18 @@
     "markDone": "标记完成"
   },
   "moonstoneTopUp": {
-    "generic": "购买失败",
+    "generic": "购买未完成。请稍后再试。",
     "packLabel": {
       "devotee": "信徒包",
       "generous": "豪华包",
       "regular": "常规包",
       "starter": "入门包"
     },
-    "packNotFound": "该套餐在商店中不可用。",
+    "packNotFound": "该套餐目前不在商店中，请选择其他套餐或稍后再试。",
     "playStorePurchase": "通过 Google Play 收费,在你的 Google 账号中管理购买。",
     "popular": "热门",
-    "securePayment": "由 Stripe 提供的安全结账。一次性购买——可随时取消。",
-    "stripeFailed": "无法打开结账",
+    "securePayment": "由 Stripe 提供的安全结账。一次性购买，无订阅。",
+    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
     "subtitle": "解锁解读、给直播主播打赏、预约顾问咨询。",
     "success": "{{n}} 月光石正在路上 — 几秒钟就到。",
     "title": "充值月光石"
@@ -4674,6 +4949,429 @@
     "whatFor": "你要為什麼事選日子？",
     "best": "近期吉日",
     "avoid": "宜避開的日子",
-    "export": "加入日曆"
+    "export": "加入我的日历",
+    "intro": "中国传统择日问的是与出生星盘不同的问题：不是「你是什么样的人」，而是「什么时候做某件事」。每一天都依据主管它的二十八宿来解读——一旦知道你的出生日期，还会看这一天与你自己的四柱如何相处。",
+    "noBirth": "这些是通书的解读，对每个人都一样。在个人资料中添加你的出生日期，每一天还会与你自己的四柱对照——那里的相冲是传统通书建议另择一日最常见的原因。",
+    "disclaimer": "这是一项传统习俗，也仅作为习俗呈现。它不涉及健康、金钱或法律——评分只是可以逐行核对的简单计数，而不是神谕。",
+    "windowNote": "正在查看未来 {{days}} 天。点击某一天，看看它为什么得到这样的分数。"
+  },
+  "celestial": {
+    "needBirthDate": {
+      "cta": "前往个人资料",
+      "secondary": "改为编辑完整资料",
+      "title": "请先添加你的出生日期",
+      "body": "你的天体地图是从你的出生星盘绘制而来的。请在「个人资料」页添加出生日期（如果知道，也加上出生时间），你的地图就会准备好。"
+    },
+    "previewLock": {
+      "title": "你正在查看太阳 + 月亮预览。",
+      "body": "用高级版解锁全部 40 条行星线、城市解读和 AI 旅行解读——或用 250 月光石获取单次旅行解读。",
+      "cta": "解锁完整地图"
+    },
+    "city": {
+      "aiReading": {
+        "body": "获取一份专属解读，把这些行星线与你的出生星盘和你所寻求的事结合起来——专为你而写。",
+        "title": "专属旅行解读",
+        "loading": "正在撰写你的解读…",
+        "ctaPremium": "生成解读",
+        "ctaMoonstones": "用 250 月光石解锁",
+        "error": "暂时无法生成解读，请稍后再试。",
+        "label": "你的解读",
+        "cautionsLabel": "需要留意",
+        "practiceLabel": "在这里的头三天"
+      },
+      "lockedCount": "还有 {{count}} 条行星线经过此地",
+      "unknown": "远洋 / 偏远地区",
+      "noLines": "此地 700 公里内没有行星线经过。对你的星盘来说，这里是一片安静的天空——既不助力，也不阻碍。",
+      "activeLines": "经过此地的行星线",
+      "lockedCount_one": "还有 {{count}} 条行星线经过此地",
+      "lockedCount_other": "还有 {{count}} 条行星线经过此地",
+      "unlockHint": "用高级版解锁完整地图"
+    },
+    "form": {
+      "dateRequired": "请输入出生日期。",
+      "dateInvalid": "日期格式不正确，请使用 YYYY-MM-DD。",
+      "dateLabel": "出生日期",
+      "timeLabel": "出生时间（可选）",
+      "placeLabel": "出生地（可选）",
+      "placePlaceholder": "例如：日本东京",
+      "accuracyHint": "出生时间在这里非常关键：没有它，我们会默认为正午，你的上升线和天顶线可能落在错误的大洲。请添加你的出生时间——即使是大致时间——才能得到一张可信的地图。",
+      "saving": "保存中…",
+      "cta": "绘制我的地图",
+      "saveFailed": "无法保存出生信息，请检查网络连接后重试。"
+    },
+    "search": {
+      "placeholder": "搜索城市或国家…",
+      "label": "搜索城市"
+    },
+    "about": {
+      "eyebrow": "占星地图",
+      "body": "占星地图标出你出生那一刻每颗行星正在升起、落下或到达最高点的位置——并把这些位置投射到全世界。结果是一张专属于你的地图集：不同的地方与你的不同面向共鸣。有的城市让你的事业线发亮，有的落在你的爱情线、疗愈线、聚光灯线上。搬到那里，能量随之而来。",
+      "tradition": "占星地图由占星师 Jim Lewis 在 20 世纪 70 年代创立，如今被迁居顾问、旅行占星师，以及正在规划人生下一章的好奇者们使用。"
+    },
+    "use": {
+      "eyebrow": "你可以探寻什么",
+      "subtitle": "点击一个主题，按该意图筛选地图。",
+      "love": {
+        "body": "找出那些让浪漫更容易到来、吸引力更深、在那里建立的关系更长久的地方。"
+      }
+    },
+    "angles": {
+      "title": "如何解读这些线"
+    },
+    "controls": {
+      "flat": "平面地图",
+      "globe": "地球视图",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "reset": "重置视图",
+      "findMe": "定位我的出生地"
+    },
+    "intro": {
+      "title": "正在绘制你的天体地图",
+      "body": "正在把每颗行星放到你出生时它升起、落下和过中天的位置…",
+      "ready": "马上就好"
+    },
+    "power": {
+      "title": "你的能量之地",
+      "subtitle": "你的星盘中行星线汇聚最多的地方。值得考虑前往、迁居或重访的强能量点。",
+      "lockedHint": "解锁以查看你的地点"
+    },
+    "destinedPlace": {
+      "eyebrow": "你的命定之地",
+      "clear": "清除命定之地"
+    },
+    "findPlace": {
+      "cta": {
+        "title": "找到你的命定之地",
+        "premiumBadge": "高级版",
+        "body": "一键完成。我们将每座城市与你的完整出生星盘比对，揭示最适合你的那一个地方——并附上详尽的原因。"
+      },
+      "error": {
+        "title": "解读未能完成",
+        "retry": "重新解读",
+        "body": "请检查网络连接后重试。",
+        "noPlace": "未找到与该意图匹配的强能量地点，请换一个生活领域试试。"
+      },
+      "hero": {
+        "eyebrow": "你的命定之地"
+      },
+      "reading": {
+        "loading": "正在撰写你的解读…",
+        "linesLabel": "为什么是这里",
+        "practiceLabel": "你的第一个月",
+        "cautionsLabel": "坦白说",
+        "rerollCta": "换一个地方看看",
+        "saving": "保存中…",
+        "saved": "已保存",
+        "saveCta": "保存这个地方"
+      },
+      "eyebrow": "寻找你的地方",
+      "needsTimeTitle": "添加出生时间以解锁此功能",
+      "needsTimeBody": "「寻找你的地方」会把城市与你的上升线和天顶线比对——而这两条线完全取决于你的出生时间。没有它我们只能猜测，所以宁愿等你的地图真正准确。即使是大致的时间也有帮助。"
+    },
+    "hero": {
+      "subtitle": "从你出生的确切时刻出发，探寻最适合你生活、相爱、工作和疗愈的地方。"
+    },
+    "mapSection": {
+      "title": "你的地图",
+      "subtitle": "点击任意位置查看经过的行星线，或在下方搜索指定城市。"
+    },
+    "eyebrow": "天体地图",
+    "title": "你的星辰交汇之处",
+    "disclaimer": "这些线标出你出生那一刻每颗行星正在升起、落下或过中天的位置。它们是信号，而非命运。",
+    "filter": {
+      "all": "全部",
+      "love": "爱情",
+      "career": "事业",
+      "travel": "旅行",
+      "healing": "疗愈",
+      "home": "安居",
+      "growth": "成长"
+    }
+  },
+  "freeCourse": {
+    "errors": {
+      "invalidEmail": "请输入有效的邮箱地址。",
+      "signupFailed": "订阅失败，请稍后再试。"
+    },
+    "badge": "免费三课邮件课程",
+    "title": "三封邮件，学会塔罗",
+    "subtitle": "一系列免费邮件，涵盖关键词、花色对应和数字学基础——每位塔罗读者必备的根基。",
+    "success": "订阅成功。请查收邮箱。",
+    "emailPlaceholder": "your@email.com",
+    "sending": "发送中…",
+    "cta": "给我寄第一课",
+    "disclaimer": "无垃圾邮件。一键退订。5 天内 3 封邮件。"
+  },
+  "loveTree": {
+    "shareText": "我的 Arcana 爱之树：{{title}}——{{archetype}}。到 arcana.app/love-tree 找到你的",
+    "title": "爱之树",
+    "intro": "12 个问题，90 秒，一棵树。把你的依恋类型呈现为一个有生命的形状——再加上一段直白的解读，说说你如何去爱。",
+    "howItWorksLabel": "如何进行",
+    "how1": "为 12 条简短陈述打分，从非常不同意到非常同意。",
+    "how2": "我们在经典依恋坐标上计算你的焦虑与回避得分。",
+    "how3": "你会落在四个象限之一——呈现为一棵独特的动态之树。",
+    "startCta": "种下我的树",
+    "disclaimer": "这是自我认识的工具，不是临床诊断。依恋模式会变化——这是一张快照，不是判决。",
+    "back": "返回",
+    "progress": "{{i}} / {{n}}",
+    "retake": "重新测试",
+    "yourStyle": "你的依恋类型",
+    "share": "分享我的树",
+    "anxietyLabel": "焦虑",
+    "avoidanceLabel": "回避",
+    "strengthsLabel": "你天生的优势",
+    "growthLabel": "成长空间",
+    "inLoveLabel": "在爱里",
+    "affirmationLabel": "你的肯定语"
+  },
+  "updateBanner": {
+    "title": "有新版本可用",
+    "body": "包含最近的修复和改进。请在 Google Play 更新以获取。",
+    "update": "在 Google Play 更新",
+    "later": "两天后再提醒我",
+    "dismiss": "关闭"
+  },
+  "rateApp": {
+    "title": "谢谢你试用我的第一款应用",
+    "body1": "这是我在学习之余做的，时间和资源都有限。我知道它还不完美，但我一直在改进。",
+    "body2": "如果哪里不对劲或发现了 bug，请告诉我。如果你喜欢它，一个五星好评会帮上大忙。",
+    "rate": "在 Google Play 评价 Arcana",
+    "feedback": "通过邮件反馈问题",
+    "later": "下次再说"
+  },
+  "people": {
+    "eyebrow": "你的圈子",
+    "title": "人物",
+    "subtitle": "保存你在意的人的出生信息，探索他们的星盘以及你们之间的契合度。",
+    "addPerson": "添加一个人",
+    "emptyTitle": "这里还没有人",
+    "emptyBody": "添加你的伴侣、父母或朋友，揭示他们的本命盘，看看你们的星辰如何相合。",
+    "timeUnknown": "时间未知",
+    "savedCount": "已保存 {{n}} / 50",
+    "notFound": "在你的圈子里找不到这个人。",
+    "relationship": {
+      "self": "你",
+      "partner": "伴侣",
+      "family": "家人",
+      "friend": "朋友",
+      "other": "其他",
+      "pet": "宠物"
+    },
+    "form": {
+      "name": "姓名",
+      "namePlaceholder": "例如：妈妈、小林、Alex",
+      "relationship": "关系",
+      "species": "物种",
+      "birthDate": "出生日期",
+      "birthTime": "出生时间（可选——让星盘更精准）",
+      "petTime": "时间（可选——大多数领养的动物没有）",
+      "birthPlace": "出生地（可选）",
+      "nameRequired": "请给这个人起个名字。",
+      "dateRequired": "请输入对方的出生日期。",
+      "limit": "已达到 50 人上限。",
+      "saveFailed": "无法保存这个人，请检查网络连接后重试。",
+      "updated": "已更新{{name}}",
+      "added": "已添加{{name}}",
+      "cancel": "取消",
+      "saving": "保存中…",
+      "saveChanges": "保存出生信息",
+      "add": "添加这个人"
+    },
+    "detail": {
+      "chartFailed": "无法排出星盘，请检查网络连接后重试。",
+      "deleted": "已删除{{name}}",
+      "deleteFailed": "无法删除{{name}}，请重试。",
+      "backToPeople": "返回人物",
+      "birthTimeUnknown": "出生时间未知——宫位和上升星座为近似值。",
+      "compare": "比较我们的星盘",
+      "edit": "编辑出生信息",
+      "delete": "删除{{name}}",
+      "editTitle": "编辑{{name}}",
+      "deleteTitle": "删除{{name}}？",
+      "deleteBody": "这将删除{{name}}已保存的出生数据和星盘，且无法撤销。",
+      "keep": "保留{{name}}",
+      "deleteConfirm": "永久删除"
+    },
+    "compare": {
+      "needOwnBirth": "在个人资料中添加你自己的出生日期，才能比较星盘。",
+      "castFailed": "无法排出两张星盘，请检查网络连接后重试。",
+      "tabFailed": "无法排出这张星盘，请检查网络连接后重试。",
+      "goBack": "返回",
+      "eyebrow": "合盘",
+      "title": "你和{{name}}",
+      "chartTypeAria": "星盘类型",
+      "disclaimer": "仅供反思与娱乐。这些星盘描述的是互动模式，而非命运。",
+      "tabs": {
+        "synastry": {
+          "label": "合盘",
+          "blurb": "你们两张星盘如何对话"
+        },
+        "composite": {
+          "label": "组合盘",
+          "blurb": "这段关系本身的中点星盘"
+        },
+        "davison": {
+          "label": "戴维森盘",
+          "blurb": "一片真实的天空，位于你们出生时间与地点的中间"
+        },
+        "progressed-composite": {
+          "label": "推运盘",
+          "blurb": "这段关系的星盘如今演进到了哪里"
+        }
+      }
+    }
+  },
+  "mirror": {
+    "signIn": "登录以查看你的镜子。",
+    "title": "镜子",
+    "subtitle": "你的解读历史揭示了怎样的你。基于你已保存的塔罗抽牌汇总而成的模式。",
+    "period": {
+      "week": "最近 7 天",
+      "month": "最近 30 天",
+      "all": "全部时间"
+    },
+    "periodAria": "时间段",
+    "loading": "正在读取镜子…",
+    "emptyTitle": "这个时间段还没有解读。",
+    "emptyBody": "今天抽一张牌，你的模式就会开始在这里浮现。",
+    "stats": {
+      "readings": "解读",
+      "cardsDrawn": "抽取的牌",
+      "reversals": "逆位",
+      "streak": "连续"
+    },
+    "highlights": {
+      "cardNow": "你此刻的牌",
+      "dominantSuit": "主导花色",
+      "recurringNumber": "反复出现的数字"
+    },
+    "sections": {
+      "topCards": "前 5 张牌",
+      "suitBalance": "花色平衡（小阿卡纳）",
+      "majorMinor": "大阿卡纳 vs 小阿卡纳",
+      "majorMinorNote": "大阿卡纳 = 人生主题；小阿卡纳 = 日常能量。"
+    }
+  },
+  "spreadDetail": {
+    "notFound": "未找到该牌阵",
+    "backToAll": "返回全部牌阵",
+    "allSpreads": "全部牌阵"
+  },
+  "chartSuite": {
+    "eyebrow": "星盘库",
+    "title": "每一片天空，每一个角度",
+    "subtitle": "十三种解读一个时刻的方式——从你出生时的星盘，到此刻你头顶的天空。",
+    "needBirth": "在个人资料中添加你的出生日期，才能排出这张星盘。",
+    "addBirth": "添加我的出生信息",
+    "castFailed": "无法排出这张星盘，请检查网络连接后重试。",
+    "retry": "重新排盘"
+  },
+  "foolsJourney": {
+    "signInHint": "登录以查看你的愚者之旅。",
+    "signIn": "登录，踏上旅程"
+  },
+  "soulmatePortrait": {
+    "title": "你的灵魂伴侣画像",
+    "intro": "一幅插画式的画像，描绘你的星盘在爱中追寻的特质——取自你的下降点、金星、火星和月亮。这是象征性的艺术，不是真实人物的照片。",
+    "vibe": {
+      "romantic": "浪漫",
+      "grounded": "沉稳",
+      "electric": "炽烈",
+      "soulful": "深情"
+    },
+    "paint": "绘制画像",
+    "painting": "正在绘制你的画像…",
+    "notEnough": "月光石不足",
+    "failed": "画像未能绘制，请重试。",
+    "saved": "已保存",
+    "alt": "根据你星盘中的关系象征生成的象征性插画画像",
+    "why": "为什么是这个样子",
+    "save": "保存图片",
+    "repaint": "再画一次",
+    "disclaimer": "这是对你星盘象征的艺术诠释——不是对真实人物的描绘。"
+  },
+  "wishingSky": {
+    "eyebrow": "许愿星空",
+    "title": "所有人的愿望，在同一片天空",
+    "subtitle": "这里的每一颗星都是某个人的愿望。许一个愿，你的星也会加入其中。当你呼应一个愿望——表示你也希望它为对方实现——你的星和对方的星之间就会连起一条线。",
+    "loading": "正在点亮星空…",
+    "emptyTitle": "今夜的星空还是空的。",
+    "emptyBody": "许下第一个愿望，点亮它。",
+    "makeWish": "许个愿",
+    "signInHint": "登录后可以添加你自己的星，并呼应他人的愿望。",
+    "recent": "最近的愿望",
+    "openToHelp": "接受帮助",
+    "yours": "你的",
+    "noWishes": "还没有愿望。",
+    "themeOther": "其他",
+    "placeholder": "我希望…",
+    "publicNote": "所有使用 Arcana 的人都能看到。",
+    "contactWarning": "这看起来像是{{what}}。请把它删掉——愿望是公开的，公开愿望上的联系方式正是骗子找上门的途径。请改为在下方开启「接受帮助」，任何善意的人都可以私下写信给你。",
+    "anEmail": "邮箱地址",
+    "aPhone": "电话号码",
+    "themeLabel": "这是关于什么的？",
+    "openToHelpLabel": "允许别人提供帮助",
+    "openToHelpBody": "任何人都可以就这个愿望给你发私信。他们看不到你的联系方式——你读到对方写的内容，再决定是否回复。",
+    "nameLabel": "署名（可选）",
+    "namePlaceholder": "名字、昵称，或者什么都不写",
+    "lightStar": "点亮我的星",
+    "lighting": "点亮中…",
+    "starLit": "你的星已点亮。",
+    "signInToEcho": "登录以呼应愿望。",
+    "wishTitle": "一个愿望",
+    "echo": "我也希望如此",
+    "echoed": "已呼应",
+    "offerHelp": "提供帮助",
+    "report": "举报这个愿望",
+    "thisIsYours": "这是你的愿望。",
+    "linked": "你的星和对方的星现在已在天空中相连。",
+    "offerIntro": "这只会发给对方。对方会看到你的留言，愿意的话可以回复——你们都不必分享任何不想分享的东西。",
+    "offerPlaceholder": "你能做些什么，以及你希望怎样帮忙…",
+    "sendPrivately": "私下发送",
+    "sending": "发送中…",
+    "offerSent": "已发送。对方会私下看到，愿意的话可以回复。",
+    "neverMind": "算了",
+    "reported": "已举报。谢谢——我们会进行查看。",
+    "reportFailed": "无法发送举报，请重试。",
+    "footer": "愿望是公开的，任何人都能看到。切勿在愿望中写电话号码、地址或邮箱——如果你接受帮助，别人可以私下联系你。",
+    "errors": {
+      "loadSky": "无法加载星空，请检查网络连接后重试。",
+      "lightStar": "无法点亮你的星，请检查网络连接后重试。",
+      "loadLinks": "无法加载连线，请检查网络连接后重试。",
+      "addEcho": "无法添加你的呼应，请稍后再试。",
+      "removeEcho": "无法取消你的呼应，请稍后再试。",
+      "alreadyOffered": "你已经为这个愿望提供过帮助了。",
+      "sendOffer": "无法发送你的帮助，请检查网络连接后重试。",
+      "loadOffers": "无法加载帮助信息，请检查网络连接后重试。",
+      "respond": "无法发送你的回复，请稍后再试。",
+      "sendReport": "无法发送举报，请检查网络连接后重试。"
+    }
+  },
+  "spreadBuilder": {
+    "signIn": "登录以创建牌阵",
+    "signInPrompt": "自定义牌阵会保存到你的账号。",
+    "signInCta": "登录以创建牌阵",
+    "toasts": {
+      "signInToSave": "请登录后保存此牌阵。",
+      "nameRequired": "保存前请为牌阵命名。",
+      "positionRequired": "请至少添加一个位置，并填写名称和含义。",
+      "saveFailed": "无法保存你的牌阵，请检查网络连接后重试。",
+      "saved": "牌阵已保存，可在「你保存的牌阵」中找到。",
+      "deleteFailed": "无法删除该牌阵，请检查网络连接后重试。",
+      "deleted": "牌阵已删除。"
+    }
+  },
+  "authBootstrap": {
+    "backToSignIn": "返回登录"
+  },
+  "publicNav": {
+    "signIn": "登录"
+  },
+  "astrologyLearn": {
+    "title": "占星"
+  },
+  "spreads": {
+    "pageTitle": "塔罗牌阵"
   }
 }

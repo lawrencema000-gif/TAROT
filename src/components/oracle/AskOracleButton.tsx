@@ -156,12 +156,12 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
             <Card padding="md">
               <p className="text-sm text-mystic-400 mb-3">
                 {t('askOracle.errorGeneric', {
-                  defaultValue: 'Could not reach the Oracle. Try again.',
+                  defaultValue: "Couldn't reach the Oracle — check your connection and try again.",
                 })}
               </p>
               <Button variant="primary" onClick={fetch} size="sm">
                 <RefreshCw className="w-3 h-3 mr-2" />
-                {t('common:actions.retry', { defaultValue: 'Retry' })}
+                {t('askOracle.retry', { defaultValue: 'Ask the Oracle again' })}
               </Button>
             </Card>
           )}
@@ -186,11 +186,11 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
               <div className="flex gap-2">
                 <Button variant="outline" fullWidth onClick={handleShare}>
                   <Share2 className="w-4 h-4 mr-2" />
-                  {t('askOracle.share', { defaultValue: 'Share' })}
+                  {t('askOracle.share', { defaultValue: 'Share this reading' })}
                 </Button>
                 <Button variant="primary" fullWidth onClick={fetch}>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  {t('askOracle.redraw', { defaultValue: 'New read' })}
+                  {t('askOracle.redraw', { defaultValue: 'Draw again' })}
                 </Button>
               </div>
             </>
@@ -201,7 +201,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
             className="w-full py-2 text-xs text-mystic-500 hover:text-mystic-300 flex items-center justify-center gap-1 pt-2 border-t border-mystic-800"
           >
             <X className="w-3 h-3" />
-            {t('common:actions.close', { defaultValue: 'Close' })}
+            {t('askOracle.close', { defaultValue: 'Close the Oracle' })}
           </button>
         </div>
       </Sheet>

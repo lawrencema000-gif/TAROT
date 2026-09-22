@@ -3,9 +3,7 @@ import {
   Crown,
   Compass,
   Heart,
-  Star,
   X,
-  Infinity as InfinityIcon,
   Layers,
   Brain,
   Moon,
@@ -30,17 +28,80 @@ import { useT } from '../../i18n/useT';
 interface PaywallSheetProps {
   open: boolean;
   onClose: () => void;
+  /**
+   * The localized name of the thing the user tapped (a tab label, a spread
+   * name). When it matches one of the names in FEATURE_NAME_KEYS the sheet
+   * leads with that feature's outcome; otherwise it shows the generic copy.
+   */
   feature?: string;
 }
 
+/**
+ * Call sites open this sheet with the localized NAME of what the user tapped,
+ * so the copy is keyed by name: each entry lists the i18n keys whose value a
+ * caller may pass, resolved through the same t() the caller used, which keeps
+ * the match honest in every locale. Anything unmatched falls back to the
+ * generic heading and subheading.
+ */
+type PaywallFeatureId =
+  | 'celticCross'
+  | 'relationship'
+  | 'careerSpread'
+  | 'shadow'
+  | 'unlimitedReadings'
+  | 'horoscopeChart'
+  | 'horoscopeForecast'
+  | 'horoscopeExplore'
+  | 'humanDesign'
+  | 'bazi'
+  | 'dreams'
+  | 'partnerSynastry'
+  | 'celestialMap'
+  | 'compatFull'
+  | 'compatFriendship'
+  | 'compatWork';
+
+const FEATURE_NAME_KEYS: Record<PaywallFeatureId, readonly string[]> = {
+  celticCross: ['readings.spreads.celticCross.name'],
+  relationship: ['readings.spreads.relationship.name'],
+  careerSpread: ['readings.spreads.careerSpread.name'],
+  shadow: ['readings.spreads.shadow.name'],
+  unlimitedReadings: ['readings.paywall.unlimited'],
+  horoscopeChart: ['horoscope.tabs.chart', 'horoscope.paywallFeatures.birthChart'],
+  horoscopeForecast: ['horoscope.tabs.forecast'],
+  horoscopeExplore: ['horoscope.tabs.explore'],
+  humanDesign: ['readings.tabs.humanDesign'],
+  bazi: ['readings.tabs.bazi'],
+  dreams: ['readings.tabs.dream'],
+  partnerSynastry: ['readings.tabs.partner'],
+  celestialMap: ['celestial.title'],
+  compatFull: ['compatibility.paywallFeatures.full'],
+  compatFriendship: ['compatibility.paywallFeatures.friendship'],
+  compatWork: ['compatibility.paywallFeatures.work'],
+};
+
+function resolveFeatureId(
+  feature: string | undefined,
+  t: (key: string) => string,
+): PaywallFeatureId | null {
+  if (!feature) return null;
+  for (const [id, keys] of Object.entries(FEATURE_NAME_KEYS)) {
+    if (keys.some((key) => t(key) === feature)) return id as PaywallFeatureId;
+  }
+  return null;
+}
+
+// The one list of what Premium opens; SubscriptionSheet reads the same keys.
+// Every entry is backed by a gate in code: ads.ts checks isPremium, the
+// spreads and tabs are premium-only, and the AI features skip the Moonstone
+// debit for premium. A save limit and "guided prompts" used to be listed
+// here, but neither exists in code, so neither is promised.
 const unlocks = [
   { icon: Ban, key: 'adFree' },
   { icon: Layers, key: 'allSpreads' },
-  { icon: InfinityIcon, key: 'unlimitedSaves' },
   { icon: Heart, key: 'compatibility' },
   { icon: Users, key: 'partnerSynastry' },
   { icon: Brain, key: 'deepInterpretations' },
-  { icon: Star, key: 'guidedPrompts' },
   { icon: Moon, key: 'birthChart' },
   { icon: Sun, key: 'horoscopeFull' },
   { icon: Compass, key: 'humanDesign' },
@@ -178,6 +239,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
   const [productError, setProductError] = useState<string | null>(null);
   const [displayPlans, setDisplayPlans] = useState<DisplayPlan[]>([]);
   const [hasRealProducts, setHasRealProducts] = useState(false);
+  const featureId = resolveFeatureId(feature, (key) => t(key) as string);
 
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
@@ -228,7 +290,11 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
       }
     } catch (error) {
       console.error('[Paywall] Failed to load products:', error);
-      setProductError(t('premium.paywall.errors.loadFailed'));
+      setProductError(
+        t('premium.paywall.errors.loadFailed', {
+          defaultValue: 'Couldn’t load prices. Check your connection and try again.',
+        }),
+      );
       setDisplayPlans(buildDisplayPlans([]));
     } finally {
       setLoadingProducts(false);
@@ -252,7 +318,12 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
     // rcPackage concept. Block only when we're on native and the RC
     // offerings aren't configured.
     if (isNative() && !plan.product?.rcPackage && !hasRealProducts) {
-      toast(t('premium.paywall.toasts.productsUnavailable'), 'error');
+      toast(
+        t('premium.paywall.toasts.productsUnavailable', {
+          defaultValue: 'Purchases aren’t available in this build yet.',
+        }),
+        'error',
+      );
       console.error('[Paywall] No rcPackage available for purchase. RevenueCat offerings may not be configured.');
       return;
     }
@@ -270,7 +341,12 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         // update profiles.is_premium within ~5 seconds; we kick off a
         // background poll to confirm and (silently) keep state in sync.
         optimisticallyMarkPremium();
-        toast(t('premium.paywall.toasts.welcome'), 'success');
+        toast(
+          t('billing.premiumActivated', {
+            defaultValue: 'Premium is on. Every reading is open to you.',
+          }),
+          'success',
+        );
         onClose();
 
         if (user) {
@@ -294,7 +370,13 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         if (msg) toast(msg, 'error');
       }
     } catch {
-      toast(t('premium.paywall.toasts.purchaseFailed'), 'error');
+      toast(
+        t('premium.paywall.toasts.purchaseFailed', {
+          defaultValue:
+            'The purchase didn’t complete — check your connection and try again. If you were charged, use Restore below.',
+        }),
+        'error',
+      );
     } finally {
       setPurchasing(false);
     }
@@ -311,14 +393,30 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
         // confirmed the entitlement locally, so flip the UI immediately
         // and background-sync the DB.
         optimisticallyMarkPremium();
-        toast(t('premium.paywall.toasts.purchasesRestored'), 'success');
+        toast(
+          t('premium.paywall.toasts.purchasesRestored', {
+            defaultValue: 'Premium restored — everything is open again.',
+          }),
+          'success',
+        );
         onClose();
         pollProfileUntilPremium(60_000, 2_000).catch(() => undefined);
       } else {
-        toast(t('premium.paywall.toasts.noPurchases'), 'info');
+        toast(
+          t('premium.paywall.toasts.noPurchases', {
+            defaultValue:
+              'No Premium purchase found on this account. Make sure you’re signed in to the store account you bought with, then try again.',
+          }),
+          'info',
+        );
       }
     } catch {
-      toast(t('premium.paywall.toasts.restoreFailed'), 'error');
+      toast(
+        t('premium.paywall.toasts.restoreFailed', {
+          defaultValue: 'Couldn’t reach the store to restore your purchase. Check your connection and try again.',
+        }),
+        'error',
+      );
     } finally {
       setRestoring(false);
     }
@@ -337,6 +435,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           onClick={onClose}
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}
           className="absolute right-4 z-10 p-2.5 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
+          aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
         >
           <X className="w-5 h-5 text-mystic-400" />
         </button>
@@ -355,21 +454,30 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           </div>
 
           <h1 className="font-display text-3xl text-center text-mystic-100 mb-2">
-            {t('premium.paywall.heading')}
+            {featureId
+              ? t(`premium.paywall.byFeature.${featureId}.heading`)
+              : t('premium.paywall.heading', { defaultValue: 'Open every reading' })}
           </h1>
           <p className="text-mystic-400 text-center max-w-xs mb-8">
-            {t('premium.paywall.subheading')}
+            {featureId
+              ? t(`premium.paywall.byFeature.${featureId}.outcome`)
+              : t('premium.paywall.subheading', {
+                  defaultValue:
+                    'Every tarot spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend.',
+                })}
           </p>
 
-          {feature && (
+          {/* A matched feature is already named by the heading; the tag only
+              carries a name the map doesn't know. */}
+          {feature && !featureId && (
             <Tag tone="gold" size="md" icon={<Lock className="w-4 h-4" aria-hidden />} className="mb-6">
-              {t('premium.paywall.featureRequires', { feature })}
+              {t('premium.paywall.featureRequires', { defaultValue: '{{feature}} opens with Premium', feature })}
             </Tag>
           )}
 
           <div className="w-full max-w-sm space-y-3 mb-8">
             <p className="text-xs font-medium text-mystic-500 uppercase tracking-wider text-center mb-4">
-              {t('premium.paywall.whatYouUnlock')}
+              {t('premium.paywall.whatYouUnlock', { defaultValue: 'What opens with Premium' })}
             </p>
             <div className="grid grid-cols-2 gap-3">
               {unlocks.map((item, i) => {
@@ -402,6 +510,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                 <button
                   onClick={loadProducts}
                   className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                  aria-label={t('common:actions.retry', { defaultValue: 'Try again' }) as string}
                 >
                   <RefreshCw className="w-4 h-4 text-red-400" />
                 </button>
@@ -414,8 +523,17 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                 <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-amber-300 font-medium mb-1">{t('premium.paywall.errors.notAvailableTitle')}</p>
-                  <p className="text-xs text-amber-400/80">{t('premium.paywall.errors.notAvailableDesc')}</p>
+                  <p className="text-sm text-amber-300 font-medium mb-1">
+                    {t('premium.paywall.errors.notAvailableTitle', {
+                      defaultValue: 'Purchases aren’t available in this build yet',
+                    })}
+                  </p>
+                  <p className="text-xs text-amber-400/80">
+                    {t('premium.paywall.errors.notAvailableDesc', {
+                      defaultValue:
+                        'Everything free still works. If you already have Premium, restore it below.',
+                    })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -472,7 +590,10 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
                   </div>
                   {plan.product?.hasTrial && plan.product?.trialDays ? (
                     <p className={`mt-2 ml-8 text-xs ${selectedPlan === plan.id ? 'text-emerald-300' : 'text-emerald-400/70'}`}>
-                      ✦ {plan.product.trialDays}-day free trial — cancel anytime before charge
+                      {t('premium.paywall.trialLine', {
+                        defaultValue: '{{days}}-day free trial. Cancel before it ends and you pay nothing.',
+                        days: plan.product.trialDays,
+                      })}
                     </p>
                   ) : null}
                 </button>
@@ -481,27 +602,35 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
           </div>
 
           <div className="w-full max-w-sm space-y-3">
-            <Button
-              variant="gold"
-              fullWidth
-              size="lg"
-              onClick={handlePurchase}
-              loading={purchasing}
-              disabled={loadingProducts || !hasRealProducts}
-              className="text-base font-semibold"
-            >
-              {(() => {
-                if (!hasRealProducts && !loadingProducts) {
-                  return t('premium.paywall.cta.notAvailable');
-                }
-                const selected = displayPlans.find((p) => p.id === selectedPlan);
-                if (selectedPlan === 'lifetime') return t('premium.paywall.cta.getLifetime');
-                if (selected?.product?.hasTrial) {
-                  return t('premium.paywall.cta.startTrial', { defaultValue: 'Start 3-day free trial' });
-                }
-                return t('premium.paywall.cta.subscribeNow');
-              })()}
-            </Button>
+            {/* When nothing can be bought, the amber notice above is the
+                status; a button that cannot buy anything has no label that
+                tells the truth, so it is not rendered. */}
+            {(loadingProducts || hasRealProducts) && (
+              <Button
+                variant="gold"
+                fullWidth
+                size="lg"
+                onClick={handlePurchase}
+                loading={purchasing}
+                disabled={loadingProducts || !hasRealProducts}
+                className="text-base font-semibold"
+              >
+                {(() => {
+                  const selected = displayPlans.find((p) => p.id === selectedPlan);
+                  if (selectedPlan === 'lifetime') {
+                    return t('premium.paywall.cta.getLifetime', { defaultValue: 'Unlock Premium for life' });
+                  }
+                  if (selected?.product?.hasTrial && selected.product.trialDays) {
+                    return t('premium.paywall.cta.startTrial', {
+                      defaultValue: 'Start your {{days}}-day free trial',
+                      days: selected.product.trialDays,
+                    });
+                  }
+                  if (featureId) return t(`premium.paywall.byFeature.${featureId}.cta`);
+                  return t('premium.paywall.cta.subscribe', { defaultValue: 'Subscribe to Premium' });
+                })()}
+              </Button>
+            )}
 
             <button
               onClick={handleRestore}
@@ -513,7 +642,7 @@ export function PaywallSheet({ open, onClose, feature }: PaywallSheetProps) {
               ) : (
                 <RotateCcw className="w-4 h-4" />
               )}
-              {t('premium.paywall.restorePurchase')}
+              {t('premium.paywall.restorePurchase', { defaultValue: 'Restore a previous purchase' })}
             </button>
           </div>
         </div>

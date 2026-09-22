@@ -168,7 +168,7 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
             </Button>
             <Button variant="primary" fullWidth onClick={handleShare} disabled={!myCode}>
               <Share2 className="w-4 h-4 mr-2" />
-              {t('referral.share', { defaultValue: 'Share' })}
+              {t('referral.share', { defaultValue: 'Share my code' })}
             </Button>
           </div>
           {invitesCount !== null && invitesCount > 0 && (
@@ -201,14 +201,14 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
                 className="flex-1 font-mono tracking-widest"
               />
               <Button
-                variant="gold"
+                variant="outline"
                 onClick={handleRedeem}
                 disabled={redeeming || inviteInput.trim().length < 6}
                 className="px-5"
               >
                 {redeeming
                   ? t('referral.redeeming', { defaultValue: 'Redeeming…' })
-                  : t('referral.redeem', { defaultValue: 'Redeem' })}
+                  : t('referral.redeem', { defaultValue: 'Redeem this code' })}
               </Button>
             </div>
           </div>

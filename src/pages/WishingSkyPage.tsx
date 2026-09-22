@@ -10,6 +10,7 @@ import {
 } from '../dal/wishes';
 import { useAuth } from '../context/AuthContext';
 import { setPageMeta } from '../utils/seo';
+import { useT } from '../i18n/useT';
 
 const MAX_WISH = 280;
 
@@ -28,6 +29,7 @@ const MAX_WISH = 280;
 export function WishingSkyPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useT('app');
 
   const [sky, setSky] = useState<Wish[]>([]);
   const [echoes, setEchoes] = useState<WishEcho[]>([]);
@@ -79,15 +81,15 @@ export function WishingSkyPage() {
       text, theme, openToHelp, wisherLabel: openToHelp ? label : null,
     });
     setSaving(false);
-    if (!res.ok) { toast(res.error, 'error'); return; }
+    if (!res.ok) { toast(t(res.error), 'error'); return; }
     setSky((prev) => [res.data, ...prev]);
     setComposing(false);
     setText(''); setLabel(''); setOpenToHelp(false);
-    toast('Your star is lit.', 'success');
+    toast(t('wishingSky.starLit', { defaultValue: 'Your star is lit.' }), 'success');
   };
 
   const toggleEcho = async (wish: Wish) => {
-    if (!user) { toast('Sign in to echo a wish.', 'error'); return; }
+    if (!user) { toast(t('wishingSky.signInToEcho', { defaultValue: 'Sign in to echo a wish.' }), 'error'); return; }
     const had = myEchoes.has(wish.id);
     // Optimistic: the sky should respond instantly, and a failed echo is
     // recoverable by reloading.
@@ -99,7 +101,7 @@ export function WishingSkyPage() {
     const res = had
       ? await wishesDal.unecho(wish.id, user.id)
       : await wishesDal.echo(wish.id, user.id);
-    if (!res.ok) { toast(res.error, 'error'); load(); }
+    if (!res.ok) { toast(t(res.error), 'error'); load(); }
   };
 
   const sendOffer = async () => {
@@ -107,29 +109,31 @@ export function WishingSkyPage() {
     setSaving(true);
     const res = await wishesDal.offerHelp(selected.id, user.id, offerMessage);
     setSaving(false);
-    if (!res.ok) { toast(res.error, 'error'); return; }
+    if (!res.ok) { toast(t(res.error), 'error'); return; }
     setOffering(false); setOfferMessage('');
-    toast('Sent. They will see it privately and can reply if they want to.', 'success');
+    toast(t('wishingSky.offerSent', { defaultValue: 'Sent. They will see it privately and can reply if they want to.' }), 'success');
   };
 
   const reportWish = async (wish: Wish) => {
     if (!user) return;
     const res = await wishesDal.report(wish.id, user.id);
-    toast(res.ok ? 'Reported. Thank you — we will look at it.' : 'Could not send the report.', res.ok ? 'success' : 'error');
+    toast(
+      res.ok
+        ? t('wishingSky.reported', { defaultValue: 'Reported. Thank you — we will look at it.' })
+        : t('wishingSky.reportFailed', { defaultValue: "Couldn't send the report — try again." }),
+      res.ok ? 'success' : 'error',
+    );
   };
 
-  const themeLabel = (k: WishTheme) => WISH_THEMES.find((t) => t.key === k)?.label ?? 'Something else';
+  const themeLabel = (k: WishTheme) => WISH_THEMES.find((th) => th.key === k)?.label ?? t('wishingSky.themeOther', { defaultValue: 'Something else' });
 
   return (
     <Page spacing="md">
       <PageHeader
         onBack={() => navigate(-1)}
-        eyebrow="The Wishing Sky"
-        title="Everyone’s wishes, in one sky"
-        subtitle={<>
-          Every star here is someone’s wish. Make one and yours joins them. When you echo a wish —
-          say you want it for them too — a line is drawn between your star and theirs.
-        </>}
+        eyebrow={t('wishingSky.eyebrow', { defaultValue: 'The Wishing Sky' })}
+        title={t('wishingSky.title', { defaultValue: "Everyone's wishes, in one sky" })}
+        subtitle={t('wishingSky.subtitle', { defaultValue: "Every star here is someone's wish. Make one and yours joins them. When you echo a wish — say you want it for them too — a line is drawn between your star and theirs." })}
       />
 
       {/* The sky itself. Deliberately tall: it is the point of the page. */}
@@ -137,7 +141,7 @@ export function WishingSkyPage() {
            style={{ height: 'min(60vh, 460px)' }}>
         {loading ? (
           <div className="absolute inset-0 grid place-items-center text-sm text-mystic-500">
-            Lighting the sky…
+            {t('wishingSky.loading', { defaultValue: 'Lighting the sky…' })}
           </div>
         ) : sky.length === 0 ? (
           <div className="absolute inset-0 grid place-items-center px-8">
@@ -145,8 +149,8 @@ export function WishingSkyPage() {
               variant="inline"
               size="sm"
               icon={<Moon />}
-              title="The sky is empty tonight."
-              description="Make the first wish and light it."
+              title={t('wishingSky.emptyTitle', { defaultValue: 'The sky is empty tonight.' })}
+              description={t('wishingSky.emptyBody', { defaultValue: 'Make the first wish and light it.' })}
             />
           </div>
         ) : (
@@ -164,7 +168,7 @@ export function WishingSkyPage() {
           {user && (
             <Button variant="primary" size="sm" className="pointer-events-auto"
                     onClick={() => setComposing(true)}>
-              <MysticalStar size={14} halo={false} className="mr-1.5" /> Make a wish
+              <MysticalStar size={14} halo={false} className="mr-1.5" /> {t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}
             </Button>
           )}
         </div>
@@ -173,7 +177,7 @@ export function WishingSkyPage() {
       {!user && (
         <Card className="p-4">
           <p className="text-sm text-mystic-300">
-            Sign in to add your own star and to echo other people’s wishes.
+            {t('wishingSky.signInHint', { defaultValue: "Sign in to add your own star and to echo other people's wishes." })}
           </p>
         </Card>
       )}
@@ -181,7 +185,7 @@ export function WishingSkyPage() {
       {/* The readable sky. A canvas is invisible to a screen reader, and some
           people simply prefer a list — so the wishes exist twice, in full. */}
       <Card className="p-4 space-y-1">
-        <h2 className="heading-display-md text-mystic-100 mb-2">Recent wishes</h2>
+        <h2 className="heading-display-md text-mystic-100 mb-2">{t('wishingSky.recent', { defaultValue: 'Recent wishes' })}</h2>
         {sky.slice(0, 30).map((w) => (
           <button
             key={w.id}
@@ -192,48 +196,50 @@ export function WishingSkyPage() {
             <div className="flex items-center gap-2 mt-1 text-[11px] text-mystic-600">
               <span>{themeLabel(w.theme)}</span>
               {w.echoCount > 0 && <span>· {w.echoCount} {w.echoCount === 1 ? 'echo' : 'echoes'}</span>}
-              {w.openToHelp && <span className="text-teal">· open to help</span>}
-              {myWishIds.has(w.id) && <span className="text-gold">· yours</span>}
+              {w.openToHelp && <span className="text-teal">· {t('wishingSky.openToHelp', { defaultValue: 'open to help' })}</span>}
+              {myWishIds.has(w.id) && <span className="text-gold">· {t('wishingSky.yours', { defaultValue: 'yours' })}</span>}
             </div>
           </button>
         ))}
         {sky.length === 0 && !loading && (
-          <EmptyState variant="inline" size="sm" icon={<Moon />} title="No wishes yet." />
+          <EmptyState variant="inline" size="sm" icon={<Moon />} title={t('wishingSky.noWishes', { defaultValue: 'No wishes yet.' })} />
         )}
       </Card>
 
       {/* ── compose ── */}
-      <Sheet open={composing} onClose={() => setComposing(false)} title="Make a wish">
+      <Sheet open={composing} onClose={() => setComposing(false)} title={t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}>
         <div className="space-y-4">
           <div>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, MAX_WISH))}
               rows={4}
-              placeholder="I wish…"
+              placeholder={t('wishingSky.placeholder', { defaultValue: 'I wish…' })}
               className="w-full rounded-xl bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
             />
             <div className="flex justify-between items-start gap-2 mt-1">
               <p className="text-[11px] text-mystic-600">
-                Everyone using Arcana can read this.
+                {t('wishingSky.publicNote', { defaultValue: 'Everyone using Arcana can read this.' })}
               </p>
               <span className="text-[11px] text-mystic-600 flex-shrink-0">{text.length}/{MAX_WISH}</span>
             </div>
             {contactWarning && (
               <p className="text-[12px] text-coral mt-2 leading-relaxed">
-                That looks like {contactWarning === 'email' ? 'an email address' : 'a phone number'}.
-                Please take it out — a wish is public, and contact details on a public wish are how
-                scams find people. Turn on “open to help” below instead, and anyone kind can write to
-                you privately.
+                {t('wishingSky.contactWarning', {
+                  defaultValue: 'That looks like {{what}}. Please take it out — a wish is public, and contact details on a public wish are how scams find people. Turn on "open to help" below instead, and anyone kind can write to you privately.',
+                  what: contactWarning === 'email'
+                    ? t('wishingSky.anEmail', { defaultValue: 'an email address' })
+                    : t('wishingSky.aPhone', { defaultValue: 'a phone number' }),
+                })}
               </p>
             )}
           </div>
 
           <div>
-            <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">What is it about?</label>
+            <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">{t('wishingSky.themeLabel', { defaultValue: 'What is it about?' })}</label>
             <div className="flex flex-wrap gap-2">
-              {WISH_THEMES.map((t) => (
-                <Chip key={t.key} label={t.label} selected={theme === t.key} onSelect={() => setTheme(t.key)} />
+              {WISH_THEMES.map((th) => (
+                <Chip key={th.key} label={th.label} selected={theme === th.key} onSelect={() => setTheme(th.key)} />
               ))}
             </div>
           </div>
@@ -244,19 +250,18 @@ export function WishingSkyPage() {
                      onChange={(e) => setOpenToHelp(e.target.checked)}
                      className="mt-1 accent-gold w-4 h-4" />
               <span>
-                <span className="text-sm text-mystic-200">Let people offer to help</span>
+                <span className="text-sm text-mystic-200">{t('wishingSky.openToHelpLabel', { defaultValue: 'Let people offer to help' })}</span>
                 <span className="block text-[12px] text-mystic-500 leading-relaxed mt-0.5">
-                  Anyone can send you a private message about this wish. They never see your
-                  contact details — you read what they wrote and decide whether to reply.
+                  {t('wishingSky.openToHelpBody', { defaultValue: 'Anyone can send you a private message about this wish. They never see your contact details — you read what they wrote and decide whether to reply.' })}
                 </span>
               </span>
             </label>
             {openToHelp && (
               <Input
-                label="A name to go by (optional)"
+                label={t('wishingSky.nameLabel', { defaultValue: 'A name to go by (optional)' })}
                 value={label}
                 onChange={(e) => setLabel(e.target.value.slice(0, 40))}
-                placeholder="First name, a nickname, or nothing at all"
+                placeholder={t('wishingSky.namePlaceholder', { defaultValue: 'First name, a nickname, or nothing at all' })}
               />
             )}
           </div>
@@ -264,13 +269,13 @@ export function WishingSkyPage() {
           <Button variant="primary" fullWidth disabled={!text.trim() || !!contactWarning || saving}
                   onClick={submitWish}>
             <MysticalStar size={16} halo={false} className="mr-2" />
-            {saving ? 'Lighting…' : 'Light my star'}
+            {saving ? t('wishingSky.lighting', { defaultValue: 'Lighting…' }) : t('wishingSky.lightStar', { defaultValue: 'Light my star' })}
           </Button>
         </div>
       </Sheet>
 
       {/* ── a single wish ── */}
-      <Sheet open={!!selected && !offering} onClose={() => setSelected(null)} title="A wish">
+      <Sheet open={!!selected && !offering} onClose={() => setSelected(null)} title={t('wishingSky.wishTitle', { defaultValue: 'A wish' })}>
         {selected && (
           <div className="space-y-4">
             <p className="text-base text-mystic-100 leading-relaxed">{selected.text}</p>
@@ -285,27 +290,27 @@ export function WishingSkyPage() {
                 <Button variant={myEchoes.has(selected.id) ? 'primary' : 'outline'} size="sm"
                         onClick={() => toggleEcho(selected)}>
                   <Heart className="w-3.5 h-3.5 mr-1.5" />
-                  {myEchoes.has(selected.id) ? 'Echoed' : 'I wish this too'}
+                  {myEchoes.has(selected.id) ? t('wishingSky.echoed', { defaultValue: 'Echoed' }) : t('wishingSky.echo', { defaultValue: 'I wish this too' })}
                 </Button>
               )}
               {user && selected.openToHelp && selected.userId !== user.id && (
                 <Button variant="outline" size="sm" onClick={() => setOffering(true)}>
-                  <HandHeart className="w-3.5 h-3.5 mr-1.5" /> Offer to help
+                  <HandHeart className="w-3.5 h-3.5 mr-1.5" /> {t('wishingSky.offerHelp', { defaultValue: 'Offer to help' })}
                 </Button>
               )}
               {user && selected.userId !== user.id && (
                 <Button variant="ghost" size="sm" onClick={() => reportWish(selected)}>
-                  <Flag className="w-3.5 h-3.5 mr-1.5" /> Report
+                  <Flag className="w-3.5 h-3.5 mr-1.5" /> {t('wishingSky.report', { defaultValue: 'Report this wish' })}
                 </Button>
               )}
               {user && selected.userId === user.id && (
-                <span className="text-xs text-mystic-500 self-center">This one is yours.</span>
+                <span className="text-xs text-mystic-500 self-center">{t('wishingSky.thisIsYours', { defaultValue: 'This one is yours.' })}</span>
               )}
             </div>
 
             {myEchoes.has(selected.id) && (
               <p className="text-[12px] text-mystic-500 leading-relaxed">
-                Your star and theirs are linked in the sky now.
+                {t('wishingSky.linked', { defaultValue: 'Your star and theirs are linked in the sky now.' })}
               </p>
             )}
           </div>
@@ -313,32 +318,30 @@ export function WishingSkyPage() {
       </Sheet>
 
       {/* ── offer help ── */}
-      <Sheet open={offering} onClose={() => setOffering(false)} title="Offer to help">
+      <Sheet open={offering} onClose={() => setOffering(false)} title={t('wishingSky.offerHelp', { defaultValue: 'Offer to help' })}>
         <div className="space-y-4">
           <p className="text-sm text-mystic-400 leading-relaxed">
-            This goes only to them. They will see your message and can reply if they want to —
-            neither of you has to share anything you would rather not.
+            {t('wishingSky.offerIntro', { defaultValue: 'This goes only to them. They will see your message and can reply if they want to — neither of you has to share anything you would rather not.' })}
           </p>
           <textarea
             value={offerMessage}
             onChange={(e) => setOfferMessage(e.target.value.slice(0, 500))}
             rows={4}
-            placeholder="What you could do, and how you would like to help…"
+            placeholder={t('wishingSky.offerPlaceholder', { defaultValue: 'What you could do, and how you would like to help…' })}
             className="w-full rounded-xl bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
           />
           <Button variant="primary" fullWidth disabled={!offerMessage.trim() || saving} onClick={sendOffer}>
-            {saving ? 'Sending…' : 'Send privately'}
+            {saving ? t('wishingSky.sending', { defaultValue: 'Sending…' }) : t('wishingSky.sendPrivately', { defaultValue: 'Send privately' })}
           </Button>
           <button onClick={() => setOffering(false)}
                   className="w-full text-xs text-mystic-500 inline-flex items-center justify-center gap-1">
-            <X className="w-3 h-3" /> Never mind
+            <X className="w-3 h-3" /> {t('wishingSky.neverMind', { defaultValue: 'Never mind' })}
           </button>
         </div>
       </Sheet>
 
       <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">
-        Wishes are public and anyone can read them. Never put a phone number, an address or an email
-        in one — if you are open to help, people can reach you privately instead.
+        {t('wishingSky.footer', { defaultValue: 'Wishes are public and anyone can read them. Never put a phone number, an address or an email in one — if you are open to help, people can reach you privately instead.' })}
       </p>
     </Page>
   );

@@ -1,6 +1,6 @@
 {
   "nav": {
-    "cardMeanings": "Card Meanings",
+    "cardMeanings": "Card meanings",
     "features": "Features",
     "zodiac": "Zodiac",
     "faq": "FAQ"
@@ -10,7 +10,7 @@
     "headlineTop": "Know yourself.",
     "headlineBottom": "One ritual a day.",
     "sub": "Daily tarot readings, personalized horoscopes, reflective journaling, and personality quizzes — all in one beautifully crafted app.",
-    "cta": "Get Started Free",
+    "cta": "Create my free account",
     "note": "Free to start · No credit card required"
   },
   "features": {
@@ -19,19 +19,19 @@
     "sub": "Everything you need for your daily practice, designed to help you grow one day at a time.",
     "items": {
       "tarot": {
-        "title": "Tarot Readings",
+        "title": "Tarot readings",
         "desc": "Full 78-card deck with 6 spread types. Celtic Cross, Relationship, Career, Shadow Work — choose your focus and pull your cards."
       },
       "horoscope": {
-        "title": "Daily Horoscope",
+        "title": "Daily horoscope",
         "desc": "Personalized forecasts with energy scores, love and career insights, planetary transits, and daily affirmations."
       },
       "journal": {
-        "title": "Reflective Journal",
+        "title": "Reflective journal",
         "desc": "Track mood with 10 emoji moods, tag entries, and link readings to journal entries over time."
       },
       "quizzes": {
-        "title": "Personality Quizzes",
+        "title": "Personality quizzes",
         "desc": "MBTI, Enneagram, Big Five, Love Language, Attachment Style — six assessments that shape your experience."
       },
       "streaks": {
@@ -39,39 +39,39 @@
         "desc": "Earn XP, level up through Seeker Ranks, and unlock achievements as you build your daily habit."
       },
       "birthChart": {
-        "title": "Birth Chart",
+        "title": "Birth chart",
         "desc": "Complete natal chart with planetary placements, aspects, and personalized interpretations."
       }
     }
   },
   "deck": {
-    "tag": "The Deck",
+    "tag": "The deck",
     "heading": "78 beautifully illustrated cards",
     "sub": "Every card in the traditional tarot, with detailed interpretations for upright and reversed positions."
   },
   "zodiac": {
-    "tag": "The Zodiac",
+    "tag": "The zodiac",
     "heading": "Written in the stars",
     "sub": "Personalized horoscopes for all 12 signs, updated daily with cosmic precision.",
-    "theZodiac": "The Zodiac",
+    "theZodiac": "The zodiac",
     "hoverToExplore": "Hover to explore"
   },
   "ritual": {
-    "tag": "Your Daily Ritual",
+    "tag": "Your daily ritual",
     "heading": "Three steps. Every day.",
     "sub": "Complete all three to maintain your streak and level up through Seeker Ranks.",
     "steps": {
       "horoscope": {
-        "title": "Read Your Horoscope",
+        "title": "Read your horoscope",
         "desc": "Start with your personalized daily forecast. See your energy score and what the cosmos has in store."
       },
       "card": {
-        "title": "Pull Your Card",
+        "title": "Pull your card",
         "desc": "Draw a tarot card for daily guidance. Reflect on its meaning and how it connects to your current chapter."
       },
       "journal": {
-        "title": "Write a Reflection",
-        "desc": "Journal your thoughts using a guided prompt or free-write. Link your entry to today's reading."
+        "title": "Write a reflection",
+        "desc": "Journal your thoughts using a guided prompt or free-write. Link your entry to today’s reading."
       }
     }
   },
@@ -81,7 +81,7 @@
     "items": {
       "free": {
         "q": "Is Arcana free to use?",
-        "a": "Yes! Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads."
+        "a": "Yes. Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads."
       },
       "accuracy": {
         "q": "How accurate are the tarot readings?",
@@ -97,18 +97,18 @@
       },
       "premium": {
         "q": "Is there a premium version?",
-        "a": "Yes! Arcana is completely free to use. When you're ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding."
+        "a": "Yes. Arcana is completely free to use. When you’re ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding."
       },
       "web": {
         "q": "Does it work on the web?",
-        "a": "Yes! Use Arcana right here on the web, or download the Android app for offline support and push notifications."
+        "a": "Yes. Use Arcana right here on the web, or download the Android app for offline support and push notifications."
       }
     }
   },
   "finalCta": {
     "heading": "Begin your journey",
     "sub": "Start your first daily ritual today.",
-    "cta": "Get Started Free"
+    "cta": "Start for free"
   },
   "footer": {
     "privacyPolicy": "Privacy Policy",
@@ -117,7 +117,15 @@
     "googlePlay": "Google Play",
     "disclaimer": "For entertainment and self-reflection purposes only.",
     "copyright": "© 2026 Arcana. All rights reserved.",
-    "shop": "Shop"
+    "shop": "Shop",
+    "links": {
+      "cardMeanings": "Tarot card meanings",
+      "spreads": "Tarot spreads",
+      "spreadBuilder": "Custom spread builder",
+      "privacy": "Privacy policy",
+      "contact": "Contact and support",
+      "googlePlay": "Get it on Google Play"
+    }
   },
   "meta": {
     "title": "Daily Tarot Readings, Horoscope & Astrology Journal",
@@ -126,7 +134,7 @@
   "demo": {
     "title": "Try a free reading",
     "sub": "Ask a question, then draw a card. No signup.",
-    "drawBtn": "Draw Your Card",
+    "drawBtn": "Draw your card",
     "pickCalling": "Pick the card that calls to you.",
     "reversed": "Reversed",
     "upright": "Upright",
@@ -137,22 +145,22 @@
     "stats": [
       {
         "n": 78,
-        "l": "Tarot Cards",
+        "l": "Tarot cards",
         "s": "Full traditional deck"
       },
       {
         "n": 6,
-        "l": "Spread Types",
+        "l": "Spread types",
         "s": "Daily to Celtic Cross"
       },
       {
         "n": 5,
-        "l": "Personality Tests",
+        "l": "Personality tests",
         "s": "MBTI, Enneagram & more"
       },
       {
         "n": 12,
-        "l": "Zodiac Signs",
+        "l": "Zodiac signs",
         "s": "Updated daily"
       }
     ]
@@ -162,18 +170,27 @@
     "title": "Learn tarot in 3 emails",
     "subtitle": "A free email series covering keywords, suit correspondences, and numerology basics — the foundation every reader needs.",
     "lessons": {
-      "1": { "title": "Lesson 1", "topic": "The 78 Cards in 5 Keywords" },
-      "2": { "title": "Lesson 2", "topic": "Suit Correspondences (Wands, Cups, Swords, Pentacles)" },
-      "3": { "title": "Lesson 3", "topic": "Numerology Basics for Card Combinations" }
+      "1": {
+        "title": "Lesson 1",
+        "topic": "The 78 cards in 5 keywords"
+      },
+      "2": {
+        "title": "Lesson 2",
+        "topic": "Suit correspondences (Wands, Cups, Swords, Pentacles)"
+      },
+      "3": {
+        "title": "Lesson 3",
+        "topic": "Numerology basics for card combinations"
+      }
     },
     "emailPlaceholder": "your@email.com",
     "cta": "Send me Lesson 1",
     "sending": "Sending…",
-    "success": "You're in. Check your inbox.",
+    "success": "You’re in. Check your inbox.",
     "disclaimer": "No spam. Unsubscribe with one click. 3 emails over 5 days.",
     "errors": {
       "invalidEmail": "Please enter a valid email.",
-      "signupFailed": "Couldn't sign you up — please try again in a moment."
+      "signupFailed": "Couldn’t sign you up — please try again in a moment."
     }
   }
 }

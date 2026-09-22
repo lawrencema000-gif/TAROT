@@ -10,7 +10,7 @@
     "level": "레벨 {{n}}",
     "xpProgress": "XP 진행도",
     "todaysRitual": "오늘의 의식",
-    "ritualComplete": "의식 완료!",
+    "ritualComplete": "의식 완료",
     "streak": "{{n}}일 연속이에요. 이대로 계속 가요.",
     "savedToday": "오늘 저장한 것",
     "savedHighlights": "저장한 하이라이트",
@@ -18,7 +18,6 @@
     "eveningRitual": "저녁 의식",
     "savedToHighlights": "하이라이트에 저장했어요",
     "copiedToClipboard": "클립보드에 복사되었어요",
-    "seeker": "탐구자",
     "dayStreakLabel": "일 연속",
     "xpValue": "{{current}} / {{required}} XP",
     "ritualReady": {
@@ -45,7 +44,7 @@
       "share": "공유",
       "meaning": "의미"
     },
-    "xpEarned": "+{{xp}} XP 획득!",
+    "xpEarned": "+{{xp}} XP를 얻었어요.",
     "removedFromSaved": "저장에서 지웠어요",
     "quickReading": "3초 리딩",
     "quickReadingSub": "아무 질문이나 해보세요",
@@ -56,22 +55,24 @@
     "soulmateTitle": "소울메이트 스코어",
     "soulmateSub": "누구와도 차트를 비교 — 100점 만점 스코어.",
     "loveTreeSub": "90초, 12문항 → 당신의 애착 스타일이 살아있는 나무로 나타납니다.",
-    "loveTreeTitle": "사랑의 나무"
+    "loveTreeTitle": "사랑의 나무",
+    "exploreMore": "오늘의 의식, 그 너머",
+    "seeAllSaved": "저장한 것 모두 보기"
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
     "signInSub": "여정을 이어서 시작해 보세요",
     "newToArcana": "Arcana가 처음이신가요?",
     "verifyEmail": "이메일 인증",
-    "checkEmail": "메일함을 확인하세요",
-    "verificationSent": "인증 메일을 보냈어요!",
+    "checkEmail": "메일함을 확인해 주세요",
+    "verificationSent": "인증 메일을 보냈어요.",
     "resendVerification": "인증 메일 다시 보내기",
-    "resendFailed": "인증 메일 재전송에 실패했어요.",
+    "resendFailed": "인증 메일을 보내지 못했어요 — 잠시 후 다시 시도해 주세요.",
     "resetPassword": "비밀번호 재설정",
     "enterEmailForReset": "재설정 링크를 받을 이메일을 입력하세요",
     "enterEmail": "이메일을 입력해 주세요.",
     "resetSent": "재설정 링크를 보냈어요. 메일함을 확인하세요.",
-    "resetFailed": "재설정 메일 전송에 실패했어요. 다시 시도해 주세요.",
+    "resetFailed": "재설정 링크를 보내지 못했어요 — 주소를 확인하고 다시 시도해 주세요.",
     "sendResetLink": "재설정 링크 보내기",
     "forgotPassword": "비밀번호를 잊으셨나요?",
     "backToSignIn": "로그인으로 돌아가기",
@@ -81,7 +82,7 @@
     "enterNewPassword": "Arcana 계정의 새 비밀번호를 설정하세요.",
     "passwordTooShort": "비밀번호는 8자 이상이어야 합니다.",
     "passwordsMustMatch": "비밀번호가 일치하지 않습니다.",
-    "passwordRequirementHint": "8자 이상. 다른 곳과 다른 비밀번호를 권장합니다.",
+    "passwordRequirementHint": "8자 이상. 다른 곳에서 쓰지 않는 비밀번호를 사용하세요.",
     "resetSuccess": "비밀번호가 변경되었습니다.",
     "resetSuccessHint": "앱으로 돌아가는 중…",
     "resetSuccessRecoveryHint": "로그아웃합니다. 새 비밀번호로 다시 로그인해 주세요.",
@@ -95,7 +96,10 @@
     "resetDidntReceive": "메일을 받지 못하셨나요? 스팸함을 확인하거나 다시 시도해 주세요.",
     "tryAgain": "다시 시도",
     "orDivider": "또는",
-    "termsNotice": "계속 진행하면 서비스 약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다."
+    "termsNotice": "계속 진행하면 서비스 약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다.",
+    "bootstrap": {
+      "signInAgain": "다시 로그인"
+    }
   },
   "cardMeaning": {
     "yesNo": {
@@ -111,14 +115,25 @@
         "maybe": "{{name}}은(는) 맥락 의존적입니다. 답은 주변 카드와 구체적 상황에 달려 있습니다."
       },
       "explanationKeywords": {
-        "yes": "이 카드의 {{keywords}} 에너지는 긍정적인 결과로 기울어집니다.",
-        "no": "이 카드의 {{keywords}} 에너지는 도전이나 지연을 시사합니다."
+        "yes": "이 카드의 {{keywords}} 에너지는 긍정적인 결과 쪽으로 기울어요.",
+        "no": "이 카드의 {{keywords}} 에너지는 어려움이나 지연을 시사해요."
       }
-    }
+    },
+    "astrology": "점성술 대응",
+    "element": "원소",
+    "planet": "행성",
+    "zodiac": "별자리",
+    "decan": "데칸",
+    "hebrewLetter": "히브리 문자",
+    "numerology": "수비학",
+    "reinforcingCards": "강화하는 카드",
+    "reinforcingIntro": "{{name}}이(가) 이 카드들과 함께 나오면 리딩의 에너지가 강해져요 — {{reason}}",
+    "opposingCards": "대립하는 카드",
+    "opposingIntro": "이 카드들은 {{name}}와(과) 긴장을 만들어요 — {{reason}}",
+    "faq": "자주 묻는 질문"
   },
   "readings": {
     "title": "리딩",
-    "subtitle": "오늘의 스프레드를 골라보세요",
     "tabs": {
       "tarot": "타로",
       "horoscope": "별자리",
@@ -132,12 +147,13 @@
       "partner": "궁합",
       "fengshui": "풍수",
       "runes": "룬",
-      "dice": "주사위"
+      "dice": "주사위",
+      "celestial": "천체 지도"
     },
     "dailyRemaining": "오늘 무료 리딩 {{used}} / {{limit}}",
     "upgradeForUnlimited": "무제한 이용으로 업그레이드",
     "limitReached": "오늘 한도에 도달했어요",
-    "limitReachedMsg": "오늘 무료 리딩을 모두 사용했어요. 업그레이드하거나 내일 다시 돌아오세요.",
+    "limitReachedMsg": "오늘의 무료 리딩을 모두 사용했어요. 무제한으로 업그레이드하거나 내일 다시 오세요.",
     "resetsAt": "{{hours}}시간 {{minutes}}분 후 초기화",
     "categories": {
       "daily": "데일리",
@@ -148,7 +164,7 @@
       "celtic": "켈틱 크로스"
     },
     "focusArea": "포커스",
-    "focusPrompt": "무엇이 마음에 있나요?",
+    "focusPrompt": "지금 마음에 있는 것은 무엇인가요?",
     "draw": "카드 뽑기",
     "drawAgain": "다시 뽑기",
     "saveReading": "리딩 저장",
@@ -204,11 +220,10 @@
       }
     },
     "dailyDraw": {
-      "title": "데일리 드로우",
-      "subtitle": "탭하여 리딩 시작"
+      "title": "데일리 드로우"
     },
     "browse": {
-      "title": "덱 보기",
+      "title": "덱 둘러보기",
       "allCards": "전체 78장",
       "learnMeanings": "카드 의미 배우기",
       "filters": {
@@ -222,12 +237,12 @@
     },
     "spreadsSection": "스프레드",
     "focusView": {
-      "title": "무엇에 집중하시겠어요?",
+      "title": "무엇에 집중할까요?",
       "subtitle": "리딩을 안내할 영역을 선택하세요",
-      "continue": "계속"
+      "continue": "이 주제로 덱 섞기"
     },
     "shuffleView": {
-      "inProgress": "덱을 섞는 중...",
+      "inProgress": "덱을 섞는 중…",
       "clearMind": "마음을 비우세요",
       "spreading": "78장을 펼치는 중",
       "focusQuestion": "질문에 집중하세요",
@@ -236,16 +251,17 @@
     "selectView": {
       "chooseMore_one": "{{count}}장 더 선택하세요",
       "chooseMore_other": "{{count}}장 더 선택하세요",
-      "readyReveal": "공개 준비 완료!",
+      "readyReveal": "공개할 준비가 됐어요.",
       "trustIntuition": "직관을 믿으세요 • 전체 78장",
       "selectMore": "{{count}}장 더 선택",
-      "revealCards": "카드 공개"
+      "revealCards": "카드 공개",
+      "chooseMore": "{{count}}장 더 고르기"
     },
     "revealView": {
       "focusReading": "{{focus}} 리딩",
       "tapToReveal": "탭하여 공개",
       "revealAll": "전체 공개",
-      "generating": "생성 중...",
+      "generating": "생성 중…",
       "getAIInsight": "AI 인사이트 받기",
       "premiumAI": "프리미엄 AI",
       "aiInterpretation": "AI 해석",
@@ -259,23 +275,25 @@
       "reversed": "역방향",
       "upright": "정방향",
       "reversalNote": "역방향 노트: {{text}}",
-      "save": "저장",
+      "save": "이 리딩 저장",
       "saved": "저장됨",
-      "newReading": "새 리딩",
-      "cardsSpoken": "\"카드가 말했습니다. 이 안내에 따라 오늘 당신이 취할 수 있는 작은 행동은 무엇인가요?\""
+      "newReading": "새 리딩 시작",
+      "share": "이 리딩 공유"
     },
     "status": {
-      "try": "시도",
+      "try": "광고 보기",
       "unlocked": "잠금 해제"
     },
-    "back": "← 뒤로",
+    "back": "뒤로",
     "toasts": {
       "cardsNotFound": "선택한 카드 중 일부를 찾을 수 없습니다. 다시 섞어서 시도하세요.",
-      "saveFailed": "리딩 저장에 실패했습니다",
+      "saveFailed": "이 리딩을 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "readingSaved": "리딩이 저장되었습니다",
       "aiReady": "AI 해석 준비 완료",
       "interpretationReady": "해석 준비 완료",
-      "aiFailed": "해석 생성에 실패했습니다"
+      "aiFailed": "해석을 생성하지 못했어요 — 잠시 후 다시 시도해 주세요.",
+      "aiInsufficient": "AI 해석에 필요한 문스톤이 부족해요 — 홈 위젯에서 충전하거나 데일리 체크인으로 더 모으세요.",
+      "aiLimit": "오늘의 AI 해석 한도에 도달했어요. 내일 다시 오세요."
     },
     "positions": {
       "yourCard": "당신의 카드",
@@ -337,11 +355,13 @@
         "희망과 두려움",
         "최종 결과"
       ]
-    }
+    },
+    "shareText": "Arcana에서 본 나의 {{spread}} 타로 리딩",
+    "share": "리딩 공유",
+    "cardBackAlt": "카드 뒷면"
   },
   "journal": {
     "title": "저널",
-    "subtitle": "돌아보고, 기억하고, 성장하세요.",
     "newEntry": "새 글",
     "entryPlaceholder": "오늘 마음에 무엇이 있나요?",
     "titlePlaceholder": "제목 (선택)",
@@ -351,7 +371,7 @@
     "addPrompt": "프롬프트 추가",
     "linkToReading": "리딩과 연결",
     "linkToCard": "카드와 연결",
-    "saveEntry": "저장",
+    "saveEntry": "이 기록 저장",
     "saved": "저장되었어요.",
     "deleted": "삭제되었어요.",
     "noEntries": "아직 기록이 없어요",
@@ -391,7 +411,7 @@
     "emptyState": "아직 저널이 없어요.",
     "emptyStateSub": "오늘부터 성찰의 여정을 시작해 보세요.",
     "loadMore": "더 불러오기",
-    "loadingMore": "불러오는 중...",
+    "loadingMore": "불러오는 중…",
     "totalEntries": "전체 기록",
     "dayStreak": "연속 일수",
     "moodTrend": "기분 추이 (7일)",
@@ -419,14 +439,18 @@
       "upgradeToLock": "기록을 잠그려면 프리미엄으로 업그레이드하세요",
       "savedLocked": "기록이 저장되고 잠겼어요",
       "saved": "기록이 저장됐어요",
-      "xpEarned": "+{{n}} XP 획득!",
+      "xpEarned": "+{{n}} XP를 얻었어요.",
       "deleteConfirm": "이 저널 기록을 삭제할까요?",
       "deleted": "기록이 삭제됐어요"
+    },
+    "linkReading": "리딩 연결하기",
+    "startWriting": "첫 기록 쓰기",
+    "editor": {
+      "cancel": "취소"
     }
   },
   "quizzes": {
     "title": "퀴즈",
-    "subtitle": "내면의 지도를 찾아보세요",
     "questions": "문항",
     "takes": "소요시간",
     "minutes": "분",
@@ -639,7 +663,7 @@
               "1": "의심한다 — 아직 배우는 중이다.",
               "2": "행동으로 도전한다.",
               "3": "주변을 이끈다.",
-              "4": "내가 기준이 된다."
+              "4": "그 자체가 됐다 — 내가 기준을 세운다."
             }
           },
           "cr2": {
@@ -654,7 +678,7 @@
           "cr3": {
             "text": "변화와의 관계는…",
             "options": {
-              "1": "설레고 호기심이 넘친다.",
+              "1": "설렌다 — 호기심에 눈이 반짝인다.",
               "2": "내가 먼저 쫓아간다.",
               "3": "적응하며 주변을 돌본다.",
               "4": "배를 안정시켜 아무것도 깨지지 않게 한다."
@@ -690,7 +714,7 @@
         }
       },
       "shadowArchetype": {
-        "title": "그림자 원형 진단",
+        "title": "그림자 원형",
         "description": "지금 내면에서 어떤 원형이 방을 지휘하고 있을까요? 연인·전사·마법사·왕권·현자·순수자·탐험가 — 일곱 개의 깊은 패턴 중 하나에 연결하고, 건강할 때의 선물, 상처 입었을 때의 그림자, 그리고 통합의 길을 돌려드립니다.",
         "timeEstimate": "6분",
         "whatYouGet": [
@@ -719,7 +743,7 @@
             "text": "스스로를 지키지 못하는 사람들을 위해 앞에 나선다."
           },
           "mag1": {
-            "text": "표면 아래의 숨은 지식에 끌린다."
+            "text": "숨은 지식 — 사물의 밑면 — 에 끌린다."
           },
           "mag2": {
             "text": "다른 사람들이 놓치는 패턴과 연결을 자주 본다."
@@ -731,13 +755,13 @@
             "text": "사람들은 자연스레 나에게서 방향을 구한다."
           },
           "sov2": {
-            "text": "내가 속한 장과 체계의 안녕에 책임감을 느낀다."
+            "text": "내가 속한 체계의 안녕에 책임감을 느낀다."
           },
           "sov3": {
             "text": "내가 무엇의 기준이 되는지에 대해 또렷한 감각이 있다."
           },
           "sag1": {
-            "text": "주인공이기보다 가르치는 사람·지켜보는 사람으로 있는 쪽이 편하다."
+            "text": "주인공보다 가르치는 사람이나 지켜보는 사람으로 있을 때 더 행복하다."
           },
           "sag2": {
             "text": "생각을 제대로 정리하려면 긴 홀로의 시간이 필요하다."
@@ -758,7 +782,7 @@
             "text": "루틴은 천천히 숨이 막히는 감각처럼 느껴진다."
           },
           "exp2": {
-            "text": "삶을 새로 짠 적이 한 번으로 끝나지 않는다."
+            "text": "삶을 새로 짠 적이 한 번 이상 있다."
           },
           "exp3": {
             "text": "낯선 곳에 있는 감각이 내가 가장 좋아하는 감각 중 하나다."
@@ -767,7 +791,7 @@
       },
       "elementAffinity": {
         "title": "원소 친화성",
-        "description": "네 개의 고전 원소 — 불·물·공기·흙 — 중 지금 당신이 실제로 살아가는 방식에 가장 울리는 것은 무엇인지, 10문항으로 빠르게 알아봅니다. 별자리 차트의 원소와 맞춰 \"차트는 X인데 행동은 Y\"라는 대비도 볼 수 있습니다.",
+        "description": "네 가지 고전 원소 — 불, 물, 공기, 흙 — 중 당신이 실제로 살아가는 방식에 가장 가까운 것은 무엇인지 10문항으로 빠르게 알아봐요. 별자리 차트의 원소와 맞춰 보면 「차트는 X, 행동은 Y」라는 비교도 할 수 있어요.",
         "timeEstimate": "2분",
         "whatYouGet": [
           "행동의 원소(불/물/공기/흙)",
@@ -893,7 +917,7 @@
       "blindSpots": "사각지대",
       "underStress": "스트레스 상황에서",
       "inRelationships": "관계에서",
-      "atWork": "업무에서",
+      "atWork": "일에서",
       "growthQuests": "성장 퀘스트",
       "stressSignature": "스트레스 징후",
       "recoveryPath": "회복 경로",
@@ -903,7 +927,7 @@
       "higherThanAverage": "평균보다 높음",
       "lowerThanAverage": "평균보다 낮음",
       "averageRange": "평균 범위",
-      "compatibleTypes": "궁합이 좋은 유형",
+      "compatibleTypes": "잘 맞는 유형",
       "enneagramType": "유형 {{n}}",
       "whenDrawn": "이 카드가 나올 때",
       "shadow": "그림자",
@@ -911,7 +935,38 @@
       "gift": "선물",
       "integration": "통합",
       "tarotPairing": "타로 페어링",
-      "whenDominant": "이 원소가 주도할 때"
+      "whenDominant": "이 원소가 주도할 때",
+      "commonTriggers": "흔한 트리거",
+      "coreDesire": "핵심 욕구",
+      "coreFear": "핵심 두려움",
+      "coreMotivation": "핵심 동기",
+      "corePattern": "핵심 패턴",
+      "discomfortWithClosenessAndDependence": "친밀함과 의존에 대한 불편함",
+      "fearOfAbandonmentAndNeedForReassurance": "버림받음에 대한 두려움과 확인받고 싶은 마음",
+      "growthDirection": "성장 방향",
+      "growthLever": "성장의 지렛대",
+      "growthPractices": "성장 연습",
+      "growthTips": "성장 팁",
+      "healingPractices": "치유 연습",
+      "howToAskForIt": "이렇게 요청해 보세요",
+      "journalPrompt": "저널 프롬프트",
+      "journalPrompts": "저널 프롬프트",
+      "miniRitual": "미니 의식",
+      "pathToSecure": "안정 애착으로 가는 길",
+      "reflection": "성찰",
+      "stressDirection": "스트레스 방향",
+      "suggestionForYou": "당신을 위한 제안",
+      "tarotArchetype": "타로 원형",
+      "tarotEnergy": "타로 에너지",
+      "tryThisWeek": "이번 주에 해볼 것",
+      "whatYouNeed": "당신에게 필요한 것",
+      "whatToAvoid": "피할 것",
+      "whatToDoToday": "오늘 할 일",
+      "whenThisLanguageGoesUnmet": "이 언어가 채워지지 않을 때",
+      "whenThisLanguageIsWellFed": "이 언어가 충분히 채워질 때",
+      "yourDimensions": "당신의 차원",
+      "yourScores": "당신의 점수",
+      "yourTraitScores": "당신의 특성 점수"
     },
     "takeAnother": "다른 퀴즈 풀기",
     "courtCards": {
@@ -1167,7 +1222,7 @@
           "물질 불안",
           "돌봄 속 자기 상실"
         ],
-        "whenDrawn": "모두의 정원을 돌보고 있어요 — 내 정원에도 씨를 뿌리는 걸 잊지 마요.",
+        "whenDrawn": "모두의 정원을 돌보고 있어요 — 내 정원에도 씨를 뿌리는 걸 잊지 마세요.",
         "affirmation": "두려움이 아니라 충만함에서 베푼다."
       },
       "king-of-pentacles": {
@@ -1190,24 +1245,24 @@
     },
     "sneakPeek": {
       "label": "중간 읽기:",
-      "mbti": "지금까지 {{letters}} 쪽으로 기울고 있어요 — 계속해 확정해 보세요.",
+      "mbti": "지금까지는 {{letters}} 쪽으로 기울고 있어요 — 계속 진행해 확인해 보세요.",
       "courtMatchElement": {
         "wands": "완드 카드가 떠오르고 있어요 — 불의 에너지가 앞섭니다.",
         "cups": "컵 카드가 일어나고 있어요 — 물이 중심이 됩니다.",
         "swords": "소드 카드가 형태를 잡고 있어요 — 공기가 중심이 됩니다.",
         "pentacles": "펜타클 카드가 쌓이고 있어요 — 흙이 중심이 됩니다."
       },
-      "loveLanguage": "당신의 일차 러브 랭귀지가 드러나기 시작했어요…",
+      "loveLanguage": "당신의 주된 사랑의 언어가 드러나기 시작했어요…",
       "enneagram": "유형의 윤곽이 잡히고 있어요 — 윙을 위해 계속해 보세요.",
-      "attachment": "애착 스타일의 초점이 잡히고 있어요…",
-      "bigFive": "특성 프로파일의 모양이 드러나고 있어요…",
-      "shadowArchetype": "원형의 패턴이 형태를 잡고 있어요……",
-      "elementAffinity": "원소의 흐름이 드러나고 있어요……"
+      "attachment": "애착 유형의 초점이 잡히고 있어요…",
+      "bigFive": "특성 프로필이 모양을 갖추고 있어요…",
+      "shadowArchetype": "원형의 패턴이 형태를 잡고 있어요…",
+      "elementAffinity": "원소의 흐름이 드러나고 있어요…"
     },
     "share": {
-      "button": "공유",
+      "button": "내 결과 공유",
       "downloaded": "기기에 저장했어요",
-      "failed": "공유 이미지를 만들 수 없었어요"
+      "failed": "공유 이미지를 만들지 못했어요 — 잠시 후 다시 시도해 주세요."
     },
     "backToQuizzes": "퀴즈 목록으로",
     "shadowArchetypes": {
@@ -1232,7 +1287,7 @@
       "magician": {
         "name": "마법사",
         "tagline": "표면 아래를 보는 사람.",
-        "gift": "숨은 패턴을 읽습니다. 자신, 방, 관계, 문제 — 남이 보지 못하는 것을 봄으로써 변화를 일으킵니다. 앎이 당신의 무기이자 선물입니다.",
+        "gift": "당신은 숨은 패턴을 읽어요. 남들이 보지 못하는 것을 봄으로써 — 자신을, 공간을, 관계를, 문제를 — 바꿔요. 앎이 당신의 무기이자 선물이에요.",
         "shadow": "상처 입은 마법사는 조종합니다. 통찰을 지배에 쓰고, 진실을 권력처럼 붙들며, 살지 않고 관찰만 합니다. 혹은 \"아는 것\"과 \"이해하는 것\"을 혼동하는 사기꾼이 됩니다.",
         "integration": "통찰을 타인을 위한 구체적인 쓰임으로 번역합니다. 가르치세요. 변화시키는 사람이 아니라, 변화받는 사람도 되어 보세요.",
         "affirmation": "시선을 지배가 아니라 밝힘에 쓴다.",
@@ -1251,7 +1306,7 @@
         "name": "현자",
         "tagline": "가장자리에서 또렷이 보는 사람.",
         "gift": "혼란 속에서 차분합니다. 누구도 던지지 않는 질문을 합니다. 공 없이 진실을 말하는 인내와 장기적 지혜를 가져옵니다.",
-        "shadow": "상처 입은 현자는 냉소가가 됩니다 — 알지만 거리를 두고, 움직이지 않으며, 느끼지 않음. 혹은 산에서 내려오지 않는 상아탑의 은둔자가 됩니다.",
+        "shadow": "상처 입은 현자는 냉소가가 돼요 — 알지만 거리를 두고, 행동하지도 느끼지도 않으려 해요. 혹은 산에서 내려오지 않는 상아탑의 은둔자가 되기도 해요.",
         "integration": "안에만 머무는 지혜는 쓰디쓴 것이 됩니다. 가르치세요. 다가가세요. 틀릴 위험을 감수하세요.",
         "affirmation": "산에서 내려와, 사랑하는 사람들 사이를 걷는다.",
         "tarotPairing": "은둔자 / 교황"
@@ -1261,7 +1316,7 @@
         "tagline": "신뢰를 지키는 사람.",
         "gift": "희망을 지킵니다. 남이 부패를 볼 때 당신은 선을 봅니다. 신뢰, 낙관, 단순함이 주변에 주는 선물이 됩니다.",
         "shadow": "상처 입은 순수자는 그림자 자체를 보지 않으려 합니다 — 해악에 순진하고, 환상에 갇히며, \"괜찮을 거야\"가 실제 행동을 막습니다.",
-        "integration": "믿음을 유지하되 눈을 단련하세요. 희망적이면서도 또렷할 수 있습니다. \"둘 다\"의 태도로.",
+        "integration": "믿음은 지키되 보는 눈을 길러요. 희망적이면서도 또렷할 수 있어요. 둘 중 하나가 아니라, 둘 다.",
         "affirmation": "눈을 뜨고서도 희망을 지킨다.",
         "tarotPairing": "바보 / 별"
       },
@@ -1270,7 +1325,7 @@
         "tagline": "계속 움직이는 사람.",
         "gift": "경계를 찾습니다. 새로운 지형에서 생기를 되찾는다는 것을 알고 있으며, 지금 삶이 유일한 삶이 아님을 보여줍니다. 자유가 당신의 약입니다.",
         "shadow": "상처 입은 탐험가는 도망칩니다 — 친밀함에서, 끝까지 해내는 것에서, 사실은 성장시켜 줄 평범한 삶에서. 무엇이 진짜가 되기 직전에 늘 떠납니다.",
-        "integration": "머무릅니다. 한 곳에서 깊이 들어가 보세요. 아직 가보지 않은 새 지형은, 지리가 아니라 친밀함일 수도 있습니다.",
+        "integration": "머물러요. 한 곳에서 깊이 들어가요. 아직 탐험하지 않은 새 영역은 지리가 아니라 친밀함일지도 몰라요.",
         "affirmation": "바깥과 안, 둘 다 여행한다 — 가장 깊은 탐험은 머물 때 일어난다.",
         "tarotPairing": "바보 / 완드 기사"
       }
@@ -1317,7 +1372,7 @@
       "air": {
         "name": "공기",
         "tagline": "사유, 언어, 투명함.",
-        "description": "공기는 마음으로 산다. 아이디어를 잇고, 남들이 이름 붙이지 못하는 것에 이름을 붙이며, 이해로 움직인다. 대화, 책, 언어, 호흡 — 이것이 당신의 약이며 매체다.",
+        "description": "공기는 마음으로 살아요. 아이디어를 잇고, 남들이 이름 붙이지 못하는 것에 이름을 붙이고, 이해로 움직여요. 대화, 책, 언어, 호흡 — 이것이 당신의 약이자 매체예요.",
         "strengths": [
           "명료함",
           "호기심",
@@ -1353,17 +1408,17 @@
         "affirmation": "먼 길을 위해 짓고, 계절의 순환을 허락한다."
       },
       "chartVsBehaviour": "차트 vs. 행동",
-      "matchNote": "당신의 행동 원소가 별자리 차트와 일치합니다 — 본래의 에너지와 나란히 살고 있어요.",
-      "differNote": "차트는 {{natal}}라고 말하지만 행동은 {{behaviour}}라고 말해요 — 당신이 어디서 늘어지고 있는지 살펴볼 가치가 있어요."
-    }
+      "matchNote": "당신의 행동 원소가 별자리 차트와 일치해요 — 타고난 에너지와 나란히 살고 있어요.",
+      "differNote": "차트는 {{natal}}이라고 하지만 행동은 {{behaviour}}이라고 해요 — 어디서 자신을 늘리고 있는지 살펴볼 만해요."
+    },
+    "askOracleCta": "이 결과 읽어 주기",
+    "loading": "불러오는 중…",
+    "saveToProfile": "내 프로필에 저장",
+    "compareLocked": "친구와 비교하기"
   },
   "horoscope": {
     "title": "별자리 운세",
-    "subtitle": "오늘 우주가 전하는 예보",
     "today": "오늘",
-    "week": "이번 주",
-    "month": "이번 달",
-    "year": "올해",
     "energyScore": "에너지 점수",
     "sections": {
       "overview": "전체",
@@ -1377,9 +1432,6 @@
     "birthChart": "출생 차트",
     "compatibility": "궁합",
     "transits": "트랜짓",
-    "yourPersonalHoroscope": "당신만을 위한 운세",
-    "whatUnlocks": "해제되는 기능",
-    "premiumLocked": "프리미엄",
     "completeBirthChart": "출생 정보를 입력해 해제하세요",
     "enterBirthInfo": "출생 정보 입력",
     "tabs": {
@@ -1389,31 +1441,6 @@
       "explore": "탐색"
     },
     "unlockPremium": "프리미엄 접근 해제",
-    "unlockIntro": "당신만을 위한 별자리 프로필을 해제하세요. 맞춤형 데일리 인사이트, 출생 차트 분석, 우주 예보까지.",
-    "joinThousands": "수많은 이들이 자신의 우주적 잠재력을 발견하고 있어요",
-    "features": {
-      "dailyForecast": {
-        "title": "맞춤 데일리 예보",
-        "desc": "출생 차트에 기반한 나만의 매일 운세"
-      },
-      "fullChart": {
-        "title": "완전한 출생 차트",
-        "desc": "모든 행성 배치와 어스펙트를 포함한 본격 네이털 차트"
-      },
-      "transits": {
-        "title": "트랜짓 캘린더",
-        "desc": "당신의 차트에 영향을 주는 우주적 변화 추적"
-      },
-      "forecasts": {
-        "title": "주간·월간 예보",
-        "desc": "장기 예측으로 타이밍을 읽어요"
-      }
-    },
-    "periods": {
-      "today": "오늘",
-      "week": "이번 주",
-      "month": "이번 달"
-    },
     "general": "종합",
     "love": "사랑",
     "work": "일",
@@ -1440,64 +1467,29 @@
     "dailyAffirmation": "오늘의 확언",
     "cardOfTheDay": "오늘의 카드",
     "luckyNumbersLabel": "행운의 숫자",
-    "miniRitual": "미니 리추얼",
+    "miniRitual": "미니 의식",
     "actionStep": "행동 단계",
-    "showMore": "더 많은 통찰 보기",
+    "showMore": "통찰 더 보기",
     "showLess": "간단히 보기",
-    "weeklyOverview": "주간 개요",
-    "weekdayInitials": {
-      "mon": "월",
-      "tue": "화",
-      "wed": "수",
-      "thu": "목",
-      "fri": "금",
-      "sat": "토",
-      "sun": "일"
-    },
-    "lovePeak": "사랑의 절정",
-    "careerPeak": "커리어 절정",
-    "bestDay": "최고의 날",
-    "peakDays": {
-      "wednesday": "수요일",
-      "thursday": "목요일",
-      "friday": "금요일"
-    },
-    "monthlyTheme": "이달의 테마",
-    "moonPhaseInfluence": "달의 위상 영향",
-    "moonPhaseText": "12일의 신월이 새로운 시작을 증폭시킵니다",
-    "keyDates": "주요 날짜",
-    "keyDatesText": "7일, 15일, 23일 - 에너지가 높은 날",
-    "weeklyInsights": [
-      "주 초반은 의사소통에 명확함을 가져옵니다. 주 중반은 과감한 결정에 유리하며, 주말은 휴식이 필요합니다.",
-      "주 초반에는 관계에 집중하세요. 커리어는 주 중반에 정점에 이릅니다. 금요일까지 재정을 검토하세요.",
-      "월요일은 느리게 시작하지만 추진력이 붙습니다. 수요일에는 예상치 못한 소식이 있으며, 주말에는 로맨틱한 가능성이 열립니다.",
-      "주 초반에는 창조적 에너지가 높습니다. 주 중반에는 실무가 요구됩니다. 토요일은 사교 행사에 완벽합니다."
-    ],
-    "monthlyThemes": [
-      "이번 달은 개인적 변화를 강조합니다. 15일경 커리어 기회가 나타나고, 월말에는 사랑이 안정됩니다.",
-      "월초에는 재정 문제가 지배적입니다. 월 중반에는 관계의 진전이 있고, 마지막 주에는 개인적 성장이 가속됩니다.",
-      "건강과 웰빙이 중심입니다. 전문적인 인정이 예기치 않게 찾아옵니다. 20일까지 감정의 명료함이 도착합니다."
-    ],
-    "journalButton": "저널",
+    "journalButton": "저널 열기",
     "birthChartCard": {
       "title": "출생 차트 분석",
       "subtitle": "개인 맞춤 트랜짓 노트",
-      "upgrade": "업그레이드"
+      "upgrade": "내 출생 차트 열기"
     },
     "paywallFeatures": {
-      "monthly": "월간 호로스코프",
       "birthChart": "출생 차트 분석"
     },
     "share": {
-      "title": "나의 오늘의 호로스코프",
-      "template": "{{sign}} 오늘의 호로스코프\n\n{{general}}\n\n확언: {{affirmation}}\n\nArcana에서 생성 ✨"
+      "title": "나의 오늘의 운세",
+      "template": "{{sign}} 오늘의 운세\n\n{{general}}\n\n확언: {{affirmation}}\n\nArcana에서 생성"
     },
     "toasts": {
-      "saveFailed": "저장에 실패했습니다",
+      "saveFailed": "이 운세를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "horoscopeSaved": "호로스코프가 저장되었습니다",
       "shared": "공유되었습니다",
       "copied": "클립보드에 복사되었습니다",
-      "unableToShare": "공유할 수 없습니다"
+      "unableToShare": "공유를 열지 못했어요 — 잠시 후 다시 시도해 주세요."
     },
     "birthChartView": {
       "noChartData": "차트 데이터가 없습니다",
@@ -1512,10 +1504,10 @@
       "modalityBalance": "양태 균형",
       "keyAspects": "주요 각도",
       "strengths": "강점",
-      "blindSpots": "맹점",
+      "blindSpots": "사각지대",
       "underStress": "스트레스 상황에서",
       "growthPath": "성장의 길",
-      "inHouse": "{{num}}번째 하우스에서",
+      "inHouse": "{{num}}하우스에서",
       "atItsBest": "최상의 상태",
       "shadowSide": "그림자 면",
       "houseLabel": "{{num}}번째 하우스",
@@ -1536,9 +1528,9 @@
       "monthlyUnavailable": "월간 예보를 사용할 수 없습니다",
       "weeklyTheme": "주간 테마",
       "keyMoments": "중요한 순간",
-      "bestDaysFor": "최적의 날",
+      "bestDaysFor": "이런 일에 좋은 날",
       "monthlyOverview": "월간 개요",
-      "newMoon": "신월",
+      "newMoon": "삭",
       "fullMoon": "보름달",
       "keyDates": "주요 날짜",
       "oneThingThisMonth": "이번 달의 한 가지",
@@ -1547,7 +1539,7 @@
     "todayForYou": {
       "heading": "오늘의 당신",
       "noDailyContent": "오늘의 콘텐츠가 없습니다",
-      "tryAgain": "다시 시도",
+      "tryAgain": "오늘의 리딩 다시 불러오기",
       "moonIn": "달의 위치",
       "houseParen": "({{num}}번째 하우스)",
       "activeTransits": "활성 트랜짓",
@@ -1561,7 +1553,8 @@
         "career": "커리어",
         "money": "돈",
         "energy": "에너지"
-      }
+      },
+      "loadFailed": "오늘의 리딩을 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
     },
     "onboarding": {
       "oneMoreDetail": "한 가지 더",
@@ -1570,8 +1563,8 @@
       "dateLabel": "날짜:",
       "timeLabel": "시간:",
       "birthLocation": "출생지",
-      "searchCityPlaceholder": "도시 또는 마을 검색...",
-      "computeMyChart": "차트 계산하기",
+      "searchCityPlaceholder": "도시 또는 마을 검색…",
+      "computeMyChart": "내 차트 계산하기",
       "selectLocationToContinue": "계속하려면 위에서 위치를 선택하세요",
       "chartComputationFailed": "차트 계산 실패",
       "chartComputeFailDefault": "출생 차트를 계산할 수 없습니다. 다시 시도하거나 출생지를 업데이트하세요.",
@@ -1583,10 +1576,10 @@
         "couldNotCompute": "차트를 계산할 수 없습니다. 다른 위치로 시도하세요."
       },
       "computeSteps": {
-        "planetaryPositions": "행성 위치 계산 중...",
-        "houseCusps": "하우스 커스프 계산 중...",
-        "aspects": "각도 분석 중...",
-        "preparing": "차트 준비 중..."
+        "planetaryPositions": "행성 위치 계산 중…",
+        "houseCusps": "하우스 커스프 계산 중…",
+        "aspects": "각도 분석 중…",
+        "preparing": "차트 준비 중…"
       }
     },
     "exploreView": {
@@ -1622,10 +1615,10 @@
     "dayStreak": "연속 일수",
     "level": "레벨 {{n}}",
     "xpProgress": "XP 진행도",
-    "upgradeToPremium": "프리미엄으로 업그레이드",
-    "upgradeSub": "모든 스프레드, 차트 등을 해제하세요",
-    "premiumMember": "프리미엄 회원",
-    "premiumSub": "모든 기능 이용 가능",
+    "upgradeToPremium": "프리미엄 시작하기",
+    "upgradeSub": "모든 스프레드, 전체 출생 차트, 광고 없음",
+    "premiumMember": "프리미엄 이용 중",
+    "premiumSub": "모든 스프레드, 차트, 리딩이 열려 있어요",
     "manageSubscription": "구독 관리",
     "editProfile": "프로필 편집",
     "signOut": "로그아웃",
@@ -1660,9 +1653,10 @@
       "displayName": "표시 이름",
       "yourName": "이름",
       "birthTimeOptional": "출생 시각 (선택)",
-      "searchCity": "도시 검색…"
+      "searchCity": "도시 검색…",
+      "save": "내 프로필 저장"
     },
-    "disclaimer": "이 앱은 엔터테인먼트와 자기 성찰을 위한 용도예요.",
+    "disclaimer": "Arcana는 엔터테인먼트와 자기 성찰을 위한 앱이에요.",
     "elementSign": "{{element}} 별자리",
     "cosmic": {
       "title": "코스믹 프로파일",
@@ -1680,16 +1674,21 @@
     "referralSub": "친구당 문스톤 100개 적립",
     "careerReportTitle": "커리어 원형 보고서",
     "careerReportSub": "{{mbti}}를 위한 심층 코칭 리드",
-    "yearAheadTitle": "다가올 해 포캐스트",
+    "yearAheadTitle": "다가올 해 예보",
     "yearAheadSub": "당신의 차트에 12개월 트랜짓",
     "natalReportTitle": "전체 출생 차트",
     "natalReportSub": "인쇄 가능한 심층 차트 리딩",
     "compatInviteTitle": "궁합 초대",
-    "compatInviteSub": "공동 리딩 링크 공유하기"
+    "compatInviteSub": "공동 리딩 링크 공유하기",
+    "yourProgress": "당신의 진행 상황",
+    "saveProfile": "내 프로필 저장",
+    "toasts": {
+      "saveFailed": "프로필을 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
+    },
+    "untitled": "당신의 프로필"
   },
   "achievements": {
     "title": "트로피",
-    "subtitle": "지금까지의 여정",
     "noInCategory": "이 카테고리엔 아직 업적이 없어요.",
     "errorLoading": "업적을 불러오지 못했어요:",
     "novicesSeeker": "노비스 시커",
@@ -1723,13 +1722,14 @@
       "streakDays_other": "{{count}}일",
       "readings": "리딩",
       "journal": "저널",
-      "quizzes": "퀴즈"
+      "quizzes": "퀴즈",
+      "streakDays": "연속 일수"
     }
   },
   "blog": {
     "title": "뉴스 & 인사이트",
     "subtitle": "타로, 점성술, 자기 발견",
-    "failedToLoad": "기사를 불러오지 못했어요.",
+    "failedToLoad": "기사를 불러오지 못했어요 — 연결을 확인하고 페이지를 새로고침해 주세요.",
     "noArticles": "아직 글이 없어요",
     "comeBackSoon": "타로 인사이트와 영적 안내를 곧 만나보세요.",
     "articleNotFound": "기사를 찾을 수 없어요.",
@@ -1759,12 +1759,12 @@
     "careerAndFinances": "커리어와 재정",
     "reflectionPrompt": "성찰 프롬프트",
     "experienceInReading": "리딩에서 {{name}}를 만나보세요",
-    "tryFreeReading": "무료 리딩 체험",
+    "tryFreeReading": "무료 리딩 체험하기",
     "freeTarotGuide": "무료 타로 가이드",
-    "freeTarotGuideDesc": "타로 초보자를 위한 무료 가이드를 메일로 보내드려요.",
+    "freeTarotGuideDesc": "타로 리딩 초보자를 위한 무료 가이드를 메일함으로 보내드려요.",
     "getFreeGuide": "무료 가이드 받기",
     "noSpam": "스팸 없음. 언제든 구독 취소 가능.",
-    "youreIn": "완료! 메일함에서 무료 타로 가이드를 확인하세요.",
+    "youreIn": "신청됐어요. 메일함에서 무료 타로 가이드를 확인하세요.",
     "yourEmail": "이메일 주소",
     "heroBadge": "78장 · 전체 의미",
     "heroSub": "타로 덱의 모든 카드 완전 가이드 — 정방향·역방향 의미, 연애·커리어 해석, 그리고 성찰 프롬프트.",
@@ -1776,17 +1776,17 @@
     "allSuitCards": "{{suit}} 전체",
     "suitMinorLabel": "{{suit}} · 마이너 아르카나",
     "elements": {
-      "fire": "불 🔥",
-      "water": "물 💧",
-      "air": "공기 💨",
-      "earth": "땅 🌍",
-      "spirit": "영혼 ✨"
+      "fire": "불",
+      "water": "물",
+      "air": "공기",
+      "earth": "땅",
+      "spirit": "영혼"
     },
     "suits": {
       "major": {
         "title": "메이저 아르카나",
         "subtitle": "바보의 여정",
-        "desc": "22장의 메이저 아르카나는 삶의 큰 주제, 영적 교훈, 전환점을 나타냅니다. 바보의 순수한 첫걸음부터 세계의 찬란한 완성까지, 이 카드들은 영혼 진화의 이야기를 들려줍니다."
+        "desc": "22장의 메이저 아르카나는 삶의 큰 주제, 영적 교훈, 전환점을 나타내요. 바보의 순수한 첫걸음부터 세계의 찬란한 완성까지, 이 카드들은 영혼이 진화하는 이야기를 들려줘요."
       },
       "wands": {
         "title": "완드 슈트",
@@ -1835,12 +1835,13 @@
       "reflectionFallback": "이 카드는 당신의 여정에 어떤 메시지를 담고 있나요? 이 에너지는 현재 상황과 어떻게 공명하나요?",
       "journalPromptsLabel": "저널 프롬프트:",
       "journalPrompt1": "이 카드의 이미지가 오늘 나에게 무엇을 말하고 있나요?",
-      "journalPrompt2": "이 카드 의미의 어떤 측면이 가장 나에게 도전이 되나요?",
-      "journalPrompt3": "이 카드의 안내를 기리기 위해 오늘 어떤 작은 행동을 취할 수 있나요?",
+      "journalPrompt2": "이 카드 의미의 어떤 측면이 나에게 가장 도전이 되나요?",
+      "journalPrompt3": "이 카드의 안내를 따르기 위해 오늘 할 수 있는 작은 행동은 무엇인가요?",
       "todaysAction": "오늘의 행동",
       "todaysActionText": "{{name}}의 에너지에 맞는 작은 행동 하나를 선택하세요. 10분 이내에 할 수 있을 만큼 쉽게 만들어 보세요.",
       "closeLabel": "닫기"
-    }
+    },
+    "askOracleCta": "이 카드 읽어 주기"
   },
   "admin": {
     "title": "관리자",
@@ -1851,121 +1852,94 @@
       "ads": "광고",
       "users": "사용자",
       "content": "콘텐츠"
+    },
+    "verifications": {
+      "toasts": {
+        "loadFailed": "인증 대기열을 불러오지 못했어요 — 새로고침을 눌러 다시 시도해 주세요.",
+        "previewFailed": "신분증과 영상 미리보기를 불러오지 못했어요 — 미리보기 불러오기를 다시 눌러 주세요.",
+        "decideFailed": "결정을 저장하지 못했어요 — 대기열을 새로고침하고 다시 시도해 주세요."
+      }
+    },
+    "moderation": {
+      "toasts": {
+        "loadEventsFailed": "모더레이션 이벤트를 불러오지 못했어요 — 새로고침을 눌러 다시 시도해 주세요.",
+        "loadFlagsFailed": "위기 플래그를 불러오지 못했어요 — 새로고침을 눌러 다시 시도해 주세요.",
+        "markReviewedFailed": "이벤트를 검토 완료로 표시하지 못했어요 — 새로고침하고 다시 시도해 주세요.",
+        "acknowledgeFailed": "플래그를 확인 처리하지 못했어요 — 새로고침하고 다시 시도해 주세요."
+      }
+    },
+    "blog": {
+      "toasts": {
+        "updateFailed": "게시글을 업데이트하지 못했어요 — 새로고침하고 다시 시도해 주세요.",
+        "deleteFailed": "게시글을 삭제하지 못했어요 — 새로고침하고 다시 시도해 주세요."
+      }
     }
   },
   "premium": {
-    "title": "프리미엄 해제",
-    "subtitle": "당신의 하루 수행을 더 깊이.",
     "features": {
-      "unlimited_saves": {
-        "name": "무제한 저장",
-        "description": "원하는 만큼의 리딩과 통찰을 저장하세요"
-      },
-      "celtic_cross": {
-        "name": "켈틱 크로스 스프레드",
-        "description": "깊은 통찰을 위한 궁극의 10장 카드 스프레드"
-      },
-      "three_card": {
-        "name": "세 장 카드 스프레드",
-        "description": "과거, 현재, 미래 리딩"
-      },
-      "compatibility_full": {
-        "name": "완전 궁합 분석",
-        "description": "파트너와의 완전한 궁합 분석"
-      },
-      "deep_interpretations": {
-        "name": "심층 해석",
-        "description": "확장된 의미와 개인화된 가이드"
-      },
-      "guided_prompts": {
-        "name": "가이드 프롬프트",
-        "description": "당신의 리딩을 바탕으로 AI가 만든 성찰 프롬프트"
-      },
-      "journal_insights": {
-        "name": "저널 인사이트",
-        "description": "고급 감정 추적과 패턴 분석"
-      },
-      "personalization": {
-        "name": "개인화 엔진",
-        "description": "당신의 톤과 목표에 맞춘 콘텐츠"
-      },
-      "birth_chart": {
-        "name": "출생 차트 분석",
-        "description": "완전한 점성술 출생 차트 분석"
-      },
-      "extra_reading": {
-        "name": "추가 리딩",
-        "description": "일일 한도를 넘는 타로 리딩 한 번 추가"
-      }
+      "unlimited_saves": {},
+      "celtic_cross": {},
+      "three_card": {},
+      "compatibility_full": {},
+      "deep_interpretations": {},
+      "guided_prompts": {},
+      "journal_insights": {},
+      "personalization": {},
+      "birth_chart": {},
+      "extra_reading": {}
     },
     "monthly": "월간",
     "yearly": "연간",
     "lifetime": "평생",
-    "bestValue": "가장 인기",
-    "save": "{{pct}}% 할인",
-    "perMonth": "/월",
-    "perYear": "/년",
-    "oneTime": "1회 결제",
-    "subscribe": "구독 시작",
-    "startFreeTrial": "무료 체험 시작",
-    "restorePurchases": "구매 복원",
-    "termsNotice": "자동 갱신. 언제든 취소 가능.",
-    "activeUntil": "만료일 {{date}}",
     "badge": "프리미엄",
     "paywall": {
-      "heading": "전체 덱을 잠금 해제",
-      "subheading": "더 깊은 스프레드, 무제한 저장, 궁합 인사이트까지",
-      "featureRequires": "{{feature}}은(는) 프리미엄이 필요합니다",
-      "whatYouUnlock": "잠금 해제되는 기능",
-      "loadingPrices": "가격을 불러오는 중...",
+      "heading": "모든 리딩을 열어요",
+      "subheading": "모든 타로 스프레드, 전체 출생 차트, 파트너 시너스트리, 운세 탭까지 — 광고 없이, 문스톤 소모 없이.",
+      "featureRequires": "{{feature}}은(는) 프리미엄으로 열려요",
+      "whatYouUnlock": "프리미엄으로 열리는 것",
+      "loadingPrices": "가격을 불러오는 중…",
       "unlocks": {
         "adFree": {
-          "label": "광고 없는 경험",
-          "desc": "방해 없이 온전한 몰입"
+          "label": "광고 없음",
+          "desc": "리딩 사이에 광고가 없어요"
         },
         "allSpreads": {
           "label": "모든 타로 스프레드",
-          "desc": "켈틱 크로스, 3카드 외 다수"
+          "desc": "최대 10장까지, 모든 스프레드"
         },
-        "unlimitedSaves": {
-          "label": "무제한 저장",
-          "desc": "모든 통찰을 영원히 보관"
-        },
+        "unlimitedSaves": {},
         "compatibility": {
-          "label": "전체 궁합 분석",
-          "desc": "깊이 있는 상대 분석"
+          "label": "전체 궁합",
+          "desc": "사랑뿐 아니라 우정과 일까지"
         },
         "deepInterpretations": {
-          "label": "심층 해석",
-          "desc": "나만의 맞춤 안내"
+          "label": "AI 해석",
+          "desc": "당신의 카드에 맞춰 쓰고, 문스톤은 필요 없어요"
         },
-        "guidedPrompts": {
-          "label": "가이드 프롬프트",
-          "desc": "AI가 엮은 성찰"
-        },
+        "guidedPrompts": {},
         "birthChart": {
           "label": "출생 차트",
-          "desc": "당신의 우주적 설계도"
+          "desc": "모든 행성, 별자리, 하우스"
         },
         "partnerSynastry": {
           "label": "파트너 시너스트리",
-          "desc": "실제 교차 각도 점성술"
+          "desc": "두 차트를 각도 하나하나까지"
         },
         "horoscopeFull": {
-          "label": "전체 호로스코프",
-          "desc": "차트 · 예보 · 탐색 모두 해제"
+          "label": "전체 운세",
+          "desc": "차트, 예보, 탐색"
         },
         "humanDesign": {
           "label": "휴먼 디자인",
-          "desc": "실제 바디그래프와 프로필, 결정권"
+          "desc": "바디그래프, 프로파일, 결정 권위"
         },
         "bazi": {
-          "label": "바지(사주팔자)",
-          "desc": "중국 전통 팔자 명리학"
+          "label": "사주 네 기둥",
+          "desc": "당신의 네 기둥을 풀이해요"
         },
         "dreamAi": {
-          "label": "AI 꿈 해석",
-          "desc": "어떤 꿈이든 융 심리학으로 읽기"
+          "label": "꿈 해석기",
+          "desc": "어떤 꿈이든 융 심리학으로 읽어요"
         },
         "moodLetter": {
           "label": "주간 감정 편지",
@@ -1973,11 +1947,11 @@
         },
         "oracleChat": {
           "label": "오라클 컴패니언",
-          "desc": "네 가지 페르소나, 무제한 대화"
+          "desc": "대화할 수 있는 네 가지 페르소나"
         },
         "shadowWork": {
           "label": "섀도우 워크 스프레드",
-          "desc": "가장 깊은 타로 배치"
+          "desc": "내면 작업을 위한 일곱 장"
         }
       },
       "plans": {
@@ -1992,109 +1966,188 @@
       },
       "badges": {
         "bestValue": "최고의 가치",
-        "foreverAccess": "평생 이용"
+        "foreverAccess": "한 번만 결제"
       },
       "cta": {
-        "notAvailable": "프리미엄을 사용할 수 없습니다",
-        "getLifetime": "평생 이용권 구매",
-        "subscribeNow": "지금 구독하기"
+        "getLifetime": "프리미엄 평생 이용권 열기",
+        "startTrial": "{{days}}일 무료 체험 시작하기",
+        "subscribe": "프리미엄 구독하기"
       },
       "restorePurchase": "구매 복원",
       "errors": {
-        "loadFailed": "가격을 불러올 수 없습니다. 연결 상태를 확인해 주세요.",
-        "notAvailableTitle": "프리미엄을 사용할 수 없습니다",
-        "notAvailableDesc": "RevenueCat 오퍼링이 설정되어야 합니다. 설정이 완료될 때까지 구매가 비활성화됩니다."
+        "loadFailed": "가격을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+        "notAvailableTitle": "지금은 프리미엄을 이용할 수 없어요",
+        "notAvailableDesc": "스토어에서 플랜을 받아오지 못했어요. 나중에 다시 시도해 주세요 — 이미 구독했다면 구매 복원을 사용하세요."
       },
       "disclaimers": {
-        "lifetime": "일회성 결제. 반복 청구 없음. 모든 프리미엄 기능을 평생 이용할 수 있습니다.",
-        "subscription": "언제든지 해지할 수 있습니다. 결제는 계정으로 청구됩니다. 현재 기간 종료 24시간 전까지 해지하지 않으면 구독이 자동 갱신됩니다."
+        "lifetime": "한 번의 결제, 갱신 없음. 프리미엄은 계속 당신의 것이에요.",
+        "subscription": "기간 종료 24시간 전까지 해지하지 않으면 각 기간이 끝날 때 자동으로 갱신돼요. 언제든 해지할 수 있어요."
       },
       "toasts": {
-        "productsUnavailable": "상품을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.",
-        "welcome": "프리미엄에 오신 것을 환영합니다!",
-        "purchaseFailed": "구매에 실패했습니다",
-        "purchasesRestored": "구매가 복원되었습니다!",
-        "noPurchases": "구매 내역을 찾을 수 없습니다",
-        "restoreFailed": "복원에 실패했습니다"
+        "productsUnavailable": "지금은 스토어에서 이 플랜을 이용할 수 없어요 — 나중에 다시 시도해 주세요.",
+        "purchaseFailed": "구매가 완료되지 않았어요. 다시 시도해 주세요 — 이미 결제됐다면 구매 복원을 사용하세요.",
+        "purchasesRestored": "프리미엄을 복원했어요 — 모든 것이 다시 열렸어요.",
+        "noPurchases": "이 스토어 계정에서 이전 구매 내역을 찾지 못했어요. 다른 계정으로 구독했다면 계정을 전환한 뒤 다시 복원해 주세요.",
+        "restoreFailed": "복원을 위해 스토어에 연결하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
+      },
+      "trialLine": "{{days}}일 무료 체험. 끝나기 전에 해지하면 비용이 들지 않아요.",
+      "byFeature": {
+        "celticCross": {
+          "heading": "켈틱 크로스 읽기",
+          "outcome": "하나의 질문에 열 장, 자리마다 읽어요 — 다른 모든 스프레드도 함께. 프리미엄은 이 모두를 광고 없이 열어요.",
+          "cta": "켈틱 크로스 열기"
+        },
+        "relationship": {
+          "heading": "관계 스프레드 읽기",
+          "outcome": "당신, 상대, 둘을 잇는 것, 다음에 할 일에 대한 다섯 장 — 다른 모든 스프레드도 함께. 프리미엄은 이 모두를 광고 없이 열어요.",
+          "cta": "관계 스프레드 열기"
+        },
+        "careerSpread": {
+          "heading": "커리어 결정 스프레드 읽기",
+          "outcome": "지금의 위치, 당신을 움직이는 것, 예상되는 결과에 대한 여섯 장 — 다른 모든 스프레드도 함께. 프리미엄은 이 모두를 광고 없이 열어요.",
+          "cta": "커리어 결정 스프레드 열기"
+        },
+        "shadow": {
+          "heading": "섀도우 워크 스프레드 읽기",
+          "outcome": "쓰고 있는 가면부터 그것을 통합하는 한 걸음까지 일곱 장 — 다른 모든 스프레드도 함께. 프리미엄은 이 모두를 광고 없이 열어요.",
+          "cta": "섀도우 워크 스프레드 열기"
+        },
+        "unlimitedReadings": {
+          "heading": "오늘 계속 리딩하기",
+          "outcome": "무료 계정은 하루 세 번 타로 리딩을 할 수 있어요. 프리미엄은 이 제한을 없애고 모든 스프레드를 광고 없이 열어요.",
+          "cta": "일일 제한 없애기"
+        },
+        "horoscopeChart": {
+          "heading": "전체 출생 차트 보기",
+          "outcome": "각 행성이 놓인 별자리와 하우스, 행성 사이의 각도, 그리고 그것이 당신에게 뜻하는 것. 프리미엄은 차트, 예보, 탐색 탭을 함께 열어요.",
+          "cta": "내 출생 차트 열기"
+        },
+        "horoscopeForecast": {
+          "heading": "다가올 한 주와 한 달 보기",
+          "outcome": "태양 별자리만이 아니라 당신의 차트로 계산한 주간·월간 예보. 프리미엄은 차트, 예보, 탐색 탭을 함께 열어요.",
+          "cta": "내 예보 열기"
+        },
+        "horoscopeExplore": {
+          "heading": "내 차트 탐색하기",
+          "outcome": "현재 트랜짓, 당신의 하우스와 각도를 하나씩 설명해요. 프리미엄은 차트, 예보, 탐색 탭을 함께 열어요.",
+          "cta": "탐색 탭 열기"
+        },
+        "humanDesign": {
+          "heading": "내 휴먼디자인 보기",
+          "outcome": "출생 정보로 계산한 바디그래프, 타입, 프로파일, 결정 권위. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "내 휴먼디자인 열기"
+        },
+        "bazi": {
+          "heading": "내 사주 차트 보기",
+          "outcome": "생년월일과 시각으로 세운 네 기둥을 기둥마다 읽어요. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "내 사주 차트 열기"
+        },
+        "dreams": {
+          "heading": "꿈 해석 받기",
+          "outcome": "어떤 꿈이든 적으면 그 상징을 융 심리학으로 풀이해 읽을 수 있어요. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "꿈 리딩 열기"
+        },
+        "partnerSynastry": {
+          "heading": "내 시너스트리 보기",
+          "outcome": "파트너의 출생 정보를 추가하고 두 차트 사이의 각도를 읽어요. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "파트너 시너스트리 열기"
+        },
+        "celestialMap": {
+          "heading": "천체 지도 전체 보기",
+          "outcome": "프리미엄으로 40개 행성 라인 전부, 도시별 해석, AI 여행 리딩까지 — 또는 여행 리딩 한 번을 250 문스톤으로.",
+          "cta": "전체 지도 열기"
+        },
+        "compatFull": {
+          "heading": "전체 궁합 보기",
+          "outcome": "생년월일을 아는 누구와도, 사랑과 함께 우정·일 궁합까지. 프리미엄은 세 가지 모두를 열어요.",
+          "cta": "우정·일 궁합 열기"
+        },
+        "compatFriendship": {
+          "heading": "친구로서의 궁합",
+          "outcome": "두 별자리 조합을 연애가 아닌 우정으로 읽고, 일 궁합도 함께 봐요. 프리미엄은 둘 다 열어요.",
+          "cta": "우정 궁합 열기"
+        },
+        "compatWork": {
+          "heading": "일에서의 궁합",
+          "outcome": "두 별자리 조합을 함께 일하는 관계로 읽고, 우정 궁합도 함께 봐요. 프리미엄은 둘 다 열어요.",
+          "cta": "일 궁합 열기"
+        }
       }
     },
-    "gate": {
-      "watchAdToTry": "광고 보고 체험하기",
-      "unlockPremium": "프리미엄 잠금 해제"
-    },
+    "gate": {},
     "subscription": {
-      "heading": "프리미엄 활성화됨",
-      "subheading": "모든 프리미엄 기능에 완전히 접근할 수 있습니다",
+      "heading": "프리미엄 이용 중",
+      "subheading": "모든 스프레드, 차트, 리딩이 열려 있어요 — 광고 없이, 문스톤 소모 없이.",
       "planTitle": "프리미엄 플랜",
       "memberFallback": "회원",
       "status": "상태",
       "statusActive": "활성",
       "billing": "결제 수단",
-      "billingGooglePlay": "Google Play",
-      "yourBenefits": "프리미엄 혜택",
-      "manageOnGooglePlay": "Google Play에서 관리",
-      "syncStatus": "구독 상태 동기화",
-      "disclaimer": "구독을 해지하거나 변경하려면 Google Play 스토어 앱 또는 웹사이트를 이용하세요. 변경 사항이 앱에 반영되기까지 몇 분 정도 걸릴 수 있습니다.",
-      "features": {
-        "adFree": "광고 없는 경험",
-        "allSpreads": "모든 타로 스프레드",
-        "unlimitedSaves": "무제한 저장",
-        "compatibility": "전체 궁합 분석",
-        "deepInterpretations": "심층 해석",
-        "guidedPrompts": "가이드 프롬프트",
-        "birthChart": "출생 차트",
-        "partnerSynastry": "파트너 시너스트리",
-        "horoscopeFull": "전체 호로스코프",
-        "humanDesign": "휴먼 디자인",
-        "bazi": "바지 사주",
-        "dreamAi": "AI 꿈 해석",
-        "moodLetter": "주간 감정 편지",
-        "oracleChat": "오라클 컴패니언",
-        "shadowWork": "섀도우 워크"
-      },
+      "yourBenefits": "플랜에 포함된 것",
+      "syncStatus": "내 구독 새로고침",
+      "features": {},
       "toasts": {
-        "verified": "구독이 확인되었습니다!",
-        "active": "구독이 활성 상태입니다",
-        "verifyFailed": "구독을 확인할 수 없습니다"
+        "verified": "구독이 확인됐어요.",
+        "active": "바뀐 것이 없어요 — 구독은 표시된 그대로예요.",
+        "verifyFailed": "스토어에서 구독을 확인하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+        "portalFailed": "결제 포털을 열지 못했어요. 연결을 확인하고 다시 시도해 주세요."
+      },
+      "billingVia": {
+        "android": "Google Play",
+        "ios": "App Store",
+        "web": "카드 (Stripe 결제)"
+      },
+      "manage": {
+        "android": "Google Play에서 관리",
+        "ios": "App Store에서 관리",
+        "web": "구독 관리"
+      },
+      "storeNote": {
+        "android": "구독을 해지하거나 변경하려면 Google Play 스토어 앱이나 웹사이트를 이용하세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "ios": "구독을 해지하거나 변경하려면 설정을 열고 이름을 누른 뒤 구독으로 들어가세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
+        "web": "구독을 해지하거나 변경하려면 이 페이지에서 결제 포털을 여세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요."
       }
     },
     "watchAd": {
-      "defaultTitle": "{{feature}} 체험하기",
-      "defaultSubtitle": "짧은 광고를 시청하면 이 프리미엄 기능을 1회 사용할 수 있습니다",
-      "contexts": {
-        "extraReading": {
-          "title": "리딩 1회 더 받기",
-          "subtitle": "짧은 광고를 시청하면 오늘 타로 리딩을 1회 더 받을 수 있습니다"
-        },
-        "deepInterpretations": {
-          "title": "확장 해석 잠금 해제",
-          "subtitle": "짧은 광고를 시청하면 카드를 더 깊이 들여다볼 수 있습니다"
-        }
-      },
-      "unlocksRemaining": "오늘 남은 무료 해제: {{remaining}}/{{total}}회",
-      "watchAdToUnlock": "광고 보고 잠금 해제",
-      "usedAllUnlocks": "오늘 무료 해제 횟수를 모두 사용했습니다",
-      "comeBackTomorrow": "내일 다시 오거나 프리미엄으로 업그레이드하세요",
-      "getUnlimited": "무제한 이용권 받기",
+      "getUnlimited": "또는 프리미엄으로 모든 것을 열기",
       "notNow": "나중에",
-      "footerDisclaimer": "프리미엄 회원은 광고 없이 모든 기능을 무제한으로 이용할 수 있습니다",
+      "footerDisclaimer": "프리미엄에서는 아무것도 소모하지 않아요. 모든 스프레드, 차트, 리딩이 광고 없이 열려요.",
       "toasts": {
-        "unlocked": "기능이 잠금 해제되었습니다! 무료 체험을 즐겨보세요.",
-        "notAvailable": "광고를 표시할 수 없습니다. 다시 시도해 주세요.",
-        "error": "문제가 발생했습니다. 다시 시도해 주세요."
-      }
+        "unlocked": "잠금이 풀렸어요. 리딩이 열렸어요.",
+        "notAvailable": "지금은 볼 수 있는 광고가 없어요 — 잠시 후 다시 시도해 주세요.",
+        "error": "광고가 끝까지 재생되지 않았어요 — 아무것도 소모되지 않았어요. 잠시 후 다시 시도해 주세요.",
+        "credited": "문스톤 {{n}}개가 추가됐어요. 아래에서 사용해 잠금을 여세요.",
+        "persistFailed": "광고는 봤지만 문스톤을 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+        "spendFailed": "문스톤을 사용하지 못했어요 — 차감된 것은 없어요. 연결을 확인하고 다시 시도해 주세요.",
+        "insufficient": "이 기능에는 문스톤 {{n}}개가 필요해요. 광고를 보고 더 모으세요.",
+        "adsDisabled": "이 기기에서는 광고를 이용할 수 없어요.",
+        "creditedEarnOnly": "문스톤 {{n}}개가 추가됐어요."
+      },
+      "unlockTitle": "이 리딩 열기",
+      "unlockSubtitle": "문스톤 {{cost}}개를 써서 지금 읽거나, 짧은 광고를 보고 먼저 {{ad}}개를 모으세요.",
+      "currentBalance": "보유 문스톤 {{n}}개",
+      "spendCta": "문스톤 {{n}}개 쓰고 열기",
+      "watchAdCta": "광고 보고 문스톤 {{n}}개 받기",
+      "unlockNamed": "{{name}} 열기",
+      "earnOnlySubtitle": "문스톤 {{cost}}개가 필요해요. 짧은 광고 하나에 {{ad}}개를 받을 수 있고, 충분히 모이면 이 페이지에서 열 수 있어요."
     },
     "trialReminder": {
-      "badge": "3일 무료",
+      "badge": "{{days}}일 무료",
       "benefits": {
-        "adFree": "광고 완전 제거",
-        "allFeatures": "모든 프리미엄 기능 잠금 해제",
-        "cancelAnytime": "언제든 취소 가능, 요금 없음"
+        "spreads": "켈틱 크로스를 포함한 모든 타로 스프레드",
+        "chart": "행성 하나하나까지, 당신의 전체 출생 차트",
+        "noAds": "광고 없음, 문스톤 소모 없음"
       },
       "cta": "무료 체험 시작",
       "dismiss": "나중에",
-      "subtitle": "3일 동안 모두 잠금 해제, 이후 $19.99/년. 언제든 취소 가능.",
-      "title": "프리미엄을 3일 무료로 체험"
+      "subtitle": "{{days}}일 동안 모든 기능이 열리고, 이후 연 {{price}}예요. 체험 기간이 끝나기 전에 해지하면 비용이 들지 않아요.",
+      "title": "프리미엄을 {{days}}일 무료로 체험하세요",
+      "noTrial": {
+        "title": "프리미엄으로 모든 것을 열어요",
+        "subtitle": "연 {{price}}, 또는 월 결제. 언제든 해지할 수 있어요.",
+        "subtitleNoPrice": "연간 또는 월간, 스토어에 표시된 가격으로. 언제든 해지할 수 있어요.",
+        "cta": "프리미엄 플랜 보기"
+      }
     }
   },
   "settings": {
@@ -2136,7 +2189,7 @@
       "notificationsEnabled": "알림을 켰어요",
       "notificationsDisabled": "알림을 껐어요",
       "themeChanged": "테마가 {{name}}(으)로 바뀌었어요",
-      "updateFailed": "업데이트에 실패했어요"
+      "updateFailed": "설정을 변경하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
     },
     "language": "언어",
     "languageSub": "선호하는 언어를 선택하세요",
@@ -2185,8 +2238,8 @@
     "dailyReminders": "일일 알림",
     "getNotified": "매일의 의식에 대한 알림 받기",
     "noTransits": "이 기간 동안의 트랜짓을 찾을 수 없습니다",
-    "chartUnavailable": "차트 데이터를 사용할 수 없습니다",
-    "birthCity": "출생지",
+    "chartUnavailable": "아직 차트 데이터가 없어요 — 출생 정보를 추가하면 계산할 수 있어요.",
+    "birthCity": "출생 도시",
     "frequentlyAskedQuestions": "자주 묻는 질문",
     "faq": {
       "accuracyQ": "리딩은 얼마나 정확한가요?",
@@ -2198,10 +2251,10 @@
     "disclaimerBody": "최소한의 데이터만 수집합니다. 출생 시간과 장소는 선택 사항입니다.",
     "actionCannotBeUndone": "이 작업은 되돌릴 수 없습니다",
     "toasts": {
-      "exportPartial": "일부 데이터를 내보내지 못했습니다. 다시 시도해 주세요.",
+      "exportPartial": "일부 데이터를 내보내지 못했어요 — 잠시 후 다시 시도해 주세요.",
       "profileUpdated": "프로필이 업데이트되었습니다",
-      "profileUpdateFailed": "프로필 업데이트에 실패했습니다",
-      "updateFailed": "업데이트에 실패했습니다",
+      "profileUpdateFailed": "프로필을 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "updateFailed": "설정을 변경하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "devModeEnabled": "개발자 모드가 활성화되었습니다"
     },
     "editProfile": {
@@ -2209,7 +2262,7 @@
       "displayName": "표시 이름",
       "displayNamePlaceholder": "당신의 이름",
       "birthDate": "생년월일",
-      "birthTime": "태어난 시간(선택)"
+      "birthTime": "출생 시각 (선택)"
     },
     "helpCenter": {
       "title": "도움말 센터"
@@ -2219,9 +2272,14 @@
       "dataWarning": "프로필, 저널 기록, 타로 리딩, 저장한 항목 등 모든 데이터가 영구적으로 삭제됩니다.",
       "exportRecommendation": "계정을 삭제하기 전에 데이터를 내보내는 것을 권장합니다.",
       "exportFirst": "먼저 데이터 내보내기",
-      "exporting": "내보내는 중...",
+      "exporting": "내보내는 중…",
       "deleteMyAccount": "내 계정 삭제",
-      "deleting": "삭제 중..."
+      "deleting": "삭제 중…"
+    },
+    "legal": {
+      "entertainmentDisclaimer": "엔터테인먼트 고지",
+      "acceptanceOfTerms": "약관 동의",
+      "notProfessionalAdvice": "전문적 조언이 아님"
     }
   },
   "search": {
@@ -2237,7 +2295,7 @@
     "recentSearches": "최근 검색",
     "quickLinks": "빠른 링크",
     "quickLink": {
-      "horoscope": "데일리 운세",
+      "horoscope": "오늘의 운세",
       "journalPrompts": "저널 프롬프트",
       "personalityQuiz": "성격 퀴즈"
     },
@@ -2251,7 +2309,6 @@
   },
   "saved": {
     "title": "저장됨",
-    "subtitle": "북마크한 순간들",
     "empty": "아직 저장한 항목이 없어요",
     "emptySub": "리딩, 카드, 인사이트의 별표를 눌러 저장해 보세요.",
     "emptySubAlt": "리딩, 저널, 퀴즈 결과에 별표를 누르면 여기에 저장돼요",
@@ -2273,17 +2330,17 @@
       "friendship": "친구 궁합",
       "work": "직장 궁합"
     },
-    "disclaimer": "이 앱은 성찰과 엔터테인먼트를 위한 것입니다. 의료, 법률, 재정 조언을 제공하지 않습니다.",
+    "disclaimer": "Arcana는 성찰과 엔터테인먼트를 위한 앱이에요. 의료, 법률, 재정 조언을 제공하지 않아요.",
     "you": "당신",
     "theirName": "상대방 이름",
     "theirNamePlaceholder": "상대방 이름을 입력하세요",
     "theirBirthDate": "상대방 생년월일",
     "requiredMark": "*",
-    "optionalLabel": "선택 사항: 더 깊은 통찰을 위한 상세 정보",
+    "optionalLabel": "선택: 더 깊은 통찰을 위한 추가 정보",
     "theirMbti": "상대방 MBTI 유형",
     "moreMbti": "+{{count}}개 더",
     "theirLoveLanguage": "상대방 사랑의 언어",
-    "selectPlaceholder": "선택...",
+    "selectPlaceholder": "선택…",
     "loveLanguages": {
       "words": "인정의 말",
       "acts": "봉사의 행동",
@@ -2291,10 +2348,10 @@
       "quality": "함께하는 시간",
       "touch": "신체적 접촉"
     },
-    "calculate": "궁합 계산",
-    "bestMatches": "최고의 매치",
-    "bestMatchesSubtitle": "{{sign}}(으)로서 가장 잘 맞는 상대:",
-    "startOver": "다시 시작",
+    "calculate": "궁합 계산하기",
+    "bestMatches": "당신과 잘 맞는 별자리",
+    "bestMatchesSubtitle": "{{sign}}인 당신과 가장 잘 맞는 상대:",
+    "startOver": "다른 두 별자리 비교하기",
     "match": "일치",
     "famousPairing": "유명한 커플:",
     "dimensions": {
@@ -2307,7 +2364,7 @@
     "strengths": "강점",
     "frictionPoints": "마찰 지점",
     "doThisToday": "오늘 해볼 것",
-    "reflectionDisclaimer": "이것은 판결이 아닌 성찰 도구입니다. 대화와 이해를 촉발하는 데 사용하세요.",
+    "reflectionDisclaimer": "이것은 판결이 아니라 성찰의 도구예요. 대화와 이해를 여는 데 써 보세요.",
     "connectionStyles": {
       "fire": "열정적이고 역동적",
       "earth": "안정적이고 현실적",
@@ -2342,19 +2399,21 @@
     ]
   },
   "library": {
-    "loading": "불러오는 중...",
+    "loading": "불러오는 중…",
     "toasts": {
-      "loadSavedFailed": "저장된 항목을 불러올 수 없습니다 — 오프라인일 수 있습니다",
-      "loadMoreFailed": "추가 항목을 불러오지 못했습니다",
-      "deleteFailed": "삭제에 실패했습니다",
-      "deleted": "삭제되었습니다"
+      "loadSavedFailed": "저장한 항목을 불러오지 못했어요 — 연결을 확인하고 라이브러리를 다시 열어 주세요.",
+      "deleteFailed": "항목을 삭제하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "deleted": "삭제되었습니다",
+      "loadMoreSavedFailed": "저장한 항목을 더 불러오지 못했어요 — 연결을 확인하고 더 보기를 다시 눌러 주세요.",
+      "loadMoreSpreadsFailed": "스프레드를 더 불러오지 못했어요 — 연결을 확인하고 더 보기를 다시 눌러 주세요.",
+      "loadMoreReadingsFailed": "리딩을 더 불러오지 못했어요 — 연결을 확인하고 더 보기를 다시 눌러 주세요."
     },
     "empty": {
       "noAIReadings": "아직 AI 리딩이 없습니다",
       "getAIFromTarot": "타로 섹션에서 AI 해석을 받아보세요"
     },
     "reading": {
-      "yourQuestion": "질문",
+      "yourQuestion": "당신의 질문",
       "cardsDrawn": "뽑은 카드",
       "interpretation": "해석"
     },
@@ -2508,7 +2567,7 @@
         ]
       },
       "chakras": {
-        "title": "차크라의 지도",
+        "title": "차크라 체계",
         "description": "에너지 센터를 하나씩 돌보기",
         "sections": [
           {
@@ -2571,11 +2630,11 @@
     "loadMoreSpreads": "스프레드 더 보기",
     "loadMoreSaved": "저장된 항목 더 보기",
     "loadMoreReadings": "리딩 더 보기",
-    "contentComingSoon": "콘텐츠 준비 중...",
+    "contentComingSoon": "더 많은 가이드를 준비하고 있어요.",
     "continueExploring": "가이드를 계속 탐구하여 영적 실천을 깊게 하세요",
-    "savedSpreads": "저장된 스프레드",
-    "savedCards": "저장된 카드",
-    "savedHoroscopes": "저장된 운세",
+    "savedSpreads": "저장한 스프레드",
+    "savedCards": "저장한 카드",
+    "savedHoroscopes": "저장한 운세",
     "periodDaily": "데일리",
     "tabs": {
       "saved": "저장됨",
@@ -2589,18 +2648,20 @@
       "spreads": "스프레드"
     },
     "periodWeekly": "주간",
-    "periodMonthly": "월간"
+    "periodMonthly": "월간",
+    "aiReading": "AI 리딩"
   },
   "celebration": {
     "streak": {
-      "dedication": "놀라운 헌신입니다!",
-      "ritualComplete": "의식 완료!",
-      "keepFlowing": "우주의 에너지를 계속 유지하세요!"
+      "dedication": "시작한 날부터 매일, 빠짐없이.",
+      "ritualComplete": "의식 완료",
+      "keepFlowing": "내일 한 번 더 하면 기록이 이어집니다."
     },
     "levelUp": {
-      "title": "레벨 업!",
+      "title": "레벨 업.",
       "level": "레벨",
-      "newAbilities": "새로운 능력 해제"
+      "newAbilities": "새로운 능력이 열렸어요",
+      "rank": "랭크"
     }
   },
   "pageTitles": {
@@ -2964,9 +3025,9 @@
     ]
   },
   "errorBoundary": {
-    "title": "별들이 움직였습니다",
+    "title": "이 화면이 멈췄어요",
     "message": "예기치 않은 일이 당신의 우주 여행을 방해했습니다. 우주는 신비롭게 작동하지만, 다시 시도할 수 있습니다.",
-    "tryAgain": "다시 시도",
+    "tryAgain": "이 화면 다시 불러오기",
     "returnHome": "홈으로",
     "viewDiagnostics": "진단 보기",
     "hideDetails": "세부 숨기기",
@@ -2978,16 +3039,26 @@
     "networkTitle": "별들과의 연결이 끊어졌습니다",
     "networkMessage": "우주의 서버에 도달할 수 없었습니다. 연결을 확인하고 길이 맑아지면 다시 시도하세요.",
     "notFoundTitle": "이 길은 막다른 길입니다",
-    "notFoundMessage": "당신이 찾는 페이지는 공허 속으로 사라졌습니다. 별들이 다른 목적지를 염두에 두고 있는지도 모릅니다."
+    "notFoundMessage": "당신이 찾는 페이지는 공허 속으로 사라졌습니다. 별들이 다른 목적지를 염두에 두고 있는지도 모릅니다.",
+    "retryContent": "이 콘텐츠 다시 불러오기",
+    "contentTitle": "{{type}}을(를) 불러오지 못했어요",
+    "contentMessage": "이번에는 불러오지 못했어요. 다시 불러와 보세요.",
+    "contentRetry": "{{type}} 다시 불러오기"
   },
   "astrologyErrors": {
-    "noChart": "차트를 찾을 수 없습니다",
-    "loadChart": "차트 불러오기 실패",
-    "computeChart": "차트 계산 실패",
-    "dailyHoroscope": "일일 운세 불러오기 실패",
-    "weeklyForecast": "주간 예보 불러오기 실패",
-    "monthlyForecast": "월간 예보 불러오기 실패",
-    "transits": "트랜짓 불러오기 실패"
+    "noChart": "아직 차트가 없어요 — 출생 정보를 추가하면 계산할 수 있어요.",
+    "loadChart": "차트를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "computeChart": "차트를 계산하지 못했어요 — 출생 정보를 확인하고 다시 시도해 주세요.",
+    "dailyHoroscope": "오늘의 운세를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "weeklyForecast": "이번 주 예보를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "monthlyForecast": "이번 달 예보를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "transits": "트랜짓을 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "signedOut": "세션이 끝났어요 — 다시 로그인하면 불러올 수 있어요.",
+    "timeout": "요청 시간이 초과됐어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "rateLimited": "요청이 너무 많아요 — 잠시 기다렸다가 다시 시도해 주세요.",
+    "contract": "서버가 이 버전에서 읽을 수 없는 응답을 보냈어요 — 잠시 후 다시 시도해 주세요.",
+    "geocodeNone": "일치하는 장소가 없어요 — 가장 가까운 도시를 입력하거나 나라 이름을 추가해 보세요.",
+    "geocodeUnavailable": "장소 검색이 응답하지 않아요 — 연결을 확인하고 다시 시도해 주세요."
   },
   "savedSheet": {
     "threeCardSpread": "세 장 스프레드",
@@ -2997,15 +3068,22 @@
     "wordsOfAffirmation": "인정하는 말"
   },
   "billing": {
-    "purchaseCancelled": "구매가 취소되었습니다",
-    "purchaseFailed": "구매에 실패했습니다",
-    "webNotAvailableOnMobile": "웹 결제는 모바일에서 이용할 수 없습니다. 앱 스토어를 이용해 주세요.",
-    "userNotAuthenticated": "사용자가 인증되지 않았습니다",
-    "alreadyPremium": "이미 프리미엄을 사용 중입니다",
-    "stripeNotConfigured": "Stripe가 구성되지 않았습니다. 지원팀에 문의하세요.",
-    "notAuthenticated": "인증되지 않았습니다",
-    "checkoutSessionFailed": "체크아웃 세션 생성에 실패했습니다",
-    "noCheckoutUrl": "체크아웃 URL이 반환되지 않았습니다"
+    "purchaseCancelled": "구매가 취소됐어요 — 결제된 것은 없어요.",
+    "purchaseFailed": "구매가 완료되지 않았어요. 다시 시도해 주세요 — 이미 결제됐다면 구매 복원을 사용하세요.",
+    "webNotAvailableOnMobile": "앱에서는 카드 결제를 이용할 수 없어요 — 대신 Google Play로 구독해 주세요.",
+    "userNotAuthenticated": "구독하려면 로그인해 주세요.",
+    "alreadyPremium": "이 계정은 이미 프리미엄을 이용 중이에요.",
+    "stripeNotConfigured": "지금은 카드 결제를 이용할 수 없어요 — 나중에 다시 시도해 주세요.",
+    "notAuthenticated": "구독하려면 로그인해 주세요.",
+    "checkoutSessionFailed": "결제 화면을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "noCheckoutUrl": "결제 화면을 열지 못했어요 — 잠시 후 다시 시도해 주세요.",
+    "paymentCancelled": "결제가 취소됐어요 — 청구된 것은 없어요.",
+    "premiumActivated": "이 계정에서 프리미엄이 활성화됐어요.",
+    "processingPayment": "구독을 처리하는 중이에요… 몇 초 걸릴 수 있어요.",
+    "processingTimeout": "결제는 됐지만 프리미엄이 아직 켜지지 않았어요. 1분 뒤 새로고침해 보세요 — 그래도 꺼져 있으면 지원팀에 문의해 주세요.",
+    "alreadyPremiumWeb": "이미 웹에서 구독했어요 — 설정에서 관리할 수 있어요.",
+    "alreadyPremiumMobile": "이미 앱에서 구독했어요 — Google Play에서 관리할 수 있어요.",
+    "productUnavailable": "지금은 스토어에서 이 플랜을 이용할 수 없어요 — 나중에 다시 시도해 주세요."
   },
   "lifePath": {
     "1": {
@@ -3166,7 +3244,7 @@
     "11": {
       "title": "직관의 전령",
       "tagline": "비전·영감·영적 시각.",
-      "purpose": "마스터의 길. 남들이 보지 못하는 것을 보고, 사람들이 가져갈 수 있는 언어로 번역한다. 비전을 땅으로 내린다 — 잠기지 않고 흘려보낸다 — 이 과제입니다.",
+      "purpose": "마스터의 길. 당신은 남들이 보지 못하는 것을 보고, 사람들이 품고 갈 수 있는 언어로 옮기기 위해 여기 있어요. 당신의 과제는 비전을 땅에 내리는 것 — 비전에 삼켜지지 말고 흘려보내는 것이에요.",
       "strengths": [
         "비전",
         "영적 감도",
@@ -3210,7 +3288,7 @@
         "압도",
         "역할만 되어 사람임을 잊음"
       ],
-      "affirmation": "충만함에서 사랑하고 봉사한다 — 내 삶도 누구의 삶만큼 소중하다."
+      "affirmation": "나는 충만함에서 사랑하고 봉사한다 — 내 삶도 누구의 삶만큼 소중하다."
     }
   },
   "chineseZodiac": {
@@ -3257,7 +3335,7 @@
     "questionLabel": "당신의 질문 (선택)",
     "questionPlaceholder": "지금 내가 이해하면 가장 도움이 될 것은 무엇일까요?",
     "castButton": "동전 던지기",
-    "casting": "점치는 중...",
+    "casting": "점치는 중…",
     "hexagramLabel": "제",
     "judgement": "단전",
     "interpretation": "해석",
@@ -3463,7 +3541,11 @@
         "name": "미제·완성의 전"
       }
     },
-    "readAsLiuYao": "이 괘를 육효로 읽기"
+    "readAsLiuYao": "이 괘를 육효로 읽기",
+    "castingLine": "6효 중 {{n}}효",
+    "readFullReading": "전체 리딩 읽기",
+    "askOracleCta": "이 괘 읽어 주기",
+    "share": "이 괘 공유"
   },
   "humanDesign": {
     "title": "휴먼디자인",
@@ -3471,7 +3553,7 @@
     "birthDate": "생년월일",
     "birthTime": "출생 시간 (선택, 결과를 더 정확하게)",
     "calculate": "나의 디자인 보기",
-    "calcFailed": "차트를 계산할 수 없었습니다",
+    "calcFailed": "디자인을 계산하지 못했어요 — 출생 정보를 확인하고 다시 시도해 주세요.",
     "needBirthDate": "생년월일이 필요합니다",
     "disclaimer": "이것은 간편 버전입니다. 완전한 휴먼디자인 차트는 정확한 출생 시점의 행성 위치가 필요합니다. 9센터 전체 바디그래프를 원하면 전용 Human Design 사이트에 출생 데이터를 입력하세요.",
     "signatureLabel": "시그니처",
@@ -3483,7 +3565,7 @@
     "affirmationLabel": "당신을 위한 아파메이션",
     "tarotPairingLabel": "타로 페어링",
     "backToInput": "다시 계산",
-    "recalculate": "다시 계산",
+    "recalculate": "다른 차트 계산하기",
     "types": {
       "manifestor": {
         "name": "매니페스터"
@@ -3500,7 +3582,27 @@
       "reflector": {
         "name": "리플렉터"
       }
-    }
+    },
+    "computing": "바디그래프를 계산하는 중…",
+    "authorityHeading": "당신의 내적 권위",
+    "bodygraphLabel": "당신의 바디그래프",
+    "centersDefined": "센터 정의됨",
+    "channelsDefined": "채널",
+    "channelsHeading": "당신의 정의된 채널",
+    "channelsNote": "각 채널은 두 센터를 이어 그 사이에 일정한 생명력의 흐름을 정의해요. 이것은 당신이라는 사람의 고정된 부분이며, 언제나 당신 곁에 있어요.",
+    "activationsLabel": "26개 활성화 전체",
+    "personalityLabel": "퍼스낼리티 (의식) — 출생 시점",
+    "designLabel": "디자인 (무의식) — 출생 전 태양 호 88°",
+    "casesHeading": "실전에서의 전략",
+    "casesIntro": "평범한 화요일 오후 같은 실제 상황에서 당신의 전략이 어떤 모습인지 보여주는 구체적인 장면들이에요.",
+    "scenarioLabel": "상황",
+    "wrongMoveLabel": "반사적인 선택",
+    "alignedMoveLabel": "결이 맞는 선택",
+    "signatureFelt": "느껴지는 시그니처",
+    "decisionScriptHeading": "결정하는 법: {{authority}}",
+    "commonMistakeLabel": "흔한 실수",
+    "realityCheckLabel": "현실 점검",
+    "share": "내 디자인 공유"
   },
   "bazi": {
     "title": "사주팔자(바지)",
@@ -3508,7 +3610,7 @@
     "birthDate": "생년월일",
     "birthTime": "출생 시간 (선택)",
     "calculate": "사주 뽑기",
-    "calcFailed": "사주를 계산할 수 없었습니다",
+    "calcFailed": "네 기둥을 세우지 못했어요 — 출생 정보를 확인하고 다시 시도해 주세요.",
     "needBirthDate": "생년월일이 필요합니다",
     "pillarsLabel": "당신의 네 기둥",
     "year": "년주",
@@ -3524,7 +3626,7 @@
     "strugglingLabel": "힘들 때",
     "affirmationLabel": "아파메이션",
     "back": "다시 계산",
-    "recalculate": "다시 계산",
+    "recalculate": "다른 생년월일로 세우기",
     "elements": {
       "wood": "목",
       "fire": "화",
@@ -3540,8 +3642,8 @@
     "luckyColorTodayLabel": "오늘의 행운 색상",
     "luckyNumbersLabel": "행운의 숫자",
     "nayinLabel": "연주의 납음",
-    "premiumTeaserBody": "당신의 내적인 힘(고전 십신), 지장간 영향, 납음, 보조 원소와 그 행운 색상·방향·숫자, 오늘의 행운 색상 위젯을 잠금 해제.",
-    "premiumTeaserCta": "프리미엄 보기",
+    "premiumTeaserBody": "내적인 힘(고전 십신), 지장간 영향, 납음, 행운 색상·방향·숫자가 담긴 보조 원소, 그리고 오늘의 행운 색상 위젯을 열어요.",
+    "premiumTeaserCta": "전체 리딩 열기",
     "premiumTeaserTitle": "프리미엄으로 더 깊이",
     "strength": {
       "balanced": {
@@ -3558,7 +3660,34 @@
       }
     },
     "supportingLabel": "당신의 보조 원소",
-    "supportingSub": "당신의 차트가 균형을 위해 기우는 원소 — 그 색을 입고, 그 방향을 향하고, 그 숫자를 가까이."
+    "supportingSub": "당신의 차트가 균형을 위해 기우는 원소 — 그 색을 입고, 그 방향을 향하고, 그 숫자를 가까이.",
+    "gender": "출생 성별 — 대운과 올해 운세에 필요해요",
+    "selectGender": "선택하면 심층 모드가 열려요",
+    "male": "남성",
+    "female": "여성",
+    "dominantNote": "당신의 주도 원소는 {{el}}이에요 — 가장 자연스러운 당신의 모습을 빚어요.",
+    "weakNote": "당신의 가장 약한 원소는 {{el}}이에요 — 이곳을 더 받쳐 주면 당신이 자라요. {{el}}을(를) 키우려면 {{el}}을(를) 낳는 {{support}}을(를) 곁에 두세요.",
+    "excessNote": "{{el}}이(가) 크게 넘쳐요. 그 그림자 표현을 주의하고, {{el}}을(를) 다스리는 {{control}}(으)로 균형을 잡으세요.",
+    "unlockDeepHint": "더 깊은 층 — 10년 대운, 올해 운세, 신살, 지지 관계 — 을 보려면 돌아가서 출생 성별을 추가하세요. 대운의 방향은 연주의 음양 × 성별로 정해지기 때문에 계산에 둘 다 필요해요.",
+    "pillarsHeading": "각 기둥이 뜻하는 것",
+    "yearPillarLabel": "년",
+    "monthPillarLabel": "월",
+    "dayPillarLabel": "일",
+    "hourPillarLabel": "시",
+    "annualHeading": "{{year}} — 당신의 한 해",
+    "currentLuckHeading": "현재 10년 대운 ({{a}}-{{b}})",
+    "luckPillarsHeading": "당신의 80년 대운 흐름",
+    "ageRange": "{{a}}-{{b}}세",
+    "structureHeading": "당신의 차트 구조",
+    "spiritStarsHeading": "차트 속 신살",
+    "branchRelationsHeading": "지지 관계",
+    "climateHeading": "당신의 조후 균형",
+    "careerHeading": "일간에 맞는 커리어",
+    "lifeAreasHeading": "재물 · 배우자 · 건강",
+    "wealthLabel": "재물",
+    "spouseLabel": "배우자",
+    "healthLabel": "건강",
+    "share": "내 사주 공유"
   },
   "ayurveda": {
     "withSecondary": "(부 도샤: {{sec}})",
@@ -3582,27 +3711,45 @@
   },
   "dream": {
     "title": "꿈 해석기",
-    "intro": "기억나는 만큼 꿈을 자세히 적어 주세요. 순서나 일관성은 걱정하지 않아도 됩니다 — 마음은 상징으로 작동합니다. 원형적 패턴을 맞춰 당신이 머무를 수 있는 질문을 돌려드립니다. 꿈에는 하나의 의미가 아니라, 초대가 있습니다.",
+    "intro": "기억나는 만큼 꿈을 자세히 적어 주세요. 순서나 또렷함은 걱정하지 않아도 돼요 — 마음은 상징으로 움직이니까요. 원형적 패턴을 맞춰 보고, 곁에 두고 곱씹을 질문을 드릴게요. 꿈에는 하나의 의미가 아니라 초대가 있어요.",
     "label": "당신의 꿈을 말해 주세요",
-    "placeholder": "어두운 바다 옆에 서 있었는데 집으로 가는 길을 찾을 수 없었다. 새 한 마리가 무언가를 부리에 물고 위로 날아갔다……",
+    "placeholder": "어두운 바다 옆에 서 있었는데 집으로 가는 길을 찾을 수 없었다. 새 한 마리가 무언가를 부리에 물고 머리 위로 날아갔다…",
     "privacy": "꿈 텍스트는 저장되지 않습니다. 당신의 기기 내부에서 분석됩니다.",
     "interpret": "내 꿈 해석하기",
     "needLonger": "꿈에 대해 조금만 더 이야기해 주세요 (몇 문장 정도).",
     "yourDream": "상징이 말하는 것",
-    "noMatch": "이 꿈 텍스트에는 흔한 원형이 즉시 떠오르지 않았지만, 그렇다고 침묵은 아닙니다. 가장 개인적인 꿈은 당신의 삶에만 고유한 상징을 사용합니다. 꿈에서 가장 강한 이미지 옆에 앉아 보세요. 묻습니다: 이것은 무엇의 반대인가? 나의 삶의 어느 부분과 운율을 맞추고 있는가?",
+    "noMatch": "이 꿈에서는 흔한 원형이 바로 떠오르지 않았어요 — 그렇다고 꿈이 침묵하는 건 아니에요. 가장 개인적인 꿈은 당신의 삶에만 있는 상징을 쓰곤 해요. 꿈에서 가장 강렬했던 이미지 곁에 머물러 보세요. 그리고 물어보세요. 이것은 무엇의 반대일까? 내 삶의 어느 부분과 닮아 있을까?",
     "symbolsLabel": "상징들",
     "reflectionLabel": "이 질문을 품고",
     "practiceLabel": "꿈 연습",
     "practiceBody": "머리맡에 노트를 두세요. 깨자마자, 사라지기 전에 꿈을 기록하세요. 시간이 쌓이면 반복되는 상징이 당신의 무의식이 당신과 나누는 언어를 드러냅니다.",
     "archetypeLabel": "꿈 상징 읽기",
     "back": "다른 꿈 해석하기",
-    "another": "다른 꿈",
-    "genericTitle": "꿈 읽기",
-    "genericReflection": "꿈은 메시지를 전합니다 — 남기고 가는 질문을 소중히 하세요."
+    "another": "다른 꿈 해석하기",
+    "genericTitle": "꿈 리딩",
+    "genericReflection": "꿈은 메시지를 전합니다 — 남기고 가는 질문을 소중히 하세요.",
+    "interpreting": "꿈을 읽는 중…",
+    "yourDreamLabel": "당신의 꿈",
+    "coreThemeLabel": "핵심 주제",
+    "emotionalToneLabel": "정서",
+    "archetypesLabel": "작동하는 원형",
+    "shadowPromptLabel": "그림자 질문",
+    "integrationLabel": "통합 연습",
+    "compensatoryLabel": "깨어 있는 당신에게 빠져 있는 것",
+    "compensatoryHint": "융은 꿈이 의식의 태도를 보상한다고 봤어요. 이것은 당신이 아직 갖고 있지 않은 것을 꿈이 건네는 부분이에요.",
+    "symbolicLayersLabel": "상징의 층",
+    "colorsLabel": "등장한 색",
+    "numbersLabel": "등장한 숫자",
+    "directionsLabel": "움직임의 방향",
+    "resourcesLabel": "더 깊이",
+    "culturesLabel": "여러 전통이 꿈을 읽는 법",
+    "lucidLabel": "자각몽 기법",
+    "nightmaresLabel": "악몽 다루기",
+    "share": "이 해석 공유"
   },
   "extraQuizzes": {
     "dark-triad": {
-      "title": "다크 트라이어드 — 그림자 삼각",
+      "title": "다크 트라이어드 그림자",
       "description": "심리학에서 \"다크 트라이어드\"라 부르는 세 가지 그림자 특성 — 자기애, 마키아벨리즘, 사이코패시 — 는 누구에게나 어느 정도 있습니다. 당신의 그림자가 어디서 가장 강한지 비춰 보세요.",
       "timeEstimate": "4분",
       "whatYouGet": [
@@ -3633,7 +3780,7 @@
     },
     "boundaries": {
       "title": "경계선 체크인",
-      "description": "당신의 경계선은 어디가 단단하고, 어디가 약하고, 어디서 상대에 따라 변합니까? 네 가지 패턴 — 단단한 벽, 투과적 개방, 건강한 유연함, 상황 의존 — 으로 봅니다.",
+      "description": "당신의 경계선은 어디가 단단하고, 어디가 약하고, 어디서 상대에 따라 달라지나요? 네 가지 패턴 — 단단한 벽, 투과되는 개방, 건강한 유연함, 상황 의존 — 으로 봐요.",
       "timeEstimate": "4분",
       "whatYouGet": [
         "당신의 경계가 단단한 곳, 느슨한 곳, 상황에 따라 변하는 곳",
@@ -3643,7 +3790,7 @@
     },
     "burnout": {
       "title": "번아웃 체크",
-      "description": "번아웃은 측정 가능한 세 가지 차원이 있습니다 — 소진(에너지 고갈), 냉소(업무와의 거리), 효능감 상실(나는 더 이상 효과적이지 않다). 오늘 어디에 있는지 봅니다.",
+      "description": "번아웃에는 측정할 수 있는 세 차원이 있어요 — 소진(에너지 고갈), 냉소(일과의 거리), 효능감 상실(나는 더 이상 잘하지 못한다). 오늘 어디에 있는지 확인해요.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "소진 vs 냉소 vs 효능감 저하 프로파일",
@@ -3653,7 +3800,7 @@
     },
     "communication": {
       "title": "커뮤니케이션 스타일",
-      "description": "어려움 속에서 네 가지 스타일이 드러납니다 — 수동적(숨기), 공격적(치기), 수동공격적(옆에서), 어서티브(명확 + 존중). 당신의 기본값과, 조절되어 있을 때 쓸 수 있는 것을 봅니다.",
+      "description": "어려움 속에서 네 가지 스타일이 드러나요 — 수동적(숨기), 공격적(치기), 수동공격적(에둘러 치기), 자기주장적(명확하고 존중하는). 당신의 기본값과, 마음이 안정됐을 때 쓸 수 있는 스타일을 봐요.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "스트레스 상황에서의 기본 스타일",
@@ -3716,7 +3863,7 @@
     },
     "love-styles": {
       "title": "사랑의 스타일",
-      "description": "당신이 주로 드러내는 4가지 그리스식 사랑 — Eros(열정), Philia(깊은 우정), Storge(안정적인 따뜻함), Agape(무조건적인 사랑) — 중 어느 것인지. 우열이 아닌, 각각이 다른 것을 요구합니다.",
+      "description": "네 가지 그리스식 사랑 — Eros(열정), Philia(깊은 우정), Storge(한결같은 따뜻함), Agape(무조건적 사랑) — 중 당신이 앞세우는 것은 무엇인지. 어느 하나가 더 낫지는 않아요 — 각각 당신에게 다른 것을 요구할 뿐이에요.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "당신이 주로 드러내는 4가지 그리스식 사랑 스타일",
@@ -3726,7 +3873,7 @@
     },
     "parenting-style": {
       "title": "양육 스타일",
-      "description": "스트레스 상황과 최상의 상태에서 당신의 기본 Baumrind 양육 스타일 — 권위적/권위주의적/허용적/방임적 — 이 어떻게 달라지는지. 연구 결과와 함께 가지고 다닐 긍정 확언 하나.",
+      "description": "당신의 기본 Baumrind 양육 스타일 — 권위적, 권위주의적, 허용적, 방임적 — 이 스트레스 상황과 최상의 상태에서 어떻게 달라지는지. 각 스타일에 대한 연구 결과와 함께 품고 갈 확언 하나.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "당신의 기본 양육 스타일 (권위적/권위주의적/허용적/방임적)",
@@ -3746,7 +3893,7 @@
     },
     "empath-hsp": {
       "title": "엠패스 / HSP",
-      "description": "엠패스, 매우 민감한 사람(HSP), 둘 다, 또는 둘 다 아님. 신경학적으로 각각이 의미하는 것 — 관련되어 있지만 동일하지 않음 — 과 당신의 회로에 맞는 실용적인 자기 돌봄.",
+      "description": "엠패스, 매우 민감한 사람(HSP), 둘 다, 혹은 둘 다 아님. 신경학적으로 각각이 뜻하는 것 — 관련은 있지만 같지는 않아요 — 과 당신의 기질에 맞는 실용적인 자기 돌봄.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "엠패스, HSP, 둘 다, 또는 둘 다 아님",
@@ -3756,7 +3903,7 @@
     },
     "self-compassion": {
       "title": "자기연민",
-      "description": "당신의 주된 자기연민 태도 — 자기친절, 자기비판, 마음챙김, 과잉동일시. 당신이 자신을 지지하는 곳과 그렇지 않은 곳, 그리고 다음 단계를 위한 긍정 확언.",
+      "description": "당신의 주된 자기연민 태도 — 자기친절, 자기비판, 마음챙김, 과잉동일시. 자신을 지지하는 곳과 그렇지 않은 곳, 그리고 다음 걸음을 위한 확언 하나.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "당신의 주된 자기연민 태도",
@@ -3766,7 +3913,7 @@
     },
     "mood-screener": {
       "title": "기분 신호 점검",
-      "description": "비진단적 PHQ-2 스타일 질문을 통한 지난 2주간 기분 신호 읽기. 진단이 아니라 자기 성찰의 거울 — 답변이 도움이 필요함을 시사하면 위기 자원을 보여줍니다.",
+      "description": "비진단적 PHQ-2 방식의 질문으로 지난 2주간의 기분 신호를 읽어요. 진단이 아니라 자기 성찰의 거울이에요 — 답변이 도움이 필요함을 시사하면 위기 지원 자원을 보여드려요.",
       "timeEstimate": "3분",
       "whatYouGet": [
         "지난 2주간 기분 신호 읽기",
@@ -3873,7 +4020,22 @@
       "curious": {
         "name": "호기심"
       }
-    }
+    },
+    "needMoreForLetter": "주간 편지를 받으려면 최소 3일을 기록하세요.",
+    "letterFailed": "지금은 편지를 쓰지 못했어요. 잠시 후 다시 시도해 주세요.",
+    "letterHeading": "이번 주를 위한 편지",
+    "letterIntro": "지난 14일의 기록을 읽고 따뜻하고 구체적인 편지를 써 드려요 — 줄곧 당신을 지켜봐 온 지혜로운 친구처럼.",
+    "writingLetter": "쓰는 중…",
+    "generateLetter": "내 편지 쓰기",
+    "letterTitle": "당신의 주간 편지",
+    "themeLabel": "주제",
+    "carePracticeLabel": "한 가지 연습",
+    "rewriteLetter": "다른 편지 쓰기",
+    "patternLabel": "이번 주",
+    "heaviestDayLabel": "가장 무거웠던 날",
+    "lightestDayLabel": "가장 가벼웠던 날",
+    "weekOverWeekLabel": "지난주 대비",
+    "driftUnits": "무드 y값 변화"
   },
   "compat": {
     "title": "파트너 궁합",
@@ -3887,7 +4049,7 @@
     "selectOrSkip": "선택 또는 건너뛰기",
     "runButton": "궁합 확인하기",
     "needBothSides": "양쪽에서 최소한 하나의 정보가 필요합니다 (MBTI 또는 생년월일).",
-    "failed": "궁합을 계산할 수 없었습니다",
+    "failed": "궁합을 계산하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "back": "다른 짝 보기",
     "another": "다른 짝",
     "compatibilityLabel": "궁합",
@@ -3895,18 +4057,33 @@
     "astroLabel": "점성술 핏",
     "strengthsLabel": "강점",
     "growthLabel": "성장의 모서리",
-    "adviceLabel": "조언"
+    "adviceLabel": "조언",
+    "yourBirthTime": "당신의 출생 시각 (리딩이 더 정밀해져요 — 달까지 포함)",
+    "partnerBirthTime": "상대의 출생 시각 (선택)",
+    "computing": "각도를 계산하는 중…",
+    "synastryLabel": "점성술 시너스트리",
+    "harmoniousLabel": "조화",
+    "intenseLabel": "강렬",
+    "challengingLabel": "도전",
+    "synastryExplainer": "각 각도는 당신의 행성과 상대의 행성 사이의 실제 기하학적 관계예요. 조화로운 각도는 쉽게 흐르고, 강렬한 각도는 증폭시키고, 도전적인 각도는 성장의 노력을 요구해요.",
+    "topAspectsLabel": "가장 많은 것을 말해 주는 각도",
+    "myPlanet": "당신의",
+    "partnerPlanet": "상대의",
+    "elementalLabel": "원소의 조합",
+    "compositeLabel": "제3의 존재로서의 관계",
+    "compositeIntro": "컴포짓 차트는 관계 그 자체를 두 사람 각각과는 별개의, 고유한 성격을 가진 존재로 다뤄요. 이 관찰은 그 관계라는 존재를 설명해요.",
+    "share": "이 궁합 공유"
   },
   "wisdom": {
     "title": "오늘의 지혜"
   },
   "fengshui": {
     "title": "풍수 팔괘",
-    "intro": "팔괘 맵은 삶을 아홉 영역으로 나눕니다. 당신의 삶의 각 영역이 지금 어떻게 느껴지는지 1-5로 평가해 주세요. 가장 손길이 필요한 영역과 그것을 살리는 풍수 조정을 알려 드립니다.",
+    "intro": "팔괘 맵은 삶을 아홉 영역으로 나눠요. 삶의 각 영역이 지금 어떻게 느껴지는지 1-5로 평가해 주세요. 가장 손길이 필요한 영역과 그것을 살리는 풍수 조정을 알려드려요.",
     "scale": "1 = 심하게 고갈 · 3 = 괜찮음 · 5 = 번성",
     "reveal": "나의 팔괘 보기",
     "backToRate": "다시 평가하기",
-    "reRate": "다시 평가",
+    "reRate": "영역 다시 평가하기",
     "mapLabel": "당신의 팔괘 지도",
     "overallScore": "전체: {{n}} / 5",
     "focusLabel": "손길이 필요한 영역",
@@ -3944,43 +4121,65 @@
       "helpers": {
         "name": "도움·여행"
       }
-    }
+    },
+    "kuaHeading": "당신의 본명괘 (선택)",
+    "kuaIntro": "출생 연도와 성별을 추가하면 팔택 풍수의 바탕인 본명괘 숫자를 계산해요. 침대, 책상, 현관을 놓기에 좋은 4방향과 피할 4방향을 보여드려요.",
+    "birthYearLabel": "출생 연도",
+    "genderLabel": "출생 성별",
+    "selectOrSkip": "선택 또는 건너뛰기",
+    "male": "남성",
+    "female": "여성",
+    "kuaPreview": "본명괘 {{n}} · {{trigram}} · {{group}} 그룹",
+    "kuaResultHeading": "당신의 8방위 (본명괘 {{n}})",
+    "kuaResultIntro": "당신은 {{group}} 그룹의 {{trigram}}({{element}})이에요. 침대, 책상, 현관이 좋은 4방향 중 하나를 향하도록 놓으세요. 피할 4방향 — 특히 절명 방향 — 은 피하세요.",
+    "kuaFavorable": "좋은 방향",
+    "kuaUnfavorable": "피할 방향",
+    "annualHeading": "연간 비성 · {{year}}",
+    "annualIntro": "해마다 9개의 별이 집의 9궁을 돌아요. 올해 각 방향에 자리한 별이 무엇을 살리고 무엇을 피할지 알려줘요. 현관에서 집 안쪽을 바라보는 기준으로 방향을 잡으세요.",
+    "roomsHeading": "방별 안내",
+    "rules": "원칙",
+    "avoid": "피할 것",
+    "problemsHeading": "흔한 문제 체크리스트",
+    "problemsIntro": "집에 해당하는 항목을 눌러 보세요. 각각 구체적인 해결법이 따라와요. 대부분 3-5개가 해당되고, 심각도가 높은 것부터 고치면 몇 주 안에 눈에 보이는 변화가 있어요.",
+    "why": "왜 중요한가",
+    "fix": "해결법",
+    "share": "내 팔괘 공유"
   },
   "community": {
     "title": "커뮤니티",
-    "postButton": "게시",
-    "whisperButton": "속삭이기",
+    "postButton": "글 쓰기",
+    "whisperButton": "속삭임 쓰기",
     "newPost": "새 게시물",
     "topicLabel": "주제",
-    "placeholder": "리딩, 생각, 질문 — 무엇이든.",
+    "placeholder": "리딩, 생각, 질문을 나눠 보세요…",
     "postAnonymously": "익명으로 게시",
-    "send": "게시",
-    "posting": "게시 중…",
+    "send": "댓글 올리기",
+    "posting": "올리는 중…",
     "posted": "게시됨",
-    "postFailed": "게시할 수 없었어요",
+    "postFailed": "올리지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "contentTooLong": "너무 길어요 (최대 2000자)",
     "contentDisallowed": "그 표현은 사용할 수 없어요",
     "contentEmpty": "먼저 무언가 써 주세요",
-    "anonymous": "이름 없는 구도자",
-    "loadFailed": "피드를 불러올 수 없었어요",
+    "anonymous": "익명",
+    "loadFailed": "피드를 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "empty": "아직 게시물이 없어요. 첫 번째가 되어 보세요.",
     "signInFirst": "반응하려면 로그인이 필요합니다",
     "signInToPost": "게시, 반응, 댓글을 위해 로그인해 주세요.",
-    "reactFailed": "반응할 수 없었어요",
+    "reactFailed": "반응을 남기지 못했어요 — 다시 시도해 주세요.",
     "reported": "신고가 접수됐어요. 감사합니다.",
-    "reportFailed": "신고할 수 없었어요",
+    "reportFailed": "신고를 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "report": "신고",
     "reportPostTitle": "게시물 신고",
     "blockUser": "사용자 차단",
     "blocked": "차단했어요",
-    "blockFailed": "차단할 수 없었어요",
+    "blockFailed": "이 멤버를 차단하지 못했어요 — 다시 시도해 주세요.",
     "back": "피드로 돌아가기",
     "backToFeed": "피드로 돌아가기",
     "commentsHeading": "댓글",
     "noComments": "아직 댓글이 없어요. 첫 응답을 남겨보세요.",
-    "commentPlaceholder": "응답 작성…",
+    "commentPlaceholder": "답글을 써 보세요…",
     "commentAnonymously": "익명으로 댓글",
-    "commentFailed": "댓글을 달 수 없었어요",
+    "commentFailed": "댓글을 올리지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "topics": {
       "all": "전체",
       "general": "일반",
@@ -4010,12 +4209,15 @@
     },
     "postedUnderReview": "게시되었습니다 — 곧 검토하겠습니다.",
     "commentUnderReview": "댓글이 게시되었습니다 — 곧 검토하겠습니다.",
-    "contentBlocked": "이 콘텐츠는 커뮤니티 가이드라인에 위배됩니다."
+    "contentBlocked": "이 콘텐츠는 커뮤니티 가이드라인에 위배됩니다.",
+    "publishPost": "내 글 올리기"
   },
   "common": {
     "mainContent": "본문",
     "loading": "불러오는 중…",
-    "cancel": "취소"
+    "cancel": "취소",
+    "close": "닫기",
+    "back": "뒤로"
   },
   "moonstones": {
     "balanceLabel": "문스톤",
@@ -4023,16 +4225,50 @@
     "claiming": "받는 중…",
     "alreadyClaimed": "내일 다시 오세요",
     "claimed": "+{{n}} 문스톤 · {{d}}일 연속 접속",
-    "claimFailed": "오늘의 보상을 받을 수 없었어요",
-    "topUp": "충전"
+    "claimFailed": "오늘의 보상을 받지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "topUp": "충전",
+    "premiumLabel": "프리미엄 · 모든 리딩 열림",
+    "earn": "문스톤 모으기",
+    "costLine": "리딩 한 번에 <gold>문스톤 {{n}}개</gold>를 사용해요",
+    "youHave": "보유 {{n}}개",
+    "earnSheet": {
+      "title": "문스톤 모으기",
+      "titleSoftCap": "일일 한도에 도달했어요",
+      "softCapBody": "지난 24시간 동안 리딩을 50번 했어요 — 모두를 위해 AI 품질을 지키는 한도예요. 다음 리딩은 <gold>{{when}}</gold> 뒤에 열리고, 오래된 리딩이 지나가면서 자리가 하나씩 비워져요. 프리미엄은 그동안에도 계속 유지돼요.",
+      "softCapSoon": "몇 시간",
+      "now": "지금",
+      "timeHM": "{{h}}시간 {{m}}분",
+      "timeM": "{{m}}분",
+      "browseBody": "AI 리딩 한 번에 <gold>문스톤 {{cost}}개</gold>가 들어요.",
+      "insufficientBody": "이 리딩에는 <gold>문스톤 {{cost}}개</gold>가 필요해요.",
+      "youHave": "보유 <strong>{{n}}</strong>개.",
+      "earnBelow": "아래에서 더 모으세요.",
+      "adCredited": "문스톤 {{n}}개가 추가됐어요.",
+      "adNotReady": "아직 준비된 광고가 없어요 — 잠시 후 다시 시도해 주세요.",
+      "adPersistFailed": "광고는 봤지만 문스톤을 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+      "adDismissed": "광고가 일찍 닫혔어요 — 끝까지 봐야 문스톤을 받을 수 있어요.",
+      "adsUnavailable": "이 기기에서는 광고를 이용할 수 없어요.",
+      "checkinDone": "문스톤 {{n}}개가 추가됐어요 — {{day}}일 연속 체크인이에요.",
+      "checkinFailed": "체크인하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+      "watchAdTitle": "짧은 영상 보기",
+      "watchAdSub": "문스톤 {{n}}개 받기",
+      "watchAdNotReady": "지금은 준비된 광고가 없어요",
+      "checkinTitle": "데일리 체크인",
+      "checkinSub": "문스톤 {{min}}~{{max}}개, 연속 기록에 따라 늘어나요",
+      "checkinRange": "+{{min}}~+{{max}}",
+      "checkinClaimed": "오늘은 이미 체크인했어요.",
+      "premiumTitle": "프리미엄 시작하기",
+      "premiumSub": "문스톤 소모 없음, 광고 없음, 모든 스프레드와 차트",
+      "notNow": "나중에"
+    }
   },
   "companion": {
     "title": "컴패니언",
-    "newConversation": "새로 시작",
+    "newConversation": "새 대화",
     "emptyState": "무엇이든 물어 보세요 — 가슴에 품은 질문, 해석되길 바라는 꿈, 이해하고 싶은 이름.",
-    "placeholder": "컴패니언에게 물어보세요...",
+    "placeholder": "컴패니언에게 물어보세요…",
     "thinking": "생각 중…",
-    "sendFailed": "컴패니언에게 닿지 못했어요: {{err}}",
+    "sendFailed": "컴패니언에게 닿지 못했어요 — 연결을 확인하고 다시 보내 주세요.",
     "dailyLimitReached": "오늘의 메시지 한도에 도달했어요 — 내일 다시 오세요",
     "dailyRemaining": "오늘 {{remaining}}개 남음",
     "personas": {
@@ -4056,7 +4292,7 @@
   },
   "advisors": {
     "title": "어드바이저",
-    "intro": "Arcana에 합류하는 리더들을 만나 보세요. 유료 세션은 단계적으로 공개되고 있어요. 관심을 표시하면 각 어드바이저가 예약을 열 때 알려드립니다.",
+    "intro": "Arcana에 합류하는 리더들을 만나 보세요. 유료 세션은 단계적으로 열리고 있어요. 관심을 등록하고 다시 들러 주세요 — 어드바이저가 예약을 열면 프로필에 세션 예약 버튼이 나타나요.",
     "back": "어드바이저 전체",
     "empty": "아직 어드바이저가 없어요. 곧 다시 찾아 주세요.",
     "yearsLabel": "경력",
@@ -4065,12 +4301,12 @@
     "specialtiesLabel": "전문",
     "rateLabel": "참고 요금",
     "expressInterest": "관심 표시",
-    "bookingsComingSoon": "유료 세션은 단계적으로 열리고 있어요. 어떤 점을 돕길 원하는지 알려주시면 이 어드바이저가 예약을 열 때 알려드려요.",
+    "bookingsComingSoon": "유료 세션은 단계적으로 열리고 있어요. 어떤 도움이 필요한지 알려 주세요 — 이 어드바이저가 예약을 열면 이 페이지에 세션 예약 버튼이 나타나요.",
     "topicPlaceholder": "어떤 주제로 이야기하고 싶나요? (선택)",
-    "notifyMe": "예약이 열리면 알려주세요",
+    "notifyMe": "관심 등록하기",
     "submitting": "제출 중…",
-    "interestSubmitted": "관심을 기록했어요 — {{n}}님이 예약을 열면 알려드립니다.",
-    "interestFailed": "관심을 제출할 수 없었어요",
+    "interestSubmitted": "관심을 기록했어요. 이 프로필에 다시 들러 주세요 — {{n}}님이 예약을 열면 여기에 세션 예약 버튼이 나타나요.",
+    "interestFailed": "관심을 기록하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "signInToExpress": "관심 표시를 하려면 로그인해 주세요",
     "specialties": {
       "tarot": "타로",
@@ -4083,7 +4319,8 @@
       "shadow-work": "그림자 작업",
       "creativity": "창조성",
       "breakup-recovery": "이별 회복"
-    }
+    },
+    "bookCta": "세션 예약"
   },
   "moon": {
     "title": "오늘 밤의 달",
@@ -4107,7 +4344,7 @@
         "ritual": "의도와 당신 사이에 선 장애물 하나를 적으세요. 그걸 넘기는 다음 정확한 행동을 쓰세요."
       },
       "waxing-gibbous": {
-        "name": "영달",
+        "name": "차오르는 달",
         "guidance": "결과가 가까우나 다듬음이 필요합니다. 지금은 편집·점검·수정 같은 지루하지만 꼼꼼한 일을 하세요.",
         "ritual": "이번 주기에 쌓은 것을 검토하세요. 어떤 한 가지 디테일을 개선하면 전체가 달라질까요?"
       },
@@ -4117,7 +4354,7 @@
         "ritual": "달빛 아래(또는 창가에서) 이번 주기에 마친 일 세 가지를 이름 붙이세요. 피하던 진실 하나를 말하세요."
       },
       "waning-gibbous": {
-        "name": "기울어가는 영달",
+        "name": "기우는 달",
         "guidance": "배운 것을 나누세요. 가르치고, 감사하고, 기록하세요. 이는 통합의 시간 — 애쓰는 때가 아닙니다.",
         "ritual": "이번 주기에 당신을 도운 누군가에게 감사 메시지 하나를 보내세요. 배운 점 하나를 일기에 쓰세요."
       },
@@ -4148,7 +4385,17 @@
     "meaningLabel": "의미",
     "journalPrompt": "저널 프롬프트",
     "shareButton": "이 점괘 공유",
-    "elementLabel": "원소"
+    "elementLabel": "원소",
+    "questionLabel": "당신의 질문 (선택)",
+    "questionPlaceholder": "지금 내가 가장 이해해야 할 것은 무엇일까요?",
+    "castLabel": "세 룬 던지기",
+    "back": "다시 던지기",
+    "yourQuestion": "당신의 질문",
+    "reversed": "역방향",
+    "whenItLandsLabel": "이것이 당신에게 닿을 때",
+    "promptLabel": "저널 프롬프트",
+    "askOracleCta": "이 점괘 전체 읽어 주기",
+    "share": "이 점괘 공유"
   },
   "dice": {
     "title": "주사위 오라클",
@@ -4157,25 +4404,31 @@
     "promptLabel": "이 질문을 품기",
     "rollButton": "주사위 굴리기",
     "rollAgain": "다시 굴리기",
-    "rolling": "굴리는 중..."
+    "rolling": "굴리는 중…",
+    "astroIntro": "점성가의 주사위 — 세 개가 한 번에 떨어져요. 행성은 무엇을, 별자리는 어떻게, 하우스는 삶의 어디에서인지 말해요. 질문을 품고 굴려 보세요.",
+    "askOracle": "오라클에게 이것에 대해 묻기"
   },
   "crisis": {
     "title": "당신은 혼자가 아닙니다",
     "subtitle": "작성하신 내용 중 일부를 보았습니다. 지금 힘드시다면 아래 도움을 요청해 보세요 — 무료이고 비밀이 보장됩니다.",
     "phone": {
-      "title": "988 자살 및 위기 상담전화",
-      "body": "Call or text 988 · 24/7 · US",
-      "cta": "통화"
+      "title": "자살예방 상담전화",
+      "body": "109 · 24시간 · 대한민국",
+      "cta": "전화하기",
+      "number": "109"
     },
     "text": {
-      "title": "Crisis Text Line",
-      "body": "HOME을 741741로 문자 · 미국/영국/캐나다/아일랜드",
-      "cta": "문자"
+      "title": "정신건강위기상담전화",
+      "body": "1577-0199 · 24시간",
+      "cta": "전화하기",
+      "number": "1577-0199",
+      "scheme": "tel",
+      "keyword": ""
     },
     "international": {
       "title": "국제 도움전화"
     },
-    "footer": "Arcana는 의료 서비스가 아닙니다. 급박한 위험이 있다면, 지역 긴급 전화번호로 연락하세요.",
+    "footer": "Arcana는 의료 서비스가 아니에요. 긴급한 상황이라면 119 또는 112로 전화하세요.",
     "closeButton": "지금은 괜찮아요"
   },
   "referral": {
@@ -4185,23 +4438,23 @@
     "yourCodeLabel": "내 코드",
     "copy": "링크 복사",
     "copied": "링크 복사됨",
-    "copyFailed": "복사할 수 없습니다",
-    "share": "공유",
-    "shareText": "저는 Arcana로 타로와 점성을 쓰고 있어요 — 제 코드를 쓰면 Moonstone 100개가 무료예요: {{url}}",
+    "copyFailed": "코드를 복사하지 못했어요 — 직접 선택해서 복사해 주세요.",
+    "share": "내 코드 공유",
+    "shareText": "저는 Arcana로 타로와 점성술을 보고 있어요 — 제 코드를 쓰면 문스톤 100개가 무료예요: {{url}}",
     "invitesCount": "당신의 코드로 {{n}}명이 가입했어요",
     "redeemLabel": "코드가 있나요?",
-    "redeemHelper": "처음 30일 안에 친구의 코드를 입력해 100 Moonstone을 받으세요.",
+    "redeemHelper": "가입 후 30일 안에 친구의 코드를 입력하면 문스톤 100개를 받아요.",
     "codePlaceholder": "ABCD1234",
-    "redeem": "사용하기",
+    "redeem": "이 코드 사용하기",
     "redeeming": "적용 중…",
-    "redeemSuccess": "+{{n}} Moonstone — 환영해요!",
+    "redeemSuccess": "+{{n}} 문스톤 — 환영해요.",
     "alreadyRedeemed": "이미 추천 코드를 사용했어요.",
     "errors": {
       "alreadyRedeemed": "이미 코드를 사용했어요.",
       "notFound": "코드를 찾을 수 없어요.",
       "selfRedeem": "자신의 코드는 사용할 수 없어요.",
       "accountTooOld": "추천 코드는 첫 30일에만 사용할 수 있어요.",
-      "generic": "코드를 사용할 수 없어요."
+      "generic": "코드를 사용하지 못했어요 — 코드를 확인하고 다시 시도해 주세요."
     }
   },
   "yearAhead": {
@@ -4217,20 +4470,23 @@
       "feat4": "한 해를 관통하는 서사"
     },
     "unlockCta": "{{n}} Moonstones로 해제",
-    "unlocking": "해제 중…",
     "unlocked": "예보가 해제됨",
-    "unlockFailed": "해제할 수 없음",
-    "insufficientBalance": "Moonstones가 부족합니다 — 데일리 체크인이나 초대로 더 모으세요",
-    "balance": "잔액: {{n}} Moonstones",
-    "priceNote": "Stripe로 ${{price}} 결제도 가능 (곧 제공)",
+    "unlockFailed": "예보를 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "insufficientBalance": "문스톤이 부족해요 — {{n}}개가 필요해요. 데일리 체크인, 광고, 초대로 더 모으세요.",
     "computing": "당신의 올해를 그리는 중…",
     "errorNatalMissing": "계산된 출생 차트를 찾을 수 없습니다. 프로필에서 출생 정보를 다시 입력하세요.",
     "errorGeneric": "예보를 불러올 수 없습니다. 잠시 후 다시 시도하세요.",
     "overall": "전체 흐름",
     "emptyMonth": "점성학적으로 한달이 고요합니다. 쉬어가세요.",
     "disclaimer": "점성학은 상징적 렌즈이지 예언이 아닙니다. 트랜싯은 원형적 날씨를 설명할 뿐 — 그 안에서 무엇을 할지는 당신의 몫입니다.",
-    "stripeFailed": "결제를 시작할 수 없음",
-    "payWithStripe": "또는 카드로 ${{price}} 결제"
+    "stripeFailed": "결제 화면을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "upgradeToPremium": "프리미엄에 포함된 것 보기",
+    "orEarnMoonstones": "또는 문스톤 {{n}}개로 열기",
+    "balanceShort": "잔액: {{n}}",
+    "earnHint": "데일리 체크인, 광고 보기, 친구 초대로 문스톤을 모을 수 있어요.",
+    "earnNow": "광고 보고 문스톤 {{n}}개 받기",
+    "eventCount": "트랜짓 {{n}}개",
+    "retry": "예보 다시 불러오기"
   },
   "natalReport": {
     "title": "전체 출생 차트",
@@ -4245,12 +4501,9 @@
       "feat4": "브라우저에서 PDF로 저장하거나 인쇄"
     },
     "unlockCta": "{{n}} Moonstones로 잠금 해제",
-    "unlocking": "잠금 해제 중…",
     "unlocked": "차트 잠금 해제됨",
-    "unlockFailed": "잠금 해제에 실패했어요",
-    "insufficientBalance": "Moonstones가 부족합니다 — 매일 출석이나 초대로 더 모으세요",
-    "balance": "잔액: {{n}} Moonstones",
-    "priceNote": "Stripe로 ${{price}} 결제도 가능 (곧 제공)",
+    "unlockFailed": "보고서를 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "insufficientBalance": "문스톤이 부족해요 — {{n}}개가 필요해요. 데일리 체크인, 광고, 초대로 더 모으세요.",
     "errorChartMissing": "계산된 출생 차트를 찾지 못했어요. 프로필에서 출생 정보를 다시 입력해주세요.",
     "printCta": "PDF로 저장",
     "bigThreeHeading": "Big Three",
@@ -4273,15 +4526,16 @@
     "synastryPrompt": "파트너 출생 정보",
     "partnerNamePlaceholder": "파트너 이름(선택)",
     "synastryCta": "파트너 차트 오버레이",
-    "synastryFailed": "시너스트리 계산에 실패했어요.",
+    "synastryFailed": "시너스트리를 계산하지 못했어요 — 양쪽의 출생 정보를 확인하고 다시 시도해 주세요.",
     "overlayFailed": "오버레이를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
     "balanceShort": "잔액: {{n}}",
     "earnHint": "매일 출석 + 친구 초대로 모을 수 있어요.",
     "orEarnMoonstones": "또는 문스톤 {{n}}개로 잠금 해제",
     "crossAspects": "주요 교차 각",
     "disclaimer": "점성술은 상징적 렌즈이지 예언이 아닙니다. 당신의 차트는 기질의 지도 — 그 활용은 온전히 당신의 몫입니다.",
-    "stripeFailed": "결제를 시작하지 못했어요",
-    "payWithStripe": "혹은 카드로 ${{price}} 결제"
+    "stripeFailed": "결제 화면을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "upgradeToPremium": "프리미엄에 포함된 것 보기",
+    "earnNow": "광고 보고 문스톤 {{n}}개 받기"
   },
   "careerReport": {
     "title": "커리어 원형",
@@ -4296,12 +4550,9 @@
       "feat4": "새 역할에서의 첫 90일 계획"
     },
     "unlockCta": "{{n}} 문스톤으로 잠금 해제",
-    "unlocking": "잠금 해제 중…",
     "unlocked": "리포트가 열렸습니다",
-    "unlockFailed": "잠금 해제할 수 없습니다",
-    "insufficientBalance": "문스톤이 부족합니다 — 데일리 체크인이나 초대로 더 모으세요",
-    "balance": "잔액: {{n}} 문스톤",
-    "priceNote": "Stripe로 ${{price}}에 구매 가능(곧 제공)",
+    "unlockFailed": "보고서를 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "insufficientBalance": "문스톤이 부족해요 — {{n}}개가 필요해요. 데일리 체크인, 광고, 초대로 더 모으세요.",
     "bestFit": "최적 역할",
     "drains": "당신을 소모시키는 환경",
     "collaboration": "협업 패턴",
@@ -4310,13 +4561,18 @@
     "monthLabel": "{{n}}월",
     "reflection": "이 질문들과 함께 머물러 보기",
     "share": "내 원형 공유하기",
-    "stripeFailed": "결제를 시작할 수 없습니다",
-    "payWithStripe": "또는 카드로 ${{price}} 결제"
+    "stripeFailed": "결제 화면을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "upgradeToPremium": "프리미엄에 포함된 것 보기",
+    "orEarnMoonstones": "또는 문스톤 {{n}}개로 열기",
+    "balanceShort": "잔액: {{n}}",
+    "earnHint": "데일리 체크인, 광고 보기, 친구 초대로 문스톤을 모을 수 있어요.",
+    "earnNow": "광고 보고 문스톤 {{n}}개 받기",
+    "fullReport": "전체 보고서"
   },
   "compatInvite": {
     "createTitle": "누군가 초대하기",
     "createSubtitle": "링크를 보내세요. 상대가 자신의 파트를 하고, 함께 공동 리딩을 봅니다.",
-    "createFailed": "초대를 만들 수 없어요",
+    "createFailed": "초대 링크를 만들지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "pickKind": "상대궁합 종류",
     "nothingToShare": "먼저 성격 테스트를 하거나 생일을 추가하세요.",
     "generateLink": "초대 링크 생성",
@@ -4336,7 +4592,7 @@
     "ownInvite": "이건 당신의 초대예요. 친구나 파트너에게 링크를 공유하세요 — 상대가 응답해야 해요.",
     "signInTitle": "로그인하여 매치를 확인하세요",
     "signInBody": "무료 계정을 만들거나 로그인해 궁합 리딩의 당신 파트를 진행하세요.",
-    "signInCta": "계속",
+    "signInCta": "로그인하고 궁합 보기",
     "resultLabel": "궁합",
     "mbtiSection": "성격 궁합",
     "astroSection": "점성술 궁합",
@@ -4349,10 +4605,10 @@
     "responderDefault": "당신",
     "shareText": "Arcana에서 나와 궁합 리딩 해봐요: {{url}}",
     "errors": {
-      "selfInvite": "자기 초대에는 응답할 수 없어요.",
+      "selfInvite": "자신의 초대에는 응답할 수 없어요.",
       "expired": "이 초대는 만료되었어요.",
       "notFound": "초대를 찾을 수 없어요.",
-      "generic": "응답할 수 없어요."
+      "generic": "응답을 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
     },
     "kinds": {
       "mbti": "성격 (MBTI)",
@@ -4362,7 +4618,8 @@
       "enneagram": "Enneagram",
       "zodiac": "Zodiac",
       "element": "원소"
-    }
+    },
+    "shareLink": "내 초대 링크 공유"
   },
   "advisorBooking": {
     "back": "뒤로",
@@ -4379,7 +4636,7 @@
     "bookedToast": "세션이 예약되었습니다 — {{n}} Moonstones가 차감되었습니다.",
     "insufficientBalance": "Moonstones가 부족합니다. 충전 후 다시 시도하세요.",
     "slotTaken": "방금 해당 시간이 선점되었습니다. 다른 시간을 선택하세요.",
-    "bookFailed": "해당 시간을 예약할 수 없습니다.",
+    "bookFailed": "그 시간을 예약하지 못했어요 — 방금 다른 사람이 잡았을 수 있어요. 다른 시간을 골라 주세요.",
     "disclaimer": "세션 시작 전 언제든 취소하면 전액 환불됩니다."
   },
   "advisorSession": {
@@ -4388,7 +4645,7 @@
     "notFound": "세션을 찾을 수 없습니다.",
     "startsIn": "{{n}}분 후 시작. 예약 시간 기준 5분 이내 언제든 시작할 수 있어요.",
     "readyToStart": "준비되시면 시작해요.",
-    "cancel": "취소",
+    "cancel": "이 세션 취소",
     "start": "세션 시작",
     "started": "세션이 시작되었습니다",
     "ended": "세션이 종료되었습니다",
@@ -4397,10 +4654,10 @@
     "cancelledToast": "취소되었습니다. {{n}} Moonstones가 환불되었습니다.",
     "noMessages": "인사로 시작해 보세요.",
     "composerPlaceholder": "메시지를 입력하세요…",
-    "sendFailed": "전송할 수 없습니다",
+    "sendFailed": "메시지를 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "rateTitle": "어떠셨나요?",
     "reviewPlaceholder": "공유할 내용이 있나요? (선택)",
-    "submitRating": "평가 제출",
+    "submitRating": "내 평가 보내기",
     "ratingThanks": "피드백 감사합니다"
   },
   "advisorDashboard": {
@@ -4431,13 +4688,13 @@
     "cashoutExceeds": "금액이 현금화 가능 잔액을 초과했습니다.",
     "cashoutSent": "${{usd}}를 Stripe 계정으로 보냈습니다.",
     "cashoutMinNote": "최소 Moonstone 100개($10 총액 / $7 수령).",
-    "stripeFailed": "Stripe 온보딩을 시작할 수 없습니다",
+    "stripeFailed": "Stripe 온보딩을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "onboardingRequired": "먼저 Stripe 온보딩을 완료하세요."
   },
   "voice": {
     "join": "보이스 참여",
     "joining": "참여 중…",
-    "leave": "나가기",
+    "leave": "음성 나가기",
     "notConnected": "보이스 끔",
     "state": {
       "idle": "",
@@ -4451,11 +4708,11 @@
   "liveRoom": {
     "back": "모든 방",
     "notFound": "방을 찾을 수 없어요.",
-    "listeners": "{{n}} RSVPd / cap {{cap}}",
-    "rsvp": "RSVP",
-    "rsvpd": "참여 완료",
+    "listeners": "{{cap}}석 중 {{n}}석 참여",
+    "rsvp": "내 자리 잡기",
+    "rsvpd": "참여 확정",
     "notLiveYet": "호스트가 시작하면 음성이 열려요.",
-    "rsvpToJoin": "음성 참여하려면 먼저 RSVP하세요.",
+    "rsvpToJoin": "음성 룸에 참여하려면 먼저 자리를 잡으세요.",
     "tipHost": "호스트에게 팁 보내기",
     "tipSent": "호스트에게 문스톤 {{n}}개를 보냈어요.",
     "replayHeading": "다시 듣기",
@@ -4463,14 +4720,22 @@
     "unlockReplay": "다시 듣기 잠금 해제 — 문스톤 {{n}}개",
     "unlocking": "잠금 해제 중…",
     "replayUnlocked": "다시 듣기 해제됨",
-    "replayInsufficient": "잠금 해제에 문스톤이 부족해요.",
+    "replayInsufficient": "다시보기에 필요한 문스톤이 부족해요 — 홈 위젯에서 충전하거나 데일리 체크인으로 더 모으세요.",
     "signInToUnlock": "로그인해 다시 듣기 잠금을 해제하세요",
-    "listenFree": "무료로 듣기"
+    "listenFree": "무료로 듣기",
+    "tipInsufficient": "팁에 필요한 문스톤이 부족해요 — 홈 위젯에서 충전하거나 데일리 체크인으로 더 모으세요.",
+    "tipAmount": "문스톤 {{n}}개",
+    "toasts": {
+      "rsvpFailed": "자리를 잡지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "cancelFailed": "자리를 취소하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "unlockFailed": "다시보기를 열지 못했어요 — 문스톤은 차감되지 않았어요. 잠시 후 다시 시도해 주세요.",
+      "tipFailed": "팁을 보내지 못했어요 — 문스톤은 차감되지 않았어요. 잠시 후 다시 시도해 주세요."
+    }
   },
   "advisorVerify": {
     "title": "고문 인증",
     "startTitle": "인증 후 공개",
-    "startBody": "고객이 예약하기 전, 신원을 확인합니다. 정부 발급 신분증과 오늘 날짜와 본인 성명을 말하는 짧은 셀피 영상을 업로드하세요. 72시간 이내 검토됩니다.",
+    "startBody": "고객이 예약하기 전에 신원을 확인해요. 정부 발급 신분증과, 본인의 전체 이름과 오늘 날짜를 말하는 짧은 셀피 영상을 올려 주세요. 72시간 안에 검토해요.",
     "pendingTitle": "검토 중",
     "pendingBody": "{{date}} 제출됨. 72시간 이내 검토합니다.",
     "approvedTitle": "인증 완료",
@@ -4484,27 +4749,31 @@
     "idLabel": "정부 신분증 (이미지)",
     "uploadId": "신분증 업로드",
     "selfieLabel": "셀피 영상 (이름 + 오늘 날짜 말하기)",
-    "uploadSelfie": "영상 업로드",
+    "uploadSelfie": "내 인증 영상 올리기",
     "submitCta": "검토 제출",
     "submitting": "제출 중…",
-    "submitted": "제출됨. 72시간 이내 검토합니다.",
+    "submitted": "제출됐어요. 72시간 안에 검토할게요.",
     "incomplete": "모든 항목을 입력하고 두 파일을 업로드하세요.",
-    "privacyNote": "문서는 암호화되며 관리자 검토자만 볼 수 있습니다."
+    "privacyNote": "문서는 암호화되며 관리자 검토자만 볼 수 있습니다.",
+    "uploadIdFailed": "신분증을 올리지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "uploadVideoFailed": "영상을 올리지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
   },
   "sandbox": {
     "title": "원형 상자",
     "intro": "상징적 오브젝트를 골라 받침대에 놓으면, 오라클이 배열을 읽습니다. 미리보기 버전 — 위치는 자동 나선 배열, 드래그 앤 드롭은 곧 제공됩니다.",
     "pickObject": "오브젝트 선택",
     "place": "받침대에 놓기",
-    "reset": "초기화",
+    "reset": "받침대 비우기",
     "placedLabel": "받침대 위",
     "placeMore": "오브젝트를 두 개 이상 놓으세요.",
     "interpretCta": "배열 읽기",
     "reading": "배열을 읽는 중…",
     "readingLabel": "오라클이 읽는 중",
-    "rearrange": "재배열",
-    "interpretFailed": "해석할 수 없습니다.",
-    "preview": "미리보기 — 드래그 배치와 저장/공유가 곧 제공됩니다."
+    "rearrange": "비우고 다시 배치하기",
+    "interpretFailed": "배치를 읽지 못했어요 — 잠시 후 다시 시도해 주세요.",
+    "preview": "미리보기 — 드래그 배치와 저장/공유가 곧 제공됩니다.",
+    "webglUnavailableTitle": "3D 미리보기를 사용할 수 없어요",
+    "webglUnavailableBody": "브라우저나 기기가 WebGL을 지원하지 않아요. 그래도 원형 오브젝트를 배치하고 해석을 받을 수 있어요 — 리딩에 3D 보기가 꼭 필요하지는 않아요."
   },
   "quickReading": {
     "title": "3초 리딩",
@@ -4515,11 +4784,11 @@
     "drawing": "뽑는 중…",
     "yourQuestion": "당신의 질문",
     "cardLabel": "뽑힌 카드",
-    "memoryUsed": "이전에 나눈 대화를 참고해요.",
+    "memoryUsed": "이전에 나눈 대화를 바탕으로 읽어요.",
     "share": "공유",
     "askAnother": "다시 묻기",
     "disclaimer": "리딩은 자기 성찰을 위한 것이며, 예측이나 전문적 조언이 아닙니다.",
-    "errorRateLimit": "너무 빠르게 묻고 있어요 — 잠시 후 다시 시도해 주세요.",
+    "errorRateLimit": "질문이 너무 빨라요 — 조금 천천히, 잠시 후 다시 시도해 주세요.",
     "errorUnavailable": "리딩을 일시적으로 사용할 수 없습니다.",
     "errorGeneric": "리딩을 생성하지 못했습니다. 다시 시도해 주세요."
   },
@@ -4533,15 +4802,15 @@
     "reversed": "역위",
     "composerPlaceholder": "이어 물어보기…",
     "seedMessage": "방금 {{card}}를 뽑았어요. 지금 이것이 무엇을 가리키는지 함께 머물며 살펴보게 도와줘요.",
-    "aiFailed": "오라클에 연결할 수 없어요"
+    "aiFailed": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 물어봐 주세요."
   },
   "journalCoach": {
     "askCta": "저널 코치에게 물어보기",
     "thinking": "읽는 중…",
-    "failed": "코치에 연결할 수 없음",
+    "failed": "코치에 연결하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "observationLabel": "관찰",
     "promptsLabel": "이 질문들과 함께 머물기",
-    "dismiss": "닫기"
+    "dismiss": "이 프롬프트 숨기기"
   },
   "chartWheel": {
     "tapPrompt": "행성, 하우스, 또는 각줄을 탭하세요.",
@@ -4555,12 +4824,16 @@
     "intro": "예정된 라이브 모임 — 보름달 서클, 수성 역행 디브리프, 라이브 타로 리딩. 곧 오디오 우선. 좌석 예약을 위해 RSVP 하세요.",
     "empty": "아직 예정된 라이브 룸이 없습니다 — 곧 다시 확인하세요.",
     "capacity": "최대 {{n}}명 청취",
-    "rsvp": "RSVP",
+    "rsvp": "내 자리 잡기",
     "rsvpd": "참여 확정",
-    "rsvpConfirmed": "리스트에 올랐어요 — 알림을 드릴게요.",
-    "rsvpCancelled": "RSVP 취소됨",
-    "signInToRsvp": "RSVP하려면 로그인",
-    "voiceComingSoon": "오디오 스트리밍이 순차적으로 제공됩니다. RSVP 하시면 룸이 열릴 때 알려드려요."
+    "rsvpConfirmed": "명단에 올랐어요. 여기로 다시 와 주세요 — 룸은 {{time}}에 열려요.",
+    "rsvpCancelled": "자리를 취소했어요 — 언제든 다시 잡을 수 있어요.",
+    "signInToRsvp": "로그인하고 자리 잡기",
+    "voiceComingSoon": "오디오는 단계적으로 열리고 있어요. 자리를 잡고 여기로 다시 와 주세요 — 각 룸은 예정된 시간에 열려요.",
+    "toasts": {
+      "rsvpFailed": "자리를 잡지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "cancelFailed": "자리를 취소하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
+    }
   },
   "pickACard": {
     "title": "카드 뽑기",
@@ -4570,8 +4843,8 @@
     "optionAria": "카드 {{n}}",
     "upright": "정방향",
     "reversed": "역방향",
-    "share": "공유",
-    "learnMore": "더 보기",
+    "share": "내 카드 공유",
+    "learnMore": "이 카드의 의미 읽기",
     "comeBack": "자정에 새 카드가 도착해요.",
     "shareText": "오늘 뽑은 카드: {{name}} ({{orientation}}) — {{keyword}}"
   },
@@ -4580,7 +4853,7 @@
     "subtitle": "전통적인 시나스트리 궁합을 하나의 숫자로. 무료, 공유 가능, 빠름.",
     "needsBirthData": "먼저 생년월일을 추가해 주세요",
     "needsBirthDataBody": "차트 비교를 위해 생년월일(시간도 있으면 좋아요)이 필요해요. 설정 → 프로필 편집에서 추가하세요.",
-    "goToProfile": "프로필로",
+    "goToProfile": "내 출생 정보 추가하기",
     "partnerNameLabel": "상대방 이름",
     "partnerNamePlaceholder": "선택 사항",
     "birthDateLabel": "생년월일",
@@ -4594,7 +4867,7 @@
     "noTimeHint": "출생 시간을 추가하면 더 정확해요.",
     "harmoniesHeading": "서로 흐르는 지점",
     "frictionsHeading": "서로를 확장시키는 지점",
-    "tryAnother": "다른 상대",
+    "tryAnother": "다른 사람 스코어 보기",
     "share": "스코어 공유",
     "shareText": "우리의 Arcana 소울메이트 스코어는 {{score}}/100 ({{vibe}}). arcana.app에서 직접 해보세요",
     "disclaimer": "스코어는 판결이 아니라 대화를 위한 거울이에요. 차트는 운명이 아니라 패턴을 보여줘요.",
@@ -4607,10 +4880,10 @@
     },
     "vibeDescriptions": {
       "transcendent": "두 차트가 드문 조화를 이루고 있어요 — 깊은 인식, 자연스러운 화학 반응, 일치하는 목적.",
-      "strong": "기본 형태가 맞아요. 진짜 끌림과 진짜 편안함, 그리고 관계를 생생하게 유지할 정도의 차이.",
+      "strong": "기본 형태가 맞아요. 진짜 끌림과 진짜 편안함이 있고 — 관계를 생생하게 유지할 만큼의 차이도 있어요.",
       "steady": "땅에 발을 디딘, 실용적인 조합. 어떤 부분에선 만나고 다른 부분에선 엇갈려요. 노력하면 잘 돌아가요.",
       "complex": "자력이 있지만 마찰도 많아요. 끌림은 진짜, 모서리도 진짜. 열기를 유지할 수 있다면 성장의 보고예요.",
-      "testing": "패턴이 쉽게 흐르지 않아요. 가능하지만 중력보다 의도가 더 필요해요."
+      "testing": "패턴이 쉽게 흐르지 않아요. 가능하지만 — 끌림보다 의도가 더 필요해요."
     }
   },
   "askOracle": {
@@ -4618,12 +4891,14 @@
     "contextLabel": "당신의 질문",
     "cta": "오라클에게 묻기",
     "drawing": "뽑는 중…",
-    "errorGeneric": "오라클에 연결할 수 없습니다. 다시 시도해주세요.",
+    "errorGeneric": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "question": "이것을 저를 위해 읽어주세요 — {{context}}. 지금 제 삶에서 무엇을 가리키고 있나요?",
-    "redraw": "다시 읽기",
-    "share": "공유",
+    "redraw": "다시 뽑기",
+    "share": "이 리딩 공유",
     "sheetTitle": "오라클의 해석",
-    "subtitle": "당신의 차트와 기억을 바탕으로 한 맞춤 리딩"
+    "subtitle": "당신의 차트와 기억을 바탕으로 한 맞춤 리딩",
+    "retry": "오라클에게 다시 묻기",
+    "close": "오라클 닫기"
   },
   "dailyMission": {
     "doneSub": "새로운 미션은 자정에 도착합니다.",
@@ -4632,18 +4907,18 @@
     "markDone": "완료로 표시"
   },
   "moonstoneTopUp": {
-    "generic": "구매 실패",
+    "generic": "구매가 완료되지 않았어요. 잠시 후 다시 시도해 주세요.",
     "packLabel": {
       "devotee": "디보티",
       "generous": "제너러스",
       "regular": "레귤러",
       "starter": "스타터"
     },
-    "packNotFound": "이 팩은 스토어에서 사용할 수 없습니다.",
+    "packNotFound": "지금은 스토어에 이 팩이 없어요 — 다른 팩을 고르거나 나중에 다시 시도해 주세요.",
     "playStorePurchase": "Google Play에서 청구됩니다. Google 계정에서 구매를 관리하세요.",
     "popular": "인기",
-    "securePayment": "Stripe로 안전하게 결제. 일회성 구매 — 언제든 취소 가능.",
-    "stripeFailed": "결제를 열 수 없습니다",
+    "securePayment": "Stripe로 안전하게 결제해요. 일회성 구매 — 구독이 아니에요.",
+    "stripeFailed": "결제 화면을 열지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
     "subtitle": "리딩 잠금 해제, 라이브 호스트 팁 보내기, 어드바이저 세션 예약.",
     "success": "{{n}}개의 문스톤이 도착합니다 — 몇 초 안에 계정에 반영됩니다.",
     "title": "문스톤 충전"
@@ -4674,6 +4949,429 @@
     "whatFor": "무엇을 위한 날을 고르시나요?",
     "best": "다가오는 길일",
     "avoid": "피할 날",
-    "export": "캘린더"
+    "export": "내 캘린더에 추가",
+    "intro": "택일은 출생 차트와는 다른 질문을 던져요. 당신이 어떤 사람인지가 아니라, 어떤 일을 언제 할지를 묻죠. 각 날은 그날을 다스리는 이십팔수로 읽고 — 생년월일을 알면 그날이 당신의 사주와 어떻게 놓이는지도 함께 봐요.",
+    "noBirth": "지금 보이는 것은 누구에게나 같은 역서 풀이예요. 프로필에 생년월일을 추가하면 각 날을 당신의 사주와도 맞춰 봐요 — 거기서 충이 생기는 것이 전통 역서에서 다른 날을 고르라고 하는 가장 흔한 이유예요.",
+    "disclaimer": "전통 풍습으로, 그렇게만 참고하세요. 건강, 돈, 법에 대해서는 아무것도 말하지 않아요 — 점수는 한 줄씩 확인할 수 있는 단순한 합산이지, 신탁이 아니에요.",
+    "windowNote": "앞으로 {{days}}일을 보고 있어요. 날짜를 누르면 왜 그런 점수가 나왔는지 정확히 볼 수 있어요."
+  },
+  "celestial": {
+    "needBirthDate": {
+      "cta": "프로필로 이동",
+      "secondary": "전체 프로필 편집하기",
+      "title": "먼저 생년월일이 필요해요",
+      "body": "당신의 천체 지도는 출생 차트에서 그려져요. 프로필 페이지에서 생년월일(알고 있다면 출생 시각도)을 추가하면 지도가 준비돼요."
+    },
+    "previewLock": {
+      "title": "지금은 태양 + 달 미리보기예요.",
+      "body": "프리미엄으로 40개 행성 라인 전부, 도시별 해석, AI 여행 리딩까지 열어 보세요 — 또는 여행 리딩 한 번을 250 문스톤으로 받을 수 있어요.",
+      "cta": "전체 지도 열기"
+    },
+    "city": {
+      "aiReading": {
+        "body": "이 라인들을 당신의 출생 차트, 그리고 지금 찾고 있는 것과 엮어 읽은 맞춤 해석 — 오직 당신을 위해 써 드려요.",
+        "title": "개인 여행 리딩",
+        "loading": "리딩을 쓰는 중…",
+        "ctaPremium": "리딩 만들기",
+        "ctaMoonstones": "250 문스톤으로 열기",
+        "error": "지금은 리딩을 생성하지 못했어요 — 잠시 후 다시 시도해 주세요.",
+        "label": "당신의 리딩",
+        "cautionsLabel": "조심할 점",
+        "practiceLabel": "이곳에서의 첫 사흘"
+      },
+      "lockedCount": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요",
+      "unknown": "먼바다 / 외딴 곳",
+      "noLines": "여기서 700 km 안을 지나는 행성 라인이 없어요. 이곳은 당신의 차트에서 천체적으로 고요한 곳이에요 — 돕지도, 막지도 않아요.",
+      "activeLines": "이곳의 활성 라인",
+      "lockedCount_one": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요",
+      "lockedCount_other": "이곳을 지나는 행성 라인이 {{count}}개 더 있어요",
+      "unlockHint": "프리미엄으로 전체 지도 열기"
+    },
+    "form": {
+      "dateRequired": "생년월일을 입력해 주세요.",
+      "dateInvalid": "날짜가 올바르지 않은 것 같아요. YYYY-MM-DD 형식으로 입력해 보세요.",
+      "dateLabel": "생년월일",
+      "timeLabel": "출생 시각 (선택)",
+      "placeLabel": "출생지 (선택)",
+      "placePlaceholder": "예: 서울, 대한민국",
+      "accuracyHint": "여기서는 출생 시각이 아주 중요해요. 시각이 없으면 정오로 가정하는데, 그러면 상승궁과 천정 라인이 엉뚱한 대륙에 놓일 수 있어요. 대략적인 시각이라도 추가하면 믿을 수 있는 지도가 돼요.",
+      "saving": "저장 중…",
+      "cta": "내 지도 그리기",
+      "saveFailed": "출생 정보를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
+    },
+    "search": {
+      "placeholder": "도시나 나라 검색…",
+      "label": "도시 검색"
+    },
+    "about": {
+      "eyebrow": "아스트로카토그래피",
+      "body": "아스트로카토그래피는 당신이 태어난 바로 그 순간 각 행성이 어디서 떠오르고, 지고, 가장 높이 있었는지를 세계 지도 위에 투사해요. 그 결과는 당신의 여러 면과 공명하는 장소들의 개인 지도예요. 어떤 도시는 커리어 라인을 밝히고, 어떤 도시는 사랑의 라인, 치유의 라인, 주목의 라인 위에 놓여요. 그곳으로 가면 에너지가 따라와요.",
+      "tradition": "1970년대 점성가 짐 루이스가 개발한 아스트로카토그래피는 오늘날 이주 컨설턴트, 여행하는 점성가, 그리고 다음 장을 계획하는 호기심 많은 사람들이 사용하고 있어요."
+    },
+    "use": {
+      "eyebrow": "무엇을 읽을 수 있나요",
+      "subtitle": "테마를 누르면 그 목적에 맞게 지도를 걸러 보여줘요.",
+      "love": {
+        "body": "사랑이 더 쉽게 찾아오고, 끌림이 깊어지고, 그곳에서 맺은 관계가 오래가는 장소를 지도에서 찾아요."
+      }
+    },
+    "angles": {
+      "title": "라인 읽는 법"
+    },
+    "controls": {
+      "flat": "평면 지도",
+      "globe": "지구본 보기",
+      "zoomIn": "확대",
+      "zoomOut": "축소",
+      "reset": "보기 초기화",
+      "findMe": "내 출생지 찾기"
+    },
+    "intro": {
+      "title": "당신의 천체 지도를 그리는 중",
+      "body": "당신이 태어났을 때 각 행성이 떠오르고, 지고, 자오선에 있던 자리에 놓는 중…",
+      "ready": "곧 준비돼요"
+    },
+    "power": {
+      "title": "당신의 파워 플레이스",
+      "subtitle": "당신의 차트에서 가장 많은 행성 라인이 모이는 곳. 방문하거나, 이주하거나, 다시 찾아갈 만한 강한 지점이에요.",
+      "lockedHint": "잠금 해제하고 내 장소 보기"
+    },
+    "destinedPlace": {
+      "eyebrow": "당신의 운명의 장소",
+      "clear": "운명의 장소 지우기"
+    },
+    "findPlace": {
+      "cta": {
+        "title": "운명의 장소 찾기",
+        "premiumBadge": "프리미엄",
+        "body": "한 번의 탭. 모든 도시를 당신의 전체 출생 차트에 비추어 읽고, 당신에게 가장 잘 맞는 단 하나의 장소를 — 긴 이유와 함께 — 알려드려요."
+      },
+      "error": {
+        "title": "리딩을 끝내지 못했어요",
+        "retry": "리딩 다시 시도",
+        "body": "연결을 확인하고 다시 시도해 주세요.",
+        "noPlace": "이 목적에 맞는 강한 장소를 찾지 못했어요 — 다른 삶의 영역으로 시도해 보세요."
+      },
+      "hero": {
+        "eyebrow": "당신의 운명의 장소"
+      },
+      "reading": {
+        "loading": "리딩을 쓰는 중…",
+        "linesLabel": "왜 이곳인가",
+        "practiceLabel": "당신의 첫 달",
+        "cautionsLabel": "솔직히 말하면",
+        "rerollCta": "다른 장소 보기",
+        "saving": "저장 중…",
+        "saved": "저장됨",
+        "saveCta": "이 장소 저장"
+      },
+      "eyebrow": "내 장소 찾기",
+      "needsTimeTitle": "출생 시각을 추가하면 열려요",
+      "needsTimeBody": "내 장소 찾기는 상승궁과 천정 라인에 도시를 맞춰 보는데, 이 라인들은 전적으로 태어난 시각에 달려 있어요. 시각이 없으면 추측이 되기 때문에, 지도가 진짜가 될 때까지 기다리려고 해요. 대략적인 시각이라도 도움이 돼요."
+    },
+    "hero": {
+      "subtitle": "살고, 사랑하고, 일하고, 치유하기에 가장 좋은 장소를 — 당신이 태어난 바로 그 순간에서 읽어요."
+    },
+    "mapSection": {
+      "title": "당신의 지도",
+      "subtitle": "아무 지점이나 누르면 그곳을 지나는 라인을 볼 수 있어요. 아래에서 특정 도시를 검색해도 돼요."
+    },
+    "eyebrow": "천체 지도",
+    "title": "당신의 별들이 모이는 곳",
+    "disclaimer": "이 라인들은 당신이 태어난 순간 각 행성이 떠오르고, 지고, 자오선에 있던 자리를 표시해요. 운명이 아니라 신호예요.",
+    "filter": {
+      "all": "전체",
+      "love": "사랑",
+      "career": "커리어",
+      "travel": "여행",
+      "healing": "치유",
+      "home": "집",
+      "growth": "성장"
+    }
+  },
+  "freeCourse": {
+    "errors": {
+      "invalidEmail": "유효한 이메일을 입력해 주세요.",
+      "signupFailed": "신청하지 못했어요 — 잠시 후 다시 시도해 주세요."
+    },
+    "badge": "무료 3부작 이메일 코스",
+    "title": "이메일 3통으로 타로 배우기",
+    "subtitle": "키워드, 슈트 대응, 기초 수비학을 다루는 무료 이메일 시리즈 — 모든 리더에게 필요한 기초예요.",
+    "success": "신청됐어요. 메일함을 확인하세요.",
+    "emailPlaceholder": "your@email.com",
+    "sending": "보내는 중…",
+    "cta": "1강 보내 주기",
+    "disclaimer": "스팸 없음. 클릭 한 번으로 구독 취소. 5일 동안 이메일 3통."
+  },
+  "loveTree": {
+    "shareText": "나의 Arcana 사랑의 나무: {{title}} — {{archetype}}. 당신의 나무는 arcana.app/love-tree에서",
+    "title": "사랑의 나무",
+    "intro": "12문항, 90초, 한 그루의 나무. 당신의 애착 유형을 살아 있는 형태로 그리고 — 당신이 사랑하는 방식을 꾸밈없이 읽어요.",
+    "howItWorksLabel": "이렇게 진행돼요",
+    "how1": "12개의 짧은 문장을 「전혀 그렇지 않다」부터 「매우 그렇다」까지로 평가해요.",
+    "how2": "고전적인 애착 격자 위에서 불안과 회피 점수를 계산해요.",
+    "how3": "네 사분면 중 하나에 자리하고 — 각기 다른 움직이는 나무로 그려져요.",
+    "startCta": "내 나무 키우기",
+    "disclaimer": "자기 이해를 위한 도구이지 임상 진단이 아니에요. 애착 패턴은 바뀔 수 있어요 — 이것은 판결이 아니라 지금의 스냅샷이에요.",
+    "back": "뒤로",
+    "progress": "{{n}} 중 {{i}}",
+    "retake": "다시 하기",
+    "yourStyle": "당신의 애착 유형",
+    "share": "내 나무 공유",
+    "anxietyLabel": "불안",
+    "avoidanceLabel": "회피",
+    "strengthsLabel": "당신의 타고난 강점",
+    "growthLabel": "성장할 곳",
+    "inLoveLabel": "사랑에서",
+    "affirmationLabel": "당신의 확언"
+  },
+  "updateBanner": {
+    "title": "새 버전이 나왔어요",
+    "body": "최근 수정과 개선이 담겨 있어요. Google Play에서 업데이트하면 받을 수 있어요.",
+    "update": "Google Play에서 업데이트",
+    "later": "이틀 뒤에 다시 알림",
+    "dismiss": "닫기"
+  },
+  "rateApp": {
+    "title": "제 첫 앱을 써 주셔서 고마워요",
+    "body1": "공부하면서 만든 앱이라 시간과 자원이 넉넉하지 않아요. 아직 완벽하지 않다는 걸 알지만, 꾸준히 고쳐 나가고 있어요.",
+    "body2": "이상한 점이나 버그가 보이면 알려 주세요. 즐겁게 쓰고 계시다면 별 5개 리뷰가 큰 힘이 돼요.",
+    "rate": "Google Play에서 Arcana 평가하기",
+    "feedback": "이메일로 문제 알리기",
+    "later": "다음에 다시 물어봐 주세요"
+  },
+  "people": {
+    "eyebrow": "당신의 사람들",
+    "title": "사람들",
+    "subtitle": "소중한 사람들의 출생 정보를 저장하면 그들의 차트와 당신과의 궁합을 살펴볼 수 있어요.",
+    "addPerson": "사람 추가",
+    "emptyTitle": "아직 아무도 없어요",
+    "emptyBody": "파트너, 부모님, 친구를 추가하면 그 사람의 출생 차트와 당신의 별이 어떻게 맞물리는지 볼 수 있어요.",
+    "timeUnknown": "시각 모름",
+    "savedCount": "50명 중 {{n}}명 저장",
+    "notFound": "당신의 사람들 중에서 이 사람을 찾지 못했어요.",
+    "relationship": {
+      "self": "나",
+      "partner": "파트너",
+      "family": "가족",
+      "friend": "친구",
+      "other": "기타",
+      "pet": "반려동물"
+    },
+    "form": {
+      "name": "이름",
+      "namePlaceholder": "예: 엄마, 지민, 수아",
+      "relationship": "관계",
+      "species": "종",
+      "birthDate": "생년월일",
+      "birthTime": "출생 시각 (선택 — 차트가 더 정밀해져요)",
+      "petTime": "시각 (선택 — 입양한 동물은 대부분 몰라요)",
+      "birthPlace": "출생지 (선택)",
+      "nameRequired": "이 사람의 이름을 적어 주세요.",
+      "dateRequired": "생년월일을 입력해 주세요.",
+      "limit": "50명 한도에 도달했어요.",
+      "saveFailed": "이 사람을 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "updated": "{{name}} 정보를 업데이트했어요",
+      "added": "{{name}}을(를) 추가했어요",
+      "cancel": "취소",
+      "saving": "저장 중…",
+      "saveChanges": "출생 정보 저장",
+      "add": "이 사람 추가"
+    },
+    "detail": {
+      "chartFailed": "차트를 세우지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "deleted": "{{name}}을(를) 삭제했어요",
+      "deleteFailed": "{{name}}을(를) 삭제하지 못했어요 — 다시 시도해 주세요.",
+      "backToPeople": "사람들로 돌아가기",
+      "birthTimeUnknown": "출생 시각을 몰라요 — 하우스와 상승궁은 근사치예요.",
+      "compare": "우리 차트 비교하기",
+      "edit": "출생 정보 편집",
+      "delete": "{{name}} 삭제",
+      "editTitle": "{{name}} 편집",
+      "deleteTitle": "{{name}}을(를) 삭제할까요?",
+      "deleteBody": "{{name}}의 저장된 출생 정보와 차트가 삭제돼요. 되돌릴 수 없어요.",
+      "keep": "{{name}} 남기기",
+      "deleteConfirm": "영구 삭제"
+    },
+    "compare": {
+      "needOwnBirth": "차트를 비교하려면 프로필에 당신의 생년월일을 추가하세요.",
+      "castFailed": "두 차트를 세우지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "tabFailed": "이 차트를 세우지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "goBack": "돌아가기",
+      "eyebrow": "시너스트리",
+      "title": "당신과 {{name}}",
+      "chartTypeAria": "차트 유형",
+      "disclaimer": "성찰과 엔터테인먼트를 위한 것이에요. 이 차트는 운명이 아니라 관계의 역학을 설명해요.",
+      "tabs": {
+        "synastry": {
+          "label": "시너스트리",
+          "blurb": "두 차트가 서로 어떻게 대화하는지"
+        },
+        "composite": {
+          "label": "컴포짓",
+          "blurb": "관계 그 자체의 중간점 차트"
+        },
+        "davison": {
+          "label": "데이비슨",
+          "blurb": "두 사람의 출생 사이, 시간과 공간의 한가운데에 있던 실제 하늘"
+        },
+        "progressed-composite": {
+          "label": "프로그레스드",
+          "blurb": "관계의 차트가 지금까지 어디로 흘러왔는지"
+        }
+      }
+    }
+  },
+  "mirror": {
+    "signIn": "로그인하면 당신의 거울을 볼 수 있어요.",
+    "title": "거울",
+    "subtitle": "리딩 기록이 당신에 대해 말해 주는 것. 저장한 타로 리딩을 모아 본 패턴이에요.",
+    "period": {
+      "week": "최근 7일",
+      "month": "최근 30일",
+      "all": "전체 기간"
+    },
+    "periodAria": "기간",
+    "loading": "거울을 읽는 중…",
+    "emptyTitle": "이 기간에는 아직 리딩이 없어요.",
+    "emptyBody": "오늘 카드를 한 장 뽑으면 여기에 패턴이 드러나기 시작해요.",
+    "stats": {
+      "readings": "리딩",
+      "cardsDrawn": "뽑은 카드",
+      "reversals": "역방향",
+      "streak": "연속 기록"
+    },
+    "highlights": {
+      "cardNow": "지금 당신의 카드",
+      "dominantSuit": "주도 슈트",
+      "recurringNumber": "반복되는 숫자"
+    },
+    "sections": {
+      "topCards": "상위 5장",
+      "suitBalance": "슈트 균형 (마이너 아르카나)",
+      "majorMinor": "메이저 vs 마이너",
+      "majorMinorNote": "메이저 아르카나 = 삶의 주제, 마이너 = 일상의 에너지."
+    }
+  },
+  "spreadDetail": {
+    "notFound": "스프레드를 찾을 수 없어요",
+    "backToAll": "전체 스프레드로 돌아가기",
+    "allSpreads": "전체 스프레드"
+  },
+  "chartSuite": {
+    "eyebrow": "차트 라이브러리",
+    "title": "모든 하늘, 모든 각도",
+    "subtitle": "한 순간을 읽는 열세 가지 방법 — 당신이 태어날 때의 차트부터 지금 머리 위의 하늘까지.",
+    "needBirth": "이 차트를 세우려면 프로필에 생년월일을 추가하세요.",
+    "addBirth": "내 출생 정보 추가하기",
+    "castFailed": "이 차트를 세우지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+    "retry": "차트 다시 세우기"
+  },
+  "foolsJourney": {
+    "signInHint": "로그인하면 당신의 바보의 여정을 볼 수 있어요.",
+    "signIn": "로그인하고 여정 걷기"
+  },
+  "soulmatePortrait": {
+    "title": "당신의 소울메이트 초상",
+    "intro": "당신의 차트가 사랑에서 향하는 자질을 그린 초상 — 디센던트, 금성, 화성, 달로 그려요. 실제 인물의 사진이 아니라 상징적인 그림이에요.",
+    "vibe": {
+      "romantic": "로맨틱",
+      "grounded": "안정적",
+      "electric": "짜릿한",
+      "soulful": "깊은"
+    },
+    "paint": "초상 그리기",
+    "painting": "초상을 그리는 중…",
+    "notEnough": "문스톤이 부족해요",
+    "failed": "초상을 그리지 못했어요 — 다시 시도해 주세요.",
+    "saved": "저장됨",
+    "alt": "당신 차트의 관계 상징으로 생성한 상징적 초상화",
+    "why": "왜 이렇게 보이나요",
+    "save": "이미지 저장",
+    "repaint": "다시 그리기",
+    "disclaimer": "당신 차트의 상징을 예술적으로 해석한 것이에요 — 실제 인물을 그린 것이 아니에요."
+  },
+  "wishingSky": {
+    "eyebrow": "소원의 별하늘",
+    "title": "모두의 소원이 한 하늘에",
+    "subtitle": "여기 있는 별 하나하나가 누군가의 소원이에요. 소원을 빌면 당신의 별도 그 곁에 더해져요. 누군가의 소원에 마음을 보태면 — 그 사람을 위해 나도 바란다고 말하면 — 당신의 별과 그 별 사이에 선이 그어져요.",
+    "loading": "하늘을 밝히는 중…",
+    "emptyTitle": "오늘 밤 하늘이 비어 있어요.",
+    "emptyBody": "첫 소원을 빌고 별을 밝혀 보세요.",
+    "makeWish": "소원 빌기",
+    "signInHint": "로그인하면 당신의 별을 더하고 다른 사람의 소원에 마음을 보탤 수 있어요.",
+    "recent": "최근 소원",
+    "openToHelp": "도움 환영",
+    "yours": "내 것",
+    "noWishes": "아직 소원이 없어요.",
+    "themeOther": "다른 것",
+    "placeholder": "내 소원은…",
+    "publicNote": "Arcana를 쓰는 누구나 읽을 수 있어요.",
+    "contactWarning": "{{what}}처럼 보여요. 지워 주세요 — 소원은 공개되고, 공개된 소원에 적힌 연락처는 사기꾼이 사람을 찾는 통로가 돼요. 대신 아래의 「도움 환영」을 켜 두면 마음 좋은 누군가가 비공개로 편지를 보낼 수 있어요.",
+    "anEmail": "이메일 주소",
+    "aPhone": "전화번호",
+    "themeLabel": "어떤 소원인가요?",
+    "openToHelpLabel": "도움을 제안할 수 있게 하기",
+    "openToHelpBody": "누구나 이 소원에 대해 비공개 메시지를 보낼 수 있어요. 상대는 당신의 연락처를 절대 볼 수 없고 — 당신이 메시지를 읽고 답할지 정해요.",
+    "nameLabel": "표시할 이름 (선택)",
+    "namePlaceholder": "이름, 별명, 또는 비워 두기",
+    "lightStar": "내 별 밝히기",
+    "lighting": "밝히는 중…",
+    "starLit": "당신의 별이 켜졌어요.",
+    "signInToEcho": "로그인하면 소원에 마음을 보탤 수 있어요.",
+    "wishTitle": "소원",
+    "echo": "나도 이 소원을 빌어요",
+    "echoed": "마음을 보탰어요",
+    "offerHelp": "도움 제안하기",
+    "report": "이 소원 신고",
+    "thisIsYours": "이 소원은 당신의 것이에요.",
+    "linked": "이제 당신의 별과 그 별이 하늘에서 이어졌어요.",
+    "offerIntro": "이 메시지는 그 사람에게만 전해져요. 상대는 메시지를 보고 원하면 답할 수 있어요 — 두 사람 모두 원치 않는 것은 아무것도 공유하지 않아도 돼요.",
+    "offerPlaceholder": "할 수 있는 일과, 어떻게 돕고 싶은지…",
+    "sendPrivately": "비공개로 보내기",
+    "sending": "보내는 중…",
+    "offerSent": "보냈어요. 상대만 볼 수 있고, 원하면 답할 수 있어요.",
+    "neverMind": "그만두기",
+    "reported": "신고했어요. 고마워요 — 살펴볼게요.",
+    "reportFailed": "신고를 보내지 못했어요 — 다시 시도해 주세요.",
+    "footer": "소원은 공개되며 누구나 읽을 수 있어요. 전화번호, 주소, 이메일은 절대 적지 마세요 — 도움을 받고 싶다면 사람들이 비공개로 연락할 수 있어요.",
+    "errors": {
+      "loadSky": "하늘을 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "lightStar": "별을 밝히지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "loadLinks": "연결선을 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "addEcho": "마음을 보태지 못했어요 — 잠시 후 다시 시도해 주세요.",
+      "removeEcho": "보탠 마음을 거두지 못했어요 — 잠시 후 다시 시도해 주세요.",
+      "alreadyOffered": "이 소원에는 이미 도움을 제안했어요.",
+      "sendOffer": "제안을 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "loadOffers": "제안을 불러오지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "respond": "답장을 보내지 못했어요 — 잠시 후 다시 시도해 주세요.",
+      "sendReport": "신고를 보내지 못했어요 — 연결을 확인하고 다시 시도해 주세요."
+    }
+  },
+  "spreadBuilder": {
+    "signIn": "로그인하고 스프레드 만들기",
+    "signInPrompt": "직접 만든 스프레드는 계정에 저장돼요.",
+    "signInCta": "로그인하고 스프레드 만들기",
+    "toasts": {
+      "signInToSave": "이 스프레드를 저장하려면 로그인하세요.",
+      "nameRequired": "저장하기 전에 스프레드에 이름을 붙여 주세요.",
+      "positionRequired": "이름과 의미가 모두 있는 자리를 최소 하나 추가하세요.",
+      "saveFailed": "스프레드를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "saved": "스프레드를 저장했어요 — 저장한 스프레드 아래에 있어요.",
+      "deleteFailed": "스프레드를 삭제하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
+      "deleted": "스프레드를 삭제했어요."
+    }
+  },
+  "authBootstrap": {
+    "backToSignIn": "로그인으로 돌아가기"
+  },
+  "publicNav": {
+    "signIn": "로그인"
+  },
+  "astrologyLearn": {
+    "title": "점성술"
+  },
+  "spreads": {
+    "pageTitle": "타로 스프레드"
   }
 }

@@ -340,10 +340,10 @@ function AiResultView({
       <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" fullWidth onClick={handleShare}>
           <Share2 className="w-4 h-4 mr-2" />
-          {t('quizzes.share.button', { defaultValue: 'Share' })}
+          {t('dream.share', { defaultValue: 'Share this interpretation' })}
         </Button>
         <Button variant="outline" fullWidth onClick={onReset}>
-          {t('dream.another', { defaultValue: 'Another dream' })}
+          {t('dream.another', { defaultValue: 'Interpret another dream' })}
         </Button>
       </div>
     </Page>
@@ -597,10 +597,10 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
       <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" fullWidth onClick={handleShare}>
           <Share2 className="w-4 h-4 mr-2" />
-          {t('quizzes.share.button', { defaultValue: 'Share' })}
+          {t('dream.share', { defaultValue: 'Share this interpretation' })}
         </Button>
         <Button variant="outline" fullWidth onClick={onReset}>
-          {t('dream.another', { defaultValue: 'Another dream' })}
+          {t('dream.another', { defaultValue: 'Interpret another dream' })}
         </Button>
       </div>
     </Page>

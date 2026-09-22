@@ -528,10 +528,10 @@ export function FengShuiPage() {
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth onClick={handleShare}>
             <Share2 className="w-4 h-4 mr-2" />
-            {t('quizzes.share.button', { defaultValue: 'Share' })}
+            {t('fengshui.share', { defaultValue: 'Share my Bagua' })}
           </Button>
           <Button variant="outline" fullWidth onClick={() => setStage('rate')}>
-            {t('fengshui.reRate', { defaultValue: 'Re-rate' })}
+            {t('fengshui.reRate', { defaultValue: 'Rate the areas again' })}
           </Button>
         </div>
       </Page>

@@ -55,7 +55,7 @@ const USE_CASES: Array<{
     titleKey: 'celestial.use.love.title',
     titleDefault: 'Where love finds you',
     bodyKey: 'celestial.use.love.body',
-    bodyDefault: 'Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last. Real signal for the lonely traveller.',
+    bodyDefault: 'Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last.',
     accent: 'from-rose-400/15 to-mystic-900/60 border-rose-400/20',
   },
   {

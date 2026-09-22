@@ -55,7 +55,7 @@ export function BlogPage() {
 
   return (
     <Page spacing="sm" className="pt-2 max-w-3xl mx-auto">
-      <PageHeader title={t('blog.title')} subtitle={t('blog.subtitle')} />
+      <PageHeader title={t('blog.title')} />
       <div className="grid gap-4">
         {posts.map((post) => (
           <button

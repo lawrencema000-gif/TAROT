@@ -21,7 +21,7 @@ export function PromptCard({ prompt, onWrite }: PromptCardProps) {
         </div>
       </div>
 
-      <p className="font-display text-xl text-mystic-100 leading-relaxed mb-6 italic">
+      <p className="font-display text-xl text-mystic-100 leading-relaxed mb-6">
         "{prompt}"
       </p>
 

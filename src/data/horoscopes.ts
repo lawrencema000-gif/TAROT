@@ -825,20 +825,8 @@ export function generateEnhancedHoroscope(sign: ZodiacSign, date: string): Enhan
   };
 }
 
-export const dailyPrompts = [
-  'What intention do you want to set for today?',
-  'What are you most grateful for right now?',
-  'What fear are you ready to release?',
-  'Describe a moment that brought you joy recently.',
-  'What lesson has life been teaching you lately?',
-  'If you could tell your past self one thing, what would it be?',
-  'What does your ideal day look like?',
-  'What boundary do you need to strengthen?',
-  'Who in your life deserves more appreciation?',
-  'What dream have you been postponing?',
-  'How can you show yourself more compassion today?',
-  'What pattern in your life are you ready to change?',
-];
+import { dailyPrompts, getDailyPrompt, localizedDailyPrompts } from './dailyPrompts';
+export { dailyPrompts, getDailyPrompt };
 
 export const goalBasedPrompts: Record<string, string[]> = {
   love: [
@@ -885,21 +873,9 @@ export const goalBasedPrompts: Record<string, string[]> = {
   ],
 };
 
-function localizedDailyPrompts(): string[] {
-  const bundle = HOROSCOPE_BUNDLES[getLocale()] as (HoroscopeBundle & { dailyPrompts?: string[] }) | undefined;
-  return bundle?.dailyPrompts ?? dailyPrompts;
-}
-
 function localizedGoalPrompts(goal: string): string[] | undefined {
   const bundle = HOROSCOPE_BUNDLES[getLocale()] as (HoroscopeBundle & { goalBasedPrompts?: Record<string, string[]> }) | undefined;
   return bundle?.goalBasedPrompts?.[goal] ?? goalBasedPrompts[goal];
-}
-
-export function getDailyPrompt(date: string): string {
-  const dateNum = new Date(date).getTime();
-  const random = seededRandom(dateNum);
-  const prompts = localizedDailyPrompts();
-  return prompts[Math.floor(random() * prompts.length)];
 }
 
 export function getPersonalizedPrompt(date: string, goals: string[]): string {

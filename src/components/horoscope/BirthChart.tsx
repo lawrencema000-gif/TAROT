@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { useT } from '../../i18n/useT';
 import { Card, Sheet, Skeleton, Progress, Tag, type Tone } from '../ui';
-import { ChartWheel } from './ChartWheel';
+import { ChartWheel } from '../chart/ChartWheel';
+import { houseTheme } from '../chart/houseThemes';
 import { useNatalChart } from '../../hooks/useAstrology';
-import { HOUSE_THEMES } from '../../types/astrology';
 import type { ZodiacSign, Planet, Element, Modality, PlanetPlacement, Aspect } from '../../types/astrology';
 import { ZodiacGlyph, PlanetGlyph } from '../icons';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
+import { ASPECT_GLYPH, ASPECT_TONE, ELEMENT_TONE, MODALITY_TONE, type ChartTone } from '../../lib/chart';
 
 // Lazy-loaded interpretation data modules
 type PlanetInSignModule = typeof import('../../data/planetInSign');
@@ -48,20 +49,21 @@ function useInterpData() {
   return { loaded, ...modulesRef.current };
 }
 
-const ELEMENT_TONES: Record<Element, Tone> = {
-  Fire: 'coral',
-  Earth: 'teal',
-  Air: 'blue',
-  Water: 'neutral',
+// Text class for each chart tone \u2014 the same hue the wheel draws the line in.
+const TONE_TEXT: Record<ChartTone, string> = {
+  neutral: 'text-mystic-300',
+  gold: 'text-gold',
+  teal: 'text-teal',
+  coral: 'text-coral',
+  blue: 'text-cosmic-blue-ink',
+  violet: 'text-cosmic-violet-ink',
+  rose: 'text-cosmic-rose',
 };
 
-const ASPECT_LABELS: Record<string, { symbol: string; color: string }> = {
-  conjunction: { symbol: '\u260C', color: 'text-gold' },
-  opposition: { symbol: '\u260D', color: 'text-cosmic-rose' },
-  trine: { symbol: '\u25B3', color: 'text-teal' },
-  square: { symbol: '\u25A1', color: 'text-coral' },
-  sextile: { symbol: '\u2731', color: 'text-cosmic-blue' },
-};
+function aspectMark(type: string): { symbol: string; color: string } {
+  const tone = ASPECT_TONE[type] ?? 'neutral';
+  return { symbol: ASPECT_GLYPH[type] ?? '?', color: TONE_TEXT[tone] };
+}
 
 export function BirthChart() {
   const { t } = useT('app');
@@ -94,7 +96,7 @@ export function BirthChart() {
   }
 
   const { natalChart } = chart;
-  const { bigThree, planets, houses, ascendant, aspects, dominants } = natalChart;
+  const { bigThree, planets, aspects, dominants } = natalChart;
 
   return (
     <div className="p-4 space-y-5">
@@ -136,7 +138,13 @@ export function BirthChart() {
         )}
       </Card>
 
-      <ChartWheel planets={planets} houses={houses} ascendant={ascendant} />
+      <Card padding="sm">
+        <ChartWheel
+          chart={natalChart}
+          onOpenPlanet={(p) => setSelectedPlacement(p)}
+          onOpenAspect={(a) => setSelectedAspect(a)}
+        />
+      </Card>
 
       <div className="space-y-2">
         <h3 className="heading-display-md text-mystic-100 px-1">{t('horoscope.birthChartView.placements')}</h3>
@@ -164,32 +172,38 @@ export function BirthChart() {
         <Card padding="md" className="space-y-3">
           <h3 className="heading-display-md text-mystic-100">{t('horoscope.birthChartView.elementBalance')}</h3>
           <div className="space-y-2">
-            {(Object.entries(dominants.elements) as [Element, number][]).map(([el, count]) => (
-              <div key={el} className="flex items-center gap-3">
-                <Tag tone={ELEMENT_TONES[el]} className="w-12 justify-center">
-                  {t(`horoscope.birthChartView.elements.${el}`)}
-                </Tag>
-                <Progress
-                  value={count}
-                  max={10}
-                  size="md"
-                  tone={ELEMENT_TONES[el]}
-                  label={t(`horoscope.birthChartView.elements.${el}`) as string}
-                  className="flex-1"
-                />
-                <span className="text-meta text-mystic-400 w-4">{count}</span>
-              </div>
-            ))}
+            {(Object.entries(dominants.elements) as [Element, number][]).map(([el, count]) => {
+              const tone = (ELEMENT_TONE[el] ?? 'neutral') as Tone;
+              return (
+                <div key={el} className="flex items-center gap-3">
+                  <Tag tone={tone} className="w-12 justify-center">
+                    {t(`horoscope.birthChartView.elements.${el}`)}
+                  </Tag>
+                  <Progress
+                    value={count}
+                    max={10}
+                    size="md"
+                    tone={tone}
+                    label={t(`horoscope.birthChartView.elements.${el}`) as string}
+                    className="flex-1"
+                  />
+                  <span className="text-meta text-mystic-400 w-4">{count}</span>
+                </div>
+              );
+            })}
           </div>
           <h3 className="heading-display-md text-mystic-100 pt-2">{t('horoscope.birthChartView.modalityBalance')}</h3>
           <div className="space-y-2">
-            {(Object.entries(dominants.modalities) as [Modality, number][]).map(([mod, count]) => (
-              <div key={mod} className="flex items-center gap-3">
-                <span className="text-meta font-medium w-16 text-mystic-400">{mod}</span>
-                <Progress value={count} max={10} size="md" tone="gold" label={mod} className="flex-1" />
-                <span className="text-meta text-mystic-400 w-4">{count}</span>
-              </div>
-            ))}
+            {(Object.entries(dominants.modalities) as [Modality, number][]).map(([mod, count]) => {
+              const name = t(`chartWheel.modalities.${mod}`, { defaultValue: mod });
+              return (
+                <div key={mod} className="flex items-center gap-3">
+                  <span className="text-meta font-medium w-16 text-mystic-400">{name}</span>
+                  <Progress value={count} max={10} size="md" tone={(MODALITY_TONE[mod] ?? 'gold') as Tone} label={name} className="flex-1" />
+                  <span className="text-meta text-mystic-400 w-4">{count}</span>
+                </div>
+              );
+            })}
           </div>
         </Card>
       )}
@@ -199,7 +213,7 @@ export function BirthChart() {
           <h3 className="heading-display-md text-mystic-100 px-1">{t('horoscope.birthChartView.keyAspects')}</h3>
           <div className="space-y-1">
             {aspects.slice(0, 10).map((a, i) => {
-              const info = ASPECT_LABELS[a.type] || { symbol: '?', color: 'text-mystic-400' };
+              const info = aspectMark(a.type);
               return (
                 <button
                   key={i}
@@ -259,7 +273,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
             <span className="font-medium text-mystic-100">{localizeSignName(placement.sign)} {placement.degree.toFixed(1)}&deg;</span>
           </div>
           {placement.house && (
-            <div className="text-meta text-mystic-400">{t('horoscope.birthChartView.houseLabel', { num: placement.house })} - {HOUSE_THEMES[placement.house - 1]}</div>
+            <div className="text-meta text-mystic-400">{t('horoscope.birthChartView.houseLabel', { num: placement.house })} · {houseTheme(t, placement.house)}</div>
           )}
         </div>
       </div>
@@ -342,24 +356,24 @@ function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
   const interp = getAspectInterp(aspect.planet1 as Planet, aspect.planet2 as Planet, aspect.type) ||
     getGenericAspectInterp(aspect.planet1 as Planet, aspect.planet2 as Planet, aspect.type);
 
-  const info = ASPECT_LABELS[aspect.type] || { symbol: '?', color: 'text-mystic-400' };
+  const info = aspectMark(aspect.type);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-center gap-4">
         <div className="text-center flex flex-col items-center">
           <PlanetGlyph planet={aspect.planet1 as Planet} size={32} className="text-gold" framed />
-          <div className="text-meta text-mystic-400 mt-1">{aspect.planet1}</div>
+          <div className="text-meta text-mystic-400 mt-1">{localizePlanetName(aspect.planet1 as Planet)}</div>
         </div>
-        <div className={`text-xl ${info.color}`}>{info.symbol}</div>
+        <div className={`text-xl ${info.color}`} aria-hidden>{info.symbol}</div>
         <div className="text-center flex flex-col items-center">
           <PlanetGlyph planet={aspect.planet2 as Planet} size={32} className="text-gold" framed />
-          <div className="text-meta text-mystic-400 mt-1">{aspect.planet2}</div>
+          <div className="text-meta text-mystic-400 mt-1">{localizePlanetName(aspect.planet2 as Planet)}</div>
         </div>
       </div>
       <div className="text-center text-meta text-mystic-400">
         {t('horoscope.birthChartView.aspectMeta', {
-          type: aspect.type,
+          type: localizeAspectName(aspect.type),
           orb: aspect.orb.toFixed(1),
           motion: aspect.applying ? t('horoscope.birthChartView.applying') : t('horoscope.birthChartView.separating'),
         })}

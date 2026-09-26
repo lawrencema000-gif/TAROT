@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNatalChart } from '../hooks/useAstrology';
 import { HoroscopeOnboarding, TodayForYou, BirthChart, Forecast, Explore } from '../components/horoscope';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
+import { ChartWheel } from '../components/chart/ChartWheel';
 import { preloadInterpModules } from '../data/preloadInterpModules';
 import { useT } from '../i18n/useT';
 import type { HoroscopeSubTab } from '../types/astrology';
@@ -96,6 +97,16 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
         open={showPaywall}
         onClose={() => setShowPaywall(false)}
         feature={paywallFeature}
+        // Chart, Forecast and Explore are all computed from this chart, so
+        // the locked tab's proof is the user's own wheel, masked.
+        preview={chart?.natalChart ? (
+          <div
+            aria-hidden
+            className="pointer-events-none select-none w-56 max-h-56 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
+          >
+            <ChartWheel chart={chart.natalChart} />
+          </div>
+        ) : undefined}
       />
     </div>
   );

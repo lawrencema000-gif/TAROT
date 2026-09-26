@@ -162,6 +162,32 @@ function syncDocumentLang(lng: string) {
 syncDocumentLang(i18n.language);
 i18n.on('languageChanged', syncDocumentLang);
 
+// CJK faces load per locale, not for everyone. The Latin faces are
+// self-hosted (see index.css); Noto Sans / Serif JP, KR and SC are large,
+// so each is fetched from Google Fonts only once the user is actually
+// reading in that language. Offline Android falls back to the system's
+// own Noto CJK, which is what the stacks name anyway.
+const CJK_FONTS: Record<string, string> = {
+  ja: 'family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@500;600',
+  ko: 'family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600',
+  zh: 'family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600',
+};
+function loadCjkFonts(lng: string) {
+  if (typeof document === 'undefined') return;
+  const locale = normalizeLocale(lng) ?? 'en';
+  const query = CJK_FONTS[locale];
+  if (!query) return;
+  const id = `arcana-font-${locale}`;
+  if (document.getElementById(id)) return;
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?${query}&display=swap`;
+  document.head.appendChild(link);
+}
+loadCjkFonts(i18n.language);
+i18n.on('languageChanged', loadCjkFonts);
+
 // Emit a GA4 event every time the user switches language so we can measure
 // real-world adoption by locale. Fires once per change, regardless of how
 // the change was initiated (LanguageDropdown click, programmatic setLocale,

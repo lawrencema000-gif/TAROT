@@ -272,6 +272,14 @@
     "mapSection": {
       "title": "Your map",
       "subtitle": "Tap any spot to see what lines run through it. Or search a specific city below."
+    },
+    "paywallPreview": {
+      "city": "{{count}} more lines run through {{city}}",
+      "city_one": "{{count}} more line runs through {{city}}",
+      "city_other": "{{count}} more lines run through {{city}}",
+      "map": "{{count}} more lines cross your map",
+      "map_one": "{{count}} more line crosses your map",
+      "map_other": "{{count}} more lines cross your map"
     }
   },
   "readings": {
@@ -2106,6 +2114,14 @@
         "shadowWork": {
           "label": "Shadow work spread",
           "desc": "Seven cards for inner work"
+        },
+        "celestialMap": {
+          "label": "Celestial Map",
+          "desc": "All 40 planetary lines and city readings"
+        },
+        "reports": {
+          "label": "Deep reports",
+          "desc": "Natal, career and year ahead, no Moonstones to spend"
         }
       },
       "plans": {
@@ -2120,7 +2136,8 @@
       },
       "badges": {
         "bestValue": "Best value",
-        "foreverAccess": "Pay once"
+        "foreverAccess": "Pay once",
+        "save": "Save {{percent}}%"
       },
       "cta": {
         "getLifetime": "Unlock Premium for life",
@@ -2225,7 +2242,38 @@
           "heading": "Match at work",
           "outcome": "Your sign pairing read for working together, with friendship compatibility alongside. Premium opens both.",
           "cta": "Unlock work compatibility"
+        },
+        "natalReport": {
+          "heading": "Read your full natal chart",
+          "outcome": "Every planet in its sign and house, every aspect with its orb, and a report you can print. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock my natal report"
+        },
+        "careerReport": {
+          "heading": "Read your Career Archetype report",
+          "outcome": "Best-fit roles, the environments that drain you, your blind spots and a first-90-days plan, written for your type. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock my career report"
+        },
+        "yearAhead": {
+          "heading": "Read your year ahead",
+          "outcome": "Twelve monthly briefings on the transits to your own chart, with the dates each one runs. Premium opens it, with no Moonstones to spend.",
+          "cta": "Unlock my year ahead"
         }
+      },
+      "sheetTitle": "Premium",
+      "plansLabel": "Plans",
+      "perMonthEquivalent": "{{price}} per month",
+      "continuity": {
+        "line": "Your {{items}} stay. Premium builds on them.",
+        "and": " and ",
+        "readings": "{{count}} readings",
+        "readings_one": "{{count}} reading",
+        "readings_other": "{{count}} readings",
+        "entries": "{{count}} journal entries",
+        "entries_one": "{{count}} journal entry",
+        "entries_other": "{{count}} journal entries",
+        "streak": "{{count}}-day streak",
+        "streak_one": "{{count}}-day streak",
+        "streak_other": "{{count}}-day streak"
       }
     },
     "subscription": {
@@ -2258,6 +2306,14 @@
         "android": "To cancel or change your subscription, use the Google Play Store app or website. Changes can take a few minutes to show here.",
         "ios": "To cancel or change your subscription, open Settings, tap your name, then Subscriptions. Changes can take a few minutes to show here.",
         "web": "To cancel or change your subscription, open the billing portal from this page. Changes can take a few minutes to show here."
+      },
+      "plan": "Your plan",
+      "renewal": {
+        "label": "Renewal",
+        "renews": "Renews {{date}}",
+        "ends": "Ends {{date}}",
+        "trialEnds": "Trial ends {{date}}",
+        "never": "Paid once, nothing renews"
       }
     },
     "watchAd": {
@@ -4800,7 +4856,69 @@
     "planetLabel": "Planet",
     "transitLabel": "Transit",
     "houseLabel": "House {{n}}",
-    "aspectLabel": "Aspect"
+    "aspectLabel": "Aspect",
+    "wheelAria": "Natal chart wheel",
+    "planetAria": "{{planet}} in {{sign}}, {{deg}}°, house {{house}}",
+    "planetAriaNoHouse": "{{planet}} in {{sign}}, {{deg}}°",
+    "retrograde": "Retrograde",
+    "orb": "Orb {{deg}}°",
+    "readMore": "Read the full interpretation",
+    "planetsInHouse": "Planets here: {{list}}",
+    "emptyHouse": "No planets in this house",
+    "houseThemes": {
+      "1": "Self and identity",
+      "2": "Values and possessions",
+      "3": "Communication and learning",
+      "4": "Home and family",
+      "5": "Creativity and romance",
+      "6": "Health and service",
+      "7": "Partnerships",
+      "8": "Transformation and shared resources",
+      "9": "Philosophy and travel",
+      "10": "Career and public image",
+      "11": "Community and aspirations",
+      "12": "Spirituality and the subconscious"
+    },
+    "legendAspects": "Aspects",
+    "legendElements": "Elements",
+    "legendModalities": "Modalities",
+    "orbFilterAria": "Which aspects to draw",
+    "aspectsAll": "All ({{n}})",
+    "aspectsTight": "Tight orbs ({{n}})",
+    "noTightAspects": "No aspects within tight orbs. Switch to all to see every connection.",
+    "aspectGridAria": "Aspect grid",
+    "gridTapPrompt": "Tap a cell to read the aspect",
+    "modalities": {
+      "Cardinal": "Cardinal",
+      "Fixed": "Fixed",
+      "Mutable": "Mutable"
+    },
+    "nodes": {
+      "north": "North Node",
+      "south": "South Node"
+    },
+    "firdaria": {
+      "periodDetail": "{{lord}} · age {{from}}–{{to}} · {{startYear}}–{{endYear}}",
+      "subPeriodDetail": "{{lord}} sub-period · {{start}} to {{end}}",
+      "birth": "Birth",
+      "years": "{{n}} yrs",
+      "insidePeriod": "Inside your {{lord}} period ({{start}}–{{end}})",
+      "tapPrompt": "Tap a period to see its years"
+    },
+    "flavour": {
+      "supporting": "Supporting",
+      "challenging": "Challenging",
+      "neutral": "Neutral"
+    },
+    "luckPillar": {
+      "detail": "{{stem}}{{branch}} · Age {{from}}–{{to}} · {{startYear}}–{{endYear}} · {{flavour}}",
+      "tapPrompt": "Tap a pillar to see its years",
+      "startAgeEstimated": "Start age estimated — add your birth date for the exact solar-term calculation."
+    },
+    "ageLabel": "Age {{n}}",
+    "ziwei": {
+      "body": "Body"
+    }
   },
   "liveRooms": {
     "title": "Live rooms",
@@ -5009,7 +5127,9 @@
       "deleteTitle": "Delete {{name}}?",
       "deleteBody": "This deletes {{name}}’s saved birth data and chart. It can’t be undone.",
       "keep": "Keep {{name}}",
-      "deleteConfirm": "Delete permanently"
+      "deleteConfirm": "Delete permanently",
+      "rising": "{{sign}} rising",
+      "aspects": "Aspects"
     },
     "compare": {
       "needOwnBirth": "Add your own birth date in your profile to compare charts.",
@@ -5037,7 +5157,14 @@
           "label": "Progressed",
           "blurb": "Where the relationship chart has evolved to now"
         }
-      }
+      },
+      "aspectsInChart": "Aspects in this chart",
+      "resonance": "Overall resonance from {{n}} cross-chart connections",
+      "love": "Love",
+      "friendship": "Friendship",
+      "work": "Work",
+      "strongest": "Your strongest connections",
+      "crossRow": "Your {{mine}} {{type}} {{name}}’s {{theirs}}"
     }
   },
   "mirror": {
@@ -5083,7 +5210,34 @@
     "needBirth": "Add your birth date in your profile to cast this chart.",
     "addBirth": "Add my birth details",
     "castFailed": "Couldn’t cast this chart — check your connection and try again.",
-    "retry": "Cast the chart again"
+    "retry": "Cast the chart again",
+    "linked": {
+      "ziwei": "Chinese emperor-star system",
+      "natalReport": "In your natal report",
+      "yearAhead": "In your year-ahead report",
+      "people": "Compare in People"
+    },
+    "moment": {
+      "lunarReturn": "Return moment: {{when}}",
+      "skyNow": "Cast: {{when}}",
+      "progressed": "Progressed to: {{when}}"
+    },
+    "firdaria": {
+      "current": "You are in your {{major}} period",
+      "currentSub": "You are in your {{major}} period · {{sub}} sub-period",
+      "dayBirth": "Day birth",
+      "nightBirth": "Night birth",
+      "flavoredBy": "Flavored by {{sub}}:"
+    },
+    "solarArc": "Solar arc: {{deg}}° from birth",
+    "hitRow": "{{transit}} {{type}} natal {{natal}}",
+    "sections": {
+      "chapter": "This chapter",
+      "balance": "Balance",
+      "hits": "Hits to your natal chart",
+      "aspects": "Aspects within this chart",
+      "placements": "Placements"
+    }
   },
   "foolsJourney": {
     "signInHint": "Sign in to see your Fool’s Journey.",
@@ -5191,5 +5345,9 @@
   },
   "spreads": {
     "pageTitle": "Tarot spreads"
+  },
+  "share": {
+    "youAnd": "You and {{name}}",
+    "yourCompatibility": "Your compatibility"
   }
 }

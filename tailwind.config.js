@@ -73,8 +73,8 @@ export default {
 },
       },
       fontFamily: {
-        display: ['Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],
-        body: ['Inter', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+        display: ['Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],
+        body: ['Inter', 'Inter Fallback', 'Inter Fallback Android', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
       // ── Type scale ──────────────────────────────────────────────
       // There was no fontSize key at all, so four uncoordinated ramps
@@ -180,11 +180,6 @@ export default {
         'scale-in': 'scale-in 300ms cubic-bezier(0.22, 0.8, 0.25, 1) forwards',
         'slide-up': 'slide-up 300ms cubic-bezier(0.22, 0.8, 0.25, 1) forwards',
 
-        // ── ambient: transform-only, so it stays on the compositor ──
-        'float-gentle': 'float-gentle 4s ease-in-out infinite',
-
-        // ── a moment, once per interaction ──
-        'confetti': 'confetti 3s ease-out forwards',
       },
       keyframes: {
         // Skeleton sweep. background-position is a repaint rather than a
@@ -217,14 +212,6 @@ export default {
         'slide-up': {
           from: { opacity: '0', transform: 'translateY(20px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
-        },
-        'float-gentle': {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-6px)' },
-        },
-        confetti: {
-          '0%': { transform: 'translateY(-100vh) rotate(0deg)', opacity: '1' },
-          '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
         },
       },
     },

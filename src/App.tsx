@@ -19,7 +19,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
 import { WebAdSidebar } from './components/ads/WebAdSidebar';
 import { DevicePreview } from './components/dev/DevicePreview';
-import { ToastContainer, ListSkeleton, BrandWordmark } from './components/ui';
+import { ToastContainer, ListSkeleton, BrandMark, BrandWordmark } from './components/ui';
 import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -38,7 +38,9 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
 import { AuthPage } from './pages/AuthPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { LandingPage } from './pages/LandingPage';
+// The marketing landing is a web-only cold-visitor screen; it and its
+// stylesheet load only when a signed-out browser lands on /.
+const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
 
 // Lazy imports — loaded on demand when user navigates
 const ReadingsPage = lazy(() => import('./pages/ReadingsPage').then(m => ({ default: m.ReadingsPage })));
@@ -126,7 +128,7 @@ async function initializeNativeFeatures() {
   // Critical: status bar + splash (fast, visible immediately)
   try {
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: '#0a0a0f' });
+    await StatusBar.setBackgroundColor({ color: '#07070f' });
   } catch {
     console.log('StatusBar not available');
   }
@@ -428,7 +430,7 @@ function AppContent() {
         <div className="min-h-screen constellation-bg">
           <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
             <a href="/" className="no-underline flex items-center gap-2" aria-label="Arcana home">
-              <span className="font-display text-xl text-mystic-100" aria-hidden>☽</span>
+              <BrandMark size={22} className="text-gold" />
               <BrandWordmark size={20} sparkle={false} />
             </a>
             <div className="flex items-center gap-4">
@@ -499,10 +501,12 @@ function AppContent() {
     }
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-        <LandingPage
-          onSignIn={() => { setShowAuthForm(true); navigate('/signin'); }}
-          onGetStarted={() => { setShowOnboarding(true); navigate('/signup'); }}
-        />
+        <Suspense fallback={<div className="min-h-screen bg-mystic-950" aria-busy="true" />}>
+          <LandingPage
+            onSignIn={() => { setShowAuthForm(true); navigate('/signin'); }}
+            onGetStarted={() => { setShowOnboarding(true); navigate('/signup'); }}
+          />
+        </Suspense>
       </ErrorBoundary>
     );
   }

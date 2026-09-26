@@ -35,6 +35,32 @@ import { HomeHero } from '../components/home/HomeHero';
 import { StreakConstellation, type ConstellationNight } from '../components/celebration/StreakConstellation';
 import { MoonPhaseGlyph } from '../components/icons/MoonPhaseGlyph';
 import { HoroscopeCard, PromptCard } from '../components/ritual';
+import { ChartWheel } from '../components/chart/ChartWheel';
+import type { WheelChart } from '../types/astrology';
+
+/** ASC at 15° Aries, a stellium on the Ascendant, one retrograde, no Jupiter longitude. */
+const SHOWCASE_CHART: WheelChart = {
+  ascendant: 15,
+  houses: Array.from({ length: 12 }, (_, i) => (15 + i * 30) % 360),
+  planets: [
+    { planet: 'Sun', sign: 'Aries', degree: 15, longitude: 15, house: 1 },
+    { planet: 'Moon', sign: 'Aries', degree: 17, longitude: 17, house: 1 },
+    { planet: 'Mercury', sign: 'Aries', degree: 19, longitude: 19, house: 1 },
+    { planet: 'Venus', sign: 'Libra', degree: 5, longitude: 185, house: 7, retrograde: true },
+    { planet: 'Mars', sign: 'Cancer', degree: 10, longitude: 100, house: 3 },
+    { planet: 'Jupiter', sign: 'Leo', degree: 10, house: 4 },
+    { planet: 'Saturn', sign: 'Capricorn', degree: 0, longitude: 270, house: 9 },
+    { planet: 'Uranus', sign: 'Aquarius', degree: 0, longitude: 300, house: 10 },
+    { planet: 'Neptune', sign: 'Pisces', degree: 0, longitude: 330, house: 11 },
+    { planet: 'Pluto', sign: 'Sagittarius', degree: 0, longitude: 240, house: 8 },
+  ],
+  aspects: [
+    { planet1: 'Sun', planet2: 'Moon', type: 'conjunction', orb: 2, applying: true },
+    { planet1: 'Sun', planet2: 'Venus', type: 'opposition', orb: 6, applying: false },
+    { planet1: 'Mars', planet2: 'Sun', type: 'square', orb: 5, applying: true },
+    { planet1: 'Moon', planet2: 'Saturn', type: 'trine', orb: 3, applying: true },
+  ],
+};
 
 // A fortnight with a break in it, for the constellation.
 const SHOWCASE_NIGHTS: ConstellationNight[] = (
@@ -160,6 +186,11 @@ export function RedesignShowcasePage() {
             <MysticalStar size={56} className="text-mystic-100" />
             <MysticalStar size={40} halo={false} className="text-gold" />
           </div>
+        </div>
+
+        <div className="space-y-2" data-showcase="wheel">
+          <p className="text-mystic-400 text-sm">ChartWheel — the one wheel: ASC at 9 o’clock, seam sign 30°, stellium spread, ℞, legend</p>
+          <ChartWheel chart={SHOWCASE_CHART} />
         </div>
 
         <div className="space-y-2">

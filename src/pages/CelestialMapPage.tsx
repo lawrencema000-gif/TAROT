@@ -17,7 +17,8 @@ import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
-import type { City } from '../utils/celestialGeo';
+import { linesNearPoint, nearestCity, type City } from '../utils/celestialGeo';
+import { GLOBAL_CITIES } from '../data/citiesGlobal';
 import type { DestinedPlace } from '../types';
 import { scrollBehavior } from '../utils/motion';
 
@@ -224,6 +225,24 @@ export function CelestialMapPage() {
       ),
     };
   }, [allLines, visiblePlanets]);
+
+  // Proof for the paywall: how many of the user's own lines are hidden from
+  // them. Near a tapped city the count is of lines within the insight
+  // panel's 700 km radius of it; otherwise it is the whole map. Computed
+  // from the same line sets the map draws, so the number is never invented.
+  const lockedPreview = useMemo(() => {
+    if (!allLines || !filteredLines || isPremium) return null;
+    if (tappedPoint) {
+      const near = nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
+      if (near && near.distanceKm <= 300) {
+        const all = linesNearPoint(tappedPoint.lat, tappedPoint.lon, allLines, 700).length;
+        const visible = linesNearPoint(tappedPoint.lat, tappedPoint.lon, filteredLines, 700).length;
+        if (all - visible > 0) return { count: all - visible, city: near.city.name as string | null };
+      }
+    }
+    const hidden = allLines.features.length - filteredLines.features.length;
+    return hidden > 0 ? { count: hidden, city: null } : null;
+  }, [allLines, filteredLines, isPremium, tappedPoint]);
 
   // ── Empty state — no birth data yet, OR compute failed ──────────
   // Inline birth-data form: most users entered this at signup, but
@@ -542,6 +561,34 @@ export function CelestialMapPage() {
         open={showPaywall}
         onClose={() => setShowPaywall(false)}
         feature={t('celestial.title', { defaultValue: 'Celestial Map' }) as string}
+        preview={lockedPreview ? (
+          <div className="text-center max-w-[280px]">
+            <span
+              className="inline-flex w-12 h-12 rounded-control bg-gold/10 text-gold items-center justify-center mb-2"
+              aria-hidden
+            >
+              <Globe2 className="w-6 h-6" />
+            </span>
+            <p className="text-lede text-mystic-100 text-balance">
+              {lockedPreview.city
+                ? t('celestial.paywallPreview.city', {
+                    count: lockedPreview.count,
+                    city: lockedPreview.city,
+                    defaultValue:
+                      lockedPreview.count === 1
+                        ? '{{count}} more line runs through {{city}}'
+                        : '{{count}} more lines run through {{city}}',
+                  })
+                : t('celestial.paywallPreview.map', {
+                    count: lockedPreview.count,
+                    defaultValue:
+                      lockedPreview.count === 1
+                        ? '{{count}} more line crosses your map'
+                        : '{{count}} more lines cross your map',
+                  })}
+            </p>
+          </div>
+        ) : undefined}
       />
       {EarnSheet}
 

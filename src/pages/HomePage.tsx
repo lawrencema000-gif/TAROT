@@ -31,7 +31,7 @@ import { dailyRituals, savedHighlights } from '../dal';
 import { getZodiacSign } from '../utils/zodiac';
 import { localDateStr } from '../utils/localDate';
 import { friendlyDisplayName } from '../utils/displayName';
-// horoscopes loaded lazily to keep main bundle small
+import { getDailyPrompt } from '../data/dailyPrompts';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import type { TarotCard, SavedHighlight } from '../types';
@@ -169,7 +169,7 @@ export function HomePage() {
   }, [user, today]);
 
   useEffect(() => {
-    import('../data/horoscopes').then(m => setDailyPrompt(m.getDailyPrompt(localToday)));
+    setDailyPrompt(getDailyPrompt(localToday));
   }, [localToday]);
 
   useEffect(() => {

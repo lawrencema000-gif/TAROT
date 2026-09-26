@@ -410,6 +410,17 @@ export function NatalChartReportPage() {
           feature={t('natalReport.title', { defaultValue: 'Full Natal Chart' }) as string}
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
+          // The proof is the user's own chart: useNatalChart runs before the
+          // unlock check, so the wheel is computed while the report is
+          // locked. Masked toward the bottom — a glimpse, not the report.
+          preview={natal ? (
+            <div
+              aria-hidden
+              className="pointer-events-none select-none w-56 max-h-56 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
+            >
+              <ChartWheel chart={natal} />
+            </div>
+          ) : undefined}
         />
         {moonstonesEnabled && (
           <WatchAdSheet

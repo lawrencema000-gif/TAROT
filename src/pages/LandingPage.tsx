@@ -1,11 +1,29 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+// The stylesheet ships with this chunk, not with the app: LandingPage is
+// lazy-loaded by App.tsx and native never renders it, so main.tsx must not
+// import landing.css globally.
+import '../styles/landing.css';
+import { useState, useEffect, useRef, useCallback, type KeyboardEvent, type ReactNode } from 'react';
+import { ChevronRight, Flame, ListChecks, PenLine } from 'lucide-react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema, setHowToSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
 import { LanguageDropdown } from '../components/i18n/LanguageDropdown';
 import { useT } from '../i18n/useT';
-import { BrandWordmark, BrandMark } from '../components/ui';
+import {
+  Button,
+  Card,
+  DeckFan,
+  Disclosure,
+  EyebrowLabel,
+  BrandMark,
+  BrandWordmark,
+  TarotCardIcon,
+  HoroscopeWheelIcon,
+} from '../components/ui';
+import { ZodiacGlyphPaths, SunIcon } from '../components/icons';
+import { fullDeck } from '../data/tarotDeck';
 import { prefersReducedMotion } from '../utils/motion';
+import type { ZodiacSign } from '../types/astrology';
 
 interface LandingPageProps {
   onSignIn: () => void;
@@ -13,147 +31,103 @@ interface LandingPageProps {
 }
 
 // ─── Data ──────────────────────────────────────────────────────
-const ZODIAC = [
-  { symbol: '♈', name: 'Aries', element: 'Fire', dates: 'Mar 21 – Apr 19', trait: 'Bold & Ambitious', desc: 'The fearless leader of the zodiac. Driven by passion and a desire to be first in everything they do.' },
-  { symbol: '♉', name: 'Taurus', element: 'Earth', dates: 'Apr 20 – May 20', trait: 'Reliable & Patient', desc: 'Grounded and sensual. Taurus finds comfort in stability, beauty, and the finer things in life.' },
-  { symbol: '♊', name: 'Gemini', element: 'Air', dates: 'May 21 – Jun 20', trait: 'Curious & Adaptive', desc: 'The social butterfly with a brilliant mind. Gemini thrives on communication and new experiences.' },
-  { symbol: '♋', name: 'Cancer', element: 'Water', dates: 'Jun 21 – Jul 22', trait: 'Intuitive & Nurturing', desc: 'Deeply emotional and protective. Cancer creates safe havens and leads with the heart.' },
-  { symbol: '♌', name: 'Leo', element: 'Fire', dates: 'Jul 23 – Aug 22', trait: 'Creative & Confident', desc: 'The natural-born star. Leo radiates warmth, generosity, and an irresistible magnetic energy.' },
-  { symbol: '♍', name: 'Virgo', element: 'Earth', dates: 'Aug 23 – Sep 22', trait: 'Analytical & Devoted', desc: 'The perfectionist healer. Virgo sees the details others miss and serves with quiet precision.' },
-  { symbol: '♎', name: 'Libra', element: 'Air', dates: 'Sep 23 – Oct 22', trait: 'Harmonious & Fair', desc: 'The seeker of balance. Libra brings beauty, diplomacy, and grace to every relationship.' },
-  { symbol: '♏', name: 'Scorpio', element: 'Water', dates: 'Oct 23 – Nov 21', trait: 'Intense & Magnetic', desc: 'The transformer of the zodiac. Scorpio sees beneath the surface and embraces the shadows.' },
-  { symbol: '♐', name: 'Sagittarius', element: 'Fire', dates: 'Nov 22 – Dec 21', trait: 'Adventurous & Free', desc: 'The eternal explorer. Sagittarius chases truth, wisdom, and the horizon with boundless optimism.' },
-  { symbol: '♑', name: 'Capricorn', element: 'Earth', dates: 'Dec 22 – Jan 19', trait: 'Disciplined & Wise', desc: 'The mountain climber. Capricorn builds empires through patience, ambition, and quiet determination.' },
-  { symbol: '♒', name: 'Aquarius', element: 'Air', dates: 'Jan 20 – Feb 18', trait: 'Visionary & Original', desc: 'The revolutionary thinker. Aquarius dreams of a better future and dares to be different.' },
-  { symbol: '♓', name: 'Pisces', element: 'Water', dates: 'Feb 19 – Mar 20', trait: 'Empathic & Mystical', desc: 'The dreamer of the zodiac. Pisces flows between worlds, channeling intuition and boundless compassion.' },
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.arcana.app';
+
+type Element = 'fire' | 'earth' | 'air' | 'water';
+
+/** The twelve signs in wheel order. Names, dates, traits and descriptions live in landing.json. */
+const SIGNS: ReadonlyArray<{ sign: ZodiacSign; key: string; element: Element }> = [
+  { sign: 'Aries', key: 'aries', element: 'fire' },
+  { sign: 'Taurus', key: 'taurus', element: 'earth' },
+  { sign: 'Gemini', key: 'gemini', element: 'air' },
+  { sign: 'Cancer', key: 'cancer', element: 'water' },
+  { sign: 'Leo', key: 'leo', element: 'fire' },
+  { sign: 'Virgo', key: 'virgo', element: 'earth' },
+  { sign: 'Libra', key: 'libra', element: 'air' },
+  { sign: 'Scorpio', key: 'scorpio', element: 'water' },
+  { sign: 'Sagittarius', key: 'sagittarius', element: 'fire' },
+  { sign: 'Capricorn', key: 'capricorn', element: 'earth' },
+  { sign: 'Aquarius', key: 'aquarius', element: 'air' },
+  { sign: 'Pisces', key: 'pisces', element: 'water' },
 ];
 
-const CARDS_ROW1 = [
+/**
+ * Element → ink token. Fire is coral, earth is teal, and the two cool
+ * elements take the AA text inks for the cosmic tints (the raw blue and
+ * violet are fills, 3.5:1 as text). Literal class names so Tailwind
+ * emits them.
+ */
+const ELEMENT_INK: Record<Element, string> = {
+  fire: 'text-coral',
+  earth: 'text-teal',
+  air: 'text-cosmic-blue-ink',
+  water: 'text-cosmic-violet-ink',
+};
+
+const MAJOR_ARCANA = [
   'the-fool', 'the-magician', 'the-high-priestess', 'the-empress', 'the-emperor',
   'the-hierophant', 'the-lovers', 'the-chariot', 'strength', 'the-hermit', 'wheel-of-fortune',
-];
-const CARDS_ROW2 = [
   'justice', 'the-hanged-man', 'death', 'temperance', 'the-devil',
   'the-tower', 'the-star', 'the-moon', 'the-sun', 'judgement', 'the-world',
 ];
 
-const HERO_ORBIT = [
-  { file: 'the-star.webp', angle: -18 },
-  { file: 'the-moon.webp', angle: 54 },
-  { file: 'the-sun.webp', angle: 126 },
-  { file: 'the-empress.webp', angle: 198 },
-  { file: 'the-world.webp', angle: 270 },
-];
+/**
+ * Counts the page can stand behind.
+ *
+ * Quizzes: the registry in src/pages/QuizzesPage.tsx (`const quizzes`) has
+ * ten entries that are always on — mood check, MBTI (full and quick), tarot
+ * court match, element affinity, shadow archetype, love language, Big Five,
+ * Enneagram, attachment — plus twenty-three behind the `ayurveda-dosha` and
+ * `extra-quizzes` flags, which this page cannot see. Ten is the floor.
+ *
+ * Spreads: `allSpreads` in src/data/tarotSpreads.ts is 18 general spreads
+ * plus the 22 major-arcana spreads. Not imported: those two data files are
+ * ~190KB and this page is the first thing a cold visitor downloads.
+ */
+const QUIZ_COUNT = 10;
+const SPREAD_COUNT = 40;
 
-const EL_COLORS: Record<string, string> = { Fire: '#e85d3a', Earth: '#5d9e5a', Air: '#5b9dd9', Water: '#7b68d4' };
-
-// Features and FAQ data moved to src/i18n/locales/<lang>/landing.json
-// and pulled in via FEATURES_I18N / FAQ_KEYS defined inside LandingPage().
+// Wheel geometry, in a 520-unit viewBox. Pure numbers, computed once.
+const WHEEL = 520;
+const WC = WHEEL / 2;
+// `arc` is the selection mark: it sits just outside the tick ring, clear of
+// the sign buttons, so it reads as a bracket on the rim rather than a halo.
+const R = { outer: 230, signs: 190, inner: 145, core: 95, arc: 240 };
+function polar(r: number, i: number, offsetDeg = 0) {
+  const a = (i * 30 - 90 + offsetDeg) * (Math.PI / 180);
+  return { x: WC + Math.cos(a) * r, y: WC + Math.sin(a) * r };
+}
+const TICKS = Array.from({ length: 72 }, (_, i) => {
+  const a = i * 5 * (Math.PI / 180);
+  const major = i % 6 === 0;
+  const r1 = R.outer - (major ? 10 : 5);
+  return {
+    x1: WC + Math.cos(a) * r1, y1: WC + Math.sin(a) * r1,
+    x2: WC + Math.cos(a) * R.outer, y2: WC + Math.sin(a) * R.outer,
+    major,
+  };
+});
+const SPOKES = SIGNS.map((_, i) => ({ a: polar(R.core, i, -15), b: polar(R.outer, i, -15) }));
 
 // ─── Hooks ─────────────────────────────────────────────────────
-function useReveal(t = 0.12) {
-  const ref = useRef<HTMLDivElement>(null);
+/** True once the element has entered the viewport. Never resets: entrances play once. */
+function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.12) {
+  const ref = useRef<T>(null);
   const [v, setV] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) setV(true); }, { threshold: t });
+    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) setV(true); }, { threshold });
     o.observe(el);
     return () => o.disconnect();
-  }, [t]);
+  }, [threshold]);
   return { ref, v };
 }
 
-// ─── Stars ─────────────────────────────────────────────────────
-function Stars() {
-  const s = useRef(Array.from({ length: 80 }, (_, i) => ({
-    i, x: Math.random() * 100, y: Math.random() * 100,
-    sz: 0.4 + Math.random() * 1.8, dur: 2 + Math.random() * 5,
-    del: Math.random() * 5, bright: Math.random() > 0.88,
-  }))).current;
-  return (
-    <div className="lp-stars" aria-hidden="true">
-      {s.map(st => <div key={st.i} className={`lp-star ${st.bright ? 'bright' : ''}`}
-        style={{ left: `${st.x}%`, top: `${st.y}%`, width: st.sz, height: st.sz,
-          animationDuration: `${st.dur}s`, animationDelay: `${st.del}s` }} />)}
-    </div>
-  );
-}
-
-// ─── Particles ─────────────────────────────────────────────────
-function Particles() {
-  const p = useRef(Array.from({ length: 14 }, (_, i) => ({
-    i, x: Math.random() * 100, sz: 1 + Math.random() * 2.5,
-    dur: 7 + Math.random() * 14, del: Math.random() * 10,
-    drift: -40 + Math.random() * 80, op: 0.1 + Math.random() * 0.35,
-  }))).current;
-  return (
-    <div className="lp-particles" aria-hidden="true">
-      {p.map(pt => <div key={pt.i} className="lp-particle" style={{
-        left: `${pt.x}%`, '--psize': `${pt.sz}px`, '--pdrift': `${pt.drift}px`,
-        '--popacity': pt.op, animationDuration: `${pt.dur}s`, animationDelay: `${pt.del}s`,
-      } as React.CSSProperties} />)}
-    </div>
-  );
-}
-
-// ─── Hero Word Reveal ──────────────────────────────────────────
-function WordReveal({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
-  return (
-    <span className={className}>
-      {text.split(' ').map((word, i) => (
-        <span key={i} className="lp-word" style={{ animationDelay: `${delay + i * 0.12}s` }}>
-          {word}&nbsp;
-        </span>
-      ))}
-    </span>
-  );
-}
-
-// ─── Hero Orbiting Cards ───────────────────────────────────────
-function OrbitCards() {
-  const [hovered, setHovered] = useState<number | null>(null);
-  return (
-    <div className="lp-orbit">
-      <div className="lp-orbit-ring" />
-      <div className="lp-orbit-glow" />
-      {HERO_ORBIT.map((c, i) => (
-        <div key={c.file}
-          className={`lp-orbit-card ${hovered === i ? 'hovered' : ''}`}
-          style={{ '--angle': `${c.angle}deg`, '--i': i } as React.CSSProperties}
-          onMouseEnter={() => setHovered(i)}
-          onMouseLeave={() => setHovered(null)}>
-          <img src={`/bundled-cards/major-arcana/${c.file}`} alt="" loading="eager" />
-        </div>
-      ))}
-      {/* Center moon */}
-      <div className="lp-orbit-moon">☽</div>
-    </div>
-  );
-}
-
-// ─── Marquee ───────────────────────────────────────────────────
-function CardMarquee({ cards, reverse = false }: { cards: string[]; reverse?: boolean }) {
-  const doubled = [...cards, ...cards];
-  return (
-    <div className={`lp-marquee ${reverse ? 'reverse' : ''}`}>
-      <div className="lp-marquee-track">
-        {doubled.map((card, i) => (
-          <div key={`${card}-${i}`} className="lp-marquee-card">
-            <img src={`/bundled-cards/major-arcana/${card}.webp`} alt={card.replace(/-/g, ' ')} loading="lazy" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Animated Counter ──────────────────────────────────────────
-// Previously gated on IntersectionObserver at threshold 0.5, which meant
-// visitors who never scrolled to the trust section saw "0" forever. We
-// now start from `to` (correct value always visible) and only *replay*
-// the count-up once when the section enters view, so a scroll-in user
-// still gets the animation without anyone ever seeing 0 at rest.
+// ─── Animated counter ──────────────────────────────────────────
+// Starts at `to` (the figure is always correct at rest) and replays the
+// count-up once when it scrolls into view. A setInterval is invisible to
+// the CSS reduced-motion block, so it checks for itself.
 function AnimNum({ to }: { to: number }) {
   const [n, setN] = useState(to);
   const ref = useRef<HTMLSpanElement>(null);
@@ -163,9 +137,6 @@ function AnimNum({ to }: { to: number }) {
     const o = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !ran.current) {
         ran.current = true;
-        // The figure is the information; counting up to it is decoration.
-        // A setInterval is invisible to the CSS reduced-motion block, so it
-        // has to check for itself.
         if (prefersReducedMotion()) { setN(to); return; }
         let c = 0; const step = to / 30;
         setN(0);
@@ -178,214 +149,252 @@ function AnimNum({ to }: { to: number }) {
   return <span ref={ref}>{n}</span>;
 }
 
-// ─── Zodiac Wheel ──────────────────────────────────────────────
-function ZodiacWheel() {
-  const { t } = useT(['landing', 'common']);
-  const [active, setActive] = useState<number | null>(null);
-  const svgSize = 520; const cx = svgSize / 2; const cy = svgSize / 2;
-  const rOuter = 230; const rSigns = 190; const rInner = 145; const rCore = 95; const rCenter = 55;
-  const ticks = Array.from({ length: 72 }, (_, i) => {
-    const angle = (i * 5) * (Math.PI / 180);
-    const isMajor = i % 6 === 0;
-    const r1 = rOuter - (isMajor ? 10 : 5); const r2 = rOuter;
-    return { x1: cx + Math.cos(angle) * r1, y1: cy + Math.sin(angle) * r1, x2: cx + Math.cos(angle) * r2, y2: cy + Math.sin(angle) * r2, major: isMajor };
-  });
-
+// ─── Google Play badge ─────────────────────────────────────────
+// The official asset, cropped by .lp-play-clip (see landing.css for why).
+function PlayBadge({ alt, eager = false }: { alt: string; eager?: boolean }) {
   return (
-    <div className="lp-chart-wrap">
-      <svg viewBox={`0 0 ${svgSize} ${svgSize}`} className="lp-chart-svg" aria-label="Zodiac wheel">
-        <defs>
-          <radialGradient id="zg-cg" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(212, 175, 55,0.15)" /><stop offset="100%" stopColor="transparent" /></radialGradient>
-        </defs>
-        <circle cx={cx} cy={cy} r={rCenter + 30} fill="url(#zg-cg)" />
-        <circle cx={cx} cy={cy} r={rOuter} fill="none" stroke="rgba(212, 175, 55,0.08)" strokeWidth="1" className="lp-chart-ring-outer" />
-        {ticks.map((t, i) => <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={t.major ? 'rgba(212, 175, 55,0.2)' : 'rgba(212, 175, 55,0.07)'} strokeWidth={t.major ? 1 : 0.5} />)}
-        <circle cx={cx} cy={cy} r={rSigns} fill="none" stroke="rgba(212, 175, 55,0.05)" strokeWidth="0.5" strokeDasharray="2 6" />
-        <circle cx={cx} cy={cy} r={rInner} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-        <circle cx={cx} cy={cy} r={rCore} fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
-        {ZODIAC.map((_, i) => { const a = ((i * 30) - 90) * (Math.PI / 180); return <line key={i} x1={cx + Math.cos(a) * rCore} y1={cy + Math.sin(a) * rCore} x2={cx + Math.cos(a) * rOuter} y2={cy + Math.sin(a) * rOuter} stroke="rgba(212, 175, 55,0.04)" strokeWidth="0.5" />; })}
-        {ZODIAC.map((s, i) => {
-          const a = ((i * 30) - 90) * (Math.PI / 180);
-          const sa = ((i * 30) - 105) * (Math.PI / 180); const ea = ((i * 30) - 75) * (Math.PI / 180);
-          const x = cx + Math.cos(a) * rSigns; const y = cy + Math.sin(a) * rSigns;
-          const isA = active === i; const col = EL_COLORS[s.element];
-          return (
-            <g key={s.name} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)} style={{ cursor: 'pointer' }}>
-              {isA && <path d={`M ${cx + Math.cos(sa) * rSigns} ${cy + Math.sin(sa) * rSigns} A ${rSigns} ${rSigns} 0 0 1 ${cx + Math.cos(ea) * rSigns} ${cy + Math.sin(ea) * rSigns}`} fill="none" stroke={col} strokeWidth={3} strokeLinecap="round" style={{ transition: 'all 0.4s' }} />}
-              {isA && <circle cx={x} cy={y} r={24} fill={col} opacity={0.08} />}
-              <circle cx={x} cy={y} r={20} fill={isA ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)'} stroke={isA ? col : 'rgba(212, 175, 55,0.1)'} strokeWidth={isA ? 1.5 : 0.5} style={{ transition: 'all 0.35s' }} />
-              <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={isA ? 18 : 15} fill={isA ? col : 'rgba(212, 175, 55,0.6)'} style={{ transition: 'all 0.35s', fontFamily: 'serif' }}>{s.symbol}</text>
-              {isA && <text x={cx + Math.cos(a) * (rOuter + 20)} y={cy + Math.sin(a) * (rOuter + 20)} textAnchor="middle" dominantBaseline="central" fontSize={11} fill={col} fontWeight={500} fontFamily="'Cormorant Garamond', serif" letterSpacing="0.05em">{s.name}</text>}
-            </g>
-          );
-        })}
-        <circle cx={cx} cy={cy} r={rCenter} fill="rgba(5,5,8,0.8)" stroke="rgba(212, 175, 55,0.08)" strokeWidth="0.5" />
-        <line x1={cx - 20} y1={cy} x2={cx + 20} y2={cy} stroke="rgba(212, 175, 55,0.1)" strokeWidth="0.5" />
-        <line x1={cx} y1={cy - 20} x2={cx} y2={cy + 20} stroke="rgba(212, 175, 55,0.1)" strokeWidth="0.5" />
-        {[0, 90, 180, 270].map(d => { const a = d * (Math.PI / 180); return <circle key={d} cx={cx + Math.cos(a) * 15} cy={cy + Math.sin(a) * 15} r={1.5} fill="rgba(212, 175, 55,0.3)" />; })}
-      </svg>
-      <div className="lp-chart-center-info">
-        {active !== null ? (<>
-          <div className="lp-chart-ci-sym" style={{ color: EL_COLORS[ZODIAC[active].element] }}>{ZODIAC[active].symbol}</div>
-          <div className="lp-chart-ci-name">{ZODIAC[active].name}</div>
-          <div className="lp-chart-ci-trait" style={{ color: EL_COLORS[ZODIAC[active].element] }}>{ZODIAC[active].trait}</div>
-          <div className="lp-chart-ci-dates">{ZODIAC[active].dates}</div>
-        </>) : (<>
-          <div className="lp-chart-ci-sym" style={{ color: 'var(--g)', fontSize: '1.6rem' }}>☉</div>
-          <div className="lp-chart-ci-name">{t('zodiac.theZodiac')}</div>
-          <div className="lp-chart-ci-el" style={{ opacity: 0.35 }}>{t('zodiac.hoverToExplore')}</div>
-        </>)}
-      </div>
-      {active !== null && (
-        <div className="lp-chart-popup" style={{ '--el-color': EL_COLORS[ZODIAC[active].element] } as React.CSSProperties}>
-          <div className="lp-chart-popup-header">
-            <span className="lp-chart-popup-sym">{ZODIAC[active].symbol}</span>
-            <div>
-              <div className="lp-chart-popup-name">{ZODIAC[active].name}</div>
-              <div className="lp-chart-popup-meta">{ZODIAC[active].element} · {ZODIAC[active].dates}</div>
-            </div>
-          </div>
-          <div className="lp-chart-popup-trait">{ZODIAC[active].trait}</div>
-          <div className="lp-chart-popup-desc">{ZODIAC[active].desc}</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── FAQ ───────────────────────────────────────────────────────
-function FaqItem({ q, a, i: idx }: { q: string; a: string; i: number }) {
-  const [open, setOpen] = useState(false);
-  const { ref, v } = useReveal();
-  return (
-    <div ref={ref} className={`lp-faq ${open ? 'open' : ''} ${v ? 'vis' : ''}`} style={{ transitionDelay: `${idx * 60}ms` }}>
-      <button className="lp-faq-q" onClick={() => setOpen(!open)}>
-        <span>{q}</span><span className="lp-faq-plus">+</span>
-      </button>
-      <div className="lp-faq-a"><p>{a}</p></div>
-    </div>
-  );
-}
-
-// ─── Section ───────────────────────────────────────────────────
-// `ambient` picks a section-specific animated background layer (pure
-// CSS/SVG, transform+opacity only — see landing.css "Ambient art").
-// Sections are also scroll-snap stops: html.lp-snap uses proximity
-// snapping so each panel "lands" as you scroll without hijacking.
-type Ambient = 'aurora' | 'nebula' | 'constellation' | 'halo' | 'dust' | 'dawn';
-function Sec({ children, id, className = '', ambient }: { children: React.ReactNode; id?: string; className?: string; ambient?: Ambient }) {
-  const { ref, v } = useReveal();
-  return <section ref={ref} id={id} data-ambient={ambient} className={`lp-sec ${v ? 'vis' : ''} ${className}`}>{children}</section>;
-}
-
-// ─── Google Play Badge ─────────────────────────────────────────
-// Aggregate rating strip — surfaces social proof at top of trust section.
-// Pulls from the existing Play Store rating + reviews count. Updated when
-// ratings shift materially. Inspired by Labyrinthos's "Rated 4.89/5 by
-// 2,978 customers" hero block — one of their highest-converting elements.
-function RatingStrip() {
-  const stars = 5;
-  return (
-    <div className="flex flex-col items-center gap-2 mb-8 sm:mb-10">
-      <div className="flex items-center gap-1">
-        {Array.from({ length: stars }).map((_, i) => (
-          <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="#facc15" aria-hidden>
-            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-          </svg>
-        ))}
-      </div>
-      <p className="text-sm text-mystic-300">
-        <span className="font-semibold text-mystic-100">4.6 / 5</span>
-        <span className="text-mystic-500"> · 1,200+ reviews on Google Play</span>
-      </p>
-    </div>
-  );
-}
-
-// Press logo strip — placeholder set. Swap to real outlets as press is
-// earned. Even niche-specific outlets ("Spirit Daily", "Tarot Times")
-// outperform a blank space — Labyrinthos's strip with Vice/Vogue/Wired
-// is one of the strongest authority signals on their homepage.
-function PressStrip() {
-  const outlets = ['Featured in Spirit Today', 'As seen on TarotPath', 'Featured: Mystic Monthly'];
-  return (
-    <div className="mt-10 pt-8 border-t border-mystic-800/40">
-      <p className="text-center text-xs uppercase tracking-[0.2em] text-mystic-500 mb-4">
-        Trusted by tarot readers worldwide
-      </p>
-      <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 opacity-70">
-        {outlets.map((o) => (
-          <span key={o} className="text-xs sm:text-sm text-mystic-400 font-display tracking-wide">
-            {o}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PlayBadge() {
-  return (
-    <a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="lp-play-badge">
-      <svg className="lp-play-badge-icon" viewBox="0 0 24 24" fill="none">
-        <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92z" fill="#4285F4"/>
-        <path d="M17.556 8.235L5.016.907a1.005 1.005 0 00-1.02-.011l9.796 11.1 3.764-3.76z" fill="#34A853"/>
-        <path d="M17.556 15.765l-3.764-3.761-9.796 11.1c.325.186.727.2 1.064-.012l12.496-7.327z" fill="#EA4335"/>
-        <path d="M21.395 10.486l-3.84-2.25-4.149 4.149 4.108 4.108 3.88-2.279c.779-.457.779-1.578.001-1.728z" fill="#FBBC05"/>
-      </svg>
-      <span className="lp-play-badge-text">
-        <span className="lp-play-badge-label">Get it on</span>
-        <span className="lp-play-badge-store">Google Play</span>
+    <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="lp-play">
+      <span className="lp-play-clip">
+        <img src="/google-play-badge.png" alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
       </span>
     </a>
   );
 }
 
-// ─── Bento Feature Card ────────────────────────────────────────
-// Extracted so `useReveal` isn't called inside .map(). Each card gets its
-// own observer state instance. `t` is passed in rather than re-invoked as
-// a hook inside the card.
-type TFn = (k: string, o?: Record<string, unknown>) => string;
-function BentoItem({ feature, index, t }: {
-  feature: { icon: string; key: string; size: string };
-  index: number;
-  t: TFn;
-}) {
-  const { ref, v } = useReveal();
+// ─── Section scaffolding ───────────────────────────────────────
+function Sec({ children, id, className = '' }: { children: ReactNode; id?: string; className?: string }) {
+  const { ref, v } = useReveal<HTMLElement>();
   return (
-    <div
-      ref={ref}
-      className={`lp-bento-card ${feature.size} ${v ? 'vis' : ''}`}
-      style={{ transitionDelay: `${index * 80}ms` }}
-    >
-      <div className="lp-bento-icon">{feature.icon}</div>
-      <h3 className="lp-bento-title">{t(`features.items.${feature.key}.title`)}</h3>
-      <p className="lp-bento-desc">{t(`features.items.${feature.key}.desc`)}</p>
+    <section ref={ref} id={id} className={`lp-sec ${v ? 'is-vis' : ''} ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+function SectionHeader({ tag, heading, sub }: { tag: string; heading: string; sub?: string }) {
+  return (
+    <div className="lp-header">
+      <EyebrowLabel rules>{tag}</EyebrowLabel>
+      <h2 className="lp-h2 heading-display-xl text-mystic-100">{heading}</h2>
+      {sub && <p className="lp-sub text-body text-mystic-400">{sub}</p>}
     </div>
   );
 }
 
-// ─── Ritual Timeline Step ──────────────────────────────────────
-function RitualStep({ step, index, t }: {
-  step: { n: string; icon: string; key: string };
-  index: number;
-  t: TFn;
-}) {
-  const { ref, v } = useReveal();
+// ─── Deck marquee ──────────────────────────────────────────────
+// The page's one ambient animation. Decorative: the cards are shown again
+// below in the demo and the faces carry no information here, so the whole
+// row is hidden from assistive technology rather than announcing 44 images.
+function CardMarquee({ cards }: { cards: string[] }) {
+  const doubled = [...cards, ...cards];
+  return (
+    <div className="lp-marquee" aria-hidden="true">
+      <div className="lp-marquee-track">
+        {doubled.map((card, i) => (
+          <div key={`${card}-${i}`} className="lp-marquee-card">
+            <img src={`/bundled-cards/major-arcana/${card}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Zodiac wheel ──────────────────────────────────────────────
+// A static ring drawing with twelve real buttons laid over it. Tap, focus,
+// Enter and Space select a sign; the arrow keys walk the ring; Escape
+// clears. Nothing rotates.
+function ZodiacWheel() {
+  const { t } = useT('landing');
+  const [active, setActive] = useState<number | null>(null);
+  const buttons = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+    let next: number | null = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % SIGNS.length;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i + SIGNS.length - 1) % SIGNS.length;
+    else if (e.key === 'Escape') { setActive(null); return; }
+    if (next === null) return;
+    e.preventDefault();
+    buttons.current[next]?.focus();
+  };
+
+  const current = active === null ? null : SIGNS[active];
+  const ink = current ? ELEMENT_INK[current.element] : 'text-gold';
+  const arc = current && active !== null
+    ? (() => { const s = polar(R.arc, active, -15); const e = polar(R.arc, active, 15); return `M ${s.x} ${s.y} A ${R.arc} ${R.arc} 0 0 1 ${e.x} ${e.y}`; })()
+    : null;
+
+  return (
+    <div className="lp-wheel">
+      <div className="lp-wheel-stage" role="group" aria-label={t('zodiac.wheelLabel')}>
+        <svg viewBox={`0 0 ${WHEEL} ${WHEEL}`} className="lp-wheel-svg text-gold" aria-hidden focusable="false">
+          <circle cx={WC} cy={WC} r={R.outer} fill="none" stroke="currentColor" strokeOpacity={0.14} strokeWidth={1} />
+          {TICKS.map((k, i) => (
+            <line key={i} x1={k.x1} y1={k.y1} x2={k.x2} y2={k.y2} stroke="currentColor" strokeOpacity={k.major ? 0.3 : 0.12} strokeWidth={k.major ? 1 : 0.5} />
+          ))}
+          <circle cx={WC} cy={WC} r={R.signs} fill="none" stroke="currentColor" strokeOpacity={0.1} strokeWidth={0.5} strokeDasharray="2 6" />
+          <circle cx={WC} cy={WC} r={R.inner} fill="none" stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5} />
+          {SPOKES.map((s, i) => (
+            <line key={i} x1={s.a.x} y1={s.a.y} x2={s.b.x} y2={s.b.y} stroke="currentColor" strokeOpacity={0.08} strokeWidth={0.5} />
+          ))}
+          {arc && <path d={arc} className={ink} fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" />}
+          <circle cx={WC} cy={WC} r={R.core} fill="rgb(var(--surface-card))" stroke="currentColor" strokeOpacity={0.18} strokeWidth={0.75} />
+        </svg>
+
+        {SIGNS.map((s, i) => {
+          const { x, y } = polar(R.signs, i);
+          const isA = active === i;
+          return (
+            <button
+              key={s.key}
+              ref={(el) => { buttons.current[i] = el; }}
+              type="button"
+              className={`lp-wheel-sign ${isA ? `is-active ${ELEMENT_INK[s.element]}` : 'text-gold/70'}`}
+              style={{ left: `${(x / WHEEL) * 100}%`, top: `${(y / WHEEL) * 100}%` }}
+              aria-label={t(`zodiac.signs.${s.key}.name`)}
+              aria-pressed={isA}
+              // Select, never toggle: a pointer press focuses the button first,
+              // which already selected it, so a toggle would undo the tap.
+              onClick={() => setActive(i)}
+              onFocus={() => setActive(i)}
+              onKeyDown={(e) => onKeyDown(e, i)}
+            >
+              <svg viewBox="0 0 32 32" width={22} height={22} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable="false">
+                <ZodiacGlyphPaths sign={s.sign} />
+              </svg>
+            </button>
+          );
+        })}
+
+        <div className="lp-wheel-centre" aria-hidden="true">
+          {current ? (
+            <>
+              <svg viewBox="0 0 32 32" width={32} height={32} className={ink} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                <ZodiacGlyphPaths sign={current.sign} />
+              </svg>
+              <div className="heading-display-md text-mystic-100">{t(`zodiac.signs.${current.key}.name`)}</div>
+              <div className="text-caption text-mystic-400">{t(`zodiac.signs.${current.key}.dates`)}</div>
+            </>
+          ) : (
+            <>
+              <span className="text-gold"><SunIcon size={28} /></span>
+              <div className="heading-display-md text-mystic-100">{t('zodiac.theZodiac')}</div>
+              <div className="text-caption text-mystic-400">{t('zodiac.tapToExplore')}</div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <Card padding="md" className="lp-wheel-detail" aria-live="polite">
+        {current ? (
+          <>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className={`text-caption font-semibold uppercase tracking-wider ${ink}`}>{t(`zodiac.elements.${current.element}`)}</span>
+              <span className="text-caption text-mystic-500">{t(`zodiac.signs.${current.key}.dates`)}</span>
+            </div>
+            <h3 className="heading-display-md text-mystic-100 mt-2">
+              {t(`zodiac.signs.${current.key}.name`)}
+              <span className={`text-meta font-body font-medium ml-2 ${ink}`}>{t(`zodiac.signs.${current.key}.trait`)}</span>
+            </h3>
+            <p className="text-body text-mystic-300 mt-1">{t(`zodiac.signs.${current.key}.desc`)}</p>
+          </>
+        ) : (
+          <p className="text-ui text-mystic-400">{t('zodiac.tapToExplore')}</p>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ─── FAQ ───────────────────────────────────────────────────────
+function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
+  const { ref, v } = useReveal<HTMLDivElement>();
+  return (
+    <div ref={ref} className={`lp-reveal mb-2.5 ${v ? 'is-vis' : ''}`} style={{ transitionDelay: `${index * 50}ms` }}>
+      <Disclosure variant="panel" label={<span className="text-ui text-mystic-100">{q}</span>}>
+        <p className="text-body text-mystic-300">{a}</p>
+      </Disclosure>
+    </div>
+  );
+}
+
+// ─── Bento feature card ────────────────────────────────────────
+type TFn = (k: string, o?: Record<string, unknown>) => string;
+const FEATURES = [
+  { key: 'tarot', size: 'large' },
+  { key: 'horoscope', size: 'small' },
+  { key: 'journal', size: 'small' },
+  { key: 'quizzes', size: 'large' },
+  { key: 'streaks', size: 'small' },
+  { key: 'birthChart', size: 'small' },
+] as const;
+const BENTO_ICONS: Record<(typeof FEATURES)[number]['key'], ReactNode> = {
+  tarot: <TarotCardIcon className="w-6 h-6" />,
+  horoscope: <SunIcon size={24} />,
+  journal: <PenLine className="w-6 h-6" strokeWidth={1.6} />,
+  quizzes: <ListChecks className="w-6 h-6" strokeWidth={1.6} />,
+  streaks: <Flame className="w-6 h-6" strokeWidth={1.6} />,
+  birthChart: <HoroscopeWheelIcon className="w-6 h-6" />,
+};
+
+function BentoItem({ feature, index, t }: { feature: (typeof FEATURES)[number]; index: number; t: TFn }) {
+  const { ref, v } = useReveal<HTMLDivElement>();
+  return (
+    <Card
+      ref={ref}
+      padding="lg"
+      className={`lp-bento-card lp-reveal ${feature.size} ${v ? 'is-vis' : ''}`}
+      style={{ transitionDelay: `${index * 60}ms` }}
+    >
+      <div className="lp-bento-icon text-gold" aria-hidden="true">{BENTO_ICONS[feature.key]}</div>
+      <h3 className="heading-display-md text-mystic-100 mb-2">{t(`features.items.${feature.key}.title`)}</h3>
+      <p className="text-ui text-mystic-400">{t(`features.items.${feature.key}.desc`)}</p>
+    </Card>
+  );
+}
+
+// ─── Ritual timeline step ──────────────────────────────────────
+const RITUAL_STEPS = [
+  { n: '01', key: 'horoscope' },
+  { n: '02', key: 'card' },
+  { n: '03', key: 'journal' },
+] as const;
+const RITUAL_ICONS: Record<(typeof RITUAL_STEPS)[number]['key'], ReactNode> = {
+  horoscope: <SunIcon size={28} />,
+  card: <TarotCardIcon className="w-7 h-7" />,
+  journal: <PenLine className="w-7 h-7" strokeWidth={1.6} />,
+};
+
+function RitualStep({ step, index, t }: { step: (typeof RITUAL_STEPS)[number]; index: number; t: TFn }) {
+  const { ref, v } = useReveal<HTMLDivElement>();
   return (
     <div
       ref={ref}
-      className={`lp-timeline-item ${index % 2 === 1 ? 'right' : 'left'} ${v ? 'vis' : ''}`}
-      style={{ transitionDelay: `${index * 150}ms` }}
+      className={`lp-timeline-item lp-reveal ${index % 2 === 1 ? 'right' : 'left'} ${v ? 'is-vis' : ''}`}
+      style={{ transitionDelay: `${index * 90}ms` }}
     >
-      <div className="lp-timeline-dot" />
-      <div className="lp-timeline-card">
-        <div className="lp-timeline-watermark">{step.n}</div>
-        <div className="lp-timeline-icon">{step.icon}</div>
-        <h3 className="lp-timeline-title">{t(`ritual.steps.${step.key}.title`)}</h3>
-        <p className="lp-timeline-desc">{t(`ritual.steps.${step.key}.desc`)}</p>
-      </div>
+      <div className="lp-timeline-dot" aria-hidden="true" />
+      <Card padding="lg" className="relative overflow-hidden">
+        <div className="lp-timeline-watermark" aria-hidden="true">{step.n}</div>
+        <div className="text-gold mb-3" aria-hidden="true">{RITUAL_ICONS[step.key]}</div>
+        <h3 className="heading-display-md text-mystic-100 mb-1">{t(`ritual.steps.${step.key}.title`)}</h3>
+        <p className="text-ui text-mystic-400">{t(`ritual.steps.${step.key}.desc`)}</p>
+      </Card>
     </div>
+  );
+}
+
+// ─── Footer ────────────────────────────────────────────────────
+function FooterLink({ href, children, external = false }: { href: string; children: ReactNode; external?: boolean }) {
+  return (
+    <a
+      href={href}
+      className="lp-footer-link text-ui text-mystic-300 [@media(hover:hover)]:hover:text-mystic-100"
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
+      {children}
+    </a>
   );
 }
 
@@ -396,24 +405,6 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   const { t } = useT(['landing', 'common']);
   const [navSolid, setNavSolid] = useState(false);
 
-  // Feature grid items — i18n-aware, mapped to the landing namespace.
-  const FEATURES_I18N = [
-    { icon: '✦', key: 'tarot', size: 'large' },
-    { icon: '☉', key: 'horoscope', size: 'small' },
-    { icon: '✎', key: 'journal', size: 'small' },
-    { icon: '◈', key: 'quizzes', size: 'large' },
-    { icon: '↑', key: 'streaks', size: 'small' },
-    { icon: '☽', key: 'birthChart', size: 'small' },
-  ] as const;
-
-  // Ritual steps — same pattern.
-  const RITUAL_STEPS_I18N = [
-    { n: '01', icon: '☉', key: 'horoscope' },
-    { n: '02', icon: '🂠', key: 'card' },
-    { n: '03', icon: '✎', key: 'journal' },
-  ] as const;
-
-  // FAQ items referenced by the i18n keys.
   const FAQ_KEYS = ['free', 'accuracy', 'quizzes', 'privacy', 'premium', 'web'] as const;
 
   const onScroll = useCallback(() => { setNavSolid(window.scrollY > 50); }, []);
@@ -422,10 +413,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [onScroll]);
 
-  // Scroll-stop panels: proximity snapping on the document while the
-  // landing is mounted (removed on unmount so the app shell scrolls
-  // normally). Proximity — not mandatory — so long sections never trap
-  // the scroll; each panel just "lands" when you release near it.
+  // Scroll-stop panels while the landing is mounted (see landing.css).
   useEffect(() => {
     document.documentElement.classList.add('lp-snap');
     return () => document.documentElement.classList.remove('lp-snap');
@@ -445,242 +433,210 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
+  const stats = [
+    { key: 'cards', n: fullDeck.length },
+    { key: 'spreads', n: SPREAD_COUNT },
+    { key: 'quizzes', n: QUIZ_COUNT },
+    { key: 'signs', n: SIGNS.length },
+  ];
+
+  const navLink = 'lp-nav-link text-ui text-mystic-400 [@media(hover:hover)]:hover:text-mystic-100';
+
   return (
-    <div className="lp-root">
-      {/* Noise overlay */}
-      <div className="lp-noise" aria-hidden="true" />
-      <Stars />
-      <Particles />
+    <div className="lp-root text-mystic-100">
+      <div className="lp-sky" aria-hidden="true" />
 
       {/* ── Nav ── */}
-      <nav className={`lp-nav ${navSolid ? 'solid' : ''}`}>
+      <nav className={`lp-nav ${navSolid ? 'is-solid' : ''}`}>
         <div className="lp-nav-in">
-          <div className="lp-nav-brand flex items-center gap-2">
-            <span className="lp-nav-moon">☽</span>
-            <BrandWordmark size={18} sparkle={false} />
-          </div>
+          <a href="/" className="lp-nav-brand" aria-label={t('nav.home')}>
+            <BrandMark size={22} className="text-gold" />
+            <BrandWordmark size={17} sparkle={false} className="lp-nav-word" />
+          </a>
           <div className="lp-nav-right">
-            <a href="/tarot-meanings" className="lp-nav-link">{t('nav.cardMeanings')}</a>
-            <a href="#features" className="lp-nav-link">{t('nav.features')}</a>
-            <a href="#zodiac" className="lp-nav-link">{t('nav.zodiac')}</a>
-            <a href="#faq" className="lp-nav-link">{t('nav.faq')}</a>
-            <a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className="lp-nav-link">{t('common:nav.shop')}</a>
+            <a href="/tarot-meanings" className={navLink}>{t('nav.cardMeanings')}</a>
+            <a href="#features" className={navLink}>{t('nav.features')}</a>
+            <a href="#zodiac" className={navLink}>{t('nav.zodiac')}</a>
+            <a href="#faq" className={navLink}>{t('nav.faq')}</a>
+            <a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className={navLink}>{t('common:nav.shop')}</a>
             <LanguageDropdown />
-            <button onClick={onSignIn} className="lp-nav-btn">{t('common:nav.signIn')}</button>
+            <Button variant="ghost" onClick={onSignIn}>{t('common:nav.signIn')}</Button>
+            <Button variant="gold" onClick={onGetStarted}>{t('nav.cta')}</Button>
           </div>
         </div>
       </nav>
 
-      {/* ── Main content (hero onwards) ── */}
       <main>
-      {/* ── Hero ── */}
-      <section className="lp-hero" data-ambient="aurora">
-        <div className="lp-hero-orb o1" /><div className="lp-hero-orb o2" /><div className="lp-hero-orb o3" />
-
-        <div className="lp-hero-content">
-          {/* Redesign 2026 — brand lockup above the hero badge. Pulls
-              the BrandMark (arched window glyph) and BrandWordmark
-              (gold serif "ARCANA" with sparkle interpunct) from the
-              ad campaign. Sits above the existing word-reveal headline
-              so the brand statement reads first. */}
-          <div className="lp-hero-lockup lp-fade-in" style={{ animationDelay: '0.2s' }}>
-            <BrandMark size={56} className="text-gold drop-shadow-[0_0_14px_rgba(212,175,55,0.35)]" />
-            <BrandWordmark size={42} />
-          </div>
-          <div className="lp-hero-badge"><span className="lp-hero-badge-dot" />{t('hero.badge')}</div>
-          <h1 className="lp-hero-h1">
-            <WordReveal text={t('hero.headlineTop')} className="lp-hero-line1" />
-            <br />
-            <WordReveal text={t('hero.headlineBottom')} className="lp-shimmer" delay={0.5} />
-          </h1>
-          <p className="lp-hero-sub lp-fade-in" style={{ animationDelay: '1.2s' }}>
-            {t('hero.sub')}
-          </p>
-          <div className="lp-hero-ctas lp-fade-in" style={{ animationDelay: '1.6s' }}>
-            <button onClick={onGetStarted} className="lp-btn-gold">
-              <span className="lp-btn-gold-glow" />{t('hero.cta')}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </button>
-            <PlayBadge />
-          </div>
-          <p className="lp-hero-note lp-fade-in" style={{ animationDelay: '1.9s' }}>{t('hero.note')}</p>
-          <div className="lp-fade-in" style={{ animationDelay: '2.2s' }}>
+        {/* ── Hero: the deck, the thesis, the draw ── */}
+        <section className="lp-hero">
+          <div className="lp-hero-in lp-enter">
+            <DeckFan size="lg" />
+            <EyebrowLabel rules className="mt-4">{t('hero.badge')}</EyebrowLabel>
+            <h1 className="lp-hero-h1 heading-display-xl text-mystic-100">
+              {t('hero.headlineTop')}
+              <br />
+              <span className="text-gold">{t('hero.headlineBottom')}</span>
+            </h1>
+            <p className="text-lede text-mystic-300 max-w-md">{t('hero.sub')}</p>
+            <div className="lp-hero-ctas">
+              <Button variant="gold" size="lg" onClick={onGetStarted}>
+                {t('hero.cta')}
+                <ChevronRight className="w-4 h-4" aria-hidden />
+              </Button>
+              <PlayBadge alt={t('play.alt')} eager />
+            </div>
+            <p className="text-caption text-mystic-500 mt-2">{t('hero.note')}</p>
             <FreeReadingDemo onSignUp={onGetStarted} />
           </div>
-        </div>
+        </section>
 
-        <div className="lp-hero-visual lp-fade-in" style={{ animationDelay: '0.8s' }}>
-          <OrbitCards />
-        </div>
-      </section>
+        <div className="lp-divider" />
 
-      {/* ── Gradient divider ── */}
-      <div className="lp-divider" />
-
-      {/* ── Trust ── */}
-      <Sec className="lp-trust" ambient="dust">
-        <div className="lp-wrap">
-          <RatingStrip />
-          <div className="lp-trust-grid">
-            {(t('trust.stats', { returnObjects: true, defaultValue: [] }) as Array<{ n: number; l: string; s: string }>).map(st => (
-              <div key={st.l} className="lp-trust-item">
-                <div className="lp-trust-num"><AnimNum to={st.n} /></div>
-                <div className="lp-trust-label">{st.l}</div>
-                <div className="lp-trust-sub">{st.s}</div>
-              </div>
-            ))}
+        {/* ── What is in the box ── */}
+        <Sec className="lp-trust">
+          <div className="lp-wrap">
+            <div className="lp-trust-grid">
+              {stats.map((s) => (
+                <div key={s.key} className="lp-trust-item">
+                  <div className="font-display text-hero font-medium text-gold"><AnimNum to={s.n} /></div>
+                  <div className="text-ui font-medium text-mystic-100 mt-1">{t(`trust.stats.${s.key}.label`)}</div>
+                  <div className="text-caption text-mystic-500">{t(`trust.stats.${s.key}.sub`)}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <PressStrip />
-        </div>
-      </Sec>
+        </Sec>
 
-      <div className="lp-divider" />
+        <div className="lp-divider" />
 
-      {/* ── Free 3-part email course ── */}
-      <Sec>
-        <FreeEmailCourseCard />
-      </Sec>
+        {/* ── Free 3-part email course ── */}
+        <Sec>
+          <FreeEmailCourseCard />
+        </Sec>
 
-      <div className="lp-divider" />
+        <div className="lp-divider" />
 
-      {/* ── Features (Bento) ── */}
-      <Sec id="features" ambient="nebula">
-        <div className="lp-wrap">
-          <div className="lp-header">
-            <span className="lp-tag">{t('features.tag')}</span>
-            <h2 className="lp-h2">{t('features.heading')}</h2>
-            <p className="lp-sub">{t('features.sub')}</p>
+        {/* ── Features ── */}
+        <Sec id="features">
+          <div className="lp-wrap">
+            <SectionHeader tag={t('features.tag')} heading={t('features.heading')} sub={t('features.sub')} />
+            <div className="lp-bento">
+              {FEATURES.map((f, i) => (
+                <BentoItem key={f.key} feature={f} index={i} t={t} />
+              ))}
+            </div>
           </div>
-          <div className="lp-bento">
-            {FEATURES_I18N.map((f, i) => (
-              <BentoItem key={f.key} feature={f} index={i} t={t} />
-            ))}
+        </Sec>
+
+        <div className="lp-divider" />
+
+        {/* ── The deck ── */}
+        <Sec className="lp-showcase">
+          <div className="lp-wrap">
+            <SectionHeader tag={t('deck.tag')} heading={t('deck.heading')} sub={t('deck.sub')} />
           </div>
-        </div>
-      </Sec>
+          <CardMarquee cards={MAJOR_ARCANA} />
+        </Sec>
 
-      <div className="lp-divider" />
+        <div className="lp-divider" />
 
-      {/* ── Card Showcase (Dual Marquee) ── */}
-      <Sec className="lp-showcase" ambient="constellation">
-        <div className="lp-wrap">
-          <div className="lp-header">
-            <span className="lp-tag">{t('deck.tag')}</span>
-            <h2 className="lp-h2">{t('deck.heading')}</h2>
-            <p className="lp-sub">{t('deck.sub')}</p>
+        {/* ── Zodiac ── */}
+        <Sec id="zodiac">
+          <div className="lp-wrap">
+            <SectionHeader tag={t('zodiac.tag')} heading={t('zodiac.heading')} sub={t('zodiac.sub')} />
+            <ZodiacWheel />
           </div>
-        </div>
-        <CardMarquee cards={CARDS_ROW1} />
-        <CardMarquee cards={CARDS_ROW2} reverse />
-      </Sec>
+        </Sec>
 
-      <div className="lp-divider" />
+        <div className="lp-divider" />
 
-      {/* ── Zodiac ── */}
-      <Sec id="zodiac" ambient="halo">
-        <div className="lp-wrap">
-          <div className="lp-header">
-            <span className="lp-tag">{t('zodiac.tag')}</span>
-            <h2 className="lp-h2">{t('zodiac.heading')}</h2>
-            <p className="lp-sub">{t('zodiac.sub')}</p>
+        {/* ── Daily ritual ── */}
+        <Sec>
+          <div className="lp-wrap">
+            <SectionHeader tag={t('ritual.tag')} heading={t('ritual.heading')} sub={t('ritual.sub')} />
+            <div className="lp-timeline">
+              <div className="lp-timeline-line" aria-hidden="true" />
+              {RITUAL_STEPS.map((s, i) => (
+                <RitualStep key={s.n} step={s} index={i} t={t} />
+              ))}
+            </div>
           </div>
-          <ZodiacWheel />
-        </div>
-      </Sec>
+        </Sec>
 
-      <div className="lp-divider" />
+        <div className="lp-divider" />
 
-      {/* ── Daily Ritual (Timeline) ── */}
-      <Sec>
-        <div className="lp-wrap">
-          <div className="lp-header">
-            <span className="lp-tag">{t('ritual.tag')}</span>
-            <h2 className="lp-h2">{t('ritual.heading')}</h2>
-            <p className="lp-sub">{t('ritual.sub')}</p>
+        {/* ── FAQ ── */}
+        <Sec id="faq">
+          <div className="lp-wrap lp-faq-wrap">
+            <SectionHeader tag={t('faq.tag')} heading={t('faq.heading')} />
+            {FAQ_KEYS.map((k, i) => <FaqItem key={k} q={t(`faq.items.${k}.q`)} a={t(`faq.items.${k}.a`)} index={i} />)}
           </div>
-          <div className="lp-timeline">
-            {RITUAL_STEPS_I18N.map((s, i) => (
-              <RitualStep key={s.n} step={s} index={i} t={t} />
-            ))}
-            <div className="lp-timeline-line" />
+        </Sec>
+
+        <div className="lp-divider" />
+
+        {/* ── Final CTA ── */}
+        <Sec className="lp-final">
+          <div className="lp-wrap text-center">
+            <div className="lp-lockup">
+              <BrandMark size={48} className="text-gold" />
+              <BrandWordmark size={28} />
+            </div>
+            <h2 className="heading-display-xl text-mystic-100 mb-3">{t('finalCta.heading')}</h2>
+            <p className="text-body text-mystic-400 mb-8">{t('finalCta.sub')}</p>
+            <Button variant="gold" size="lg" onClick={onGetStarted}>
+              {t('finalCta.cta')}
+              <ChevronRight className="w-4 h-4" aria-hidden />
+            </Button>
+            <div className="mt-4"><PlayBadge alt={t('play.alt')} /></div>
           </div>
-        </div>
-      </Sec>
-
-      <div className="lp-divider" />
-
-      {/* ── FAQ ── */}
-      <Sec id="faq">
-        <div className="lp-wrap lp-faq-wrap">
-          <div className="lp-header"><span className="lp-tag">{t('faq.tag')}</span><h2 className="lp-h2">{t('faq.heading')}</h2></div>
-          {FAQ_KEYS.map((k, i) => <FaqItem key={k} q={t(`faq.items.${k}.q`)} a={t(`faq.items.${k}.a`)} i={i} />)}
-        </div>
-      </Sec>
-
-      <div className="lp-divider" />
-
-      {/* ── Final CTA ── */}
-      <Sec className="lp-cta-final" ambient="dawn">
-        <div className="lp-wrap" style={{ textAlign: 'center' }}>
-          <div className="lp-cta-moon-wrap">
-            <div className="lp-cta-moon">☽</div>
-            <div className="lp-cta-ray r1" /><div className="lp-cta-ray r2" /><div className="lp-cta-ray r3" /><div className="lp-cta-ray r4" />
-          </div>
-          <h2 className="lp-h2" style={{ marginBottom: 12 }}>{t('finalCta.heading')}</h2>
-          <p className="lp-sub" style={{ marginBottom: 40 }}>{t('finalCta.sub')}</p>
-          <button onClick={onGetStarted} className="lp-btn-gold lp-btn-lg">
-            <span className="lp-btn-gold-glow" />{t('finalCta.cta')}
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </button>
-          <div style={{ marginTop: 20 }}><PlayBadge /></div>
-        </div>
-      </Sec>
+        </Sec>
       </main>
 
-      {/* ── Footer (multi-column, mirrors Labyrinthos pattern) ── */}
+      {/* ── Footer ── */}
       <footer className="lp-footer">
         <div className="lp-wrap">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10 pt-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 sm:col-span-1">
-              <div className="lp-footer-brand mb-2 flex items-center gap-2">
-                <span className="lp-nav-moon">☽</span>
-                <BrandWordmark size={18} sparkle={false} />
+              <div className="flex items-center gap-2 mb-3">
+                <BrandMark size={22} className="text-gold" />
+                <BrandWordmark size={17} sparkle={false} />
               </div>
-              <p className="text-xs text-mystic-500 leading-relaxed">A daily ritual practice for tarot, astrology, and reflection.</p>
+              <p className="text-caption text-mystic-500">{t('footer.tagline')}</p>
             </div>
             <div>
-              <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">Learn</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/tarot-meanings" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.cardMeanings', { defaultValue: "Tarot card meanings" })}</a></li>
-                <li><a href="/spreads" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.spreads', { defaultValue: "Tarot spreads" })}</a></li>
-                <li><a href="/astrology" className="text-mystic-300 hover:text-mystic-100 no-underline">Astrology</a></li>
-                <li><a href="/numerology" className="text-mystic-300 hover:text-mystic-100 no-underline">Numerology</a></li>
-                <li><a href="/crystals" className="text-mystic-300 hover:text-mystic-100 no-underline">Crystals</a></li>
-                <li><a href="/glossary" className="text-mystic-300 hover:text-mystic-100 no-underline">Glossary</a></li>
-                <li><a href="/blog" className="text-mystic-300 hover:text-mystic-100 no-underline">Blog</a></li>
+              <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.learn')}</EyebrowLabel>
+              <ul className="space-y-1">
+                <li><FooterLink href="/tarot-meanings">{t('footer.links.cardMeanings')}</FooterLink></li>
+                <li><FooterLink href="/spreads">{t('footer.links.spreads')}</FooterLink></li>
+                <li><FooterLink href="/astrology">{t('footer.links.astrology')}</FooterLink></li>
+                <li><FooterLink href="/numerology">{t('footer.links.numerology')}</FooterLink></li>
+                <li><FooterLink href="/crystals">{t('footer.links.crystals')}</FooterLink></li>
+                <li><FooterLink href="/glossary">{t('footer.links.glossary')}</FooterLink></li>
+                <li><FooterLink href="/blog">{t('footer.links.blog')}</FooterLink></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">App</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/signup" className="text-mystic-300 hover:text-mystic-100 no-underline">Sign up — 3-day free trial</a></li>
-                <li><a href="/signin" className="text-mystic-300 hover:text-mystic-100 no-underline">Sign in</a></li>
-                <li><a href="/spreads/builder" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.spreadBuilder', { defaultValue: "Custom spread builder" })}</a></li>
-                <li><a href="https://play.google.com/store/apps/details?id=com.arcana.app" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.googlePlay', { defaultValue: 'Get it on Google Play' })}</a></li>
+              <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.app')}</EyebrowLabel>
+              <ul className="space-y-1">
+                <li><FooterLink href="/signup">{t('footer.links.signUp')}</FooterLink></li>
+                <li><FooterLink href="/signin">{t('footer.links.signIn')}</FooterLink></li>
+                <li><FooterLink href="/spreads/builder">{t('footer.links.spreadBuilder')}</FooterLink></li>
+                <li><FooterLink href={PLAY_STORE_URL} external>{t('footer.links.googlePlay')}</FooterLink></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-[11px] uppercase tracking-wider text-gold mb-3">Company</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/privacy-policy.html" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.privacy', { defaultValue: "Privacy policy" })}</a></li>
-                <li><a href="mailto:support@arcana.app" className="text-mystic-300 hover:text-mystic-100 no-underline">{t('footer.links.contact', { defaultValue: "Contact and support" })}</a></li>
-                <li><a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className="text-mystic-300 hover:text-mystic-100 no-underline">Shop (partner)</a></li>
+              <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.company')}</EyebrowLabel>
+              <ul className="space-y-1">
+                <li><FooterLink href="/privacy-policy.html">{t('footer.links.privacy')}</FooterLink></li>
+                <li><FooterLink href="mailto:support@arcana.app">{t('footer.links.contact')}</FooterLink></li>
+                <li><FooterLink href="https://yinyangguardian.com/" external>{t('footer.links.shopPartner')}</FooterLink></li>
               </ul>
             </div>
           </div>
-          <div className="lp-footer-bottom border-t border-mystic-800/40 pt-6">
-            <p className="text-xs text-mystic-500 mb-1">{t('footer.disclaimer')}</p>
-            <p className="text-xs text-mystic-600">{t('footer.copyright')}</p>
+          <div className="border-t border-mystic-700 pt-6">
+            <p className="text-caption text-mystic-500 mb-1">{t('footer.disclaimer')}</p>
+            <p className="text-caption text-mystic-600">{t('footer.copyright')}</p>
           </div>
         </div>
       </footer>

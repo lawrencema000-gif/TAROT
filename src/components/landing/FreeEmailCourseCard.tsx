@@ -1,16 +1,15 @@
-// Free 3-part email course lead magnet — landing page concrete CTA
-// inspired by Labyrinthos.co's "Unlock tarot secrets with our free
-// 3-part email series: Keywords, Suit Correspondences, and Numerology
-// Basics."
+// Free 3-part email course lead magnet — the landing page's concrete CTA.
 //
-// Captures email into newsletter_signups (RLS allows anon INSERT).
-// The actual emails are delivered by a future daily-newsletter-sender
-// cron once Resend API key is set; for now we just capture the lead.
+// Captures the email into newsletter_signups (RLS allows anon INSERT). The
+// lessons are delivered by the send-newsletter-course edge function on a
+// day 0 / +2 / +2 cadence, which is the "3 emails over 5 days" the copy
+// promises.
 
 import { useState } from 'react';
 import { Mail, Check, Gift } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useT } from '../../i18n/useT';
+import { Button, Card, Input } from '../ui';
 
 export function FreeEmailCourseCard() {
   const { t } = useT('landing');
@@ -53,32 +52,32 @@ export function FreeEmailCourseCard() {
         setDone(true);
         return;
       }
-      setError(t('freeCourse.errors.signupFailed', { defaultValue: "Couldn't sign you up — please try again in a moment." }) as string);
+      setError(t('freeCourse.errors.signupFailed', { defaultValue: "Couldn’t sign you up — please try again in a moment." }) as string);
       return;
     }
     setDone(true);
   };
 
   return (
-    <div className="lp-wrap" style={{ padding: '48px 16px' }}>
-      <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 p-6 sm:p-10 max-w-2xl mx-auto">
+    <div className="lp-wrap">
+      <Card variant="accent" padding="lg" className="max-w-2xl mx-auto">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-            <Gift className="w-3.5 h-3.5 text-gold" />
-            <span className="text-xs uppercase tracking-wider text-gold">{t('freeCourse.badge', { defaultValue: 'Free 3-part email course' })}</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 text-gold mb-3">
+            <Gift className="w-3.5 h-3.5" aria-hidden />
+            <span className="text-caption uppercase tracking-wider">{t('freeCourse.badge', { defaultValue: 'Free 3-part email course' })}</span>
           </div>
-          <h2 className="font-display text-2xl sm:text-3xl text-mystic-100 mb-2">
+          <h2 className="heading-display-lg text-mystic-100 mb-2">
             {t('freeCourse.title', { defaultValue: 'Learn tarot in 3 emails' })}
           </h2>
-          <p className="text-sm text-mystic-400 max-w-md mx-auto">
+          <p className="text-ui text-mystic-400 max-w-md mx-auto">
             {t('freeCourse.subtitle', { defaultValue: 'A free email series covering keywords, suit correspondences, and numerology basics — the foundation every reader needs.' })}
           </p>
         </div>
 
         <ul className="space-y-2 mb-6 max-w-md mx-auto">
           {lessons.map((l) => (
-            <li key={l.title} className="flex items-start gap-2.5 text-sm">
-              <Check className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
+            <li key={l.title} className="flex items-start gap-2.5 text-ui">
+              <Check className="w-4 h-4 text-gold flex-shrink-0 mt-1" aria-hidden />
               <span>
                 <span className="text-mystic-100 font-medium">{l.title}:</span>
                 <span className="text-mystic-400"> {l.topic}</span>
@@ -88,43 +87,39 @@ export function FreeEmailCourseCard() {
         </ul>
 
         {done ? (
-          <div className="flex items-center justify-center gap-2 py-4 text-gold">
-            <Check className="w-5 h-5" />
-            <span className="text-sm font-medium">{t('freeCourse.success', { defaultValue: "You're in. Check your inbox." })}</span>
+          <div className="flex items-center justify-center gap-2 py-4 text-gold" role="status">
+            <Check className="w-5 h-5" aria-hidden />
+            <span className="text-ui font-medium">{t('freeCourse.success', { defaultValue: "You’re in. Check your inbox." })}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1">
-                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-mystic-500" />
-                <input
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+              <div className="flex-1">
+                <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('freeCourse.emailPlaceholder', { defaultValue: 'your@email.com' }) as string}
-                  className="w-full pl-9 pr-3 py-3 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 outline-none text-sm"
+                  aria-label={t('freeCourse.emailLabel', { defaultValue: 'Email address' }) as string}
+                  icon={<Mail className="w-4 h-4" aria-hidden />}
+                  error={error ?? undefined}
                   required
                   autoComplete="email"
                   disabled={submitting}
                 />
               </div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-sm disabled:opacity-50 whitespace-nowrap"
-              >
+              <Button type="submit" variant="gold" loading={submitting} className="whitespace-nowrap">
                 {submitting
                   ? (t('freeCourse.sending', { defaultValue: 'Sending…' }) as string)
                   : (t('freeCourse.cta', { defaultValue: 'Send me Lesson 1' }) as string)}
-              </button>
+              </Button>
             </div>
-            {error && <p className="text-xs text-red-400 mt-2 text-center">{error}</p>}
-            <p className="text-[11px] text-mystic-500 mt-3 text-center">
+            <p className="text-caption text-mystic-500 mt-3 text-center">
               {t('freeCourse.disclaimer', { defaultValue: 'No spam. Unsubscribe with one click. 3 emails over 5 days.' })}
             </p>
           </form>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

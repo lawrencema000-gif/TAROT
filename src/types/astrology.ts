@@ -12,6 +12,9 @@ export interface PlanetPlacement {
   degree: number;
   longitude?: number;
   house: number | null;
+  /** True when the body was retrograde at the chart moment. Optional: the
+   *  horoscope edge function predates the field; the person-chart one has it. */
+  retrograde?: boolean;
 }
 
 export interface Aspect {
@@ -43,6 +46,21 @@ export interface NatalChart {
   aspects: Aspect[];
   dominants: DominantsData;
   chartMode: ChartMode;
+}
+
+/**
+ * The slice of a chart the wheel draws. `NatalChart` above satisfies it
+ * structurally; the person-chart model (lib/chart.ts) is converted with
+ * `toWheelChart()`. Twelve `houses` or none: an empty array means "unknown",
+ * and the wheel falls back to equal houses from the Ascendant when it has one.
+ */
+export interface WheelChart {
+  planets: PlanetPlacement[];
+  houses: number[];
+  ascendant: number | null;
+  /** Midheaven longitude when the source knows it; otherwise houses[9] or nothing. */
+  midheaven?: number | null;
+  aspects: Aspect[];
 }
 
 export interface TransitEvent {

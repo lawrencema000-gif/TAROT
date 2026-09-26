@@ -53,13 +53,11 @@ const LIFT_ALLOWED = new Set([
 ]);
 
 /**
- * Hero screens rebuilt wholesale in Phase 5; their brand-glyph glow goes
- * with the rebuild. A debt, not a permission: remove the entry then.
+ * Empty since Phase 5c. AuthPage and LandingPage carried a glow on the
+ * brand glyph until their hero blocks were rebuilt; the list stays so a
+ * future debt has somewhere to be declared, with its reason.
  */
-const HALO_ALLOWED = new Set([
-  'src/pages/AuthPage.tsx',
-  'src/pages/LandingPage.tsx',
-]);
+const HALO_ALLOWED = new Set<string>([]);
 
 /**
  * A shadow written as an inline style is invisible to the class scans.
@@ -135,13 +133,13 @@ describe('elevation is fill', () => {
   });
 
   it('the stylesheets carry no box-shadow outside the star field', () => {
-    // landing.css is Phase 5 territory and keeps its own until then. The
-    // celestial background draws its stars and particles with a 4px glow —
-    // that is how a star is drawn, not an elevation, so `.celestial-*`
-    // rules are exempt by name.
+    // Every stylesheet, landing.css included (its exemption ended with the
+    // Phase 5c rebuild). The celestial background draws its stars and
+    // particles with a 4px glow — that is how a star is drawn, not an
+    // elevation, so `.celestial-*` rules are exempt by name.
     const found: string[] = [];
     for (const f of files) {
-      if (!f.path.endsWith('.css') || f.path.endsWith('landing.css')) continue;
+      if (!f.path.endsWith('.css')) continue;
       let selector = '';
       f.code.split('\n').forEach((line, i) => {
         if (line.includes('{')) selector = line.slice(0, line.indexOf('{')).trim();

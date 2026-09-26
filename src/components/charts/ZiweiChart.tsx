@@ -1,3 +1,7 @@
+import { ZIWEI_TRANSFORM_COLOR, withAlpha } from '../../lib/chart';
+import { getLocale } from '../../i18n/config';
+import { useT } from '../../i18n/useT';
+
 export interface ZiweiStar {
   /** Romanised key, e.g. 'Ziwei' */
   key: string;
@@ -19,11 +23,8 @@ export interface ZiweiPalace {
   isBody: boolean;
 }
 
-const TRANSFORM_STYLE: Record<string, { label: string; color: string }> = {
-  hua_lu:   { label: '祿', color: '#5cc9a7' },
-  hua_quan: { label: '權', color: '#d4a853' },
-  hua_ke:   { label: '科', color: '#7db0d8' },
-  hua_ji:   { label: '忌', color: '#e0684f' },
+const TRANSFORM_LABEL: Record<string, string> = {
+  hua_lu: '祿', hua_quan: '權', hua_ke: '科', hua_ji: '忌',
 };
 
 /**
@@ -35,6 +36,10 @@ const TRANSFORM_STYLE: Record<string, { label: string; color: string }> = {
  *   辰 ┌─────┐ 酉
  *   卯 └─────┘ 戌
  *   寅 丑 子 亥
+ *
+ * Rows share a height but grow with their content, so a palace with many
+ * stars wraps instead of being clipped at 390px. Palace names render in
+ * English outside the CJK locales when the data carries one.
  */
 const GRID_BRANCHES: (number | null)[][] = [
   [5, 6, 7, 8],
@@ -50,10 +55,13 @@ export function ZiweiChart({
   palaces: ZiweiPalace[];
   centre: React.ReactNode;
 }) {
+  const { t } = useT('app');
+  const locale = getLocale();
+  const cjk = locale === 'ja' || locale === 'zh' || locale === 'ko';
   const byBranch = new Map(palaces.map((p) => [p.branchIdx, p]));
 
   return (
-    <div className="grid grid-cols-4 grid-rows-4 gap-1 aspect-square w-full text-[10px]">
+    <div className="grid grid-cols-4 auto-rows-fr gap-1 w-full text-caption">
       {GRID_BRANCHES.flatMap((row, r) =>
         row.map((branch, c) => {
           // The 2×2 hole in the middle is one merged cell for the summary.
@@ -62,7 +70,7 @@ export function ZiweiChart({
               return (
                 <div
                   key="centre"
-                  className="col-span-2 row-span-2 rounded-xl border border-gold/25 bg-mystic-900/60 p-2 flex flex-col items-center justify-center text-center overflow-hidden"
+                  className="col-span-2 row-span-2 rounded-control border border-gold/25 bg-mystic-900/60 p-2 flex flex-col items-center justify-center text-center"
                 >
                   {centre}
                 </div>
@@ -72,10 +80,11 @@ export function ZiweiChart({
           }
 
           const p = byBranch.get(branch);
+          const name = p ? (cjk || !p.en ? p.cn : p.en) : '';
           return (
             <div
               key={`${r}-${c}`}
-              className={`rounded-lg border p-1.5 flex flex-col overflow-hidden ${
+              className={`rounded-inset border p-1.5 min-h-[72px] flex flex-col ${
                 p?.isLife
                   ? 'border-gold/60 bg-gold/10'
                   : p?.isBody
@@ -86,16 +95,16 @@ export function ZiweiChart({
               {/* stars */}
               <div className="flex-1 flex flex-wrap gap-x-1 gap-y-0.5 content-start">
                 {p?.stars.map((s) => {
-                  const tr = s.transformation ? TRANSFORM_STYLE[s.transformation] : null;
+                  const color = s.transformation ? ZIWEI_TRANSFORM_COLOR[s.transformation] : null;
                   return (
                     <span key={s.key} className="text-mystic-100 leading-tight whitespace-nowrap">
                       {s.cn}
-                      {tr && (
+                      {color && s.transformation && (
                         <span
-                          className="ml-0.5 px-0.5 rounded"
-                          style={{ color: tr.color, border: `1px solid ${tr.color}66` }}
+                          className="ml-0.5 px-0.5 rounded-mark"
+                          style={{ color, border: `1px solid ${withAlpha(color, 0.4)}` }}
                         >
-                          {tr.label}
+                          {TRANSFORM_LABEL[s.transformation]}
                         </span>
                       )}
                     </span>
@@ -104,12 +113,16 @@ export function ZiweiChart({
               </div>
 
               {/* palace + branch footer */}
-              <div className="flex items-end justify-between mt-1 pt-1 border-t border-mystic-800/40">
-                <span className={`leading-none ${p?.isLife ? 'text-gold' : 'text-mystic-400'}`}>
-                  {p?.cn}
-                  {p?.isBody && <span className="text-cosmic-violetLight ml-0.5">身</span>}
+              <div className="flex items-end justify-between gap-1 mt-1 pt-1 border-t border-mystic-800/40">
+                <span className={`leading-tight ${p?.isLife ? 'text-gold' : 'text-mystic-400'}`}>
+                  {name}
+                  {p?.isBody && (
+                    <span className="text-cosmic-violet-ink ml-0.5">
+                      {cjk ? '身' : t('chartWheel.ziwei.body', { defaultValue: 'Body' })}
+                    </span>
+                  )}
                 </span>
-                <span className="text-mystic-600 leading-none">{p?.branchCn}</span>
+                <span className="text-mystic-500 leading-none shrink-0">{p?.branchCn}</span>
               </div>
             </div>
           );

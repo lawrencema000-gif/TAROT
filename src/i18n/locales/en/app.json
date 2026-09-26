@@ -32,7 +32,7 @@
     "xpValue": "{{current}} / {{required}} XP",
     "ritualReady": {
       "title": "Your ritual is ready.",
-      "sub": "Pull one card, then write one honest sentence."
+      "sub": "Your horoscope, one card, one honest sentence."
     },
     "startTodaysRitual": "Start today’s ritual",
     "ritualCards": {
@@ -57,7 +57,22 @@
     "xpEarned": "+{{xp}} XP earned.",
     "removedFromSaved": "Removed from saved",
     "exploreMore": "Beyond today’s ritual",
-    "seeAllSaved": "See all saved"
+    "seeAllSaved": "See all saved",
+    "savedTypes": {
+      "horoscope": "Horoscope",
+      "tarot": "Card",
+      "prompt": "Prompt"
+    },
+    "shareCard": "My card of the day: {{name}}. {{meaning}}",
+    "todaysMansion": "Today’s mansion",
+    "ritualProgress": "{{n}} of 3 parts done",
+    "cosmicScore": {
+      "eyebrow": "Today’s cosmic weather",
+      "counts": "{{flowing}} flowing · {{demanding}} demanding",
+      "why": "Why this number",
+      "influence": "{{transiting}} {{type}} your {{natal}}",
+      "footnote": "Scored from real planetary positions right now against your birth chart. It describes weather, not fate."
+    }
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -376,11 +391,12 @@
       "continue": "Shuffle for this focus"
     },
     "shuffleView": {
-      "inProgress": "Shuffling the deck…",
+      "inProgress": "Shuffling the deck",
       "clearMind": "Clear your mind",
-      "spreading": "Spreading all 78 cards",
-      "focusQuestion": "Focus on your question",
-      "shuffleDeck": "Shuffle deck"
+      "spreading": "Tap the deck to cut it when it feels right.",
+      "focusQuestion": "Hold your focus, then shuffle.",
+      "shuffleDeck": "Shuffle the deck",
+      "cutDeck": "Cut the deck"
     },
     "selectView": {
       "chooseMore_one": "Choose {{count}} more card",
@@ -389,7 +405,12 @@
       "trustIntuition": "Trust your intuition • All 78 cards",
       "selectMore": "Select {{count}} more",
       "revealCards": "Reveal cards",
-      "chooseMore": "Choose {{count}} more"
+      "chooseMore": "Choose {{count}} more",
+      "positions": "Your spread",
+      "deck": "The deck",
+      "cardOf": "Card {{n}} of {{total}}",
+      "returnCard": "Return the card in {{position}} to the deck",
+      "cardN": "Card {{n}}"
     },
     "revealView": {
       "focusReading": "{{focus}} reading",
@@ -412,7 +433,12 @@
       "save": "Save this reading",
       "saved": "Saved",
       "newReading": "Start a new reading",
-      "share": "Share this reading"
+      "share": "Share this reading",
+      "revealPosition": "Reveal {{position}}",
+      "openCard": "Open {{name}}"
+    },
+    "celticCross": {
+      "caption": "The cross and the staff"
     },
     "status": {
       "try": "Watch an ad",
@@ -2775,7 +2801,17 @@
     "streak": {
       "dedication": "Every day since you started, with no gaps.",
       "ritualComplete": "Ritual complete",
-      "keepFlowing": "One more tomorrow keeps it."
+      "keepFlowing": "One more tomorrow keeps it.",
+      "title": "Your streak",
+      "days": "{{n}}-day streak",
+      "firstNight": "Your first night.",
+      "lastNights": "{{done}} of the last {{total}} nights completed.",
+      "milestone": {
+        "week": "A full week, every night.",
+        "month": "A whole month of nights.",
+        "hundred": "One hundred nights.",
+        "year": "A year of nights."
+      }
     },
     "levelUp": {
       "title": "Level up.",

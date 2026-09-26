@@ -1,25 +1,7 @@
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
-import { ChevronLeft, Compass,
-  Eye,
-  Feather,
-  ChevronRight,
-  Lock,
-  Bookmark,
-  BookmarkCheck,
-  Grid3X3,
-  Layers,
-  Info,
-  Shuffle,
-  Brain,
-  Loader2,
-  Play,
-  Heart,
-  Briefcase,
-  ArrowUp,
-  ArrowDown,
-  Share2 } from 'lucide-react';
+import { useState, useEffect, useRef, type ReactElement } from 'react';
+import { Heart, Briefcase } from 'lucide-react';
 import { MysticalStar } from '../ui/MysticalStar';
-import { Card, Button, Sheet, Chip, Tabs, Tag, Badge, toast, ReadingProse } from '../ui';
+import { Sheet, Chip, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { useRitual } from '../../context/RitualContext';
@@ -29,20 +11,6 @@ import { getAllTarotCards } from '../../services/tarotCards';
 import { shareOrDownloadCard } from '../../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../../services/shareableReadings';
 import { TarotCardDetail } from './TarotCardDetail';
-import { CelticCrossLayout } from './CelticCrossLayout';
-
-/*
- * The same numbers as `tarot/TarotRevealView.tsx` and `CelticCrossLayout.tsx`.
- * This grid used a 500ms `animate-flip-in` face-swap with a spring overshoot
- * and no back face, while the split-rollout path turned a real two-faced card
- * — the same gesture, in two feels, both shipping at once.
- */
-const FLIP_MS = 520;
-const FLIP_EASE = 'cubic-bezier(0.22, 0.68, 0.24, 1)';
-const BACKFACE: CSSProperties = {
-  backfaceVisibility: 'hidden',
-  WebkitBackfaceVisibility: 'hidden',
-};
 import { generatePremiumReading, tarotCardToReadingCard, getSpreadPositions } from '../../services/readingInterpretation';
 import { getZodiacSign } from '../../utils/zodiac';
 import type { TarotCard } from '../../types';
@@ -59,17 +27,33 @@ import { isNative } from '../../utils/platform';
 import { ratePromptService } from '../../services/ratePrompt';
 import { appStorage } from '../../lib/appStorage';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
-import { MoonstoneCostLine } from '../moonstones/MoonstoneCostLine';
-import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { TarotFocusView } from './tarot/TarotFocusView';
 import { TarotShuffleView } from './tarot/TarotShuffleView';
 import { TarotSelectView } from './tarot/TarotSelectView';
 import { TarotRevealView } from './tarot/TarotRevealView';
 import { TarotHomeView } from './tarot/TarotHomeView';
+import { FOCUS_AREA_I18N_KEY, type FocusArea } from './tarot/types';
 import { localDateStr } from '../../utils/localDate';
+
+/*
+ * The reading flow: home → focus → shuffle → select → reveal.
+ *
+ * This component owns every piece of state and every side effect — the
+ * deck, the picks, the reversals, the free-tier counters, the ad unlocks,
+ * XP and achievements, save, share and the AI interpretation — and hands
+ * each stage to one view in ./tarot/. There used to be two renderings of
+ * every stage (an in-file copy behind a feature flag that never rolled
+ * out, and these views); the copy is gone and the flag with it.
+ */
 
 const DAILY_READINGS_KEY = 'arcana_daily_readings';
 const DAILY_READINGS_DATE_KEY = 'arcana_daily_readings_date';
+
+/** The spread the home hero always draws. */
+const DAILY_SPREAD = 'single';
+
+/** How long the deck shuffles on its own before it settles. A cut ends it sooner. */
+const SHUFFLE_MS = 2000;
 
 async function getDailyReadingCount(): Promise<number> {
   try {
@@ -100,7 +84,6 @@ async function incrementDailyReadingCount(): Promise<void> {
 }
 
 type TarotView = 'home' | 'focus' | 'shuffle' | 'select' | 'reveal' | 'browse';
-type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
 
 /**
  * A user-built custom spread launched into the reading flow. `id` is
@@ -119,17 +102,6 @@ interface TarotSectionProps {
   customSpread?: CustomSpreadInput;
 }
 
-const focusAreas: FocusArea[] = ['Love', 'Career', 'Self', 'Money', 'Health', 'General'];
-
-const focusAreaI18nKey: Record<FocusArea, string> = {
-  Love: 'readings.focusAreas.love',
-  Career: 'readings.focusAreas.career',
-  Self: 'readings.focusAreas.self',
-  Money: 'readings.focusAreas.money',
-  Health: 'readings.focusAreas.health',
-  General: 'readings.focusAreas.general',
-};
-
 // Source-of-truth spread configs with i18n keys; .name/.description resolved at render time.
 const spreadConfigs = [
   { id: 'single',        i18n: 'single',       free: true,  count: 1  },
@@ -140,17 +112,11 @@ const spreadConfigs = [
   { id: 'shadow',        i18n: 'shadow',       free: false, count: 7  },
 ] as const;
 
-type SpreadConfig = typeof spreadConfigs[number];
-
 export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps) {
   const { t } = useT('app');
-  // Phase-5 rollout: when ON, render the extracted view components
-  // from ./tarot/. Starts OFF at 0% — flip rollout_percent in the DB to
-  // 10/50/100 after smoke-testing in prod.
-  const useSplitViews = useFeatureFlag('tarot-section-split');
-  const spreadName = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.name`);
-  const spreadDesc = (s: SpreadConfig) => t(`readings.spreads.${s.i18n}.description`);
-  const focusLabel = (f: FocusArea) => t(focusAreaI18nKey[f]);
+  const spreadName = (s: { i18n: string }) => t(`readings.spreads.${s.i18n}.name`);
+  const spreadDesc = (s: { i18n: string }) => t(`readings.spreads.${s.i18n}.description`);
+  const focusLabel = (f: FocusArea) => t(FOCUS_AREA_I18N_KEY[f]);
 
   // Unified spread metadata — resolves either a hardcoded spread or the
   // active user-built custom spread to { count, free, name }. Custom
@@ -168,7 +134,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const [view, setView] = useState<TarotView>('home');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea | null>(null);
   const [drawnCards, setDrawnCards] = useState<{ card: TarotCard; reversed: boolean; revealed: boolean }[]>([]);
-  const [currentSpread, setCurrentSpread] = useState<string>('single');
+  const [currentSpread, setCurrentSpread] = useState<string>(DAILY_SPREAD);
   const [selectedCard, setSelectedCard] = useState<{ card: TarotCard; reversed: boolean } | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [showBrowse, setShowBrowse] = useState(false);
@@ -190,12 +156,31 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const [canWatchAd, setCanWatchAd] = useState(false);
   const { tryConsume: tryConsumeAi, refund: refundAi, EarnSheet: AiEarnSheet } = useMoonstoneSpend('tarot-ai-interpret');
 
+  /*
+   * The shuffle timer. It used to be a bare setTimeout nobody held on to:
+   * Back during the shuffle sent the reader to the focus step and, two
+   * seconds later, yanked them into select anyway. Held here so a cut, a
+   * Back or an unmount can end it.
+   */
+  const shuffleTimerRef = useRef<number | null>(null);
+  /** Faces already handed to the decoder this session, so a re-pick costs nothing. */
+  const preloadedFacesRef = useRef<Set<number>>(new Set());
+  /** Set when the completion rewards have fired for the reading on screen. */
+  const rewardedRef = useRef(false);
+
   useEffect(() => {
     getDailyReadingCount().then(setDailyReadingCount);
     if (isNative()) {
       rewardedAdsService.canWatchAd().then(setCanWatchAd);
     }
   }, []);
+
+  useEffect(
+    () => () => {
+      if (shuffleTimerRef.current !== null) window.clearTimeout(shuffleTimerRef.current);
+    },
+    [],
+  );
 
   const today = new Date().toISOString().split('T')[0];
   const isAtDailyLimit = !profile?.isPremium && dailyReadingCount >= FREE_TIER.dailyReadings;
@@ -257,15 +242,28 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     return arr;
   };
 
-  const handleStartDraw = () => {
+  /** Everything a new reading starts without. */
+  const resetReadingState = () => {
+    setSelectedFocus(null);
+    setIsSaved(false);
+    setInterpretationView('focus');
+    setShowAIInterpretation(false);
+    setAiInterpretation(null);
+  };
+
+  /**
+   * Start a reading of `spreadId`. The spread is pinned first, so the hero
+   * can never inherit the last Celtic Cross (which, once its ad unlock was
+   * spent, opened a paywall on the free daily draw). The free-tier daily
+   * gate lives here; the per-spread premium gate is the caller's.
+   */
+  const beginReading = (spreadId: string) => {
+    setCurrentSpread(spreadId);
+
     if (isAtDailyLimit) {
       if (hasTemporaryAccess['extra_reading']) {
+        resetReadingState();
         setView('focus');
-        setSelectedFocus(null);
-        setIsSaved(false);
-        setInterpretationView('focus');
-        setShowAIInterpretation(false);
-        setAiInterpretation(null);
         return;
       }
       if (isNative() && canWatchAd) {
@@ -278,12 +276,17 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       return;
     }
 
+    resetReadingState();
     setView('focus');
-    setSelectedFocus(null);
-    setIsSaved(false);
-    setInterpretationView('focus');
-    setShowAIInterpretation(false);
-    setAiInterpretation(null);
+  };
+
+  /** The home hero: always the one-card daily draw. */
+  const handleStartDraw = () => beginReading(DAILY_SPREAD);
+
+  /** Back to the deck on the table; the next hero tap is a daily draw again. */
+  const goHome = () => {
+    setCurrentSpread(DAILY_SPREAD);
+    setView('home');
   };
 
   // Auto-launch into the reading flow when arriving from the custom-spread
@@ -294,8 +297,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   useEffect(() => {
     if (!customSpread || customLaunchedRef.current === customSpread.id) return;
     customLaunchedRef.current = customSpread.id;
-    setCurrentSpread(customSpread.id);
-    handleStartDraw();
+    beginReading(customSpread.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customSpread?.id]);
 
@@ -328,55 +330,109 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     if (pendingFeature === 'extra_reading') {
       setHasTemporaryAccess(prev => ({ ...prev, extra_reading: true }));
+      resetReadingState();
       setView('focus');
-      setSelectedFocus(null);
-      setIsSaved(false);
-      setInterpretationView('focus');
-      setShowAIInterpretation(false);
-      setAiInterpretation(null);
     } else if (pendingSpreadId) {
       setHasTemporaryAccess(prev => ({ ...prev, [pendingSpreadId]: true }));
-      setView('shuffle');
+      // Unlocked from the focus step, the focus is chosen: shuffle. Unlocked
+      // from the home grid it is not yet: ask first.
+      setView(selectedFocus ? 'shuffle' : 'focus');
     }
 
     setPendingFeature(null);
     setPendingSpreadId(null);
   };
 
-  const handleShuffleComplete = () => {
-    setIsShuffling(true);
+  /*
+   * The shuffle ends one of two ways — the timer runs out, or the reader
+   * cuts the deck — and both land here. The order is Fisher–Yates over the
+   * loaded deck (or ids 0–77 while it is still loading).
+   */
+  const finishShuffle = () => {
+    if (shuffleTimerRef.current !== null) {
+      window.clearTimeout(shuffleTimerRef.current);
+      shuffleTimerRef.current = null;
+    }
 
-    setTimeout(() => {
-      const baseIds =
-        tarotCards.length > 0
-          ? tarotCards.map(c => c.id)
-          : Array.from({ length: 78 }, (_, i) => i);
+    const baseIds =
+      tarotCards.length > 0
+        ? tarotCards.map(c => c.id)
+        : Array.from({ length: 78 }, (_, i) => i);
 
-      const shuffledIds = shuffleArray(baseIds);
+    setDeckCards(shuffleArray(baseIds));
+    setSelectedIndices([]);
+    setAiInterpretation(null);
+    setShowAIInterpretation(false);
+    setIsSaved(false);
 
-      setDeckCards(shuffledIds);
-      setSelectedIndices([]);
-      setAiInterpretation(null);
-      setShowAIInterpretation(false);
-      setIsSaved(false);
-
-      setIsShuffling(false);
-      setView('select');
-    }, 2000);
+    setIsShuffling(false);
+    setView('select');
   };
 
+  const handleShuffleStart = () => {
+    if (isShuffling) return;
+    setIsShuffling(true);
+    if (shuffleTimerRef.current !== null) window.clearTimeout(shuffleTimerRef.current);
+    shuffleTimerRef.current = window.setTimeout(finishShuffle, SHUFFLE_MS);
+  };
+
+  /** The reader cut the deck: the shuffle is over now. */
+  const handleCutDeck = () => {
+    if (!isShuffling) return;
+    finishShuffle();
+  };
+
+  const handleShuffleBack = () => {
+    if (shuffleTimerRef.current !== null) {
+      window.clearTimeout(shuffleTimerRef.current);
+      shuffleTimerRef.current = null;
+    }
+    setIsShuffling(false);
+    setView('focus');
+  };
+
+  /**
+   * Hand a face to the decoder the moment it is picked, so the flip in the
+   * reveal lands on a decoded bitmap instead of a fetch. The bundled path
+   * is known from the id alone; the deck lookup only matters for a card
+   * served from a remote imageUrl.
+   */
+  const preloadFace = (cardId: number) => {
+    if (preloadedFacesRef.current.has(cardId) || typeof Image === 'undefined') return;
+    const card = tarotCards.find(c => c.id === cardId);
+    const src = card ? getCardImage(card) : getBundledCardPath(cardId) ?? undefined;
+    if (!src) return;
+    preloadedFacesRef.current.add(cardId);
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+    try {
+      img.decode().catch(() => {});
+    } catch {
+      // No decode(): the fetch alone still warms the cache.
+    }
+  };
+
+  /** Toggles: a card already drawn goes back to the deck. Never exceeds the spread. */
   const handleCardSelect = (cardId: number) => {
     const spread = getSpreadMeta(currentSpread);
     if (!spread) return;
 
-    if (selectedIndices.includes(cardId)) {
-      setSelectedIndices(prev => prev.filter(id => id !== cardId));
-    } else if (selectedIndices.length < spread.count) {
-      setSelectedIndices(prev => [...prev, cardId]);
-    }
+    if (!selectedIndices.includes(cardId)) preloadFace(cardId);
+
+    setSelectedIndices(prev => {
+      if (prev.includes(cardId)) return prev.filter(id => id !== cardId);
+      if (prev.length >= spread.count) return prev;
+      return [...prev, cardId];
+    });
   };
 
-  const handleRevealSelected = async () => {
+  /**
+   * Deal the picked cards face down. Nothing is counted or awarded here:
+   * that happens when the last card turns (see the effect on `allRevealed`),
+   * so a reading abandoned face-down costs nothing and earns nothing.
+   */
+  const handleRevealSelected = () => {
     const spread = getSpreadMeta(currentSpread);
     if (!spread || selectedIndices.length !== spread.count) return;
     if (tarotCards.length === 0) return;
@@ -393,6 +449,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
     const reversedChance = 0.35;
 
+    rewardedRef.current = false;
     setDrawnCards(
       selectedCards.map(card => ({
         card,
@@ -401,48 +458,10 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       }))
     );
 
-    await incrementDailyReadingCount();
-    setDailyReadingCount(await getDailyReadingCount());
-
-    if (!profile?.isPremium) {
-      if (!spread.free && hasTemporaryAccess[currentSpread]) {
-        const feature = spreadTypeToFeature(currentSpread);
-        if (feature) {
-          await rewardedAdsService.consumeTemporaryAccess(feature, currentSpread);
-          setHasTemporaryAccess(prev => ({ ...prev, [currentSpread]: false }));
-        }
-      }
-
-      if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
-        await rewardedAdsService.consumeTemporaryAccess('extra_reading');
-        setHasTemporaryAccess(prev => ({ ...prev, extra_reading: false }));
-      }
-    }
-
     setAiInterpretation(null);
     setShowAIInterpretation(false);
+    setIsSaved(false);
     setView('reveal');
-
-    if (user) {
-      awardXP(user.id, 'reading_complete').then(() => refreshProfile());
-      checkAchievementProgress(user.id, 'reading_complete');
-      if (currentSpread === 'celtic-cross') {
-        checkAchievementProgress(user.id, 'celtic_cross_complete');
-      }
-      checkAchievementProgress(user.id, 'spread_types_used');
-
-      // Calendar/time achievements
-      const now = new Date();
-      if (isFullMoon(now)) checkAchievementProgress(user.id, 'full_moon_reading');
-      if (now.getMonth() === 0 && now.getDate() === 1) checkAchievementProgress(user.id, 'new_year_reading');
-      const hour = now.getHours();
-      if (hour >= 0 && hour < 3) checkAchievementProgress(user.id, 'witching_hour_reading');
-
-      // Specific card achievements
-      for (const drawn of selectedCards) {
-        checkSpecificCardAchievement(user.id, drawn.name);
-      }
-    }
   };
 
   const handleRevealCard = (index: number) => {
@@ -457,11 +476,67 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
   const allRevealed = drawnCards.every(c => c.revealed);
 
+  /**
+   * The reading is complete when its last card is face up. That is when a
+   * free reading is counted, an ad unlock is spent, and XP and achievements
+   * are awarded. `rewardedRef` makes it once per deal: the deps can change
+   * again afterwards (the count itself, the access map) without re-firing.
+   */
+  useEffect(() => {
+    if (view !== 'reveal' || drawnCards.length === 0 || !allRevealed || rewardedRef.current) return;
+    rewardedRef.current = true;
+
+    const spread = getSpreadMeta(currentSpread);
+    const completed = drawnCards;
+
+    (async () => {
+      await incrementDailyReadingCount();
+      setDailyReadingCount(await getDailyReadingCount());
+
+      if (!profile?.isPremium && spread) {
+        if (!spread.free && hasTemporaryAccess[currentSpread]) {
+          const feature = spreadTypeToFeature(currentSpread);
+          if (feature) {
+            await rewardedAdsService.consumeTemporaryAccess(feature, currentSpread);
+            setHasTemporaryAccess(prev => ({ ...prev, [currentSpread]: false }));
+          }
+        }
+
+        if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
+          await rewardedAdsService.consumeTemporaryAccess('extra_reading');
+          setHasTemporaryAccess(prev => ({ ...prev, extra_reading: false }));
+        }
+      }
+
+      if (user) {
+        awardXP(user.id, 'reading_complete').then(() => refreshProfile());
+        checkAchievementProgress(user.id, 'reading_complete');
+        if (currentSpread === 'celtic-cross') {
+          checkAchievementProgress(user.id, 'celtic_cross_complete');
+        }
+        checkAchievementProgress(user.id, 'spread_types_used');
+
+        // Calendar/time achievements
+        const now = new Date();
+        if (isFullMoon(now)) checkAchievementProgress(user.id, 'full_moon_reading');
+        if (now.getMonth() === 0 && now.getDate() === 1) checkAchievementProgress(user.id, 'new_year_reading');
+        const hour = now.getHours();
+        if (hour >= 0 && hour < 3) checkAchievementProgress(user.id, 'witching_hour_reading');
+
+        // Specific card achievements
+        for (const drawn of completed) {
+          checkSpecificCardAchievement(user.id, drawn.card.name);
+        }
+      }
+    })();
+    // Fires on the transition to all-revealed only; the ref guards the rest.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, allRevealed, drawnCards.length]);
+
   // Share the WHOLE reading as a deep link (opens in SharedReadingPage) plus
   // a branded image of the featured card. The deep link is the orphaned
   // encodeReading producer side — without this, no /reading/:token link was
-  // ever generated. Used by both the legacy reveal path and the split-view
-  // TarotRevealView (via onShare).
+  // ever generated. Reached from TarotRevealView via onShare.
   const handleShareReading = async () => {
     if (drawnCards.length === 0) return;
     const featured = drawnCards.find(c => c.revealed) ?? drawnCards[0];
@@ -640,6 +715,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         setPendingFeature(feature);
         setPendingSpreadId(spreadId);
         setCurrentSpread(spreadId);
+        resetReadingState();
         setShowWatchAdSheet(true);
       } else {
         onShowPaywall(spreadName(spread));
@@ -647,691 +723,105 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       return;
     }
 
-    setCurrentSpread(spreadId);
-    handleStartDraw();
+    beginReading(spreadId);
   };
 
+  /*
+   * One stage on screen at a time. The overlays below the switch — the
+   * browse deck, the card detail, the watch-ad sheet and the Moonstone earn
+   * sheet — are mounted in every stage: the card detail is opened from the
+   * reveal, the ad sheet from the focus step and the home grid, the earn
+   * sheet from the AI button. They used to live only in the home branch.
+   */
+  let stage: ReactElement;
+
   if (view === 'focus') {
-    if (useSplitViews) {
-      return (
-        <TarotFocusView
-          selectedFocus={selectedFocus}
-          onBack={() => setView('home')}
-          onSelect={handleFocusSelect}
-          onContinue={handleDraw}
-        />
-      );
-    }
-    return (
-      <div className="space-y-6">
-        <button
-          onClick={() => setView('home')}
-          className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" aria-hidden />
-          {t('readings.back')}
-        </button>
-
-        <div className="text-center space-y-3">
-          <Compass className="w-12 h-12 text-gold mx-auto animate-pulse" />
-          <h2 className="font-display text-2xl text-mystic-100">{t('readings.focusView.title')}</h2>
-          <p className="text-mystic-400">{t('readings.focusView.subtitle')}</p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-2">
-          {focusAreas.map(focus => (
-            <Chip
-              key={focus}
-              label={focusLabel(focus)}
-              selected={selectedFocus === focus}
-              onSelect={() => handleFocusSelect(focus)}
-            />
-          ))}
-        </div>
-
-        <Button
-          variant="gold"
-          fullWidth
-          disabled={!selectedFocus}
-          onClick={handleDraw}
-          size="lg"
-        >
-          {t('readings.focusView.continue')}
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
+    stage = (
+      <TarotFocusView
+        selectedFocus={selectedFocus}
+        onBack={goHome}
+        onSelect={handleFocusSelect}
+        onContinue={handleDraw}
+      />
     );
-  }
-
-  if (view === 'shuffle') {
-    if (useSplitViews) {
-      return (
-        <TarotShuffleView
-          isShuffling={isShuffling}
-          cardBackUrl={profile?.card_back_url}
-          onBack={() => setView('focus')}
-          onShuffle={handleShuffleComplete}
-        />
-      );
-    }
-    return (
-      <div className="space-y-6">
-        <button
-          onClick={() => setView('focus')}
-          className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" aria-hidden />
-          {t('readings.back')}
-        </button>
-
-        <div className="text-center space-y-6 py-12">
-          {/* Shuffle deck — properly centered. The outer wrapper handles
-              positioning, the inner card handles animation, so the
-              shuffle-card keyframes don't overwrite the center offset. */}
-          <div className="relative mx-auto flex items-center justify-center"
-               style={{ width: 220, height: 200 }}>
-            <div
-              className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-gold/10 blur-3xl transition-opacity duration-deliberate ${
-                isShuffling ? 'opacity-100 animate-pulse-slow' : 'opacity-60'
-              }`}
-            />
-            {Array.from({ length: 10 }).map((_, i) => {
-              const offsetX = (i - 5) * 2.2;
-              const offsetY = -i * 0.6;
-              const baseRotate = (i - 5) * 1.2;
-              const backSrc = profile?.card_back_url || '/card-backs/default.svg';
-              return (
-                <div
-                  key={i}
-                  className="absolute left-1/2 top-1/2"
-                  style={{
-                    transform: `translate(-50%, -50%) translate(${offsetX}px, ${offsetY}px) rotate(${baseRotate}deg)`,
-                    zIndex: i,
-                  }}
-                >
-                  <div
-                    className="w-20 h-28 rounded-xl border-2 border-gold/30 overflow-hidden bg-mystic-900"
-                    style={{
-                      animation: isShuffling
-                        ? `shuffle-card ${0.55 + i * 0.04}s ease-in-out infinite`
-                        : 'none',
-                      animationDelay: isShuffling ? `${i * 0.04}s` : undefined,
-                    }}
-                  >
-                    <img src={backSrc} alt="" className="w-full h-full object-cover pointer-events-none select-none" draggable={false} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="font-display-hero text-2xl text-mystic-100">
-              {isShuffling ? t('readings.shuffleView.inProgress') : t('readings.shuffleView.clearMind')}
-            </h2>
-            <p className="text-mystic-300 text-sm">
-              {isShuffling ? t('readings.shuffleView.spreading') : t('readings.shuffleView.focusQuestion')}
-            </p>
-          </div>
-
-          {!isShuffling && (
-            <Button
-              variant="gold"
-              onClick={handleShuffleComplete}
-              size="lg"
-            >
-              <Shuffle className="w-4 h-4" />
-              {t('readings.shuffleView.shuffleDeck')}
-            </Button>
-          )}
-        </div>
-      </div>
+  } else if (view === 'shuffle') {
+    stage = (
+      <TarotShuffleView
+        isShuffling={isShuffling}
+        cardBackUrl={profile?.card_back_url}
+        onBack={handleShuffleBack}
+        onShuffle={handleShuffleStart}
+        onCut={handleCutDeck}
+      />
     );
-  }
+  } else if (view === 'select') {
+    const spreadCount = getSpreadMeta(currentSpread)?.count ?? 0;
+    const needsMore = spreadCount - selectedIndices.length;
+    const positionLabels = Array.from({ length: spreadCount }, (_, i) => getPositionLabel(i));
 
-  if (view === 'select') {
-    const spread = getSpreadMeta(currentSpread);
-    const needsMore = spread ? spread.count - selectedIndices.length : 0;
-
-    if (useSplitViews) {
-      return (
-        <TarotSelectView
-          deckCards={deckCards}
-          selectedIndices={selectedIndices}
-          needsMore={needsMore}
-          cardBackUrl={profile?.card_back_url}
-          onBack={() => setView('shuffle')}
-          onCardSelect={handleCardSelect}
-          onReveal={handleRevealSelected}
-        />
-      );
-    }
-
-    return (
-      <div className="flex flex-col h-full space-y-4">
-        <button
-          onClick={() => setView('shuffle')}
-          className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" aria-hidden />
-          {t('readings.back')}
-        </button>
-
-        <div className="text-center space-y-2 sticky top-0 bg-mystic-950 z-10 pb-3">
-          <h2 className="font-display text-xl text-mystic-100">
-            {needsMore > 0
-              ? t('readings.selectView.chooseMore', { count: needsMore })
-              : t('readings.selectView.readyReveal')
-            }
-          </h2>
-          <p className="text-mystic-400 text-sm">{t('readings.selectView.trustIntuition')}</p>
-        </div>
-
-        <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-20">
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-            {deckCards.map((cardId) => {
-              const isSelected = selectedIndices.includes(cardId);
-              const selectionOrder = selectedIndices.indexOf(cardId) + 1;
-
-              return (
-                <button
-                  key={cardId}
-                  onClick={() => handleCardSelect(cardId)}
-                  className="relative group"
-                >
-                  <div
-                    className={`
-                      aspect-[2/3] rounded-lg border-2 transition-all duration-slow overflow-hidden
-                      ${isSelected
-                        ? 'border-gold/50 bg-gold/10 scale-105'
-                        : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
-                      }
-                      flex items-center justify-center
-                      active:scale-95 relative
-                    `}
-                  >
-                    {!isSelected && profile?.card_back_url && (
-                      <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="absolute inset-0 w-full h-full object-cover" />
-                    )}
-                    <div className="relative z-10">
-                      {isSelected ? (
-                        <div className="w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm">
-                          {selectionOrder}
-                        </div>
-                      ) : (
-                        <MysticalStar size={20} halo={false} className="text-gold/30 group-hover:text-gold/60 transition-colors" />
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="fixed bottom-20 left-0 right-0 px-4 bg-gradient-to-t from-mystic-950 via-mystic-950 to-transparent pt-4 pb-4">
-          <Button
-            variant="gold"
-            fullWidth
-            disabled={needsMore > 0}
-            onClick={handleRevealSelected}
-            size="lg"
-          >
-            {needsMore > 0 ? t('readings.selectView.selectMore', { count: needsMore }) : t('readings.selectView.revealCards')}
-            <Eye className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
+    stage = (
+      <TarotSelectView
+        deckCards={deckCards}
+        selectedIndices={selectedIndices}
+        needsMore={needsMore}
+        positionLabels={positionLabels}
+        cardBackUrl={profile?.card_back_url}
+        onBack={() => setView('shuffle')}
+        onCardSelect={handleCardSelect}
+        onReveal={handleRevealSelected}
+      />
     );
-  }
-
-  if (view === 'reveal') {
-    const spreadTitleText = getSpreadMeta(currentSpread)?.name ?? '';
-
-    if (useSplitViews) {
-      return (
-        <TarotRevealView
-          drawnCards={drawnCards}
-          currentSpread={currentSpread}
-          spreadTitle={spreadTitleText}
-          selectedFocus={selectedFocus}
-          allRevealed={allRevealed}
-          isSaved={isSaved}
-          isPremium={!!profile?.isPremium}
-          cardBackUrl={profile?.card_back_url}
-          showAIInterpretation={showAIInterpretation}
-          aiInterpretation={aiInterpretation}
-          loadingAI={loadingAI}
-          interpretationView={interpretationView}
-          focusReadingLabel={selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}
-          getCardImage={getCardImage}
-          getPositionLabel={getPositionLabel}
-          getFocusInterpretation={getFocusInterpretation}
-          onBack={() => setView('home')}
-          onSave={handleSaveReading}
-          onShare={handleShareReading}
-          onRevealCard={handleRevealCard}
-          onRevealAll={revealAll}
-          onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
-          onGetAIInterpretation={handleGetAIInterpretation}
-          onHideAIInterpretation={() => setShowAIInterpretation(false)}
-          onSetInterpretationView={setInterpretationView}
-          onNewReading={() => setView('home')}
-        />
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setView('home')}
-            className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" aria-hidden />
-            {t('readings.back')}
-          </button>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleShareReading}
-              disabled={!allRevealed}
-              aria-label={t('readings.share', { defaultValue: 'Share reading' }) as string}
-              className="p-2 rounded-full hover:bg-mystic-800 transition-all active:scale-90 disabled:opacity-40"
-            >
-              <Share2 className="w-5 h-5 text-mystic-400" />
-            </button>
-            <button
-              onClick={handleSaveReading}
-              disabled={!allRevealed}
-              className="p-2 rounded-full hover:bg-mystic-800 transition-all active:scale-90"
-            >
-              {isSaved ? (
-                <BookmarkCheck className="w-5 h-5 text-gold" />
-              ) : (
-                <Bookmark className="w-5 h-5 text-mystic-400" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center">
-          <p className="font-display-eyebrow text-mystic-400">{selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}</p>
-          <h2 className="font-display text-xl text-mystic-100">{spreadTitleText}</h2>
-        </div>
-
-        {currentSpread === 'celtic-cross' ? (
-          <CelticCrossLayout
-            drawnCards={drawnCards}
-            onRevealCard={handleRevealCard}
-            onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
-            getPositionLabel={getPositionLabel}
-            cardBackUrl={profile?.card_back_url}
-          />
-        ) : (
-          <div className="flex flex-wrap justify-center gap-4">
-            {drawnCards.map((drawn, i) => (
-              <div key={i} className="relative group">
-                <button
-                  onClick={() => drawn.revealed ? setSelectedCard({ card: drawn.card, reversed: drawn.reversed }) : handleRevealCard(i)}
-                  className="relative"
-                  style={{ perspective: '1000px' }}
-                >
-                  {/* Press feedback on the wrapper, the turn on the child:
-                      two transforms on one element fight and the scale wins. */}
-                  <div
-                    className={`w-24 h-36 transition-transform duration-base ease-out ${
-                      drawn.revealed ? '' : 'cursor-pointer hover:scale-105 active:scale-95'
-                    }`}
-                  >
-                    <div
-                      className="relative w-full h-full"
-                      style={{
-                        transformStyle: 'preserve-3d',
-                        transform: drawn.revealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                        transition: `transform ${FLIP_MS}ms ${FLIP_EASE}`,
-                      }}
-                    >
-                      {/* Back */}
-                      <div
-                        className="absolute inset-0 rounded-xl overflow-hidden border border-mystic-600 group-hover:border-gold/30 bg-gradient-to-br from-mystic-800 to-mystic-900 flex items-center justify-center"
-                        style={BACKFACE}
-                      >
-                        {profile?.card_back_url ? (
-                          <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="text-center">
-                            <div className="w-8 h-8 mx-auto rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors duration-base">
-                              <Eye className="w-4 h-4 text-gold/50 group-hover:text-gold transition-colors duration-base" />
-                            </div>
-                            <p className="text-xs text-mystic-500 mt-2">{t('readings.revealView.tapToReveal')}</p>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 rounded-xl transition-colors duration-base" />
-                      </div>
-
-                      {/* Face — mounted from the start and pre-turned, so the
-                          image is already decoded when the turn begins. */}
-                      <div
-                        className="absolute inset-0 rounded-xl overflow-hidden border border-gold/40 flex items-center justify-center"
-                        style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
-                        aria-hidden={!drawn.revealed}
-                      >
-                        {getCardImage(drawn.card) ? (
-                          <img
-                            src={getCardImage(drawn.card)}
-                            alt={drawn.card.name}
-                            className={`w-full h-full object-cover ${drawn.reversed ? 'rotate-180' : ''}`}
-                          />
-                        ) : (
-                          <div className={`text-center p-2 bg-gradient-to-br from-mystic-700 to-mystic-900 w-full h-full flex flex-col items-center justify-center ${drawn.reversed ? 'rotate-180' : ''}`}>
-                            <MysticalStar size={20} halo={false} className="text-gold mx-auto mb-1" />
-                            <p className="text-xs text-mystic-300 line-clamp-2">{drawn.card.name}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {drawn.revealed && (
-                    <div className="absolute top-1 right-1 w-6 h-6 bg-mystic-900/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gold/30">
-                      <Info className="w-3.5 h-3.5 text-gold" />
-                    </div>
-                  )}
-                </button>
-                <p className="text-meta text-mystic-400 mt-1 text-center">
-                  {getPositionLabel(i)}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!allRevealed && (
-          <Button variant="ghost" fullWidth onClick={revealAll}>
-            {t('readings.revealView.revealAll')}
-          </Button>
-        )}
-
-        {allRevealed && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="border-t border-mystic-700 pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="heading-display-md text-mystic-100">{t('readings.interpretation')}</h3>
-                {!showAIInterpretation && (
-                  <Chip
-                    variant="outline"
-                    size="sm"
-                    onClick={() => { if (!loadingAI) handleGetAIInterpretation(); }}
-                    className={loadingAI ? 'opacity-50 pointer-events-none' : ''}
-                  >
-                    {loadingAI ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        {t('readings.revealView.generating')}
-                      </>
-                    ) : (
-                      <>
-                        <Brain className="w-3.5 h-3.5" />
-                        {t('readings.revealView.getAIInsight', { defaultValue: 'AI insight' })}
-                      </>
-                    )}
-                  </Chip>
-                )}
-              </div>
-
-              {!showAIInterpretation && (
-                <MoonstoneCostLine className="mb-3" />
-              )}
-
-              {showAIInterpretation && aiInterpretation ? (
-                <div className="space-y-4">
-                  <Card padding="lg" className="bg-gradient-to-br from-gold/5 via-cosmic-blue/5 to-gold/5 border-gold/20">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
-                        <Brain className="w-4 h-4 text-gold" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-mystic-100 mb-1">{t('readings.revealView.aiInterpretation')}</h4>
-                        <p className="text-meta text-mystic-400">{t('readings.revealView.aiSubtitle')}</p>
-                      </div>
-                    </div>
-                    <ReadingProse text={aiInterpretation} />
-                  </Card>
-                  <button
-                    onClick={() => setShowAIInterpretation(false)}
-                    className="text-xs text-mystic-400 hover:text-mystic-300 transition-colors"
-                  >
-                    {t('readings.revealView.showCardMeanings')}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {(selectedFocus === 'Love' || selectedFocus === 'Career' || selectedFocus === 'Money') &&
-                   drawnCards.some(d => getFocusInterpretation(d.card, selectedFocus, d.reversed)) && (
-                    <Tabs
-                      size="sm"
-                      idPrefix="interp"
-                      aria-label={t('readings.interpretation')}
-                      className="mb-4"
-                      value={interpretationView}
-                      onChange={setInterpretationView}
-                      items={[
-                        {
-                          id: 'focus',
-                          icon: selectedFocus === 'Love' ? Heart : Briefcase,
-                          label: selectedFocus === 'Love'
-                            ? t('readings.revealView.loveFocus')
-                            : selectedFocus === 'Career'
-                              ? t('readings.revealView.careerFocus')
-                              : t('readings.revealView.moneyFocus'),
-                        },
-                        { id: 'traditional', icon: ArrowUp, label: t('readings.revealView.traditional') },
-                      ]}
-                    />
-                  )}
-
-                  {drawnCards.map((drawn, i) => {
-                    const focusInterp = getFocusInterpretation(drawn.card, selectedFocus, drawn.reversed);
-                    const showFocusContent = interpretationView === 'focus' && focusInterp;
-
-                    return (
-                      <div key={i} className="mb-6 last:mb-0">
-                        <div className="flex items-start gap-3 mb-2">
-                          <Tag tone="neutral" size="md">
-                            {getPositionLabel(i)}
-                          </Tag>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-mystic-100">
-                              {drawn.card.name}
-                              {drawn.reversed && <span className="text-meta text-mystic-400 ml-2">{t('readings.revealView.reversedParen')}</span>}
-                            </h4>
-                          </div>
-                        </div>
-
-                        {showFocusContent ? (
-                          <div className={`rounded-lg p-3 ${
-                            focusInterp.color === 'pink'
-                              ? 'bg-pink-500/10 border border-pink-500/20'
-                              : 'bg-blue-500/10 border border-blue-500/20'
-                          }`}>
-                            <div className="flex items-center gap-2 mb-2">
-                              <focusInterp.icon className={`w-4 h-4 ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`} />
-                              <span className={`text-meta font-medium ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`}>
-                                {focusInterp.label}
-                              </span>
-                            </div>
-                            <p className="reading-copy">
-                              {focusInterp.content}
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              {drawn.reversed ? (
-                                <ArrowDown className="w-3.5 h-3.5 text-amber-400" />
-                              ) : (
-                                <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
-                              )}
-                              <span className={`text-meta font-medium ${drawn.reversed ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                {drawn.reversed ? t('readings.revealView.reversed') : t('readings.revealView.upright')}
-                              </span>
-                            </div>
-                            <ReadingProse
-                              lede={false}
-                              text={(() => {
-                                const focus = selectedFocus;
-                                const focusMeaning =
-                                  focus === 'Love'
-                                    ? drawn.card.loveMeaning
-                                    : focus === 'Career'
-                                      ? drawn.card.careerMeaning
-                                      : undefined;
-                                const mainText =
-                                  focusMeaning ||
-                                  (drawn.reversed ? drawn.card.meaningReversed : drawn.card.meaningUpright);
-                                const reversalAddon =
-                                  focusMeaning && drawn.reversed
-                                    ? `\n\n${t('readings.revealView.reversalNote', { text: drawn.card.meaningReversed })}`
-                                    : '';
-                                return `${mainText}${reversalAddon}`;
-                              })()}
-                            />
-                          </div>
-                        )}
-
-                        {drawn.card.reflectionPrompt && showFocusContent && (
-                          <div className="mt-3 p-3 bg-gold/5 border border-gold/20 rounded-lg">
-                            <p className="reading-copy text-mystic-100 flex items-start gap-2">
-                              <Feather className="w-4 h-4 mt-1.5 flex-shrink-0 text-gold" />
-                              <span>{drawn.card.reflectionPrompt}</span>
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" onClick={handleSaveReading}>
-                {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                {isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
-              </Button>
-              <Button variant="gold" onClick={() => setView('home')}>
-                {t('readings.revealView.newReading')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+  } else if (view === 'reveal') {
+    stage = (
+      <TarotRevealView
+        drawnCards={drawnCards}
+        currentSpread={currentSpread}
+        spreadTitle={getSpreadMeta(currentSpread)?.name ?? ''}
+        selectedFocus={selectedFocus}
+        allRevealed={allRevealed}
+        isSaved={isSaved}
+        isPremium={!!profile?.isPremium}
+        cardBackUrl={profile?.card_back_url}
+        showAIInterpretation={showAIInterpretation}
+        aiInterpretation={aiInterpretation}
+        loadingAI={loadingAI}
+        interpretationView={interpretationView}
+        focusReadingLabel={selectedFocus ? t('readings.revealView.focusReading', { focus: focusLabel(selectedFocus) }) : ''}
+        getCardImage={getCardImage}
+        getPositionLabel={getPositionLabel}
+        getFocusInterpretation={getFocusInterpretation}
+        onBack={goHome}
+        onSave={handleSaveReading}
+        onShare={handleShareReading}
+        onRevealCard={handleRevealCard}
+        onRevealAll={revealAll}
+        onCardClick={(card, reversed) => setSelectedCard({ card, reversed })}
+        onGetAIInterpretation={handleGetAIInterpretation}
+        onHideAIInterpretation={() => setShowAIInterpretation(false)}
+        onSetInterpretationView={setInterpretationView}
+        onNewReading={goHome}
+      />
+    );
+  } else {
+    stage = (
+      <TarotHomeView
+        spreads={spreadConfigs}
+        isPremium={!!profile?.isPremium}
+        canWatchAd={canWatchAd}
+        cardBackUrl={profile?.card_back_url}
+        hasTemporaryAccess={hasTemporaryAccess}
+        spreadName={spreadName}
+        spreadDesc={spreadDesc}
+        onStartDraw={handleStartDraw}
+        onSpreadSelect={handleSpreadSelect}
+        onOpenBrowse={() => setShowBrowse(true)}
+      />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {useSplitViews ? (
-        <TarotHomeView
-          spreads={spreadConfigs.map((s) => ({ id: s.id, i18n: s.i18n, free: s.free, count: s.count }))}
-          isPremium={!!profile?.isPremium}
-          canWatchAd={canWatchAd}
-          cardBackUrl={profile?.card_back_url}
-          hasTemporaryAccess={hasTemporaryAccess}
-          spreadName={(s) => t(`readings.spreads.${s.i18n}.name`)}
-          spreadDesc={(s) => t(`readings.spreads.${s.i18n}.description`)}
-          onStartDraw={handleStartDraw}
-          onSpreadSelect={handleSpreadSelect}
-          onOpenBrowse={() => setShowBrowse(true)}
-        />
-      ) : (
-        <>
-          <Card
-            variant="glow"
-            padding="lg"
-            interactive
-            onClick={handleStartDraw}
-            className="text-center active:scale-[0.98] transition-transform"
-          >
-            <div className="w-20 h-28 mx-auto mb-4 bg-gradient-to-br from-gold/20 to-mystic-800 rounded-xl border-2 border-gold/30 flex items-center justify-center hover:scale-105 transition-transform overflow-hidden">
-              {profile?.card_back_url ? (
-                <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
-              ) : (
-                <MysticalStar size={40} halo={false} className="text-gold animate-pulse" />
-              )}
-            </div>
-            <h2 className="font-display text-xl text-mystic-100 mb-1">{t('readings.dailyDraw.title')}</h2>
-          </Card>
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-mystic-200">{t('readings.spreadsSection')}</h3>
-              <Layers className="w-4 h-4 text-mystic-500" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {spreadConfigs.map(spread => (
-                <Card
-                  key={spread.id}
-                  interactive
-                  padding="md"
-                  onClick={() => handleSpreadSelect(spread.id)}
-                  className="relative active:scale-[0.98] transition-all hover:border-gold/30"
-                >
-                  {!spread.free && !profile?.isPremium && !hasTemporaryAccess[spread.id] && (
-                    isNative() && canWatchAd ? (
-                      <Badge tone="gold" className="absolute top-2 right-2">
-                        <Play className="w-3 h-3" aria-hidden />
-                        {t('readings.status.try')}
-                      </Badge>
-                    ) : (
-                      <Lock className="absolute top-2 right-2 w-4 h-4 text-gold" />
-                    )
-                  )}
-                  {!spread.free && hasTemporaryAccess[spread.id] && (
-                    <Badge tone="teal" className="absolute top-2 right-2">
-                      {t('readings.status.unlocked')}
-                    </Badge>
-                  )}
-                  <h4 className="font-medium text-mystic-100 text-sm">{spreadName(spread)}</h4>
-                  <p className="text-meta text-mystic-400 mt-1">{spreadDesc(spread)}</p>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-mystic-200">{t('readings.browse.title')}</h3>
-              <Grid3X3 className="w-4 h-4 text-mystic-500" />
-            </div>
-            <Card
-              interactive
-              padding="md"
-              onClick={() => setShowBrowse(true)}
-              className="flex items-center justify-between active:scale-[0.98] transition-all hover:border-gold/30"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {[0, 1, 2].map(i => (
-                    <div
-                      key={i}
-                      className="w-8 h-11 bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-lg border border-mystic-600 hover:border-gold/40 transition-colors overflow-hidden"
-                    >
-                      {profile?.card_back_url && (
-                        <img src={profile.card_back_url} alt={t('readings.cardBackAlt', { defaultValue: 'Card back' })} className="w-full h-full object-cover" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <h4 className="font-medium text-mystic-100 text-sm">{t('readings.browse.allCards')}</h4>
-                  <p className="text-meta text-mystic-400">{t('readings.browse.learnMeanings')}</p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-mystic-400" />
-            </Card>
-          </div>
-        </>
-      )}
+    <>
+      {stage}
 
       <Sheet open={showBrowse} onClose={() => setShowBrowse(false)} title={t('readings.browse.title')}>
         <div className="space-y-4">
@@ -1356,7 +846,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                   // Track card exploration for achievements
                   if (user) checkAchievementProgress(user.id, 'cards_explored');
                 }}
-                className="relative aspect-[2/3] rounded-xl border border-mystic-600 hover:border-gold/50 hover:scale-105 active:scale-95 transition-all overflow-hidden group min-h-[140px]"
+                className="relative aspect-[2/3] rounded-inset border border-mystic-600 hover:border-gold/50 motion-safe:hover:scale-105 motion-safe:active:scale-95 transition-[transform,border-color] duration-fast overflow-hidden group min-h-[140px]"
               >
                 {getCardImage(card) ? (
                   <>
@@ -1364,20 +854,20 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                       src={getCardImage(card)}
                       alt={card.name}
                       loading="lazy"
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                      decoding="async"
+                      className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-mystic-900/90 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <p className="text-xs text-center text-white font-medium">{card.name}</p>
+                      <p className="text-caption text-center text-white font-medium">{card.name}</p>
                     </div>
                   </>
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-mystic-700 to-mystic-900 flex flex-col items-center justify-center p-2">
-                    <MysticalStar size={24} halo={false} className="text-gold/50 mb-2 group-hover:text-gold transition-colors" />
-                    <p className="text-xs text-center text-mystic-300 line-clamp-2">{card.name}</p>
+                  <div className="w-full h-full bg-mystic-850 flex flex-col items-center justify-center p-2">
+                    <MysticalStar size={24} halo={false} className="text-gold/50 mb-2 group-hover:text-gold transition-colors duration-fast" />
+                    <p className="text-caption text-center text-mystic-300 line-clamp-2">{card.name}</p>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/10 transition-colors rounded-xl" />
               </button>
             ))}
           </div>
@@ -1422,6 +912,6 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         />
       )}
       {AiEarnSheet}
-    </div>
+    </>
   );
 }

@@ -418,7 +418,7 @@ export function NatalChartReportPage() {
               aria-hidden
               className="pointer-events-none select-none w-56 max-h-56 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
             >
-              <ChartWheel chart={natal} />
+              <ChartWheel chart={natal} readOnly />
             </div>
           ) : undefined}
         />

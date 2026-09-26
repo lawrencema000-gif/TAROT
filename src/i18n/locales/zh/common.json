@@ -167,5 +167,8 @@
     "signInCancelled": "登录已取消",
     "signInSessionExpired": "登录会话已过期。请重试。",
     "googleNotConfigured": "未配置 Google 登录。请使用邮箱/密码。"
+  },
+  "sheet": {
+    "panel": "面板"
   }
 }

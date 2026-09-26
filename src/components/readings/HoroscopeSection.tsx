@@ -281,7 +281,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                           key={i}
                           className="w-10 h-10 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center"
                         >
-                          <span className="text-sm font-bold text-gold">{num}</span>
+                          <span className="text-sm font-semibold text-gold">{num}</span>
                         </div>
                       ))}
                     </div>

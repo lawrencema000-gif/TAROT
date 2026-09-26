@@ -233,7 +233,7 @@ function HouseExplorer({ data }: { data: LazyExploreData }) {
           <Card key={house} padding="sm">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-mystic-800/60 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-gold">{house}</span>
+                <span className="text-xs font-semibold text-gold">{house}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-ui font-medium text-mystic-100">{HOUSE_THEMES[house - 1]}</div>

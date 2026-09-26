@@ -293,6 +293,12 @@
     scroll-behavior: smooth;
   }
 
+  /* Bold is 600. The self-hosted faces stop at 600 (the remake's ramp is
+     400 / 500 / 600), and a browser with a 600 face will not synthesise a
+     700, so <strong> and <b> outside .prose-reading are pinned here rather
+     than left to the user agent's "bolder". */
+  b, strong { font-weight: 600; }
+
   body {
     @apply bg-mystic-950 text-mystic-100;
     background-image:

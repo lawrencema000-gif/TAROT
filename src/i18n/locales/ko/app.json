@@ -2127,7 +2127,8 @@
         "entries_other": "저널 기록 {{count}}개",
         "streak": "{{count}}일 연속 기록",
         "streak_one": "{{count}}일 연속 기록",
-        "streak_other": "{{count}}일 연속 기록"
+        "streak_other": "{{count}}일 연속 기록",
+        "lineOne": "지금까지의 {{items}}, 그대로 남아요. 프리미엄은 그 위에 더해져요."
       }
     },
     "gate": {},

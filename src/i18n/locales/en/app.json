@@ -2273,7 +2273,8 @@
         "entries_other": "{{count}} journal entries",
         "streak": "{{count}}-day streak",
         "streak_one": "{{count}}-day streak",
-        "streak_other": "{{count}}-day streak"
+        "streak_other": "{{count}}-day streak",
+        "lineOne": "Your {{items}} stays. Premium builds on it."
       }
     },
     "subscription": {

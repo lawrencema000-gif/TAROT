@@ -2127,7 +2127,8 @@
         "entries_other": "{{count}} 条日记",
         "streak": "{{count}} 天连续记录",
         "streak_one": "{{count}} 天连续记录",
-        "streak_other": "{{count}} 天连续记录"
+        "streak_other": "{{count}} 天连续记录",
+        "lineOne": "你的{{items}}会保留。高级版在此基础上继续。"
       }
     },
     "gate": {},

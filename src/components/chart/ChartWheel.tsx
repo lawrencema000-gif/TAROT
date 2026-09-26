@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback, type KeyboardEvent } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, type KeyboardEvent, FocusEvent } from 'react';
 import {
   ZODIAC_SIGNS,
   SIGN_ELEMENTS,
@@ -64,6 +64,13 @@ export interface ChartWheelProps {
   onOpenPlanet?: (placement: PlanetPlacement) => void;
   onOpenAspect?: (aspect: Aspect) => void;
   className?: string;
+  /**
+   * A glimpse, not a control: the paywall preview shows the user's own chart
+   * behind a mask. Coins lose their role, tab stop and handlers, and the
+   * panel and legend are not rendered, so nothing focusable hides inside an
+   * aria-hidden box.
+   */
+  readOnly?: boolean;
 }
 
 type Selection =
@@ -77,7 +84,7 @@ type Selection =
 const CX = 180;
 const CY = 180;
 const R = {
-  label: 171,      // ASC / DESC / MC / IC labels, inside the viewBox edge
+  label: 182,      // ASC / DESC / MC / IC labels, outside the frame (the viewBox has a 14-unit margin)
   frameOuter: 168,
   frameInner: 160, // beads sit between the two frame rings
   signOuter: 156,
@@ -127,6 +134,7 @@ export function ChartWheel({
   onOpenPlanet,
   onOpenAspect,
   className = '',
+  readOnly = false,
 }: ChartWheelProps) {
   const { t } = useT('app');
   const [selection, setSelection] = useState<Selection>(null);
@@ -297,7 +305,7 @@ export function ChartWheel({
   return (
     <div className={`space-y-3 ${className}`.trim()}>
       <div className="relative mx-auto w-full" style={{ maxWidth: 400 }}>
-        <svg viewBox="0 0 360 360" className="w-full h-auto block select-none overflow-visible" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="-14 -14 388 388" className="w-full h-auto block select-none" xmlns="http://www.w3.org/2000/svg">
           {/* ── Ground: flat fill, the wheel's own surface ── */}
           <circle cx={CX} cy={CY} r={R.frameInner - 1} fill={CHART_TOKENS.sunken} aria-hidden />
 
@@ -527,7 +535,7 @@ export function ChartWheel({
           </g>
 
           {/* ── Natal planets: coins in a labelled group of buttons ── */}
-          <g role="group" aria-label={t('chartWheel.wheelAria', { defaultValue: 'Natal chart wheel' })} style={entranceFade}>
+          <g role={readOnly ? undefined : 'group'} aria-label={readOnly ? undefined : t('chartWheel.wheelAria', { defaultValue: 'Natal chart wheel' })} style={entranceFade}>
             {placed.map(({ placement: p, angle, trueAngle }, index) => {
               const pos = polar(CX, CY, R.planet, angle);
               const isSelected = selection?.kind === 'planet' && selection.planet === p.planet;
@@ -550,16 +558,20 @@ export function ChartWheel({
                 <g
                   key={`planet-${p.planet}`}
                   ref={(el) => { coinRefs.current.set(p.planet, el); }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={label}
-                  aria-pressed={isSelected}
-                  onClick={() => toggle({ kind: 'planet', planet: p.planet })}
-                  onKeyDown={(e) => onCoinKey(e, index, p.planet)}
-                  onFocus={(e) => { if (isKeyboardFocus(e.currentTarget)) setFocused(p.planet); }}
-                  onBlur={() => setFocused((f) => (f === p.planet ? null : f))}
+                  {...(readOnly
+                    ? { 'aria-hidden': true }
+                    : {
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-label': label,
+                        'aria-pressed': isSelected,
+                        onClick: () => toggle({ kind: 'planet', planet: p.planet }),
+                        onKeyDown: (e: KeyboardEvent<SVGGElement>) => onCoinKey(e, index, p.planet),
+                        onFocus: (e: FocusEvent<SVGGElement>) => { if (isKeyboardFocus(e.currentTarget)) setFocused(p.planet); },
+                        onBlur: () => setFocused((f) => (f === p.planet ? null : f)),
+                      })}
                   style={{
-                    cursor: 'pointer',
+                    cursor: readOnly ? 'default' : 'pointer',
                     outline: 'none',
                     opacity: isDim ? 0.4 : 1,
                     transition: 'opacity var(--dur-base, 220ms) var(--ease-standard, ease)',
@@ -663,16 +675,16 @@ export function ChartWheel({
         </svg>
       </div>
 
-      <WheelDetailPanel selection={panelSelection} onOpenPlanet={onOpenPlanet} onOpenAspect={onOpenAspect} />
+      {!readOnly && <WheelDetailPanel selection={panelSelection} onOpenPlanet={onOpenPlanet} onOpenAspect={onOpenAspect} />}
 
-      <WheelLegend
+      {!readOnly && <WheelLegend
         presentTypes={presentTypes}
         filter={filter}
         onFilterChange={(f) => { setFilter(f); setSelection((s) => (s?.kind === 'aspect' ? null : s)); }}
         counts={{ all: chart.aspects.length, tight: tightCount }}
         hasRetrograde={hasRetrograde}
         overlayLabel={placedOverlay.length > 0 ? (overlayLabel ?? null) : undefined}
-      />
+      />}
     </div>
   );
 }

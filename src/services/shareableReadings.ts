@@ -1,3 +1,4 @@
+import { isNative } from '../utils/platform';
 // URL-shareable tarot readings.
 //
 // Encodes a reading (cards + reversed flags + spread + optional question)
@@ -63,7 +64,17 @@ export function decodeReading(token: string): SharedReadingPayload | null {
   }
 }
 
+const CANONICAL_ORIGIN = 'https://tarotlife.app';
+
+/**
+ * The link a reading is shared under. Inside the Android app the page's
+ * origin is the Capacitor shell (https://localhost), which used to leak
+ * into the share text now that native sharing exists; only a public
+ * tarotlife.app origin (or a local dev server) is trusted, everything else
+ * gets the canonical domain.
+ */
 export function buildShareUrl(token: string): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://tarotlife.app';
-  return `${origin}/reading/${token}`;
+  const here = typeof window !== 'undefined' ? window.location.origin : '';
+  const trusted = !isNative() && /^(https:\/\/(www\.)?tarotlife\.app|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)$/.test(here);
+  return `${trusted ? here : CANONICAL_ORIGIN}/reading/${token}`;
 }

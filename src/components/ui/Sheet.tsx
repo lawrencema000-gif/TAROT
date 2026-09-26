@@ -6,6 +6,8 @@ interface SheetProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  /** Accessible name when there is no visible title (a city panel, a celebration). */
+  label?: string;
   children: React.ReactNode;
   variant?: 'default' | 'glow';
 }
@@ -62,7 +64,7 @@ const prefersReducedMotion = () =>
   typeof window.matchMedia === 'function' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function Sheet({ open, onClose, title, children, variant = 'default' }: SheetProps) {
+export function Sheet({ open, onClose, title, label, children, variant = 'default' }: SheetProps) {
   const { t } = useT('common');
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -147,7 +149,7 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
-      aria-label={title ? undefined : t('actions.close')}
+      aria-label={title ? undefined : (label ?? t('sheet.panel'))}
     >
       {/* The scrim fades on the same clock as the panel, so the two read as
           one object arriving rather than a backdrop plus a card. */}

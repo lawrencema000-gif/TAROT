@@ -516,8 +516,8 @@ async function buildTarot(ctx: CanvasRenderingContext2D, flow: Flow, opts: Tarot
   flow.gap(r.gap(40));
   flow.chip(
     reversed
-      ? (i18n.t('tarot.reversed', { defaultValue: 'Reversed' }) as string)
-      : (i18n.t('tarot.upright', { defaultValue: 'Upright' }) as string),
+      ? (i18n.t('app:tarot.reversed', { defaultValue: 'Reversed' }) as string)
+      : (i18n.t('app:tarot.upright', { defaultValue: 'Upright' }) as string),
     r.chipFont,
     reversed ? C.coral : C.teal,
     r.chipH,
@@ -535,8 +535,8 @@ function buildSoulmate(ctx: CanvasRenderingContext2D, flow: Flow, opts: Soulmate
   flow.text(
     opts.eyebrow ??
       (opts.partnerName
-        ? (i18n.t('share.youAnd', { defaultValue: 'You and {{name}}', name: opts.partnerName }) as string)
-        : (i18n.t('share.yourCompatibility', { defaultValue: 'Your compatibility' }) as string)),
+        ? (i18n.t('app:share.youAnd', { defaultValue: 'You and {{name}}', name: opts.partnerName }) as string)
+        : (i18n.t('app:share.yourCompatibility', { defaultValue: 'Your compatibility' }) as string)),
     r.eyebrow,
   );
   flow.gap(r.gap(48));
@@ -563,7 +563,7 @@ function buildSoulmate(ctx: CanvasRenderingContext2D, flow: Flow, opts: Soulmate
     drawLines(ctx, [String(score)], flow.cx, cy - 130 * g.type, 200 * g.type);
     ctx.font = cssFont(400, 32 * g.type, BODY);
     ctx.fillStyle = C.ink300;
-    drawLines(ctx, [i18n.t('soulmate.outOf', { defaultValue: 'out of 100' }) as string], flow.cx, cy + 90 * g.type, 44 * g.type);
+    drawLines(ctx, [i18n.t('app:soulmate.outOf', { defaultValue: 'out of 100' }) as string], flow.cx, cy + 90 * g.type, 44 * g.type);
   });
 
   flow.gap(r.gap(44));

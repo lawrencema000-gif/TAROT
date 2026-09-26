@@ -167,5 +167,8 @@
     "signInCancelled": "Sign in was cancelled",
     "signInSessionExpired": "Sign in session expired. Please try again.",
     "googleNotConfigured": "Google sign-in is not configured. Please use email/password."
+  },
+  "sheet": {
+    "panel": "Panel"
   }
 }

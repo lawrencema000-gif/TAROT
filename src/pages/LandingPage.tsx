@@ -216,6 +216,7 @@ function ZodiacWheel() {
     else if (e.key === 'Escape') { setActive(null); return; }
     if (next === null) return;
     e.preventDefault();
+    setActive(next);
     buttons.current[next]?.focus();
   };
 
@@ -254,10 +255,10 @@ function ZodiacWheel() {
               style={{ left: `${(x / WHEEL) * 100}%`, top: `${(y / WHEEL) * 100}%` }}
               aria-label={t(`zodiac.signs.${s.key}.name`)}
               aria-pressed={isA}
-              // Select, never toggle: a pointer press focuses the button first,
-              // which already selected it, so a toggle would undo the tap.
-              onClick={() => setActive(i)}
-              onFocus={() => setActive(i)}
+              // One tab stop for the ring (roving tabindex); the arrows walk
+              // it and select; a tap toggles, so aria-pressed is truthful.
+              tabIndex={i === (active ?? 0) ? 0 : -1}
+              onClick={() => setActive(isA ? null : i)}
               onKeyDown={(e) => onKeyDown(e, i)}
             >
               <svg viewBox="0 0 32 32" width={22} height={22} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable="false">

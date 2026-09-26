@@ -79,14 +79,32 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
     <div className="space-y-4">
       {/* major-period band */}
       <div>
-        <div className="relative h-10 bg-mystic-800 rounded-full overflow-hidden">
+        <div className="relative h-11 bg-mystic-800 rounded-full overflow-hidden">
+          {/* The coloured bands are illustration: a two-year period is a
+              few pixels wide on a phone. The buttons below them keep the
+              band's centre but never shrink under 44px. */}
+          {data.periods.map((p, i) => {
+            const { left, width } = seg(p.start, p.end);
+            if (width <= 0) return null;
+            const isPicked = pick?.kind === 'major' && pick.index === i;
+            return (
+              <div
+                key={`band-${i}`}
+                aria-hidden
+                className="absolute top-0 bottom-0 flex items-center justify-center text-meta text-mystic-950 font-semibold"
+                style={{ left: `${left}%`, width: `${width}%`, background: withAlpha(TIME_LORD_COLOR[p.lord] ?? '#7e7e9e', isPicked ? 1 : 0.85) }}
+              >
+                {width > 4 ? lordGlyph(p.lord) : ''}
+              </div>
+            );
+          })}
           {data.periods.map((p, i) => {
             const { left, width } = seg(p.start, p.end);
             if (width <= 0) return null;
             const isPicked = pick?.kind === 'major' && pick.index === i;
             return (
               <button
-                key={i}
+                key={`hit-${i}`}
                 type="button"
                 onClick={() => setPick(isPicked ? null : { kind: 'major', index: i })}
                 aria-pressed={isPicked}
@@ -94,11 +112,14 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
                   defaultValue: '{{lord}} · age {{from}}–{{to}} · {{startYear}}–{{endYear}}',
                   lord: lordName(p.lord), from: ageAt(p.start), to: ageAt(p.end), startYear: p.start.slice(0, 4), endYear: p.end.slice(0, 4),
                 })}
-                className="absolute top-0 bottom-0 flex items-center justify-center text-meta text-mystic-950 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-100"
-                style={{ left: `${left}%`, width: `${width}%`, background: withAlpha(TIME_LORD_COLOR[p.lord] ?? '#7e7e9e', isPicked ? 1 : 0.85) }}
-              >
-                <span aria-hidden>{width > 4 ? lordGlyph(p.lord) : ''}</span>
-              </button>
+                className="absolute top-0 bottom-0 bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-100"
+                style={{
+                  left: `calc(${left}% + ${width / 2}% - max(${width}%, 44px) / 2)`,
+                  width: `max(${width}%, 44px)`,
+                  // narrower periods sit on top so a wide neighbour cannot swallow their hit area
+                  zIndex: Math.round(100 - Math.min(width, 99)),
+                }}
+              />
             );
           })}
           <div className="absolute top-0 bottom-0 w-0.5 bg-mystic-100 pointer-events-none" style={{ left: `${nowPct}%` }} aria-hidden />
@@ -122,7 +143,7 @@ export function FirdariaTimeline({ data, birthDate }: { data: FirdariaData; birt
               end: currentMajor.end.slice(0, 4),
             })}
           </div>
-          <div className="relative h-8 bg-mystic-800 rounded-full overflow-hidden flex">
+          <div className="relative h-11 bg-mystic-800 rounded-full overflow-hidden flex">
             {currentMajor.subs.map((s, i) => {
               const isNow = Date.now() >= Date.parse(s.start) && Date.now() < Date.parse(s.end);
               const isPicked = pick?.kind === 'sub' && pick.index === i;

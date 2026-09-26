@@ -2127,7 +2127,8 @@
         "entries_other": "{{count}}件のジャーナル",
         "streak": "{{count}}日連続の記録",
         "streak_one": "{{count}}日連続の記録",
-        "streak_other": "{{count}}日連続の記録"
+        "streak_other": "{{count}}日連続の記録",
+        "lineOne": "あなたの{{items}}はそのまま残ります。プレミアムは、その上に積み重なります。"
       }
     },
     "gate": {},

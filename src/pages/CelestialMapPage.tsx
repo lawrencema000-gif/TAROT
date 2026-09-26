@@ -231,18 +231,25 @@ export function CelestialMapPage() {
   // panel's 700 km radius of it; otherwise it is the whole map. Computed
   // from the same line sets the map draws, so the number is never invented.
   const lockedPreview = useMemo(() => {
-    if (!allLines || !filteredLines || isPremium) return null;
+    if (!allLines || isPremium) return null;
+    // Measured against what the free tier can ever see (Sun + Moon), not
+    // against the user's current life-area filter: a line they hid
+    // themselves is not a line Premium unlocks.
+    const freeLines = {
+      ...allLines,
+      features: allLines.features.filter((f) => FREE_TIER_PLANETS.has(f.properties!.planet)),
+    };
     if (tappedPoint) {
       const near = nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
       if (near && near.distanceKm <= 300) {
         const all = linesNearPoint(tappedPoint.lat, tappedPoint.lon, allLines, 700).length;
-        const visible = linesNearPoint(tappedPoint.lat, tappedPoint.lon, filteredLines, 700).length;
-        if (all - visible > 0) return { count: all - visible, city: near.city.name as string | null };
+        const free = linesNearPoint(tappedPoint.lat, tappedPoint.lon, freeLines, 700).length;
+        if (all - free > 0) return { count: all - free, city: near.city.name as string | null };
       }
     }
-    const hidden = allLines.features.length - filteredLines.features.length;
+    const hidden = allLines.features.length - freeLines.features.length;
     return hidden > 0 ? { count: hidden, city: null } : null;
-  }, [allLines, filteredLines, isPremium, tappedPoint]);
+  }, [allLines, isPremium, tappedPoint]);
 
   // ── Empty state — no birth data yet, OR compute failed ──────────
   // Inline birth-data form: most users entered this at signup, but

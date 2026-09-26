@@ -104,7 +104,7 @@ function PremiumHoroscopeHub({ refreshProfile }: { refreshProfile: () => Promise
             aria-hidden
             className="pointer-events-none select-none w-56 max-h-56 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
           >
-            <ChartWheel chart={chart.natalChart} />
+            <ChartWheel chart={chart.natalChart} readOnly />
           </div>
         ) : undefined}
       />

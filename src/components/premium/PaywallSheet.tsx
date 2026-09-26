@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type ComponentType, type ReactNode, type KeyboardEvent } from 'react';
+import { useState, useEffect, useCallback, type ComponentType, type ReactNode, type KeyboardEvent, useRef } from 'react';
 import {
   Ban,
   Brain,
@@ -593,9 +593,16 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
       t('premium.paywall.continuity.streak', { count: streak, defaultValue: '{{count}}-day streak' }),
     );
   }
+  // One singular item ("your 1 reading", "your 7-day streak") takes the
+  // singular verb; everything else is plural.
+  const singleSingular =
+    continuityItems.length === 1 &&
+    ((readings === 1 && entries === 0 && streak === 0) ||
+      (entries === 1 && readings === 0 && streak === 0) ||
+      (streak > 0 && readings === 0 && entries === 0));
   const continuityLine = continuityItems.length
-    ? t('premium.paywall.continuity.line', {
-        defaultValue: 'Your {{items}} stay. Premium builds on them.',
+    ? t(singleSingular ? 'premium.paywall.continuity.lineOne' : 'premium.paywall.continuity.line', {
+        defaultValue: singleSingular ? 'Your {{items}} stays. Premium builds on it.' : 'Your {{items}} stay. Premium builds on them.',
         items: joinList(continuityItems, t('premium.paywall.continuity.and', { defaultValue: ' and ' })),
       })
     : null;
@@ -618,10 +625,40 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
     return t('premium.paywall.cta.subscribe', { defaultValue: 'Subscribe to Premium' });
   })();
 
+  // A radio group is one tab stop: the checked plan carries tabIndex 0, the
+  // others -1, and the arrow keys move both the check and the focus.
+  const planRefs = useRef<Partial<Record<PlanId, HTMLDivElement | null>>>({});
   const onPlanKey = (e: KeyboardEvent<HTMLDivElement>, id: PlanId) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setSelectedPlan(id);
+    const ids = displayPlans.map((pl) => pl.id);
+    const at = ids.indexOf(id);
+    let next: PlanId | null = null;
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        setSelectedPlan(id);
+        return;
+      case 'ArrowDown':
+      case 'ArrowRight':
+        next = ids[(at + 1) % ids.length];
+        break;
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        next = ids[(at - 1 + ids.length) % ids.length];
+        break;
+      case 'Home':
+        next = ids[0];
+        break;
+      case 'End':
+        next = ids[ids.length - 1];
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    if (next) {
+      setSelectedPlan(next);
+      planRefs.current[next]?.focus();
     }
   };
 
@@ -751,11 +788,12 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
                 return (
                   <Card
                     key={plan.id}
+                    ref={(el) => { planRefs.current[plan.id] = el; }}
                     variant={active ? 'accent' : 'default'}
                     padding="none"
                     role="radio"
                     aria-checked={active}
-                    tabIndex={0}
+                    tabIndex={active ? 0 : -1}
                     onClick={() => setSelectedPlan(plan.id)}
                     onKeyDown={(e) => onPlanKey(e, plan.id)}
                     className={`

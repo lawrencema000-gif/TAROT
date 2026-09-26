@@ -188,49 +188,37 @@ export function ListSkeleton({ count = 3 }: { count?: number }) {
 }
 
 export function HomePageSkeleton() {
+  // Mirrors the real Home: greeting and streak pill, then the deck hero
+  // (three card backs, a title, a button), then the first feed card.
   return (
-    <div className="space-y-4">
-      {/* Streak / greeting area */}
-      <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
-        <div className="flex items-center gap-3 mb-4">
-          <Skeleton variant="circular" width={48} height={48} />
+    <div className="space-y-6" aria-busy="true">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <Skeleton height={12} width={96} className="mb-2" />
+          <Skeleton height={34} width="55%" />
+        </div>
+        <Skeleton height={44} width={112} className="rounded-full" />
+      </div>
+
+      <div className="flex flex-col items-center">
+        <div className="flex items-end justify-center gap-3 h-[176px]">
+          <Skeleton width={84} height={126} className="rounded-inset -rotate-[14deg] translate-y-1.5" />
+          <Skeleton width={84} height={126} className="rounded-inset" />
+          <Skeleton width={84} height={126} className="rounded-inset rotate-[14deg] translate-y-1.5" />
+        </div>
+        <Skeleton height={26} width={180} className="mt-2" />
+        <Skeleton height={16} width={240} className="mt-3" />
+        <Skeleton height={48} width={220} className="mt-5 rounded-control" />
+      </div>
+
+      <div className="bg-mystic-850 rounded-card p-5 border border-mystic-700">
+        <div className="flex items-center gap-3">
+          <Skeleton width={40} height={40} className="rounded-control" />
           <div className="flex-1">
-            <Skeleton height={20} width="50%" className="mb-2" />
-            <Skeleton height={14} width="70%" />
+            <Skeleton height={13} width="40%" className="mb-2" />
+            <Skeleton height={22} width="60%" />
           </div>
         </div>
-        <div className="flex gap-3">
-          <Skeleton height={32} width={80} className="rounded-full" />
-          <Skeleton height={32} width={80} className="rounded-full" />
-          <Skeleton height={32} width={80} className="rounded-full" />
-        </div>
-      </div>
-
-      {/* Tarot card area */}
-      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700">
-        <Skeleton height={16} width={80} className="mb-2" />
-        <Skeleton height={20} width={140} className="mb-6" />
-        <div className="flex justify-center">
-          <Skeleton width={180} height={288} className="rounded-xl" />
-        </div>
-      </div>
-
-      {/* Horoscope card */}
-      <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
-        <div className="flex items-center gap-3 mb-3">
-          <Skeleton variant="circular" width={40} height={40} />
-          <Skeleton height={18} width={120} />
-        </div>
-        <Skeleton height={14} width="100%" className="mb-2" />
-        <Skeleton height={14} width="85%" className="mb-2" />
-        <Skeleton height={14} width="60%" />
-      </div>
-
-      {/* Prompt card */}
-      <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
-        <Skeleton height={14} width={100} className="mb-3" />
-        <Skeleton height={16} width="90%" className="mb-2" />
-        <Skeleton height={16} width="75%" />
       </div>
     </div>
   );

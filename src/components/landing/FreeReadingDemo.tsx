@@ -1,22 +1,28 @@
 import { useState, useCallback } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { fullDeck } from '../../data/tarotDeck';
 import { getBundledFullPath } from '../../config/bundledImages';
 import { useT } from '../../i18n/useT';
 import { localizeCard } from '../../i18n/localizeCard';
+import { Button, Card, TarotCardIcon } from '../ui';
 import type { TarotCard } from '../../types';
 
 /**
  * Free 1-card demo reading — no signup required.
  *
- * Cold ad traffic hits this on the landing page hero. User picks one of
- * three face-down cards, watches a reveal animation, and sees the card
- * meaning + keywords. Soft CTA at the end drives into full onboarding.
+ * The draw moment, directly under the hero's call to action. The visitor
+ * picks one of three face-down Arcana backs (the same
+ * public/card-backs/default.svg the DeckFan above it shows), the chosen
+ * card turns over once, and the meaning and keywords appear with a soft
+ * CTA into onboarding.
  *
  * Fires a gtag micro-conversion on draw so Google Ads can optimize for
  * engaged visitors even before they sign up.
  */
 
 type Stage = 'prompt' | 'picking' | 'revealed';
+
+const CARD_BACK = '/card-backs/default.svg';
 
 function pickThreeRandom(): TarotCard[] {
   const pool = [...fullDeck];
@@ -90,30 +96,31 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
   }, [onSignUp]);
 
   return (
-    <div className="free-reading">
+    <Card variant="accent" padding="md" className="free-reading">
       {stage === 'prompt' && (
-        <div className="free-reading-prompt">
-          <div className="free-reading-icon">✦</div>
-          <h3 className="free-reading-title">{t('demo.title')}</h3>
-          <p className="free-reading-sub">{t('demo.sub')}</p>
-          <button className="lp-btn-gold free-reading-btn" onClick={startPicking}>
+        <div>
+          <TarotCardIcon className="w-7 h-7 text-gold mx-auto mb-2" />
+          <h3 className="heading-display-md text-mystic-100 mb-1">{t('demo.title')}</h3>
+          <p className="text-ui text-mystic-400 mb-4">{t('demo.sub')}</p>
+          <Button variant="gold" onClick={startPicking}>
             {t('demo.drawBtn')}
-          </button>
+          </Button>
         </div>
       )}
 
       {stage === 'picking' && (
-        <div className="free-reading-picking">
-          <p className="free-reading-sub">{t('demo.pickCalling')}</p>
-          <div className="free-reading-cards">
+        <div>
+          <p className="text-ui text-mystic-400">{t('demo.pickCalling')}</p>
+          <div className="free-reading-cards" role="group" aria-label={t('demo.pickCalling')}>
             {cards.map((c, i) => (
               <button
                 key={c.id}
+                type="button"
                 className="free-reading-card-back"
                 onClick={() => pickCard(c)}
-                aria-label={`Card ${i + 1}`}
+                aria-label={t('demo.cardLabel', { n: i + 1 })}
               >
-                <span className="free-reading-card-glyph">☽</span>
+                <img src={CARD_BACK} alt="" decoding="async" draggable={false} />
               </button>
             ))}
           </div>
@@ -122,42 +129,43 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
 
       {stage === 'revealed' && chosen && (
         <div className="free-reading-revealed">
-          <div className={`free-reading-card-face ${reversed ? 'reversed' : ''}`}>
+          <div className={`free-reading-card-face lp-flip ${reversed ? 'reversed' : ''}`}>
             {getBundledFullPath(chosen.id) ? (
               <img
                 src={getBundledFullPath(chosen.id)!}
                 alt={chosen.name}
-                className="free-reading-card-img"
                 loading="lazy"
+                decoding="async"
               />
             ) : (
-              <div className="free-reading-card-fallback">{chosen.name}</div>
+              <div className="w-full h-full flex items-center justify-center text-gold text-meta p-3 text-center">{chosen.name}</div>
             )}
           </div>
           <div className="free-reading-result">
-            <p className="free-reading-orientation">
+            <p className="text-caption font-semibold uppercase tracking-wider text-gold mb-1">
               {reversed ? t('demo.reversed') : t('demo.upright')}
             </p>
-            <h4 className="free-reading-card-name">{chosen.name}</h4>
+            <h4 className="heading-display-md text-mystic-100">{chosen.name}</h4>
             <div className="free-reading-keywords">
               {chosen.keywords.slice(0, 4).map(k => (
-                <span key={k} className="free-reading-keyword">{k}</span>
+                <span key={k} className="text-caption px-2 py-0.5 rounded-full bg-gold/10 text-gold">{k}</span>
               ))}
             </div>
-            <p className="free-reading-meaning">
+            <p className="text-ui text-mystic-300 mb-4">
               {(reversed ? chosen.meaningReversed : chosen.meaningUpright).slice(0, 220)}…
             </p>
             <div className="free-reading-ctas">
-              <button className="lp-btn-gold" onClick={handleSignUp}>
+              <Button variant="gold" onClick={handleSignUp}>
                 {t('demo.fullCta')}
-              </button>
-              <button className="free-reading-draw-again" onClick={reset}>
+                <ChevronRight className="w-4 h-4" aria-hidden />
+              </Button>
+              <Button variant="ghost" onClick={reset}>
                 {t('demo.drawAnother')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

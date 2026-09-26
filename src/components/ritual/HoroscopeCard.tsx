@@ -1,57 +1,49 @@
-import { ChevronRight, Heart, Briefcase, Wind } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import { EyebrowLabel } from '../ui';
+import { ZODIAC_ICONS } from '../icons';
 import { useT } from '../../i18n/useT';
+import { localizeSignName } from '../../i18n/localizeNames';
 import type { ZodiacSign } from '../../types';
-import { zodiacData } from '../../utils/zodiac';
+import type { ZodiacSign as AstroSign } from '../../types/astrology';
 
 interface HoroscopeCardProps {
   sign: ZodiacSign;
   onRead: () => void;
 }
 
+/**
+ * The first part of the ritual: today's horoscope.
+ *
+ * It used to show three labels — Love, Work, Mood — with no data behind
+ * them, and the sign as a text glyph that Android renders as colour emoji.
+ * Now it says what it is: the sign, drawn in the same line as every other
+ * glyph in the app, and a single line inviting the read. The surface is
+ * `.card-ritual`, the app's one tappable-card treatment, on a real button.
+ */
 export function HoroscopeCard({ sign, onRead }: HoroscopeCardProps) {
   const { t } = useT('app');
-  const info = zodiacData[sign];
+  // utils/zodiac keys signs in lower case; the glyph set and the name
+  // localiser use the astrology type's capitalised names.
+  const astro = (sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign;
+  const Glyph = ZODIAC_ICONS[astro];
+  const name = localizeSignName(astro);
 
   return (
     <button
+      type="button"
       onClick={onRead}
-      className="w-full text-left bg-gradient-to-br from-mystic-800/80 to-mystic-900/80 backdrop-blur-sm rounded-2xl border border-mystic-700/50 p-5 transition-all hover:border-gold/30 active:scale-[0.98] group"
+      className="card-ritual w-full text-left p-5 touch-manipulation [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-            <span className="text-2xl">{info.symbol}</span>
-          </div>
-          <div>
-            <p className="text-xs text-mystic-500 uppercase tracking-wider">{t('home.ritualCards.todaysEnergy')}</p>
-            <h3 className="font-display text-lg text-mystic-100">{info.name}</h3>
-          </div>
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-control bg-gold/10 text-gold flex items-center justify-center shrink-0">
+          <Glyph size={30} strokeWidth={1.5} aria-label={name} />
         </div>
-        <div className="w-8 h-8 rounded-full bg-mystic-800/50 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-          <ChevronRight className="w-4 h-4 text-mystic-400 group-hover:text-gold transition-colors" />
+        <div className="flex-1 min-w-0">
+          <EyebrowLabel align="left">{t('home.ritualCards.todaysEnergy')}</EyebrowLabel>
+          <h3 className="heading-display-md text-mystic-100 mt-0.5">{name}</h3>
+          <p className="text-meta text-mystic-400 mt-0.5">{t('home.ritualCards.read')}</p>
         </div>
-      </div>
-
-      <div className="flex items-center gap-4 text-sm">
-        <div className="flex items-center gap-1.5">
-          <Heart className="w-4 h-4 text-cosmic-rose" />
-          <span className="text-mystic-400">{t('home.ritualCards.love')}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Briefcase className="w-4 h-4 text-cosmic-blue" />
-          <span className="text-mystic-400">{t('home.ritualCards.work')}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Wind className="w-4 h-4 text-gold" />
-          <span className="text-mystic-400">{t('home.ritualCards.mood')}</span>
-        </div>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-mystic-700/50">
-        <span className="text-sm text-gold font-medium flex items-center gap-1">
-          {t('home.ritualCards.read')}
-          <ChevronRight className="w-3.5 h-3.5" />
-        </span>
+        <ChevronRight className="w-5 h-5 text-mystic-500 shrink-0" aria-hidden />
       </div>
     </button>
   );

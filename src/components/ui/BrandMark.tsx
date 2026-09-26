@@ -110,6 +110,7 @@ export function BrandWordmark({
       <Tag
         className={`font-display font-medium tracking-[0.18em] ${colorClass} ${className}`}
         style={{ fontSize, lineHeight: 1, letterSpacing: '0.18em' }}
+        role="img"
         aria-label="Arcana"
       >
         ARCANA

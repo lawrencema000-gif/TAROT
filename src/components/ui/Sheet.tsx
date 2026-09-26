@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
+import { useT } from '../../i18n/useT';
 
 interface SheetProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  /** Accessible name when there is no visible title (a city panel, a celebration). */
+  label?: string;
   children: React.ReactNode;
   variant?: 'default' | 'glow';
 }
@@ -35,14 +38,40 @@ interface SheetProps {
  */
 const EXIT_MS = 180;
 
+// How many sheets currently hold the page. The body scroll lock and the
+// `sheet-open` class (which hides the bottom nav) belong to the page, not to
+// any one sheet: a paywall opened from inside Settings used to release both
+// when it closed, leaving Settings scrolling the page behind it with the
+// navbar showing through. Now the last sheet out turns the lights off.
+let openSheets = 0;
+function holdPage() {
+  openSheets += 1;
+  if (openSheets === 1) {
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('sheet-open');
+  }
+  return () => {
+    openSheets = Math.max(0, openSheets - 1);
+    if (openSheets === 0) {
+      document.body.style.overflow = '';
+      document.body.classList.remove('sheet-open');
+    }
+  };
+}
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   typeof window.matchMedia === 'function' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function Sheet({ open, onClose, title, children, variant = 'default' }: SheetProps) {
+export function Sheet({ open, onClose, title, label, children, variant = 'default' }: SheetProps) {
+  const { t } = useT('common');
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Per instance: two sheets on one screen (a paywall over Settings) used to
+  // share the id "sheet-title", so the dialog's name could resolve to the
+  // wrong heading.
+  const titleId = useId();
 
   const [mounted, setMounted] = useState(open);
   // Always starts false, even when `open` is true on the very first render —
@@ -100,12 +129,7 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
   // `body.sheet-open` and hides the navbar entirely while a sheet is up.
   useEffect(() => {
     if (!mounted) return;
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('sheet-open');
-    return () => {
-      document.body.style.overflow = '';
-      document.body.classList.remove('sheet-open');
-    };
+    return holdPage();
   }, [mounted]);
 
   if (!mounted) return null;
@@ -124,8 +148,8 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
       className={`fixed inset-0 z-50 ${shown ? '' : 'pointer-events-none'}`}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? 'sheet-title' : undefined}
-      aria-label={title ? undefined : 'Sheet'}
+      aria-labelledby={title ? titleId : undefined}
+      aria-label={title ? undefined : (label ?? t('sheet.panel'))}
     >
       {/* The scrim fades on the same clock as the panel, so the two read as
           one object arriving rather than a backdrop plus a card. */}
@@ -164,15 +188,15 @@ export function Sheet({ open, onClose, title, children, variant = 'default' }: S
             {/* Title uses the new heading-display-md scale for a more
                 editorial, broadside feel — and stays serif for CJK
                 fallback fonts via the @apply chain. */}
-            <h2 id="sheet-title" className="heading-display-md text-mystic-100 truncate">{title}</h2>
+            <h2 id={titleId} className="heading-display-md text-mystic-100 truncate">{title}</h2>
             {/* This button receives focus on open, so it needs a ring it can
                 actually show. It had none. */}
             <button
               ref={closeRef}
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t('actions.close')}
               className="
-                shrink-0 p-2 rounded-full hairline-gold-soft text-mystic-300
+                shrink-0 w-11 h-11 -mr-2 flex items-center justify-center rounded-full hairline-gold-soft text-mystic-300
                 transition-[transform,color,border-color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
                 touch-manipulation [-webkit-tap-highlight-color:transparent]
                 motion-safe:active:scale-[0.92] active:text-mystic-100

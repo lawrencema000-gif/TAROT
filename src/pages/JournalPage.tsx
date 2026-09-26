@@ -38,6 +38,7 @@ import { journalTemplates, templateCategories, getTemplatesForPersonality, Journ
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
+import { getDailyPrompt } from '../data/dailyPrompts';
 
 const moodEmojis = [
   { emoji: '😊', label: 'Happy', value: 'happy' },
@@ -151,7 +152,7 @@ export function JournalPage() {
   });
 
   useEffect(() => {
-    import('../data/horoscopes').then(m => setTodayPrompt(m.getDailyPrompt(today)));
+    setTodayPrompt(getDailyPrompt(today));
   }, [today]);
 
   useEffect(() => {

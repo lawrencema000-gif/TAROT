@@ -31,7 +31,7 @@ export function LevelUpCelebration({
   }, [open]);
 
   return (
-    <Sheet open={open} onClose={onClose} title="">
+    <Sheet open={open} onClose={onClose} label={t('celebration.levelUp.title')}>
       <div className="relative">
         <button
           onClick={onClose}
@@ -72,7 +72,7 @@ export function LevelUpCelebration({
           <div className="bg-gradient-to-br from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-2xl p-6 mb-6">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="text-center">
-                <div className="text-5xl font-bold text-gold mb-1">{newLevel}</div>
+                <div className="text-5xl font-semibold text-gold mb-1">{newLevel}</div>
                 <div className="text-sm text-mystic-400">{t('celebration.levelUp.level')}</div>
               </div>
               <div className="h-12 w-px bg-mystic-700" />

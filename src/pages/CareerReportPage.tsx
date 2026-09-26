@@ -261,6 +261,35 @@ export function CareerReportPage() {
           feature={t('careerReport.title', { defaultValue: 'Career Archetype' }) as string}
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
+          // The proof is the report itself: the archetype the user's type
+          // resolved to and the sections it will contain — the same headings
+          // the unlocked page renders below, masked toward the bottom.
+          preview={
+            <div
+              aria-hidden
+              className="pointer-events-none select-none w-full max-w-[280px] [mask-image:linear-gradient(to_bottom,black_40%,transparent)]"
+            >
+              <p className="heading-display-md text-mystic-100 text-center">{archetype.name}</p>
+              <p className="text-meta text-mystic-400 text-center mb-3">
+                {archetype.mbti} · {t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}
+              </p>
+              <ol className="space-y-1.5">
+                {[
+                  t('careerReport.bestFit', { defaultValue: 'Best-fit roles' }),
+                  t('careerReport.drains', { defaultValue: 'Environments that drain you' }),
+                  t('careerReport.collaboration', { defaultValue: 'Collaboration pattern' }),
+                  t('careerReport.blindSpots', { defaultValue: 'Blind spots' }),
+                  t('careerReport.ninetyDays', { defaultValue: 'First 90 days' }),
+                  t('careerReport.reflection', { defaultValue: 'Sit with these questions' }),
+                ].map((section, i) => (
+                  <li key={section} className="flex items-center gap-2.5 text-ui text-mystic-300">
+                    <span className="w-5 shrink-0 text-meta text-gold/80 tabular-nums">{i + 1}</span>
+                    {section}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          }
         />
         {moonstonesEnabled && (
           <WatchAdSheet

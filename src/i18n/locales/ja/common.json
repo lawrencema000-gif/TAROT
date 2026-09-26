@@ -167,5 +167,8 @@
     "signInCancelled": "サインインがキャンセルされました",
     "signInSessionExpired": "サインインセッションの有効期限が切れました。もう一度お試しください。",
     "googleNotConfigured": "Googleサインインが構成されていません。メール/パスワードをご使用ください。"
+  },
+  "sheet": {
+    "panel": "パネル"
   }
 }

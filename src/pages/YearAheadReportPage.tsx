@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
 import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
@@ -68,6 +69,13 @@ export function YearAheadReportPage() {
 
   const hasNatalChart = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
   const currentYear = new Date().getFullYear();
+
+  // The twelve months the forecast covers (the unlock reference is the
+  // calendar year), named in the user's locale for the paywall's preview.
+  const monthNames = useMemo(() => {
+    const fmt = new Intl.DateTimeFormat(getLocale(), { month: 'long' });
+    return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(currentYear, i, 15)));
+  }, [currentYear]);
 
   const checkUnlock = useCallback(async () => {
     if (!user) {
@@ -293,6 +301,30 @@ export function YearAheadReportPage() {
           feature={t('yearAhead.title', { defaultValue: 'Year Ahead' }) as string}
           open={showSubscription}
           onClose={() => setShowSubscription(false)}
+          // The proof is the report's own table of contents: the year's arc
+          // and the twelve monthly briefings, masked toward the bottom.
+          preview={
+            <div
+              aria-hidden
+              className="pointer-events-none select-none w-full max-w-[280px] max-h-44 overflow-hidden [mask-image:linear-gradient(to_bottom,black_35%,transparent)]"
+            >
+              <p className="heading-display-md text-mystic-100 text-center mb-2">
+                {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
+              </p>
+              <ul className="space-y-1.5">
+                <li className="flex items-center gap-2.5 text-ui text-mystic-200">
+                  <Star className="w-3.5 h-3.5 text-gold shrink-0" />
+                  {t('yearAhead.overall', { defaultValue: 'Overall arc' })}
+                </li>
+                {monthNames.map((month) => (
+                  <li key={month} className="flex items-center gap-2.5 text-ui text-mystic-300">
+                    <TrendingUp className="w-3.5 h-3.5 text-mystic-500 shrink-0" />
+                    {month}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          }
         />
         {moonstonesEnabled && (
           <WatchAdSheet

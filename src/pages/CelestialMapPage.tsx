@@ -17,7 +17,8 @@ import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { computeCelestialLines, type PlanetName } from '../utils/astrocartography';
 import { getZodiacSign } from '../utils/zodiac';
-import type { City } from '../utils/celestialGeo';
+import { linesNearPoint, nearestCity, type City } from '../utils/celestialGeo';
+import { GLOBAL_CITIES } from '../data/citiesGlobal';
 import type { DestinedPlace } from '../types';
 import { scrollBehavior } from '../utils/motion';
 
@@ -224,6 +225,31 @@ export function CelestialMapPage() {
       ),
     };
   }, [allLines, visiblePlanets]);
+
+  // Proof for the paywall: how many of the user's own lines are hidden from
+  // them. Near a tapped city the count is of lines within the insight
+  // panel's 700 km radius of it; otherwise it is the whole map. Computed
+  // from the same line sets the map draws, so the number is never invented.
+  const lockedPreview = useMemo(() => {
+    if (!allLines || isPremium) return null;
+    // Measured against what the free tier can ever see (Sun + Moon), not
+    // against the user's current life-area filter: a line they hid
+    // themselves is not a line Premium unlocks.
+    const freeLines = {
+      ...allLines,
+      features: allLines.features.filter((f) => FREE_TIER_PLANETS.has(f.properties!.planet)),
+    };
+    if (tappedPoint) {
+      const near = nearestCity(GLOBAL_CITIES, tappedPoint.lat, tappedPoint.lon);
+      if (near && near.distanceKm <= 300) {
+        const all = linesNearPoint(tappedPoint.lat, tappedPoint.lon, allLines, 700).length;
+        const free = linesNearPoint(tappedPoint.lat, tappedPoint.lon, freeLines, 700).length;
+        if (all - free > 0) return { count: all - free, city: near.city.name as string | null };
+      }
+    }
+    const hidden = allLines.features.length - freeLines.features.length;
+    return hidden > 0 ? { count: hidden, city: null } : null;
+  }, [allLines, isPremium, tappedPoint]);
 
   // ── Empty state — no birth data yet, OR compute failed ──────────
   // Inline birth-data form: most users entered this at signup, but
@@ -542,6 +568,34 @@ export function CelestialMapPage() {
         open={showPaywall}
         onClose={() => setShowPaywall(false)}
         feature={t('celestial.title', { defaultValue: 'Celestial Map' }) as string}
+        preview={lockedPreview ? (
+          <div className="text-center max-w-[280px]">
+            <span
+              className="inline-flex w-12 h-12 rounded-control bg-gold/10 text-gold items-center justify-center mb-2"
+              aria-hidden
+            >
+              <Globe2 className="w-6 h-6" />
+            </span>
+            <p className="text-lede text-mystic-100 text-balance">
+              {lockedPreview.city
+                ? t('celestial.paywallPreview.city', {
+                    count: lockedPreview.count,
+                    city: lockedPreview.city,
+                    defaultValue:
+                      lockedPreview.count === 1
+                        ? '{{count}} more line runs through {{city}}'
+                        : '{{count}} more lines run through {{city}}',
+                  })
+                : t('celestial.paywallPreview.map', {
+                    count: lockedPreview.count,
+                    defaultValue:
+                      lockedPreview.count === 1
+                        ? '{{count}} more line crosses your map'
+                        : '{{count}} more lines cross your map',
+                  })}
+            </p>
+          </div>
+        ) : undefined}
       />
       {EarnSheet}
 

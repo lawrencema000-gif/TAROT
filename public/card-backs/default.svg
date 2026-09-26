@@ -1,51 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" fill="none">
-  <defs>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#16213e;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0f1419;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#f4d03f;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#d4af37;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-
-  <rect width="200" height="300" fill="url(#cardGrad)" rx="8"/>
-
-  <rect x="5" y="5" width="190" height="290" fill="none" stroke="url(#goldGrad)" stroke-width="2" rx="6" opacity="0.3"/>
-
-  <rect x="10" y="10" width="180" height="280" fill="none" stroke="url(#goldGrad)" stroke-width="1" rx="4" opacity="0.2"/>
-
-  <g transform="translate(100, 150)">
-    <circle r="40" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" opacity="0.4"/>
-    <circle r="50" fill="none" stroke="url(#goldGrad)" stroke-width="1" opacity="0.2"/>
-
-    <path d="M0,-25 L5,-10 L20,-10 L8,2 L13,17 L0,7 L-13,17 L-8,2 L-20,-10 L-5,-10 Z"
-          fill="url(#goldGrad)" opacity="0.5">
-      <animateTransform
-        attributeName="transform"
-        type="rotate"
-        from="0"
-        to="360"
-        dur="60s"
-        repeatCount="indefinite"/>
-    </path>
-
-    <path d="M0,25 L5,40 L20,40 L8,52 L13,67 L0,57 L-13,67 L-8,52 L-20,40 L-5,40 Z"
-          fill="url(#goldGrad)" opacity="0.3">
-      <animateTransform
-        attributeName="transform"
-        type="rotate"
-        from="360"
-        to="0"
-        dur="60s"
-        repeatCount="indefinite"/>
-    </path>
-  </g>
-
-  <text x="100" y="280" font-family="serif" font-size="12" fill="url(#goldGrad)" text-anchor="middle" opacity="0.4">
-    ARCANA
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
+<!-- Arcana card back. Generated from src/components/ui/CardBack.tsx geometry; edit there and regenerate. -->
+<rect x="0" y="0" width="200" height="300" rx="14" fill="#16162e"/>
+<g fill="none" stroke="#d4af37" stroke-linecap="round" stroke-linejoin="round">
+<rect x="8" y="8" width="184" height="284" rx="10" stroke-width="1.4"/>
+<rect x="18" y="18" width="164" height="264" rx="6" stroke-width="0.9" opacity="0.7"/>
+<g stroke-width="1.2"><circle cx="26" cy="26" r="4"/><circle cx="174" cy="26" r="4"/><circle cx="26" cy="274" r="4"/><circle cx="174" cy="274" r="4"/></g>
+<path d="M100.0 102.0L100.0 54.0M104.2 102.2L107.3 66.3M108.3 102.7L116.7 55.5M112.4 103.6L121.7 68.9M116.4 104.9L132.8 59.8M120.3 106.5L135.5 73.9M124.0 108.4L148.0 66.9M127.5 110.7L148.2 81.2M130.9 113.2L161.7 76.5M133.9 116.1L159.4 90.6M136.8 119.1L173.5 88.3M139.3 122.5L168.8 101.8M141.6 126.0L183.1 102.0M143.5 129.7L176.1 114.5M145.1 133.6L190.2 117.2M146.4 137.6L181.1 128.3M147.3 141.7L194.5 133.3M147.8 145.8L183.7 142.7M148.0 150.0L196.0 150.0M147.8 154.2L183.7 157.3M147.3 158.3L194.5 166.7M146.4 162.4L181.1 171.7M145.1 166.4L190.2 182.8M143.5 170.3L176.1 185.5M141.6 174.0L183.1 198.0M139.3 177.5L168.8 198.2M136.8 180.9L173.5 211.7M133.9 183.9L159.4 209.4M130.9 186.8L161.7 223.5M127.5 189.3L148.2 218.8M124.0 191.6L148.0 233.1M120.3 193.5L135.5 226.1M116.4 195.1L132.8 240.2M112.4 196.4L121.7 231.1M108.3 197.3L116.7 244.5M104.2 197.8L107.3 233.7M100.0 198.0L100.0 246.0M95.8 197.8L92.7 233.7M91.7 197.3L83.3 244.5M87.6 196.4L78.3 231.1M83.6 195.1L67.2 240.2M79.7 193.5L64.5 226.1M76.0 191.6L52.0 233.1M72.5 189.3L51.8 218.8M69.1 186.8L38.3 223.5M66.1 183.9L40.6 209.4M63.2 180.9L26.5 211.7M60.7 177.5L31.2 198.2M58.4 174.0L16.9 198.0M56.5 170.3L23.9 185.5M54.9 166.4L9.8 182.8M53.6 162.4L18.9 171.7M52.7 158.3L5.5 166.7M52.2 154.2L16.3 157.3M52.0 150.0L4.0 150.0M52.2 145.8L16.3 142.7M52.7 141.7L5.5 133.3M53.6 137.6L18.9 128.3M54.9 133.6L9.8 117.2M56.5 129.7L23.9 114.5M58.4 126.0L16.9 102.0M60.7 122.5L31.2 101.8M63.2 119.1L26.5 88.3M66.1 116.1L40.6 90.6M69.1 113.2L38.3 76.5M72.5 110.7L51.8 81.2M76.0 108.4L52.0 66.9M79.7 106.5L64.5 73.9M83.6 104.9L67.2 59.8M87.6 103.6L78.3 68.9M91.7 102.7L83.3 55.5M95.8 102.2L92.7 66.3" stroke-width="0.7" opacity="0.55"/>
+<circle cx="100" cy="150" r="52" stroke-width="1" opacity="0.8"/>
+<circle cx="100" cy="150" r="46" stroke-width="0.6" opacity="0.5" stroke-dasharray="1.5 3"/>
+<path d="M97.8 129.1L100.0 110.0L102.2 129.1M106.0 129.9Q104.6 129.4 113.0 118.6Q111.3 132.2 110.0 131.5M113.2 133.7L128.3 121.7L116.3 136.8M118.5 140.0Q117.8 138.7 131.4 137.0Q120.6 145.4 120.1 144.0M120.9 147.8L140.0 150.0L120.9 152.2M120.1 156.0Q120.6 154.6 131.4 163.0Q117.8 161.3 118.5 160.0M116.3 163.2L128.3 178.3L113.2 166.3M110.0 168.5Q111.3 167.8 113.0 181.4Q104.6 170.6 106.0 170.1M102.2 170.9L100.0 190.0L97.8 170.9M94.0 170.1Q95.4 170.6 87.0 181.4Q88.7 167.8 90.0 168.5M86.8 166.3L71.7 178.3L83.7 163.2M81.5 160.0Q82.2 161.3 68.6 163.0Q79.4 154.6 79.9 156.0M79.1 152.2L60.0 150.0L79.1 147.8M79.9 144.0Q79.4 145.4 68.6 137.0Q82.2 138.7 81.5 140.0M83.7 136.8L71.7 121.7L86.8 133.7M90.0 131.5Q88.7 132.2 87.0 118.6Q95.4 129.4 94.0 129.9" stroke-width="1.2"/>
+<circle cx="100" cy="150" r="20" stroke-width="1.4" fill="#d4af37" fill-opacity="0.1"/>
+<circle cx="100" cy="150" r="13" stroke-width="0.8" opacity="0.7"/>
+<path d="M46.0 51.0L48.2 55.8L53.0 58.0L48.2 60.2L46.0 65.0L43.8 60.2L39.0 58.0L43.8 55.8ZM154.0 65.0L155.6 68.4L159.0 70.0L155.6 71.6L154.0 75.0L152.4 71.6L149.0 70.0L152.4 68.4ZM40.0 231.0L41.6 234.4L45.0 236.0L41.6 237.6L40.0 241.0L38.4 237.6L35.0 236.0L38.4 234.4ZM158.0 237.0L160.2 241.8L165.0 244.0L160.2 246.2L158.0 251.0L155.8 246.2L151.0 244.0L155.8 241.8ZM100.0 254.0L101.3 256.7L104.0 258.0L101.3 259.3L100.0 262.0L98.7 259.3L96.0 258.0L98.7 256.7ZM100.0 38.0L101.3 40.7L104.0 42.0L101.3 43.3L100.0 46.0L98.7 43.3L96.0 42.0L98.7 40.7Z" stroke-width="1" fill="#d4af37" fill-opacity="0.15"/>
+</g>
 </svg>

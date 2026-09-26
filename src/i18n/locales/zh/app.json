@@ -8,7 +8,6 @@
     },
     "subtitle": "今日宇宙捎来的讯息",
     "level": "等级 {{n}}",
-    "xpProgress": "经验进度",
     "todaysRitual": "今日仪式",
     "ritualComplete": "仪式完成",
     "streak": "已连续 {{n}} 天,继续保持。",
@@ -22,24 +21,18 @@
     "xpValue": "{{current}} / {{required}} 经验值",
     "ritualReady": {
       "title": "今日的仪式正在等你。",
-      "sub": "抽一张牌,再把心里浮现的一句话,诚实地写下来。"
+      "sub": "你的运势，一张牌，一句诚实的话。"
     },
     "startTodaysRitual": "开始今日仪式",
     "ritualCards": {
       "todaysEnergy": "今日能量",
       "yourPrompt": "你的提示语",
-      "reflection": "反思",
       "yourCard": "你的牌",
       "tapToReveal": "点击翻开",
       "reversed": "逆位",
       "upright": "正位",
-      "majorArcana": "大阿卡纳",
-      "love": "爱情",
-      "work": "工作",
-      "mood": "心情",
       "read": "阅读",
       "write": "书写",
-      "twoMin": "2 分钟",
       "save": "收藏",
       "share": "分享",
       "meaning": "牌意"
@@ -57,7 +50,22 @@
     "loveTreeSub": "90 秒,12 道题 → 你的依恋风格化为一棵活树。",
     "loveTreeTitle": "爱之树",
     "exploreMore": "今日仪式之外",
-    "seeAllSaved": "查看全部收藏"
+    "seeAllSaved": "查看全部收藏",
+    "savedTypes": {
+      "horoscope": "运势",
+      "tarot": "塔罗牌",
+      "prompt": "提示语"
+    },
+    "shareCard": "我的今日牌：{{name}}。{{meaning}}",
+    "todaysMansion": "今日星宿",
+    "ritualProgress": "已完成 {{n}}/3",
+    "cosmicScore": {
+      "eyebrow": "今日星象天气",
+      "counts": "{{flowing}} 项顺畅 · {{demanding}} 项考验",
+      "why": "为什么是这个分数",
+      "influence": "行运{{transiting}}与你的{{natal}}成{{type}}",
+      "footnote": "根据此刻真实的行星位置与你的出生星盘对照评分。它描述的是天气，不是命运。"
+    }
   },
   "auth": {
     "welcomeBack": "欢迎回来",
@@ -246,7 +254,8 @@
       "clearMind": "清空思绪",
       "spreading": "展开全部78张牌",
       "focusQuestion": "专注于你的问题",
-      "shuffleDeck": "洗牌"
+      "shuffleDeck": "洗牌",
+      "cutDeck": "切牌"
     },
     "selectView": {
       "chooseMore_one": "再选{{count}}张牌",
@@ -255,11 +264,15 @@
       "trustIntuition": "相信你的直觉 • 全78张",
       "selectMore": "再选 {{count}} 张",
       "revealCards": "揭示牌面",
-      "chooseMore": "再选 {{count}} 张"
+      "chooseMore": "再选 {{count}} 张",
+      "positions": "你的牌阵",
+      "deck": "牌堆",
+      "cardOf": "第 {{n}} 张，共 {{total}} 张",
+      "returnCard": "把{{position}}的牌放回牌堆",
+      "cardN": "第 {{n}} 张"
     },
     "revealView": {
       "focusReading": "{{focus}}解读",
-      "tapToReveal": "点击揭示",
       "revealAll": "全部揭示",
       "generating": "生成中…",
       "getAIInsight": "获取 AI 洞察",
@@ -278,7 +291,9 @@
       "save": "保存这次解读",
       "saved": "已保存",
       "newReading": "开始新的解读",
-      "share": "分享这次解读"
+      "share": "分享这次解读",
+      "revealPosition": "揭示{{position}}",
+      "openCard": "打开{{name}}"
     },
     "status": {
       "try": "观看广告",
@@ -357,8 +372,9 @@
       ]
     },
     "shareText": "我在 Arcana 的{{spread}}塔罗解读",
-    "share": "分享解读",
-    "cardBackAlt": "牌背"
+    "celticCross": {
+      "caption": "十字与权杖"
+    }
   },
   "journal": {
     "title": "日记",
@@ -1952,6 +1968,14 @@
         "shadowWork": {
           "label": "阴影工作牌阵",
           "desc": "七张牌，探索内在"
+        },
+        "celestialMap": {
+          "label": "天体地图",
+          "desc": "全部 40 条行星线与城市解读"
+        },
+        "reports": {
+          "label": "深度报告",
+          "desc": "本命盘、职业原型与全年展望，无需月光石"
         }
       },
       "plans": {
@@ -1966,7 +1990,8 @@
       },
       "badges": {
         "bestValue": "最超值",
-        "foreverAccess": "一次付费"
+        "foreverAccess": "一次付费",
+        "save": "省 {{percent}}%"
       },
       "cta": {
         "getLifetime": "终身解锁高级版",
@@ -2071,7 +2096,39 @@
           "heading": "作为同事配对",
           "outcome": "从共事的角度解读你们的星座组合，并附友情契合度。高级版同时开启两项。",
           "cta": "解锁工作契合度"
+        },
+        "natalReport": {
+          "heading": "阅读你的完整本命盘",
+          "outcome": "每颗行星所在的星座与宫位、每个相位及其容许度，还有一份可打印的报告。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁我的本命盘报告"
+        },
+        "careerReport": {
+          "heading": "阅读你的职业原型报告",
+          "outcome": "最适合你的角色、会耗尽你的环境、你的盲点，以及一份前 90 天计划，专为你的类型而写。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁我的职业报告"
+        },
+        "yearAhead": {
+          "heading": "阅读你的全年展望",
+          "outcome": "十二份月度简报，讲述行运对你自己星盘的影响，并标出每段行运的起止日期。高级版开启此功能，无需消耗月光石。",
+          "cta": "解锁我的全年展望"
         }
+      },
+      "sheetTitle": "高级版",
+      "plansLabel": "方案",
+      "perMonthEquivalent": "每月 {{price}}",
+      "continuity": {
+        "line": "你的{{items}}都会保留。高级版在此基础上继续。",
+        "and": "、",
+        "readings": "{{count}} 次解读",
+        "readings_one": "{{count}} 次解读",
+        "readings_other": "{{count}} 次解读",
+        "entries": "{{count}} 条日记",
+        "entries_one": "{{count}} 条日记",
+        "entries_other": "{{count}} 条日记",
+        "streak": "{{count}} 天连续记录",
+        "streak_one": "{{count}} 天连续记录",
+        "streak_other": "{{count}} 天连续记录",
+        "lineOne": "你的{{items}}会保留。高级版在此基础上继续。"
       }
     },
     "gate": {},
@@ -2106,6 +2163,14 @@
         "android": "如需取消或更改订阅，请使用 Google Play 商店应用或网站。更改可能需要几分钟才会在此显示。",
         "ios": "如需取消或更改订阅，请打开「设置」，点击你的姓名，然后选择「订阅」。更改可能需要几分钟才会在此显示。",
         "web": "如需取消或更改订阅，请从本页面打开账单门户。更改可能需要几分钟才会在此显示。"
+      },
+      "plan": "你的方案",
+      "renewal": {
+        "label": "续订",
+        "renews": "{{date}} 续订",
+        "ends": "{{date}} 到期",
+        "trialEnds": "试用期 {{date}} 结束",
+        "never": "一次付费，无需续订"
       }
     },
     "watchAd": {
@@ -2657,7 +2722,17 @@
     "streak": {
       "dedication": "从开始那天起，每天都没有间断。",
       "ritualComplete": "仪式完成",
-      "keepFlowing": "明天再来一次，记录就会延续。"
+      "keepFlowing": "明天再来一次，记录就会延续。",
+      "title": "你的连续记录",
+      "days": "连续 {{n}} 天",
+      "firstNight": "你的第一晚。",
+      "lastNights": "最近 {{total}} 晚，完成了 {{done}} 晚。",
+      "milestone": {
+        "week": "整整一周，每晚都在。",
+        "month": "整整一个月的夜晚。",
+        "hundred": "一百个夜晚。",
+        "year": "一年的夜晚。"
+      }
     },
     "levelUp": {
       "title": "升级了。",
@@ -4819,7 +4894,69 @@
     "planetLabel": "行星",
     "transitLabel": "行运",
     "houseLabel": "第{{n}}宫",
-    "aspectLabel": "相位"
+    "aspectLabel": "相位",
+    "wheelAria": "本命星盘轮",
+    "planetAria": "{{planet}}在{{sign}} {{deg}}°，第{{house}}宫",
+    "planetAriaNoHouse": "{{planet}}在{{sign}} {{deg}}°",
+    "retrograde": "逆行",
+    "orb": "容许度 {{deg}}°",
+    "readMore": "阅读完整解读",
+    "planetsInHouse": "此宫行星：{{list}}",
+    "emptyHouse": "此宫没有行星",
+    "houseThemes": {
+      "1": "自我与身份",
+      "2": "价值观与财物",
+      "3": "沟通与学习",
+      "4": "家庭与家人",
+      "5": "创造力与浪漫",
+      "6": "健康与服务",
+      "7": "伙伴关系",
+      "8": "转化与共享资源",
+      "9": "哲学与远行",
+      "10": "事业与公众形象",
+      "11": "社群与愿望",
+      "12": "灵性与潜意识"
+    },
+    "legendAspects": "相位",
+    "legendElements": "元素",
+    "legendModalities": "模式",
+    "orbFilterAria": "要绘制哪些相位",
+    "aspectsAll": "全部（{{n}}）",
+    "aspectsTight": "紧密相位（{{n}}）",
+    "noTightAspects": "没有容许度紧密的相位。切换到「全部」可查看所有连接。",
+    "aspectGridAria": "相位矩阵",
+    "gridTapPrompt": "点按格子阅读相位",
+    "modalities": {
+      "Cardinal": "开创",
+      "Fixed": "固定",
+      "Mutable": "变动"
+    },
+    "nodes": {
+      "north": "北交点",
+      "south": "南交点"
+    },
+    "firdaria": {
+      "periodDetail": "{{lord}} · {{from}}–{{to}} 岁 · {{startYear}}–{{endYear}}",
+      "subPeriodDetail": "{{lord}}子限 · {{start}} 至 {{end}}",
+      "birth": "出生",
+      "years": "{{n}} 年",
+      "insidePeriod": "你正处于{{lord}}限期（{{start}}–{{end}}）",
+      "tapPrompt": "点按某段限期查看年份"
+    },
+    "flavour": {
+      "supporting": "助力",
+      "challenging": "挑战",
+      "neutral": "中性"
+    },
+    "luckPillar": {
+      "detail": "{{stem}}{{branch}} · {{from}}–{{to}} 岁 · {{startYear}}–{{endYear}} · {{flavour}}",
+      "tapPrompt": "点按某柱大运查看年份",
+      "startAgeEstimated": "起运年龄为估算值——添加你的出生日期，即可按节气精确计算。"
+    },
+    "ageLabel": "{{n}} 岁",
+    "ziwei": {
+      "body": "身宫"
+    }
   },
   "liveRooms": {
     "title": "直播房间",
@@ -5089,6 +5226,14 @@
       "healing": "疗愈",
       "home": "安居",
       "growth": "成长"
+    },
+    "paywallPreview": {
+      "city": "还有 {{count}} 条行星线经过{{city}}",
+      "city_one": "还有 {{count}} 条行星线经过{{city}}",
+      "city_other": "还有 {{count}} 条行星线经过{{city}}",
+      "map": "还有 {{count}} 条行星线穿过你的地图",
+      "map_one": "还有 {{count}} 条行星线穿过你的地图",
+      "map_other": "还有 {{count}} 条行星线穿过你的地图"
     }
   },
   "freeCourse": {
@@ -5193,7 +5338,9 @@
       "deleteTitle": "删除{{name}}？",
       "deleteBody": "这将删除{{name}}已保存的出生数据和星盘，且无法撤销。",
       "keep": "保留{{name}}",
-      "deleteConfirm": "永久删除"
+      "deleteConfirm": "永久删除",
+      "rising": "上升{{sign}}",
+      "aspects": "相位"
     },
     "compare": {
       "needOwnBirth": "在个人资料中添加你自己的出生日期，才能比较星盘。",
@@ -5221,7 +5368,14 @@
           "label": "推运盘",
           "blurb": "这段关系的星盘如今演进到了哪里"
         }
-      }
+      },
+      "aspectsInChart": "这张星盘中的相位",
+      "resonance": "由 {{n}} 个跨盘连接得出的整体共鸣",
+      "love": "爱情",
+      "friendship": "友情",
+      "work": "工作",
+      "strongest": "你们最强的连接",
+      "crossRow": "你的{{mine}}与{{name}}的{{theirs}}成{{type}}"
     }
   },
   "mirror": {
@@ -5267,7 +5421,34 @@
     "needBirth": "在个人资料中添加你的出生日期，才能排出这张星盘。",
     "addBirth": "添加我的出生信息",
     "castFailed": "无法排出这张星盘，请检查网络连接后重试。",
-    "retry": "重新排盘"
+    "retry": "重新排盘",
+    "linked": {
+      "ziwei": "中国的帝星命理体系",
+      "natalReport": "在你的本命盘报告中",
+      "yearAhead": "在你的全年展望报告中",
+      "people": "在「人物」中比较"
+    },
+    "moment": {
+      "lunarReturn": "回归时刻：{{when}}",
+      "skyNow": "排盘时刻：{{when}}",
+      "progressed": "推运至：{{when}}"
+    },
+    "firdaria": {
+      "current": "你正处于{{major}}限期",
+      "currentSub": "你正处于{{major}}限期 · {{sub}}子限",
+      "dayBirth": "日间出生",
+      "nightBirth": "夜间出生",
+      "flavoredBy": "带有{{sub}}的色彩："
+    },
+    "solarArc": "太阳弧：距出生 {{deg}}°",
+    "hitRow": "{{transit}}与本命{{natal}}成{{type}}",
+    "sections": {
+      "chapter": "这一章",
+      "balance": "平衡",
+      "hits": "对你本命盘的触发",
+      "aspects": "这张星盘内的相位",
+      "placements": "行星落位"
+    }
   },
   "foolsJourney": {
     "signInHint": "登录以查看你的愚者之旅。",
@@ -5375,5 +5556,9 @@
   },
   "spreads": {
     "pageTitle": "塔罗牌阵"
+  },
+  "share": {
+    "youAnd": "你和{{name}}",
+    "yourCompatibility": "你们的契合度"
   }
 }

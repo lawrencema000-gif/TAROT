@@ -8,7 +8,6 @@
     },
     "subtitle": "오늘 우주가 전하는 메시지",
     "level": "레벨 {{n}}",
-    "xpProgress": "XP 진행도",
     "todaysRitual": "오늘의 의식",
     "ritualComplete": "의식 완료",
     "streak": "{{n}}일 연속이에요. 이대로 계속 가요.",
@@ -22,24 +21,18 @@
     "xpValue": "{{current}} / {{required}} XP",
     "ritualReady": {
       "title": "오늘의 의식이 기다리고 있어요.",
-      "sub": "카드 한 장을 뽑고, 떠오르는 한 문장을 솔직하게 적어보세요."
+      "sub": "당신의 운세, 카드 한 장, 그리고 솔직한 한 문장."
     },
     "startTodaysRitual": "오늘의 의식 시작하기",
     "ritualCards": {
       "todaysEnergy": "오늘의 에너지",
       "yourPrompt": "당신을 위한 프롬프트",
-      "reflection": "성찰",
       "yourCard": "당신의 카드",
       "tapToReveal": "눌러서 열기",
       "reversed": "역방향",
       "upright": "정방향",
-      "majorArcana": "메이저 아르카나",
-      "love": "연애",
-      "work": "일",
-      "mood": "기분",
       "read": "읽기",
       "write": "쓰기",
-      "twoMin": "2분",
       "save": "저장",
       "share": "공유",
       "meaning": "의미"
@@ -57,7 +50,22 @@
     "loveTreeSub": "90초, 12문항 → 당신의 애착 스타일이 살아있는 나무로 나타납니다.",
     "loveTreeTitle": "사랑의 나무",
     "exploreMore": "오늘의 의식, 그 너머",
-    "seeAllSaved": "저장한 것 모두 보기"
+    "seeAllSaved": "저장한 것 모두 보기",
+    "savedTypes": {
+      "horoscope": "운세",
+      "tarot": "카드",
+      "prompt": "프롬프트"
+    },
+    "shareCard": "오늘의 내 카드: {{name}}. {{meaning}}",
+    "todaysMansion": "오늘의 수(宿)",
+    "ritualProgress": "3단계 중 {{n}}단계 완료",
+    "cosmicScore": {
+      "eyebrow": "오늘의 우주 날씨",
+      "counts": "조화로운 {{flowing}} · 도전적인 {{demanding}}",
+      "why": "이 숫자의 이유",
+      "influence": "{{transiting}}이 당신의 {{natal}}에 {{type}}",
+      "footnote": "지금 이 순간의 실제 행성 위치를 당신의 출생 차트에 비추어 매긴 점수예요. 운명이 아니라 날씨를 말해요."
+    }
   },
   "auth": {
     "welcomeBack": "다시 만나서 반가워요",
@@ -246,7 +254,8 @@
       "clearMind": "마음을 비우세요",
       "spreading": "78장을 펼치는 중",
       "focusQuestion": "질문에 집중하세요",
-      "shuffleDeck": "덱 섞기"
+      "shuffleDeck": "덱 섞기",
+      "cutDeck": "덱 나누기"
     },
     "selectView": {
       "chooseMore_one": "{{count}}장 더 선택하세요",
@@ -255,11 +264,15 @@
       "trustIntuition": "직관을 믿으세요 • 전체 78장",
       "selectMore": "{{count}}장 더 선택",
       "revealCards": "카드 공개",
-      "chooseMore": "{{count}}장 더 고르기"
+      "chooseMore": "{{count}}장 더 고르기",
+      "positions": "당신의 스프레드",
+      "deck": "덱",
+      "cardOf": "{{total}}장 중 {{n}}번째 카드",
+      "returnCard": "{{position}} 자리의 카드를 덱으로 되돌리기",
+      "cardN": "카드 {{n}}"
     },
     "revealView": {
       "focusReading": "{{focus}} 리딩",
-      "tapToReveal": "탭하여 공개",
       "revealAll": "전체 공개",
       "generating": "생성 중…",
       "getAIInsight": "AI 인사이트 받기",
@@ -278,7 +291,9 @@
       "save": "이 리딩 저장",
       "saved": "저장됨",
       "newReading": "새 리딩 시작",
-      "share": "이 리딩 공유"
+      "share": "이 리딩 공유",
+      "revealPosition": "{{position}} 공개",
+      "openCard": "{{name}} 열기"
     },
     "status": {
       "try": "광고 보기",
@@ -357,8 +372,9 @@
       ]
     },
     "shareText": "Arcana에서 본 나의 {{spread}} 타로 리딩",
-    "share": "리딩 공유",
-    "cardBackAlt": "카드 뒷면"
+    "celticCross": {
+      "caption": "십자와 지팡이"
+    }
   },
   "journal": {
     "title": "저널",
@@ -1952,6 +1968,14 @@
         "shadowWork": {
           "label": "섀도우 워크 스프레드",
           "desc": "내면 작업을 위한 일곱 장"
+        },
+        "celestialMap": {
+          "label": "천체 지도",
+          "desc": "40개 행성 라인 전부와 도시별 해석"
+        },
+        "reports": {
+          "label": "심층 보고서",
+          "desc": "출생 차트, 커리어, 다가올 해 — 문스톤 소모 없이"
         }
       },
       "plans": {
@@ -1966,7 +1990,8 @@
       },
       "badges": {
         "bestValue": "최고의 가치",
-        "foreverAccess": "한 번만 결제"
+        "foreverAccess": "한 번만 결제",
+        "save": "{{percent}}% 절약"
       },
       "cta": {
         "getLifetime": "프리미엄 평생 이용권 열기",
@@ -2071,7 +2096,39 @@
           "heading": "일에서의 궁합",
           "outcome": "두 별자리 조합을 함께 일하는 관계로 읽고, 우정 궁합도 함께 봐요. 프리미엄은 둘 다 열어요.",
           "cta": "일 궁합 열기"
+        },
+        "natalReport": {
+          "heading": "전체 출생 차트 읽기",
+          "outcome": "모든 행성이 놓인 별자리와 하우스, 오브까지 담은 모든 각도, 그리고 인쇄할 수 있는 보고서. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "내 출생 차트 보고서 열기"
+        },
+        "careerReport": {
+          "heading": "커리어 원형 보고서 읽기",
+          "outcome": "가장 잘 맞는 역할, 에너지를 소모시키는 환경, 사각지대, 그리고 첫 90일 계획을 당신의 유형에 맞춰 써요. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "내 커리어 보고서 열기"
+        },
+        "yearAhead": {
+          "heading": "다가올 해 읽기",
+          "outcome": "당신의 차트에 닿는 트랜짓을 다룬 월간 브리핑 12개, 각 트랜짓이 이어지는 날짜와 함께. 프리미엄은 문스톤 소모 없이 이것을 열어요.",
+          "cta": "다가올 해 보고서 열기"
         }
+      },
+      "sheetTitle": "프리미엄",
+      "plansLabel": "플랜",
+      "perMonthEquivalent": "월 {{price}}",
+      "continuity": {
+        "line": "지금까지의 {{items}}, 모두 그대로 남아요. 프리미엄은 그 위에 더해져요.",
+        "and": " 및 ",
+        "readings": "리딩 {{count}}회",
+        "readings_one": "리딩 {{count}}회",
+        "readings_other": "리딩 {{count}}회",
+        "entries": "저널 기록 {{count}}개",
+        "entries_one": "저널 기록 {{count}}개",
+        "entries_other": "저널 기록 {{count}}개",
+        "streak": "{{count}}일 연속 기록",
+        "streak_one": "{{count}}일 연속 기록",
+        "streak_other": "{{count}}일 연속 기록",
+        "lineOne": "지금까지의 {{items}}, 그대로 남아요. 프리미엄은 그 위에 더해져요."
       }
     },
     "gate": {},
@@ -2106,6 +2163,14 @@
         "android": "구독을 해지하거나 변경하려면 Google Play 스토어 앱이나 웹사이트를 이용하세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
         "ios": "구독을 해지하거나 변경하려면 설정을 열고 이름을 누른 뒤 구독으로 들어가세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요.",
         "web": "구독을 해지하거나 변경하려면 이 페이지에서 결제 포털을 여세요. 변경 사항이 여기에 반영되기까지 몇 분 걸릴 수 있어요."
+      },
+      "plan": "내 플랜",
+      "renewal": {
+        "label": "갱신",
+        "renews": "{{date}}에 갱신",
+        "ends": "{{date}}에 종료",
+        "trialEnds": "무료 체험 {{date}}에 종료",
+        "never": "한 번 결제, 갱신 없음"
       }
     },
     "watchAd": {
@@ -2657,7 +2722,17 @@
     "streak": {
       "dedication": "시작한 날부터 매일, 빠짐없이.",
       "ritualComplete": "의식 완료",
-      "keepFlowing": "내일 한 번 더 하면 기록이 이어집니다."
+      "keepFlowing": "내일 한 번 더 하면 기록이 이어집니다.",
+      "title": "당신의 연속 기록",
+      "days": "{{n}}일 연속",
+      "firstNight": "당신의 첫 밤이에요.",
+      "lastNights": "지난 {{total}}일 밤 중 {{done}}일 밤을 마쳤어요.",
+      "milestone": {
+        "week": "일주일, 하룻밤도 빠짐없이.",
+        "month": "한 달의 밤을 모두 채웠어요.",
+        "hundred": "백 번째 밤이에요.",
+        "year": "일 년의 밤이 모였어요."
+      }
     },
     "levelUp": {
       "title": "레벨 업.",
@@ -4819,7 +4894,69 @@
     "planetLabel": "행성",
     "transitLabel": "트랜짓",
     "houseLabel": "하우스 {{n}}",
-    "aspectLabel": "각"
+    "aspectLabel": "각",
+    "wheelAria": "출생 차트 휠",
+    "planetAria": "{{sign}} {{planet}}, {{deg}}°, {{house}}하우스",
+    "planetAriaNoHouse": "{{sign}} {{planet}}, {{deg}}°",
+    "retrograde": "역행",
+    "orb": "오브 {{deg}}°",
+    "readMore": "전체 해석 읽기",
+    "planetsInHouse": "이 하우스의 행성: {{list}}",
+    "emptyHouse": "이 하우스에는 행성이 없어요",
+    "houseThemes": {
+      "1": "자아와 정체성",
+      "2": "가치와 소유",
+      "3": "소통과 배움",
+      "4": "집과 가족",
+      "5": "창조성과 연애",
+      "6": "건강과 봉사",
+      "7": "파트너십",
+      "8": "변환과 공유 자원",
+      "9": "철학과 여행",
+      "10": "커리어와 공적 이미지",
+      "11": "공동체와 열망",
+      "12": "영성과 무의식"
+    },
+    "legendAspects": "각도",
+    "legendElements": "원소",
+    "legendModalities": "양태",
+    "orbFilterAria": "표시할 각도",
+    "aspectsAll": "전체 ({{n}})",
+    "aspectsTight": "좁은 오브 ({{n}})",
+    "noTightAspects": "좁은 오브 안에 드는 각도가 없어요. 전체로 바꾸면 모든 연결을 볼 수 있어요.",
+    "aspectGridAria": "각도 표",
+    "gridTapPrompt": "칸을 누르면 각도를 읽을 수 있어요",
+    "modalities": {
+      "Cardinal": "활동",
+      "Fixed": "고정",
+      "Mutable": "변통"
+    },
+    "nodes": {
+      "north": "북교점",
+      "south": "남교점"
+    },
+    "firdaria": {
+      "periodDetail": "{{lord}} · {{from}}–{{to}}세 · {{startYear}}–{{endYear}}",
+      "subPeriodDetail": "{{lord}} 소시기 · {{start}}부터 {{end}}까지",
+      "birth": "출생",
+      "years": "{{n}}년",
+      "insidePeriod": "지금은 {{lord}} 시기 안이에요 ({{start}}–{{end}})",
+      "tapPrompt": "시기를 누르면 해당 연도를 볼 수 있어요"
+    },
+    "flavour": {
+      "supporting": "순조로운",
+      "challenging": "도전적인",
+      "neutral": "중립"
+    },
+    "luckPillar": {
+      "detail": "{{stem}}{{branch}} · {{from}}–{{to}}세 · {{startYear}}–{{endYear}} · {{flavour}}",
+      "tapPrompt": "기둥을 누르면 해당 연도를 볼 수 있어요",
+      "startAgeEstimated": "시작 나이는 추정치예요 — 생년월일을 추가하면 절기 기준으로 정확히 계산해요."
+    },
+    "ageLabel": "{{n}}세",
+    "ziwei": {
+      "body": "신궁"
+    }
   },
   "liveRooms": {
     "title": "라이브 룸",
@@ -5089,6 +5226,14 @@
       "healing": "치유",
       "home": "집",
       "growth": "성장"
+    },
+    "paywallPreview": {
+      "city": "{{city}}에는 라인이 {{count}}개 더 지나가요",
+      "city_one": "{{city}}에는 라인이 {{count}}개 더 지나가요",
+      "city_other": "{{city}}에는 라인이 {{count}}개 더 지나가요",
+      "map": "당신의 지도를 가로지르는 라인이 {{count}}개 더 있어요",
+      "map_one": "당신의 지도를 가로지르는 라인이 {{count}}개 더 있어요",
+      "map_other": "당신의 지도를 가로지르는 라인이 {{count}}개 더 있어요"
     }
   },
   "freeCourse": {
@@ -5193,7 +5338,9 @@
       "deleteTitle": "{{name}}을(를) 삭제할까요?",
       "deleteBody": "{{name}}의 저장된 출생 정보와 차트가 삭제돼요. 되돌릴 수 없어요.",
       "keep": "{{name}} 남기기",
-      "deleteConfirm": "영구 삭제"
+      "deleteConfirm": "영구 삭제",
+      "rising": "{{sign}} 상승궁",
+      "aspects": "각도"
     },
     "compare": {
       "needOwnBirth": "차트를 비교하려면 프로필에 당신의 생년월일을 추가하세요.",
@@ -5221,7 +5368,14 @@
           "label": "프로그레스드",
           "blurb": "관계의 차트가 지금까지 어디로 흘러왔는지"
         }
-      }
+      },
+      "aspectsInChart": "이 차트의 각도",
+      "resonance": "두 차트를 잇는 {{n}}개의 연결로 본 전체 공명",
+      "love": "사랑",
+      "friendship": "우정",
+      "work": "일",
+      "strongest": "가장 강한 연결",
+      "crossRow": "당신의 {{mine}}이 {{name}}의 {{theirs}}에 {{type}}"
     }
   },
   "mirror": {
@@ -5267,7 +5421,34 @@
     "needBirth": "이 차트를 세우려면 프로필에 생년월일을 추가하세요.",
     "addBirth": "내 출생 정보 추가하기",
     "castFailed": "이 차트를 세우지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
-    "retry": "차트 다시 세우기"
+    "retry": "차트 다시 세우기",
+    "linked": {
+      "ziwei": "중국의 제왕성 체계",
+      "natalReport": "출생 차트 보고서에서",
+      "yearAhead": "다가올 해 보고서에서",
+      "people": "사람들에서 비교하기"
+    },
+    "moment": {
+      "lunarReturn": "리턴 시점: {{when}}",
+      "skyNow": "세운 시각: {{when}}",
+      "progressed": "진행 시점: {{when}}"
+    },
+    "firdaria": {
+      "current": "지금은 {{major}} 시기예요",
+      "currentSub": "지금은 {{major}} 시기 · {{sub}} 소시기예요",
+      "dayBirth": "주간 출생",
+      "nightBirth": "야간 출생",
+      "flavoredBy": "{{sub}}의 색이 더해져요:"
+    },
+    "solarArc": "솔라 아크: 출생에서 {{deg}}°",
+    "hitRow": "{{transit}}이 출생 차트의 {{natal}}에 {{type}}",
+    "sections": {
+      "chapter": "지금의 장",
+      "balance": "균형",
+      "hits": "출생 차트에 닿는 각도",
+      "aspects": "이 차트 안의 각도",
+      "placements": "배치"
+    }
   },
   "foolsJourney": {
     "signInHint": "로그인하면 당신의 바보의 여정을 볼 수 있어요.",
@@ -5375,5 +5556,9 @@
   },
   "spreads": {
     "pageTitle": "타로 스프레드"
+  },
+  "share": {
+    "youAnd": "당신과 {{name}}",
+    "yourCompatibility": "당신의 궁합"
   }
 }

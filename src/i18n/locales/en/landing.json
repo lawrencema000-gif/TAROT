@@ -1,9 +1,11 @@
 {
   "nav": {
+    "home": "Arcana home",
     "cardMeanings": "Card meanings",
     "features": "Features",
     "zodiac": "Zodiac",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "cta": "Start for free"
   },
   "hero": {
     "badge": "Personalized tarot & astrology",
@@ -13,6 +15,9 @@
     "cta": "Create my free account",
     "note": "Free to start · No credit card required"
   },
+  "play": {
+    "alt": "Get it on Google Play"
+  },
   "features": {
     "tag": "Features",
     "heading": "A complete spiritual toolkit",
@@ -20,7 +25,7 @@
     "items": {
       "tarot": {
         "title": "Tarot readings",
-        "desc": "Full 78-card deck with 6 spread types. Celtic Cross, Relationship, Career, Shadow Work — choose your focus and pull your cards."
+        "desc": "The full 78-card deck and forty spreads, from a one-card daily to the Celtic Cross, relationship, career and shadow work. Choose your focus and pull your cards."
       },
       "horoscope": {
         "title": "Daily horoscope",
@@ -28,11 +33,11 @@
       },
       "journal": {
         "title": "Reflective journal",
-        "desc": "Track mood with 10 emoji moods, tag entries, and link readings to journal entries over time."
+        "desc": "Track your mood, tag entries, and link readings to journal entries over time."
       },
       "quizzes": {
         "title": "Personality quizzes",
-        "desc": "MBTI, Enneagram, Big Five, Love Language, Attachment Style — six assessments that shape your experience."
+        "desc": "MBTI, Enneagram, Big Five, love language, attachment style and more — ten assessments that shape your readings."
       },
       "streaks": {
         "title": "Streaks & XP",
@@ -54,7 +59,88 @@
     "heading": "Written in the stars",
     "sub": "Personalized horoscopes for all 12 signs, updated daily with cosmic precision.",
     "theZodiac": "The zodiac",
-    "hoverToExplore": "Hover to explore"
+    "tapToExplore": "Tap a sign to explore",
+    "wheelLabel": "Zodiac wheel",
+    "elements": {
+      "fire": "Fire",
+      "earth": "Earth",
+      "air": "Air",
+      "water": "Water"
+    },
+    "signs": {
+      "aries": {
+        "name": "Aries",
+        "dates": "Mar 21 – Apr 19",
+        "trait": "Bold and ambitious",
+        "desc": "The fearless leader of the zodiac. Driven by passion and a desire to be first in everything they do."
+      },
+      "taurus": {
+        "name": "Taurus",
+        "dates": "Apr 20 – May 20",
+        "trait": "Reliable and patient",
+        "desc": "Grounded and sensual. Taurus finds comfort in stability, beauty, and the finer things in life."
+      },
+      "gemini": {
+        "name": "Gemini",
+        "dates": "May 21 – Jun 20",
+        "trait": "Curious and adaptive",
+        "desc": "The social butterfly with a brilliant mind. Gemini thrives on communication and new experiences."
+      },
+      "cancer": {
+        "name": "Cancer",
+        "dates": "Jun 21 – Jul 22",
+        "trait": "Intuitive and nurturing",
+        "desc": "Deeply emotional and protective. Cancer creates safe havens and leads with the heart."
+      },
+      "leo": {
+        "name": "Leo",
+        "dates": "Jul 23 – Aug 22",
+        "trait": "Creative and confident",
+        "desc": "The natural-born star. Leo radiates warmth, generosity, and an irresistible magnetic energy."
+      },
+      "virgo": {
+        "name": "Virgo",
+        "dates": "Aug 23 – Sep 22",
+        "trait": "Analytical and devoted",
+        "desc": "The perfectionist healer. Virgo sees the details others miss and serves with quiet precision."
+      },
+      "libra": {
+        "name": "Libra",
+        "dates": "Sep 23 – Oct 22",
+        "trait": "Harmonious and fair",
+        "desc": "The seeker of balance. Libra brings beauty, diplomacy, and grace to every relationship."
+      },
+      "scorpio": {
+        "name": "Scorpio",
+        "dates": "Oct 23 – Nov 21",
+        "trait": "Intense and magnetic",
+        "desc": "The transformer of the zodiac. Scorpio sees beneath the surface and embraces the shadows."
+      },
+      "sagittarius": {
+        "name": "Sagittarius",
+        "dates": "Nov 22 – Dec 21",
+        "trait": "Adventurous and free",
+        "desc": "The eternal explorer. Sagittarius chases truth, wisdom, and the horizon with boundless optimism."
+      },
+      "capricorn": {
+        "name": "Capricorn",
+        "dates": "Dec 22 – Jan 19",
+        "trait": "Disciplined and wise",
+        "desc": "The mountain climber. Capricorn builds empires through patience, ambition, and quiet determination."
+      },
+      "aquarius": {
+        "name": "Aquarius",
+        "dates": "Jan 20 – Feb 18",
+        "trait": "Visionary and original",
+        "desc": "The revolutionary thinker. Aquarius dreams of a better future and dares to be different."
+      },
+      "pisces": {
+        "name": "Pisces",
+        "dates": "Feb 19 – Mar 20",
+        "trait": "Empathic and mystical",
+        "desc": "The dreamer of the zodiac. Pisces flows between worlds, channeling intuition and boundless compassion."
+      }
+    }
   },
   "ritual": {
     "tag": "Your daily ritual",
@@ -81,7 +167,7 @@
     "items": {
       "free": {
         "q": "Is Arcana free to use?",
-        "a": "Yes. Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, all 6 spread types, birth charts, and removes ads."
+        "a": "Yes. Arcana is free with 3 daily tarot readings, daily horoscopes, a full journal, and all personality quizzes. Premium unlocks unlimited readings, every spread, birth charts, and removes ads."
       },
       "accuracy": {
         "q": "How accurate are the tarot readings?",
@@ -89,7 +175,7 @@
       },
       "quizzes": {
         "q": "What personality quizzes are available?",
-        "a": "Six assessments: MBTI (16 types), Enneagram (9 types with wings), Big Five personality traits, Love Language, Attachment Style, and a daily Mood Check."
+        "a": "Ten assessments: MBTI (16 types, in a full and a quick version), Enneagram (9 types with wings), Big Five personality traits, love language, attachment style, shadow archetype, element affinity, tarot court match, and a daily mood check."
       },
       "privacy": {
         "q": "Is my journal private?",
@@ -97,7 +183,7 @@
       },
       "premium": {
         "q": "Is there a premium version?",
-        "a": "Yes. Arcana is completely free to use. When you’re ready, premium unlocks unlimited readings, all spread types, birth chart analysis, and removes ads. You can explore everything before deciding."
+        "a": "Yes. Arcana is completely free to use. When you’re ready, premium unlocks unlimited readings, every spread, birth chart analysis, and removes ads. You can explore everything before deciding."
       },
       "web": {
         "q": "Does it work on the web?",
@@ -111,6 +197,7 @@
     "cta": "Start for free"
   },
   "footer": {
+    "tagline": "A daily ritual practice for tarot, astrology, and reflection.",
     "privacyPolicy": "Privacy Policy",
     "blog": "Blog",
     "contact": "Contact",
@@ -118,12 +205,25 @@
     "disclaimer": "For entertainment and self-reflection purposes only.",
     "copyright": "© 2026 Arcana. All rights reserved.",
     "shop": "Shop",
+    "groups": {
+      "learn": "Learn",
+      "app": "App",
+      "company": "Company"
+    },
     "links": {
       "cardMeanings": "Tarot card meanings",
       "spreads": "Tarot spreads",
+      "astrology": "Astrology",
+      "numerology": "Numerology",
+      "crystals": "Crystals",
+      "glossary": "Glossary",
+      "blog": "Blog",
+      "signUp": "Sign up, free to start",
+      "signIn": "Sign in",
       "spreadBuilder": "Custom spread builder",
       "privacy": "Privacy policy",
       "contact": "Contact and support",
+      "shopPartner": "Shop (partner)",
       "googlePlay": "Get it on Google Play"
     }
   },
@@ -136,34 +236,31 @@
     "sub": "Ask a question, then draw a card. No signup.",
     "drawBtn": "Draw your card",
     "pickCalling": "Pick the card that calls to you.",
+    "cardLabel": "Card {{n}}",
     "reversed": "Reversed",
     "upright": "Upright",
-    "fullCta": "Get your full reading →",
+    "fullCta": "Get my full reading",
     "drawAnother": "Draw another card"
   },
   "trust": {
-    "stats": [
-      {
-        "n": 78,
-        "l": "Tarot cards",
-        "s": "Full traditional deck"
+    "stats": {
+      "cards": {
+        "label": "Tarot cards",
+        "sub": "The full traditional deck"
       },
-      {
-        "n": 6,
-        "l": "Spread types",
-        "s": "Daily to Celtic Cross"
+      "spreads": {
+        "label": "Spreads",
+        "sub": "One-card daily to Celtic Cross"
       },
-      {
-        "n": 5,
-        "l": "Personality tests",
-        "s": "MBTI, Enneagram & more"
+      "quizzes": {
+        "label": "Quizzes",
+        "sub": "MBTI, Enneagram and more"
       },
-      {
-        "n": 12,
-        "l": "Zodiac signs",
-        "s": "Updated daily"
+      "signs": {
+        "label": "Zodiac signs",
+        "sub": "Updated daily"
       }
-    ]
+    }
   },
   "freeCourse": {
     "badge": "Free 3-part email course",
@@ -184,6 +281,7 @@
       }
     },
     "emailPlaceholder": "your@email.com",
+    "emailLabel": "Email address",
     "cta": "Send me Lesson 1",
     "sending": "Sending…",
     "success": "You’re in. Check your inbox.",

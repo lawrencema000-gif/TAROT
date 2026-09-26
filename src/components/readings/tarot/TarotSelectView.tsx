@@ -1,21 +1,36 @@
 /**
- * TarotSection card selection grid — extracted from TarotSection.tsx as
- * part of the `tarot-section-split` rollout.
+ * Drawing the cards.
  *
- * User taps N cards from a shuffled 78-card grid (N varies per spread).
- * Selected cards show their pick order; the CTA stays disabled until N
- * are chosen.
+ * Selection used to be a scrolling grid of 78 identical tiles — three
+ * columns, twenty-six rows, four thousand pixels of spreadsheet — where a
+ * picked card turned into an empty square with a number on it, and nothing
+ * said which position the next pick would fill.
+ *
+ * Now the deck is spread across the table: one overlapping row you scroll
+ * along, the way a hand runs across a fanned deck. Above it wait the
+ * spread's positions, named — Past, Present, Future — as empty slots. Draw
+ * a card and it leaves the deck (a gap stays where it was) and lands in the
+ * next open slot; tap a slot to put its card back. The reader always sees
+ * what they have drawn and what remains to draw.
+ *
+ * Every card is the Arcana back at 2:3. The strip is 78 buttons and 78
+ * images of one SVG, which the browser decodes once; nothing animates while
+ * the reader is scrolling.
  */
 import { ChevronLeft, Eye } from 'lucide-react';
 import { Button } from '../../ui';
 import { useT } from '../../../i18n/useT';
+import { tap } from '../../../utils/haptics';
 
 interface TarotSelectViewProps {
   deckCards: number[];
   selectedIndices: number[];
   needsMore: number;
+  /** One label per spread position, in fill order. */
+  positionLabels: string[];
   cardBackUrl: string | null | undefined;
   onBack: () => void;
+  /** Toggles: a card already drawn goes back to the deck. */
   onCardSelect: (cardId: number) => void;
   onReveal: () => void;
 }
@@ -24,119 +39,123 @@ export function TarotSelectView({
   deckCards,
   selectedIndices,
   needsMore,
+  positionLabels,
   cardBackUrl,
   onBack,
   onCardSelect,
   onReveal,
 }: TarotSelectViewProps) {
   const { t } = useT('app');
+  const backSrc = cardBackUrl || '/card-backs/default.svg';
+  const slots = positionLabels.length > 0 ? positionLabels : selectedIndices.map((_, i) => t('readings.selectView.cardN', { n: i + 1, defaultValue: `Card ${i + 1}` }));
+
+  const pick = (cardId: number) => {
+    tap();
+    onCardSelect(cardId);
+  };
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col space-y-5">
       <button
         onClick={onBack}
-        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
+        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors self-start"
       >
         <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}
       </button>
 
-      <div className="text-center space-y-2 sticky top-0 bg-mystic-950 z-10 pb-3">
-        <h2 className="font-display text-xl text-mystic-100">
+      <div className="text-center space-y-1">
+        <h2 className="heading-display-lg text-mystic-100" aria-live="polite">
           {needsMore > 0
             ? t('readings.selectView.chooseMore', { count: needsMore })
             : t('readings.selectView.readyReveal')}
         </h2>
-        <p className="text-mystic-400 text-sm">{t('readings.selectView.trustIntuition')}</p>
+        <p className="text-ui text-mystic-400">{t('readings.selectView.trustIntuition')}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto -mx-4 px-4 pb-40">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-          {deckCards.map((cardId, index) => {
-            const isSelected = selectedIndices.includes(cardId);
-            const selectionOrder = selectedIndices.indexOf(cardId) + 1;
+      {/* The spread's positions, waiting. */}
+      <div
+        className="flex justify-center gap-3 flex-wrap"
+        role="list"
+        aria-label={t('readings.selectView.positions', { defaultValue: 'Your spread' })}
+      >
+        {slots.map((label, i) => {
+          const cardId = selectedIndices[i];
+          const filled = cardId !== undefined;
+          return (
+            <div key={i} className="flex flex-col items-center gap-1.5 w-16" role="listitem">
+              {filled ? (
+                <button
+                  type="button"
+                  onClick={() => pick(cardId)}
+                  aria-label={t('readings.selectView.returnCard', { position: label, defaultValue: `Return the card in ${label} to the deck` })}
+                  className="relative w-16 aspect-[2/3] rounded-inset border border-gold overflow-hidden bg-mystic-850 transition-transform duration-fast motion-safe:active:scale-95 select-none touch-manipulation [-webkit-tap-highlight-color:transparent]"
+                >
+                  <img src={backSrc} alt="" decoding="async" className="w-full h-full object-cover pointer-events-none" draggable={false} />
+                  <span className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-gold text-mystic-950 text-caption font-semibold flex items-center justify-center" aria-hidden>
+                    {i + 1}
+                  </span>
+                </button>
+              ) : (
+                <div
+                  className={`w-16 aspect-[2/3] rounded-inset border border-dashed ${i === selectedIndices.length ? 'border-gold/60' : 'border-mystic-600'}`}
+                  aria-hidden
+                />
+              )}
+              <span className={`text-caption text-center leading-tight ${filled ? 'text-mystic-200' : 'text-mystic-500'}`}>{label}</span>
+            </div>
+          );
+        })}
+      </div>
 
+      {/* The deck, spread across the table. */}
+      <div
+        className="-mx-4 px-4 overflow-x-auto scrollbar-hide pb-2"
+        role="group"
+        aria-label={t('readings.selectView.deck', { defaultValue: 'The deck' })}
+      >
+        <div className="flex items-end pt-4 pl-1" style={{ width: 'max-content' }}>
+          {deckCards.map((cardId, index) => {
+            const drawn = selectedIndices.includes(cardId);
             return (
               <button
                 key={cardId}
-                onClick={() => onCardSelect(cardId)}
-                className="relative group animate-fade-in"
+                type="button"
+                onClick={() => pick(cardId)}
+                disabled={drawn}
+                aria-hidden={drawn || undefined}
+                tabIndex={drawn ? -1 : undefined}
+                aria-label={t('readings.selectView.cardOf', { n: index + 1, total: deckCards.length, defaultValue: `Card ${index + 1} of ${deckCards.length}` })}
+                className={`relative shrink-0 w-16 aspect-[2/3] rounded-inset border overflow-hidden bg-mystic-850 select-none touch-manipulation [-webkit-tap-highlight-color:transparent]
+                  transition-[transform,opacity,border-color] duration-fast ease-out
+                  ${index > 0 ? '-ml-9' : ''}
+                  ${drawn ? 'opacity-0 pointer-events-none border-transparent' : 'border-gold/25 [@media(hover:hover)]:hover:-translate-y-2 [@media(hover:hover)]:hover:border-gold/60 motion-safe:active:scale-95'}
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:z-10`}
                 style={{
-                  animationDuration: '260ms',
-                  animationDelay: `${Math.min(index, 20) * 16}ms`,
-                  animationFillMode: 'both',
+                  // `backwards`, not `both`: a held end frame would outrank the
+                  // opacity-0 / hover / press classes for the life of the card.
+                  animation: index < 24 ? `arcana-spread 260ms ease-out ${index * 14}ms backwards` : undefined,
                 }}
               >
-                <div
-                  className={`
-                    aspect-[2/3] rounded-lg border-2 overflow-hidden
-                    transition-[transform,border-color,background-color] duration-base ease-out
-                    ${isSelected
-                      ? 'border-gold bg-gold/10 scale-[1.06] -translate-y-1'
-                      : 'border-mystic-600 bg-gradient-to-br from-mystic-800 to-mystic-900 hover:border-gold/50 hover:scale-105'
-                    }
-                    flex items-center justify-center
-                    active:scale-95 relative
-                  `}
-                >
-                  {!isSelected && (
-                    <img
-                      src={cardBackUrl || '/card-backs/default.svg'}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-                      draggable={false}
-                    />
-                  )}
-                  <div className="relative z-10">
-                    {/*
-                      Always mounted, scaled to nothing when unpicked. A
-                      badge that mounts on selection can only appear; one
-                      that scales can also *leave*, so un-picking a card
-                      reads as an undo rather than as a disappearance.
-                      The back-out curve gives the pick a bit of weight.
-                    */}
-                    <div
-                      className={`w-7 h-7 rounded-full bg-gold flex items-center justify-center text-mystic-950 font-bold text-sm transition-transform duration-base ${
-                        isSelected ? 'scale-100' : 'scale-0'
-                      }`}
-                      style={{
-                        transitionTimingFunction: isSelected
-                          ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-                          : 'cubic-bezier(0.4, 0, 1, 1)',
-                      }}
-                      aria-hidden={!isSelected}
-                    >
-                      {selectionOrder > 0 ? selectionOrder : ''}
-                    </div>
-                  </div>
-                </div>
+                <img src={backSrc} alt="" decoding="async" loading={index < 12 ? 'eager' : 'lazy'} className="w-full h-full object-cover pointer-events-none" draggable={false} />
               </button>
             );
           })}
         </div>
       </div>
+      <style>{`@keyframes arcana-spread { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
-      {/*
-        CTA sits above the BottomNav. `bottom-20` alone wasn't enough on
-        devices with a gesture home-indicator — the inset-bottom safe area
-        would push the nav up and clip the button. Anchor via calc so the
-        CTA always clears nav + safe area.
-      */}
       <div
         className="fixed left-0 right-0 px-4 bg-gradient-to-t from-mystic-950 via-mystic-950 to-transparent pt-4 pb-4"
         style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <Button
-          variant="gold"
-          fullWidth
-          disabled={needsMore > 0}
-          onClick={onReveal}
-          size="lg"
-        >
+        <Button variant="gold" fullWidth disabled={needsMore > 0} onClick={onReveal} size="lg">
           {needsMore > 0 ? t('readings.selectView.selectMore', { count: needsMore }) : t('readings.selectView.revealCards')}
-          <Eye className="w-4 h-4" />
+          <Eye className="w-4 h-4" aria-hidden />
         </Button>
       </div>
+      {/* room for the fixed CTA */}
+      <div className="h-24" aria-hidden />
     </div>
   );
 }

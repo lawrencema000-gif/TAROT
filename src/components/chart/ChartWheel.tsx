@@ -1,708 +1,690 @@
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useRef, useEffect, useCallback, type KeyboardEvent, FocusEvent } from 'react';
 import {
-  HOUSE_THEMES,
-  type NatalChart,
+  ZODIAC_SIGNS,
+  SIGN_ELEMENTS,
+  type WheelChart,
+  type PlanetPlacement,
   type Planet,
-  type ZodiacSign,
-  type AspectType,
+  type Aspect,
 } from '../../types/astrology';
-import {
-  PlanetGlyph,
-  ZodiacGlyph,
-  PlanetGlyphPaths,
-  ZodiacGlyphPaths,
-} from '../icons';
+import { PlanetGlyphPaths, ZodiacGlyphPaths } from '../icons';
 import { useT } from '../../i18n/useT';
+import { localizePlanetName, localizeSignName } from '../../i18n/localizeNames';
+import { CHART_TOKENS, ELEMENT_COLOR, ELEMENT_INK, ASPECT_STYLE, ASPECT_ORDER, TIGHT_ORB, withAlpha } from '../../lib/chart';
+import { prefersReducedMotion } from '../../utils/motion';
+import {
+  lonOf, lonToSvgAngle, polar, sectorPath, spreadAngles, angleDelta, drawDashArray, norm, ROMAN,
+} from './wheelGeometry';
+import { WheelDetailPanel, type WheelSelection, type OverlayPlanet } from './WheelDetailPanel';
+import { WheelLegend, type AspectFilter } from './WheelLegend';
+
+export type { OverlayPlanet, AspectFilter };
 
 /**
- * Interactive natal chart wheel — astrolabe edition.
+ * The one chart wheel.
  *
- * Redesign 2026-04-25 replaces the previous flat-radar aesthetic with
- * a full illuminated-manuscript treatment:
+ * Phase 5c folds three wheels into this one and fixes what the audit found
+ * in all of them:
  *
- *   1. Double gold bead border (outer + inner rings with 36 beads +
- *      four cardinal diamond markers) — reads as an engraved frame,
- *      not a radar dish.
- *   2. Degree tick markings — 1°, 5°, and 30° ticks at different
- *      lengths/opacities give the wheel a measured astrolabe feel.
- *   3. Element-tinted sign sectors — Fire=coral, Earth=teal,
- *      Air=cosmic-blue, Water=cosmic-violet at ~8% opacity, so the
- *      signs read as a colored cycle rather than a uniform grey.
- *   4. Cardinal axis (ASC / DESC / MC / IC) emphasized with thicker
- *      gold beams, four-point star caps, and serif-italic labels.
- *   5. Planet glyphs rendered as engraved coins (dark center + bead
- *      ring + inner hairline + SVG path glyph, no Unicode).
- *   6. Aspect lines typed by aspect kind — conjunction solid gold,
- *      trine solid teal, sextile blue-dashed, square coral-dashed,
- *      opposition violet-dotted.
- *   7. Compass-rose center (12 rays + central dot) replaces the
- *      empty middle; house numbers are Roman numerals in serif,
- *      with bolder weight on the four angular houses.
- *   Bonus: parchment noise clipped to the wheel interior, outer
- *   glow ring, and a scale-in mount animation.
+ *   - Geometry. The Ascendant is at 9 o'clock, houses run counter-clockwise
+ *     from it, the MC sits where the chart says. Sign sectors are drawn as
+ *     start + 30° sweep, so the sign on the 0/360 seam is a 30° band with
+ *     its glyph in it (it used to be a 330° band with the glyph on the far
+ *     side). A placement with no longitude is placed from sign + degree.
+ *   - Legibility at 390px. No text under 9 units in the 360 viewBox; degree
+ *     labels live in the detail panel. Coins spread on collision around the
+ *     whole circle, wrap included, and a stellium fans out about its own
+ *     centre. ℞ shows when the data carries it.
+ *   - Interaction. Planets are buttons in a labelled group: Enter/Space
+ *     select, arrows cycle, a focus ring shows where you are. Invisible
+ *     44px hit circles on coins and wide transparent strokes on aspect
+ *     lines. Selecting a planet lifts its aspects and its house cusp and
+ *     dims the rest; selecting a line lifts both planets. The panel is
+ *     aria-live. The legend lists only the aspect types drawn, and the orb
+ *     filter that decides that.
+ *   - Colour. Every hex comes from lib/chart's token map. No noise filter,
+ *     no glow gradient, no infinite rotation; elevation is fill.
+ *   - Motion. One entrance: aspect lines draw in over the deliberate
+ *     duration (stroke-dashoffset, their dash pattern intact) and the coins
+ *     fade in. Reduced motion skips straight to the end state.
  *
- * Pure client-side SVG. No bundle impact beyond the component itself.
- * Tap a planet to surface details below the wheel. Tap a house sector
- * for the house theme. Tap an aspect line to see the pair + orb.
+ * `chart`, `overlay` and `overlayLabel` keep their names and meaning for the
+ * natal report; everything else is optional.
  */
 
-export interface OverlayPlanet {
-  planet: Planet;
-  sign: ZodiacSign;
-  degree: number;
-  longitude?: number;
-}
-
-interface ChartWheelProps {
-  chart: NatalChart;
-  /** Optional transit (or progressed) planets drawn as an outer ring. */
+export interface ChartWheelProps {
+  chart: WheelChart;
+  /** Transit, progressed, return or partner planets drawn as an outer ring. */
   overlay?: OverlayPlanet[];
-  /** Label for the overlay (e.g. "Today" or "2026-05-01"). */
+  /** What the overlay is (e.g. "Today" or a date). */
   overlayLabel?: string;
+  /** Which aspects to draw at first. The viewer can switch in the legend. */
+  defaultAspectFilter?: AspectFilter;
+  /** Offered in the panel as "Read the full interpretation" when a host has a richer view. */
+  onOpenPlanet?: (placement: PlanetPlacement) => void;
+  onOpenAspect?: (aspect: Aspect) => void;
+  className?: string;
+  /**
+   * A glimpse, not a control: the paywall preview shows the user's own chart
+   * behind a mask. Coins lose their role, tab stop and handlers, and the
+   * panel and legend are not rendered, so nothing focusable hides inside an
+   * aria-hidden box.
+   */
+  readOnly?: boolean;
 }
 
-// ─── Aspect styling ────────────────────────────────────────────────
-// Each aspect type gets its own color + stroke treatment so you can
-// read the chart's relationships at a glance without reading labels.
-const ASPECT_STYLE: Record<
-  AspectType,
-  { color: string; dasharray?: string; width: number; opacity: number }
-> = {
-  conjunction: { color: '#d4af37', width: 1.4, opacity: 0.75 },             // solid gold
-  opposition:  { color: '#8e6eb5', width: 1.3, opacity: 0.7, dasharray: '1 4' },   // violet dotted
-  trine:       { color: '#4ecdc4', width: 1.2, opacity: 0.7 },             // solid teal
-  square:      { color: '#e07a5f', width: 1.3, opacity: 0.7, dasharray: '4 3' },   // coral dashed
-  sextile:     { color: '#4a7eb8', width: 1.0, opacity: 0.6, dasharray: '2 3' },   // blue short-dashed
-};
-
-// ─── Sign → element map for tinted sector fills ───────────────────
-const SIGNS: ZodiacSign[] = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
-];
-
-const SIGN_ELEMENT_FILL: Record<ZodiacSign, string> = {
-  Aries:       'rgba(224, 122, 95, 0.10)', // Fire
-  Leo:         'rgba(224, 122, 95, 0.10)',
-  Sagittarius: 'rgba(224, 122, 95, 0.10)',
-  Taurus:      'rgba(78, 205, 196, 0.10)', // Earth
-  Virgo:       'rgba(78, 205, 196, 0.10)',
-  Capricorn:   'rgba(78, 205, 196, 0.10)',
-  Gemini:      'rgba(74, 126, 184, 0.10)', // Air
-  Libra:       'rgba(74, 126, 184, 0.10)',
-  Aquarius:    'rgba(74, 126, 184, 0.10)',
-  Cancer:      'rgba(142, 110, 181, 0.10)', // Water
-  Scorpio:     'rgba(142, 110, 181, 0.10)',
-  Pisces:      'rgba(142, 110, 181, 0.10)',
-};
-
-// Glyph color keyed off element for a subtle color-coded ring.
-const SIGN_GLYPH_COLOR: Record<ZodiacSign, string> = {
-  Aries:       '#e89a87', Leo: '#e89a87', Sagittarius: '#e89a87',
-  Taurus:      '#7ee8e1', Virgo: '#7ee8e1', Capricorn: '#7ee8e1',
-  Gemini:      '#8fb9e6', Libra: '#8fb9e6', Aquarius: '#8fb9e6',
-  Cancer:      '#b19ed1', Scorpio: '#b19ed1', Pisces: '#b19ed1',
-};
-
-// ─── Selection state ──────────────────────────────────────────────
 type Selection =
-  | { kind: 'planet'; planet: Planet; sign: ZodiacSign; degree: number; house: number | null }
-  | { kind: 'transit'; planet: Planet; sign: ZodiacSign; degree: number }
+  | { kind: 'planet'; planet: Planet }
+  | { kind: 'transit'; planet: Planet }
   | { kind: 'house'; index: number }
-  | { kind: 'aspect'; planet1: Planet; planet2: Planet; type: AspectType; orb: number }
+  | { kind: 'aspect'; planet1: Planet; planet2: Planet }
   | null;
 
-// ─── Coordinate helpers ───────────────────────────────────────────
-// Convert ecliptic longitude to SVG angle. Chart convention: Ascendant
-// on the left (9 o'clock = 180° in SVG angle). Longitudes increase
-// counterclockwise in traditional charts — but SVG angles increase
-// clockwise. So we flip.
-function lonToSvgAngle(lon: number, ascLon: number | null): number {
-  const asc = ascLon ?? 0;
-  const rel = ((lon - asc) % 360 + 360) % 360;   // degrees CCW from ASC
-  return 180 - rel;                              // SVG degrees (0 = right, +CW)
+// ─── Geometry (360 × 360 viewBox) ──────────────────────────────────
+const CX = 180;
+const CY = 180;
+const R = {
+  label: 182,      // ASC / DESC / MC / IC labels, outside the frame (the viewBox has a 14-unit margin)
+  frameOuter: 168,
+  frameInner: 160, // beads sit between the two frame rings
+  signOuter: 156,
+  signInner: 126,  // 30-unit sign ring; glyphs are 18
+  overlay: 110,    // overlay coin centres
+  houseNum: 96,
+  planet: 76,      // natal coin centres
+  aspect: 57,      // aspect line endpoints
+  roseOut: 30,
+  roseIn: 6,
+};
+const COIN_R = 11;                       // 22 units ≈ 22px at 390
+const HIT_R = 22;                        // 44px-equivalent hit circle
+const OVERLAY_R = 8;
+const MIN_SEP = ((COIN_R * 2 + 2) / R.planet) * (180 / Math.PI);         // ≈ 18°
+const MIN_SEP_OVERLAY = ((OVERLAY_R * 2 + 2) / R.overlay) * (180 / Math.PI); // ≈ 9°
+
+const GOLD = CHART_TOKENS.gold;
+const FONT_DISPLAY = 'font-display';
+
+function samePair(a: { planet1: Planet; planet2: Planet }, p1: Planet, p2: Planet): boolean {
+  return (a.planet1 === p1 && a.planet2 === p2) || (a.planet1 === p2 && a.planet2 === p1);
 }
 
-function polar(cx: number, cy: number, r: number, angleDeg: number): { x: number; y: number } {
-  const rad = (angleDeg * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+/** The drawn focus ring is for keyboard users; a tap should not leave a dashed halo behind. */
+function isKeyboardFocus(el: Element): boolean {
+  try {
+    return typeof el.matches === 'function' ? el.matches(':focus-visible') : true;
+  } catch {
+    return true;
+  }
 }
 
-function sectorPath(cx: number, cy: number, rInner: number, rOuter: number, startDeg: number, endDeg: number): string {
-  const s1 = polar(cx, cy, rOuter, startDeg);
-  const s2 = polar(cx, cy, rOuter, endDeg);
-  const i1 = polar(cx, cy, rInner, endDeg);
-  const i2 = polar(cx, cy, rInner, startDeg);
-  const large = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
-  return [
-    `M ${s1.x.toFixed(2)} ${s1.y.toFixed(2)}`,
-    `A ${rOuter} ${rOuter} 0 ${large} 1 ${s2.x.toFixed(2)} ${s2.y.toFixed(2)}`,
-    `L ${i1.x.toFixed(2)} ${i1.y.toFixed(2)}`,
-    `A ${rInner} ${rInner} 0 ${large} 0 ${i2.x.toFixed(2)} ${i2.y.toFixed(2)}`,
-    'Z',
-  ].join(' ');
+/** The angles to label: the horizon always, the meridian only when the chart knows its MC. */
+function axesFor(asc: number, mcLon: number | null): [string, number][] {
+  const axes: [string, number][] = [['ASC', asc], ['DESC', asc + 180]];
+  if (mcLon != null) axes.push(['MC', mcLon], ['IC', mcLon + 180]);
+  return axes;
 }
 
-function shouldShowAspect(type: AspectType, orb: number): boolean {
-  const tight: Record<AspectType, number> = {
-    conjunction: 3, opposition: 3, trine: 2.5, square: 2.5, sextile: 1.5,
-  };
-  return orb <= tight[type];
-}
-
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-
-// ─── Component ────────────────────────────────────────────────────
-export function ChartWheel({ chart, overlay, overlayLabel }: ChartWheelProps) {
+// ─── Component ─────────────────────────────────────────────────────
+export function ChartWheel({
+  chart,
+  overlay,
+  overlayLabel,
+  defaultAspectFilter = 'all',
+  onOpenPlanet,
+  onOpenAspect,
+  className = '',
+  readOnly = false,
+}: ChartWheelProps) {
   const { t } = useT('app');
   const [selection, setSelection] = useState<Selection>(null);
+  const [focused, setFocused] = useState<Planet | null>(null);
+  const [filter, setFilter] = useState<AspectFilter>(defaultAspectFilter);
+  const coinRefs = useRef(new Map<Planet, SVGGElement | null>());
 
-  // Geometry — a 360x360 viewBox with the wheel centered.
-  const cx = 180, cy = 180;
-  const rOuterBead   = 172;   // outer bead border
-  const rOuterInner  = 162;   // inner bead border
-  const rSign        = 148;   // sign ring outer edge
-  const rSignInner   = 120;   // sign ring inner edge
-  const rTransit     = 108;   // transit glyph ring
-  const rHouseNum    = 92;    // where Roman numerals sit
-  const rPlanet      = 76;    // natal planet coin centers
-  const rAspectEdge  = 58;    // aspect line endpoints
-  const rRosetteOut  = 34;    // compass rose outer radius
-  const rRosetteIn   = 6;     // compass rose inner dot radius
+  // One entrance, then never again. Reduced motion starts at the end state.
+  const [drawn, setDrawn] = useState(() => prefersReducedMotion());
+  useEffect(() => {
+    if (drawn) return;
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setDrawn(true));
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [drawn]);
 
-  const ascLon = chart.ascendant;
+  const asc = chart.ascendant;
 
-  // Spread overlay planets within ~6° so glyphs don't collide.
+  // Natal planets: true angle from the data, drawn angle after collision spread.
+  const placed = useMemo(() => {
+    const lons = chart.planets.map(lonOf);
+    const trueAngles = lons.map((l) => lonToSvgAngle(l, asc));
+    const drawnAngles = spreadAngles(trueAngles, MIN_SEP);
+    return chart.planets
+      .map((p, i) => ({ placement: p, lon: lons[i], trueAngle: trueAngles[i], angle: drawnAngles[i] }))
+      .sort((a, b) => a.lon - b.lon);
+  }, [chart.planets, asc]);
+
+  const byPlanet = useMemo(() => new Map(placed.map((p) => [p.placement.planet, p])), [placed]);
+
   const placedOverlay = useMemo(() => {
-    if (!overlay) return [];
-    const list = overlay
-      .filter((o) => typeof o.longitude === 'number')
-      .map((o) => ({ ...o, svgAngle: lonToSvgAngle(o.longitude as number, ascLon) }))
-      .sort((a, b) => a.svgAngle - b.svgAngle);
-    const spread = 6;
-    for (let i = 1; i < list.length; i++) {
-      const gap = list[i].svgAngle - list[i - 1].svgAngle;
-      if (Math.abs(gap) < spread) list[i].svgAngle = list[i - 1].svgAngle + spread;
-    }
-    return list;
-  }, [overlay, ascLon]);
+    if (!overlay || overlay.length === 0) return [];
+    const angles = spreadAngles(overlay.map((o) => lonToSvgAngle(lonOf(o), asc)), MIN_SEP_OVERLAY);
+    return overlay.map((o, i) => ({ placement: o, angle: angles[i] }));
+  }, [overlay, asc]);
 
-  // Spread natal planets similarly.
-  const placedPlanets = useMemo(() => {
-    const byAngle = chart.planets
-      .map((p) => ({ ...p, svgAngle: lonToSvgAngle(p.longitude ?? 0, ascLon) }))
-      .sort((a, b) => a.svgAngle - b.svgAngle);
-    const spread = 5;
-    for (let i = 1; i < byAngle.length; i++) {
-      const gap = byAngle[i].svgAngle - byAngle[i - 1].svgAngle;
-      if (Math.abs(gap) < spread) {
-        byAngle[i].svgAngle = byAngle[i - 1].svgAngle + spread;
+  // Houses: the chart's twelve cusps, else equal houses from a known ASC, else none.
+  const cusps = useMemo<number[] | null>(() => {
+    if (chart.houses.length === 12) return chart.houses;
+    if (asc == null) return null;
+    return Array.from({ length: 12 }, (_, i) => norm(asc + i * 30));
+  }, [chart.houses, asc]);
+
+  const mcLon = chart.midheaven ?? (chart.houses.length === 12 ? chart.houses[9] : null);
+
+  // Aspects under the current filter, with their line geometry.
+  const tightCount = useMemo(() => chart.aspects.filter((a) => a.orb <= TIGHT_ORB[a.type]).length, [chart.aspects]);
+  const lines = useMemo(() => {
+    const out: { aspect: Aspect; from: { x: number; y: number }; to: { x: number; y: number }; len: number; key: string }[] = [];
+    for (const a of chart.aspects) {
+      if (filter === 'tight' && a.orb > TIGHT_ORB[a.type]) continue;
+      const p1 = byPlanet.get(a.planet1);
+      const p2 = byPlanet.get(a.planet2);
+      if (!p1 || !p2) continue;
+      const from = polar(CX, CY, R.aspect, p1.angle);
+      const to = polar(CX, CY, R.aspect, p2.angle);
+      out.push({ aspect: a, from, to, len: Math.hypot(to.x - from.x, to.y - from.y), key: `${a.planet1}-${a.planet2}-${a.type}` });
+    }
+    return out;
+  }, [chart.aspects, byPlanet, filter]);
+
+  const presentTypes = useMemo(
+    () => ASPECT_ORDER.filter((type) => lines.some((l) => l.aspect.type === type)),
+    [lines],
+  );
+
+  // Planets linked to the selection: the selected planet plus its aspect
+  // partners, both ends of a selected line, or the tenants of a house.
+  const linked = useMemo<Set<Planet> | null>(() => {
+    if (!selection || selection.kind === 'transit') return null;
+    if (selection.kind === 'planet') {
+      const s = new Set<Planet>([selection.planet]);
+      for (const l of lines) {
+        if (l.aspect.planet1 === selection.planet) s.add(l.aspect.planet2);
+        else if (l.aspect.planet2 === selection.planet) s.add(l.aspect.planet1);
       }
+      return s;
     }
-    return byAngle;
-  }, [chart.planets, ascLon]);
+    if (selection.kind === 'aspect') return new Set<Planet>([selection.planet1, selection.planet2]);
+    return new Set<Planet>(placed.filter((p) => p.placement.house === selection.index).map((p) => p.placement.planet));
+  }, [selection, lines, placed]);
 
-  // House cusps if present, else equal houses from ASC.
-  const houseCuspsLon: number[] = useMemo(() => {
-    if (chart.houses && chart.houses.length === 12) return chart.houses;
-    const asc = ascLon ?? 0;
-    return Array.from({ length: 12 }, (_, i) => (asc + i * 30) % 360);
-  }, [chart.houses, ascLon]);
+  const highlightedCusp: number | null = (() => {
+    if (!selection) return null;
+    if (selection.kind === 'house') return selection.index - 1;
+    if (selection.kind === 'planet') {
+      const h = byPlanet.get(selection.planet)?.placement.house;
+      return h ? h - 1 : null;
+    }
+    return null;
+  })();
+
+  const lineState = (a: Aspect): 'hi' | 'dim' | 'base' => {
+    if (!selection || selection.kind === 'transit') return 'base';
+    if (selection.kind === 'planet') return a.planet1 === selection.planet || a.planet2 === selection.planet ? 'hi' : 'dim';
+    if (selection.kind === 'aspect') return samePair(a, selection.planet1, selection.planet2) ? 'hi' : 'dim';
+    return linked && (linked.has(a.planet1) || linked.has(a.planet2)) ? 'hi' : 'dim';
+  };
+
+  const toggle = useCallback((next: Exclude<Selection, null>) => {
+    setSelection((prev) => {
+      if (!prev || prev.kind !== next.kind) return next;
+      if (prev.kind === 'planet' && next.kind === 'planet') return prev.planet === next.planet ? null : next;
+      if (prev.kind === 'transit' && next.kind === 'transit') return prev.planet === next.planet ? null : next;
+      if (prev.kind === 'house' && next.kind === 'house') return prev.index === next.index ? null : next;
+      if (prev.kind === 'aspect' && next.kind === 'aspect') return samePair(prev, next.planet1, next.planet2) ? null : next;
+      return next;
+    });
+  }, []);
+
+  const focusPlanetAt = (index: number) => {
+    const n = placed.length;
+    if (n === 0) return;
+    const target = placed[((index % n) + n) % n];
+    coinRefs.current.get(target.placement.planet)?.focus();
+  };
+
+  const onCoinKey = (e: KeyboardEvent<SVGGElement>, index: number, planet: Planet) => {
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        toggle({ kind: 'planet', planet });
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        e.preventDefault();
+        focusPlanetAt(index + 1);
+        break;
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        e.preventDefault();
+        focusPlanetAt(index - 1);
+        break;
+      case 'Escape':
+        setSelection(null);
+        break;
+      default:
+    }
+  };
+
+  // The panel reads the selection back into data.
+  const panelSelection: WheelSelection = (() => {
+    if (!selection) return null;
+    if (selection.kind === 'planet') {
+      const p = byPlanet.get(selection.planet);
+      return p ? { kind: 'planet', placement: p.placement } : null;
+    }
+    if (selection.kind === 'transit') {
+      const o = placedOverlay.find((x) => x.placement.planet === selection.planet);
+      return o ? { kind: 'transit', placement: o.placement, label: overlayLabel } : null;
+    }
+    if (selection.kind === 'house') {
+      return { kind: 'house', index: selection.index, planets: placed.filter((p) => p.placement.house === selection.index).map((p) => p.placement) };
+    }
+    const a = chart.aspects.find((x) => samePair(x, selection.planet1, selection.planet2));
+    return a ? { kind: 'aspect', aspect: a } : null;
+  })();
+
+  const hasRetrograde = chart.planets.some((p) => p.retrograde);
+  const entranceFade = { opacity: drawn ? 1 : 0, transition: 'opacity var(--dur-slow, 300ms) var(--ease-out, ease-out)' } as const;
 
   return (
-    <div className="space-y-3">
-      <motion.div
-        className="relative mx-auto"
-        style={{ maxWidth: 380 }}
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <svg viewBox="0 0 360 360" className="w-full h-auto" role="img" aria-label="Natal chart wheel">
-          <defs>
-            {/* Parchment fill clipped to the wheel interior */}
-            <clipPath id="natalInterior">
-              <circle cx={cx} cy={cy} r={rOuterInner - 1} />
-            </clipPath>
-            <filter id="parchmentNoiseNatal">
-              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
-              <feColorMatrix values="0 0 0 0 0.83
-                                     0 0 0 0 0.69
-                                     0 0 0 0 0.22
-                                     0 0 0 0.035 0" />
-            </filter>
-            {/* Outer glow gradient */}
-            <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="85%" stopColor="rgba(212,175,55,0)" />
-              <stop offset="95%" stopColor="rgba(212,175,55,0.25)" />
-              <stop offset="100%" stopColor="rgba(212,175,55,0)" />
-            </radialGradient>
-            {/* Aspect stroke gradients — fade at the middle so lines feel drawn rather than scanned */}
-            {(Object.keys(ASPECT_STYLE) as AspectType[]).map((t) => {
-              const c = ASPECT_STYLE[t].color;
+    <div className={`space-y-3 ${className}`.trim()}>
+      <div className="relative mx-auto w-full" style={{ maxWidth: 400 }}>
+        <svg viewBox="-14 -14 388 388" className="w-full h-auto block select-none" xmlns="http://www.w3.org/2000/svg">
+          {/* ── Ground: flat fill, the wheel's own surface ── */}
+          <circle cx={CX} cy={CY} r={R.frameInner - 1} fill={CHART_TOKENS.sunken} aria-hidden />
+
+          {/* ── Frame: two gold hairlines with beads and cardinal diamonds ── */}
+          <g aria-hidden>
+            <circle cx={CX} cy={CY} r={R.frameOuter} fill="none" stroke={withAlpha(GOLD, 0.6)} strokeWidth={1} />
+            <circle cx={CX} cy={CY} r={R.frameInner} fill="none" stroke={withAlpha(GOLD, 0.5)} strokeWidth={0.8} />
+            {Array.from({ length: 36 }).map((_, i) => {
+              const angle = i * 10;
+              if (angle % 90 === 0) return null;
+              const p = polar(CX, CY, (R.frameOuter + R.frameInner) / 2, angle);
+              return <circle key={`bead-${i}`} cx={p.x} cy={p.y} r={1.1} fill={GOLD} opacity={0.85} />;
+            })}
+            {[0, 90, 180, 270].map((angle) => {
+              const p = polar(CX, CY, (R.frameOuter + R.frameInner) / 2, angle);
               return (
-                <linearGradient id={`aspect-${t}`} key={t} x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={c} stopOpacity="0.95" />
-                  <stop offset="50%" stopColor={c} stopOpacity="0.55" />
-                  <stop offset="100%" stopColor={c} stopOpacity="0.95" />
-                </linearGradient>
+                <rect
+                  key={`diamond-${angle}`}
+                  x={-2.5} y={-2.5} width={5} height={5}
+                  transform={`translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) rotate(45)`}
+                  fill={GOLD}
+                  stroke={withAlpha(CHART_TOKENS.goldLight, 0.9)}
+                  strokeWidth={0.4}
+                />
               );
             })}
-          </defs>
-
-          {/* Outer vignette glow */}
-          <circle cx={cx} cy={cy} r={rOuterBead + 6} fill="url(#outerGlow)" />
-
-          {/* Parchment interior */}
-          <g clipPath="url(#natalInterior)">
-            <rect x="0" y="0" width="360" height="360" fill="#0d0d1a" />
-            <rect x="0" y="0" width="360" height="360" filter="url(#parchmentNoiseNatal)" opacity="0.55" />
           </g>
 
-          {/* 1. Double bead border — outer + inner rings with beads + cardinal diamonds */}
-          <circle cx={cx} cy={cy} r={rOuterBead} fill="none" stroke="rgba(212,175,55,0.65)" strokeWidth={1} />
-          <circle cx={cx} cy={cy} r={rOuterInner} fill="none" stroke="rgba(212,175,55,0.55)" strokeWidth={0.8} />
-          {/* 36 beads between the two rings (every 10°), skipping cardinal slots */}
-          {Array.from({ length: 36 }).map((_, i) => {
-            const angle = i * 10;
-            if (angle % 90 === 0) return null; // cardinals get diamond markers
-            const p = polar(cx, cy, (rOuterBead + rOuterInner) / 2, angle);
-            return <circle key={`bead-${i}`} cx={p.x} cy={p.y} r={1.1} fill="#d4af37" opacity={0.85} />;
-          })}
-          {/* 4 cardinal diamond markers (true SVG directions — top/right/bottom/left) */}
-          {[0, 90, 180, 270].map((angle) => {
-            const p = polar(cx, cy, (rOuterBead + rOuterInner) / 2, angle);
-            return (
-              <g key={`diamond-${angle}`} transform={`translate(${p.x} ${p.y}) rotate(45)`}>
-                <rect x={-2.5} y={-2.5} width={5} height={5} fill="#d4af37" />
-                <rect x={-2.5} y={-2.5} width={5} height={5} fill="none" stroke="rgba(244,214,104,0.9)" strokeWidth={0.4} />
-              </g>
-            );
-          })}
-
-          {/* 3. Sign sector fills, tinted by element */}
-          {SIGNS.map((sign, i) => {
-            const startLon = i * 30;
-            const endLon = (i + 1) * 30;
-            const startAngle = lonToSvgAngle(startLon, ascLon);
-            const endAngle = lonToSvgAngle(endLon, ascLon);
-            const [a, b] = startAngle > endAngle ? [endAngle, startAngle] : [startAngle, endAngle];
-            const midAngle = (a + b) / 2;
-            const pos = polar(cx, cy, (rSign + rSignInner) / 2, midAngle);
-            return (
-              <g key={`sign-${sign}`}>
-                <path
-                  d={sectorPath(cx, cy, rSignInner, rSign, a, b)}
-                  fill={SIGN_ELEMENT_FILL[sign]}
-                  stroke="rgba(212,175,55,0.18)"
-                  strokeWidth={0.5}
-                />
-                {/* Sign glyph drawn via shared SVG paths, colored by element */}
-                <g
-                  transform={`translate(${pos.x - 9} ${pos.y - 9}) scale(${18 / 32})`}
-                  stroke={SIGN_GLYPH_COLOR[sign]}
-                  strokeWidth={2.4}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ pointerEvents: 'none' }}
-                >
-                  <ZodiacGlyphPaths sign={sign} />
+          {/* ── Sign ring: 12 × 30° sectors, start + sweep, tinted by element ── */}
+          <g aria-hidden>
+            {ZODIAC_SIGNS.map((sign, i) => {
+              const start = lonToSvgAngle(i * 30, asc);
+              const mid = polar(CX, CY, (R.signOuter + R.signInner) / 2, start - 15);
+              const element = SIGN_ELEMENTS[sign];
+              return (
+                <g key={`sign-${sign}`}>
+                  <path
+                    d={sectorPath(CX, CY, R.signInner, R.signOuter, start, -30)}
+                    fill={withAlpha(ELEMENT_COLOR[element], 0.12)}
+                    stroke={withAlpha(GOLD, 0.2)}
+                    strokeWidth={0.5}
+                  />
+                  <g
+                    transform={`translate(${(mid.x - 9).toFixed(2)} ${(mid.y - 9).toFixed(2)}) scale(${(18 / 32).toFixed(4)})`}
+                    stroke={ELEMENT_INK[element]}
+                    strokeWidth={2.4}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <ZodiacGlyphPaths sign={sign} />
+                  </g>
                 </g>
-              </g>
-            );
-          })}
+              );
+            })}
+            {/* Degree ticks every 5°, longer and gold on sign boundaries */}
+            {Array.from({ length: 72 }).map((_, i) => {
+              const deg = i * 5;
+              const boundary = deg % 30 === 0;
+              const angle = lonToSvgAngle(deg, asc);
+              const p1 = polar(CX, CY, R.signInner, angle);
+              const p2 = polar(CX, CY, R.signInner - (boundary ? 8 : 4), angle);
+              return (
+                <line
+                  key={`tick-${deg}`}
+                  x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+                  stroke={boundary ? GOLD : CHART_TOKENS.ink100}
+                  strokeOpacity={boundary ? 0.9 : 0.35}
+                  strokeWidth={boundary ? 1 : 0.5}
+                />
+              );
+            })}
+          </g>
 
-          {/* 2. Degree tick markings — inside the sign ring */}
-          {Array.from({ length: 360 }).map((_, deg) => {
-            const angle = lonToSvgAngle(deg, ascLon);
-            const isSignBoundary = deg % 30 === 0;
-            const is5 = deg % 5 === 0;
-            if (!is5 && !isSignBoundary) {
-              // 1° micro-tick (only draw every other to save nodes — still dense)
-              if (deg % 2 !== 0) return null;
-            }
-            const rInside = isSignBoundary ? rSignInner - 8 : is5 ? rSignInner - 5 : rSignInner - 2;
-            const p1 = polar(cx, cy, rSignInner, angle);
-            const p2 = polar(cx, cy, rInside, angle);
-            const opacity = isSignBoundary ? 0.9 : is5 ? 0.5 : 0.2;
-            const width = isSignBoundary ? 1 : is5 ? 0.6 : 0.3;
-            const color = isSignBoundary ? '#d4af37' : '#ffffff';
-            return (
-              <line
-                key={`tick-${deg}`}
-                x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-                stroke={color}
-                strokeOpacity={opacity}
-                strokeWidth={width}
-              />
-            );
-          })}
-          {/* Terminal dots on sign-boundary ticks (every 30°) */}
-          {Array.from({ length: 12 }).map((_, i) => {
-            const angle = lonToSvgAngle(i * 30, ascLon);
-            const p = polar(cx, cy, rSignInner - 9, angle);
-            return <circle key={`sign-dot-${i}`} cx={p.x} cy={p.y} r={1} fill="#d4af37" opacity={0.9} />;
-          })}
+          {/* ── Houses: spokes, a highlighted sector, numerals ── */}
+          {cusps && (
+            <g>
+              {highlightedCusp !== null && (
+                <path
+                  aria-hidden
+                  d={sectorPath(
+                    CX, CY, R.aspect, R.signInner,
+                    lonToSvgAngle(cusps[highlightedCusp], asc),
+                    -norm(cusps[(highlightedCusp + 1) % 12] - cusps[highlightedCusp]),
+                  )}
+                  fill={withAlpha(GOLD, 0.07)}
+                  style={{ transition: 'opacity var(--dur-base, 220ms) var(--ease-standard, ease)' }}
+                />
+              )}
+              {cusps.map((cusp, i) => {
+                const angle = lonToSvgAngle(cusp, asc);
+                const a = polar(CX, CY, R.signInner, angle);
+                const b = polar(CX, CY, R.roseOut, angle);
+                const angular = i % 3 === 0;
+                const hi = highlightedCusp === i;
+                return (
+                  <line
+                    key={`spoke-${i}`}
+                    aria-hidden
+                    x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                    stroke={hi ? CHART_TOKENS.goldLight : angular ? withAlpha(GOLD, 0.55) : withAlpha(CHART_TOKENS.ink100, 0.14)}
+                    strokeWidth={hi ? 1.6 : angular ? 1.1 : 0.5}
+                  />
+                );
+              })}
+              {cusps.map((cusp, i) => {
+                const span = norm(cusps[(i + 1) % 12] - cusp) || 30;
+                const angle = lonToSvgAngle(cusp + span / 2, asc);
+                const pos = polar(CX, CY, R.houseNum, angle);
+                const angular = i % 3 === 0;
+                const hi = highlightedCusp === i;
+                const houseIndex = i + 1;
+                return (
+                  <g
+                    key={`house-${i}`}
+                    onClick={() => toggle({ kind: 'house', index: houseIndex })}
+                    style={{ cursor: 'pointer' }}
+                    aria-hidden
+                  >
+                    <circle cx={pos.x} cy={pos.y} r={16} fill="transparent" />
+                    <text
+                      x={pos.x}
+                      y={pos.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={angular ? 11 : 9}
+                      fontStyle="italic"
+                      fontWeight={angular || hi ? 600 : 400}
+                      fill={hi ? CHART_TOKENS.goldLight : angular ? withAlpha(GOLD, 0.9) : withAlpha(CHART_TOKENS.ink100, 0.5)}
+                      className={FONT_DISPLAY}
+                      style={{ letterSpacing: '0.05em', pointerEvents: 'none' }}
+                    >
+                      {ROMAN[i]}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          )}
 
-          {/* 7. House spokes — thin faint lines except angular houses which are gold */}
-          {houseCuspsLon.map((cuspLon, i) => {
-            const angle = lonToSvgAngle(cuspLon, ascLon);
-            const a = polar(cx, cy, rSignInner, angle);
-            const b = polar(cx, cy, rRosetteOut, angle);
-            const isAngular = i === 0 || i === 3 || i === 6 || i === 9;
-            return (
-              <line
-                key={`spoke-${i}`}
-                x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                stroke={isAngular ? 'rgba(212,175,55,0.55)' : 'rgba(255,255,255,0.12)'}
-                strokeWidth={isAngular ? 1.1 : 0.5}
-              />
-            );
-          })}
-
-          {/* 4. Cardinal axis — thicker gold beams for ASC-DESC and MC-IC with star caps */}
-          {ascLon !== null && (() => {
-            const asc = lonToSvgAngle(ascLon, ascLon);        // 180 (9 o'clock)
-            const desc = lonToSvgAngle(ascLon + 180, ascLon); // 0   (3 o'clock)
-            const mcLon = (chart.houses && chart.houses[9] != null) ? chart.houses[9] : (ascLon + 270) % 360;
-            const mc = lonToSvgAngle(mcLon, ascLon);
-            const ic = lonToSvgAngle(mcLon + 180, ascLon);
-            const axes = [
-              { label: 'ASC', angle: asc, labelAngle: asc },
-              { label: 'DESC', angle: desc, labelAngle: desc },
-              { label: 'MC', angle: mc, labelAngle: mc },
-              { label: 'IC', angle: ic, labelAngle: ic },
-            ];
-            return (
-              <g>
-                {/* two beams: ASC-DESC and MC-IC */}
-                {[[asc, desc], [mc, ic]].map(([angle1, angle2], idx) => {
-                  const p1 = polar(cx, cy, rSignInner, angle1);
-                  const p2 = polar(cx, cy, rSignInner, angle2);
-                  return (
-                    <line
-                      key={`axis-${idx}`}
-                      x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-                      stroke="rgba(212,175,55,0.4)"
-                      strokeWidth={0.8}
-                      strokeDasharray="2 4"
+          {/* ── Axes: ASC–DESC always when the ASC is known, MC–IC when the chart says where ── */}
+          {asc != null && (
+            <g aria-hidden>
+              {axesFor(asc, mcLon).map(([label, lon]) => {
+                const angle = lonToSvgAngle(lon, asc);
+                const inner = polar(CX, CY, R.roseOut, angle);
+                const outer = polar(CX, CY, R.signInner, angle);
+                const star = polar(CX, CY, R.signInner + 3, angle);
+                const text = polar(CX, CY, R.label, angle);
+                return (
+                  <g key={label}>
+                    <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke={withAlpha(GOLD, 0.45)} strokeWidth={0.9} strokeDasharray="2 4" />
+                    <path
+                      d="M 0 -4.5 L 1.1 -1.1 L 4.5 0 L 1.1 1.1 L 0 4.5 L -1.1 1.1 L -4.5 0 L -1.1 -1.1 Z"
+                      transform={`translate(${star.x.toFixed(2)} ${star.y.toFixed(2)})`}
+                      fill={GOLD}
+                      stroke={withAlpha(CHART_TOKENS.goldLight, 0.9)}
+                      strokeWidth={0.4}
                     />
-                  );
-                })}
-                {/* 4-point star caps + labels at each angle */}
-                {axes.map(({ label, angle, labelAngle }) => {
-                  const starPos = polar(cx, cy, rSignInner + 4, angle);
-                  const labelPos = polar(cx, cy, rOuterBead + 9, labelAngle);
-                  return (
-                    <g key={label}>
-                      {/* Four-point star */}
-                      <g transform={`translate(${starPos.x} ${starPos.y})`}>
-                        <path
-                          d="M 0 -4.5 L 1.1 -1.1 L 4.5 0 L 1.1 1.1 L 0 4.5 L -1.1 1.1 L -4.5 0 L -1.1 -1.1 Z"
-                          fill="#d4af37"
-                          stroke="rgba(244,214,104,0.9)"
-                          strokeWidth={0.4}
-                        />
-                      </g>
-                      {/* Label outside the outer bead ring */}
-                      <text
-                        x={labelPos.x}
-                        y={labelPos.y + 3}
-                        textAnchor="middle"
-                        fontSize={9}
-                        fontStyle="italic"
-                        fontWeight={500}
-                        fill="rgba(212,175,55,0.9)"
-                        fontFamily="Cormorant Garamond, Georgia, serif"
-                        style={{ letterSpacing: '0.15em', userSelect: 'none' }}
-                      >
-                        {label}
-                      </text>
-                    </g>
-                  );
-                })}
-              </g>
-            );
-          })()}
+                    <text
+                      x={text.x}
+                      y={text.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={9}
+                      fontStyle="italic"
+                      fontWeight={500}
+                      fill={withAlpha(GOLD, 0.95)}
+                      className={FONT_DISPLAY}
+                      style={{ letterSpacing: '0.12em' }}
+                    >
+                      {label}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          )}
 
-          {/* 7. Roman-numeral house numbers at midpoints of each sector */}
-          {houseCuspsLon.map((cuspLon, i) => {
-            const nextLon = houseCuspsLon[(i + 1) % 12];
-            const midLon = (cuspLon + (nextLon >= cuspLon ? nextLon : nextLon + 360)) / 2 % 360;
-            const midAngle = lonToSvgAngle(midLon, ascLon);
-            const numPos = polar(cx, cy, rHouseNum, midAngle);
-            const isAngular = i === 0 || i === 3 || i === 6 || i === 9;
-            return (
-              <text
-                key={`hnum-${i}`}
-                x={numPos.x}
-                y={numPos.y + 3.5}
-                textAnchor="middle"
-                fontSize={isAngular ? 11 : 9}
-                fill={isAngular ? 'rgba(212,175,55,0.9)' : 'rgba(255,255,255,0.45)'}
-                fontWeight={isAngular ? 600 : 400}
-                fontStyle="italic"
-                fontFamily="Cormorant Garamond, Georgia, serif"
-                style={{ cursor: 'pointer', userSelect: 'none', letterSpacing: '0.05em' }}
-                onClick={() => setSelection({ kind: 'house', index: i + 1 })}
-              >
-                {ROMAN[i]}
-              </text>
-            );
-          })}
-
-          {/* 6. Aspect lines — typed strokes using per-aspect gradient + dashed styles */}
-          {chart.aspects.filter((a) => shouldShowAspect(a.type, a.orb)).map((a, i) => {
-            const p1 = placedPlanets.find((p) => p.planet === a.planet1);
-            const p2 = placedPlanets.find((p) => p.planet === a.planet2);
-            if (!p1 || !p2) return null;
-            const from = polar(cx, cy, rAspectEdge, p1.svgAngle);
-            const to = polar(cx, cy, rAspectEdge, p2.svgAngle);
-            const style = ASPECT_STYLE[a.type];
-            return (
-              <line
-                key={`asp-${a.planet1}-${a.planet2}-${a.type}-${i}`}
-                x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                stroke={`url(#aspect-${a.type})`}
-                strokeWidth={style.width}
-                strokeOpacity={style.opacity}
-                strokeDasharray={style.dasharray}
-                strokeLinecap="round"
-                onClick={() => setSelection({ kind: 'aspect', planet1: a.planet1, planet2: a.planet2, type: a.type, orb: a.orb })}
-                style={{ cursor: 'pointer' }}
-              />
-            );
-          })}
-
-          {/* 7. Compass-rose center: 12 rays + center dot */}
-          <g style={{ pointerEvents: 'none' }}>
+          {/* ── Centre rose ── */}
+          <g aria-hidden style={{ pointerEvents: 'none' }}>
             {Array.from({ length: 12 }).map((_, i) => {
               const angle = i * 30;
               const long = i % 3 === 0;
-              const p1 = polar(cx, cy, rRosetteIn + 3, angle);
-              const p2 = polar(cx, cy, long ? rRosetteOut : rRosetteOut - 8, angle);
-              return (
-                <line
-                  key={`ray-${i}`}
-                  x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-                  stroke="rgba(212,175,55,0.35)"
-                  strokeWidth={long ? 0.8 : 0.4}
-                  strokeLinecap="round"
-                />
-              );
+              const p1 = polar(CX, CY, R.roseIn + 3, angle);
+              const p2 = polar(CX, CY, long ? R.roseOut : R.roseOut - 8, angle);
+              return <line key={`ray-${i}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={withAlpha(GOLD, 0.35)} strokeWidth={long ? 0.8 : 0.4} strokeLinecap="round" />;
             })}
-            {/* Outer rosette ring */}
-            <circle cx={cx} cy={cy} r={rRosetteOut - 3} fill="none" stroke="rgba(212,175,55,0.18)" strokeWidth={0.5} />
-            {/* Inner ring */}
-            <circle cx={cx} cy={cy} r={rRosetteIn + 3} fill="none" stroke="rgba(212,175,55,0.35)" strokeWidth={0.6} />
-            {/* Center dot with subtle glow */}
-            <circle cx={cx} cy={cy} r={rRosetteIn - 1} fill="#d4af37" />
-            <circle cx={cx} cy={cy} r={rRosetteIn + 1.5} fill="none" stroke="rgba(244,214,104,0.4)" strokeWidth={0.5} />
+            <circle cx={CX} cy={CY} r={R.roseOut - 3} fill="none" stroke={withAlpha(GOLD, 0.18)} strokeWidth={0.5} />
+            <circle cx={CX} cy={CY} r={R.roseIn + 3} fill="none" stroke={withAlpha(GOLD, 0.35)} strokeWidth={0.6} />
+            <circle cx={CX} cy={CY} r={R.roseIn - 1} fill={GOLD} />
           </g>
 
-          {/* 5. Natal planet coins */}
-          {placedPlanets.map((p) => {
-            const pos = polar(cx, cy, rPlanet, p.svgAngle);
-            const isSelected = selection?.kind === 'planet' && selection.planet === p.planet;
-            return (
-              <g
-                key={`planet-${p.planet}`}
-                onClick={() =>
-                  setSelection({ kind: 'planet', planet: p.planet, sign: p.sign, degree: p.degree, house: p.house })
-                }
-                style={{ cursor: 'pointer' }}
-              >
-                {/* Outer bead ring */}
-                <circle cx={pos.x} cy={pos.y} r={12.2} fill="none" stroke="rgba(212,175,55,0.35)" strokeWidth={0.6} />
-                {/* Coin face */}
-                <circle
-                  cx={pos.x} cy={pos.y} r={10.5}
-                  fill={isSelected ? '#d4af37' : '#0a0a10'}
-                  stroke={isSelected ? '#fff' : '#d4af37'}
-                  strokeWidth={isSelected ? 1.3 : 0.9}
-                />
-                {/* Inner hairline */}
-                <circle cx={pos.x} cy={pos.y} r={8.8} fill="none" stroke={isSelected ? 'rgba(0,0,0,0.4)' : 'rgba(212,175,55,0.3)'} strokeWidth={0.4} />
-                {/* Planet SVG glyph */}
+          {/* ── Aspect lines: typed strokes, drawn in once, linked to the selection ── */}
+          <g aria-hidden>
+            {lines.map(({ aspect, from, to, len, key }) => {
+              const s = ASPECT_STYLE[aspect.type];
+              const state = lineState(aspect);
+              const tightness = 1 - Math.min(1, aspect.orb / 8);
+              const baseOpacity = 0.4 + 0.45 * tightness;
+              const opacity = state === 'hi' ? 0.98 : state === 'dim' ? 0.1 : baseOpacity;
+              const width = state === 'hi' ? s.width + 0.9 : s.width;
+              return (
                 <g
-                  transform={`translate(${pos.x - 7.5} ${pos.y - 7.5}) scale(${15 / 32})`}
-                  stroke={isSelected ? '#0a0a10' : '#f4d668'}
-                  strokeWidth={2.4}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ pointerEvents: 'none' }}
+                  key={key}
+                  onClick={() => toggle({ kind: 'aspect', planet1: aspect.planet1, planet2: aspect.planet2 })}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <PlanetGlyphPaths planet={p.planet} />
+                  <line
+                    x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+                    stroke={s.color}
+                    strokeWidth={width}
+                    strokeOpacity={opacity}
+                    strokeLinecap="round"
+                    strokeDasharray={drawDashArray(len, s.dash)}
+                    style={{
+                      strokeDashoffset: drawn ? 0 : len,
+                      transition: 'stroke-dashoffset var(--dur-deliberate, 500ms) var(--ease-out, ease-out), stroke-opacity var(--dur-base, 220ms) var(--ease-standard, ease)',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  {/* wide transparent hit stroke */}
+                  <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="transparent" strokeWidth={16} strokeLinecap="round" style={{ pointerEvents: 'stroke' }} />
                 </g>
-                {/* Degree label below coin */}
-                <text
-                  x={pos.x} y={pos.y + 21}
-                  textAnchor="middle"
-                  fontSize={7}
-                  fill="rgba(255,255,255,0.5)"
-                  fontFamily="Cormorant Garamond, Georgia, serif"
-                  style={{ userSelect: 'none', pointerEvents: 'none' }}
-                >
-                  {p.degree.toFixed(0)}°
-                </text>
-              </g>
-            );
-          })}
+              );
+            })}
+          </g>
 
-          {/* 5. Transit/overlay planet coins (if any) — smaller + cooler palette */}
-          {placedOverlay.map((p) => {
-            const pos = polar(cx, cy, rTransit, p.svgAngle);
-            const isSelected = selection?.kind === 'transit' && selection.planet === p.planet;
-            return (
-              <g
-                key={`transit-${p.planet}`}
-                onClick={() => setSelection({ kind: 'transit', planet: p.planet, sign: p.sign, degree: p.degree })}
-                style={{ cursor: 'pointer' }}
-              >
-                <circle cx={pos.x} cy={pos.y} r={9.5} fill="none" stroke="rgba(96,165,250,0.35)" strokeWidth={0.5} strokeDasharray="1.5 1.5" />
-                <circle
-                  cx={pos.x} cy={pos.y} r={8}
-                  fill={isSelected ? '#60a5fa' : '#0a0a10'}
-                  stroke={isSelected ? '#fff' : '#60a5fa'}
-                  strokeWidth={isSelected ? 1.3 : 0.8}
-                />
+          {/* ── Natal planets: coins in a labelled group of buttons ── */}
+          <g role={readOnly ? undefined : 'group'} aria-label={readOnly ? undefined : t('chartWheel.wheelAria', { defaultValue: 'Natal chart wheel' })} style={entranceFade}>
+            {placed.map(({ placement: p, angle, trueAngle }, index) => {
+              const pos = polar(CX, CY, R.planet, angle);
+              const isSelected = selection?.kind === 'planet' && selection.planet === p.planet;
+              const isLinked = !isSelected && !!linked?.has(p.planet);
+              const isDim = !!linked && !linked.has(p.planet);
+              const isFocused = focused === p.planet;
+              const displaced = Math.abs(angleDelta(trueAngle, angle)) > 1.5;
+              const planetName = localizePlanetName(p.planet);
+              const signName = localizeSignName(p.sign);
+              const deg = p.degree.toFixed(0);
+              const label =
+                (p.house
+                  ? t('chartWheel.planetAria', { defaultValue: '{{planet}} in {{sign}}, {{deg}}°, house {{house}}', planet: planetName, sign: signName, deg, house: p.house })
+                  : t('chartWheel.planetAriaNoHouse', { defaultValue: '{{planet}} in {{sign}}, {{deg}}°', planet: planetName, sign: signName, deg })) +
+                (p.retrograde ? `, ${t('chartWheel.retrograde', { defaultValue: 'Retrograde' })}` : '');
+              const faceFill = isSelected ? GOLD : CHART_TOKENS.canvas;
+              const faceStroke = isSelected ? CHART_TOKENS.goldLight : isLinked ? CHART_TOKENS.goldLight : withAlpha(GOLD, 0.9);
+              const glyphStroke = isSelected ? CHART_TOKENS.canvas : isLinked ? CHART_TOKENS.goldLight : CHART_TOKENS.goldLight;
+              return (
                 <g
-                  transform={`translate(${pos.x - 6} ${pos.y - 6}) scale(${12 / 32})`}
-                  stroke={isSelected ? '#0a0a10' : '#a3cfff'}
-                  strokeWidth={2.4}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ pointerEvents: 'none' }}
+                  key={`planet-${p.planet}`}
+                  ref={(el) => { coinRefs.current.set(p.planet, el); }}
+                  {...(readOnly
+                    ? { 'aria-hidden': true }
+                    : {
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-label': label,
+                        'aria-pressed': isSelected,
+                        onClick: () => toggle({ kind: 'planet', planet: p.planet }),
+                        onKeyDown: (e: KeyboardEvent<SVGGElement>) => onCoinKey(e, index, p.planet),
+                        onFocus: (e: FocusEvent<SVGGElement>) => { if (isKeyboardFocus(e.currentTarget)) setFocused(p.planet); },
+                        onBlur: () => setFocused((f) => (f === p.planet ? null : f)),
+                      })}
+                  style={{
+                    cursor: readOnly ? 'default' : 'pointer',
+                    outline: 'none',
+                    opacity: isDim ? 0.4 : 1,
+                    transition: 'opacity var(--dur-base, 220ms) var(--ease-standard, ease)',
+                  }}
                 >
-                  <PlanetGlyphPaths planet={p.planet} />
+                  {/* pointer to the true longitude when the coin had to move */}
+                  {displaced && (() => {
+                    const a = polar(CX, CY, R.planet + COIN_R + 1, angle);
+                    const b = polar(CX, CY, R.signInner - 10, trueAngle);
+                    return (
+                      <>
+                        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={CHART_TOKENS.ink100} strokeOpacity={0.22} strokeWidth={0.5} />
+                        <circle cx={b.x} cy={b.y} r={1} fill={CHART_TOKENS.ink100} opacity={0.5} />
+                      </>
+                    );
+                  })()}
+                  {/* hit target */}
+                  <circle cx={pos.x} cy={pos.y} r={HIT_R} fill="transparent" />
+                  {/* focus ring: drawn, so it shows in every browser */}
+                  {isFocused && (
+                    <circle cx={pos.x} cy={pos.y} r={COIN_R + 4} fill="none" stroke={CHART_TOKENS.goldLight} strokeWidth={1.2} strokeDasharray="2 2" />
+                  )}
+                  {/* bead ring + coin face + inner hairline */}
+                  <circle cx={pos.x} cy={pos.y} r={COIN_R + 1.4} fill="none" stroke={withAlpha(GOLD, isSelected || isLinked ? 0.6 : 0.35)} strokeWidth={0.6} />
+                  <circle cx={pos.x} cy={pos.y} r={COIN_R} fill={faceFill} stroke={faceStroke} strokeWidth={isSelected || isLinked ? 1.4 : 0.9} />
+                  <circle cx={pos.x} cy={pos.y} r={COIN_R - 1.8} fill="none" stroke={isSelected ? withAlpha(CHART_TOKENS.canvas, 0.35) : withAlpha(GOLD, 0.3)} strokeWidth={0.4} />
+                  <g
+                    transform={`translate(${(pos.x - 7.5).toFixed(2)} ${(pos.y - 7.5).toFixed(2)}) scale(${(15 / 32).toFixed(4)})`}
+                    stroke={glyphStroke}
+                    strokeWidth={2.4}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    <PlanetGlyphPaths planet={p.planet} />
+                  </g>
+                  {p.retrograde && (
+                    <text
+                      x={pos.x + COIN_R - 1}
+                      y={pos.y - COIN_R + 3}
+                      fontSize={9}
+                      fontWeight={600}
+                      fill={CHART_TOKENS.coralLight}
+                      className={FONT_DISPLAY}
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      ℞
+                    </text>
+                  )}
                 </g>
-              </g>
-            );
-          })}
+              );
+            })}
+          </g>
+
+          {/* ── Overlay ring: transit / progressed / return / partner planets ── */}
+          {placedOverlay.length > 0 && (
+            <g role="group" aria-label={overlayLabel ?? t('chartWheel.transitLabel', { defaultValue: 'Transit' })} style={entranceFade}>
+              <circle cx={CX} cy={CY} r={R.overlay} fill="none" stroke={withAlpha(CHART_TOKENS.blue, 0.25)} strokeWidth={0.5} strokeDasharray="1.5 3" aria-hidden />
+              {placedOverlay.map(({ placement: o, angle }) => {
+                const pos = polar(CX, CY, R.overlay, angle);
+                const isSelected = selection?.kind === 'transit' && selection.planet === o.planet;
+                const label = `${overlayLabel ?? t('chartWheel.transitLabel', { defaultValue: 'Transit' })} · ${t('chartWheel.planetAriaNoHouse', {
+                  defaultValue: '{{planet}} in {{sign}}, {{deg}}°',
+                  planet: localizePlanetName(o.planet),
+                  sign: localizeSignName(o.sign),
+                  deg: o.degree.toFixed(0),
+                })}`;
+                return (
+                  <g
+                    key={`overlay-${o.planet}`}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={label}
+                    aria-pressed={isSelected}
+                    onClick={() => toggle({ kind: 'transit', planet: o.planet })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle({ kind: 'transit', planet: o.planet }); }
+                    }}
+                    style={{ cursor: 'pointer', outline: 'none' }}
+                  >
+                    <circle cx={pos.x} cy={pos.y} r={HIT_R - 4} fill="transparent" />
+                    <circle cx={pos.x} cy={pos.y} r={OVERLAY_R + 1.4} fill="none" stroke={withAlpha(CHART_TOKENS.blue, 0.4)} strokeWidth={0.5} strokeDasharray="1.5 1.5" />
+                    <circle cx={pos.x} cy={pos.y} r={OVERLAY_R} fill={isSelected ? CHART_TOKENS.blue : CHART_TOKENS.canvas} stroke={isSelected ? CHART_TOKENS.ink100 : CHART_TOKENS.blueInk} strokeWidth={isSelected ? 1.3 : 0.8} />
+                    <g
+                      transform={`translate(${(pos.x - 6).toFixed(2)} ${(pos.y - 6).toFixed(2)}) scale(${(12 / 32).toFixed(4)})`}
+                      stroke={isSelected ? CHART_TOKENS.canvas : CHART_TOKENS.blueInk}
+                      strokeWidth={2.6}
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <PlanetGlyphPaths planet={o.planet} />
+                    </g>
+                  </g>
+                );
+              })}
+            </g>
+          )}
         </svg>
-      </motion.div>
-
-      {/* Detail panel — smooth cross-fade between selections */}
-      <div className="min-h-[84px]">
-        <AnimatePresence mode="wait">
-          {!selection && (
-            <motion.p
-              key="prompt"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="text-xs text-mystic-500 italic text-center"
-            >
-              {t('chartWheel.tapPrompt', { defaultValue: 'Tap a planet, house, or aspect line.' })}
-            </motion.p>
-          )}
-          {selection?.kind === 'planet' && (
-            <motion.div
-              key={`planet-${selection.planet}`}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="bg-mystic-900/60 border border-gold/20 rounded-xl p-3"
-            >
-              <p className="text-[10px] uppercase tracking-widest text-gold mb-1">
-                {t('chartWheel.planetLabel', { defaultValue: 'Planet' })}
-              </p>
-              <p className="text-sm font-medium text-mystic-100 flex items-center gap-1.5">
-                <PlanetGlyph planet={selection.planet} size={18} className="text-gold" />
-                {selection.planet} in {selection.sign}
-                <ZodiacGlyph sign={selection.sign} size={16} className="text-mystic-300" />
-              </p>
-              <p className="text-xs text-mystic-400 mt-0.5">
-                {selection.degree.toFixed(1)}°{selection.house ? ` · House ${selection.house}` : ''}
-              </p>
-            </motion.div>
-          )}
-          {selection?.kind === 'transit' && (
-            <motion.div
-              key={`transit-${selection.planet}`}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3"
-            >
-              <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
-                {t('chartWheel.transitLabel', { defaultValue: 'Transit' })}
-                {overlayLabel ? ` · ${overlayLabel}` : ''}
-              </p>
-              <p className="text-sm font-medium text-mystic-100 flex items-center gap-1.5">
-                <PlanetGlyph planet={selection.planet} size={18} className="text-cosmic-blue" />
-                {selection.planet} in {selection.sign}
-                <ZodiacGlyph sign={selection.sign} size={16} className="text-mystic-300" />
-              </p>
-              <p className="text-xs text-mystic-400 mt-0.5">{selection.degree.toFixed(1)}°</p>
-            </motion.div>
-          )}
-          {selection?.kind === 'house' && (
-            <motion.div
-              key={`house-${selection.index}`}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="bg-mystic-900/60 border border-cosmic-violet/30 rounded-xl p-3"
-            >
-              <p className="text-[10px] uppercase tracking-widest text-cosmic-violetLight mb-1">
-                {t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: selection.index })}
-              </p>
-              <p className="text-sm text-mystic-100">
-                {HOUSE_THEMES[selection.index - 1]}
-              </p>
-            </motion.div>
-          )}
-          {selection?.kind === 'aspect' && (
-            <motion.div
-              key={`aspect-${selection.planet1}-${selection.planet2}`}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="bg-mystic-900/60 border border-cosmic-blue/30 rounded-xl p-3"
-            >
-              <p className="text-[10px] uppercase tracking-widest text-cosmic-blue mb-1">
-                {t('chartWheel.aspectLabel', { defaultValue: 'Aspect' })}
-              </p>
-              <p className="text-sm font-medium text-mystic-100 flex items-center gap-2">
-                <PlanetGlyph planet={selection.planet1} size={18} className="text-gold" />
-                <span>{selection.type}</span>
-                <PlanetGlyph planet={selection.planet2} size={18} className="text-gold" />
-              </p>
-              <p className="text-xs text-mystic-400 mt-0.5">
-                orb {selection.orb.toFixed(1)}°
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* Legend — styled aspect lines match the in-chart strokes */}
-      <div className="flex flex-wrap justify-center gap-3 text-[10px] text-mystic-400">
-        {(Object.entries(ASPECT_STYLE) as [AspectType, typeof ASPECT_STYLE.conjunction][]).map(([type, style]) => (
-          <span key={type} className="inline-flex items-center gap-1.5">
-            <svg width="18" height="4" viewBox="0 0 18 4" aria-hidden>
-              <line
-                x1="1" y1="2" x2="17" y2="2"
-                stroke={style.color}
-                strokeWidth={style.width + 0.4}
-                strokeDasharray={style.dasharray}
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="capitalize">{type}</span>
-          </span>
-        ))}
-      </div>
+      {!readOnly && <WheelDetailPanel selection={panelSelection} onOpenPlanet={onOpenPlanet} onOpenAspect={onOpenAspect} />}
+
+      {!readOnly && <WheelLegend
+        presentTypes={presentTypes}
+        filter={filter}
+        onFilterChange={(f) => { setFilter(f); setSelection((s) => (s?.kind === 'aspect' ? null : s)); }}
+        counts={{ all: chart.aspects.length, tight: tightCount }}
+        hasRetrograde={hasRetrograde}
+        overlayLabel={placedOverlay.length > 0 ? (overlayLabel ?? null) : undefined}
+      />}
     </div>
   );
 }

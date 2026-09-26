@@ -161,7 +161,7 @@ export function AchievementsPage() {
             >
               <div className="flex flex-col items-center justify-center">
                 <Trophy className="w-8 h-8 text-gold mb-1" />
-                <span className="text-2xl font-bold text-white">
+                <span className="text-2xl font-semibold text-white">
                   {Math.round(completionPercentage)}%
                 </span>
               </div>
@@ -174,7 +174,7 @@ export function AchievementsPage() {
                   {localizeSeekerRank(profile?.seekerRank)}
                 </span>
               </div>
-              <h2 className="text-xl font-bold text-white mb-1">
+              <h2 className="text-xl font-semibold text-white mb-1">
                 {stats?.unlocked_achievements || 0} of {stats?.total_achievements || 0}
               </h2>
               <p className="text-sm text-mystic-400">

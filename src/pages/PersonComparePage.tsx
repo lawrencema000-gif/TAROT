@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Heart } from 'lucide-react';
 import { Card, Button, Page, PageHeader, Section, Tabs, HoroscopeWheelIcon, ReadingProse } from '../components/ui';
-import { NatalWheel } from '../components/charts/NatalWheel';
+import { ChartWheel } from '../components/chart/ChartWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
+import { PlanetGlyph, ZodiacGlyph } from '../components/icons';
 import { useAuth } from '../context/AuthContext';
 import { people as peopleDal } from '../dal';
 import { supabase } from '../lib/supabase';
-import { type NatalChart, PLANET_GLYPH, SIGN_GLYPH, computeSynastry, synastryScore } from '../lib/chart';
+import { type NatalChart, computeSynastry, synastryScore, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
 import { useT } from '../i18n/useT';
+import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
 
 type CompareTab = 'synastry' | 'composite' | 'davison' | 'progressed-composite';
 const TABS: { key: CompareTab; label: string; blurb: string }[] = [
@@ -19,6 +21,9 @@ const TABS: { key: CompareTab; label: string; blurb: string }[] = [
 ];
 
 type Interp = typeof import('../data/interpretations');
+
+const planetName = (p: string) => (isPlanet(p) ? localizePlanetName(p) : p);
+const aspectName = (a: string) => (isAspectType(a) ? localizeAspectName(a) : a);
 
 async function chartFor(body: Record<string, unknown>): Promise<NatalChart | null> {
   const { data, error } = await supabase.functions.invoke('astrology-person-chart', { body });
@@ -90,6 +95,15 @@ export function PersonComparePage() {
   const mySun = mine?.planets.find((p) => p.planet === 'Sun')?.sign;
   const theirSun = theirs?.planets.find((p) => p.planet === 'Sun')?.sign;
   const compat = interp && mySun && theirSun ? interp.signCompatText(mySun, theirSun) : null;
+  const relChart = tab !== 'synastry' ? relCharts[tab] : undefined;
+
+  const sunChip = (sign: string | undefined) =>
+    sign ? (
+      <span className="inline-flex items-center gap-1.5">
+        {isZodiacSign(sign) && <ZodiacGlyph sign={sign} size={18} className="text-gold" />}
+        {isZodiacSign(sign) ? localizeSignName(sign) : sign}
+      </span>
+    ) : null;
 
   return (
     <Page spacing="md">
@@ -102,9 +116,9 @@ export function PersonComparePage() {
       />
 
       <div className="flex items-center justify-center gap-3 text-mystic-300 -mt-3">
-        <span>{mySun && `${SIGN_GLYPH[mySun]} ${mySun}`}</span>
-        <Heart className="w-4 h-4 text-pink-400" />
-        <span>{theirSun && `${SIGN_GLYPH[theirSun]} ${theirSun}`}</span>
+        {sunChip(mySun)}
+        <Heart className="w-4 h-4 text-cosmic-rose" aria-hidden />
+        {sunChip(theirSun)}
       </div>
 
       {/* Chart-type tabs */}
@@ -119,21 +133,21 @@ export function PersonComparePage() {
       <p className="text-center text-ui text-mystic-400 -mt-3">{t(`people.compare.tabs.${tab}.blurb`, { defaultValue: TABS.find((tDef) => tDef.key === tab)?.blurb ?? '' })}</p>
 
       {tab !== 'synastry' ? (
-        relLoading && !relCharts[tab] ? (
+        relLoading && !relChart ? (
           <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 text-gold animate-spin" /></div>
-        ) : relCharts[tab] ? (
+        ) : relChart ? (
           <>
-            <Card className="p-4 flex justify-center">
-              <div className="w-full max-w-[360px]"><NatalWheel chart={relCharts[tab]!} /></div>
+            <Card padding="sm">
+              <ChartWheel key={tab} chart={toWheelChart(relChart)} />
             </Card>
-            {relCharts[tab]!.aspects.length > 0 && (
-              <Section title="Aspects in this chart" headingLevel="h3" contentClassName="space-y-3">
-                <AspectGrid aspects={relCharts[tab]!.aspects} />
+            {relChart.aspects.length > 0 && (
+              <Section title={t('people.compare.aspectsInChart', { defaultValue: 'Aspects in this chart' })} headingLevel="h3" contentClassName="space-y-3">
+                <AspectGrid aspects={relChart.aspects} />
                 <div className="space-y-3 pt-1">
-                  {relCharts[tab]!.aspects.slice(0, 5).map((a, i) => (
+                  {relChart.aspects.slice(0, 5).map((a, i) => (
                     <div key={i} className="text-ui">
-                      <span className="text-mystic-200">{a.planet1} {a.type} {a.planet2}</span>
-                      <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+                      <span className="text-mystic-200">{planetName(a.planet1)} {aspectName(a.type)} {planetName(a.planet2)}</span>
+                      <span className="text-meta text-mystic-400"> · {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
                       {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
                     </div>
                   ))}
@@ -149,16 +163,18 @@ export function PersonComparePage() {
       {/* Harmony score ring */}
       <Card className="p-6 text-center space-y-2">
         <div className="text-5xl font-display text-gold">{score}<span className="text-2xl text-mystic-500">/100</span></div>
-        <p className="text-meta text-mystic-400">Overall resonance from {aspects.length} cross-chart connections</p>
+        <p className="text-meta text-mystic-400">
+          {t('people.compare.resonance', { defaultValue: 'Overall resonance from {{n}} cross-chart connections', n: aspects.length })}
+        </p>
       </Card>
 
       {/* Sun-sign compatibility */}
       {compat && (
-        <Section title={<>{mySun} &amp; {theirSun}</>} headingLevel="h3">
+        <Section title={<>{mySun && isZodiacSign(mySun) ? localizeSignName(mySun) : mySun} &amp; {theirSun && isZodiacSign(theirSun) ? localizeSignName(theirSun) : theirSun}</>} headingLevel="h3">
           <div className="reading-copy">
-            <p><span className="text-pink-300 font-medium">Love · </span>{compat.love}</p>
-            <p><span className="text-sky-300 font-medium">Friendship · </span>{compat.friendship}</p>
-            <p><span className="text-emerald-300 font-medium">Work · </span>{compat.work}</p>
+            <p><span className="text-coral font-medium">{t('people.compare.love', { defaultValue: 'Love' })} · </span>{compat.love}</p>
+            <p><span className="text-cosmic-blue-ink font-medium">{t('people.compare.friendship', { defaultValue: 'Friendship' })} · </span>{compat.friendship}</p>
+            <p><span className="text-teal font-medium">{t('people.compare.work', { defaultValue: 'Work' })} · </span>{compat.work}</p>
           </div>
         </Section>
       )}
@@ -166,16 +182,24 @@ export function PersonComparePage() {
       {/* Top cross-aspects */}
       <Section
         headingLevel="h3"
-        title={<span className="inline-flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /> Your strongest connections</span>}
+        title={<span className="inline-flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /> {t('people.compare.strongest', { defaultValue: 'Your strongest connections' })}</span>}
       >
         <div className="space-y-4">
           {aspects.slice(0, 8).map((a, i) => (
             <div key={i} className="text-ui">
-              <div className="text-mystic-200">
-                Your <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet1]}</span> {a.planet1}
-                <span className="text-mystic-400"> {a.type} </span>
-                {name}'s <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet2]}</span> {a.planet2}
-                <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+              <div className="text-mystic-200 flex items-center gap-1.5 flex-wrap">
+                {isPlanet(a.planet1) && <PlanetGlyph planet={a.planet1} size={16} className="text-gold" />}
+                <span>
+                  {t('people.compare.crossRow', {
+                    defaultValue: 'Your {{mine}} {{type}} {{name}}’s {{theirs}}',
+                    mine: planetName(a.planet1),
+                    type: aspectName(a.type),
+                    name,
+                    theirs: planetName(a.planet2),
+                  })}
+                </span>
+                {isPlanet(a.planet2) && <PlanetGlyph planet={a.planet2} size={16} className="text-gold" />}
+                <span className="text-meta text-mystic-400">· {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
               </div>
               {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
             </div>

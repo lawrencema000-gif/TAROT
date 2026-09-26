@@ -176,7 +176,12 @@ export function CityInsightPanel({
   }
 
   return (
-    <Sheet open={open} onClose={onClose} variant="glow">
+    <Sheet
+      open={open}
+      onClose={onClose}
+      variant="glow"
+      label={cityInfo && !isFarFromCity ? cityInfo.city.name : t('celestial.city.unknown', { defaultValue: 'Open ocean / remote' })}
+    >
       <div className="space-y-5">
         {/* ── Header: city name + distance from tap ─────────────── */}
         <div className="flex items-start gap-3">

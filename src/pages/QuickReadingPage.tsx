@@ -10,6 +10,7 @@ import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { ORACLE_SUGGESTIONS, type OracleContext } from '../data/oracleSuggestions';
 import { localDateStr } from '../utils/localDate';
+import { ALL_CARDS, getBundledCardPath } from '../config/bundledImages';
 
 const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
   { key: 'general', label: 'Anything' },
@@ -28,10 +29,31 @@ const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
  * returns a 2-paragraph reading in under 3 seconds (with Gemini 2.0 Flash).
  */
 
+interface QuickReadingCard {
+  name: string;
+  meaning: string;
+  /* The server sends a name and a meaning today; the rest are honoured
+     if a later version sends them, so the face can be chosen directly. */
+  id?: number;
+  reversed?: boolean;
+  imageUrl?: string;
+}
+
 interface QuickReadingResponse {
   reading: string;
-  card?: { name: string; meaning: string };
+  card?: QuickReadingCard;
   memoryUsed: boolean;
+}
+
+/*
+ * The card was drawn and never shown. Its face is in the bundle: resolve
+ * it by id when the server gives one, else by name — the server's deck
+ * uses the same names as the bundled majors — else by any URL it sent.
+ */
+function faceFor(card: QuickReadingCard): string | null {
+  const wanted = card.name.trim().toLowerCase();
+  const id = typeof card.id === 'number' ? card.id : ALL_CARDS.find((c) => c.name.toLowerCase() === wanted)?.id;
+  return (id !== undefined ? getBundledCardPath(id) : null) ?? card.imageUrl ?? null;
 }
 
 export function QuickReadingPage() {
@@ -94,7 +116,7 @@ export function QuickReadingPage() {
       return;
     }
     setResult(payload);
-  }, [question, profile, tryConsume, refund]);
+  }, [question, profile, tryConsume, refund, context]);
 
   const reset = () => {
     setResult(null);
@@ -119,6 +141,7 @@ export function QuickReadingPage() {
   };
 
   if (result) {
+    const face = result.card ? faceFor(result.card) : null;
     return (
       <Page spacing="md">
         <PageHeader
@@ -134,12 +157,34 @@ export function QuickReadingPage() {
         </Card>
 
         {result.card && (
-          <Card padding="lg" className="text-center bg-mystic-900/60 border-gold/20">
-            <p className="font-display-eyebrow mb-1">
-              {t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}
-            </p>
-            <h2 className="font-display text-xl text-mystic-100 mb-2">{result.card.name}</h2>
-            <p className="text-ui text-mystic-300 italic">{result.card.meaning}</p>
+          <Card padding="lg" className="bg-mystic-900/60 border-gold/20">
+            {/* The card, shown: its face beside its name and meaning. A
+                reversed draw lies upside down, as it would on the table. */}
+            <div className={`flex items-center gap-4 ${face ? 'text-left' : 'text-center justify-center'}`}>
+              {face && (
+                <img
+                  src={face}
+                  alt={result.card.name}
+                  decoding="async"
+                  draggable={false}
+                  className={`w-20 shrink-0 aspect-[2/3] object-cover rounded-inset bg-mystic-850 select-none ${
+                    result.card.reversed ? 'rotate-180' : ''
+                  }`}
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="font-display-eyebrow mb-1">
+                  {t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}
+                </p>
+                <h2 className="heading-display-md text-mystic-100 mb-1">
+                  {result.card.name}
+                  {result.card.reversed && (
+                    <span className="text-meta text-mystic-400 ml-2">{t('readings.revealView.reversedParen')}</span>
+                  )}
+                </h2>
+                <p className="text-ui text-mystic-300 italic">{result.card.meaning}</p>
+              </div>
+            </div>
           </Card>
         )}
 
@@ -206,7 +251,7 @@ export function QuickReadingPage() {
       </div>
 
       <Card padding="lg">
-        <label className="block text-[10px] uppercase tracking-widest text-mystic-500 mb-2">
+        <label className="block font-display-eyebrow text-mystic-500 mb-2">
           {t('quickReading.questionLabel', { defaultValue: 'Your question' })}
         </label>
         <textarea
@@ -217,16 +262,16 @@ export function QuickReadingPage() {
           placeholder={t('quickReading.questionPlaceholder', {
             defaultValue: 'What is mine to focus on this week? Where is the friction in my work coming from? What am I avoiding?',
           })}
-          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
         />
-        <p className="text-[10px] text-mystic-500 mt-1 text-right">{question.length} / 500</p>
+        <p className="text-caption text-mystic-500 mt-1 text-right">{question.length} / 500</p>
       </Card>
 
       {error && (
         <Card padding="md">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-pink-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-mystic-400">
+            <p className="text-meta text-mystic-400">
               {error === 'rate-limit'
                 ? t('quickReading.errorRateLimit', { defaultValue: 'You\'re asking fast — slow down and try again in a moment.' })
                 : error === 'unavailable'

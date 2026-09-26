@@ -7,7 +7,7 @@
   },
   "welcome": {
     "heading": "매일의 의식이 시작됩니다.",
-    "subheading": "타로, 점성술, 성격 통찰이 하나로 아름답게 어우러집니다.",
+    "subheading": "당신의 운세, 카드 한 장, 그리고 솔직한 한 문장. 매일 몇 분이면 돼요.",
     "cta": "내 계정 만들기",
     "alreadyHaveAccount": "이미 계정이 있어요"
   },
@@ -23,7 +23,9 @@
     "submit": "내 계정 만들기",
     "switchToSignIn": "이미 계정이 있나요? 로그인",
     "back": "이전 단계",
-    "appleCta": "Apple로 계속"
+    "appleCta": "Apple로 계속",
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기"
   },
   "toast": {
     "invalidEmail": "이메일이 올바르지 않은 것 같아요 — 확인하고 다시 시도해 주세요.",
@@ -80,7 +82,10 @@
     "notifications": {
       "reminderTime": "알림 시간",
       "dailyPromise": "하루에 한 번, 당신이 고른 시간에 알림을 보내요. 스팸은 없어요.",
-      "webNote": "알림은 휴대폰의 Arcana 앱으로 와요. 설정은 앱을 설치할 때를 위해 저장돼요."
+      "webNote": "알림은 휴대폰의 Arcana 앱으로 와요. 설정은 앱을 설치할 때를 위해 저장돼요.",
+      "heading": "매일 알림을 받을까요?",
+      "yes": "네, 매일 알려 주세요",
+      "no": "괜찮아요"
     },
     "next": "계속",
     "beginJourney": "첫 의식 시작하기",
@@ -88,6 +93,15 @@
       "saveFailed": "정보를 저장하지 못했어요 — 연결을 확인하고 다시 시도해 주세요.",
       "welcome": "Arcana에 오신 걸 환영해요."
     },
-    "back": "이전 단계"
+    "back": "이전 단계",
+    "welcomeNoName": "환영해요.",
+    "reveal": {
+      "eyebrow": "당신의 태양 별자리",
+      "body": "당신이 태어난 순간 태양은 {{sign}}에 있었어요. 당신의 운세, 오늘의 카드, 차트가 모두 여기서 시작돼요.",
+      "cta": "시작하기"
+    }
+  },
+  "progress": {
+    "step": "{{total}}단계 중 {{n}}단계"
   }
 }

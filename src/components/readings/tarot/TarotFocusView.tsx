@@ -1,10 +1,15 @@
 /**
- * TarotSection focus-area picker — extracted from the monolithic
- * TarotSection.tsx as part of the `tarot-section-split` rollout.
+ * The focus.
  *
- * Behavior-equivalent to the `view === 'focus'` branch of the legacy
- * component. All state is owned by the parent; this component is pure
- * presentation + event forwarding.
+ * Before the deck is touched the reader names what the reading is for.
+ * Six areas, one row of chips, one button. All state is the parent's; this
+ * is presentation and event forwarding.
+ *
+ * The compass arrives once (a 300ms scale-in, `forwards`) and then holds.
+ * It used to pulse forever — and a control that throbs is what a disabled
+ * one looks like. The chips follow in a short cascade so the row reads as
+ * a set being laid out. Under reduced motion the global block in index.css
+ * pins both to a single frame.
  */
 import { ChevronLeft, Compass, ChevronRight } from 'lucide-react';
 import { Chip, Button } from '../../ui';
@@ -32,22 +37,12 @@ export function TarotFocusView({ selectedFocus, onBack, onSelect, onContinue }: 
       </button>
 
       <div className="text-center space-y-3">
-        {/*
-          Was a permanent `animate-pulse`. A compass that throbs forever
-          says nothing — and a pulsing control is what a *disabled* one
-          looks like. It now simply arrives, once.
-        */}
-        <Compass className="w-12 h-12 text-gold mx-auto animate-scale-in" />
-        <h2 className="font-display text-2xl text-mystic-100">{t('readings.focusView.title')}</h2>
-        <p className="text-mystic-400">{t('readings.focusView.subtitle')}</p>
+        <Compass className="w-12 h-12 text-gold mx-auto animate-scale-in" aria-hidden />
+        <h2 className="heading-display-lg text-mystic-100">{t('readings.focusView.title')}</h2>
+        <p className="text-body text-mystic-400">{t('readings.focusView.subtitle')}</p>
       </div>
 
-      {/*
-        A short cascade rather than the whole row landing at once: it
-        reads as a set being laid out, and it gives the eye an order to
-        follow. 40ms apart, so the last chip is in place well inside
-        400ms even for a long list.
-      */}
+      {/* 40ms apart: the last chip is in place well inside 400ms. */}
       <div className="flex flex-wrap justify-center gap-2">
         {FOCUS_AREAS.map((focus, i) => (
           <div
@@ -76,7 +71,7 @@ export function TarotFocusView({ selectedFocus, onBack, onSelect, onContinue }: 
         size="lg"
       >
         {t('readings.focusView.continue')}
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-4 h-4" aria-hidden />
       </Button>
     </div>
   );

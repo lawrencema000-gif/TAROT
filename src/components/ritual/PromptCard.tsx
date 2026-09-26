@@ -1,5 +1,5 @@
-import { PenLine, Clock } from 'lucide-react';
-import { Button } from '../ui';
+import { PenLine } from 'lucide-react';
+import { Button, Card, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 
 interface PromptCardProps {
@@ -7,34 +7,24 @@ interface PromptCardProps {
   onWrite: () => void;
 }
 
+/**
+ * The third part of the ritual: one question, one honest sentence.
+ *
+ * The prompt is the content, so it gets the display face at reading size
+ * and nothing competes with it: no icon tile, no second heading, no
+ * invented "2 min" beside the button. One card surface, like every other
+ * card on Home.
+ */
 export function PromptCard({ prompt, onWrite }: PromptCardProps) {
   const { t } = useT('app');
   return (
-    <div className="bg-gradient-to-br from-mystic-800/80 to-mystic-900/80 backdrop-blur-sm rounded-2xl border border-mystic-700/50 p-5">
-      <div className="flex items-start gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center flex-shrink-0">
-          <PenLine className="w-5 h-5 text-gold" />
-        </div>
-        <div>
-          <p className="text-xs text-mystic-500 uppercase tracking-wider">{t('home.ritualCards.yourPrompt')}</p>
-          <h3 className="font-display text-lg text-mystic-100">{t('home.ritualCards.reflection')}</h3>
-        </div>
-      </div>
-
-      <p className="font-display text-xl text-mystic-100 leading-relaxed mb-6">
-        "{prompt}"
-      </p>
-
-      <div className="flex items-center justify-between">
-        <Button variant="gold" onClick={onWrite}>
-          <PenLine className="w-4 h-4" />
-          {t('home.ritualCards.write')}
-          <span className="flex items-center gap-1 text-xs opacity-80 ml-1">
-            <Clock className="w-3 h-3" />
-            {t('home.ritualCards.twoMin')}
-          </span>
-        </Button>
-      </div>
-    </div>
+    <Card padding="md">
+      <EyebrowLabel>{t('home.ritualCards.yourPrompt')}</EyebrowLabel>
+      <p className="font-display text-lede text-mystic-100 leading-relaxed mt-3 mb-5">“{prompt}”</p>
+      <Button variant="gold" onClick={onWrite}>
+        <PenLine className="w-4 h-4" aria-hidden />
+        {t('home.ritualCards.write')}
+      </Button>
+    </Card>
   );
 }

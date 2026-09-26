@@ -259,7 +259,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <div className="flex justify-center mb-5">
-            <BrandMark size={64} className="text-gold drop-shadow-[0_0_18px_rgba(212,175,55,0.35)]" />
+            <BrandMark size={64} className="text-gold" />
           </div>
           <div className="flex justify-center mb-6">
             <BrandWordmark size={28} />

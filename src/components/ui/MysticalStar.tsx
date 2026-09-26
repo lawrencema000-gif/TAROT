@@ -1,43 +1,71 @@
-import { memo } from 'react';
+import { memo, useId } from 'react';
 
 /**
- * Ornate 8-point ritual star — a proper hand-drawn SVG replacement for
- * the generic lucide `<Sparkles>` icon in hero positions.
+ * Ornate 8-point ritual star — the hand-drawn replacement for the generic
+ * lucide `<Sparkles>` in hero positions: four cardinal petals, four shorter
+ * diagonal rays, a beaded halo, inscribed circles with radial ticks.
  *
- * Uses a 128x128 viewBox with four-petal cardinal rays, shorter
- * intercardinal rays, a halo ring with 8 beads at intercardinal
- * positions, and a central dot + inscribed circle. The whole thing
- * is drawn with SVG paths so color/stroke are controlled via
- * Tailwind `text-*` / `stroke` props.
+ * Three things were wrong with it for as long as it existed, and they are
+ * why it read as generated wherever it appeared thirty-eight times:
  *
- * Pairs well with `.text-gold-foil` for the animated gradient fill
- * treatment on the hero Today's Ritual card.
+ *  - Its gradient ids were fixed strings, so every star on a page resolved
+ *    its fill against the FIRST star's currentColor. A white star beside a
+ *    gold one came out gold. They are unique per instance now (`useId`).
+ *  - The four "intercardinal petal" paths were collinear — zero-area
+ *    shapes that drew nothing but a hairline — while a second set of
+ *    triangles underneath did the actual work. The dead set is gone.
+ *  - A white highlight disc covered the whole glyph even with the halo
+ *    off, the "glassy sheen" that no engraving has. Gone.
+ *
+ * `spinning` stays as an opt-in for a hero glyph; nothing here pulses.
  */
 
 export interface MysticalStarProps {
   size?: number;
   className?: string;
-  /** Underlying color of the strokes/fills. Inherits `currentColor`
-   *  unless a specific hex is passed. */
+  /** Underlying colour of the strokes/fills. Inherits `currentColor` unless a hex is passed. */
   color?: string;
-  /** Whether to draw the outer halo ring + cardinal beads. */
+  /** Draw the outer halo ring + beads. */
   halo?: boolean;
-  /** Animate a very slow rotation on mount. Good for a hero glyph. */
+  /** A very slow rotation. For a hero glyph only. */
   spinning?: boolean;
   /**
    * Accessible name. WITHOUT it the star is aria-hidden, which is the right
    * default: it is nearly always decorative, sitting beside a heading that
-   * already says what the thing is.
-   *
-   * It used to hardcode role="img" aria-label="Ritual star" with no way out.
-   * That was harmless while the component was rare, but the de-Sparkle sweep
-   * substituted it into 17 decorative slots that lucide had been rendering
-   * aria-hidden — so a screen reader started announcing "Ritual star" 17 times
-   * where it previously said nothing. Pass a label only when the glyph carries
-   * meaning no adjacent text does.
+   * already says what the thing is. Pass a label only when the glyph
+   * carries meaning no adjacent text does.
    */
   label?: string;
 }
+
+const CARDINAL = [
+  'M 64 8 L 68 50 L 64 58 L 60 50 Z',
+  'M 64 120 L 68 78 L 64 70 L 60 78 Z',
+  'M 120 64 L 78 68 L 70 64 L 78 60 Z',
+  'M 8 64 L 50 68 L 58 64 L 50 60 Z',
+].join(' ');
+
+const DIAGONAL = [45, 135, 225, 315]
+  .map((deg) => {
+    const rad = (deg * Math.PI) / 180;
+    const tip = [64 + Math.cos(rad) * 42, 64 + Math.sin(rad) * 42];
+    const l = [64 + Math.cos(((deg + 6) * Math.PI) / 180) * 12, 64 + Math.sin(((deg + 6) * Math.PI) / 180) * 12];
+    const r = [64 + Math.cos(((deg - 6) * Math.PI) / 180) * 12, 64 + Math.sin(((deg - 6) * Math.PI) / 180) * 12];
+    return `M ${tip[0].toFixed(2)} ${tip[1].toFixed(2)} L ${l[0].toFixed(2)} ${l[1].toFixed(2)} L ${r[0].toFixed(2)} ${r[1].toFixed(2)} Z`;
+  })
+  .join(' ');
+
+const TICKS = Array.from({ length: 12 })
+  .map((_, i) => {
+    const a = (i * 30 * Math.PI) / 180;
+    return `M ${(64 + Math.cos(a) * 11).toFixed(2)} ${(64 + Math.sin(a) * 11).toFixed(2)} L ${(64 + Math.cos(a) * 15).toFixed(2)} ${(64 + Math.sin(a) * 15).toFixed(2)}`;
+  })
+  .join(' ');
+
+const BEADS = Array.from({ length: 8 }).map((_, i) => {
+  const a = (i * 45 * Math.PI) / 180;
+  return [64 + Math.cos(a) * 52, 64 + Math.sin(a) * 52] as const;
+});
 
 export const MysticalStar = memo(function MysticalStar({
   size = 64,
@@ -47,6 +75,8 @@ export const MysticalStar = memo(function MysticalStar({
   spinning = false,
   label,
 }: MysticalStarProps) {
+  const id = useId();
+  const petal = `${id}-petal`;
   return (
     <svg
       width={size}
@@ -60,180 +90,30 @@ export const MysticalStar = memo(function MysticalStar({
         : { 'aria-hidden': true, focusable: false })}
     >
       <defs>
-        {/* Gold gradient for the primary star petals */}
-        <radialGradient id="mystical-star-petal" cx="50%" cy="50%" r="50%">
+        <radialGradient id={petal} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
           <stop offset="70%" stopColor="currentColor" stopOpacity="0.85" />
           <stop offset="100%" stopColor="currentColor" stopOpacity="0.4" />
         </radialGradient>
-        {/* Inner highlight gradient */}
-        <linearGradient id="mystical-star-highlight" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
-          <stop offset="50%" stopColor="#ffffff" stopOpacity="0" />
-        </linearGradient>
       </defs>
 
       {halo && (
         <>
-          {/* Outer halo ring — thin dashed circle */}
-          <circle
-            cx="64" cy="64" r="58"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="0.6"
-            strokeOpacity="0.35"
-            strokeDasharray="0.5 3.5"
-          />
-          {/* 8 beads on an inscribed ring */}
-          {Array.from({ length: 8 }).map((_, i) => {
-            const angle = (i * 45 * Math.PI) / 180;
-            const cx = 64 + Math.cos(angle) * 52;
-            const cy = 64 + Math.sin(angle) * 52;
-            return (
-              <circle
-                key={`bead-${i}`}
-                cx={cx} cy={cy} r="1.2"
-                fill="currentColor"
-                opacity="0.8"
-              />
-            );
-          })}
+          <circle cx="64" cy="64" r="58" fill="none" stroke="currentColor" strokeWidth="0.6" strokeOpacity="0.35" strokeDasharray="0.5 3.5" />
+          {BEADS.map(([cx, cy], i) => (
+            <circle key={i} cx={cx} cy={cy} r="1.2" fill="currentColor" opacity="0.8" />
+          ))}
         </>
       )}
 
-      {/* Cardinal petals — four elongated diamond rays (N/E/S/W) */}
-      <g>
-        {/* North petal */}
-        <path
-          d="M 64 8 L 68 50 L 64 58 L 60 50 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          strokeOpacity="0.9"
-          strokeLinejoin="round"
-        />
-        {/* South petal */}
-        <path
-          d="M 64 120 L 68 78 L 64 70 L 60 78 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          strokeOpacity="0.9"
-          strokeLinejoin="round"
-        />
-        {/* East petal */}
-        <path
-          d="M 120 64 L 78 68 L 70 64 L 78 60 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          strokeOpacity="0.9"
-          strokeLinejoin="round"
-        />
-        {/* West petal */}
-        <path
-          d="M 8 64 L 50 68 L 58 64 L 50 60 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          strokeOpacity="0.9"
-          strokeLinejoin="round"
-        />
-      </g>
+      <path d={CARDINAL} fill={`url(#${petal})`} stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.9" strokeLinejoin="round" />
+      <path d={DIAGONAL} fill="currentColor" fillOpacity="0.55" stroke="currentColor" strokeOpacity="0.6" strokeWidth="0.4" strokeLinejoin="round" opacity="0.75" />
 
-      {/* Intercardinal petals — shorter diagonal diamond rays (NE/SE/SW/NW) */}
-      <g opacity="0.85">
-        <path
-          d="M 104 24 L 78 50 L 64 64 L 78 50 Z M 104 24 L 76 52 L 72 56 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.6"
-          strokeOpacity="0.7"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M 104 104 L 78 78 L 72 72 L 76 76 Z M 104 104 L 76 76 L 72 72 L 78 78 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.6"
-          strokeOpacity="0.7"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M 24 104 L 50 78 L 56 72 L 52 76 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.6"
-          strokeOpacity="0.7"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M 24 24 L 50 50 L 56 56 L 52 52 Z"
-          fill="url(#mystical-star-petal)"
-          stroke="currentColor"
-          strokeWidth="0.6"
-          strokeOpacity="0.7"
-          strokeLinejoin="round"
-        />
-      </g>
-
-      {/* Clean intercardinal rays as tapered triangles (overlay for crispness) */}
-      <g opacity="0.75">
-        {[45, 135, 225, 315].map((deg) => {
-          const rad = (deg * Math.PI) / 180;
-          const tipX = 64 + Math.cos(rad) * 42;
-          const tipY = 64 + Math.sin(rad) * 42;
-          const leftRad = ((deg + 6) * Math.PI) / 180;
-          const rightRad = ((deg - 6) * Math.PI) / 180;
-          const leftX = 64 + Math.cos(leftRad) * 12;
-          const leftY = 64 + Math.sin(leftRad) * 12;
-          const rightX = 64 + Math.cos(rightRad) * 12;
-          const rightY = 64 + Math.sin(rightRad) * 12;
-          return (
-            <path
-              key={`diag-${deg}`}
-              d={`M ${tipX} ${tipY} L ${leftX} ${leftY} L ${rightX} ${rightY} Z`}
-              fill="currentColor"
-              fillOpacity="0.55"
-              stroke="currentColor"
-              strokeOpacity="0.6"
-              strokeWidth="0.4"
-              strokeLinejoin="round"
-            />
-          );
-        })}
-      </g>
-
-      {/* Inner inscribed circles */}
       <circle cx="64" cy="64" r="16" fill="none" stroke="currentColor" strokeOpacity="0.45" strokeWidth="0.7" />
       <circle cx="64" cy="64" r="10" fill="none" stroke="currentColor" strokeOpacity="0.7" strokeWidth="0.6" />
-
-      {/* Inner small rays between circles — radial ticks */}
-      <g opacity="0.65">
-        {Array.from({ length: 12 }).map((_, i) => {
-          const angle = (i * 30 * Math.PI) / 180;
-          const x1 = 64 + Math.cos(angle) * 11;
-          const y1 = 64 + Math.sin(angle) * 11;
-          const x2 = 64 + Math.cos(angle) * 15;
-          const y2 = 64 + Math.sin(angle) * 15;
-          return (
-            <line
-              key={`tick-${i}`}
-              x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke="currentColor"
-              strokeWidth="0.5"
-              strokeLinecap="round"
-            />
-          );
-        })}
-      </g>
-
-      {/* Central dot cluster */}
+      <path d={TICKS} stroke="currentColor" strokeWidth="0.5" strokeLinecap="round" opacity="0.65" />
       <circle cx="64" cy="64" r="3" fill="currentColor" />
       <circle cx="64" cy="64" r="5" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="0.5" />
-
-      {/* Top-corner highlight — sells the engraved feel */}
-      <circle cx="64" cy="64" r="58" fill="url(#mystical-star-highlight)" />
     </svg>
   );
 });

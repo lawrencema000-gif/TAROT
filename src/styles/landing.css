@@ -1,781 +1,417 @@
 /* ═══════════════════════════════════════════════════════════════
-   ARCANA — "Celestial Theater" v3
+   ARCANA — landing
    ═══════════════════════════════════════════════════════════════
 
-   Redesign 2026 / Phase 2 — one gold, one ink ramp.
+   Redesign 2026 / Phase 5c. Ships only with the landing chunk: this file
+   is imported by src/pages/LandingPage.tsx, not by main.tsx, so the
+   native bundle (which never renders the landing) does not carry it.
 
-   This sheet used to carry a second palette (--g #d4a853 over --bg
-   #040407, ink #eae6f2 / #706a82 / #3e3a4d), so the first screen a
-   visitor saw was made of different material than the app they signed
-   into — and token gold #d4af37 was ALSO here (.free-reading-*,
-   .lp-lang-check), so two golds rendered side by side on the hero.
+   What this sheet is for: layout, the three motions the page is allowed,
+   and the Google Play badge crop. What it is NOT for: colour. Every ink
+   is a Tailwind token on the element (text-mystic-*, text-gold, the
+   cosmic inks), every surface is a step of the mystic ramp reached
+   through the rgb(var(--x)) triplets index.css declares. The old sheet
+   redeclared the ink ladder as --tx/--tb/--tm/--td; those are gone.
 
-   Every colour below is now the app's token. Where src/index.css :root
-   has an RGB triplet (gold, surfaces, coral, teal) it is reached through
-   rgb(var(--x)) / rgba(var(--x), α) so the two files cannot drift; the
-   ink ramp and the two cosmic hues have no triplet, so they are declared
-   ONCE on .lp-root below and referenced as var(--t*) / var(--lp-*).
+   Elevation is fill. No shadow, no glow filter and no blur anywhere in
+   this file: a surface sits on the page by being one step lighter than
+   it, on a hairline. The elevation gate (src/test/golden/elevation.test.ts)
+   checks this sheet like every other.
 
-   Mapping (old → token):
-     --g    #d4a853              → rgb(var(--gold-primary))    gold        #d4af37
-     --gl   #e8c97a              → rgb(var(--gold-light))      gold-light  #f4d668
-     --gg   rgba(212,168,83,α)   → rgba(var(--gold-primary), α)
-     --bg   #040407              → rgb(var(--canvas))          mystic-950  #07070f
-     --bg2  #08081a              → rgb(var(--surface-sunken))  mystic-900  #101024
-     --tx   #eae6f2 (+#f0e8d8 #f5edd8 #fff8e7)  → mystic-100  #f2f2f7
-     --tb   (new) #c0c0c0, #d8d4c8              → mystic-300  #c6c6d8
-     --tm   #706a82 (+#a0a0b0)                  → mystic-400  #a3a3bd  (3.97:1 → 7.2:1)
-     --td   #3e3a4d                             → mystic-500  #8f8fae
-     #080808 (ink on a gold fill)               → rgb(var(--canvas))
-     #2a2442 / #15132a (card back)              → rgb(var(--hairline)) / rgb(var(--surface-card))
-     rgba(30,30,60,α)                           → rgba(var(--surface-raised), α)  mystic-800
-     rgba(4,4,7,α), rgba(8,8,16,α)              → rgba(var(--canvas), α)
-     rgba(15,12,28,α)                           → rgba(var(--surface-sunken), α)
-     rgba(212,175,55,α)                         → rgba(var(--gold-primary), α)
-     ambient violets (139,92,246 · 96,76,180 · 140,120,220 · 88,60,160) → cosmic-violet 142,110,181
-     ambient blues   (59,130,246 · 58,110,165)                          → cosmic-blue   74,126,184
-     ambient teal    (40,120,130)                                       → teal          var(--teal-primary)
-     dawn            (224,140,90)                                       → coral         var(--coral-primary)
-     gold motes      (230,200,140)                                      → gold-light    var(--gold-light)
-
-   Kept on purpose: the #fff star dots, and the #000 / #fff Google Play
-   badge (those colours are Google's, not ours). The constellation SVG
-   data-URI cannot read var(), so it carries the token values literally.
-   Radii normalised to the primitives' scale: 12px controls & tiles,
-   16px cards & panels; pills stay pills (Chip is rounded-full).
-   Semantic white-alpha hairlines (--sf/--bd) are unchanged.
+   Motion budget, the whole page:
+     · one entrance for the hero block      (.lp-enter,   500ms, once)
+     · one reveal per section / item        (.lp-sec, .lp-reveal, once)
+     · one ambient animation                (.lp-marquee-track, the deck)
+     · one flip when the demo card turns    (.lp-flip, once)
+   All of it is transform and opacity. The global reduced-motion block in
+   index.css pins every animation and transition to its end state; the
+   marquee is additionally stopped outright below, because a loop pinned
+   to "one iteration of 0.01ms" still jumps once.
 */
 
 .lp-root {
-  --g: rgb(var(--gold-primary)); --gl: rgb(var(--gold-light)); --gg: rgba(var(--gold-primary), 0.25);
-  --bg: rgb(var(--canvas)); --bg2: rgb(var(--surface-sunken));
-  --sf: rgba(255,255,255,0.022); --sfh: rgba(255,255,255,0.045);
-  --bd: rgba(255,255,255,0.045); --bdh: rgba(var(--gold-primary), 0.2);
-  /* ink — mirrors the mystic ladder in tailwind.config.js */
-  --tx: #f2f2f7; /* mystic-100 — headings, primary text */
-  --tb: #c6c6d8; /* mystic-300 — reading copy, control labels */
-  --tm: #a3a3bd; /* mystic-400 — muted body text */
-  --td: #8f8fae; /* mystic-500 — faint meta */
-  /* cosmic hues — mirror cosmic.violet / cosmic.blue in tailwind.config.js */
-  --lp-violet: 142, 110, 181;
-  --lp-blue: 74, 126, 184;
-  min-height: 100vh; background: var(--bg);
-  color: var(--tx); font-family: 'Inter', -apple-system, sans-serif;
-  overflow-x: hidden; -webkit-font-smoothing: antialiased; position: relative;
-}
-.lp-wrap { max-width: 1100px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 2; }
-
-/* ── Noise Texture ── */
-.lp-noise {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat; background-size: 256px 256px;
+  min-height: 100vh;
+  background: rgb(var(--canvas));
+  font-family: 'Inter', 'Inter Fallback', 'Inter Fallback Android', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* ── Gradient Dividers ── */
+/* ── The sky: one static layer ────────────────────────────────────
+   Three soft washes (violet, gold, blue — the cosmic hues and the brand
+   metal) and the same eight gold pinpoints the app shell paints under
+   every route (.constellation-bg in index.css), folded into a single
+   fixed element. Nothing here moves. It replaced 80 twinkling stars,
+   14 rising particles, three 120px-blurred orbs, a noise overlay and six
+   per-section ambient layers. */
+.lp-sky {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(60% 45% at 18% 12%, rgba(142, 110, 181, 0.16), transparent 70%),
+    radial-gradient(50% 40% at 84% 6%, rgba(var(--gold-primary), 0.08), transparent 70%),
+    radial-gradient(55% 45% at 70% 92%, rgba(74, 126, 184, 0.10), transparent 70%),
+    radial-gradient(circle at 10% 20%, rgba(var(--gold-primary), 0.4) 1px, transparent 1px),
+    radial-gradient(circle at 90% 15%, rgba(var(--gold-primary), 0.3) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(var(--gold-primary), 0.35) 1px, transparent 1px),
+    radial-gradient(circle at 20% 80%, rgba(var(--gold-primary), 0.25) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(var(--gold-primary), 0.3) 1px, transparent 1px),
+    radial-gradient(circle at 40% 30%, rgba(var(--gold-primary), 0.2) 1px, transparent 1px),
+    radial-gradient(circle at 70% 90%, rgba(var(--gold-primary), 0.35) 1px, transparent 1px),
+    radial-gradient(circle at 30% 60%, rgba(var(--gold-primary), 0.15) 1px, transparent 1px);
+}
+
+.lp-wrap {
+  max-width: 1100px; margin: 0 auto; padding: 0 16px;
+  position: relative; z-index: 2;
+}
+@media (min-width: 640px) { .lp-wrap { padding: 0 28px; } }
+
+/* ── Hairline between sections ── */
 .lp-divider {
   height: 1px; max-width: 600px; margin: 0 auto; position: relative; z-index: 2;
   background: linear-gradient(90deg, transparent 0%, rgba(var(--gold-primary), 0.15) 30%, rgba(var(--gold-primary), 0.25) 50%, rgba(var(--gold-primary), 0.15) 70%, transparent 100%);
 }
 
-/* ── Stars ── */
-.lp-stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-.lp-star { position: absolute; border-radius: 50%; background: #fff; animation: lp-tw ease-in-out infinite alternate; opacity: 0.06; will-change: opacity; }
-.lp-star.bright { background: var(--g); opacity: 0.2; box-shadow: 0 0 4px var(--gg); }
-@keyframes lp-tw { 0% { opacity: 0.04; transform: scale(0.5); } 100% { opacity: 0.6; transform: scale(1.4); } }
-
-/* ── Particles ── */
-.lp-particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-.lp-particle {
-  position: absolute; bottom: -20px; border-radius: 50%;
-  width: var(--psize); height: var(--psize);
-  background: var(--g); opacity: 0;
-  box-shadow: 0 0 8px var(--gg), 0 0 20px rgba(var(--gold-primary), 0.08);
-  animation: lp-rise linear infinite;
-}
-@keyframes lp-rise {
-  0% { opacity: 0; transform: translateY(0) translateX(0); }
-  8% { opacity: var(--popacity); } 92% { opacity: var(--popacity); }
-  100% { opacity: 0; transform: translateY(-105vh) translateX(var(--pdrift)); }
-}
-
-/* ── Nav ── */
+/* ── Nav ──────────────────────────────────────────────────────────
+   Transparent over the hero; once the page scrolls it becomes the
+   canvas at 96% on a hairline. No blur: a near-opaque fill separates it
+   from the content just as well and costs nothing per frame. */
 .lp-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 14px 0;
-  transition: all 0.5s cubic-bezier(0.4,0,0.2,1); border-bottom: 1px solid transparent;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 8px 0;
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--dur-slow) var(--ease-out), border-color var(--dur-slow) var(--ease-out);
 }
-.lp-nav.solid {
-  background: rgba(var(--canvas), 0.85); backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6); border-bottom-color: var(--bd);
+.lp-nav.is-solid {
+  background: rgba(var(--canvas), 0.96);
+  border-bottom-color: rgb(var(--hairline));
 }
-.lp-nav-in { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
-.lp-nav-brand { display: flex; align-items: center; gap: 10px; }
-.lp-nav-moon { font-size: 1.4rem; color: var(--g); filter: drop-shadow(0 0 10px var(--gg)); }
-.lp-nav-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif; font-size: 1.35rem; font-weight: 600; color: var(--tx); letter-spacing: 0.03em; }
-.lp-nav-right { display: flex; align-items: center; gap: 6px; }
-.lp-nav-link { padding: 8px 16px; color: var(--tm); text-decoration: none; font-size: 0.85rem; border-radius: 12px; transition: color 0.25s; }
-.lp-nav-link:hover { color: var(--tx); }
-.lp-nav-btn {
-  margin-left: 10px; padding: 9px 24px; border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px; background: none; color: var(--tx); font-size: 0.85rem; font-weight: 500;
-  cursor: pointer; transition: all 0.3s;
+.lp-nav-in {
+  max-width: 1100px; margin: 0 auto; padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
-.lp-nav-btn:hover { border-color: var(--g); color: var(--g); box-shadow: 0 0 24px rgba(var(--gold-primary), 0.08); }
-
-/* ── Word Reveal ── */
-.lp-word {
-  display: inline-block; opacity: 0; transform: translateY(20px) rotateX(40deg);
-  animation: lp-word-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+@media (min-width: 640px) { .lp-nav-in { padding: 0 28px; } }
+.lp-nav-brand {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  min-height: 44px; text-decoration: none;
 }
-@keyframes lp-word-in {
-  to { opacity: 1; transform: translateY(0) rotateX(0); }
+.lp-nav-right { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.lp-nav-link {
+  display: none;
+  padding: 0 14px; min-height: 44px; align-items: center;
+  text-decoration: none; border-radius: var(--radius-control);
+  transition: color var(--dur-fast) var(--ease-out);
 }
-
-/* ── Fade In ── */
-.lp-fade-in { opacity: 0; animation: lp-fi 0.8s ease-out forwards; }
-@keyframes lp-fi { to { opacity: 1; } }
+@media (min-width: 900px) { .lp-nav-link { display: inline-flex; } }
+/* The wordmark yields to the controls on a phone: Sign in and the CTA
+   are the essentials, the mark alone still says whose page this is. */
+.lp-nav-word { display: none; }
+@media (min-width: 480px) { .lp-nav-word { display: inline-flex; } }
 
 /* ── Hero ── */
 .lp-hero {
-  position: relative; min-height: 100vh; display: flex; align-items: center;
-  justify-content: center; padding: 120px 28px 80px; gap: 60px; overflow: hidden;
+  position: relative; z-index: 2;
+  padding: 96px 16px 64px;
+  display: flex; justify-content: center;
 }
-.lp-hero-content { position: relative; z-index: 3; max-width: 520px; flex-shrink: 0; }
-
-/* Redesign 2026 — brand lockup at the top of the hero. BrandMark
-   sits above BrandWordmark, both centered above the existing badge.
-   Allows the hero to lead with the ARCANA brand statement before
-   the word-reveal headline kicks in. */
-.lp-hero-lockup {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
-  margin-bottom: 28px;
+@media (min-width: 640px) { .lp-hero { padding: 128px 28px 88px; } }
+.lp-hero-in {
+  width: 100%; max-width: 640px; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
 }
-@media (max-width: 640px) {
-  .lp-hero-lockup { align-items: center; }
+.lp-root .lp-hero-h1 {
+  font-size: clamp(2.25rem, 5.5vw, 3.25rem);
+  margin: 12px 0 16px;
 }
-.lp-hero-visual { position: relative; z-index: 3; flex-shrink: 0; }
-
-.lp-hero-orb { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(120px); }
-.lp-hero-orb.o1 { width: 450px; height: 450px; background: rgba(var(--lp-violet), 0.06); top: 0%; left: -10%; animation: lp-drift 25s ease-in-out infinite; }
-.lp-hero-orb.o2 { width: 400px; height: 400px; background: rgba(var(--gold-primary), 0.04); bottom: 5%; right: -8%; animation: lp-drift 30s ease-in-out infinite reverse; }
-.lp-hero-orb.o3 { width: 300px; height: 300px; background: rgba(var(--lp-blue), 0.03); top: 35%; left: 50%; animation: lp-drift 22s ease-in-out infinite 3s; }
-@keyframes lp-drift { 0%,100% { transform: translate(0,0); } 33% { transform: translate(40px,-30px); } 66% { transform: translate(-30px,35px); } }
-
-.lp-hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 7px 18px; border-radius: 100px;
-  background: rgba(var(--gold-primary), 0.05); border: 1px solid rgba(var(--gold-primary), 0.1);
-  font-size: 0.72rem; font-weight: 500; color: var(--g); letter-spacing: 0.04em; margin-bottom: 28px;
-  animation: lp-fi 0.6s ease-out forwards; opacity: 0;
-}
-.lp-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--g); animation: lp-pulse 2s ease-in-out infinite; }
-@keyframes lp-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; box-shadow: 0 0 8px var(--gg); } }
-
-.lp-hero-h1 {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: clamp(2.8rem, 5.5vw, 4.5rem);
-  font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px;
-  perspective: 400px;
-}
-.lp-hero-line1 { color: var(--tx); }
-
-.lp-shimmer {
-  background: linear-gradient(120deg, var(--g) 0%, var(--gl) 20%, var(--tx) 45%, var(--gl) 70%, var(--g) 100%);
-  background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; animation: lp-shm 5s linear infinite;
-}
-@keyframes lp-shm { 0% { background-position: 250% center; } 100% { background-position: -250% center; } }
-
-.lp-hero-sub { font-size: 1.08rem; color: var(--tm); line-height: 1.7; margin-bottom: 36px; max-width: 440px; }
-.lp-hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 20px; }
-.lp-hero-note { font-size: 0.78rem; color: var(--td); letter-spacing: 0.05em; }
-
-/* ── Orbiting Cards ── */
-/* Increased orbit container from 360 to 400 so the spinning cards
-   (translateX 120 + half-width 50 = 170 max from center) sit
-   comfortably inside the 200px half-width with breathing room.
-   Previously cards extended 190px but the container only allowed
-   180px, causing them to clip + appear "merged" at the edges as the
-   animation rotated them past the boundary. */
-.lp-orbit { position: relative; width: 400px; height: 400px; perspective: 600px; margin: 0 auto; }
-.lp-orbit-ring {
-  position: absolute; inset: 20px; border-radius: 50%;
-  border: 1px solid rgba(var(--gold-primary), 0.06);
-  animation: lp-orbit-spin 30s linear infinite;
-}
-.lp-orbit-glow {
-  position: absolute; inset: 60px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--gold-primary), 0.06) 0%, transparent 70%);
-  animation: lp-orbit-pulse 4s ease-in-out infinite;
-}
-@keyframes lp-orbit-spin { to { transform: rotate(360deg); } }
-@keyframes lp-orbit-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
-
-.lp-orbit-card {
-  position: absolute; left: 50%; top: 50%;
-  width: 100px; height: 155px; border-radius: 12px; overflow: hidden;
-  /* Reduced orbit radius from 140 to 130 so cards (50px half-width)
-     reach max 180px from center vs the new 200px container half —
-     20px of safe margin all around. Prevents the bottom-right
-     "card clipping" the user reported on the live hero. */
-  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(130px) rotate(calc(-1 * var(--angle)));
-  animation: lp-orbit-spin 35s linear infinite;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5); cursor: pointer;
-  transition: box-shadow 0.4s, filter 0.4s;
-  will-change: transform;
-}
-.lp-orbit-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.lp-orbit-card.hovered {
-  box-shadow: 0 12px 50px rgba(0,0,0,0.6), 0 0 40px rgba(var(--gold-primary), 0.15);
-  filter: brightness(1.15);
-  z-index: 10;
+.lp-hero-ctas {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: center;
+  margin-top: 28px;
 }
 
-.lp-orbit-moon {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  font-size: 2.5rem; color: var(--g);
-  filter: drop-shadow(0 0 30px var(--gg));
-  animation: lp-moonglow 4s ease-in-out infinite;
-  z-index: 5;
-}
-@keyframes lp-moonglow {
-  0%,100% { opacity: 0.6; filter: drop-shadow(0 0 20px var(--gg)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 50px var(--gg)) drop-shadow(0 0 100px rgba(var(--gold-primary), 0.05)); }
+/* The one entrance: the hero block fades and rises once, 500ms, and
+   holds. The H1 is inside it, static text — no per-word reveal, no
+   shimmer — so the largest contentful paint is the headline itself. */
+.lp-enter { animation: lp-enter var(--dur-deliberate) var(--ease-out) both; }
+@keyframes lp-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
 }
 
-/* ── Buttons ── */
-.lp-btn-gold {
-  position: relative; display: inline-flex; align-items: center; gap: 8px;
-  padding: 15px 32px; border: none; border-radius: 12px; cursor: pointer;
-  background: linear-gradient(135deg, var(--g), var(--gl));
-  color: rgb(var(--canvas)); font-weight: 600; font-size: 0.98rem;
-  box-shadow: 0 4px 28px var(--gg), inset 0 1px 0 rgba(255,255,255,0.18);
-  transition: transform 0.3s, box-shadow 0.3s; overflow: hidden;
+/* ── Google Play badge ────────────────────────────────────────────
+   public/google-play-badge.png is the official badge, but the file is a
+   900×554 PNG with a light checkerboard baked into the pixels around the
+   badge — there is no alpha channel. The badge itself occupies
+   x 177–722, y 198–354 (546×157). Rendering the whole file would put a
+   pale box on the page, so the <img> is scaled to a 48px badge height
+   and clipped one pixel inside that box; the 5px radius on the clip
+   hides the four corner specks left by the badge's own rounded corners.
+   The 12px padding is Google's clear space: one quarter of the badge
+   height on every side. Replace the asset with the transparent badge
+   from Google's generator and this reduces to `height: 48px`. */
+.lp-play {
+  display: inline-flex; padding: 12px;
+  border-radius: var(--radius-control);
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
-.lp-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 48px var(--gg), 0 0 80px rgba(var(--gold-primary), 0.08); }
-.lp-btn-gold-glow {
-  position: absolute; inset: -50%; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 60%);
-  opacity: 0; transition: opacity 0.4s; pointer-events: none;
+.lp-play:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
+.lp-play-clip {
+  display: block; position: relative; overflow: hidden;
+  width: 168px; height: 48px; border-radius: 5px;
 }
-.lp-btn-gold:hover .lp-btn-gold-glow { opacity: 1; }
-.lp-btn-lg { padding: 18px 44px; font-size: 1.08rem; border-radius: 12px; }
+.lp-play-clip img {
+  position: absolute; left: -55.1px; top: -61.6px;
+  width: 278.7px; height: 171.6px; max-width: none;
+}
+@media (hover: hover) { .lp-play:hover { opacity: 0.88; } }
 
-/* Google Play badge — black/white are Google's badge colours, kept. */
-.lp-play-badge {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 12px 24px; background: #000; border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px; text-decoration: none; transition: all 0.3s; color: #fff;
-}
-.lp-play-badge:hover { border-color: rgba(255,255,255,0.25); transform: scale(1.03); }
-.lp-play-badge-icon { width: 22px; height: 22px; flex-shrink: 0; }
-.lp-play-badge-text { display: flex; flex-direction: column; line-height: 1; }
-.lp-play-badge-label { font-size: 0.58rem; color: rgba(255,255,255,0.6); letter-spacing: 0.03em; text-transform: uppercase; }
-.lp-play-badge-store { font-size: 1rem; font-weight: 600; color: #fff; }
-
-/* ══ Scroll-stop panels + ambient art (Cosmos Update) ═══════════════════
-   html.lp-snap is set only while the landing is mounted. Proximity snapping
-   makes each section "land" as you release the scroll without hijacking it
-   (mandatory would trap long sections like the FAQ). Ambient layers are
-   pure CSS gradients / inline-SVG backgrounds animated with transform +
-   opacity only — no images, no layout thrash, GPU-composited. */
+/* ── Scroll-stop panels ───────────────────────────────────────────
+   html.lp-snap is set only while the landing is mounted. Proximity
+   snapping lets each section land as you release the scroll without
+   hijacking it. */
 html.lp-snap { scroll-snap-type: y proximity; }
-html.lp-snap .lp-sec,
-html.lp-snap .lp-hero { scroll-snap-align: start; scroll-margin-top: 64px; }
-@media (max-height: 599px) {
-  /* Short viewports: sections overflow the screen — snapping would hide
-     content with no way to rest mid-section. Disable entirely. */
-  html.lp-snap { scroll-snap-type: none; }
-}
-
-/* isolation creates a local stacking context so the z-index:-1 layers sit
-   behind ALL section content (including absolutely-positioned children like
-   the hero orbs) without touching any child's own positioning. */
-[data-ambient] { position: relative; isolation: isolate; }
-[data-ambient]::before,
-[data-ambient]::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: -1;
-}
-
-/* aurora — hero: two counter-drifting color fields + a slow conic sheen */
-[data-ambient='aurora']::before {
-  background:
-    radial-gradient(60% 45% at 18% 22%, rgba(var(--lp-violet), 0.20), transparent 70%),
-    radial-gradient(50% 40% at 82% 12%, rgba(var(--gold-primary), 0.10), transparent 70%),
-    radial-gradient(45% 45% at 70% 85%, rgba(var(--lp-blue), 0.14), transparent 70%);
-  animation: amb-drift-a 26s ease-in-out infinite alternate;
-}
-[data-ambient='aurora']::after {
-  background: conic-gradient(from 210deg at 50% -10%,
-    transparent 0deg, rgba(var(--lp-violet), 0.05) 60deg,
-    rgba(var(--gold-primary), 0.05) 120deg, transparent 200deg);
-  animation: amb-drift-b 34s ease-in-out infinite alternate;
-}
-
-/* nebula — features: deep violet/teal clouds, slow breathing */
-[data-ambient='nebula']::before {
-  background:
-    radial-gradient(55% 60% at 15% 65%, rgba(var(--lp-violet), 0.16), transparent 70%),
-    radial-gradient(45% 50% at 88% 30%, rgba(var(--teal-primary), 0.12), transparent 70%);
-  animation: amb-drift-a 30s ease-in-out infinite alternate;
-}
-[data-ambient='nebula']::after {
-  background: radial-gradient(30% 30% at 55% 50%, rgba(var(--gold-primary), 0.05), transparent 75%);
-  animation: amb-breathe 12s ease-in-out infinite;
-}
-
-/* constellation — deck showcase: faint star-line lattice (inline SVG).
-   A data-URI cannot read var(): the stroke is token gold 212,175,55 and
-   the dots gold-light 244,214,104, written literally. */
-[data-ambient='constellation']::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg stroke='rgba(212,175,55,0.10)' stroke-width='0.6'%3E%3Cpath d='M40 80 L130 40 L210 95 L305 60 L380 110' fill='none'/%3E%3Cpath d='M60 300 L150 250 L240 310 L330 260' fill='none'/%3E%3Cpath d='M210 95 L240 310'/%3E%3C/g%3E%3Cg fill='rgba(244,214,104,0.35)'%3E%3Ccircle cx='40' cy='80' r='1.6'/%3E%3Ccircle cx='130' cy='40' r='2.1'/%3E%3Ccircle cx='210' cy='95' r='1.4'/%3E%3Ccircle cx='305' cy='60' r='1.9'/%3E%3Ccircle cx='380' cy='110' r='1.3'/%3E%3Ccircle cx='60' cy='300' r='1.8'/%3E%3Ccircle cx='150' cy='250' r='1.3'/%3E%3Ccircle cx='240' cy='310' r='2.0'/%3E%3Ccircle cx='330' cy='260' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 420px 420px;
-  opacity: 0.55;
-  animation: amb-pan 60s linear infinite;
-}
-
-/* halo — zodiac wheel: a breathing ring of gold light behind the chart */
-[data-ambient='halo']::before {
-  background: radial-gradient(circle at 50% 46%,
-    transparent 30%, rgba(var(--gold-primary), 0.07) 40%,
-    transparent 52%, rgba(var(--lp-violet), 0.05) 64%, transparent 76%);
-  animation: amb-breathe 10s ease-in-out infinite;
-}
-
-/* dust — trust band: sparse rising gold motes */
-[data-ambient='dust']::before {
-  background-image:
-    radial-gradient(1.4px 1.4px at 12% 80%, rgba(var(--gold-light), 0.5), transparent 100%),
-    radial-gradient(1px 1px at 34% 30%, rgba(var(--gold-light), 0.35), transparent 100%),
-    radial-gradient(1.7px 1.7px at 58% 65%, rgba(var(--gold-light), 0.42), transparent 100%),
-    radial-gradient(1.1px 1.1px at 79% 40%, rgba(var(--gold-light), 0.3), transparent 100%),
-    radial-gradient(1.3px 1.3px at 92% 75%, rgba(var(--gold-light), 0.45), transparent 100%);
-  animation: amb-rise 18s linear infinite;
-}
-
-/* dawn — final CTA: warm light rising from the horizon line */
-[data-ambient='dawn']::before {
-  background:
-    linear-gradient(0deg, rgba(var(--gold-primary), 0.10) 0%, transparent 45%),
-    radial-gradient(70% 55% at 50% 108%, rgba(var(--coral-primary), 0.14), transparent 70%);
-  animation: amb-breathe 14s ease-in-out infinite;
-}
-
-@keyframes amb-drift-a {
-  from { transform: translate3d(-2.5%, -1.5%, 0) scale(1.02); }
-  to   { transform: translate3d(2.5%, 1.5%, 0) scale(1.06); }
-}
-@keyframes amb-drift-b {
-  from { transform: translate3d(1.5%, 0, 0) rotate(-1.2deg); }
-  to   { transform: translate3d(-1.5%, 0, 0) rotate(1.2deg); }
-}
-@keyframes amb-breathe {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50%      { opacity: 1;    transform: scale(1.035); }
-}
-@keyframes amb-pan {
-  from { background-position: 0 0; }
-  to   { background-position: 420px 420px; }
-}
-@keyframes amb-rise {
-  from { transform: translateY(2.5%); opacity: 0.65; }
-  50%  { opacity: 1; }
-  to   { transform: translateY(-2.5%); opacity: 0.65; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-ambient]::before, [data-ambient]::after { animation: none; }
-  html.lp-snap { scroll-snap-type: none; }
-}
+html.lp-snap .lp-sec { scroll-snap-align: start; scroll-margin-top: 64px; }
+@media (max-height: 599px) { html.lp-snap { scroll-snap-type: none; } }
 
 /* ── Sections ── */
 .lp-sec {
-  padding: 110px 0; position: relative; z-index: 2;
-  opacity: 0; transform: translateY(32px);
-  transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+  padding: 72px 0; position: relative; z-index: 2;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity var(--dur-deliberate) var(--ease-out), transform var(--dur-deliberate) var(--ease-out);
 }
-.lp-sec.vis { opacity: 1; transform: none; }
+@media (min-width: 640px) { .lp-sec { padding: 110px 0; } }
+.lp-sec.is-vis { opacity: 1; transform: none; }
 
-.lp-header { text-align: center; margin-bottom: 60px; }
-.lp-tag {
-  display: inline-block; font-size: 0.62rem; font-weight: 600;
-  letter-spacing: 0.22em; text-transform: uppercase; color: var(--g);
-  padding: 5px 16px; border: 1px solid rgba(var(--gold-primary), 0.1);
-  border-radius: 999px; background: rgba(var(--gold-primary), 0.03); margin-bottom: 18px;
+/* A card or row arriving inside a section that is already visible. */
+.lp-reveal {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity var(--dur-deliberate) var(--ease-out), transform var(--dur-deliberate) var(--ease-out);
 }
-.lp-h2 {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 600;
-  color: var(--tx); margin-bottom: 12px; letter-spacing: -0.01em;
-}
-.lp-sub { font-size: 1.02rem; color: var(--tm); max-width: 520px; margin: 0 auto; line-height: 1.6; }
+.lp-reveal.is-vis { opacity: 1; transform: none; }
+
+.lp-header { text-align: center; margin-bottom: 40px; }
+@media (min-width: 640px) { .lp-header { margin-bottom: 60px; } }
+.lp-root .lp-h2 { margin: 12px 0 10px; }
+.lp-sub { max-width: 520px; margin: 0 auto; }
 
 /* ── Trust ── */
-.lp-trust { padding: 50px 0 !important; }
-/* minmax(0, 1fr) rather than 1fr throughout: `1fr` means `minmax(auto, 1fr)`,
-   and `auto` floors at min-content, so a track cannot shrink below its widest
-   unbreakable content and the grid pushes the page sideways. These measured
-   clean at 360px in all four locales — this is hardening, not a repair; the
-   same shape DID overflow on /tarot-meanings. */
-.lp-trust-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; padding: 32px 0; }
+.lp-trust { padding: 40px 0; }
+@media (min-width: 640px) { .lp-trust { padding: 56px 0; } }
+/* minmax(0, 1fr) rather than 1fr: `1fr` floors at min-content, so a
+   track cannot shrink below its widest unbreakable word and the grid
+   pushes the page sideways. */
+.lp-trust-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+@media (min-width: 768px) { .lp-trust-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .lp-trust-item { text-align: center; }
-.lp-trust-num {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  font-size: 2.8rem; font-weight: 700; color: var(--g); line-height: 1;
-  filter: drop-shadow(0 0 8px var(--gg));
-}
-.lp-trust-label { font-size: 0.88rem; color: var(--tx); margin-top: 6px; font-weight: 500; }
-.lp-trust-sub { font-size: 0.72rem; color: var(--td); margin-top: 2px; }
 
-/* ── Bento Grid ── */
-.lp-bento {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: auto auto; gap: 14px;
-}
-.lp-bento-card {
-  background: var(--sf); border: 1px solid var(--bd); border-radius: 16px;
-  padding: 30px; backdrop-filter: blur(6px);
-  opacity: 0; transform: translateY(24px);
-  transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
-}
-.lp-bento-card.vis { opacity: 1; transform: none; }
-.lp-bento-card:hover {
-  background: var(--sfh); border-color: var(--bdh); transform: translateY(-6px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 30px rgba(var(--gold-primary), 0.03);
-}
-.lp-bento-card.large { grid-column: span 2; }
-.lp-bento-card.small { grid-column: span 1; }
-
-.lp-bento-icon {
-  width: 52px; height: 52px; border-radius: 12px;
-  background: rgba(var(--gold-primary), 0.05); border: 1px solid rgba(var(--gold-primary), 0.08);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; margin-bottom: 18px; transition: transform 0.4s;
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  color: var(--g); font-weight: 400;
-}
-.lp-bento-card:hover .lp-bento-icon { transform: scale(1.1) rotate(-6deg); }
-.lp-bento-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  font-size: 1.3rem; font-weight: 600; color: var(--tx); margin-bottom: 8px;
-}
-.lp-bento-desc { font-size: 0.88rem; color: var(--tm); line-height: 1.65; }
-
-/* ── Card Marquee ── */
-.lp-showcase { padding-bottom: 80px !important; overflow: hidden; }
-.lp-marquee { overflow: hidden; padding: 12px 0; position: relative; z-index: 2; }
-.lp-marquee-track {
-  display: flex; gap: 14px; width: max-content;
-  animation: lp-scroll 40s linear infinite;
-  will-change: transform;
-}
-.lp-marquee.reverse .lp-marquee-track { animation-direction: reverse; }
-@keyframes lp-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-.lp-marquee-card {
-  flex-shrink: 0; width: 120px; height: 190px; border-radius: 12px;
-  overflow: hidden; transition: transform 0.4s, box-shadow 0.4s;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-}
-.lp-marquee-card:hover {
-  transform: translateY(-14px) scale(1.08);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(var(--gold-primary), 0.08);
-}
-.lp-marquee-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-/* ── Zodiac Chart ── */
-.lp-chart-wrap { position: relative; width: 520px; max-width: 90vw; margin: 0 auto; aspect-ratio: 1; }
-.lp-chart-svg { width: 100%; height: 100%; display: block; animation: lp-chart-rotate 120s linear infinite; }
-.lp-chart-svg:hover { animation-play-state: paused; }
-@keyframes lp-chart-rotate { to { transform: rotate(360deg); } }
-
-.lp-chart-ring-outer { animation: lp-ring-breathe 6s ease-in-out infinite; }
-@keyframes lp-ring-breathe { 0%,100% { stroke: rgba(var(--gold-primary), 0.06); } 50% { stroke: rgba(var(--gold-primary), 0.14); } }
-
-.lp-chart-center-info {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  text-align: center; pointer-events: none; z-index: 3;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-}
-.lp-chart-ci-sym { font-size: 2rem; font-family: serif; filter: drop-shadow(0 0 12px currentColor); transition: all 0.35s; line-height: 1; margin-bottom: 4px; }
-.lp-chart-ci-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
-.lp-chart-ci-trait { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
-.lp-chart-ci-el { font-size: 0.65rem; color: var(--g); letter-spacing: 0.18em; text-transform: uppercase; }
-.lp-chart-ci-dates { font-size: 0.68rem; color: var(--tm); margin-top: 2px; }
-
-/* Zodiac popup */
-.lp-chart-popup {
-  position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
-  width: 320px; background: rgba(var(--canvas), 0.92); backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.06); border-radius: 16px;
-  padding: 20px 22px; z-index: 10; animation: lp-popup-in 0.3s ease-out;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 30px rgba(var(--gold-primary), 0.03);
-  /* The popup is anchored to the bottom of the wheel and overlaps the
-     bottom-half sign hit-areas. Without this, hovering a bottom sign pops
-     the popup UNDER the cursor, stealing the SVG <g>'s mouseleave and
-     causing an enter/leave flicker loop. It's purely informational text
-     (no interactive children), so it must not capture pointer events. */
-  pointer-events: none;
-}
-@keyframes lp-popup-in { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-.lp-chart-popup-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.lp-chart-popup-sym { font-size: 1.6rem; font-family: serif; color: var(--el-color); filter: drop-shadow(0 0 8px var(--el-color)); }
-.lp-chart-popup-name { font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif; font-size: 1.15rem; font-weight: 600; color: var(--tx); }
-.lp-chart-popup-meta { font-size: 0.7rem; color: var(--tm); }
-.lp-chart-popup-trait { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--el-color); margin-bottom: 8px; }
-.lp-chart-popup-desc { font-size: 0.88rem; color: var(--tm); line-height: 1.6; }
-
-/* ── Timeline ── */
-.lp-timeline { position: relative; max-width: 700px; margin: 0 auto; padding: 40px 0; }
-.lp-timeline-line {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
-  background: linear-gradient(180deg, transparent 0%, var(--g) 15%, var(--g) 85%, transparent 100%);
-  opacity: 0.15; transform: translateX(-50%);
-}
-.lp-timeline-item {
-  position: relative; width: 45%; padding: 0 0 48px;
-  opacity: 0; transform: translateY(24px);
-  transition: all 0.6s cubic-bezier(0.4,0,0.2,1);
-}
-.lp-timeline-item.vis { opacity: 1; transform: none; }
-.lp-timeline-item.left { margin-right: auto; text-align: right; padding-right: 40px; }
-.lp-timeline-item.right { margin-left: auto; text-align: left; padding-left: 40px; }
-
-.lp-timeline-dot {
-  position: absolute; top: 12px; width: 12px; height: 12px;
-  border-radius: 50%; background: var(--g); border: 2px solid var(--bg);
-  box-shadow: 0 0 12px var(--gg); z-index: 2;
-}
-.lp-timeline-item.left .lp-timeline-dot { right: -6px; }
-.lp-timeline-item.right .lp-timeline-dot { left: -6px; }
-
-.lp-timeline-card {
-  background: var(--sf); border: 1px solid var(--bd); border-radius: 16px;
-  padding: 28px; position: relative; overflow: hidden;
-  transition: all 0.4s;
-}
-.lp-timeline-card:hover { background: var(--sfh); border-color: var(--bdh); transform: translateY(-4px); }
-.lp-timeline-watermark {
-  position: absolute; top: -10px; right: 16px;
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  font-size: 5rem; font-weight: 700; color: rgba(var(--gold-primary), 0.04);
-  line-height: 1; pointer-events: none;
-}
-.lp-timeline-item.right .lp-timeline-watermark { right: auto; left: 16px; }
-.lp-timeline-icon { font-size: 1.8rem; margin-bottom: 12px; }
-.lp-timeline-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  font-size: 1.2rem; font-weight: 600; color: var(--tx); margin-bottom: 6px;
-}
-.lp-timeline-desc { font-size: 0.88rem; color: var(--tm); line-height: 1.6; }
-
-/* ── FAQ ── */
-.lp-faq-wrap { max-width: 680px; }
-.lp-faq {
-  border: 1px solid var(--bd); border-radius: 16px; margin-bottom: 10px;
-  background: var(--sf); backdrop-filter: blur(6px);
-  transition: all 0.4s; overflow: hidden;
-  opacity: 0; transform: translateY(16px);
-}
-.lp-faq.vis { opacity: 1; transform: none; }
-.lp-faq.open { border-color: rgba(var(--gold-primary), 0.15); box-shadow: 0 0 30px rgba(var(--gold-primary), 0.03); }
-.lp-faq-q {
-  width: 100%; display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; background: none; border: none; color: var(--tx);
-  font-size: 0.95rem; font-weight: 500; cursor: pointer; text-align: left; transition: color 0.25s;
-}
-.lp-faq-q:hover { color: var(--g); }
-.lp-faq-plus { font-size: 1.3rem; color: var(--g); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); flex-shrink: 0; margin-left: 16px; }
-.lp-faq.open .lp-faq-plus { transform: rotate(45deg); }
-.lp-faq-a { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), padding 0.45s; }
-.lp-faq.open .lp-faq-a { max-height: 250px; padding: 0 24px 20px; }
-.lp-faq-a p { font-size: 0.9rem; color: var(--tm); line-height: 1.7; }
-
-/* ── Final CTA ── */
-.lp-cta-final { padding: 130px 0 !important; }
-.lp-cta-moon-wrap { position: relative; display: inline-block; margin-bottom: 32px; }
-.lp-cta-moon {
-  font-size: 4rem; color: var(--g); position: relative; z-index: 2;
-  animation: lp-moonglow 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 40px var(--gg));
-}
-.lp-cta-ray {
-  position: absolute; top: 50%; left: 50%;
-  width: 200px; height: 1px; transform-origin: left center;
-  background: linear-gradient(90deg, rgba(var(--gold-primary), 0.15), transparent);
-  animation: lp-ray-pulse 4s ease-in-out infinite;
-}
-.lp-cta-ray.r1 { transform: rotate(0deg); }
-.lp-cta-ray.r2 { transform: rotate(90deg); }
-.lp-cta-ray.r3 { transform: rotate(45deg); animation-delay: 1s; }
-.lp-cta-ray.r4 { transform: rotate(135deg); animation-delay: 1s; }
-@keyframes lp-ray-pulse { 0%,100% { opacity: 0.3; width: 160px; } 50% { opacity: 0.7; width: 220px; } }
-
-/* ── Footer ── */
-.lp-footer { border-top: 1px solid var(--bd); padding: 48px 0; position: relative; z-index: 2; }
-.lp-footer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-.lp-footer-brand { display: flex; align-items: center; gap: 10px; }
-.lp-footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
-.lp-footer-links a { color: var(--g); text-decoration: none; font-size: 0.85rem; transition: opacity 0.25s; }
-.lp-footer-links a:hover { opacity: 0.65; }
-.lp-footer-bottom { border-top: 1px solid var(--bd); padding-top: 20px; }
-.lp-footer-bottom p { font-size: 0.75rem; color: var(--td); }
-
-/* ── Responsive ── */
-@media (max-width: 1024px) {
-  .lp-hero { flex-direction: column; text-align: center; padding-top: 130px; }
-  .lp-hero-content { max-width: 100%; }
-  .lp-hero-sub { margin-left: auto; margin-right: auto; }
-  .lp-hero-ctas { justify-content: center; }
-  .lp-orbit { width: 300px; height: 300px; }
-  .lp-orbit-card { width: 80px; height: 125px; transform: translate(-50%, -50%) rotate(var(--angle)) translateX(115px) rotate(calc(-1 * var(--angle))); }
+/* ── Bento ── */
+.lp-bento { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (min-width: 768px) {
   .lp-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lp-bento-card.large { grid-column: span 2; }
 }
-@media (max-width: 768px) {
-  .lp-bento { grid-template-columns: 1fr; }
-  .lp-bento-card.large, .lp-bento-card.small { grid-column: span 1; }
-  .lp-trust-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .lp-chart-wrap { width: 360px; }
-  .lp-timeline-item { width: 85%; padding-left: 30px !important; padding-right: 0 !important; margin-left: 15% !important; text-align: left !important; }
-  .lp-timeline-line { left: 15%; }
-  .lp-timeline-dot { left: -6px !important; right: auto !important; }
-  .lp-timeline-watermark { right: auto !important; left: 16px !important; }
-  .lp-chart-popup { width: 280px; }
+@media (min-width: 1024px) {
+  .lp-bento { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lp-bento-card.large { grid-column: span 2; }
+  .lp-bento-card.small { grid-column: span 1; }
 }
-@media (max-width: 640px) {
-  .lp-nav-link { display: none; }
-  .lp-sec { padding: 70px 0 !important; }
-  .lp-orbit { width: 260px; height: 260px; }
-  .lp-orbit-card { width: 65px; height: 100px; transform: translate(-50%, -50%) rotate(var(--angle)) translateX(95px) rotate(calc(-1 * var(--angle))); }
-  .lp-footer-top { flex-direction: column; align-items: center; text-align: center; }
-  .lp-marquee-card { width: 95px; height: 150px; }
-}
-
-
-/* ── Free Reading Demo (landing hero) ──────────────────────────── */
-.free-reading {
-  margin-top: 32px;
-  padding: 24px;
-  background: linear-gradient(140deg, rgba(var(--gold-primary), 0.06), rgba(var(--surface-raised), 0.4));
-  border: 1px solid rgba(var(--gold-primary), 0.2);
-  border-radius: 16px;
-  backdrop-filter: blur(6px);
-  max-width: 480px;
-}
-.free-reading-prompt { text-align: center; }
-.free-reading-icon { font-size: 28px; color: var(--g); margin-bottom: 8px; }
-.free-reading-title { font-size: 22px; font-weight: 600; color: var(--tx); margin: 0 0 6px; }
-.free-reading-sub { font-size: 14px; color: var(--tm); margin: 0 0 18px; }
-.free-reading-btn { padding: 12px 28px; min-height: 46px; }
-.free-reading-picking { text-align: center; }
-.free-reading-cards { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
-.free-reading-card-back {
-  width: 90px; height: 140px; border-radius: 12px;
-  background: linear-gradient(160deg, rgb(var(--hairline)), rgb(var(--surface-card)));
-  border: 1px solid rgba(var(--gold-primary), 0.3);
-  cursor: pointer; transition: transform .25s ease, border-color .25s;
+.lp-bento-icon {
+  width: 52px; height: 52px; border-radius: var(--radius-control);
+  background: rgb(var(--surface-raised)); border: 1px solid rgb(var(--hairline));
   display: flex; align-items: center; justify-content: center;
-  color: rgba(var(--gold-primary), 0.45); font-size: 28px;
-  padding: 0;
+  margin-bottom: 18px;
 }
-.free-reading-card-back:hover { transform: translateY(-8px); border-color: rgba(var(--gold-primary), 0.7); }
-.free-reading-card-glyph { pointer-events: none; }
-.free-reading-revealed { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+
+/* ── The deck: one marquee, the page's one ambient animation ──────
+   22 major arcana laid twice so the loop is seamless; transform only,
+   so it never leaves the compositor. Paused under a hovering pointer,
+   stopped under reduced motion. Decorative — the row is aria-hidden. */
+.lp-showcase { overflow: hidden; }
+.lp-marquee { overflow: hidden; padding: 12px 0; position: relative; z-index: 2; }
+.lp-marquee-track {
+  display: flex; gap: 14px; width: max-content;
+  animation: lp-scroll 70s linear infinite;
+  will-change: transform;
+}
+@keyframes lp-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (hover: hover) { .lp-marquee:hover .lp-marquee-track { animation-play-state: paused; } }
+.lp-marquee-card {
+  flex-shrink: 0; width: 95px; height: 150px; border-radius: var(--radius-control);
+  overflow: hidden; background: rgb(var(--surface-card)); border: 1px solid rgb(var(--hairline));
+}
+@media (min-width: 640px) { .lp-marquee-card { width: 120px; height: 190px; } }
+.lp-marquee-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── Zodiac wheel ─────────────────────────────────────────────────
+   The rings are one static SVG; the twelve signs are real <button>s
+   laid over it at the same polar positions, so they tab, focus, take a
+   tap and carry a name. 44px each — at the phone width the stage is
+   358px wide and neighbouring signs sit 68px apart, so the targets
+   never touch. */
+.lp-wheel { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.lp-wheel-stage { position: relative; width: min(520px, 100%); aspect-ratio: 1; }
+.lp-wheel-svg { width: 100%; height: 100%; display: block; }
+.lp-wheel-sign {
+  position: absolute; width: 44px; height: 44px; padding: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px; cursor: pointer;
+  background: rgb(var(--surface-sunken));
+  border: 1px solid rgba(var(--gold-primary), 0.18);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.lp-wheel-sign.is-active {
+  background: rgb(var(--surface-raised));
+  border-color: currentColor;
+}
+.lp-wheel-sign:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
+@media (hover: hover) {
+  .lp-wheel-sign:hover:not(.is-active) { background: rgb(var(--surface-card)); border-color: rgba(var(--gold-primary), 0.4); }
+}
+.lp-wheel-centre {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 34%; text-align: center; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.lp-wheel-detail { width: 100%; max-width: 520px; min-height: 96px; }
+
+/* ── Ritual timeline ── */
+.lp-timeline { position: relative; max-width: 700px; margin: 0 auto; padding: 8px 0; }
+.lp-timeline-line {
+  position: absolute; left: 22px; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg, transparent 0%, rgba(var(--gold-primary), 0.35) 15%, rgba(var(--gold-primary), 0.35) 85%, transparent 100%);
+  transform: translateX(-50%);
+}
+.lp-timeline-item { position: relative; padding: 0 0 20px 56px; }
+.lp-timeline-item:last-child { padding-bottom: 0; }
+.lp-timeline-dot {
+  position: absolute; left: 22px; top: 26px; width: 12px; height: 12px;
+  border-radius: 50%; background: rgb(var(--gold-primary));
+  border: 2px solid rgb(var(--canvas)); transform: translateX(-50%); z-index: 2;
+}
+@media (min-width: 768px) {
+  .lp-timeline-line { left: 50%; }
+  .lp-timeline-item { width: 50%; padding: 0 0 28px; }
+  .lp-timeline-item.left { padding-right: 40px; }
+  .lp-timeline-item.right { margin-left: auto; padding-left: 40px; }
+  .lp-timeline-item.left .lp-timeline-dot { left: auto; right: -6px; transform: none; }
+  .lp-timeline-item.right .lp-timeline-dot { left: -6px; transform: none; }
+}
+.lp-timeline-watermark {
+  position: absolute; top: -6px; right: 16px;
+  font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+  font-size: 4.5rem; font-weight: 600; line-height: 1; pointer-events: none;
+  color: rgba(var(--gold-primary), 0.07);
+}
+
+/* ── FAQ ── */
+.lp-faq-wrap { max-width: 680px; }
+
+/* ── Final CTA ── */
+.lp-final { padding: 96px 0; }
+@media (min-width: 640px) { .lp-final { padding: 130px 0; } }
+.lp-lockup { display: inline-flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 28px; }
+
+/* ── Footer ── */
+.lp-footer { border-top: 1px solid rgb(var(--hairline)); padding: 40px 0 48px; position: relative; z-index: 2; }
+.lp-footer-link {
+  display: inline-flex; align-items: center; min-height: 32px;
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+/* ── Free reading demo (hero) ──────────────────────────────────────
+   The draw moment. Three Arcana backs (public/card-backs/default.svg,
+   the same file DeckFan shows) to pick from; the chosen card turns
+   over once. */
+.free-reading { width: 100%; max-width: 520px; margin-top: 28px; text-align: center; }
+.free-reading-cards { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+@media (min-width: 640px) { .free-reading-cards { gap: 16px; } }
+.free-reading-card-back {
+  width: 78px; aspect-ratio: 2 / 3; padding: 0;
+  border-radius: var(--radius-inset); overflow: hidden;
+  background: rgb(var(--surface-card)); border: 1px solid rgba(var(--gold-primary), 0.3);
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+@media (min-width: 640px) { .free-reading-card-back { width: 92px; } }
+.free-reading-card-back img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.free-reading-card-back:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
+@media (hover: hover) {
+  .free-reading-card-back:hover:not(:active) { transform: translateY(-6px); border-color: rgba(var(--gold-primary), 0.7); }
+}
+.free-reading-card-back:active { transform: scale(0.97); }
+.free-reading-revealed { display: flex; flex-direction: column; gap: 20px; align-items: center; text-align: center; }
+@media (min-width: 640px) {
+  .free-reading-revealed { flex-direction: row; align-items: flex-start; text-align: left; }
+}
 .free-reading-card-face {
-  width: 130px; height: 200px; border-radius: 12px; overflow: hidden;
-  border: 1px solid rgba(var(--gold-primary), 0.4);
-  flex-shrink: 0;
-  animation: flip-reveal .5s ease-out;
+  width: 120px; aspect-ratio: 2 / 3; flex-shrink: 0;
+  border-radius: var(--radius-inset); overflow: hidden;
+  background: rgb(var(--surface-card)); border: 1px solid rgba(var(--gold-primary), 0.4);
 }
-.free-reading-card-face.reversed { transform: rotate(180deg); }
-.free-reading-card-img { width: 100%; height: 100%; object-fit: cover; }
-.free-reading-card-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--g); padding: 12px; text-align: center; font-size: 13px; }
-@keyframes flip-reveal { from { transform: rotateY(180deg); opacity: 0 } to { transform: rotateY(0); opacity: 1 } }
-.free-reading-result { flex: 1; min-width: 200px; }
-.free-reading-orientation { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g); margin: 0 0 4px; }
-.free-reading-card-name { font-size: 18px; font-weight: 600; color: var(--tx); margin: 0 0 10px; }
-.free-reading-keywords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.free-reading-keyword { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: rgba(var(--gold-primary), 0.1); color: var(--g); }
-.free-reading-meaning { font-size: 13px; color: var(--tb); line-height: 1.5; margin: 0 0 14px; }
-.free-reading-ctas { display: flex; flex-direction: column; gap: 8px; }
-.free-reading-draw-again { background: none; border: none; color: var(--tm); font-size: 13px; cursor: pointer; text-decoration: underline; }
-.free-reading-draw-again:hover { color: var(--g); }
-@media (max-width: 640px) {
-  .free-reading { margin-left: auto; margin-right: auto; padding: 20px; }
-  .free-reading-card-back { width: 75px; height: 115px; }
-  .free-reading-card-face { width: 110px; height: 170px; margin: 0 auto; }
-  .free-reading-revealed { flex-direction: column; align-items: center; text-align: center; }
-  .free-reading-keywords { justify-content: center; }
+.free-reading-card-face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.free-reading-card-face.reversed img { transform: rotate(180deg); }
+/* The one flip: a card turns over once, then holds. */
+.lp-flip { animation: lp-flip var(--dur-deliberate) var(--ease-out) both; }
+@keyframes lp-flip {
+  from { transform: perspective(600px) rotateY(90deg); opacity: 0; }
+  to   { transform: perspective(600px) rotateY(0); opacity: 1; }
 }
+.free-reading-result { flex: 1; min-width: 0; }
+.free-reading-keywords { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; justify-content: center; }
+@media (min-width: 640px) { .free-reading-keywords { justify-content: flex-start; } }
+.free-reading-ctas { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+@media (min-width: 640px) { .free-reading-ctas { align-items: flex-start; } }
 
-
-/* ── Language dropdown (landing nav) ───────────────────────────── */
+/* ── Language dropdown (landing nav) ──────────────────────────────
+   The menu floats over content, so it is one step up the ramp
+   (surface-2 on a hairline) rather than a shadow. The component
+   (src/components/i18n/LanguageDropdown.tsx) carries no colour classes
+   of its own, so its inks are applied here — by token name, through
+   @apply, never as a hex. */
 .lp-lang-dropdown { position: relative; display: inline-block; }
 .lp-lang-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(var(--surface-raised), 0.35);
-  border: 1px solid rgba(var(--gold-primary), 0.22);
-  color: var(--tb);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  @apply text-meta font-medium text-mystic-300;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 0 12px;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid rgb(var(--hairline));
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
 }
-.lp-lang-trigger:hover {
-  border-color: rgba(var(--gold-primary), 0.55);
-  color: var(--tx);
-}
+.lp-lang-trigger:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
+@media (hover: hover) { .lp-lang-trigger:hover { @apply text-mystic-100; border-color: rgba(var(--gold-primary), 0.5); } }
 .lp-lang-code { font-variant-numeric: tabular-nums; }
-
 .lp-lang-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 180px;
-  margin: 0;
-  padding: 6px;
-  list-style: none;
-  background: rgba(var(--surface-sunken), 0.96);
-  border: 1px solid rgba(var(--gold-primary), 0.28);
-  border-radius: 16px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 180px; margin: 0; padding: 6px; list-style: none;
+  background: rgb(var(--surface-raised));
+  border: 1px solid rgb(var(--hairline));
+  border-radius: var(--radius-card);
   z-index: 60;
 }
 .lp-lang-option {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 12px;
-  color: var(--tb);
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  @apply text-ui text-mystic-300;
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  min-height: 44px; padding: 0 12px;
+  background: transparent; border: none;
+  border-radius: var(--radius-control);
+  text-align: left; cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
-.lp-lang-option:hover {
-  background: rgba(var(--gold-primary), 0.09);
-  color: var(--tx);
-}
-.lp-lang-option.is-active {
-  background: rgba(var(--gold-primary), 0.12);
-  color: var(--tx);
-}
+.lp-lang-option:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: -2px; }
+@media (hover: hover) { .lp-lang-option:hover { @apply text-mystic-100; background: rgba(var(--gold-primary), 0.09); } }
+.lp-lang-option.is-active { @apply text-mystic-100; background: rgba(var(--gold-primary), 0.12); }
 .lp-lang-flag { font-size: 18px; line-height: 1; }
 .lp-lang-name { flex: 1; }
-.lp-lang-check { color: var(--g); }
+.lp-lang-check { @apply text-gold; }
 
-@media (max-width: 640px) {
-  .lp-lang-menu { min-width: 160px; }
-  .lp-lang-trigger { padding: 6px 10px; }
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .lp-marquee-track { animation: none; }
+  html.lp-snap { scroll-snap-type: none; }
 }

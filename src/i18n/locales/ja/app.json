@@ -8,7 +8,6 @@
     },
     "subtitle": "今日の宇宙があなたに届けるメッセージ",
     "level": "レベル {{n}}",
-    "xpProgress": "XPの進捗",
     "todaysRitual": "今日のリチュアル",
     "ritualComplete": "リチュアル完了",
     "streak": "{{n}}日連続達成。このまま続けていきましょう。",
@@ -22,24 +21,18 @@
     "xpValue": "{{current}} / {{required}} XP",
     "ritualReady": {
       "title": "今日のリチュアルが、あなたを待っています。",
-      "sub": "カードを一枚引き、心に浮かんだ一文を正直に書いてみましょう。"
+      "sub": "あなたの星占い、一枚のカード、正直な一文。"
     },
     "startTodaysRitual": "今日のリチュアルをはじめる",
     "ritualCards": {
       "todaysEnergy": "今日のエネルギー",
       "yourPrompt": "あなたへのプロンプト",
-      "reflection": "振り返り",
       "yourCard": "あなたのカード",
       "tapToReveal": "タップして開く",
       "reversed": "逆位置",
       "upright": "正位置",
-      "majorArcana": "大アルカナ",
-      "love": "恋愛",
-      "work": "仕事",
-      "mood": "気分",
       "read": "読む",
       "write": "書く",
-      "twoMin": "2分",
       "save": "保存",
       "share": "シェア",
       "meaning": "意味"
@@ -57,7 +50,22 @@
     "loveTreeSub": "90秒、12問 → あなたの愛着スタイルが生きた木として現れます。",
     "loveTreeTitle": "愛の木",
     "exploreMore": "今日のリチュアルのその先へ",
-    "seeAllSaved": "保存したものをすべて見る"
+    "seeAllSaved": "保存したものをすべて見る",
+    "savedTypes": {
+      "horoscope": "星占い",
+      "tarot": "カード",
+      "prompt": "プロンプト"
+    },
+    "shareCard": "今日の私のカードは{{name}}。{{meaning}}",
+    "todaysMansion": "今日の宿",
+    "ritualProgress": "3つのうち{{n}}つ完了",
+    "cosmicScore": {
+      "eyebrow": "今日の宇宙の天気",
+      "counts": "追い風 {{flowing}} · 試練 {{demanding}}",
+      "why": "この数字の理由",
+      "influence": "{{transiting}}があなたの{{natal}}と{{type}}",
+      "footnote": "いまこの瞬間の実際の惑星の位置を、あなたの出生図と照らし合わせて算出しています。示しているのは天気であって、運命ではありません。"
+    }
   },
   "auth": {
     "welcomeBack": "お帰りなさい",
@@ -246,7 +254,8 @@
       "clearMind": "心を澄ませて",
       "spreading": "全78枚を広げています",
       "focusQuestion": "質問に集中してください",
-      "shuffleDeck": "デッキをシャッフル"
+      "shuffleDeck": "デッキをシャッフル",
+      "cutDeck": "デッキをカット"
     },
     "selectView": {
       "chooseMore_one": "あと{{count}}枚選んでください",
@@ -255,11 +264,15 @@
       "trustIntuition": "直感を信じて • 全78枚",
       "selectMore": "あと{{count}}枚選ぶ",
       "revealCards": "カードをめくる",
-      "chooseMore": "あと{{count}}枚選んでください"
+      "chooseMore": "あと{{count}}枚選んでください",
+      "positions": "あなたのスプレッド",
+      "deck": "デッキ",
+      "cardOf": "{{total}}枚中{{n}}枚目",
+      "returnCard": "{{position}}のカードをデッキに戻す",
+      "cardN": "カード{{n}}"
     },
     "revealView": {
       "focusReading": "{{focus}}リーディング",
-      "tapToReveal": "タップしてめくる",
       "revealAll": "すべてめくる",
       "generating": "生成中…",
       "getAIInsight": "AIインサイトを受け取る",
@@ -278,7 +291,9 @@
       "save": "このリーディングを保存",
       "saved": "保存済み",
       "newReading": "新しいリーディングをはじめる",
-      "share": "このリーディングをシェア"
+      "share": "このリーディングをシェア",
+      "revealPosition": "{{position}}をめくる",
+      "openCard": "{{name}}を開く"
     },
     "status": {
       "try": "広告を見る",
@@ -357,8 +372,9 @@
       ]
     },
     "shareText": "Arcanaでの私の{{spread}}タロットリーディング",
-    "share": "リーディングをシェア",
-    "cardBackAlt": "カードの裏面"
+    "celticCross": {
+      "caption": "十字と杖"
+    }
   },
   "journal": {
     "title": "ジャーナル",
@@ -1952,6 +1968,14 @@
         "shadowWork": {
           "label": "シャドウワーク・スプレッド",
           "desc": "内なる作業のための7枚"
+        },
+        "celestialMap": {
+          "label": "セレスティアルマップ",
+          "desc": "40本すべての惑星ラインと都市ごとの解釈"
+        },
+        "reports": {
+          "label": "詳細レポート",
+          "desc": "出生図・キャリア・来年の見通し、ムーンストーンの消費なし"
         }
       },
       "plans": {
@@ -1966,7 +1990,8 @@
       },
       "badges": {
         "bestValue": "ベストバリュー",
-        "foreverAccess": "買い切り"
+        "foreverAccess": "買い切り",
+        "save": "{{percent}}%お得"
       },
       "cta": {
         "getLifetime": "プレミアムを永久に解放する",
@@ -2071,7 +2096,39 @@
           "heading": "仕事での相性を見る",
           "outcome": "ふたりの星座の組み合わせを、一緒に働く相手として読み解きます。友情の相性も一緒に。プレミアムで両方が開きます。",
           "cta": "仕事の相性を解放する"
+        },
+        "natalReport": {
+          "heading": "あなたの出生図・完全版を読む",
+          "outcome": "すべての惑星のサインとハウス、オーブ付きのすべてのアスペクト、そして印刷できるレポート。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "出生図レポートを解放する"
+        },
+        "careerReport": {
+          "heading": "キャリアのアーキタイプ・レポートを読む",
+          "outcome": "最適職種、消耗を招く環境、盲点、そして最初の90日プラン——あなたのタイプに合わせて書かれています。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "キャリアレポートを解放する"
+        },
+        "yearAhead": {
+          "heading": "来年の見通しを読む",
+          "outcome": "あなた自身のチャートへのトランジットを、月ごとの12本のブリーフで。それぞれの期間の日付も一緒に。プレミアムなら、ムーンストーンを使わずに開きます。",
+          "cta": "来年の見通しを解放する"
         }
+      },
+      "sheetTitle": "プレミアム",
+      "plansLabel": "プラン",
+      "perMonthEquivalent": "月あたり{{price}}",
+      "continuity": {
+        "line": "あなたの{{items}}はそのまま残ります。プレミアムは、その上に積み重なります。",
+        "and": "と",
+        "readings": "{{count}}回のリーディング",
+        "readings_one": "{{count}}回のリーディング",
+        "readings_other": "{{count}}回のリーディング",
+        "entries": "{{count}}件のジャーナル",
+        "entries_one": "{{count}}件のジャーナル",
+        "entries_other": "{{count}}件のジャーナル",
+        "streak": "{{count}}日連続の記録",
+        "streak_one": "{{count}}日連続の記録",
+        "streak_other": "{{count}}日連続の記録",
+        "lineOne": "あなたの{{items}}はそのまま残ります。プレミアムは、その上に積み重なります。"
       }
     },
     "gate": {},
@@ -2106,6 +2163,14 @@
         "android": "サブスクリプションのキャンセルや変更は、Google Playストアのアプリまたはウェブサイトから行ってください。変更がここに反映されるまで数分かかることがあります。",
         "ios": "サブスクリプションのキャンセルや変更は、「設定」を開き、自分の名前をタップして「サブスクリプション」から行ってください。変更がここに反映されるまで数分かかることがあります。",
         "web": "サブスクリプションのキャンセルや変更は、このページからお支払い管理ページを開いて行ってください。変更がここに反映されるまで数分かかることがあります。"
+      },
+      "plan": "あなたのプラン",
+      "renewal": {
+        "label": "更新",
+        "renews": "{{date}}に更新",
+        "ends": "{{date}}に終了",
+        "trialEnds": "トライアルは{{date}}に終了",
+        "never": "一度限りのお支払い、更新なし"
       }
     },
     "watchAd": {
@@ -2657,7 +2722,17 @@
     "streak": {
       "dedication": "始めてから毎日、途切れなく。",
       "ritualComplete": "儀式完了",
-      "keepFlowing": "明日も一回続ければ、記録は保たれます。"
+      "keepFlowing": "明日も一回続ければ、記録は保たれます。",
+      "title": "あなたの連続記録",
+      "days": "{{n}}日連続",
+      "firstNight": "最初の夜です。",
+      "lastNights": "直近{{total}}夜のうち、{{done}}夜を完了しました。",
+      "milestone": {
+        "week": "まる一週間、毎晩欠かさず。",
+        "month": "ひと月まるごと、毎晩。",
+        "hundred": "百の夜。",
+        "year": "一年分の夜。"
+      }
     },
     "levelUp": {
       "title": "レベルアップ。",
@@ -4819,7 +4894,69 @@
     "planetLabel": "惑星",
     "transitLabel": "トランジット",
     "houseLabel": "ハウス {{n}}",
-    "aspectLabel": "アスペクト"
+    "aspectLabel": "アスペクト",
+    "wheelAria": "出生図のホイール",
+    "planetAria": "{{sign}}の{{planet}}、{{deg}}°、第{{house}}ハウス",
+    "planetAriaNoHouse": "{{sign}}の{{planet}}、{{deg}}°",
+    "retrograde": "逆行",
+    "orb": "オーブ {{deg}}°",
+    "readMore": "解釈の全文を読む",
+    "planetsInHouse": "ここにある惑星：{{list}}",
+    "emptyHouse": "このハウスに惑星はありません",
+    "houseThemes": {
+      "1": "自己とアイデンティティ",
+      "2": "価値観と所有",
+      "3": "コミュニケーションと学び",
+      "4": "家庭と家族",
+      "5": "創造性と恋愛",
+      "6": "健康と奉仕",
+      "7": "パートナーシップ",
+      "8": "変容と共有の資源",
+      "9": "哲学と旅",
+      "10": "キャリアと社会的イメージ",
+      "11": "コミュニティと志",
+      "12": "スピリチュアリティと潜在意識"
+    },
+    "legendAspects": "アスペクト",
+    "legendElements": "エレメント",
+    "legendModalities": "モダリティ",
+    "orbFilterAria": "描くアスペクトの範囲",
+    "aspectsAll": "すべて（{{n}}）",
+    "aspectsTight": "タイトなオーブ（{{n}}）",
+    "noTightAspects": "タイトなオーブに収まるアスペクトはありません。「すべて」に切り替えると、すべてのつながりが見えます。",
+    "aspectGridAria": "アスペクトグリッド",
+    "gridTapPrompt": "セルをタップしてアスペクトを読む",
+    "modalities": {
+      "Cardinal": "活動宮",
+      "Fixed": "不動宮",
+      "Mutable": "柔軟宮"
+    },
+    "nodes": {
+      "north": "ノースノード",
+      "south": "サウスノード"
+    },
+    "firdaria": {
+      "periodDetail": "{{lord}} · {{from}}〜{{to}}歳 · {{startYear}}〜{{endYear}}年",
+      "subPeriodDetail": "{{lord}}の副期 · {{start}}〜{{end}}",
+      "birth": "誕生",
+      "years": "{{n}}年",
+      "insidePeriod": "いまは{{lord}}の主期（{{start}}〜{{end}}）",
+      "tapPrompt": "期間をタップして年を見る"
+    },
+    "flavour": {
+      "supporting": "追い風",
+      "challenging": "試練",
+      "neutral": "中立"
+    },
+    "luckPillar": {
+      "detail": "{{stem}}{{branch}} · {{from}}〜{{to}}歳 · {{startYear}}〜{{endYear}}年 · {{flavour}}",
+      "tapPrompt": "柱をタップして年を見る",
+      "startAgeEstimated": "開始年齢は推定です。生年月日を追加すると、節気に基づいて正確に計算します。"
+    },
+    "ageLabel": "{{n}}歳",
+    "ziwei": {
+      "body": "身宮"
+    }
   },
   "liveRooms": {
     "title": "ライブルーム",
@@ -5089,6 +5226,14 @@
       "healing": "癒し",
       "home": "住まい",
       "growth": "成長"
+    },
+    "paywallPreview": {
+      "city": "ほかに{{count}}本のラインが{{city}}を通っています",
+      "city_one": "ほかに{{count}}本のラインが{{city}}を通っています",
+      "city_other": "ほかに{{count}}本のラインが{{city}}を通っています",
+      "map": "ほかに{{count}}本のラインがあなたの地図を横切っています",
+      "map_one": "ほかに{{count}}本のラインがあなたの地図を横切っています",
+      "map_other": "ほかに{{count}}本のラインがあなたの地図を横切っています"
     }
   },
   "freeCourse": {
@@ -5193,7 +5338,9 @@
       "deleteTitle": "{{name}}を削除しますか？",
       "deleteBody": "{{name}}の保存された出生データとチャートを削除します。元に戻すことはできません。",
       "keep": "{{name}}を残す",
-      "deleteConfirm": "完全に削除する"
+      "deleteConfirm": "完全に削除する",
+      "rising": "アセンダント{{sign}}",
+      "aspects": "アスペクト"
     },
     "compare": {
       "needOwnBirth": "チャートを比べるには、プロフィールにあなたの生年月日を追加してください。",
@@ -5221,7 +5368,14 @@
           "label": "進行",
           "blurb": "関係のチャートが今どこまで進んだか"
         }
-      }
+      },
+      "aspectsInChart": "このチャートのアスペクト",
+      "resonance": "ふたつのチャートを結ぶ{{n}}のつながりから見た、全体の響き合い",
+      "love": "恋愛",
+      "friendship": "友情",
+      "work": "仕事",
+      "strongest": "もっとも強いつながり",
+      "crossRow": "あなたの{{mine}}と{{name}}の{{theirs}}が{{type}}"
     }
   },
   "mirror": {
@@ -5267,7 +5421,34 @@
     "needBirth": "このチャートを立てるには、プロフィールに生年月日を追加してください。",
     "addBirth": "出生情報を追加する",
     "castFailed": "このチャートを立てられませんでした。接続を確認して、もう一度お試しください。",
-    "retry": "もう一度チャートを立てる"
+    "retry": "もう一度チャートを立てる",
+    "linked": {
+      "ziwei": "中国の皇帝星の体系",
+      "natalReport": "出生図レポートで見る",
+      "yearAhead": "来年の見通しで見る",
+      "people": "「大切な人」で比べる"
+    },
+    "moment": {
+      "lunarReturn": "回帰の瞬間：{{when}}",
+      "skyNow": "立てた時刻：{{when}}",
+      "progressed": "進行先：{{when}}"
+    },
+    "firdaria": {
+      "current": "いまは{{major}}の主期にいます",
+      "currentSub": "いまは{{major}}の主期 · {{sub}}の副期にいます",
+      "dayBirth": "昼生まれ",
+      "nightBirth": "夜生まれ",
+      "flavoredBy": "{{sub}}が彩りを添えます："
+    },
+    "solarArc": "ソーラーアーク：誕生から{{deg}}°",
+    "hitRow": "{{transit}}がネイタルの{{natal}}と{{type}}",
+    "sections": {
+      "chapter": "この章",
+      "balance": "バランス",
+      "hits": "出生図へのヒット",
+      "aspects": "このチャート内のアスペクト",
+      "placements": "配置"
+    }
   },
   "foolsJourney": {
     "signInHint": "ログインすると、あなたの愚者の旅が見られます。",
@@ -5375,5 +5556,9 @@
   },
   "spreads": {
     "pageTitle": "タロットスプレッド"
+  },
+  "share": {
+    "youAnd": "あなたと{{name}}",
+    "yourCompatibility": "あなたの相性"
   }
 }

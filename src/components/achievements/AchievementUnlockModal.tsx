@@ -153,7 +153,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
             Achievement Unlocked!
           </p>
 
-          <h2 className="text-2xl font-bold text-white mb-3">
+          <h2 className="text-2xl font-semibold text-white mb-3">
             {achievement.name}
           </h2>
 
@@ -169,7 +169,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
             `}
           >
             <Trophy className={`w-5 h-5 ${rarityColor}`} />
-            <span className={`text-2xl font-bold ${rarityColor}`}>
+            <span className={`text-2xl font-semibold ${rarityColor}`}>
               +{xpCount}
             </span>
             <span className="text-mystic-400 font-medium">XP</span>

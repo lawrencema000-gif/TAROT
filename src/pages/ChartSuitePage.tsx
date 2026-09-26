@@ -1,30 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2, ChevronRight, Clock } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Section, EmptyState } from '../components/ui';
+import { Card, Button, Page, PageHeader, Section, EmptyState, Tag } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
-import { NatalWheel } from '../components/charts/NatalWheel';
+import { ChartWheel } from '../components/chart/ChartWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { FirdariaTimeline, type FirdariaData } from '../components/charts/FirdariaTimeline';
+import { PlanetGlyph, ZodiacGlyph } from '../components/icons';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { type NatalChart, type AspectData, PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
+import { type NatalChart, type AspectData, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
 import { CHART_TYPES, FIRDARIA_LORD_MEANINGS, type ChartTypeInfo } from '../data/chartSuiteContent';
 import { useT } from '../i18n/useT';
+import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
 
 type Interp = typeof import('../data/interpretations');
 
-/** Types living on other surfaces — hub cards link out. */
-const LINKED: Record<string, { route: string; note: string }> = {
-  ziwei: { route: '/ziwei', note: 'Chinese Emperor-star system' },
-  transits: { route: '/reports/natal', note: 'In your Natal Report' },
-  'solar-return': { route: '/reports/year-ahead', note: 'In your Year-Ahead Report' },
-  progressions: { route: '/reports/natal', note: 'In your Natal Report' },
-  synastry: { route: '/people', note: 'Compare in People' },
-  composite: { route: '/people', note: 'Compare in People' },
-  davison: { route: '/people', note: 'Compare in People' },
-  'progressed-composite': { route: '/people', note: 'Compare in People' },
+/** Types living on other surfaces — hub cards link out. Routes match App.tsx. */
+const LINKED: Record<string, { route: string; noteKey: string; note: string }> = {
+  ziwei: { route: '/ziwei', noteKey: 'chartSuite.linked.ziwei', note: 'Chinese emperor-star system' },
+  transits: { route: '/reports/natal-chart', noteKey: 'chartSuite.linked.natalReport', note: 'In your natal report' },
+  'solar-return': { route: '/reports/year-ahead', noteKey: 'chartSuite.linked.yearAhead', note: 'In your year-ahead report' },
+  progressions: { route: '/reports/natal-chart', noteKey: 'chartSuite.linked.natalReport', note: 'In your natal report' },
+  synastry: { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
+  composite: { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
+  davison: { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
+  'progressed-composite': { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
 };
 
 interface SuiteResp {
@@ -34,6 +36,11 @@ interface SuiteResp {
   arc?: number;
   crossAspects?: AspectData[];
   firdaria?: FirdariaData;
+}
+
+/** A planet name from the chart data, localised when it is one of the ten the app names. */
+function planetName(p: string): string {
+  return isPlanet(p) ? localizePlanetName(p) : p;
 }
 
 /**
@@ -105,13 +112,13 @@ export function ChartSuitePage() {
             return (
               <button key={c.key}
                 onClick={() => (linked ? navigate(linked.route) : setParams({ type: c.key }))}
-                className="w-full text-left rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/30 transition-colors active:scale-[0.99]">
+                className="w-full text-left rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/30 transition-colors active:scale-[0.99]">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-medium text-mystic-100">{c.name}</div>
                     <div className="text-meta text-gold/80 mt-0.5">{c.tagline}</div>
                     <div className="text-ui text-mystic-400 mt-1 line-clamp-2">{c.description}</div>
-                    {linked && <div className="font-display-eyebrow text-mystic-500 mt-1.5">{linked.note} →</div>}
+                    {linked && <div className="font-display-eyebrow text-mystic-500 mt-1.5">{t(linked.noteKey, { defaultValue: linked.note })} →</div>}
                   </div>
                   <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
                 </div>
@@ -125,6 +132,15 @@ export function ChartSuitePage() {
 
   // ── detail view ──
   const chart = resp?.chart ?? null;
+  const momentText = resp?.moment
+    ? (() => {
+        const when = new Date(resp.moment).toLocaleString();
+        if (selected.key === 'lunar-return') return t('chartSuite.moment.lunarReturn', { defaultValue: 'Return moment: {{when}}', when });
+        if (selected.key === 'sky-now') return t('chartSuite.moment.skyNow', { defaultValue: 'Cast: {{when}}', when });
+        return t('chartSuite.moment.progressed', { defaultValue: 'Progressed to: {{when}}', when });
+      })()
+    : null;
+
   return (
     <Page spacing="md">
       <PageHeader
@@ -152,39 +168,57 @@ export function ChartSuitePage() {
         <>
           <Card className="p-4 space-y-3">
             {resp.firdaria.current && (
-              <p className="text-ui text-mystic-200">
-                You are in your <span className="text-gold font-medium">{resp.firdaria.current.major}</span> period
-                {resp.firdaria.current.sub && <> · <span className="text-gold/80">{resp.firdaria.current.sub}</span> sub-period</>}
-                <span className="text-mystic-500"> ({resp.firdaria.sect} birth)</span>
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-ui text-mystic-200">
+                  {resp.firdaria.current.sub
+                    ? t('chartSuite.firdaria.currentSub', {
+                        defaultValue: 'You are in your {{major}} period · {{sub}} sub-period',
+                        major: planetName(resp.firdaria.current.major),
+                        sub: planetName(resp.firdaria.current.sub),
+                      })
+                    : t('chartSuite.firdaria.current', {
+                        defaultValue: 'You are in your {{major}} period',
+                        major: planetName(resp.firdaria.current.major),
+                      })}
+                </p>
+                <Tag tone="neutral">
+                  {resp.firdaria.sect === 'day'
+                    ? t('chartSuite.firdaria.dayBirth', { defaultValue: 'Day birth' })
+                    : t('chartSuite.firdaria.nightBirth', { defaultValue: 'Night birth' })}
+                </Tag>
+              </div>
             )}
             {profile?.birthDate && <FirdariaTimeline data={resp.firdaria} birthDate={profile.birthDate} />}
           </Card>
           {resp.firdaria.current && (
-            <Section title="This chapter" headingLevel="h3" contentClassName="reading-copy">
+            <Section title={t('chartSuite.sections.chapter', { defaultValue: 'This chapter' })} headingLevel="h3" contentClassName="reading-copy">
               <p>{FIRDARIA_LORD_MEANINGS[resp.firdaria.current.major]}</p>
               {resp.firdaria.current.sub && resp.firdaria.current.sub !== resp.firdaria.current.major && (
-                <p>Flavored by {resp.firdaria.current.sub}: {FIRDARIA_LORD_MEANINGS[resp.firdaria.current.sub]}</p>
+                <p>
+                  {t('chartSuite.firdaria.flavoredBy', { defaultValue: 'Flavored by {{sub}}:', sub: planetName(resp.firdaria.current.sub) })}{' '}
+                  {FIRDARIA_LORD_MEANINGS[resp.firdaria.current.sub]}
+                </p>
               )}
             </Section>
           )}
         </>
       ) : chart ? (
         <>
-          {resp?.moment && (
+          {momentText && (
             <p className="text-center text-meta text-mystic-400 flex items-center justify-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              {selected.key === 'lunar-return' ? 'Return moment: ' : selected.key === 'sky-now' ? 'Cast: ' : 'Progressed to: '}
-              {new Date(resp.moment).toLocaleString()}
+              <Clock className="w-3.5 h-3.5" aria-hidden />
+              {momentText}
             </p>
           )}
           {typeof resp?.arc === 'number' && (
-            <p className="text-center text-meta text-mystic-400">Solar arc: {resp.arc.toFixed(2)}° from birth</p>
+            <p className="text-center text-meta text-mystic-400">
+              {t('chartSuite.solarArc', { defaultValue: 'Solar arc: {{deg}}° from birth', deg: resp.arc.toFixed(2) })}
+            </p>
           )}
-          <Card className="p-4 flex justify-center">
-            <div className="w-full max-w-[360px]"><NatalWheel chart={chart} /></div>
+          <Card padding="sm">
+            <ChartWheel chart={toWheelChart(chart)} />
           </Card>
-          <Section title="Balance" headingLevel="h3">
+          <Section title={t('chartSuite.sections.balance', { defaultValue: 'Balance' })} headingLevel="h3">
             <ElementBalance elements={chart.elements} modalities={chart.modalities} />
           </Section>
           {resp?.crossAspects && resp.crossAspects.length > 0 && (
@@ -192,7 +226,7 @@ export function ChartSuitePage() {
               title={
                 <span className="flex items-center gap-2">
                   <HoroscopeWheelIcon className="w-4 h-4 text-gold" />
-                  Hits to your natal chart
+                  {t('chartSuite.sections.hits', { defaultValue: 'Hits to your natal chart' })}
                 </span>
               }
               headingLevel="h3"
@@ -200,30 +234,43 @@ export function ChartSuitePage() {
             >
               {resp.crossAspects.slice(0, 8).map((a, i) => (
                 <div key={i} className="text-ui">
-                  <span className="text-mystic-200">
-                    <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet1]}</span> {a.planet1}
-                    <span className="text-mystic-500"> {a.type} </span>
-                    natal <span style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[a.planet2]}</span> {a.planet2}
+                  <span className="text-mystic-200 inline-flex items-center gap-1.5 flex-wrap">
+                    {isPlanet(a.planet1) && <PlanetGlyph planet={a.planet1} size={16} className="text-gold" />}
+                    {t('chartSuite.hitRow', {
+                      defaultValue: '{{transit}} {{type}} natal {{natal}}',
+                      transit: planetName(a.planet1),
+                      type: isAspectType(a.type) ? localizeAspectName(a.type) : a.type,
+                      natal: planetName(a.planet2),
+                    })}
+                    {isPlanet(a.planet2) && <PlanetGlyph planet={a.planet2} size={16} className="text-gold" />}
                   </span>
-                  <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+                  <span className="text-meta text-mystic-400"> · {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
                   {interp && <p className="reading-copy mt-0.5">{interp.aspectText(a.planet1, a.planet2, a.type)}</p>}
                 </div>
               ))}
             </Section>
           )}
           {chart.aspects.length > 0 && (
-            <Section title="Aspects within this chart" headingLevel="h3">
+            <Section title={t('chartSuite.sections.aspects', { defaultValue: 'Aspects within this chart' })} headingLevel="h3">
               <AspectGrid aspects={chart.aspects} />
             </Section>
           )}
           {chart.planets.length > 0 && (
-            <Section title="Placements" headingLevel="h3" spacing="sm">
+            <Section title={t('chartSuite.sections.placements', { defaultValue: 'Placements' })} headingLevel="h3" spacing="sm">
               {chart.planets.map((p) => (
                 <div key={p.planet} className="flex items-center gap-2 py-1.5 border-b border-mystic-800/40 last:border-0 text-ui">
-                  <span className="w-6 text-center" style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[p.planet]}</span>
-                  <span className="text-mystic-100">{p.planet}</span>
-                  <span className="text-mystic-400">in {p.sign} {SIGN_GLYPH[p.sign]}</span>
-                  <span className="text-meta text-mystic-400 ml-auto">{p.degree.toFixed(1)}°{p.retrograde ? ' ℞' : ''}</span>
+                  <span className="w-6 flex justify-center">
+                    {isPlanet(p.planet) ? <PlanetGlyph planet={p.planet} size={18} className="text-gold" /> : <span className="text-mystic-300">{p.planet.charAt(0)}</span>}
+                  </span>
+                  <span className="text-mystic-100">
+                    {isZodiacSign(p.sign)
+                      ? t('horoscope.birthChartView.planetInSign', { planet: planetName(p.planet), sign: localizeSignName(p.sign) })
+                      : `${planetName(p.planet)} · ${p.sign}`}
+                  </span>
+                  {isZodiacSign(p.sign) && <ZodiacGlyph sign={p.sign} size={16} className="text-mystic-400" />}
+                  <span className="text-meta text-mystic-400 ml-auto">
+                    {p.degree.toFixed(1)}°{p.retrograde ? <span className="text-coral"> ℞</span> : ''}
+                  </span>
                 </div>
               ))}
             </Section>

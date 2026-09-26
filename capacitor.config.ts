@@ -24,7 +24,7 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: false,
-    backgroundColor: '#0a0a0f',
+    backgroundColor: '#07070f',
     buildOptions: {
       keystorePath: undefined,
       keystorePassword: undefined,
@@ -37,7 +37,7 @@ const config: CapacitorConfig = {
     // iOS-specific settings. Bundle ID + signing handled in Xcode after
     // `npx cap add ios` is run on a Mac. The values here only affect the
     // runtime (background color, scheme, content inset, etc.).
-    backgroundColor: '#0a0a0f',
+    backgroundColor: '#07070f',
     contentInset: 'always',
     // Allow the WebView to handle universal links / external schemes
     // (Sign in with Apple opens appleid.apple.com via system browser).
@@ -50,7 +50,7 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchAutoHide: true,
-      backgroundColor: '#0a0a0f',
+      backgroundColor: '#07070f',
       showSpinner: false,
       androidScaleType: 'CENTER_CROP',
       splashFullScreen: true,

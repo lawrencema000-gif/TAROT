@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { Card } from '../ui';
+import { Card, EyebrowLabel } from '../ui';
+import { useT } from '../../i18n/useT';
 import { mansionForDate, PLANET7_INFO } from '../../data/lunarMansions';
 import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansionsContent';
 
@@ -13,6 +14,7 @@ import { MANSION_MEANINGS, MANSION_DAILY_ADVICE } from '../../data/lunarMansions
  * it works from the very first session.
  */
 export function DailyMansionCard() {
+  const { t } = useT('app');
   const navigate = useNavigate();
   // Recomputed per mount; the mansion turns over at CST midnight and the whole
   // calculation is a subtraction, so there is nothing to memoise across days.
@@ -23,27 +25,22 @@ export function DailyMansionCard() {
   const advice = MANSION_DAILY_ADVICE[mansion.key];
 
   return (
-    <Card
-      className="p-4 cursor-pointer hover:border-gold/30 transition-colors active:scale-[0.99]"
-      onClick={() => navigate('/mansions')}
-    >
-      <div className="flex items-center gap-3">
-        <span className="text-3xl text-gold flex-shrink-0" style={{ fontFamily: 'serif' }}>
+    <Card padding="md" interactive role="link" tabIndex={0} onClick={() => navigate('/mansions')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/mansions'); } }}>
+      <div className="flex items-center gap-4">
+        <span className="w-12 h-12 rounded-control bg-gold/10 text-gold font-display text-title flex items-center justify-center shrink-0" aria-hidden>
           {mansion.cn}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-mystic-500">
-              Today’s mansion
-            </span>
-            <span className="text-[10px] text-mystic-600">
+            <EyebrowLabel>{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
+            <span className="text-caption text-mystic-500">
               {mansion.cn}{PLANET7_INFO[mansion.planet].cn}{mansion.animalCn}
             </span>
           </div>
-          <div className="text-sm text-mystic-100">{meaning?.title}</div>
-          <p className="text-xs text-mystic-400 leading-relaxed line-clamp-2 mt-0.5">{advice}</p>
+          <div className="text-ui text-mystic-100 mt-0.5">{meaning?.title}</div>
+          <p className="text-meta text-mystic-400 leading-relaxed line-clamp-2 mt-0.5">{advice}</p>
         </div>
-        <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
+        <ChevronRight className="w-5 h-5 text-mystic-500 shrink-0" aria-hidden />
       </div>
     </Card>
   );

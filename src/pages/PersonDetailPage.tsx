@@ -2,21 +2,26 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Pencil, Trash2, GitCompareArrows } from 'lucide-react';
 import { Card, Button, Sheet, toast, Page, PageHeader, Section, Disclosure, Skeleton, ReadingProse } from '../components/ui';
-import { NatalWheel } from '../components/charts/NatalWheel';
+import { ChartWheel } from '../components/chart/ChartWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
+import { PlanetGlyph, ZodiacGlyph } from '../components/icons';
 import { PersonForm } from '../components/people/PersonForm';
 import { PersonAIReading } from '../components/people/PersonAIReading';
 import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
 import { supabase } from '../lib/supabase';
-import { type NatalChart, PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
+import { type NatalChart, SIGN_GLYPH, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
 import { readPet, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
 import { useT } from '../i18n/useT';
+import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
 
 type Interp = typeof import('../data/interpretations');
 
 const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other', pet: 'Pet' };
+
+const planetName = (p: string) => (isPlanet(p) ? localizePlanetName(p) : p);
+const signName = (s: string) => (isZodiacSign(s) ? localizeSignName(s) : s);
 
 export function PersonDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +77,16 @@ export function PersonDetailPage() {
   const sun = chart?.planets.find((p) => p.planet === 'Sun');
   const moon = chart?.planets.find((p) => p.planet === 'Moon');
 
+  const bigThree: { key: string; label: string; sign: string; glyph: React.ReactNode }[] = !isPet && chart
+    ? [
+        sun && { key: 'sun', label: t('horoscope.birthChartView.sun'), sign: sun.sign, glyph: <PlanetGlyph planet="Sun" size={22} className="text-gold mx-auto" /> },
+        moon && { key: 'moon', label: t('horoscope.birthChartView.moon'), sign: moon.sign, glyph: <PlanetGlyph planet="Moon" size={22} className="text-gold mx-auto" /> },
+        chart.ascendantSign && isZodiacSign(chart.ascendantSign)
+          ? { key: 'rising', label: t('horoscope.birthChartView.rising'), sign: chart.ascendantSign, glyph: <ZodiacGlyph sign={chart.ascendantSign} size={22} className="text-gold mx-auto" /> }
+          : null,
+      ].filter((b): b is NonNullable<typeof b> => Boolean(b))
+    : [];
+
   return (
     <Page spacing="md">
       <PageHeader
@@ -82,9 +97,9 @@ export function PersonDetailPage() {
         title={person.name}
         subtitle={!isPet && chart ? (
           <>
-            {sun && <>Sun in {sun.sign} {SIGN_GLYPH[sun.sign]}</>}
-            {moon && <> · Moon in {moon.sign} {SIGN_GLYPH[moon.sign]}</>}
-            {chart.ascendantSign && <> · {chart.ascendantSign} Rising</>}
+            {sun && t('horoscope.birthChartView.planetInSign', { planet: planetName('Sun'), sign: signName(sun.sign) })}
+            {moon && <> · {t('horoscope.birthChartView.planetInSign', { planet: planetName('Moon'), sign: signName(moon.sign) })}</>}
+            {chart.ascendantSign && <> · {t('people.detail.rising', { defaultValue: '{{sign}} rising', sign: signName(chart.ascendantSign) })}</>}
           </>
         ) : undefined}
       />
@@ -125,23 +140,19 @@ export function PersonDetailPage() {
       )}
 
       {!isPet && chart && (
-        <Card className="p-4 flex justify-center">
-          <div className="w-full max-w-[360px]"><NatalWheel chart={chart} /></div>
+        <Card padding="sm">
+          <ChartWheel chart={toWheelChart(chart)} />
         </Card>
       )}
 
       {/* Big Three */}
-      {!isPet && chart && (
+      {bigThree.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
-          {[
-            sun && { g: PLANET_GLYPH.Sun, t: 'Sun', s: sun.sign },
-            moon && { g: PLANET_GLYPH.Moon, t: 'Moon', s: moon.sign },
-            chart.ascendantSign ? { g: 'AC', t: 'Rising', s: chart.ascendantSign } : null,
-          ].filter(Boolean).map((b) => (
-            <div key={b!.t} className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-3 text-center">
-              <div className="text-xl" style={{ fontFamily: 'serif' }}>{b!.g}</div>
-              <div className="text-meta uppercase tracking-wider text-mystic-400 mt-1">{b!.t}</div>
-              <div className="text-ui text-gold">{b!.s}</div>
+          {bigThree.map((b) => (
+            <div key={b.key} className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-3 text-center">
+              {b.glyph}
+              <div className="text-meta uppercase tracking-wider text-mystic-400 mt-1">{b.label}</div>
+              <div className="text-ui text-gold">{signName(b.sign)}</div>
             </div>
           ))}
         </div>
@@ -153,7 +164,7 @@ export function PersonDetailPage() {
       {/* Placements with interpretations */}
       {!isPet && chart && (
         <Card className="p-4 space-y-1">
-          <h3 className="heading-display-md text-mystic-100 mb-2">Placements</h3>
+          <h3 className="heading-display-md text-mystic-100 mb-2">{t('chartSuite.sections.placements', { defaultValue: 'Placements' })}</h3>
           {chart.planets.map((p) => {
             const open = openPlanet === p.planet;
             const sText = interp?.planetInSignText(p.planet, p.sign);
@@ -164,13 +175,20 @@ export function PersonDetailPage() {
                 variant="row"
                 open={open}
                 onOpenChange={(next) => setOpenPlanet(next ? p.planet : null)}
-                icon={<span className="text-lg w-6 text-center block text-mystic-200" style={{ fontFamily: 'serif' }}>{PLANET_GLYPH[p.planet]}</span>}
+                icon={
+                  <span className="w-6 flex justify-center">
+                    {isPlanet(p.planet) ? <PlanetGlyph planet={p.planet} size={20} className="text-mystic-200" /> : <span className="text-mystic-200">{p.planet.charAt(0)}</span>}
+                  </span>
+                }
                 label={
                   <>
-                    <span className="text-mystic-100">{p.planet}</span>
-                    <span className="text-mystic-400"> in {p.sign} {SIGN_GLYPH[p.sign]}</span>
-                    {p.house && <span className="text-meta text-mystic-400"> · House {p.house}</span>}
-                    {p.retrograde && <span className="text-red-400 text-xs"> ℞</span>}
+                    <span className="text-mystic-100">
+                      {isZodiacSign(p.sign)
+                        ? t('horoscope.birthChartView.planetInSign', { planet: planetName(p.planet), sign: localizeSignName(p.sign) })
+                        : `${planetName(p.planet)} · ${p.sign}`}
+                    </span>
+                    {p.house && <span className="text-meta text-mystic-400"> · {t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: p.house })}</span>}
+                    {p.retrograde && <span className="text-coral text-meta"> ℞</span>}
                   </>
                 }
                 contentClassName="pl-9 reading-copy"
@@ -185,20 +203,22 @@ export function PersonDetailPage() {
 
       {/* Element / modality balance */}
       {!isPet && chart && (
-        <Section title="Balance" headingLevel="h3">
+        <Section title={t('chartSuite.sections.balance', { defaultValue: 'Balance' })} headingLevel="h3">
           <ElementBalance elements={chart.elements} modalities={chart.modalities} />
         </Section>
       )}
 
       {/* Aspects */}
       {chart && chart.aspects.length > 0 && (
-        <Section title="Aspects" headingLevel="h3" contentClassName="space-y-3">
+        <Section title={t('people.detail.aspects', { defaultValue: 'Aspects' })} headingLevel="h3" contentClassName="space-y-3">
           <AspectGrid aspects={chart.aspects} />
           <div className="space-y-3 pt-1">
             {chart.aspects.slice(0, 6).map((a, i) => (
               <div key={i} className="text-ui">
-                <span className="text-mystic-200">{a.planet1} {a.type} {a.planet2}</span>
-                <span className="text-meta text-mystic-400"> · orb {a.orb}°</span>
+                <span className="text-mystic-200">
+                  {planetName(a.planet1)} {isAspectType(a.type) ? localizeAspectName(a.type) : a.type} {planetName(a.planet2)}
+                </span>
+                <span className="text-meta text-mystic-400"> · {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
                 {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
               </div>
             ))}

@@ -7,7 +7,7 @@ import { EyebrowLabel, SectionDivider } from './Ornament';
  *
  * 63 pages hand-wrote this block and 39 of them hand-rolled the back
  * button on top of it, so no two screens open the same way: some titles
- * are `heading-display-xl`, some are `text-2xl font-bold`, the back
+ * are `heading-display-xl`, some are `text-2xl font-semibold`, the back
  * affordance is a 16px hit area on one page and a 44px one on the next,
  * and the eyebrow appears above the title on Home but below it on
  * People. None of that variation carries meaning. It is just what

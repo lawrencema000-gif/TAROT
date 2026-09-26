@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { X, Crown, Check, Gift } from 'lucide-react';
-import { MysticalStar, Badge } from '../ui';
+import { X, Check, Gift } from 'lucide-react';
+import { Badge, Button, DeckFan } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService, PRODUCT_IDS } from '../../services/billing';
 import { useT } from '../../i18n/useT';
@@ -19,6 +19,13 @@ interface YearlyOffer {
   trialDays: number | null;
 }
 
+/**
+ * A centred modal rather than a Sheet on purpose: it appears thirty seconds
+ * into a session over whatever is on screen, which may itself be a Sheet at
+ * z-50, so it sits one layer above. It still behaves as a dialog — labelled,
+ * modal, dismissed by the scrim or Escape — and its entrance is the shared
+ * slide-up, once.
+ */
 export function TrialReminderModal() {
   const { user, profile } = useAuth();
   const { t } = useT('app');
@@ -75,6 +82,16 @@ export function TrialReminderModal() {
     };
   }, [user, profile]);
 
+  // Escape closes the reminder, as it does every other dialog in the app.
+  useEffect(() => {
+    if (!open || showPaywall) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, showPaywall]);
+
   if (showPaywall) {
     return <PaywallSheet open onClose={() => { setShowPaywall(false); setOpen(false); }} />;
   }
@@ -115,29 +132,28 @@ export function TrialReminderModal() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-md bg-gradient-to-br from-mystic-900 via-mystic-900 to-mystic-950 border border-gold/30 rounded-sheet overflow-hidden animate-slide-up"
+        className="relative w-full max-w-md bg-mystic-850 border border-gold/25 rounded-sheet overflow-hidden animate-slide-up"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0px)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold/15 via-transparent to-transparent pointer-events-none" />
-
         <button
+          type="button"
           onClick={() => setOpen(false)}
           aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
-          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-mystic-800/60 hover:bg-mystic-800 transition-colors"
+          className="
+            absolute top-3 right-3 z-10 w-11 h-11 inline-flex items-center justify-center rounded-full
+            hairline-gold-soft text-mystic-300 touch-manipulation [-webkit-tap-highlight-color:transparent]
+            transition-[transform,color] duration-fast ease-out motion-safe:active:scale-[0.92] active:text-mystic-100
+            [@media(hover:hover)]:[&:hover:not(:active)]:text-mystic-100
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50
+            focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-950
+          "
         >
-          <X className="w-4 h-4 text-mystic-300" />
+          <X className="w-5 h-5" aria-hidden />
         </button>
 
-        <div className="relative px-6 pt-8 pb-6 flex flex-col items-center">
-          <div className="relative mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold via-gold-dark to-gold flex items-center justify-center">
-              <Crown className="w-8 h-8 text-mystic-950" />
-            </div>
-            <div className="absolute -top-1 -right-1 w-6 h-6 bg-cosmic-blue rounded-full flex items-center justify-center animate-pulse">
-              <MysticalStar size={12} className="text-white" />
-            </div>
-          </div>
+        <div className="px-6 pt-7 pb-6 flex flex-col items-center">
+          <DeckFan size="sm" back={profile?.card_back_url} className="mb-3" />
 
           {hasTrial && (
             <Badge tone="gold" className="mb-3">
@@ -148,20 +164,20 @@ export function TrialReminderModal() {
 
           <h2
             id="trial-reminder-title"
-            className="font-display text-2xl text-center text-mystic-100 mb-2"
+            className="heading-display-lg text-center text-mystic-100 text-balance"
           >
             {hasTrial
               ? t('premium.trialReminder.title', { defaultValue: 'Try Premium free for {{days}} days', days: trialDays })
               : t('premium.trialReminder.noTrial.title', { defaultValue: 'Open everything with Premium' })}
           </h2>
-          <p className="text-sm text-mystic-400 text-center max-w-xs mb-5">
+          <p className="mt-2 text-ui text-mystic-300 text-center max-w-xs">
             {subtitle}
           </p>
 
-          <ul className="w-full space-y-2 mb-6">
+          <ul className="w-full mt-5 space-y-2">
             {benefits.map((benefit) => (
-              <li key={benefit} className="flex items-center gap-2.5 text-sm text-mystic-200">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center">
+              <li key={benefit} className="flex items-start gap-2.5 text-ui text-mystic-200">
+                <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-gold/15 flex items-center justify-center" aria-hidden>
                   <Check className="w-3 h-3 text-gold" />
                 </span>
                 {benefit}
@@ -169,20 +185,16 @@ export function TrialReminderModal() {
             ))}
           </ul>
 
-          <button
-            onClick={() => setShowPaywall(true)}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-base"
-          >
-            {hasTrial
-              ? t('premium.trialReminder.cta', { defaultValue: 'Start free trial' })
-              : t('premium.trialReminder.noTrial.cta', { defaultValue: 'See Premium plans' })}
-          </button>
-          <button
-            onClick={() => setOpen(false)}
-            className="mt-2 py-2 text-sm text-mystic-500 hover:text-mystic-300 transition-colors"
-          >
-            {t('premium.trialReminder.dismiss', { defaultValue: 'Not now' })}
-          </button>
+          <div className="w-full mt-6 space-y-2">
+            <Button variant="gold" fullWidth size="lg" onClick={() => setShowPaywall(true)} className="font-semibold">
+              {hasTrial
+                ? t('premium.trialReminder.cta', { defaultValue: 'Start free trial' })
+                : t('premium.trialReminder.noTrial.cta', { defaultValue: 'See Premium plans' })}
+            </Button>
+            <Button variant="ghost" fullWidth onClick={() => setOpen(false)}>
+              {t('premium.trialReminder.dismiss', { defaultValue: 'Not now' })}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

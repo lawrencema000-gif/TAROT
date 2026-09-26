@@ -54,7 +54,6 @@ import { applyPersistedReadingScale } from './utils/readingScale';
 // Before the first render: a reader who chose a larger text size must not
 // see a flash of the default size on every launch.
 applyPersistedReadingScale();
-import './styles/landing.css';
 import './styles/tarot-meanings.css';
 
 // Sentry is a ~150 KB gzipped dependency that DOESN'T need to be in the

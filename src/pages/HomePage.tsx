@@ -1,36 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Flame,
-  ChevronRight,
-  Bookmark,
-  Star,
-  PenLine,
-  TrendingUp,
-  Zap,
-  MessageCircle,
-  Heart,
-} from 'lucide-react';
+import { Star, PenLine, Zap, MessageCircle, Heart, HeartHandshake } from 'lucide-react';
 import {
   Card,
-  Button,
+  Chip,
   Page,
-  Progress,
   toast,
   HomePageSkeleton,
-  MysticalStar,
-  OrnateDivider,
   EyebrowLabel,
   SectionDivider,
   SparkleFourPoint,
   TarotCardIcon,
+  ListRow,
+  ListRowGroup,
 } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
 import { DailyCosmicScore } from '../components/ritual/DailyCosmicScore';
 import { DailyMansionCard } from '../components/ritual/DailyMansionCard';
+import { HomeHero } from '../components/home/HomeHero';
 import { StreakCelebration } from '../components/celebration/StreakCelebration';
+import { StreakConstellation, type ConstellationNight } from '../components/celebration/StreakConstellation';
+import { nightsFromRituals } from '../utils/ritualNights';
 import { useAuth } from '../context/AuthContext';
 import { useUI } from '../context/UIContext';
 import { useRitual } from '../context/RitualContext';
@@ -38,12 +30,13 @@ import { useGamification } from '../context/GamificationContext';
 import { dailyRituals, savedHighlights } from '../dal';
 import { getZodiacSign } from '../utils/zodiac';
 import { localDateStr } from '../utils/localDate';
-// horoscopes loaded lazily to keep main bundle small
+import { friendlyDisplayName } from '../utils/displayName';
+import { getDailyPrompt } from '../data/dailyPrompts';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
-import { awardXP, getLevelThresholds, getXPProgress, checkAndAwardStreakMilestone } from '../services/levelSystem';
+import { awardXP, checkAndAwardStreakMilestone } from '../services/levelSystem';
 import { checkAchievementProgress } from '../services/achievements';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
@@ -57,6 +50,16 @@ interface RitualState {
   tarotViewed: boolean;
   promptViewed: boolean;
   completed: boolean;
+}
+
+/** How many nights the constellation shows. */
+const NIGHTS = 14;
+
+/** ISO date `days` before an ISO date, in UTC — the base the ritual rows use. */
+function isoDaysBefore(iso: string, days: number): string {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
 }
 
 export function HomePage() {
@@ -76,8 +79,7 @@ export function HomePage() {
   const loveTreeEnabled = useFeatureFlag('love-tree');
   const navigate = useNavigate();
   const [showCelebration, setShowCelebration] = useState(false);
-  const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
-  const [levelThresholds, setLevelThresholds] = useState<Map<number, number>>(new Map());
+  const [celebrationReason, setCelebrationReason] = useState<'complete' | 'pill'>('pill');
   const [ritualState, setRitualState] = useState<RitualState>({
     horoscopeViewed: false,
     tarotViewed: false,
@@ -100,6 +102,7 @@ export function HomePage() {
   const today = new Date().toISOString().split('T')[0];
   const localToday = localDateStr();
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
+  const [nights, setNights] = useState<ConstellationNight[]>(() => nightsFromRituals([], today, NIGHTS));
 
   useImagePreloader(
     drawnTarot?.card.imageUrl ? [drawnTarot.card.imageUrl] : [],
@@ -121,11 +124,12 @@ export function HomePage() {
     }
 
     try {
-      // Run all 3 queries in parallel instead of sequentially
-      const [ritualResult, savesResult, countResult] = await Promise.all([
+      // All four queries in parallel instead of sequentially
+      const [ritualResult, savesResult, countResult, rangeResult] = await Promise.all([
         dailyRituals.getByDate(user.id, today),
         savedHighlights.listForUserDate(user.id, today),
         dailyRituals.countForUser(user.id),
+        dailyRituals.listRange(user.id, isoDaysBefore(today, NIGHTS - 1), today),
       ]);
 
       if (ritualResult.ok && ritualResult.data) {
@@ -155,13 +159,17 @@ export function HomePage() {
       if (countResult.ok) {
         setIsFirstTime(countResult.data === 0);
       }
+
+      if (rangeResult.ok) {
+        setNights(nightsFromRituals(rangeResult.data, today, NIGHTS));
+      }
     } finally {
       setIsLoading(false);
     }
   }, [user, today]);
 
   useEffect(() => {
-    import('../data/horoscopes').then(m => setDailyPrompt(m.getDailyPrompt(localToday)));
+    setDailyPrompt(getDailyPrompt(localToday));
   }, [localToday]);
 
   useEffect(() => {
@@ -183,29 +191,24 @@ export function HomePage() {
     }
   }, [profile, setStreak]);
 
-  useEffect(() => {
-    const loadLevelData = async () => {
-      const thresholds = await getLevelThresholds();
-      setLevelThresholds(thresholds);
-
-      if (profile) {
-        const progress = getXPProgress(profile.xp || 0, profile.level || 1, thresholds);
-        setXpProgress(progress);
-      }
-    };
-    loadLevelData();
-  }, [profile]);
-
   const handleStartRitual = () => {
     setRitualStarted(true);
+  };
+
+  /** Keep tonight's star in step with what was just done, without a refetch. */
+  const markTonight = (state: RitualState) => {
+    const parts = ((state.horoscopeViewed ? 1 : 0) + (state.tarotViewed ? 1 : 0) + (state.promptViewed ? 1 : 0)) as 0 | 1 | 2 | 3;
+    setNights(prev => prev.map(n => (n.date === today ? { ...n, parts, completed: state.completed } : n)));
   };
 
   const updateRitualProgress = async (field: keyof Omit<RitualState, 'completed'>) => {
     if (!user) return;
 
     const newState = { ...ritualState, [field]: true };
+    const completed = newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed;
     setRitualState(newState);
-    cacheDailyRitual(user.id, { ...newState, completed: newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed, date: today });
+    markTonight({ ...newState, completed });
+    cacheDailyRitual(user.id, { ...newState, completed, date: today });
 
     await dailyRituals.upsert({
       userId: user.id,
@@ -213,10 +216,10 @@ export function HomePage() {
       horoscopeViewed: newState.horoscopeViewed,
       tarotViewed: newState.tarotViewed,
       promptViewed: newState.promptViewed,
-      completed: newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed,
+      completed,
     });
 
-    if (newState.horoscopeViewed && newState.tarotViewed && newState.promptViewed && !ritualState.completed) {
+    if (completed && !ritualState.completed) {
       setRitualState(prev => ({ ...prev, completed: true }));
 
       const xpResult = await awardXP(user.id, 'ritual_complete');
@@ -244,11 +247,9 @@ export function HomePage() {
         if (dayOfWeek === 0 || dayOfWeek === 6) checkAchievementProgress(user.id, 'weekend_ritual');
 
         await refreshProfile();
-
-        const progress = getXPProgress(xpResult.total_xp, xpResult.new_level, levelThresholds);
-        setXpProgress(progress);
       }
 
+      setCelebrationReason('complete');
       setShowCelebration(true);
     }
   };
@@ -291,7 +292,13 @@ export function HomePage() {
   const handleTarotShare = async () => {
     if (!drawnTarot) return;
 
-    const text = `My card of the day: ${drawnTarot.card.name}${drawnTarot.reversed ? ' (Reversed)' : ''} - ${drawnTarot.reversed ? drawnTarot.card.meaningReversed : drawnTarot.card.meaningUpright}`;
+    const name = drawnTarot.reversed
+      ? `${drawnTarot.card.name} (${t('home.ritualCards.reversed')})`
+      : drawnTarot.card.name;
+    const text = t('home.shareCard', {
+      name,
+      meaning: drawnTarot.reversed ? drawnTarot.card.meaningReversed : drawnTarot.card.meaningUpright,
+    });
 
     if (navigator.share) {
       try {
@@ -323,140 +330,68 @@ export function HomePage() {
     return t('home.greeting.evening');
   };
 
-  const getDisplayName = () => {
-    if (!profile?.displayName || profile.displayName.trim() === '') {
-      return '';
-    }
+  const displayName = friendlyDisplayName(profile?.displayName);
 
-    const name = profile.displayName.trim();
-    const local = name.includes('@') ? name.split('@')[0] : name;
-
-    // Omit the name for obviously auto-generated handles —
-    // long, digit-heavy, or dash-heavy strings (e.g. `arcana-qa-auth-1776994003021`
-    // from signup fallback) look hostile in a welcome header.
-    const tooManyDashes = (local.match(/-/g)?.length ?? 0) >= 3;
-    const mostlyDigits = (local.match(/\d/g)?.length ?? 0) / local.length > 0.4;
-    if (local.length > 20 || tooManyDashes || mostlyDigits) {
-      return '';
-    }
-
-    if (name.includes('@') || /[._-]/.test(name)) {
-      const formatted = local
-        .split(/[._-]/)
-        .filter(Boolean)
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-        .join(' ');
-      return formatted;
-    }
-
-    return name;
-  };
-
-  const displayName = getDisplayName();
+  const savedLabel = (type: SavedHighlight['highlightType']) =>
+    type === 'horoscope'
+      ? t('home.savedTypes.horoscope')
+      : type === 'tarot'
+        ? t('home.savedTypes.tarot')
+        : t('home.savedTypes.prompt');
 
   if (isLoading) {
     return <HomePageSkeleton />;
   }
 
-  if (!ritualStarted && isFirstTime) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-        <div className="mb-6 text-gold">
-          <MysticalStar size={96} spinning />
-        </div>
+  const partsDone = [ritualState.horoscopeViewed, ritualState.tarotViewed, ritualState.promptViewed].filter(Boolean).length;
+  const showFeed = ritualStarted || !isFirstTime;
+  const hasShortcuts = pickACardEnabled || loveTreeEnabled || soulmateScoreEnabled || quickReadingEnabled || tarotCompanionEnabled;
 
-        <h1 className="heading-display-xl text-mystic-100 mb-2">
-          {t('home.ritualReady.title')}
-        </h1>
-        <div className="mb-4 text-gold/60">
-          <OrnateDivider width={140} />
-        </div>
-        <p className="text-mystic-300 mb-8 max-w-xs">
-          {t('home.ritualReady.sub')}
-        </p>
-
-        <Button variant="gold" onClick={handleStartRitual} className="px-8">
-          {t('home.startTodaysRitual')}
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
-    );
-  }
+  const openStreak = () => {
+    setCelebrationReason('pill');
+    setShowCelebration(true);
+  };
 
   return (
     <Page spacing="md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          {displayName ? (
-            <>
-              <EyebrowLabel className="!text-mystic-400">{greeting()}</EyebrowLabel>
-              <h1 className="heading-display-xl text-mystic-100 mt-1 truncate">{displayName}.</h1>
-            </>
-          ) : (
-            <h1 className="heading-display-xl text-mystic-100 truncate">{greeting()}.</h1>
-          )}
-          {profile?.seekerRank && (
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-xs text-gold">{t('home.level', { n: profile.level })}</span>
-              <span className="text-xs text-mystic-500">•</span>
-              <span className="text-xs text-mystic-400">{localizeSeekerRank(profile.seekerRank)}</span>
-            </div>
-          )}
-        </div>
-        <button
-          onClick={() => setShowCelebration(true)}
-          className="shrink-0 flex items-center gap-2 bg-gradient-to-r from-mystic-800/80 to-mystic-800/50 px-4 py-2.5 rounded-full active:scale-95 transition-transform hairline-gold-soft hover:border-gold/30"
-        >
-          <Flame className="w-5 h-5 text-gold" />
-          <span className="font-semibold text-gold">{streak}</span>
-          <span className="text-mystic-400 text-sm">{t('home.dayStreakLabel')}</span>
-        </button>
-      </div>
+      <HomeHero
+        greeting={greeting()}
+        name={displayName}
+        subline={
+          profile?.seekerRank ? (
+            <p className="text-caption text-mystic-400 mt-1.5">
+              <span className="text-gold">{t('home.level', { n: profile.level })}</span>
+              <span className="text-mystic-600"> · </span>
+              {localizeSeekerRank(profile.seekerRank)}
+            </p>
+          ) : null
+        }
+        started={ritualStarted}
+        progress={{ horoscope: ritualState.horoscopeViewed, tarot: ritualState.tarotViewed, prompt: ritualState.promptViewed }}
+        progressLabel={t('home.ritualProgress', { n: partsDone })}
+        title={isFirstTime && !ritualStarted ? t('home.ritualReady.title') : t('home.todaysRitual')}
+        lede={isFirstTime ? t('home.ritualReady.sub') : t('home.subtitle')}
+        cta={t('home.startTodaysRitual')}
+        onStart={handleStartRitual}
+        cardBackUrl={profile?.card_back_url}
+        aside={
+          <button
+            type="button"
+            onClick={openStreak}
+            className="shrink-0 inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-full bg-mystic-850 border border-mystic-700 text-meta text-mystic-300 transition-colors duration-fast [@media(hover:hover)]:hover:border-gold/30 motion-safe:active:scale-95 touch-manipulation [-webkit-tap-highlight-color:transparent]"
+          >
+            <SparkleFourPoint size={12} className="text-gold" />
+            <span className="font-semibold text-gold">{streak}</span>
+            <span>{t('home.dayStreakLabel')}</span>
+          </button>
+        }
+      />
 
-      {/* Today's Ritual — hero placement. Before anything else on the page
-          so the first thing a returning user sees is the call to start
-          their daily practice. */}
-      {!ritualStarted ? (
-        <Card variant="ornate" padding="lg" className="relative overflow-hidden text-center nebula-veil aurora-veil">
-          <span className="floating-particles-overlay floating-particles" aria-hidden />
-          <div className="relative z-[1] py-2">
-            <div className="mb-3 text-gold inline-block animate-float-gentle">
-              <MysticalStar size={72} />
-            </div>
-            <h2 className="heading-display-lg text-mystic-100 mb-2">{t('home.todaysRitual')}</h2>
-            <div className="flex justify-center mb-3 text-gold/60">
-              <OrnateDivider width={120} />
-            </div>
-            <p className="text-mystic-300 text-sm mb-6">{t('home.subtitle')}</p>
-            <Button variant="gold" onClick={handleStartRitual} className="gold-sweep">
-              {t('home.startTodaysRitual')}
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="heading-display-lg text-mystic-100">{t('home.todaysRitual')}</h2>
-            <div className="flex items-center gap-2 shrink-0">
-              <SparkleFourPoint
-                size={12}
-                className={ritualState.horoscopeViewed ? 'text-gold' : 'text-mystic-700'}
-              />
-              <SparkleFourPoint
-                size={12}
-                className={ritualState.tarotViewed ? 'text-gold' : 'text-mystic-700'}
-              />
-              <SparkleFourPoint
-                size={12}
-                className={ritualState.promptViewed ? 'text-gold' : 'text-mystic-700'}
-              />
-            </div>
-          </div>
-
+      {ritualStarted && (
+        <div key="ritual" className="space-y-4 animate-fade-in">
           <HoroscopeCard sign={zodiacSign} onRead={handleReadHoroscope} />
 
-          <Card padding="lg">
+          <Card padding="md">
             {drawnTarot && (
               <TarotFlipCard
                 card={drawnTarot.card}
@@ -471,221 +406,141 @@ export function HomePage() {
           </Card>
 
           <PromptCard prompt={dailyPrompt} onWrite={handleWritePrompt} />
-        </div>
-      )}
 
-      {moonstonesEnabled && <MoonstoneWidget />}
-
-      {moonPhasesEnabled && <MoonPhaseCard />}
-
-      {dailyMissionEnabled && <DailyMissionCard />}
-
-      {/* Personal transit score — pure-compute, cached per local day */}
-      <DailyCosmicScore />
-
-      <DailyMansionCard />
-
-      {/* Eyebrow + divider groups the secondary feature shortcuts below
-          (pick-a-card, love tree, soulmate, quick reading, tarot
-          companion) into an intentional "Beyond today's ritual" cluster
-          rather than a loose stack of buttons. Only renders when at
-          least one of those features is enabled, so the home stays
-          tight when flags are off. */}
-      {(pickACardEnabled || loveTreeEnabled || soulmateScoreEnabled || quickReadingEnabled || tarotCompanionEnabled) && (
-        <div className="space-y-3 pt-2">
-          <SectionDivider tone="mystic" />
-          <EyebrowLabel className="block text-center">
-            {t('home.exploreMore', { defaultValue: 'Beyond today\'s ritual' })}
-          </EyebrowLabel>
-        </div>
-      )}
-
-      {pickACardEnabled && (
-        <button
-          onClick={() => navigate('/pick-a-card')}
-          className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-gold/10 via-mystic-900 to-cosmic-violet/10 border border-gold/25 hover:border-gold/50"
-        >
-          <div className="flex items-center gap-4">
-            {/* Three fanned card-backs — uses the actual deck imagery so
-                the preview matches what you'll see when you pick. */}
-            <div className="relative w-14 h-20 flex-shrink-0">
-              {[-12, 0, 12].map((rot, i) => (
-                <div
-                  key={rot}
-                  className="absolute inset-0 rounded-lg border border-gold/40 overflow-hidden origin-bottom transition-transform duration-slow group-hover:scale-105"
-                  style={{ transform: `rotate(${rot}deg)`, zIndex: i }}
-                >
-                  <img
-                    src={profile?.card_back_url || '/card-backs/default.svg'}
-                    alt=""
-                    className="w-full h-full object-cover pointer-events-none select-none"
-                    draggable={false}
-                  />
+          {ritualState.completed && (
+            <Card padding="md" variant="accent">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="heading-display-md text-gold">{t('home.ritualComplete')}</h3>
+                  <p className="text-meta text-mystic-400 mt-0.5">{t('home.streak', { n: streak })}</p>
                 </div>
-              ))}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-mystic-100 mb-0.5">
-                {t('home.pickACardTitle', { defaultValue: 'Pick a card' })}
-              </p>
-              <p className="text-[11px] text-mystic-400 leading-relaxed">
-                {t('home.pickACardSub', { defaultValue: '30-second daily draw. One card calls to you.' })}
-              </p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-gold transition-colors flex-shrink-0" />
-          </div>
-        </button>
-      )}
-
-      {loveTreeEnabled && (
-        <button
-          onClick={() => navigate('/love-tree')}
-          className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-emerald-500/10 via-mystic-900 to-pink-500/10 border border-emerald-400/25 hover:border-emerald-400/50"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-pink-500/20 border border-emerald-400/30 flex items-center justify-center flex-shrink-0">
-              <Heart className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-mystic-100 mb-0.5">
-                {t('home.loveTreeTitle', { defaultValue: 'Love Tree' })}
-              </p>
-              <p className="text-[11px] text-mystic-400 leading-relaxed">
-                {t('home.loveTreeSub', { defaultValue: '90 seconds, 12 questions → your attachment style as a living tree.' })}
-              </p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
-          </div>
-        </button>
-      )}
-
-      {soulmateScoreEnabled && (
-        <button
-          onClick={() => navigate('/soulmate-score')}
-          className="w-full group relative overflow-hidden rounded-xl p-4 text-left active:scale-[0.98] transition-transform bg-gradient-to-br from-pink-500/10 via-mystic-900 to-cosmic-violet/10 border border-pink-400/25 hover:border-pink-400/50"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500/20 to-cosmic-violet/20 border border-pink-400/30 flex items-center justify-center flex-shrink-0">
-              <Heart className="w-5 h-5 text-pink-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-mystic-100 mb-0.5">
-                {t('home.soulmateTitle', { defaultValue: 'Soulmate score' })}
-              </p>
-              <p className="text-[11px] text-mystic-400 leading-relaxed">
-                {t('home.soulmateSub', { defaultValue: 'Compare charts with anyone — get a score out of 100.' })}
-              </p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-mystic-500 group-hover:text-pink-400 transition-colors flex-shrink-0" />
-          </div>
-        </button>
-      )}
-
-      {(quickReadingEnabled || tarotCompanionEnabled) && (
-        <div className="grid grid-cols-2 gap-3">
-          {quickReadingEnabled && (
-            <button
-              onClick={() => navigate('/ai/quick')}
-              className="bg-gradient-to-br from-gold/10 to-mystic-900 border border-gold/25 rounded-xl p-4 text-left hover:border-gold/50 active:scale-[0.98] transition-all"
-            >
-              <Zap className="w-5 h-5 text-gold mb-2" />
-              <p className="text-sm font-medium text-mystic-100">
-                {t('home.quickReading', { defaultValue: '3-second reading' })}
-              </p>
-              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
-                {t('home.quickReadingSub', { defaultValue: 'Ask anything' })}
-              </p>
-            </button>
-          )}
-          {tarotCompanionEnabled && (
-            <button
-              onClick={() => navigate('/ai/tarot')}
-              className="bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/25 rounded-xl p-4 text-left hover:border-cosmic-violet/50 active:scale-[0.98] transition-all"
-            >
-              <MessageCircle className="w-5 h-5 text-cosmic-violetLight mb-2" />
-              <p className="text-sm font-medium text-mystic-100">
-                {t('home.tarotCompanion', { defaultValue: 'Tarot companion' })}
-              </p>
-              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
-                {t('home.tarotCompanionSub', { defaultValue: 'Pull a card, talk it through' })}
-              </p>
-            </button>
-          )}
-        </div>
-      )}
-
-      {dailyWisdomEnabled && <DailyWisdomCard />}
-
-      {profile && xpProgress.required > 0 && (
-        <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-gold" />
-              <span className="text-sm font-medium text-mystic-100">{t('home.xpProgress')}</span>
-            </div>
-            <span className="text-xs text-mystic-400">
-              {t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}
-            </span>
-          </div>
-          <Progress
-            value={xpProgress.percentage}
-            variant="gradient"
-            size="md"
-            label={t('home.xpProgress')}
-          />
-        </div>
-      )}
-
-      {savedToday.length > 0 && (
-        <div className="space-y-3">
-          <SectionDivider tone="mystic" />
-          <div className="flex items-center justify-between">
-            <EyebrowLabel>{t('home.savedToday')}</EyebrowLabel>
-            <button
-              onClick={() => openOverlay('saved')}
-              className="text-xs text-gold hover:text-gold-light transition-colors"
-            >
-              {t('home.seeAllSaved', { defaultValue: 'See all saved' })}
-            </button>
-          </div>
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            {savedToday.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => openOverlay('saved')}
-                className="flex items-center gap-2 px-3 py-2 bg-mystic-800/50 rounded-full border border-mystic-700/50 hover:border-gold/30 transition-colors flex-shrink-0"
-              >
-                {item.highlightType === 'horoscope' && <Star className="w-3.5 h-3.5 text-gold" />}
-                {item.highlightType === 'tarot' && <TarotCardIcon className="w-3.5 h-3.5 text-gold" />}
-                {item.highlightType === 'prompt' && <PenLine className="w-3.5 h-3.5 text-gold" />}
-                <span className="text-xs text-mystic-300 capitalize">{item.highlightType}</span>
-                <Bookmark className="w-3 h-3 text-gold" />
+                <SparkleFourPoint size={20} className="text-gold shrink-0" />
+              </div>
+              <button type="button" onClick={openStreak} className="block w-full mt-3 text-gold" aria-label={t('celebration.streak.title')}>
+                <StreakConstellation nights={nights} today={today} className="w-full" height={96} />
               </button>
-            ))}
-          </div>
+            </Card>
+          )}
         </div>
       )}
 
-      {ritualState.completed && (
-        <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900/80 border-gold/20">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center ring-1 ring-gold/30">
-              <MysticalStar size={28} className="text-gold" />
+      {showFeed && (
+        <>
+          {moonstonesEnabled && <MoonstoneWidget />}
+
+          {moonPhasesEnabled && <MoonPhaseCard />}
+
+          {dailyMissionEnabled && <DailyMissionCard />}
+
+          {/* Personal transit score — pure-compute, cached per local day */}
+          <DailyCosmicScore />
+
+          <DailyMansionCard />
+
+          {/* The secondary features, as one list rather than five tiles in
+              five colours: each is a row with a tinted glyph, and none of
+              them is the size of the ritual itself. */}
+          {hasShortcuts && (
+            <div className="space-y-3 pt-2">
+              <SectionDivider tone="mystic" />
+              <EyebrowLabel className="block text-center">{t('home.exploreMore')}</EyebrowLabel>
+              <ListRowGroup>
+                {pickACardEnabled && (
+                  <ListRow
+                    icon={<TarotCardIcon />}
+                    tone="gold"
+                    label={t('home.pickACardTitle')}
+                    meta={t('home.pickACardSub')}
+                    onClick={() => navigate('/pick-a-card')}
+                  />
+                )}
+                {loveTreeEnabled && (
+                  <ListRow
+                    icon={<Heart />}
+                    tone="rose"
+                    label={t('home.loveTreeTitle')}
+                    meta={t('home.loveTreeSub')}
+                    onClick={() => navigate('/love-tree')}
+                  />
+                )}
+                {soulmateScoreEnabled && (
+                  <ListRow
+                    icon={<HeartHandshake />}
+                    tone="violet"
+                    label={t('home.soulmateTitle')}
+                    meta={t('home.soulmateSub')}
+                    onClick={() => navigate('/soulmate-score')}
+                  />
+                )}
+                {quickReadingEnabled && (
+                  <ListRow
+                    icon={<Zap />}
+                    tone="gold"
+                    label={t('home.quickReading')}
+                    meta={t('home.quickReadingSub')}
+                    onClick={() => navigate('/ai/quick')}
+                  />
+                )}
+                {tarotCompanionEnabled && (
+                  <ListRow
+                    icon={<MessageCircle />}
+                    tone="blue"
+                    label={t('home.tarotCompanion')}
+                    meta={t('home.tarotCompanionSub')}
+                    onClick={() => navigate('/ai/tarot')}
+                  />
+                )}
+              </ListRowGroup>
             </div>
-            <div className="flex-1">
-              <h3 className="heading-display-md text-gold">{t('home.ritualComplete')}</h3>
-              <p className="text-sm text-mystic-400 mt-0.5">{t('home.streak', { n: streak })}</p>
+          )}
+
+          {dailyWisdomEnabled && <DailyWisdomCard />}
+
+          {savedToday.length > 0 && (
+            <div className="space-y-3">
+              <SectionDivider tone="mystic" />
+              <div className="flex items-center justify-between">
+                <EyebrowLabel align="left">{t('home.savedToday')}</EyebrowLabel>
+                <button
+                  type="button"
+                  onClick={() => openOverlay('saved')}
+                  className="text-meta text-gold hover:text-gold-light transition-colors min-h-[44px] px-2"
+                >
+                  {t('home.seeAllSaved')}
+                </button>
+              </div>
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {savedToday.map((item) => (
+                  <Chip
+                    key={item.id}
+                    size="sm"
+                    icon={
+                      item.highlightType === 'horoscope' ? (
+                        <Star aria-hidden />
+                      ) : item.highlightType === 'tarot' ? (
+                        <TarotCardIcon aria-hidden />
+                      ) : (
+                        <PenLine aria-hidden />
+                      )
+                    }
+                    label={savedLabel(item.highlightType)}
+                    onClick={() => openOverlay('saved')}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </Card>
+          )}
+        </>
       )}
 
       <StreakCelebration
         streak={streak}
         open={showCelebration}
         onClose={() => setShowCelebration(false)}
+        nights={nights}
+        today={today}
+        justCompleted={celebrationReason === 'complete'}
       />
-
     </Page>
   );
 }

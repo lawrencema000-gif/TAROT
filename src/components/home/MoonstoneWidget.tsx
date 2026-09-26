@@ -71,19 +71,19 @@ export function MoonstoneWidget() {
 
   return (
     <>
-      <Card padding="md" className="bg-gradient-to-br from-gold/10 via-mystic-900 to-mystic-900 border-gold/20">
+      <Card padding="md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-              <Moon className="w-5 h-5 text-gold" />
+            <div className="w-10 h-10 rounded-control bg-gold/10 text-gold flex items-center justify-center">
+              <Moon className="w-5 h-5" aria-hidden />
             </div>
             <div>
-              <p className="text-xs text-mystic-500">
+              <p className="text-meta text-mystic-400">
                 {isPremium
                   ? t('moonstones.premiumLabel', { defaultValue: 'Premium · all readings unlocked' })
                   : t('moonstones.balanceLabel', { defaultValue: 'Moonstones' })}
               </p>
-              <p className="font-display text-xl text-gold">
+              <p className="heading-display-md text-gold">
                 {isPremium ? '∞' : balance}
               </p>
             </div>
@@ -99,7 +99,7 @@ export function MoonstoneWidget() {
               </Button>
             )}
             {!isPremium && !canClaim && (
-              <p className="text-xs text-mystic-500 italic">
+              <p className="text-meta text-mystic-500">
                 {t('moonstones.alreadyClaimed', { defaultValue: 'Come back tomorrow' })}
               </p>
             )}
@@ -107,9 +107,9 @@ export function MoonstoneWidget() {
               <button
                 onClick={() => setShowEarn(true)}
                 aria-label={t('moonstones.earn', { defaultValue: 'Earn moonstones' }) as string}
-                className="w-9 h-9 rounded-full bg-mystic-800 hover:bg-mystic-700 flex items-center justify-center text-gold transition-colors"
+                className="w-11 h-11 rounded-full bg-mystic-800 hover:bg-mystic-700 flex items-center justify-center text-gold transition-colors"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4" aria-hidden />
               </button>
             )}
           </div>

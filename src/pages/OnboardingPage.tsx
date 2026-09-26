@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Globe,
-  UserPlus,
   ChevronRight,
   Mail,
   Lock,
@@ -10,8 +9,8 @@ import {
   Check,
   ArrowLeft,
 } from 'lucide-react';
-import { Button, Input, toast } from '../components/ui';
-import { MysticalStar } from '../components/ui/MysticalStar';
+import { Button, DeckFan, Input, Progress, toast } from '../components/ui';
+import { displayNameFromEmail } from '../utils/displayName';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { getAuthErrorMessage } from '../utils/authErrors';
@@ -81,10 +80,11 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       toast(getAuthErrorMessage(error), 'error');
     } else {
       trackOnboardingStepCompleted({
-        step: 1,
+        step: 2,
         stepName: 'create_account',
         durationMs: Date.now() - stepStartTime.current,
       });
+      trackSignUp('google');
       trackOnboardingComplete({
         totalDurationMs: Date.now() - onboardingStartTime.current,
       });
@@ -100,7 +100,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       toast(getAuthErrorMessage(error), 'error');
     } else {
       trackOnboardingStepCompleted({
-        step: 1,
+        step: 2,
         stepName: 'create_account',
         durationMs: Date.now() - stepStartTime.current,
       });
@@ -150,7 +150,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: authData.user.id,
         email,
-        display_name: email.split('@')[0],
+        display_name: displayNameFromEmail(email),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         locale: getLocale(),
         onboarding_complete: false,
@@ -176,7 +176,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       clearAttribution();
       trackSignUp('email');
       trackOnboardingStepCompleted({
-        step: 1,
+        step: 2,
         stepName: 'create_account',
         durationMs: Date.now() - stepStartTime.current,
       });
@@ -192,26 +192,25 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
   return (
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
-      {step === 2 && (
-        <div className="h-1 bg-mystic-800/50">
-          <div className="h-full bg-gradient-to-r from-gold/80 to-gold w-full transition-all duration-deliberate ease-out" />
-        </div>
-      )}
+      <Progress
+        value={step + 1}
+        max={3}
+        size="sm"
+        label={t('progress.step', { n: step + 1, total: 3 })}
+      />
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
         <div className="w-full max-w-md">
           {step === 0 && (
             <div className="text-center space-y-8 animate-fade-in">
-              <div className="relative">
-                <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-gold/20 via-mystic-800 to-mystic-900 flex items-center justify-center border border-gold/20">
-                  <Globe className="w-14 h-14 text-gold" />
-                </div>
+              <div className="w-14 h-14 mx-auto rounded-control bg-gold/10 text-gold flex items-center justify-center">
+                <Globe className="w-7 h-7" aria-hidden />
               </div>
               <div className="space-y-3">
                 <h1 className="heading-display-lg text-mystic-100 leading-tight">
                   {t('language.title')}
                 </h1>
-                <p className="text-mystic-400 text-base leading-relaxed">
+                <p className="text-body text-mystic-300 leading-relaxed">
                   {t('language.subtitle')}
                 </p>
               </div>
@@ -231,7 +230,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   size="lg"
                 >
                   {t('language.cta', { defaultValue: 'Continue with this language' })}
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" aria-hidden />
                 </Button>
               </div>
             </div>
@@ -239,20 +238,13 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
           {step === 1 && (
             <div className="text-center space-y-8 animate-fade-in">
-              <div className="relative">
-                <div className="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-gold/20 via-mystic-800 to-mystic-900 flex items-center justify-center border border-gold/20">
-                  <MysticalStar size={56} className="text-gold" />
-                </div>
-                <div className="absolute inset-0 animate-pulse-slow">
-                  <div className="w-28 h-28 mx-auto rounded-full border border-gold/10" />
-                </div>
-              </div>
+              <DeckFan size="lg" />
 
               <div className="space-y-4">
                 <h1 className="heading-display-xl text-mystic-100 leading-tight">
                   {t('welcome.heading')}
                 </h1>
-                <p className="text-mystic-400 text-lg leading-relaxed">
+                <p className="text-body text-mystic-300 leading-relaxed">
                   {t('welcome.subheading')}
                 </p>
               </div>
@@ -272,12 +264,12 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                   size="lg"
                 >
                   {t('welcome.cta')}
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" aria-hidden />
                 </Button>
 
                 <button
                   onClick={onSwitchToSignIn}
-                  className="w-full text-center text-sm text-mystic-400 hover:text-gold transition-colors py-3"
+                  className="w-full text-center text-meta text-mystic-400 hover:text-gold transition-colors py-3 min-h-[44px]"
                 >
                   {t('welcome.alreadyHaveAccount')}
                 </button>
@@ -288,9 +280,6 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
           {step === 2 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <UserPlus className="w-8 h-8 text-gold" />
-                </div>
                 <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('createAccount.heading')}
                 </h2>
@@ -335,7 +324,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     <div className="w-full border-t border-mystic-700/50" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-3 bg-mystic-900 text-sm text-mystic-500">{t('createAccount.divider')}</span>
+                    <span className="px-3 bg-mystic-950 text-meta text-mystic-500">{t('createAccount.divider')}</span>
                   </div>
                 </div>
 
@@ -359,7 +348,9 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-mystic-400 hover:text-mystic-200 p-1"
+                      aria-label={showPassword ? t('createAccount.hidePassword') : t('createAccount.showPassword')}
+                      aria-pressed={showPassword}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-mystic-400 hover:text-mystic-200 p-2"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -413,7 +404,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
 
               <button
                 onClick={onSwitchToSignIn}
-                className="w-full text-center text-sm text-mystic-400 hover:text-gold transition-colors py-2"
+                className="w-full text-center text-meta text-mystic-400 hover:text-gold transition-colors py-2 min-h-[44px]"
               >
                 {t('createAccount.switchToSignIn')}
               </button>
@@ -425,7 +416,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
       {step >= 1 && (
         <div className="p-6 safe-bottom">
           <Button variant="ghost" size="lg" onClick={() => setStep(step - 1)} className="w-full">
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden />
             {t('createAccount.back')}
           </Button>
         </div>

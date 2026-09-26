@@ -13,7 +13,12 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { Button, Input, Chip, Progress, toast } from '../components/ui';
+import { Button, Input, Chip, DeckFan, EyebrowLabel, Progress, toast } from '../components/ui';
+import { ZODIAC_ICONS } from '../components/icons';
+import { localizeSignName } from '../i18n/localizeNames';
+import { getZodiacSign } from '../utils/zodiac';
+import { friendlyDisplayName } from '../utils/displayName';
+import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useAuth } from '../context/AuthContext';
 import { validateBirthDate } from '../utils/validation';
 import { isNative } from '../utils/platform';
@@ -109,6 +114,8 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
   const [showGeoResults, setShowGeoResults] = useState(false);
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Visuals + attribution run while the reveal is on screen; Begin awaits them.
+  const pendingRef = useRef<Promise<void> | null>(null);
   const [data, setData] = useState({
     goals: [] as Goal[],
     birthDate: '',
@@ -123,12 +130,17 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
   const totalSteps = 4;
 
+  // Steps 0-3 collect; step 4 is the reveal, the one moment the data just
+  // entered is handed back: "The Sun was in Leo when you were born."
+  const REVEAL = 4;
+
   const canProceed = () => {
     switch (step) {
       case 0: return data.goals.length > 0;
       case 1: return data.birthDate !== '' && !birthDateError;
       case 2: return true;
       case 3: return true;
+      case REVEAL: return true;
       default: return false;
     }
   };
@@ -185,27 +197,45 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     }
 
     if (user) {
-      await assignRandomVisuals(user.id);
+      const uid = user.id;
+      pendingRef.current = (async () => {
+        await assignRandomVisuals(uid);
 
-      // Persist ad attribution (UTM from landing) — only on first complete
-      const attr = getAttribution();
-      if (attr) {
-        await supabase.from('profiles').update({
-          utm_source: attr.utm_source,
-          utm_medium: attr.utm_medium,
-          utm_campaign: attr.utm_campaign,
-          utm_content: attr.utm_content,
-          utm_term: attr.utm_term,
-          first_referrer: attr.first_referrer,
-        }).eq('id', user.id);
-        clearAttribution();
-      }
+        // Persist ad attribution (UTM from landing) — only on first complete
+        const attr = getAttribution();
+        if (attr) {
+          await supabase.from('profiles').update({
+            utm_source: attr.utm_source,
+            utm_medium: attr.utm_medium,
+            utm_campaign: attr.utm_campaign,
+            utm_content: attr.utm_content,
+            utm_term: attr.utm_term,
+            first_referrer: attr.first_referrer,
+          }).eq('id', uid);
+          clearAttribution();
+        }
+      })().catch(() => {});
     }
 
+    setLoading(false);
+    setStep(REVEAL);
+  };
+
+  const finish = async () => {
+    setLoading(true);
+    if (pendingRef.current) await pendingRef.current;
     toast(t('oauth.toast.welcome'), 'success');
     setLoading(false);
     onComplete();
   };
+
+  const sunSign: AstroSign | null = data.birthDate
+    ? ((): AstroSign => {
+        const lower = getZodiacSign(data.birthDate);
+        return (lower.charAt(0).toUpperCase() + lower.slice(1)) as AstroSign;
+      })()
+    : null;
+  const SunGlyph = sunSign ? ZODIAC_ICONS[sunSign] : null;
 
   const nextStep = () => {
     if (step < totalSteps - 1) {
@@ -222,10 +252,10 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   return (
     <div className="min-h-screen flex flex-col safe-top safe-bottom constellation-bg">
       <Progress
-        value={step + 1}
+        value={Math.min(step + 1, totalSteps)}
         max={totalSteps}
         size="sm"
-        label={`Step ${step + 1} of ${totalSteps}`}
+        label={t('progress.step', { n: Math.min(step + 1, totalSteps), total: totalSteps })}
       />
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
@@ -233,13 +263,11 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           {step === 0 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <span className="text-2xl">
-                    <Heart className="w-8 h-8 text-gold" />
-                  </span>
-                </div>
+                <DeckFan size="md" className="mb-4" />
                 <h2 className="heading-display-lg text-mystic-100 mb-2">
-                  {t('oauth.welcome', { name: profile?.displayName || user?.email?.split('@')[0] || '' })}
+                  {friendlyDisplayName(profile?.displayName || user?.email)
+                    ? t('oauth.welcome', { name: friendlyDisplayName(profile?.displayName || user?.email) })
+                    : t('oauth.welcomeNoName')}
                 </h2>
                 <p className="text-mystic-400 mb-6">
                   {t('oauth.welcomeSub')}
@@ -274,8 +302,8 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           {step === 1 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <Calendar className="w-8 h-8 text-gold" />
+                <div className="w-14 h-14 mx-auto mb-4 rounded-control bg-gold/10 text-gold flex items-center justify-center">
+                  <Calendar className="w-7 h-7" aria-hidden />
                 </div>
                 <h2 className="heading-display-lg text-mystic-100 mb-2">
                   {t('oauth.basics.heading')}
@@ -400,11 +428,11 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
           {step === 3 && (
             <div className="space-y-8 animate-fade-in">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center">
-                  <Bell className="w-8 h-8 text-gold" />
+                <div className="w-14 h-14 mx-auto mb-4 rounded-control bg-gold/10 text-gold flex items-center justify-center">
+                  <Bell className="w-7 h-7" aria-hidden />
                 </div>
                 <h2 className="heading-display-lg text-mystic-100 mb-2">
-                  Daily reminder?
+                  {t('oauth.notifications.heading')}
                 </h2>
                 <p className="text-mystic-400">
                   {isNative()
@@ -423,7 +451,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   }`}
                 >
                   <span className={`font-medium ${data.notificationsEnabled ? 'text-gold' : 'text-mystic-200'}`}>
-                    Yes, remind me daily
+                    {t('oauth.notifications.yes')}
                   </span>
                 </button>
 
@@ -447,9 +475,24 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   }`}
                 >
                   <span className={`font-medium ${!data.notificationsEnabled ? 'text-gold' : 'text-mystic-200'}`}>
-                    No thanks
+                    {t('oauth.notifications.no')}
                   </span>
                 </button>
+              </div>
+            </div>
+          )}
+
+          {step === REVEAL && sunSign && SunGlyph && (
+            <div className="text-center space-y-6 animate-fade-in">
+              <div className="w-24 h-24 mx-auto rounded-full bg-gold/10 text-gold flex items-center justify-center">
+                <SunGlyph size={56} strokeWidth={1.4} aria-label={localizeSignName(sunSign)} />
+              </div>
+              <div className="space-y-3">
+                <EyebrowLabel>{t('oauth.reveal.eyebrow')}</EyebrowLabel>
+                <h2 className="heading-display-xl text-mystic-100">{localizeSignName(sunSign)}</h2>
+                <p className="text-body text-mystic-300 leading-relaxed max-w-sm mx-auto">
+                  {t('oauth.reveal.body', { sign: localizeSignName(sunSign) })}
+                </p>
               </div>
             </div>
           )}
@@ -457,22 +500,22 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
       </div>
 
       <div className="p-6 flex gap-3 safe-bottom">
-        {step > 0 && (
+        {step > 0 && step !== REVEAL && (
           <Button size="lg" variant="ghost" onClick={prevStep} >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden />
             {t('oauth.back', { defaultValue: 'Previous step' })}
           </Button>
         )}
         <Button size="lg"
           variant="gold"
           fullWidth
-          onClick={step === totalSteps - 1 ? handleComplete : nextStep}
+          onClick={step === REVEAL ? finish : step === totalSteps - 1 ? handleComplete : nextStep}
           disabled={!canProceed() || loading}
           loading={loading}
           
         >
-          {step === totalSteps - 1 ? t('oauth.beginJourney') : t('oauth.next')}
-          <ChevronRight className="w-4 h-4" />
+          {step === REVEAL ? t('oauth.reveal.cta') : step === totalSteps - 1 ? t('oauth.beginJourney') : t('oauth.next')}
+          <ChevronRight className="w-4 h-4" aria-hidden />
         </Button>
       </div>
     </div>

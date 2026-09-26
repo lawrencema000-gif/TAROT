@@ -37,6 +37,46 @@ export async function getByDate(
   };
 }
 
+export interface DailyRitualDay extends DailyRitual {
+  /** ISO date (YYYY-MM-DD), as stored. */
+  date: string;
+}
+
+/**
+ * Every ritual row in a date range, oldest first. The streak constellation
+ * draws from this: one star per night, lit by how much of the ritual was
+ * done. The table has had this history since the first release; nothing
+ * read it back until now.
+ */
+export async function listRange(
+  userId: string,
+  from: string,
+  to: string,
+): Promise<Result<DailyRitualDay[]>> {
+  const { data, error } = await supabase
+    .from('daily_rituals')
+    .select('date, horoscope_viewed, tarot_viewed, prompt_viewed, completed')
+    .eq('user_id', userId)
+    .gte('date', from)
+    .lte('date', to)
+    .order('date', { ascending: true });
+
+  if (error) {
+    captureException('dal.dailyRituals.listRange', error, { userId, from, to });
+    return { ok: false, error: error.message };
+  }
+  return {
+    ok: true,
+    data: (data ?? []).map((r) => ({
+      date: String(r.date),
+      horoscopeViewed: !!r.horoscope_viewed,
+      tarotViewed: !!r.tarot_viewed,
+      promptViewed: !!r.prompt_viewed,
+      completed: !!r.completed,
+    })),
+  };
+}
+
 export interface DailyRitualUpsert {
   userId: string;
   date: string;

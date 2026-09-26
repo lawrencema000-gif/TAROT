@@ -7,7 +7,7 @@
   },
   "welcome": {
     "heading": "Your daily ritual starts here.",
-    "subheading": "Tarot, astrology, and personality insights — beautifully combined.",
+    "subheading": "Your horoscope, one card and one honest sentence. A few minutes, every day.",
     "cta": "Set up my account",
     "alreadyHaveAccount": "I already have an account"
   },
@@ -23,7 +23,9 @@
     "submit": "Create my account",
     "switchToSignIn": "Already have an account? Sign in",
     "back": "Previous step",
-    "appleCta": "Continue with Apple"
+    "appleCta": "Continue with Apple",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "toast": {
     "invalidEmail": "That email doesn’t look right — check it and try again.",
@@ -80,7 +82,10 @@
     "notifications": {
       "reminderTime": "Reminder time",
       "dailyPromise": "One reminder a day, at the time you choose. No spam.",
-      "webNote": "Reminders arrive in the Arcana app on your phone. Your choice is saved for when you install it."
+      "webNote": "Reminders arrive in the Arcana app on your phone. Your choice is saved for when you install it.",
+      "heading": "A daily reminder?",
+      "yes": "Yes, remind me daily",
+      "no": "No thanks"
     },
     "next": "Continue",
     "beginJourney": "Begin my first ritual",
@@ -88,6 +93,15 @@
       "saveFailed": "Couldn’t save your details — check your connection and try again.",
       "welcome": "Welcome to Arcana."
     },
-    "back": "Previous step"
+    "back": "Previous step",
+    "welcomeNoName": "Welcome.",
+    "reveal": {
+      "eyebrow": "Your Sun sign",
+      "body": "The Sun was in {{sign}} when you were born. Your horoscope, your daily card and your chart all begin here.",
+      "cta": "Begin"
+    }
+  },
+  "progress": {
+    "step": "Step {{n}} of {{total}}"
   }
 }

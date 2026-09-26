@@ -56,6 +56,8 @@ export {
   AvailableNowLabel,
 } from './HomeRow';
 export { MysticalStar } from './MysticalStar';
+export { CardBack, type CardBackProps } from './CardBack';
+export { DeckFan, type DeckFanProps, type DeckFanSize } from './DeckFan';
 export { Progress, ProgressRing, type ProgressProps } from './Progress';
 export { Sheet } from './Sheet';
 export { Input, TextArea } from './Input';

@@ -25,7 +25,25 @@ import {
   RitualRow,
   AvailableNowLabel,
   TarotCardIcon,
+  DeckFan,
+  CardBack,
+  MysticalStar,
+  ListRow,
+  ListRowGroup,
 } from '../components/ui';
+import { HomeHero } from '../components/home/HomeHero';
+import { StreakConstellation, type ConstellationNight } from '../components/celebration/StreakConstellation';
+import { MoonPhaseGlyph } from '../components/icons/MoonPhaseGlyph';
+import { HoroscopeCard, PromptCard } from '../components/ritual';
+
+// A fortnight with a break in it, for the constellation.
+const SHOWCASE_NIGHTS: ConstellationNight[] = (
+  [3, 3, 3, 3, 3, 0, 2, 3, 3, 3, 3, 0, 0, 1] as const
+).map((parts, i) => {
+  const d = new Date(Date.UTC(2026, 8, 13 + i));
+  return { date: d.toISOString().slice(0, 10), parts, completed: parts === 3 };
+});
+const SHOWCASE_TODAY = '2026-09-26';
 
 /**
  * Redesign 2026 — Phase 1 showcase.
@@ -44,7 +62,7 @@ export function RedesignShowcasePage() {
     <div className="space-y-12 pb-12">
       {/* Banner */}
       <header className="text-center space-y-3">
-        <EyebrowLabel rules>Redesign 2026 · Phase 1 + 2</EyebrowLabel>
+        <EyebrowLabel rules>Redesign 2026 · showcase</EyebrowLabel>
         <HeroGreeting>Design system foundation</HeroGreeting>
         <HeroSubtitle>
           New ornaments, typography, brand mark + wordmark, and home-row
@@ -52,6 +70,106 @@ export function RedesignShowcasePage() {
           gold stays the brand CTA color.
         </HeroSubtitle>
       </header>
+
+      {/* Phase 5: signature moments */}
+      <section className="space-y-6" data-showcase="phase5">
+        <EyebrowLabel rules>Phase 5 · Signature moments</EyebrowLabel>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">HomeHero — the deck, before the ritual</p>
+          <HomeHero
+            greeting="Good evening"
+            name="Lawrence"
+            subline={<p className="text-caption text-mystic-400 mt-1.5"><span className="text-gold">Level 4</span><span className="text-mystic-600"> · </span>Seeker</p>}
+            started={false}
+            progress={{ horoscope: false, tarot: false, prompt: false }}
+            progressLabel="0 of 3 parts done"
+            title="Today’s ritual"
+            lede="Three parts: your horoscope, one card, one question."
+            cta="Start today’s ritual"
+            onStart={() => {}}
+            aside={
+              <span className="shrink-0 inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-full bg-mystic-850 border border-mystic-700 text-meta text-mystic-300">
+                <SparkleFourPoint size={12} className="text-gold" />
+                <span className="font-semibold text-gold">7</span>
+                <span>day streak</span>
+              </span>
+            }
+          />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">HomeHero — started, two of three parts done</p>
+          <HomeHero
+            greeting="Good evening"
+            name={null}
+            started
+            progress={{ horoscope: true, tarot: true, prompt: false }}
+            progressLabel="2 of 3 parts done"
+            title="Today’s ritual"
+            cta="Start today’s ritual"
+            onStart={() => {}}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">The ritual trio — HoroscopeCard (card-ritual) and PromptCard (Card)</p>
+          <HoroscopeCard sign="leo" onRead={() => {}} />
+          <PromptCard prompt="What did you avoid saying today, and to whom?" onWrite={() => {}} />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">StreakConstellation — 14 nights, one break, tonight partial</p>
+          <Card padding="md" variant="accent">
+            <StreakConstellation nights={SHOWCASE_NIGHTS} today={SHOWCASE_TODAY} className="w-full text-gold" height={120} />
+          </Card>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">DeckFan — sm / md / lg</p>
+          <div className="flex items-end justify-between">
+            <DeckFan size="sm" />
+            <DeckFan size="md" />
+          </div>
+          <DeckFan size="lg" />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">CardBack — full and quiet, as inline SVG</p>
+          <div className="flex gap-4">
+            <CardBack className="w-24 rounded-inset border border-gold/30" />
+            <CardBack detail="quiet" className="w-24 rounded-inset border border-gold/30" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">MoonPhaseGlyph — waxing 0 → 1, then waning gibbous and crescent</p>
+          <div className="flex flex-wrap gap-3 text-gold">
+            {[0, 0.12, 0.25, 0.5, 0.75, 0.9, 1].map((f) => (
+              <MoonPhaseGlyph key={f} illumination={f} waxing size={40} />
+            ))}
+            <MoonPhaseGlyph illumination={0.75} waxing={false} size={40} />
+            <MoonPhaseGlyph illumination={0.2} waxing={false} size={40} />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">MysticalStar — gold beside white (per-instance gradient ids), halo on / off</p>
+          <div className="flex items-center gap-4">
+            <MysticalStar size={56} className="text-gold" />
+            <MysticalStar size={56} className="text-mystic-100" />
+            <MysticalStar size={40} halo={false} className="text-gold" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-mystic-400 text-sm">Shortcuts — one ListRowGroup instead of five coloured tiles</p>
+          <ListRowGroup>
+            <ListRow icon={<TarotCardIcon />} tone="gold" label="Pick a card" meta="30-second daily draw. One card calls to you." onClick={() => {}} />
+            <ListRow icon={<Heart />} tone="rose" label="Love Tree" meta="Your attachment style as a living tree." onClick={() => {}} />
+          </ListRowGroup>
+        </div>
+      </section>
 
       {/* Phase 2: Brand identity */}
       <section className="space-y-6">

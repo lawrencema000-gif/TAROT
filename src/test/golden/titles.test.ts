@@ -58,7 +58,9 @@ const UNTITLED = new Set([
  * first and walked straight past PickACardPage's animated title and the
  * showcase page's hero.
  */
-const H1 = /<(?:motion\.|m\.)?h1\b|<HeroGreeting\b(?![^>]*\bas=["']h[2-6]["'])/;
+// HomeHero owns the Home title the way HeroGreeting owns a landing hero:
+// the page passes the words, the component renders the <h1>.
+const H1 = /<(?:motion\.|m\.)?h1\b|<(?:HeroGreeting|HomeHero)\b(?![^>]*\bas=["']h[2-6]["'])/;
 
 /** The components that may own a page title. */
 const OWNER = /<(?:PageHeader|ResultLayout|LearnEntryTemplate)\b/g;

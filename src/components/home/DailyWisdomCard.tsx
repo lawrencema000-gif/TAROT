@@ -1,5 +1,4 @@
-import { Feather, Scroll } from 'lucide-react';
-import { Card } from '../ui';
+import { Card, EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { getDailyQuote } from '../../data/dailyWisdom';
 
@@ -13,28 +12,17 @@ export function DailyWisdomCard() {
   const quote = getDailyQuote();
 
   return (
-    <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 via-mystic-900 to-mystic-900 border-cosmic-violet/20">
-      <div className="flex items-center gap-2 mb-3">
-        <Scroll className="w-4 h-4 text-cosmic-violetLight" />
-        <h3 className="text-sm font-medium text-cosmic-violetLight tracking-wide">
-          {t('wisdom.title', { defaultValue: 'Daily Wisdom' })}
-        </h3>
-      </div>
+    <Card padding="md">
+      <EyebrowLabel>{t('wisdom.title', { defaultValue: 'Daily Wisdom' })}</EyebrowLabel>
 
-      <p className="text-mystic-200 leading-relaxed mb-3">
-        "{t(`wisdom.quotes.${quote.id}.text`, { defaultValue: quote.text })}"
+      <p className="font-display text-lede text-mystic-100 leading-relaxed mt-3">
+        “{t(`wisdom.quotes.${quote.id}.text`, { defaultValue: quote.text })}”
       </p>
+      <p className="text-meta text-mystic-400 mt-2">— {quote.source}</p>
 
-      <p className="text-xs text-mystic-500 mb-4">
-        — {quote.source}
+      <p className="text-meta text-mystic-300 leading-relaxed mt-4 pt-4 border-t border-mystic-700">
+        {t(`wisdom.quotes.${quote.id}.reflection`, { defaultValue: quote.reflection })}
       </p>
-
-      <div className="pt-3 border-t border-mystic-800/50 flex items-start gap-2">
-        <Feather className="w-3 h-3 text-gold mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-mystic-400 leading-relaxed">
-          {t(`wisdom.quotes.${quote.id}.reflection`, { defaultValue: quote.reflection })}
-        </p>
-      </div>
     </Card>
   );
 }

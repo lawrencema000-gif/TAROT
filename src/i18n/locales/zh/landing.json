@@ -3,7 +3,9 @@
     "cardMeanings": "牌意解读",
     "features": "功能",
     "zodiac": "星座",
-    "faq": "常见问题"
+    "faq": "常见问题",
+    "home": "Arcana 首页",
+    "cta": "免费开始"
   },
   "hero": {
     "badge": "专属你的塔罗与占星",
@@ -53,7 +55,89 @@
     "tag": "十二星座",
     "heading": "写在星辰之中",
     "sub": "12 星座专属运势,每日精准更新。",
-    "theZodiac": "十二星座"
+    "theZodiac": "十二星座",
+    "tapToExplore": "点按星座查看",
+    "wheelLabel": "十二星座轮",
+    "elements": {
+      "fire": "火",
+      "earth": "土",
+      "air": "风",
+      "water": "水"
+    },
+    "signs": {
+      "aries": {
+        "name": "白羊座",
+        "dates": "3月21日 – 4月19日",
+        "trait": "勇敢而有抱负",
+        "desc": "十二星座中无畏的领袖。由热情驱动，凡事都想做第一。"
+      },
+      "taurus": {
+        "name": "金牛座",
+        "dates": "4月20日 – 5月20日",
+        "trait": "可靠而耐心",
+        "desc": "踏实而感性。金牛座在稳定、美和生活中的精致事物里找到安适。"
+      },
+      "gemini": {
+        "name": "双子座",
+        "dates": "5月21日 – 6月20日",
+        "trait": "好奇而善变通",
+        "desc": "头脑灵光的社交达人。双子座因沟通与新体验而生机勃勃。"
+      },
+      "cancer": {
+        "name": "巨蟹座",
+        "dates": "6月21日 – 7月22日",
+        "trait": "直觉敏锐，善于照顾",
+        "desc": "情感深沉，富有保护欲。巨蟹座营造安全的港湾，凭心而行。"
+      },
+      "leo": {
+        "name": "狮子座",
+        "dates": "7月23日 – 8月22日",
+        "trait": "有创造力而自信",
+        "desc": "天生的明星。狮子座散发温暖、慷慨和难以抗拒的磁场。"
+      },
+      "virgo": {
+        "name": "处女座",
+        "dates": "8月23日 – 9月22日",
+        "trait": "善分析而尽心",
+        "desc": "追求完美的疗愈者。处女座看见别人忽略的细节，以安静的精准去付出。"
+      },
+      "libra": {
+        "name": "天秤座",
+        "dates": "9月23日 – 10月22日",
+        "trait": "和谐而公正",
+        "desc": "平衡的追寻者。天秤座把美、圆融与优雅带进每一段关系。"
+      },
+      "scorpio": {
+        "name": "天蝎座",
+        "dates": "10月23日 – 11月21日",
+        "trait": "强烈而有磁性",
+        "desc": "十二星座中的转化者。天蝎座看透表面之下，并拥抱阴影。"
+      },
+      "sagittarius": {
+        "name": "射手座",
+        "dates": "11月22日 – 12月21日",
+        "trait": "爱冒险而自由",
+        "desc": "永恒的探索者。射手座带着无尽的乐观，追逐真理、智慧与地平线。"
+      },
+      "capricorn": {
+        "name": "摩羯座",
+        "dates": "12月22日 – 1月19日",
+        "trait": "自律而睿智",
+        "desc": "登山者。摩羯座以耐心、抱负和沉静的决心，筑起自己的天地。"
+      },
+      "aquarius": {
+        "name": "水瓶座",
+        "dates": "1月20日 – 2月18日",
+        "trait": "有远见而独创",
+        "desc": "革新的思想者。水瓶座梦想更好的未来，并敢于与众不同。"
+      },
+      "pisces": {
+        "name": "双鱼座",
+        "dates": "2月19日 – 3月20日",
+        "trait": "共情而神秘",
+        "desc": "十二星座中的梦想家。双鱼座在不同世界之间流动，传递直觉与无边的慈悲。"
+      }
+    }
   },
   "ritual": {
     "tag": "你的每日仪式",
@@ -123,7 +207,21 @@
       "spreadBuilder": "自定义牌阵工具",
       "privacy": "隐私政策",
       "contact": "联系与支持",
-      "googlePlay": "在 Google Play 下载"
+      "googlePlay": "在 Google Play 下载",
+      "astrology": "占星",
+      "numerology": "数字学",
+      "crystals": "水晶",
+      "glossary": "术语表",
+      "blog": "博客",
+      "signUp": "注册，免费开始",
+      "signIn": "登录",
+      "shopPartner": "商店（合作伙伴）"
+    },
+    "tagline": "塔罗、占星与自省的每日仪式。",
+    "groups": {
+      "learn": "学习",
+      "app": "应用",
+      "company": "公司"
     }
   },
   "meta": {
@@ -138,7 +236,8 @@
     "reversed": "逆位",
     "upright": "正位",
     "fullCta": "获取完整牌阵 →",
-    "drawAnother": "再抽一张"
+    "drawAnother": "再抽一张",
+    "cardLabel": "第 {{n}} 张"
   },
   "freeCourse": {
     "badge": "免费三课邮件课程",
@@ -166,6 +265,30 @@
     "errors": {
       "invalidEmail": "请输入有效的邮箱地址。",
       "signupFailed": "订阅失败，请稍后再试。"
+    },
+    "emailLabel": "邮箱地址"
+  },
+  "play": {
+    "alt": "在 Google Play 下载"
+  },
+  "trust": {
+    "stats": {
+      "cards": {
+        "label": "塔罗牌",
+        "sub": "完整的传统牌组"
+      },
+      "spreads": {
+        "label": "牌阵",
+        "sub": "从每日一张到凯尔特十字"
+      },
+      "quizzes": {
+        "label": "测试",
+        "sub": "MBTI、九型人格等"
+      },
+      "signs": {
+        "label": "星座",
+        "sub": "每日更新"
+      }
     }
   }
 }

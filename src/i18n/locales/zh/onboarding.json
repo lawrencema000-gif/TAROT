@@ -7,7 +7,7 @@
   },
   "welcome": {
     "heading": "你的每日仪式,从这里开始。",
-    "subheading": "塔罗、占星、性格洞察——合成一个温柔的空间。",
+    "subheading": "你的运势、一张牌和一句诚实的话。每天几分钟。",
     "cta": "开始设置账号",
     "alreadyHaveAccount": "我已有账号"
   },
@@ -23,7 +23,9 @@
     "submit": "创建账号",
     "switchToSignIn": "已有账号?立即登录",
     "back": "上一步",
-    "appleCta": "使用 Apple 继续"
+    "appleCta": "使用 Apple 继续",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码"
   },
   "toast": {
     "invalidEmail": "邮箱地址格式不正确，请检查后重试。",
@@ -80,7 +82,10 @@
     "notifications": {
       "reminderTime": "提醒时间",
       "dailyPromise": "每天一次提醒，时间由你定。绝无骚扰信息。",
-      "webNote": "提醒会通过手机上的 Arcana 应用送达。你的选择已保存，安装后即生效。"
+      "webNote": "提醒会通过手机上的 Arcana 应用送达。你的选择已保存，安装后即生效。",
+      "heading": "要每天提醒你吗？",
+      "yes": "好，每天提醒我",
+      "no": "不用了"
     },
     "next": "继续",
     "beginJourney": "开始我的第一次仪式",
@@ -88,6 +93,15 @@
       "saveFailed": "无法保存你的资料，请检查网络连接后重试。",
       "welcome": "欢迎来到 Arcana。"
     },
-    "back": "上一步"
+    "back": "上一步",
+    "welcomeNoName": "欢迎。",
+    "reveal": {
+      "eyebrow": "你的太阳星座",
+      "body": "你出生时，太阳正位于{{sign}}。你的运势、每日一牌和星盘，都从这里开始。",
+      "cta": "开始"
+    }
+  },
+  "progress": {
+    "step": "第 {{n}} 步，共 {{total}} 步"
   }
 }

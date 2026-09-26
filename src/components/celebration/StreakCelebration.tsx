@@ -28,6 +28,14 @@ interface StreakCelebrationProps {
 export function StreakCelebration({ streak, open, onClose, nights, today, justCompleted = false }: StreakCelebrationProps) {
   const { t } = useT(['app', 'common']);
   const completed = nights.filter((n) => n.completed).length;
+  // `streak` is the profile counter, which resets to 1 on any app open that
+  // does not follow a ritual day. The record is what is drawn above, so the
+  // words follow the record: "first night" only when it really is, and "no
+  // gaps" only when the window shows a start followed by unbroken nights.
+  const firstLit = nights.findIndex((n) => n.parts > 0);
+  const gapless = firstLit > 0 && nights.slice(firstLit).every((n) => n.parts > 0);
+  const shown = Math.max(streak, 1);
+  const isFirstNight = shown <= 1 && completed <= 1;
 
   const milestone =
     streak === 7
@@ -47,10 +55,10 @@ export function StreakCelebration({ streak, open, onClose, nights, today, justCo
 
         <div className="space-y-1.5">
           <h2 className="heading-display-xl text-gold">
-            {streak <= 1 ? t('celebration.streak.firstNight') : t('celebration.streak.days', { n: streak })}
+            {isFirstNight ? t('celebration.streak.firstNight') : t('celebration.streak.days', { n: shown })}
           </h2>
           <p className="text-body text-mystic-300">
-            {milestone ?? (justCompleted ? t('celebration.streak.keepFlowing') : t('celebration.streak.dedication'))}
+            {milestone ?? (gapless && !justCompleted ? t('celebration.streak.dedication') : t('celebration.streak.keepFlowing'))}
           </p>
           <p className="text-meta text-mystic-500">
             {t('celebration.streak.lastNights', { done: completed, total: nights.length })}

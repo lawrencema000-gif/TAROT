@@ -29,7 +29,6 @@ export function MoonPhaseCard() {
           waxing={phase.ageDays < SYNODIC_HALF}
           size={56}
           className="text-gold shrink-0"
-          aria-label={name}
         />
         <div className="flex-1 min-w-0">
           <h3 className="heading-display-md text-mystic-100">{name}</h3>

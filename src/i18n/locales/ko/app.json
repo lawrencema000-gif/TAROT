@@ -8,7 +8,6 @@
     },
     "subtitle": "오늘 우주가 전하는 메시지",
     "level": "레벨 {{n}}",
-    "xpProgress": "XP 진행도",
     "todaysRitual": "오늘의 의식",
     "ritualComplete": "의식 완료",
     "streak": "{{n}}일 연속이에요. 이대로 계속 가요.",
@@ -28,18 +27,12 @@
     "ritualCards": {
       "todaysEnergy": "오늘의 에너지",
       "yourPrompt": "당신을 위한 프롬프트",
-      "reflection": "성찰",
       "yourCard": "당신의 카드",
       "tapToReveal": "눌러서 열기",
       "reversed": "역방향",
       "upright": "정방향",
-      "majorArcana": "메이저 아르카나",
-      "love": "연애",
-      "work": "일",
-      "mood": "기분",
       "read": "읽기",
       "write": "쓰기",
-      "twoMin": "2분",
       "save": "저장",
       "share": "공유",
       "meaning": "의미"
@@ -259,7 +252,6 @@
     },
     "revealView": {
       "focusReading": "{{focus}} 리딩",
-      "tapToReveal": "탭하여 공개",
       "revealAll": "전체 공개",
       "generating": "생성 중…",
       "getAIInsight": "AI 인사이트 받기",
@@ -356,9 +348,7 @@
         "최종 결과"
       ]
     },
-    "shareText": "Arcana에서 본 나의 {{spread}} 타로 리딩",
-    "share": "리딩 공유",
-    "cardBackAlt": "카드 뒷면"
+    "shareText": "Arcana에서 본 나의 {{spread}} 타로 리딩"
   },
   "journal": {
     "title": "저널",

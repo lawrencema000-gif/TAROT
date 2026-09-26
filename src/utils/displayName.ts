@@ -8,26 +8,34 @@
  * the raw value. Now everything that says a name says the same one.
  */
 
+/** Capitalise a part that arrived all in lower case; leave "McDonald" alone. */
+function cap(part: string): string {
+  return part === part.toLowerCase() ? part.charAt(0).toUpperCase() + part.slice(1) : part;
+}
+
 /** A name fit for a greeting, or '' when the value looks machine-made. */
 export function friendlyDisplayName(raw: string | null | undefined): string {
   if (!raw) return '';
   const name = raw.trim();
   if (!name) return '';
+
+  // A real name has a space in it (an OAuth profile, a name the user typed):
+  // "Jean-Paul Sartre", "Dr. Jane Doe". Used as given.
+  if (/\s/.test(name) && !name.includes('@')) return name;
+
+  // Everything else is a handle: an email's local part or a one-word id.
   const local = name.includes('@') ? name.split('@')[0] : name;
 
-  // Long, digit-heavy or dash-heavy strings are generated handles.
+  // Long, digit-heavy or dash-heavy handles are generated.
   const tooManyDashes = (local.match(/-/g)?.length ?? 0) >= 3;
   const mostlyDigits = (local.match(/\d/g)?.length ?? 0) / Math.max(local.length, 1) > 0.4;
   if (local.length > 20 || tooManyDashes || mostlyDigits) return '';
 
-  if (name.includes('@') || /[._-]/.test(name)) {
-    return local
-      .split(/[._-]/)
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-      .join(' ');
-  }
-  return name;
+  return local
+    .split(/[._-]/)
+    .filter(Boolean)
+    .map(cap)
+    .join(' ');
 }
 
 /**

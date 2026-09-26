@@ -66,29 +66,8 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle, 
     onCut();
   };
 
-  return (
-    <div className="space-y-6">
-      <style>{DECK_KEYFRAMES}</style>
-      <button
-        onClick={onBack}
-        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" aria-hidden />
-        {t('readings.back')}
-      </button>
-
-      <div className="text-center space-y-6 py-10">
-        {/* The deck. A button while shuffling — tap to cut — and a picture otherwise. */}
-        <button
-          type="button"
-          onClick={isShuffling ? cut : undefined}
-          disabled={!isShuffling}
-          aria-label={isShuffling ? t('readings.shuffleView.cutDeck', { defaultValue: 'Cut the deck' }) : undefined}
-          className={`relative mx-auto flex items-center justify-center select-none touch-manipulation [-webkit-tap-highlight-color:transparent] ${
-            isShuffling ? 'cursor-pointer' : 'cursor-default'
-          }`}
-          style={{ width: 240, height: 220 }}
-        >
+  const deckInner = (
+    <>
           {/* One soft bloom behind the deck — the hero's light, static. */}
           <div
             className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full bg-gold/10 blur-3xl transition-opacity duration-deliberate ${
@@ -132,7 +111,37 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle, 
               </div>
             );
           })}
-        </button>
+    </>
+  );
+
+  return (
+    <div className="space-y-6">
+      <style>{DECK_KEYFRAMES}</style>
+      <button
+        onClick={onBack}
+        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4" aria-hidden />
+        {t('readings.back')}
+      </button>
+
+      <div className="text-center space-y-6 py-10">
+        {/* The deck: a button while shuffling (tap to cut), a picture otherwise. */}
+        {isShuffling ? (
+          <button
+            type="button"
+            onClick={cut}
+            aria-label={t('readings.shuffleView.cutDeck', { defaultValue: 'Cut the deck' })}
+            className="relative mx-auto flex items-center justify-center select-none touch-manipulation [-webkit-tap-highlight-color:transparent] cursor-pointer"
+            style={{ width: 240, height: 220 }}
+          >
+            {deckInner}
+          </button>
+        ) : (
+          <div className="relative mx-auto flex items-center justify-center select-none" style={{ width: 240, height: 220 }} aria-hidden>
+            {deckInner}
+          </div>
+        )}
 
         <div className="space-y-2">
           <h2 className="heading-display-lg text-mystic-100" aria-live="polite">

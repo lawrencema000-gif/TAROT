@@ -111,7 +111,7 @@ export function TarotSelectView({
       {/* The deck, spread across the table. */}
       <div
         className="-mx-4 px-4 overflow-x-auto scrollbar-hide pb-2"
-        role="list"
+        role="group"
         aria-label={t('readings.selectView.deck', { defaultValue: 'The deck' })}
       >
         <div className="flex items-end pt-4 pl-1" style={{ width: 'max-content' }}>
@@ -121,9 +121,10 @@ export function TarotSelectView({
               <button
                 key={cardId}
                 type="button"
-                role="listitem"
                 onClick={() => pick(cardId)}
                 disabled={drawn}
+                aria-hidden={drawn || undefined}
+                tabIndex={drawn ? -1 : undefined}
                 aria-label={t('readings.selectView.cardOf', { n: index + 1, total: deckCards.length, defaultValue: `Card ${index + 1} of ${deckCards.length}` })}
                 className={`relative shrink-0 w-16 aspect-[2/3] rounded-inset border overflow-hidden bg-mystic-850 select-none touch-manipulation [-webkit-tap-highlight-color:transparent]
                   transition-[transform,opacity,border-color] duration-fast ease-out
@@ -131,7 +132,9 @@ export function TarotSelectView({
                   ${drawn ? 'opacity-0 pointer-events-none border-transparent' : 'border-gold/25 [@media(hover:hover)]:hover:-translate-y-2 [@media(hover:hover)]:hover:border-gold/60 motion-safe:active:scale-95'}
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:z-10`}
                 style={{
-                  animation: index < 24 ? `arcana-spread 260ms ease-out ${index * 14}ms both` : undefined,
+                  // `backwards`, not `both`: a held end frame would outrank the
+                  // opacity-0 / hover / press classes for the life of the card.
+                  animation: index < 24 ? `arcana-spread 260ms ease-out ${index * 14}ms backwards` : undefined,
                 }}
               >
                 <img src={backSrc} alt="" decoding="async" loading={index < 12 ? 'eager' : 'lazy'} className="w-full h-full object-cover pointer-events-none" draggable={false} />

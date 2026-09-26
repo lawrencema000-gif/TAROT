@@ -4,6 +4,8 @@ import { HoroscopeWheelIcon } from '../ui/NavIcons';
 import { Card, EyebrowLabel } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { useT } from '../../i18n/useT';
+import { localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
+import type { Planet, AspectType } from '../../types/astrology';
 import { supabase } from '../../lib/supabase';
 import { appStorage } from '../../lib/appStorage';
 import { localDateStr } from '../../utils/localDate';
@@ -123,9 +125,9 @@ export function DailyCosmicScore() {
               <span className="text-mystic-300 flex-1 truncate">
                 {t('home.cosmicScore.influence', {
                   defaultValue: '{{transiting}} {{type}} your {{natal}}',
-                  transiting: inf.transiting,
-                  type: inf.type,
-                  natal: inf.natal,
+                  transiting: localizePlanetName(inf.transiting as Planet),
+                  type: localizeAspectName(inf.type as AspectType),
+                  natal: localizePlanetName(inf.natal as Planet),
                 })}
                 <span className="text-mystic-500 text-caption"> · {inf.orb}°</span>
               </span>

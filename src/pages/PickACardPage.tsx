@@ -168,9 +168,12 @@ export function PickACardPage() {
       // over, and the reading arrives. Under reduced motion there is no
       // turn to wait for.
       await wait(reduceMotion ? 0 : OTHERS_DELAY_MS);
-      if (!mounted.current) return;
-      setOthersUp(true);
-      setPicked(state);
+      // Only the React state is gated on being mounted: the pick and the
+      // streak are persisted whether or not the reader stayed to watch.
+      if (mounted.current) {
+        setOthersUp(true);
+        setPicked(state);
+      }
       await appStorage.set(PICK_STORAGE_PREFIX + today, JSON.stringify(state));
       await bumpStreak();
       if (mounted.current) setRevealing(false);

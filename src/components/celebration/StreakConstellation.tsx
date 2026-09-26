@@ -34,6 +34,12 @@ export interface StreakConstellationProps {
   className?: string;
   /** Height in viewBox units; the width is 320. */
   height?: number;
+  /**
+   * Accessible name. Without it the figure is decorative (aria-hidden): the
+   * caption beside it already says how many nights were completed, and a
+   * screen reader should hear that once, in the user's language.
+   */
+  label?: string;
 }
 
 const W = 320;
@@ -46,8 +52,8 @@ function star(cx: number, cy: number, r: number): string {
 /** A quiet, fixed wander for the y positions so the figure is not a straight line. */
 const WANDER = [0.42, 0.68, 0.3, 0.58, 0.76, 0.46, 0.24, 0.62, 0.38, 0.72, 0.5, 0.28, 0.66, 0.44, 0.7, 0.34, 0.56, 0.26, 0.6, 0.48, 0.74, 0.36];
 
-export function StreakConstellation({ nights, today, className = '', height = 140 }: StreakConstellationProps) {
-  const { lines, stars, points } = useMemo(() => {
+export function StreakConstellation({ nights, today, className = '', height = 140, label }: StreakConstellationProps) {
+  const { lines, stars } = useMemo(() => {
     const n = Math.max(nights.length, 1);
     const pad = 22;
     const step = n > 1 ? (W - pad * 2) / (n - 1) : 0;
@@ -61,15 +67,14 @@ export function StreakConstellation({ nights, today, className = '', height = 14
     for (let i = 1; i < pts.length; i++) {
       if (pts[i - 1].lit && pts[i].lit) segs.push(`M${pts[i - 1].x.toFixed(1)} ${pts[i - 1].y.toFixed(1)}L${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`);
     }
-    return { lines: segs.join(''), stars: pts, points: pts.length };
+    return { lines: segs.join(''), stars: pts };
   }, [nights, height]);
 
   return (
     <svg
       viewBox={`0 0 ${W} ${height}`}
       className={className}
-      role="img"
-      aria-label={`${nights.filter((d) => d.completed).length} of the last ${points} nights completed`}
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true, focusable: false })}
     >
       <g fill="none" stroke="currentColor">
         <path d={lines} strokeWidth="0.8" opacity="0.5" strokeLinecap="round" />

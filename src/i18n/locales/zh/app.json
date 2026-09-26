@@ -8,7 +8,6 @@
     },
     "subtitle": "今日宇宙捎来的讯息",
     "level": "等级 {{n}}",
-    "xpProgress": "经验进度",
     "todaysRitual": "今日仪式",
     "ritualComplete": "仪式完成",
     "streak": "已连续 {{n}} 天,继续保持。",
@@ -28,18 +27,12 @@
     "ritualCards": {
       "todaysEnergy": "今日能量",
       "yourPrompt": "你的提示语",
-      "reflection": "反思",
       "yourCard": "你的牌",
       "tapToReveal": "点击翻开",
       "reversed": "逆位",
       "upright": "正位",
-      "majorArcana": "大阿卡纳",
-      "love": "爱情",
-      "work": "工作",
-      "mood": "心情",
       "read": "阅读",
       "write": "书写",
-      "twoMin": "2 分钟",
       "save": "收藏",
       "share": "分享",
       "meaning": "牌意"
@@ -259,7 +252,6 @@
     },
     "revealView": {
       "focusReading": "{{focus}}解读",
-      "tapToReveal": "点击揭示",
       "revealAll": "全部揭示",
       "generating": "生成中…",
       "getAIInsight": "获取 AI 洞察",
@@ -356,9 +348,7 @@
         "最终结果"
       ]
     },
-    "shareText": "我在 Arcana 的{{spread}}塔罗解读",
-    "share": "分享解读",
-    "cardBackAlt": "牌背"
+    "shareText": "我在 Arcana 的{{spread}}塔罗解读"
   },
   "journal": {
     "title": "日记",

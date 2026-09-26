@@ -183,7 +183,9 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
       tonePreference: data.tonePreference,
       notificationsEnabled: data.notificationsEnabled,
       notificationTime: data.notificationTime,
-      onboardingComplete: true,
+      // onboardingComplete is written by finish(): App.tsx renders this page
+      // only while it is false, so flipping it here would unmount the page
+      // before the reveal step could paint.
     };
     if (data.birthLat !== undefined) profileUpdate.birthLat = data.birthLat;
     if (data.birthLon !== undefined) profileUpdate.birthLon = data.birthLon;
@@ -224,6 +226,15 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const finish = async () => {
     setLoading(true);
     if (pendingRef.current) await pendingRef.current;
+    // Sealing the profile last means the upsert's returned row also carries
+    // the card back and background assignRandomVisuals just wrote, so Home
+    // opens on the assigned back rather than the default.
+    const { error } = await updateProfile({ onboardingComplete: true });
+    if (error) {
+      toast(t('oauth.toast.saveFailed'), 'error');
+      setLoading(false);
+      return;
+    }
     toast(t('oauth.toast.welcome'), 'success');
     setLoading(false);
     onComplete();
@@ -484,8 +495,8 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
           {step === REVEAL && sunSign && SunGlyph && (
             <div className="text-center space-y-6 animate-fade-in">
-              <div className="w-24 h-24 mx-auto rounded-full bg-gold/10 text-gold flex items-center justify-center">
-                <SunGlyph size={56} strokeWidth={1.4} aria-label={localizeSignName(sunSign)} />
+              <div className="w-24 h-24 mx-auto rounded-full bg-gold/10 text-gold flex items-center justify-center" aria-hidden>
+                <SunGlyph size={56} strokeWidth={1.4} />
               </div>
               <div className="space-y-3">
                 <EyebrowLabel>{t('oauth.reveal.eyebrow')}</EyebrowLabel>

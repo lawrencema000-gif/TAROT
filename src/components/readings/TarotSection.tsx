@@ -413,7 +413,12 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     }
   };
 
-  /** Toggles: a card already drawn goes back to the deck. Never exceeds the spread. */
+  /**
+   * Picks fill the spread's positions in order, and a position is a
+   * position: returning the card in Present also returns Future, so the
+   * next draw lands in Present again rather than sliding a later card into
+   * a slot it was never drawn for. Never exceeds the spread.
+   */
   const handleCardSelect = (cardId: number) => {
     const spread = getSpreadMeta(currentSpread);
     if (!spread) return;
@@ -421,16 +426,19 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     if (!selectedIndices.includes(cardId)) preloadFace(cardId);
 
     setSelectedIndices(prev => {
-      if (prev.includes(cardId)) return prev.filter(id => id !== cardId);
+      const at = prev.indexOf(cardId);
+      if (at >= 0) return prev.slice(0, at);
       if (prev.length >= spread.count) return prev;
       return [...prev, cardId];
     });
   };
 
   /**
-   * Deal the picked cards face down. Nothing is counted or awarded here:
-   * that happens when the last card turns (see the effect on `allRevealed`),
-   * so a reading abandoned face-down costs nothing and earns nothing.
+   * Deal the picked cards face down. The reading is COUNTED here — the free
+   * tier's daily allowance and any ad unlock are spent when the cards hit
+   * the table, as they always were, so turning n−1 cards and leaving does
+   * not make a spread free. XP and achievements wait for the last card to
+   * turn (see the effect on `allRevealed`).
    */
   const handleRevealSelected = () => {
     const spread = getSpreadMeta(currentSpread);
@@ -458,6 +466,26 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
       }))
     );
 
+    (async () => {
+      await incrementDailyReadingCount();
+      setDailyReadingCount(await getDailyReadingCount());
+
+      if (!profile?.isPremium) {
+        if (!spread.free && hasTemporaryAccess[currentSpread]) {
+          const feature = spreadTypeToFeature(currentSpread);
+          if (feature) {
+            await rewardedAdsService.consumeTemporaryAccess(feature, currentSpread);
+            setHasTemporaryAccess(prev => ({ ...prev, [currentSpread]: false }));
+          }
+        }
+
+        if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
+          await rewardedAdsService.consumeTemporaryAccess('extra_reading');
+          setHasTemporaryAccess(prev => ({ ...prev, extra_reading: false }));
+        }
+      }
+    })();
+
     setAiInterpretation(null);
     setShowAIInterpretation(false);
     setIsSaved(false);
@@ -477,37 +505,18 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const allRevealed = drawnCards.every(c => c.revealed);
 
   /**
-   * The reading is complete when its last card is face up. That is when a
-   * free reading is counted, an ad unlock is spent, and XP and achievements
-   * are awarded. `rewardedRef` makes it once per deal: the deps can change
-   * again afterwards (the count itself, the access map) without re-firing.
+   * The reading is complete when its last card is face up. That is when XP
+   * and achievements are awarded (the free-tier count and any ad unlock were
+   * spent at the deal). `rewardedRef` makes it once per deal: the deps can
+   * change again afterwards without re-firing.
    */
   useEffect(() => {
     if (view !== 'reveal' || drawnCards.length === 0 || !allRevealed || rewardedRef.current) return;
     rewardedRef.current = true;
 
-    const spread = getSpreadMeta(currentSpread);
     const completed = drawnCards;
 
     (async () => {
-      await incrementDailyReadingCount();
-      setDailyReadingCount(await getDailyReadingCount());
-
-      if (!profile?.isPremium && spread) {
-        if (!spread.free && hasTemporaryAccess[currentSpread]) {
-          const feature = spreadTypeToFeature(currentSpread);
-          if (feature) {
-            await rewardedAdsService.consumeTemporaryAccess(feature, currentSpread);
-            setHasTemporaryAccess(prev => ({ ...prev, [currentSpread]: false }));
-          }
-        }
-
-        if (isAtDailyLimit && hasTemporaryAccess['extra_reading']) {
-          await rewardedAdsService.consumeTemporaryAccess('extra_reading');
-          setHasTemporaryAccess(prev => ({ ...prev, extra_reading: false }));
-        }
-      }
-
       if (user) {
         awardXP(user.id, 'reading_complete').then(() => refreshProfile());
         checkAchievementProgress(user.id, 'reading_complete');

@@ -8,7 +8,6 @@
     },
     "subtitle": "Three parts: your horoscope, one card, one question.",
     "level": "Level {{n}}",
-    "xpProgress": "XP progress",
     "todaysRitual": "Today’s ritual",
     "ritualComplete": "Ritual complete",
     "quickReading": "3-second reading",
@@ -38,18 +37,12 @@
     "ritualCards": {
       "todaysEnergy": "Today’s energy",
       "yourPrompt": "Your prompt",
-      "reflection": "Reflection",
       "yourCard": "Your card",
       "tapToReveal": "Tap to reveal",
       "reversed": "Reversed",
       "upright": "Upright",
-      "majorArcana": "Major Arcana",
-      "love": "Love",
-      "work": "Work",
-      "mood": "Mood",
       "read": "Read",
       "write": "Write",
-      "twoMin": "2 min",
       "save": "Save",
       "share": "Share",
       "meaning": "Meaning"
@@ -414,7 +407,6 @@
     },
     "revealView": {
       "focusReading": "{{focus}} reading",
-      "tapToReveal": "Tap to reveal",
       "revealAll": "Reveal all",
       "generating": "Generating…",
       "getAIInsight": "Get AI insight",
@@ -516,9 +508,7 @@
         "Final outcome"
       ]
     },
-    "shareText": "My {{spread}} tarot reading on Arcana",
-    "share": "Share reading",
-    "cardBackAlt": "Card back"
+    "shareText": "My {{spread}} tarot reading on Arcana"
   },
   "journal": {
     "title": "Journal",

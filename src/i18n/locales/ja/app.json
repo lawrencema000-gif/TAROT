@@ -8,7 +8,6 @@
     },
     "subtitle": "今日の宇宙があなたに届けるメッセージ",
     "level": "レベル {{n}}",
-    "xpProgress": "XPの進捗",
     "todaysRitual": "今日のリチュアル",
     "ritualComplete": "リチュアル完了",
     "streak": "{{n}}日連続達成。このまま続けていきましょう。",
@@ -28,18 +27,12 @@
     "ritualCards": {
       "todaysEnergy": "今日のエネルギー",
       "yourPrompt": "あなたへのプロンプト",
-      "reflection": "振り返り",
       "yourCard": "あなたのカード",
       "tapToReveal": "タップして開く",
       "reversed": "逆位置",
       "upright": "正位置",
-      "majorArcana": "大アルカナ",
-      "love": "恋愛",
-      "work": "仕事",
-      "mood": "気分",
       "read": "読む",
       "write": "書く",
-      "twoMin": "2分",
       "save": "保存",
       "share": "シェア",
       "meaning": "意味"
@@ -259,7 +252,6 @@
     },
     "revealView": {
       "focusReading": "{{focus}}リーディング",
-      "tapToReveal": "タップしてめくる",
       "revealAll": "すべてめくる",
       "generating": "生成中…",
       "getAIInsight": "AIインサイトを受け取る",
@@ -356,9 +348,7 @@
         "最終結果"
       ]
     },
-    "shareText": "Arcanaでの私の{{spread}}タロットリーディング",
-    "share": "リーディングをシェア",
-    "cardBackAlt": "カードの裏面"
+    "shareText": "Arcanaでの私の{{spread}}タロットリーディング"
   },
   "journal": {
     "title": "ジャーナル",

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dice6, Feather, Zap } from 'lucide-react';
 import { Card, Button, Chip, Page, ReadingProse, Section, PageHeader } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
-import { PLANET_GLYPH, SIGN_GLYPH } from '../lib/chart';
+import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
+import type { ZodiacSign, Planet } from '../types/astrology';
 
 type Interp = typeof import('../data/interpretations');
 
@@ -15,6 +16,18 @@ interface AstroRoll {
   planet: string;
   sign: string;
   house: number;
+}
+
+// The dice faces are drawn glyphs: the Unicode planet and sign symbols are
+// colour emoji on Android.
+function PlanetDieGlyph({ planet }: { planet: string }) {
+  const Glyph = PLANET_ICONS[planet as Planet];
+  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={planet} /> : <>?</>;
+}
+
+function SignDieGlyph({ sign }: { sign: string }) {
+  const Glyph = ZODIAC_ICONS[sign as ZodiacSign];
+  return Glyph ? <Glyph size={36} strokeWidth={1.5} aria-label={sign} /> : <>?</>;
 }
 
 function rollAstro(): AstroRoll {
@@ -64,14 +77,14 @@ export function DicePage() {
   };
 
   const renderDie = (value: number, idx: number) => (
-    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl font-display text-gold">
+    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center text-3xl font-display text-gold">
       {value}
     </div>
   );
 
-  const astroDie = (glyph: string, label: string) => (
+  const astroDie = (glyph: ReactNode, label: string) => (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-xl flex items-center justify-center text-3xl text-gold" style={{ fontFamily: 'serif' }}>
+      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center text-3xl text-gold" style={{ fontFamily: 'serif' }}>
         {glyph}
       </div>
       <span className="text-meta uppercase tracking-wider text-mystic-400">{label}</span>
@@ -109,8 +122,8 @@ export function DicePage() {
         <>
           <Card variant="glow" padding="lg" className="text-center">
             <div className="flex justify-center gap-4 mb-3">
-              {astroDie(PLANET_GLYPH[astro.planet] ?? '?', astro.planet)}
-              {astroDie(SIGN_GLYPH[astro.sign] ?? '?', astro.sign)}
+              {astroDie(<PlanetDieGlyph planet={astro.planet} />, astro.planet)}
+              {astroDie(<SignDieGlyph sign={astro.sign} />, astro.sign)}
               {astroDie(String(astro.house), `House ${astro.house}`)}
             </div>
             <h2 className="heading-display-md text-mystic-100">{astro.planet} in {astro.sign}, House {astro.house}</h2>

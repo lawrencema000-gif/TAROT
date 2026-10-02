@@ -62,7 +62,7 @@ export function SpreadsPage() {
           title={t('spreads.pageTitle', { defaultValue: 'Tarot spreads' })}
           subtitle={`${tarotSpreads.length} spreads — from a single daily card to the 10-card Celtic Cross — with position-by-position meanings, when to use each, and example questions.`}
         />
-        <Link to="/spreads/builder" className="inline-flex items-center gap-1.5 mt-3 px-3 py-2 rounded-xl border border-gold/30 bg-gold/10 text-gold text-xs no-underline hover:bg-gold/15">
+        <Link to="/spreads/builder" className="inline-flex items-center gap-1.5 mt-3 px-3 py-2 min-h-[44px] rounded-control border border-gold/30 bg-gold/10 text-gold text-caption no-underline hover:bg-gold/15">
           <TarotCardIcon className="w-3.5 h-3.5" />
           Design your own custom spread
         </Link>
@@ -78,7 +78,7 @@ export function SpreadsPage() {
                 <Link
                   key={spread.slug}
                   to={`/spreads/${spread.slug}`}
-                  className="block rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/40 hover:bg-mystic-900/60 transition-colors no-underline"
+                  className="block rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/40 hover:bg-mystic-900/60 transition-colors no-underline"
                 >
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <h3 className="heading-display-md text-mystic-100">{spread.name}</h3>

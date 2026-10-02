@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { HoroscopeWheelIcon } from '../ui/NavIcons';
+import { EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { PLANETS } from '../../utils/astrocartography';
 
@@ -94,9 +96,7 @@ export function CelestialMapIntroLoader({ open, onDone }: Props) {
                   >
                     {PLANET_GLYPH[planet]}
                   </div>
-                  <span className="text-[10px] text-mystic-400 uppercase tracking-wider">
-                    {planet}
-                  </span>
+                  <EyebrowLabel>{planet}</EyebrowLabel>
                 </motion.div>
               ))}
             </div>
@@ -105,15 +105,12 @@ export function CelestialMapIntroLoader({ open, onDone }: Props) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: PLANETS.length * 0.35 + 0.5, duration: 0.6 }}
-              className="flex items-center justify-center gap-2 text-xs text-gold/80 uppercase tracking-wider"
+              className="flex items-center justify-center gap-2 text-gold"
             >
-              <span
-                className="inline-block w-1.5 h-1.5 rounded-full bg-gold animate-pulse"
-                aria-hidden
-              />
-              <span>
+              <Loader2 className="w-3 h-3 animate-spin" aria-hidden />
+              <EyebrowLabel>
                 {t('celestial.intro.ready', { defaultValue: 'Ready in a moment' })}
-              </span>
+              </EyebrowLabel>
             </motion.div>
           </div>
         </motion.div>

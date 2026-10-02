@@ -2,6 +2,8 @@ import type { MouseEvent, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Button, Disclosure, EmptyState, PageHeader, Section } from '../ui';
+import { ZODIAC_ICONS } from '../icons';
+import type { ZodiacSign as AstroSign } from '../../types/astrology';
 
 /**
  * The one shape every "learn" entry takes.
@@ -66,7 +68,31 @@ export interface LearnEntryTemplateProps {
   children?: ReactNode;
 }
 
-const FRAME = 'rounded-2xl border border-mystic-700';
+const FRAME = 'rounded-card border border-mystic-700';
+
+// U+2648–2653 render as colour emoji on Android, so a zodiac symbol passed
+// as text is drawn from the glyph set instead. The variation selectors are
+// stripped first: lib/chart's SIGN_GLYPH carries U+FE0E, utils/zodiac does not.
+const UNICODE_SIGN: Record<string, AstroSign> = {
+  '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer', '♌': 'Leo', '♍': 'Virgo',
+  '♎': 'Libra', '♏': 'Scorpio', '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces',
+};
+const signFromSymbol = (symbol: string): AstroSign | undefined =>
+  UNICODE_SIGN[symbol.replace(/[︎️]/g, '').trim()];
+
+/** A string glyph: a drawn zodiac sign when it is one, otherwise the text in the display serif. */
+function LearnGlyph({ symbol, size, textClass, className = '' }: { symbol: string | number; size: number; textClass: string; className?: string }) {
+  const sign = typeof symbol === 'string' ? signFromSymbol(symbol) : undefined;
+  if (sign) {
+    const Glyph = ZODIAC_ICONS[sign];
+    return <Glyph size={size} strokeWidth={1.5} className={`shrink-0 ${className}`} aria-label={sign} />;
+  }
+  return (
+    <span className={`shrink-0 font-display leading-none ${textClass} ${className}`} aria-hidden>
+      {symbol}
+    </span>
+  );
+}
 
 function FactsTable({ facts }: { facts: Array<LearnEntryFact & { value: string }> }) {
   return (
@@ -115,16 +141,12 @@ const linkClass =
 export function LearnLinkList({ links }: { links: LearnEntryLink[] }) {
   return (
     <ul className="divide-y divide-mystic-700 border-y border-mystic-700">
-      {links.map((l) => (
-        <li key={l.href}>
-          <Link to={l.href} className={linkClass}>
+      {links.map(({ href, label, symbol }) => (
+        <li key={href}>
+          <Link to={href} className={linkClass}>
             <span className="flex items-center gap-3 min-w-0">
-              {l.symbol && (
-                <span className="shrink-0 font-display text-lg leading-none text-gold" aria-hidden>
-                  {l.symbol}
-                </span>
-              )}
-              <span className="truncate">{l.label}</span>
+              {symbol && <LearnGlyph symbol={symbol} size={20} textClass="text-lg" className="text-gold" />}
+              <span className="truncate">{label}</span>
             </span>
             <ChevronRight className="w-4 h-4 shrink-0 text-mystic-500" aria-hidden />
           </Link>
@@ -184,7 +206,7 @@ export function LearnEntryTemplate({
   };
   const icon =
     symbol === undefined || symbol === null ? undefined : typeof symbol === 'string' || typeof symbol === 'number' ? (
-      <span className="font-display text-xl leading-none">{symbol}</span>
+      <LearnGlyph symbol={symbol} size={22} textClass="text-xl" />
     ) : (
       symbol
     );

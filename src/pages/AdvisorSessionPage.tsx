@@ -190,7 +190,7 @@ export function AdvisorSessionPage() {
             >
               {session.state}
             </Badge>
-            <span className="text-xs text-mystic-400 flex items-center gap-1">
+            <span className="text-meta text-mystic-400 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {session.durationMinutes}m
             </span>
@@ -240,7 +240,7 @@ export function AdvisorSessionPage() {
             className="max-h-[55vh] overflow-y-auto space-y-2 mb-3 pr-1"
           >
             {messages.length === 0 && (
-              <p className="text-xs text-mystic-500 italic text-center py-8">
+              <p className="text-meta text-mystic-500 italic text-center py-8">
                 {t('advisorSession.noMessages', { defaultValue: 'Say hi to get started.' })}
               </p>
             )}
@@ -248,13 +248,13 @@ export function AdvisorSessionPage() {
               const mine = m.senderId === user?.id;
               return (
                 <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${
+                  <div className={`max-w-[75%] px-3 py-2 rounded-card text-sm ${
                     mine
                       ? 'bg-gold/15 text-mystic-100 border border-gold/30'
                       : 'bg-mystic-800/50 text-mystic-200 border border-mystic-700/40'
                   }`}>
                     <p className="leading-relaxed">{m.content}</p>
-                    <p className="text-[10px] text-mystic-500 mt-1">{formatTime(m.createdAt)}</p>
+                    <p className="text-caption text-mystic-500 mt-1">{formatTime(m.createdAt)}</p>
                   </div>
                 </div>
               );
@@ -276,9 +276,9 @@ export function AdvisorSessionPage() {
                   }}
                   placeholder={t('advisorSession.composerPlaceholder', { defaultValue: 'Write a message…' })}
                   maxLength={3000}
-                  className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-xl px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
+                  className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
                 />
-                <Button size="sm" variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className=" px-4">
+                <Button size="sm" variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className=" px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' }) as string}>
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -304,7 +304,7 @@ export function AdvisorSessionPage() {
               <button
                 key={n}
                 onClick={() => setRating(n)}
-                className={`p-1 ${n <= rating ? 'text-gold' : 'text-mystic-600'}`}
+                className={`min-w-[44px] min-h-[44px] flex items-center justify-center ${n <= rating ? 'text-gold' : 'text-mystic-600'}`}
                 aria-label={`${n} star${n === 1 ? '' : 's'}`}
               >
                 <Star className={`w-6 h-6 ${n <= rating ? 'fill-current' : ''}`} />
@@ -317,7 +317,7 @@ export function AdvisorSessionPage() {
             rows={3}
             maxLength={2000}
             placeholder={t('advisorSession.reviewPlaceholder', { defaultValue: 'Anything to share? (optional)' })}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
           />
           <Button variant="primary" fullWidth onClick={handleSubmitRating} disabled={rating === 0}>
             {t('advisorSession.submitRating', { defaultValue: 'Send my rating' })}

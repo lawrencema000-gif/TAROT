@@ -25,11 +25,16 @@ import { determineStructure, STRUCTURE_MEANINGS, STRUCTURE_INTRO } from '../data
 
 type Stage = 'input' | 'result';
 
-const ELEMENT_COLOR: Record<FiveElement, string> = {
-  wood: 'text-emerald-400',
-  fire: 'text-red-400',
-  earth: 'text-amber-600',
-  metal: 'text-slate-300',
+/**
+ * The five elements on the token palette. One map, exported so every Bazi
+ * surface colours an element the same way: wood grows (teal), fire burns
+ * (coral), earth is the gold ground, metal is ink, water the cool blue.
+ */
+export const ELEMENT_COLOR: Record<FiveElement, string> = {
+  wood: 'text-teal',
+  fire: 'text-coral',
+  earth: 'text-gold',
+  metal: 'text-mystic-300',
   water: 'text-cosmic-blue',
 };
 
@@ -130,7 +135,7 @@ export function BaziPage() {
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value as BaziGender)}
-                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-ui focus:outline-none focus:border-gold/40"
+                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui focus:outline-none focus:border-gold/40"
               >
                 <option value="">{t('bazi.selectGender', { defaultValue: 'Select to unlock deep mode' })}</option>
                 <option value="male">{t('bazi.male', { defaultValue: 'Male' })}</option>
@@ -178,7 +183,7 @@ export function BaziPage() {
           subtitle: archetype,
           tagline: `${t('bazi.dayMasterLabel', { defaultValue: 'Day Master' })}: ${name}`,
           affirmation,
-          brand: 'Arcana · Bazi',
+          brand: t('share.brand.bazi', { defaultValue: 'Bazi' }) as string,
         });
         const out = await shareOrDownload(
           blob,
@@ -186,6 +191,7 @@ export function BaziPage() {
           `My Bazi Day Master: ${name} — ${archetype}`,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+        else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
       } catch {
         toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
       }
@@ -302,7 +308,7 @@ export function BaziPage() {
               <p className="font-display-eyebrow mb-1">
                 {t('bazi.chartTypeLabel', { defaultValue: 'Chart type' })}
               </p>
-              <p className={`font-display text-2xl ${deepening.strength === 'strong' ? 'text-gold' : deepening.strength === 'receptive' ? 'text-cosmic-blue' : 'text-emerald-400'}`}>
+              <p className={`font-display text-2xl ${deepening.strength === 'strong' ? 'text-gold' : deepening.strength === 'receptive' ? 'text-cosmic-blue' : 'text-teal'}`}>
                 {t(`bazi.strength.${deepening.strength}.name`, {
                   defaultValue: deepening.strength === 'strong' ? 'Dominant' : deepening.strength === 'receptive' ? 'Receptive' : 'Balanced',
                 })}
@@ -435,7 +441,7 @@ export function BaziPage() {
                       {t('bazi.luckyColorTodayLabel', { defaultValue: "Today's Lucky Color" })}
                     </h3>
                     <div className="flex items-center gap-3 mt-2">
-                      <div className="w-12 h-12 rounded-xl flex-shrink-0" style={{ backgroundColor: luckyColor.color }} />
+                      <div className="w-12 h-12 rounded-control flex-shrink-0" style={{ backgroundColor: luckyColor.color }} />
                       <div>
                         <p className="text-ui font-medium text-mystic-100 capitalize">{luckyColor.colorName}</p>
                         <p className="reading-copy mt-0.5">{luckyColor.oneLiner}</p>
@@ -594,13 +600,13 @@ export function BaziPage() {
                   const isCurrent = deepResult.currentLuckPillar &&
                     p.startAge === deepResult.currentLuckPillar.startAge;
                   const tint =
-                    p.flavour === 'supporting' ? 'border-emerald-400/25 bg-emerald-500/5'
-                    : p.flavour === 'challenging' ? 'border-pink-400/25 bg-pink-500/5'
+                    p.flavour === 'supporting' ? 'border-teal/25 bg-teal/10'
+                    : p.flavour === 'challenging' ? 'border-coral/25 bg-coral/10'
                     : 'border-mystic-700/30 bg-mystic-800/30';
                   return (
                     <div
                       key={i}
-                      className={`p-3 rounded-xl border ${isCurrent ? 'border-gold/50 bg-gold/10' : tint}`}
+                      className={`p-3 rounded-control border ${isCurrent ? 'border-gold/50 bg-gold/10' : tint}`}
                     >
                       <div className="flex items-center justify-between text-meta mb-1">
                         <span className="text-mystic-100 font-medium">
@@ -654,11 +660,11 @@ export function BaziPage() {
                 <div className="space-y-2">
                   {deepResult.spiritStars.map((s, i) => {
                     const tint =
-                      s.kind === 'auspicious' ? 'border-emerald-400/25 bg-emerald-500/5'
-                      : s.kind === 'inauspicious' ? 'border-pink-400/25 bg-pink-500/5'
+                      s.kind === 'auspicious' ? 'border-teal/25 bg-teal/10'
+                      : s.kind === 'inauspicious' ? 'border-coral/25 bg-coral/10'
                       : 'border-gold/25 bg-gold/5';
                     return (
-                      <div key={i} className={`p-3 rounded-xl border ${tint}`}>
+                      <div key={i} className={`p-3 rounded-control border ${tint}`}>
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-1.5">
                           <span className="text-ui font-medium text-mystic-100">{s.name}</span>
                           <span className="text-meta text-mystic-400">{s.classical}</span>
@@ -681,11 +687,11 @@ export function BaziPage() {
                 <div className="space-y-2">
                   {deepResult.branchRelations.map((r, i) => {
                     const tint =
-                      r.type === 'clash' ? 'border-pink-400/25 bg-pink-500/5'
-                      : r.type === 'combine' ? 'border-emerald-400/25 bg-emerald-500/5'
+                      r.type === 'clash' ? 'border-coral/25 bg-coral/10'
+                      : r.type === 'combine' ? 'border-teal/25 bg-teal/10'
                       : 'border-gold/25 bg-gold/5';
                     return (
-                      <div key={i} className={`p-3 rounded-xl border ${tint}`}>
+                      <div key={i} className={`p-3 rounded-control border ${tint}`}>
                         <p className="reading-copy">{r.meaning}</p>
                       </div>
                     );
@@ -715,7 +721,7 @@ export function BaziPage() {
             >
               <ul className="reading-copy space-y-2">
                 {deepResult.lifeAreas.careerAffinity.map((c, i) => (
-                  <li key={i} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                  <li key={i} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-teal">
                     {c}
                   </li>
                 ))}

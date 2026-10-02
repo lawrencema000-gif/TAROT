@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface SheetProps {
   open: boolean;
@@ -43,19 +44,35 @@ const EXIT_MS = 180;
 // any one sheet: a paywall opened from inside Settings used to release both
 // when it closed, leaving Settings scrolling the page behind it with the
 // navbar showing through. Now the last sheet out turns the lights off.
+//
+// The hold also hands out the sheet's stacking order. Every Sheet used to
+// render at z-50, so a paywall opened over Settings tied with it and the
+// DOM decided who was on top — and its scrim, at the same level, did not
+// cover the sheet beneath. Each sheet now sits at 50 + 2 × its order: the
+// order counts up for as long as something holds the page and resets when
+// the page is free again, so a sheet opened over another always lands above
+// it, and the stack never climbs past the surfaces that must stay above
+// every sheet (the trial reminder at z-60).
 let openSheets = 0;
-function holdPage() {
+let nextOrder = 0;
+const BASE_Z = 50;
+function holdPage(): { order: number; release: () => void } {
+  const order = nextOrder++;
   openSheets += 1;
   if (openSheets === 1) {
     document.body.style.overflow = 'hidden';
     document.body.classList.add('sheet-open');
   }
-  return () => {
-    openSheets = Math.max(0, openSheets - 1);
-    if (openSheets === 0) {
-      document.body.style.overflow = '';
-      document.body.classList.remove('sheet-open');
-    }
+  return {
+    order,
+    release: () => {
+      openSheets = Math.max(0, openSheets - 1);
+      if (openSheets === 0) {
+        nextOrder = 0;
+        document.body.style.overflow = '';
+        document.body.classList.remove('sheet-open');
+      }
+    },
   };
 }
 
@@ -103,33 +120,42 @@ export function Sheet({ open, onClose, title, label, children, variant = 'defaul
     return () => window.clearTimeout(timer);
   }, [open]);
 
+  // The trap arms once the panel is in the DOM (`mounted` follows `open` by a
+  // render) and disarms the moment `open` drops, while the panel is still
+  // sliding out — so focus is back on the opener before the sheet is gone.
+  // It focuses the close button on open, cycles Tab inside the panel, and
+  // tells us whether this is the sheet on top.
+  const { isTop } = useFocusTrap(sheetRef, open && mounted, { initialFocus: closeRef });
+
+  // Only the top sheet answers Escape. With a paywall over Settings, one
+  // press used to close both.
   useEffect(() => {
-    if (!open) return;
+    if (!open || !isTop) return;
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleEscape);
-    // Focus the close button when sheet opens for keyboard/screen reader users
-    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 100);
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      window.clearTimeout(focusTimer);
-    };
-  }, [open, onClose]);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open, isTop, onClose]);
 
   // Keyed on `mounted`, not `open`, so the navbar does not pop back into view
   // underneath a sheet that is still on its way out.
   //
-  // Hide the bottom navbar while any Sheet is open. The Sheet renders at z-50
-  // (above the nav's z-40), but its anchored-to-bottom content box doesn't
-  // reserve space for the navbar's height — so action buttons at the bottom
-  // end up visually behind the navbar. CSS in index.css listens for
+  // Hide the bottom navbar while any Sheet is open. The Sheet renders above
+  // the nav's z-40, but its anchored-to-bottom content box doesn't reserve
+  // space for the navbar's height — so action buttons at the bottom end up
+  // visually behind the navbar. CSS in index.css listens for
   // `body.sheet-open` and hides the navbar entirely while a sheet is up.
-  useEffect(() => {
+  //
+  // A layout effect, so the stacking order is applied before the first
+  // paint of the panel rather than one frame after it.
+  const [order, setOrder] = useState(0);
+  useLayoutEffect(() => {
     if (!mounted) return;
-    return holdPage();
+    const hold = holdPage();
+    setOrder(hold.order);
+    return hold.release;
   }, [mounted]);
 
   if (!mounted) return null;
@@ -145,7 +171,8 @@ export function Sheet({ open, onClose, title, label, children, variant = 'defaul
 
   return (
     <div
-      className={`fixed inset-0 z-50 ${shown ? '' : 'pointer-events-none'}`}
+      className={`fixed inset-0 ${shown ? '' : 'pointer-events-none'}`}
+      style={{ zIndex: BASE_Z + 2 * order }}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
@@ -164,10 +191,14 @@ export function Sheet({ open, onClose, title, label, children, variant = 'defaul
         onClick={onClose}
         aria-hidden="true"
       />
+      {/* tabIndex -1: the trap's last resort when a sheet has no title (so
+          no close button) and nothing focusable inside — focus lands on the
+          panel itself rather than staying behind the scrim. */}
       <div
         ref={sheetRef}
+        tabIndex={-1}
         className={`
-          absolute bottom-0 left-0 right-0 rounded-t-sheet max-h-[90dvh] overflow-hidden flex flex-col
+          absolute bottom-0 left-0 right-0 rounded-t-sheet max-h-[90dvh] overflow-hidden flex flex-col outline-none
           transition-[transform,opacity]
           ${shown
             ? 'translate-y-0 opacity-100 duration-slow ease-[cubic-bezier(0.22,0.8,0.25,1)]'

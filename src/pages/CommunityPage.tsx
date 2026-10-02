@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, toast } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, toast } from '../components/ui';
+import { ZODIAC_ICONS } from '../components/icons';
+import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { community } from '../dal';
@@ -42,10 +44,16 @@ const SIGN_LABEL: Record<string, string> = {
   leo: 'Leo', virgo: 'Virgo', libra: 'Libra', scorpio: 'Scorpio',
   sagittarius: 'Sagittarius', capricorn: 'Capricorn', aquarius: 'Aquarius', pisces: 'Pisces',
 };
-const SIGN_ZONE_GLYPH: Record<string, string> = {
-  aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋', leo: '♌', virgo: '♍',
-  libra: '♎', scorpio: '♏', sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓',
-};
+/** The zone's sign, drawn: U+2648-2653 render as colour emoji on Android. */
+function SignZoneGlyph({ sign }: { sign: SignZone }) {
+  const Glyph = ZODIAC_ICONS[(sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign];
+  if (!Glyph) return null;
+  return (
+    <span aria-hidden className="inline-flex shrink-0">
+      <Glyph size={14} strokeWidth={1.8} />
+    </span>
+  );
+}
 
 const REACTION_ICONS: Record<ReactionType, React.ComponentType<{ className?: string }>> = {
   heart: Heart,
@@ -250,7 +258,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
 
       {isWhisperingWell && (
         <Card padding="md" className="bg-cosmic-violet/5 border-cosmic-violet/20">
-          <p className="text-xs text-mystic-400 leading-relaxed italic">
+          <p className="text-meta text-mystic-400 italic">
             {t('community.whisperingWell.intro', {
               defaultValue:
                 'A quiet place to whisper the unsayable. All posts are anonymous. Respect for each other is the rule. If something needs help, say so clearly — someone is listening.',
@@ -287,9 +295,9 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
               onSelect={() => setSelectedTopic(z)}
               className="whitespace-nowrap"
             >
-              <span style={{ fontFamily: 'serif' }}>{SIGN_ZONE_GLYPH[z]}</span>
+              <SignZoneGlyph sign={z} />
               {SIGN_LABEL[z]}
-              {z === mySign && <span className="text-[9px] uppercase tracking-wider text-gold">you</span>}
+              {z === mySign && <EyebrowLabel>{t('community.youMarker', { defaultValue: 'You' })}</EyebrowLabel>}
             </Chip>
           ))}
         </div>
@@ -363,7 +371,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
     <Card padding="md" className={isWhisperingWell ? 'bg-cosmic-violet/5 border-cosmic-violet/15' : ''}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-meta">
           <span className={post.isAnonymous ? 'text-mystic-500 italic' : 'text-mystic-300'}>
             {displayName}
           </span>
@@ -373,25 +381,25 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-1 text-mystic-500 hover:text-mystic-300"
-            aria-label="Options"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-mystic-300"
+            aria-label={t('community.options', { defaultValue: 'Options' })}
           >
             <MoreVertical className="w-4 h-4" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-6 z-10 bg-mystic-800 border border-mystic-700 rounded-lg min-w-[150px]">
+            <div className="absolute right-0 top-full z-10 bg-mystic-800 border border-mystic-700 rounded-lg min-w-[150px]">
               {!isOwn && (
                 <>
                   <button
                     onClick={() => { setMenuOpen(false); setReportOpen(true); }}
-                    className="w-full text-left px-3 py-2 text-xs text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
                   >
                     <Flag className="w-3 h-3" /> {t('community.report', { defaultValue: 'Report' })}
                   </button>
                   {!post.isAnonymous && (
                     <button
                       onClick={() => { setMenuOpen(false); onBlock(post); }}
-                      className="w-full text-left px-3 py-2 text-xs text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
+                      className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
                     >
                       <UserMinus className="w-3 h-3" /> {t('community.blockUser', { defaultValue: 'Block user' })}
                     </button>
@@ -416,7 +424,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
               <button
                 key={r}
                 onClick={() => onReact(post, r)}
-                className={`p-1.5 rounded-lg transition-all ${
+                className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all ${
                   isMine ? 'bg-gold/20 text-gold' : 'text-mystic-500 hover:text-mystic-300'
                 }`}
                 aria-label={r}
@@ -425,11 +433,11 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
               </button>
             );
           })}
-          <span className="text-xs text-mystic-500 ml-1">{post.reactionCount}</span>
+          <span className="text-meta text-mystic-500 ml-1">{post.reactionCount}</span>
         </div>
         <button
           onClick={onOpenComments}
-          className="flex items-center gap-1 text-xs text-mystic-500 hover:text-mystic-300"
+          className="flex items-center gap-1 min-h-[44px] px-2 text-meta text-mystic-500 hover:text-mystic-300"
         >
           <MessageCircle className="w-3 h-3" />
           <span>{post.commentCount}</span>
@@ -538,7 +546,7 @@ function Composer({
 
   return (
     <Page spacing="sm">
-      <button onClick={onBack} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
+      <button onClick={onBack} className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200">
         <ArrowLeft className="w-4 h-4" />
         {t('community.back', { defaultValue: 'Back to feed' })}
       </button>
@@ -552,7 +560,7 @@ function Composer({
 
         {!isWW && (
           <>
-            <label className="text-xs text-mystic-500 mb-1 block">
+            <label className="text-meta text-mystic-500 mb-1 block">
               {t('community.topicLabel', { defaultValue: 'Topic' })}
             </label>
             <div className="flex gap-2 flex-wrap mb-4">
@@ -575,12 +583,12 @@ function Composer({
           onChange={(e) => setContent(e.target.value)}
           rows={6}
           maxLength={2000}
-          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
           placeholder={isWW
             ? t('community.whisperingWell.placeholder', { defaultValue: 'What needs to be said but has no audience?' }) as string
             : t('community.placeholder', { defaultValue: 'Share a reading, a thought, a question...' }) as string}
         />
-        <p className="text-[10px] text-mystic-600 text-right mt-1">{content.length} / 2000</p>
+        <p className="text-caption text-mystic-600 text-right mt-1">{content.length} / 2000</p>
 
         {!isWW && (
           <label className="flex items-center gap-2 mt-4 cursor-pointer">
@@ -590,7 +598,7 @@ function Composer({
               onChange={(e) => setIsAnon(e.target.checked)}
               className="rounded"
             />
-            <span className="text-xs text-mystic-400">
+            <span className="text-meta text-mystic-400">
               {t('community.postAnonymously', { defaultValue: 'Post anonymously' })}
             </span>
           </label>
@@ -688,7 +696,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
 
   return (
     <Page spacing="sm">
-      <button onClick={onBack} className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200">
+      <button onClick={onBack} className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200">
         <ArrowLeft className="w-4 h-4" />
         {t('community.backToFeed', { defaultValue: 'Back to feed' })}
       </button>
@@ -719,7 +727,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       <div className="space-y-3">
         {comments.map((c) => (
           <Card key={c.id} padding="md" className="bg-mystic-800/20">
-            <div className="flex items-center gap-2 text-xs text-mystic-500 mb-2">
+            <div className="flex items-center gap-2 text-meta text-mystic-500 mb-2">
               <span className={c.isAnonymous ? 'italic' : 'text-mystic-300'}>
                 {c.isAnonymous
                   ? t('community.anonymous', { defaultValue: 'Anonymous' })
@@ -740,7 +748,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
             onChange={(e) => setNewComment(e.target.value)}
             rows={3}
             maxLength={1000}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
             placeholder={t('community.commentPlaceholder', { defaultValue: 'Write a response...' }) as string}
           />
           <div className="flex items-center justify-between mt-2">
@@ -751,7 +759,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
                 onChange={(e) => setIsAnonComment(e.target.checked)}
                 className="rounded"
               />
-              <span className="text-xs text-mystic-400">
+              <span className="text-meta text-mystic-400">
                 {t('community.commentAnonymously', { defaultValue: 'Comment anonymously' })}
               </span>
             </label>
@@ -782,7 +790,7 @@ function ReportDialog({ onClose, onSubmit, t }: { onClose: () => void; onSubmit:
             <button
               key={r}
               onClick={() => onSubmit(r)}
-              className="w-full text-left px-3 py-2 text-sm text-mystic-300 hover:bg-mystic-800 rounded-lg"
+              className="w-full text-left px-3 py-2 min-h-[44px] text-sm text-mystic-300 hover:bg-mystic-800 rounded-lg"
             >
               {t(`community.reportReasons.${r}`, { defaultValue: r })}
             </button>

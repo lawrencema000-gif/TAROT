@@ -590,7 +590,10 @@
       "howFeeling": "How are you feeling?",
       "tags": "Tags",
       "attachments": "Attachments",
-      "tarotLinked": "Tarot reading linked"
+      "tarotLinked": "Tarot reading linked",
+      "goToPrompt": "Prompt {{n}}",
+      "unlinkReading": "Remove the linked reading",
+      "promptOf": "Prompt {{n}} of {{total}}"
     },
     "toast": {
       "unlockPremiumLock": "Unlock premium to view locked entries",
@@ -605,7 +608,9 @@
     "startWriting": "Write my first entry",
     "editor": {
       "cancel": "Cancel"
-    }
+    },
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week"
   },
   "quizzes": {
     "title": "Quizzes",
@@ -1758,7 +1763,9 @@
       "noAspectsMatch": "No aspects match this filter",
       "aspectPair": "{{a}} - {{b}}",
       "planetInSign": "{{planet}} in {{sign}}"
-    }
+    },
+    "saveLabel": "Save horoscope",
+    "shareLabel": "Share horoscope"
   },
   "profile": {
     "title": "Profile",
@@ -1892,7 +1899,9 @@
     "comeBackSoon": "Check back soon for tarot insights and spiritual guidance.",
     "articleNotFound": "Article not found.",
     "readingTime": "{{n}} min read",
-    "by": "By {{author}}"
+    "by": "By {{author}}",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
   "tarot": {
     "title": "Tarot card meanings",
@@ -2857,8 +2866,15 @@
         "week": "A full week, every night.",
         "month": "A whole month of nights.",
         "hundred": "One hundred nights.",
-        "year": "A year of nights."
-      }
+        "year": "A year of nights.",
+        "fortnight": "Two weeks of nights.",
+        "sixty": "Sixty nights."
+      },
+      "milestoneToast": "{{days}}-day streak. +{{xp}} XP",
+      "milestoneToastMoonstones": "{{days}}-day streak. +{{xp}} XP · +{{moonstones}} Moonstones",
+      "milestoneToastMoonstonesOnly": "{{days}}-day streak. +{{moonstones}} Moonstones",
+      "notStarted": "No streak yet.",
+      "startTonight": "Complete tonight’s ritual to begin one."
     },
     "levelUp": {
       "title": "Level up.",
@@ -4219,7 +4235,9 @@
       "send": "Send whisper",
       "empty": "The well is quiet. Be the first to whisper."
     },
-    "publishPost": "Publish my post"
+    "publishPost": "Publish my post",
+    "youMarker": "You",
+    "options": "Options"
   },
   "common": {
     "mainContent": "Main content",
@@ -4842,7 +4860,8 @@
     "reversed": "Reversed",
     "composerPlaceholder": "Ask a follow-up…",
     "seedMessage": "I just drew {{card}}. Help me sit with what it might be pointing to right now.",
-    "aiFailed": "Couldn’t reach the oracle — check your connection and ask again."
+    "aiFailed": "Couldn’t reach the oracle — check your connection and ask again.",
+    "thinking": "The oracle is thinking…"
   },
   "journalCoach": {
     "askCta": "Ask the journal coach",
@@ -5349,6 +5368,21 @@
   },
   "share": {
     "youAnd": "You and {{name}}",
-    "yourCompatibility": "Your compatibility"
+    "yourCompatibility": "Your compatibility",
+    "brand": {
+      "bazi": "Bazi",
+      "careerArchetype": "Career archetype",
+      "dream": "Dream interpreter",
+      "fengShui": "Feng Shui Bagua",
+      "humanDesign": "Human Design",
+      "iching": "I-Ching",
+      "partnerCompat": "Partner compatibility",
+      "runes": "Runes",
+      "ayurveda": "Ayurveda",
+      "shadowArchetype": "Shadow archetype",
+      "elementAffinity": "Element affinity",
+      "tarotCourt": "Tarot court card match",
+      "cosmicProfile": "Cosmic profile"
+    }
   }
 }

@@ -47,7 +47,7 @@ export interface DisclosureProps extends Omit<HTMLAttributes<HTMLDivElement>, 'o
 }
 
 const variantStyles: Record<NonNullable<DisclosureProps['variant']>, string> = {
-  panel: 'rounded-2xl border border-mystic-700 bg-mystic-850',
+  panel: 'rounded-card border border-mystic-700 bg-mystic-850',
   row: 'border-b border-mystic-700 last:border-0',
 };
 
@@ -179,7 +179,7 @@ export const Disclosure = forwardRef<HTMLDivElement, DisclosureProps>(
           aria-expanded={isOpen}
           aria-controls={panelId}
           className={`
-            w-full min-h-[48px] py-3 flex items-center gap-3 text-left rounded-2xl
+            w-full min-h-[48px] py-3 flex items-center gap-3 text-left rounded-card
             transition-colors duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
             select-none touch-manipulation [-webkit-tap-highlight-color:transparent]
             [@media(hover:hover)]:[&:hover:not(:active)]:text-mystic-100
@@ -204,7 +204,7 @@ export const Disclosure = forwardRef<HTMLDivElement, DisclosureProps>(
               <span className="block text-meta text-mystic-400 mt-0.5">{description}</span>
             )}
           </span>
-          {meta && <span className="shrink-0 text-xs text-mystic-400">{meta}</span>}
+          {meta && <span className="shrink-0 text-meta text-mystic-400">{meta}</span>}
           <ChevronDown
             className={`w-4 h-4 shrink-0 text-mystic-500 transition-transform duration-base ease-[cubic-bezier(0.22,0.8,0.25,1)] ${isOpen ? 'rotate-180' : ''}`}
             aria-hidden

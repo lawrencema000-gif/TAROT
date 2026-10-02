@@ -29,14 +29,14 @@ import { useRitual } from '../context/RitualContext';
 import { useGamification } from '../context/GamificationContext';
 import { dailyRituals, savedHighlights } from '../dal';
 import { getZodiacSign } from '../utils/zodiac';
-import { localDateStr } from '../utils/localDate';
+import { localDateStr, localDaysAgo } from '../utils/localDate';
 import { friendlyDisplayName } from '../utils/displayName';
 import { getDailyPrompt } from '../data/dailyPrompts';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
 import type { TarotCard, SavedHighlight } from '../types';
 import { useImagePreloader } from '../hooks/useImagePreloader';
-import { awardXP, checkAndAwardStreakMilestone } from '../services/levelSystem';
+import { awardXP, checkAndAwardStreakMilestone, STREAK_MILESTONES } from '../services/levelSystem';
 import { checkAchievementProgress } from '../services/achievements';
 import { cacheDailyRitual, getCachedDailyRitual, cacheLastViewedCard } from '../services/offline';
 import { useT } from '../i18n/useT';
@@ -54,13 +54,6 @@ interface RitualState {
 
 /** How many nights the constellation shows. */
 const NIGHTS = 14;
-
-/** ISO date `days` before an ISO date, in UTC — the base the ritual rows use. */
-function isoDaysBefore(iso: string, days: number): string {
-  const d = new Date(iso + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() - days);
-  return d.toISOString().slice(0, 10);
-}
 
 export function HomePage() {
   const { t } = useT(['app', 'common']);
@@ -95,12 +88,13 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [dailyPrompt, setDailyPrompt] = useState('');
-  // `today` (UTC) keys the server-side ritual/highlight rows — keep it
-  // UTC so reads and deletes match what was written. `localToday` keys
-  // client-only daily content (card seed, prompt) so it rolls over at
-  // the user's local midnight, not 4pm/9am depending on timezone.
-  const today = new Date().toISOString().split('T')[0];
-  const localToday = localDateStr();
+  // A day is the user's day. One local calendar date keys everything on this
+  // screen — the ritual row and its cache, the highlights, the card seed, the
+  // prompt and the constellation window — so the ritual rolls over at the
+  // user's midnight and ritual_streak() counts the same days the rows carry.
+  // (Rows written before 2026-09-28 were keyed by the UTC date; a night done
+  // near UTC midnight may sit one day off once. They are not migrated.)
+  const today = localDateStr();
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const [nights, setNights] = useState<ConstellationNight[]>(() => nightsFromRituals([], today, NIGHTS));
 
@@ -129,7 +123,7 @@ export function HomePage() {
         dailyRituals.getByDate(user.id, today),
         savedHighlights.listForUserDate(user.id, today),
         dailyRituals.countForUser(user.id),
-        dailyRituals.listRange(user.id, isoDaysBefore(today, NIGHTS - 1), today),
+        dailyRituals.listRange(user.id, localDaysAgo(NIGHTS - 1), today),
       ]);
 
       if (ritualResult.ok && ritualResult.data) {
@@ -169,14 +163,14 @@ export function HomePage() {
   }, [user, today]);
 
   useEffect(() => {
-    setDailyPrompt(getDailyPrompt(localToday));
-  }, [localToday]);
+    setDailyPrompt(getDailyPrompt(today));
+  }, [today]);
 
   useEffect(() => {
     const loadAndDrawCard = async () => {
       const cards = await getAllTarotCards();
       setTarotCards(cards);
-      const seed = `${user?.id || 'anonymous'}_${localToday}`;
+      const seed = `${user?.id || 'anonymous'}_${today}`;
       const [drawn] = drawSeededCards(1, seed, cards);
       setDrawnTarot(drawn);
       cacheLastViewedCard(drawn.card, drawn.reversed);
@@ -234,11 +228,28 @@ export function HomePage() {
             xpEarned: xpResult.xp_earned,
           });
         }
+      }
 
-        // Streak is updated on app open; use current profile streak for milestone check
-        const currentStreak = profile?.streak || 1;
-        await checkAndAwardStreakMilestone(user.id, currentStreak);
+      // The streak is the rituals: now that tonight's row is complete, have
+      // the server recount from the rows and write the profile. The number
+      // beside the constellation is this one, so the two agree. Every rung
+      // at or below the streak is offered to the server, which pays each
+      // once (the Moonstone ledger is keyed by rung) — so it does not matter
+      // whether another sync wrote the new number first, and 14 and 60
+      // (Moonstones only) are claimed at last.
+      const synced = await dailyRituals.syncStreak(today);
+      if (synced.ok) {
+        const { streak: newStreak } = synced.data;
+        setStreak(newStreak);
+        checkAchievementProgress(user.id, 'streak_achieved', newStreak);
+        for (const m of STREAK_MILESTONES) {
+          if (newStreak >= m) {
+            await checkAndAwardStreakMilestone(user.id, m);
+          }
+        }
+      }
 
+      if (xpResult) {
         // Time-based achievements
         const hour = new Date().getHours();
         if (hour < 7) checkAchievementProgress(user.id, 'morning_ritual');

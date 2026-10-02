@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, ChevronRight } from 'lucide-react';
+import { EyebrowLabel } from '../ui';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { haversineKm, ccToFlag, type City } from '../../utils/celestialGeo';
@@ -93,7 +94,7 @@ export function CelestialPowerPlaces({ allLines, isPremium, onPick, onUpgrade }:
           {t('celestial.power.title', { defaultValue: 'Your power places' })}
         </h2>
       </div>
-      <p className="text-xs text-mystic-400 leading-relaxed">
+      <p className="text-meta text-mystic-400">
         {t('celestial.power.subtitle', {
           defaultValue:
             'Where the most planetary lines converge for your chart. Strong spots to consider visiting, moving to, or revisiting.',
@@ -107,7 +108,7 @@ export function CelestialPowerPlaces({ allLines, isPremium, onPick, onUpgrade }:
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 + i * 0.06, duration: 0.3, ease: 'easeOut' }}
             onClick={() => (isPremium ? onPick(hit.city) : onUpgrade())}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-mystic-800/50 hairline-gold-soft hover:bg-mystic-800/70 transition-colors text-left"
+            className="w-full flex items-center gap-3 p-3 rounded-control bg-mystic-800/50 hairline-gold-soft hover:bg-mystic-800/70 transition-colors text-left"
           >
             <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-mystic-900/60 flex items-center justify-center text-lg" aria-hidden>
               {ccToFlag(hit.city.cc)}
@@ -117,11 +118,11 @@ export function CelestialPowerPlaces({ allLines, isPremium, onPick, onUpgrade }:
                 <span className="text-sm font-medium text-mystic-100 truncate">
                   {isPremium ? hit.city.name : '••••••'}
                 </span>
-                <span className="text-[10px] uppercase tracking-wider text-gold/70">
+                <EyebrowLabel align="left">
                   {hit.lineCount} {hit.lineCount === 1 ? 'line' : 'lines'}
-                </span>
+                </EyebrowLabel>
               </div>
-              <p className="text-xs text-mystic-400 truncate">
+              <p className="text-meta text-mystic-400 truncate">
                 {isPremium
                   ? `${hit.city.country} · ${hit.topPlanets.join(' · ')}`
                   : t('celestial.power.lockedHint', {

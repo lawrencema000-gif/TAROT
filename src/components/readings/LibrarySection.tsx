@@ -11,7 +11,6 @@ import {
   Brain,
 } from 'lucide-react';
 import { TarotCardIcon } from '../ui/NavIcons';
-import { MysticalStar } from '../ui/MysticalStar';
 import { Card, Button, Chip, Tabs, Tag, Badge, Sheet, toast, ReadingProse } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReadingsDal, premiumReadings as premiumReadingsDal } from '../../dal';
@@ -282,7 +281,8 @@ export function LibrarySection() {
                     <Card key={reading.id} padding="md" className="relative group">
                       <button
                         onClick={() => handleDelete('reading', reading.id)}
-                        className="absolute top-2 right-2 p-1.5 rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-900/50"
+                        aria-label={t('common:actions.delete')}
+                        className="absolute top-0 right-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-coral/20"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-mystic-400" />
                       </button>
@@ -368,7 +368,8 @@ export function LibrarySection() {
                         <Card key={item.id} padding="md" className="relative group">
                           <button
                             onClick={() => handleDelete('highlight', item.id)}
-                            className="absolute top-2 right-2 p-1.5 rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-900/50"
+                            aria-label={t('common:actions.delete')}
+                            className="absolute top-0 right-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-coral/20"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-mystic-400" />
                           </button>
@@ -382,7 +383,7 @@ export function LibrarySection() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gold/10 flex items-center justify-center">
-                                  <MysticalStar size={20} halo={false} className="text-gold" />
+                                  <TarotCardIcon className="w-5 h-5 text-gold" />
                                 </div>
                               )}
                             </div>
@@ -418,7 +419,8 @@ export function LibrarySection() {
                         <Card key={item.id} padding="md" className="relative group">
                           <button
                             onClick={() => handleDelete('highlight', item.id)}
-                            className="absolute top-2 right-2 p-1.5 rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-900/50"
+                            aria-label={t('common:actions.delete')}
+                            className="absolute top-0 right-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-coral/20"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-mystic-400" />
                           </button>
@@ -494,7 +496,8 @@ export function LibrarySection() {
                 <Card key={reading.id} padding="md" className="relative group">
                   <button
                     onClick={() => handleDelete('premium', reading.id)}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-900/50 z-10"
+                    aria-label={t('common:actions.delete')}
+                    className="absolute top-0 right-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-800/80 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-coral/20 z-10"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-mystic-400" />
                   </button>
@@ -626,7 +629,7 @@ export function LibrarySection() {
               {selectedGuide.sections.map((section, i) => (
                 <div
                   key={i}
-                  className="p-4 bg-mystic-800/50 border border-mystic-700 rounded-xl"
+                  className="p-4 bg-mystic-800/50 border border-mystic-700 rounded-card"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <span className="w-7 h-7 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center text-sm text-gold font-medium">
@@ -659,7 +662,7 @@ export function LibrarySection() {
       >
         {selectedReading && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-xl">
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-card">
               <Brain className="w-6 h-6 text-gold flex-shrink-0" />
               <div>
                 <h3 className="font-medium text-mystic-100">

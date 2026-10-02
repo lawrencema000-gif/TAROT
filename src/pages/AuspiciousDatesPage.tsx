@@ -74,24 +74,24 @@ export function AuspiciousDatesPage() {
         open={open}
         onOpenChange={(next) => setExpanded(next ? d.date : null)}
         icon={
-          <span className={`block text-2xl ${tone === 'good' ? 'text-gold' : 'text-rose-400/70'}`} style={{ fontFamily: 'serif' }}>
+          <span className={`block text-2xl ${tone === 'good' ? 'text-gold' : 'text-coral/70'}`} style={{ fontFamily: 'serif' }}>
             {d.mansion.cn}
           </span>
         }
         label={
           <>
             <span className="text-mystic-100 text-sm">{fmt(d.date)}</span>
-            <span className="text-mystic-600 text-xs"> · {MANSION_MEANINGS[d.mansion.key]?.title}</span>
+            <span className="text-mystic-600 text-meta"> · {MANSION_MEANINGS[d.mansion.key]?.title}</span>
           </>
         }
         description={<span className="block truncate text-mystic-500">{d.reasons[0]?.text}</span>}
-        meta={d.personalClash ? <AlertTriangle className="w-4 h-4 text-rose-400/80" /> : undefined}
+        meta={d.personalClash ? <AlertTriangle className="w-4 h-4 text-coral/80" /> : undefined}
         contentClassName="pl-11"
       >
         <ul className="space-y-1">
           {d.reasons.map((r, i) => (
-            <li key={i} className="text-[13px] leading-relaxed">
-              <span className={r.weight > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}>
+            <li key={i} className="text-meta">
+              <span className={r.weight > 0 ? 'text-teal/80' : 'text-coral/80'}>
                 {r.weight > 0 ? '+' : ''}{r.weight}
               </span>{' '}
               <span className="text-mystic-300">{r.text}</span>
@@ -133,7 +133,7 @@ export function AuspiciousDatesPage() {
             </Chip>
           ))}
         </div>
-        <p className="text-xs text-mystic-500">{INTENTIONS[intention].blurb}</p>
+        <p className="text-meta text-mystic-500">{INTENTIONS[intention].blurb}</p>
       </Section>
 
       {!birth && (
@@ -158,7 +158,7 @@ export function AuspiciousDatesPage() {
         }
       >
         {best.map((d) => <DayRow key={d.date} d={d} tone="good" />)}
-        <p className="text-[11px] text-mystic-600 pt-2">
+        <p className="text-caption text-mystic-600 pt-2">
           <CalendarDays className="w-3 h-3 inline mr-1" />
           {t('dates.windowNote', { defaultValue: 'Looking at the next {{days}} days. Tap a day to see exactly why it scored the way it did.', days: WINDOW_DAYS })}
         </p>
@@ -170,7 +170,7 @@ export function AuspiciousDatesPage() {
         </Section>
       )}
 
-      <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">
+      <p className="text-center text-caption text-mystic-600 max-w-sm mx-auto">
         {t('dates.disclaimer', {
           defaultValue:
             'A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle.',

@@ -694,7 +694,7 @@ export function CelestialMapView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg bg-mystic-900/80 backdrop-blur-md hairline-gold-soft text-xs text-mystic-100 pointer-events-none"
+            className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg bg-mystic-900 hairline-gold-soft text-meta text-mystic-100 pointer-events-none"
           >
             <span style={{ color: PLANET_COLORS[engine.hovered.planet] }}>●</span>
             <span className="ml-2">{engine.hovered.planet} {engine.hovered.angle}</span>
@@ -710,7 +710,7 @@ export function CelestialMapView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg bg-mystic-900/85 backdrop-blur-md hairline-gold-soft text-xs text-mystic-100 pointer-events-none flex items-center gap-2"
+            className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg bg-mystic-900 hairline-gold-soft text-meta text-mystic-100 pointer-events-none flex items-center gap-2"
           >
             <span className="text-base" aria-hidden>
               {hoveredCity.cc
@@ -719,7 +719,7 @@ export function CelestialMapView({
             </span>
             <div>
               <div className="font-medium">{hoveredCity.name}</div>
-              <div className="text-[10px] text-mystic-400">{hoveredCity.country}</div>
+              <div className="text-caption text-mystic-400">{hoveredCity.country}</div>
             </div>
           </motion.div>
         )}

@@ -43,7 +43,7 @@ interface CrisisFlag {
 const VERDICT_STYLES: Record<ModerationEvent['verdict'], string> = {
   allow: 'bg-mystic-800/40 text-mystic-400 border-mystic-700/40',
   review: 'bg-cosmic-blue/10 text-cosmic-blue border-cosmic-blue/30',
-  block: 'bg-pink-400/10 text-pink-400 border-pink-400/30',
+  block: 'bg-cosmic-rose/10 text-cosmic-rose border-cosmic-rose/25',
 };
 
 export function ModerationPanel() {
@@ -124,7 +124,7 @@ export function ModerationPanel() {
   const crisisCount = crisisFlags.length;
 
   return (
-    <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden">
+    <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-card overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-4 text-left hover:bg-mystic-800/30 transition-colors"
@@ -133,9 +133,9 @@ export function ModerationPanel() {
           <Shield className="w-5 h-5 text-cosmic-blue" />
           <div>
             <h3 className="font-medium text-mystic-100">Moderation Queue</h3>
-            <p className="text-xs text-mystic-500">
+            <p className="text-meta text-mystic-500">
               {crisisCount > 0 && (
-                <span className="text-pink-400 font-medium">
+                <span className="text-cosmic-rose font-medium">
                   {crisisCount} crisis flag{crisisCount !== 1 ? 's' : ''} · {' '}
                 </span>
               )}
@@ -149,14 +149,14 @@ export function ModerationPanel() {
               {crisisCount} !
             </Badge>
           )}
-          <div className="text-mystic-500 text-xs">{expanded ? '▲' : '▼'}</div>
+          <div className="text-mystic-500 text-meta">{expanded ? '▲' : '▼'}</div>
         </div>
       </button>
 
       {expanded && (
         <div className="p-4 border-t border-mystic-700/50 space-y-4">
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs text-mystic-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-meta text-mystic-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={showReviewed}
@@ -173,29 +173,29 @@ export function ModerationPanel() {
 
           {crisisFlags.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs uppercase tracking-wider text-pink-400 flex items-center gap-1.5">
+              <h4 className="text-caption uppercase tracking-wider text-cosmic-rose flex items-center gap-1.5">
                 <AlertTriangle className="w-3 h-3" />
                 Crisis flags — priority review
               </h4>
               {crisisFlags.map((flag) => (
                 <div
                   key={flag.id}
-                  className="p-3 border border-pink-400/30 bg-pink-400/5 rounded-lg"
+                  className="p-3 border border-cosmic-rose/25 bg-cosmic-rose/10 rounded-lg"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] uppercase text-pink-400 tracking-wider">
+                    <span className="text-caption uppercase text-cosmic-rose tracking-wider">
                       {flag.surface}
                     </span>
-                    <span className="text-[10px] text-mystic-500 flex items-center gap-1">
+                    <span className="text-meta text-mystic-500 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {new Date(flag.created_at).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-xs text-mystic-200 leading-relaxed mb-2 italic">
+                  <p className="text-meta text-mystic-200 leading-relaxed mb-2 italic">
                     "{flag.content_excerpt}"
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-mystic-500 font-mono">
+                    <span className="text-caption text-mystic-500 font-mono">
                       user: {flag.user_id ? flag.user_id.slice(0, 8) : '—'}
                     </span>
                     <Button
@@ -213,12 +213,12 @@ export function ModerationPanel() {
           )}
 
           <div className="space-y-2">
-            <h4 className="text-xs uppercase tracking-wider text-mystic-400 flex items-center gap-1.5">
+            <h4 className="text-caption uppercase tracking-wider text-mystic-400 flex items-center gap-1.5">
               <Flag className="w-3 h-3" />
               Moderation events
             </h4>
             {events.length === 0 && !loading && (
-              <p className="text-xs text-mystic-500 italic">No events in queue.</p>
+              <p className="text-meta text-mystic-500 italic">No events in queue.</p>
             )}
             {events.map((event) => (
               <div
@@ -227,7 +227,7 @@ export function ModerationPanel() {
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium uppercase tracking-wider">
+                    <span className="text-caption font-medium uppercase tracking-wider">
                       {event.verdict}
                     </span>
                     {event.crisis_flagged && (
@@ -235,9 +235,9 @@ export function ModerationPanel() {
                         crisis
                       </Badge>
                     )}
-                    <span className="text-[10px] text-mystic-500">{event.surface}</span>
+                    <span className="text-meta text-mystic-500">{event.surface}</span>
                   </div>
-                  <span className="text-[10px] text-mystic-500 flex items-center gap-1">
+                  <span className="text-meta text-mystic-500 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {new Date(event.created_at).toLocaleString()}
                   </span>
@@ -252,7 +252,7 @@ export function ModerationPanel() {
                   </div>
                 )}
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-[10px] text-mystic-500 font-mono">
+                  <span className="text-caption text-mystic-500 font-mono">
                     user: {event.user_id ? event.user_id.slice(0, 8) : '—'}
                   </span>
                   {!event.reviewed && (

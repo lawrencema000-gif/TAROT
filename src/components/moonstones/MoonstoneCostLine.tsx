@@ -41,7 +41,7 @@ export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props)
   const insufficient = balance !== null && balance < cost;
 
   return (
-    <div className={`flex items-center gap-2 text-xs text-mystic-400 ${className}`}>
+    <div className={`flex items-center gap-2 text-meta text-mystic-400 ${className}`}>
       <Moon className="h-3.5 w-3.5 flex-none text-gold/70" />
       <span>
         <Trans
@@ -54,7 +54,7 @@ export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props)
         {balance !== null && (
           <>
             {' · '}
-            <span className={insufficient ? 'text-pink-400' : ''}>
+            <span className={insufficient ? 'text-coral' : ''}>
               {t('moonstones.youHave', { defaultValue: 'You have {{n}}', n: balance })}
             </span>
           </>

@@ -127,14 +127,18 @@ export interface CachedRitualState {
   tarotViewed: boolean;
   promptViewed: boolean;
   completed: boolean;
+  /** The user's LOCAL calendar date (localDateStr) — the same basis as
+   *  daily_rituals.date, so the cached night is the night the row is for. */
   date: string;
 }
 
+/** One entry per user; `state.date` says which local day it describes. */
 export async function cacheDailyRitual(userId: string, state: CachedRitualState): Promise<void> {
   const key = `${CACHE_KEYS.DAILY_RITUAL}_${userId}`;
   await setCache(key, state);
 }
 
+/** The cached ritual for `date` (a local calendar date), or null if the entry is for another day. */
 export async function getCachedDailyRitual(userId: string, date: string): Promise<CachedRitualState | null> {
   const key = `${CACHE_KEYS.DAILY_RITUAL}_${userId}`;
   const cached = await getCache<CachedRitualState>(key);

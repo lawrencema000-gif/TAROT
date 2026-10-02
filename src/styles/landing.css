@@ -27,6 +27,12 @@
    index.css pins every animation and transition to its end state; the
    marquee is additionally stopped outright below, because a loop pinned
    to "one iteration of 0.01ms" still jumps once.
+
+   The reveal is progressive enhancement. Sections and cards render
+   visible; `.is-pending` is added from JavaScript (LandingPage's useReveal)
+   only to an element below the fold, only when IntersectionObserver exists
+   and the user has not asked for reduced motion, and only before first
+   paint. Without JavaScript the whole page is simply there.
 */
 
 .lp-root {
@@ -107,6 +113,18 @@
    are the essentials, the mark alone still says whose page this is. */
 .lp-nav-word { display: none; }
 @media (min-width: 480px) { .lp-nav-word { display: inline-flex; } }
+/* The Menu button stands in for the hidden links below 900px: a 44px
+   icon-only ghost that opens the nav sheet. Gone once the links show. */
+.lp-nav-menu {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; padding: 0; flex-shrink: 0;
+  background: transparent; border: none; cursor: pointer;
+  border-radius: var(--radius-control);
+  transition: color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.lp-nav-menu:focus-visible { outline: 2px solid rgb(var(--focus-ring)); outline-offset: 2px; }
+@media (min-width: 900px) { .lp-nav-menu { display: none; } }
 
 /* ── Hero ── */
 .lp-hero {
@@ -172,20 +190,24 @@ html.lp-snap { scroll-snap-type: y proximity; }
 html.lp-snap .lp-sec { scroll-snap-align: start; scroll-margin-top: 64px; }
 @media (max-height: 599px) { html.lp-snap { scroll-snap-type: none; } }
 
-/* ── Sections ── */
+/* ── Sections ──
+   Visible at rest. `.is-pending` is the hidden start of the entrance and
+   is only ever set by JavaScript (see the header); `.is-vis` is the end
+   state, named so a delayed item (an FAQ row, a bento card) can carry its
+   own transition-delay into it. */
 .lp-sec {
   padding: 72px 0; position: relative; z-index: 2;
-  opacity: 0; transform: translateY(16px);
   transition: opacity var(--dur-deliberate) var(--ease-out), transform var(--dur-deliberate) var(--ease-out);
 }
 @media (min-width: 640px) { .lp-sec { padding: 110px 0; } }
+.lp-sec.is-pending { opacity: 0; transform: translateY(16px); }
 .lp-sec.is-vis { opacity: 1; transform: none; }
 
 /* A card or row arriving inside a section that is already visible. */
 .lp-reveal {
-  opacity: 0; transform: translateY(16px);
   transition: opacity var(--dur-deliberate) var(--ease-out), transform var(--dur-deliberate) var(--ease-out);
 }
+.lp-reveal.is-pending { opacity: 0; transform: translateY(16px); }
 .lp-reveal.is-vis { opacity: 1; transform: none; }
 
 .lp-header { text-align: center; margin-bottom: 40px; }
@@ -314,8 +336,10 @@ html.lp-snap .lp-sec { scroll-snap-align: start; scroll-margin-top: 64px; }
 
 /* ── Footer ── */
 .lp-footer { border-top: 1px solid rgb(var(--hairline)); padding: 40px 0 48px; position: relative; z-index: 2; }
+/* A 44px row, the touch minimum; it was 32. The rows now space themselves
+   (the lists dropped their gap), so the column reads as before. */
 .lp-footer-link {
-  display: inline-flex; align-items: center; min-height: 32px;
+  display: inline-flex; align-items: center; min-height: 44px;
   text-decoration: none;
   transition: color var(--dur-fast) var(--ease-out);
 }

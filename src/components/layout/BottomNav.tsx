@@ -100,19 +100,19 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-mystic-950/70"
             onClick={() => setMoreOpen(false)}
           />
 
           {/* Slide-up menu panel */}
           <div className="relative z-10 w-full max-w-lg mx-auto mb-[76px] px-2 animate-slide-up">
-            <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-b from-mystic-800 to-mystic-900 border border-mystic-700/40 rounded-card overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-mystic-700/30">
+              <div className="flex items-center justify-between px-5 py-1 border-b border-mystic-700/30">
                 <span className="text-gold font-semibold text-sm tracking-wide">{t('nav.more')}</span>
                 <button
                   onClick={() => setMoreOpen(false)}
-                  className="p-1 rounded-lg text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/40 transition-colors"
+                  className="min-h-[44px] min-w-[44px] -mr-3 flex items-center justify-center rounded-lg text-mystic-400 hover:text-mystic-200 hover:bg-mystic-700/40 transition-colors"
                   aria-label={t('actions.close')}
                 >
                   <X className="w-4 h-4" />
@@ -127,7 +127,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   const routed = isRoute(item);
                   const isActive = !external && !routed && activeTab === item.id;
                   const baseClass = `
-                        flex flex-col items-center gap-2 py-4 px-2 rounded-xl
+                        flex flex-col items-center gap-2 py-4 px-2 rounded-control
                         transition-all duration-base touch-manipulation active:scale-95
                         ${isActive
                           ? 'bg-gold/10 text-gold'
@@ -135,7 +135,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                         }
                       `;
                   const iconWrap = `
-                        p-2.5 rounded-xl transition-all duration-base
+                        p-2.5 rounded-control transition-all duration-base
                         ${isActive ? 'bg-gold/15' : 'bg-mystic-700/30'}
                       `;
                   const inner = (
@@ -143,7 +143,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                       <div className={iconWrap}>
                         <Icon className="w-5 h-5 transition-all duration-base" />
                       </div>
-                      <span className={`text-xs font-medium ${isActive ? 'text-gold' : ''}`}>
+                      <span className={`text-caption font-medium ${isActive ? 'text-gold' : ''}`}>
                         {t(item.labelKey)}
                       </span>
                     </>
@@ -198,7 +198,10 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
             mystic-700 border for a more refined brand-line treatment.
             Fades at the edges for a softer attachment to the page. */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/25 to-transparent" aria-hidden />
-        <div className="bg-gradient-to-t from-mystic-950 via-mystic-900/[0.98] to-mystic-900/[0.92] backdrop-blur-xl">
+        {/* Opaque: elevation is fill, and a blur over an opaque bar was a
+            compositing layer that hid nothing. The gold hairline above is
+            the bar's edge. */}
+        <div className="bg-mystic-900">
           <div className="flex items-center justify-around max-w-lg mx-auto px-2">
             {visibleTabs.map(tab => {
               const Icon = tab.icon;
@@ -222,12 +225,12 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   `}
                 >
                   <div className={`
-                    relative p-1.5 rounded-xl transition-all duration-slow
+                    relative p-1.5 rounded-control transition-all duration-slow
                     ${isActive ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
                   `}>
                     <Icon className="w-5 h-5 transition-all duration-slow" />
                   </div>
-                  <span className={`text-[10px] font-medium tracking-wide transition-all duration-slow ${isActive ? 'text-gold' : ''}`}>
+                  <span className={`text-caption font-medium tracking-wide transition-all duration-slow ${isActive ? 'text-gold' : ''}`}>
                     {t(tab.labelKey)}
                   </span>
                   {/* Active dot — small gold sparkle below the label,
@@ -258,12 +261,12 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
               `}
             >
               <div className={`
-                relative p-1.5 rounded-xl transition-all duration-slow
+                relative p-1.5 rounded-control transition-all duration-slow
                 ${isMoreActive || moreOpen ? 'bg-gold/10 ring-1 ring-gold/25' : ''}
               `}>
                 <MoreHorizontal className="w-5 h-5 transition-all duration-slow" />
               </div>
-              <span className={`text-[10px] font-medium tracking-wide transition-all duration-slow ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
+              <span className={`text-caption font-medium tracking-wide transition-all duration-slow ${isMoreActive || moreOpen ? 'text-gold' : ''}`}>
                 {t('nav.more')}
               </span>
               {(isMoreActive || moreOpen) && (

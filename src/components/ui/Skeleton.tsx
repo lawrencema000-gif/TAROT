@@ -60,7 +60,7 @@ export function Skeleton({
 
 export function CardSkeleton() {
   return (
-    <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
+    <div className="bg-mystic-850 rounded-card p-5 border border-mystic-700">
       <div className="flex items-center gap-3 mb-4">
         <Skeleton variant="circular" width={40} height={40} />
         <div className="flex-1">
@@ -83,7 +83,7 @@ export function TarotCardSkeleton() {
       <Skeleton
         width={140}
         height={240}
-        className="rounded-xl mb-4"
+        className="rounded-control mb-4"
       />
       <Skeleton height={20} width={120} className="mb-2" />
       <Skeleton height={14} width={80} />
@@ -93,7 +93,7 @@ export function TarotCardSkeleton() {
 
 export function HoroscopeSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700">
+    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-card p-6 border border-mystic-700">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Skeleton variant="circular" width={48} height={48} />
@@ -122,7 +122,7 @@ export function HoroscopeSkeleton() {
 
 export function JournalEntrySkeleton() {
   return (
-    <div className="bg-mystic-850 rounded-xl p-4 border border-mystic-700">
+    <div className="bg-mystic-850 rounded-control p-4 border border-mystic-700">
       <div className="flex justify-between items-start mb-3">
         <Skeleton height={16} width={100} />
         <Skeleton height={14} width={60} />
@@ -142,8 +142,8 @@ export function JournalEntrySkeleton() {
 
 export function QuizCardSkeleton() {
   return (
-    <div className="bg-mystic-850 rounded-2xl p-5 border border-mystic-700">
-      <Skeleton height={120} className="rounded-xl mb-4" />
+    <div className="bg-mystic-850 rounded-card p-5 border border-mystic-700">
+      <Skeleton height={120} className="rounded-control mb-4" />
       <Skeleton height={20} width="70%" className="mb-2" />
       <Skeleton height={14} width="90%" className="mb-1" />
       <Skeleton height={14} width="60%" className="mb-4" />
@@ -162,7 +162,7 @@ export function ProfileSkeleton() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-mystic-850 rounded-xl p-4 text-center">
+          <div key={i} className="bg-mystic-850 rounded-control p-4 text-center">
             <Skeleton height={28} width={40} className="mx-auto mb-2" />
             <Skeleton height={12} width={60} className="mx-auto" />
           </div>
@@ -170,7 +170,7 @@ export function ProfileSkeleton() {
       </div>
       <div className="space-y-3">
         {[1, 2, 3, 4].map(i => (
-          <Skeleton key={i} height={56} className="rounded-xl" />
+          <Skeleton key={i} height={56} className="rounded-control" />
         ))}
       </div>
     </div>
@@ -235,7 +235,7 @@ export function ReadingsPageSkeleton() {
       <div className="grid grid-cols-3 gap-3">
         {[1, 2, 3, 4, 5, 6].map(i => (
           <div key={i} className="flex flex-col items-center">
-            <Skeleton width={100} height={160} className="rounded-xl mb-2" />
+            <Skeleton width={100} height={160} className="rounded-control mb-2" />
             <Skeleton height={12} width={70} />
           </div>
         ))}
@@ -252,7 +252,7 @@ export function HoroscopePageSkeleton() {
         <Skeleton height={36} width={80} className="rounded-full" />
         <Skeleton height={36} width={100} className="rounded-full" />
       </div>
-      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700">
+      <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-card p-6 border border-mystic-700">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton variant="circular" width={48} height={48} />
           <div>
@@ -281,19 +281,19 @@ export function HoroscopePageSkeleton() {
 
 export function RitualCardSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-2xl p-6 border border-mystic-700 min-h-[400px]">
+    <div className="bg-gradient-to-br from-mystic-850 to-mystic-900 rounded-card p-6 border border-mystic-700 min-h-[400px]">
       <div className="flex items-center justify-between mb-6">
         <Skeleton height={24} width={120} />
         <Skeleton variant="circular" width={32} height={32} />
       </div>
       <div className="flex flex-col items-center justify-center py-8">
-        <Skeleton width={160} height={260} className="rounded-xl mb-6" />
+        <Skeleton width={160} height={260} className="rounded-control mb-6" />
         <Skeleton height={20} width={140} className="mb-3" />
         <Skeleton height={14} width="80%" className="mb-2" />
         <Skeleton height={14} width="60%" />
       </div>
       <div className="mt-6">
-        <Skeleton height={48} className="rounded-xl" />
+        <Skeleton height={48} className="rounded-control" />
       </div>
     </div>
   );

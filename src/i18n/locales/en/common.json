@@ -52,7 +52,9 @@
     "shareFailed": "Couldn’t share. Try again.",
     "restore": "Restore purchases",
     "manage": "Manage subscription",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "send": "Send",
+    "refresh": "Refresh"
   },
   "labels": {
     "email": "Email",

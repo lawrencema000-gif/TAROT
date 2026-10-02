@@ -2,8 +2,8 @@
 // lazy-loaded by App.tsx and native never renders it, so main.tsx must not
 // import landing.css globally.
 import '../styles/landing.css';
-import { useState, useEffect, useRef, useCallback, type KeyboardEvent, type ReactNode } from 'react';
-import { ChevronRight, Flame, ListChecks, PenLine } from 'lucide-react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, type KeyboardEvent, type ReactNode } from 'react';
+import { ChevronRight, Flame, ListChecks, Menu, PenLine } from 'lucide-react';
 import { setPageMeta, setWebsiteSchema, setFaqSchema, setHowToSchema } from '../utils/seo';
 import { FreeReadingDemo } from '../components/landing/FreeReadingDemo';
 import { FreeEmailCourseCard } from '../components/landing/FreeEmailCourseCard';
@@ -17,11 +17,12 @@ import {
   EyebrowLabel,
   BrandMark,
   BrandWordmark,
+  Sheet,
   TarotCardIcon,
   HoroscopeWheelIcon,
 } from '../components/ui';
 import { ZodiacGlyphPaths, SunIcon } from '../components/icons';
-import { fullDeck } from '../data/tarotDeck';
+import { CARD_COUNT, SPREAD_COUNT, QUIZ_COUNT, SIGN_COUNT } from '../data/counts';
 import { prefersReducedMotion } from '../utils/motion';
 import type { ZodiacSign } from '../types/astrology';
 
@@ -72,20 +73,17 @@ const MAJOR_ARCANA = [
 ];
 
 /**
- * Counts the page can stand behind.
- *
- * Quizzes: the registry in src/pages/QuizzesPage.tsx (`const quizzes`) has
- * ten entries that are always on — mood check, MBTI (full and quick), tarot
- * court match, element affinity, shadow archetype, love language, Big Five,
- * Enneagram, attachment — plus twenty-three behind the `ayurveda-dosha` and
- * `extra-quizzes` flags, which this page cannot see. Ten is the floor.
- *
- * Spreads: `allSpreads` in src/data/tarotSpreads.ts is 18 general spreads
- * plus the 22 major-arcana spreads. Not imported: those two data files are
- * ~190KB and this page is the first thing a cold visitor downloads.
+ * The nav's links, once: the row that shows from 900px up, and the menu
+ * sheet that stands in for it below. `key` is the label's i18n key (landing
+ * namespace unless prefixed); `external` opens in a new tab.
  */
-const QUIZ_COUNT = 10;
-const SPREAD_COUNT = 40;
+const NAV_LINKS: ReadonlyArray<{ href: string; key: string; external?: boolean }> = [
+  { href: '/tarot-meanings', key: 'nav.cardMeanings' },
+  { href: '#features', key: 'nav.features' },
+  { href: '#zodiac', key: 'nav.zodiac' },
+  { href: '#faq', key: 'nav.faq' },
+  { href: 'https://yinyangguardian.com/', key: 'common:nav.shop', external: true },
+];
 
 // Wheel geometry, in a 520-unit viewBox. Pure numbers, computed once.
 const WHEEL = 520;
@@ -110,18 +108,44 @@ const TICKS = Array.from({ length: 72 }, (_, i) => {
 const SPOKES = SIGNS.map((_, i) => ({ a: polar(R.core, i, -15), b: polar(R.outer, i, -15) }));
 
 // ─── Hooks ─────────────────────────────────────────────────────
-/** True once the element has entered the viewport. Never resets: entrances play once. */
+/**
+ * The one-time entrance of a section or a card, as progressive enhancement.
+ *
+ * The stylesheet renders everything visible. This hook hides an element —
+ * before the first paint, from a layout effect — only when all three hold:
+ * IntersectionObserver exists, the user has not asked for reduced motion,
+ * and the element is below the fold right now. Then the observer brings it
+ * in once, and the hook never touches it again.
+ *
+ * It used to start every section at opacity 0 and wait for the observer:
+ * no JavaScript (a crawler, a failed chunk) meant no page below the hero,
+ * and reduced motion still ran the fade. Now the resting state is the
+ * default and the animation is the extra.
+ */
+type Reveal = 'visible' | 'pending' | 'revealed';
 function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.12) {
   const ref = useRef<T>(null);
-  const [v, setV] = useState(false);
+  const [state, setState] = useState<Reveal>('visible');
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined' || prefersReducedMotion()) return;
+    const r = el.getBoundingClientRect();
+    const inView = r.top < window.innerHeight && r.bottom > 0;
+    if (!inView) setState('pending');
+  }, []);
+
   useEffect(() => {
+    if (state !== 'pending') return;
     const el = ref.current;
     if (!el) return;
-    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) setV(true); }, { threshold });
+    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) setState('revealed'); }, { threshold });
     o.observe(el);
     return () => o.disconnect();
-  }, [threshold]);
-  return { ref, v };
+  }, [state, threshold]);
+
+  const cls = state === 'pending' ? 'is-pending' : state === 'revealed' ? 'is-vis' : '';
+  return { ref, cls };
 }
 
 // ─── Animated counter ──────────────────────────────────────────
@@ -163,9 +187,9 @@ function PlayBadge({ alt, eager = false }: { alt: string; eager?: boolean }) {
 
 // ─── Section scaffolding ───────────────────────────────────────
 function Sec({ children, id, className = '' }: { children: ReactNode; id?: string; className?: string }) {
-  const { ref, v } = useReveal<HTMLElement>();
+  const { ref, cls } = useReveal<HTMLElement>();
   return (
-    <section ref={ref} id={id} className={`lp-sec ${v ? 'is-vis' : ''} ${className}`}>
+    <section ref={ref} id={id} className={`lp-sec ${cls} ${className}`}>
       {children}
     </section>
   );
@@ -310,9 +334,9 @@ function ZodiacWheel() {
 
 // ─── FAQ ───────────────────────────────────────────────────────
 function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
-  const { ref, v } = useReveal<HTMLDivElement>();
+  const { ref, cls } = useReveal<HTMLDivElement>();
   return (
-    <div ref={ref} className={`lp-reveal mb-2.5 ${v ? 'is-vis' : ''}`} style={{ transitionDelay: `${index * 50}ms` }}>
+    <div ref={ref} className={`lp-reveal mb-2.5 ${cls}`} style={{ transitionDelay: `${index * 50}ms` }}>
       <Disclosure variant="panel" label={<span className="text-ui text-mystic-100">{q}</span>}>
         <p className="text-body text-mystic-300">{a}</p>
       </Disclosure>
@@ -340,12 +364,12 @@ const BENTO_ICONS: Record<(typeof FEATURES)[number]['key'], ReactNode> = {
 };
 
 function BentoItem({ feature, index, t }: { feature: (typeof FEATURES)[number]; index: number; t: TFn }) {
-  const { ref, v } = useReveal<HTMLDivElement>();
+  const { ref, cls } = useReveal<HTMLDivElement>();
   return (
     <Card
       ref={ref}
       padding="lg"
-      className={`lp-bento-card lp-reveal ${feature.size} ${v ? 'is-vis' : ''}`}
+      className={`lp-bento-card lp-reveal ${feature.size} ${cls}`}
       style={{ transitionDelay: `${index * 60}ms` }}
     >
       <div className="lp-bento-icon text-gold" aria-hidden="true">{BENTO_ICONS[feature.key]}</div>
@@ -368,11 +392,11 @@ const RITUAL_ICONS: Record<(typeof RITUAL_STEPS)[number]['key'], ReactNode> = {
 };
 
 function RitualStep({ step, index, t }: { step: (typeof RITUAL_STEPS)[number]; index: number; t: TFn }) {
-  const { ref, v } = useReveal<HTMLDivElement>();
+  const { ref, cls } = useReveal<HTMLDivElement>();
   return (
     <div
       ref={ref}
-      className={`lp-timeline-item lp-reveal ${index % 2 === 1 ? 'right' : 'left'} ${v ? 'is-vis' : ''}`}
+      className={`lp-timeline-item lp-reveal ${index % 2 === 1 ? 'right' : 'left'} ${cls}`}
       style={{ transitionDelay: `${index * 90}ms` }}
     >
       <div className="lp-timeline-dot" aria-hidden="true" />
@@ -405,6 +429,9 @@ function FooterLink({ href, children, external = false }: { href: string; childr
 export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
   const { t } = useT(['landing', 'common']);
   const [navSolid, setNavSolid] = useState(false);
+  // The nav's links below 900px: a sheet, opened from a Menu button.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuLabel = t('nav.menu', { defaultValue: 'Menu' });
 
   const FAQ_KEYS = ['free', 'accuracy', 'quizzes', 'privacy', 'premium', 'web'] as const;
 
@@ -434,14 +461,16 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
+  // From src/data/counts.ts, which the counts gate holds to the data files.
   const stats = [
-    { key: 'cards', n: fullDeck.length },
+    { key: 'cards', n: CARD_COUNT },
     { key: 'spreads', n: SPREAD_COUNT },
     { key: 'quizzes', n: QUIZ_COUNT },
-    { key: 'signs', n: SIGNS.length },
+    { key: 'signs', n: SIGN_COUNT },
   ];
 
   const navLink = 'lp-nav-link text-ui text-mystic-400 [@media(hover:hover)]:hover:text-mystic-100';
+  const external = (yes?: boolean) => (yes ? { target: '_blank', rel: 'noopener noreferrer' } : {});
 
   return (
     <div className="lp-root text-mystic-100">
@@ -455,14 +484,25 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             <BrandWordmark size={17} sparkle={false} className="lp-nav-word" />
           </a>
           <div className="lp-nav-right">
-            <a href="/tarot-meanings" className={navLink}>{t('nav.cardMeanings')}</a>
-            <a href="#features" className={navLink}>{t('nav.features')}</a>
-            <a href="#zodiac" className={navLink}>{t('nav.zodiac')}</a>
-            <a href="#faq" className={navLink}>{t('nav.faq')}</a>
-            <a href="https://yinyangguardian.com/" target="_blank" rel="noopener noreferrer" className={navLink}>{t('common:nav.shop')}</a>
+            {NAV_LINKS.map((l) => (
+              <a key={l.href} href={l.href} className={navLink} {...external(l.external)}>{t(l.key)}</a>
+            ))}
             <LanguageDropdown />
             <Button variant="ghost" onClick={onSignIn}>{t('common:nav.signIn')}</Button>
             <Button variant="gold" onClick={onGetStarted}>{t('nav.cta')}</Button>
+            {/* Below 900px the links above are display:none; this is how a
+                phone reaches them. Icon only — at 360px the mark, the
+                language picker, Sign in and the CTA already fill the bar. */}
+            <button
+              type="button"
+              className="lp-nav-menu text-mystic-300 [@media(hover:hover)]:hover:text-mystic-100"
+              aria-label={menuLabel}
+              aria-haspopup="dialog"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="w-5 h-5" strokeWidth={1.8} aria-hidden />
+            </button>
           </div>
         </div>
       </nav>
@@ -605,9 +645,12 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
               </div>
               <p className="text-caption text-mystic-500">{t('footer.tagline')}</p>
             </div>
+            {/* Each link is a 44px row (see .lp-footer-link); the rows space
+                themselves, and the -mt-1.5 puts the first baseline back
+                where the 32px row had it under the group label. */}
             <div>
               <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.learn')}</EyebrowLabel>
-              <ul className="space-y-1">
+              <ul className="-mt-1.5">
                 <li><FooterLink href="/tarot-meanings">{t('footer.links.cardMeanings')}</FooterLink></li>
                 <li><FooterLink href="/spreads">{t('footer.links.spreads')}</FooterLink></li>
                 <li><FooterLink href="/astrology">{t('footer.links.astrology')}</FooterLink></li>
@@ -619,7 +662,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             </div>
             <div>
               <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.app')}</EyebrowLabel>
-              <ul className="space-y-1">
+              <ul className="-mt-1.5">
                 <li><FooterLink href="/signup">{t('footer.links.signUp')}</FooterLink></li>
                 <li><FooterLink href="/signin">{t('footer.links.signIn')}</FooterLink></li>
                 <li><FooterLink href="/spreads/builder">{t('footer.links.spreadBuilder')}</FooterLink></li>
@@ -628,7 +671,7 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
             </div>
             <div>
               <EyebrowLabel align="left" className="block mb-3">{t('footer.groups.company')}</EyebrowLabel>
-              <ul className="space-y-1">
+              <ul className="-mt-1.5">
                 <li><FooterLink href="/privacy-policy.html">{t('footer.links.privacy')}</FooterLink></li>
                 <li><FooterLink href="mailto:support@arcana.app">{t('footer.links.contact')}</FooterLink></li>
                 <li><FooterLink href="https://yinyangguardian.com/" external>{t('footer.links.shopPartner')}</FooterLink></li>
@@ -641,6 +684,28 @@ export function LandingPage({ onSignIn, onGetStarted }: LandingPageProps) {
           </div>
         </div>
       </footer>
+
+      {/* The phone's nav. Picking a link closes the sheet; the anchor then
+          scrolls the page (hash navigation works under the sheet's scroll
+          lock, which only stops the user's own scrolling). */}
+      <Sheet open={menuOpen} onClose={() => setMenuOpen(false)} title={menuLabel}>
+        <nav aria-label={menuLabel}>
+          <ul className="space-y-1">
+            {NAV_LINKS.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  className="flex items-center min-h-[48px] px-3 rounded-control text-body text-mystic-100 [@media(hover:hover)]:hover:bg-mystic-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+                  onClick={() => setMenuOpen(false)}
+                  {...external(l.external)}
+                >
+                  {t(l.key)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </Sheet>
     </div>
   );
 }

@@ -52,7 +52,9 @@
     "shareFailed": "分享失败，请重试。",
     "restore": "恢复购买",
     "manage": "管理订阅",
-    "loading": "加载中…"
+    "loading": "加载中…",
+    "send": "发送",
+    "refresh": "刷新"
   },
   "labels": {
     "email": "邮箱",

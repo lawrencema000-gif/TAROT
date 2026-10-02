@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Bookmark, Compass, Crown, Loader2, RefreshCw, Sparkles, X } from 'lucide-react';
-import { Button, Badge, ReadingProse } from '../ui';
+import { Button, Badge, EyebrowLabel, ReadingProse } from '../ui';
 import { useT } from '../../i18n/useT';
 import { GLOBAL_CITIES } from '../../data/citiesGlobal';
 import { scorePlaces, type PlaceScore, type LifeIntent } from '../../utils/celestialScoring';
@@ -208,7 +208,7 @@ export function FindYourPlace({
         transition={{ duration: 0.4, delay: 0.2 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => (isPremium ? handleStart() : ranked.length === 0 ? onUpgrade() : handleStart())}
-        className="group w-full p-5 rounded-2xl bg-gradient-to-br from-gold/25 via-gold/10 to-mystic-900/60 hairline-gold border border-gold/40 hover:border-gold/60 transition-all text-left relative overflow-hidden"
+        className="group w-full p-5 rounded-card bg-gradient-to-br from-gold/25 via-gold/10 to-mystic-900/60 hairline-gold border border-gold/40 hover:border-gold/60 transition-all text-left relative overflow-hidden"
       >
         {/* Subtle animated shimmer across the card */}
         <div
@@ -220,7 +220,7 @@ export function FindYourPlace({
           aria-hidden
         />
         <div className="relative flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-mystic-900/70 hairline-gold flex items-center justify-center">
+          <div className="flex-shrink-0 w-12 h-12 rounded-card bg-mystic-900/70 hairline-gold flex items-center justify-center">
             <Compass className="w-6 h-6 text-gold" aria-hidden />
           </div>
           <div className="flex-1 min-w-0">
@@ -235,7 +235,7 @@ export function FindYourPlace({
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-mystic-300 leading-relaxed">
+            <p className="text-meta text-mystic-300">
               {t('celestial.findPlace.cta.body', {
                 defaultValue:
                   'One tap. We read every city against your full birth chart and reveal the single best place for you — with the long-form why.',
@@ -254,7 +254,7 @@ export function FindYourPlace({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-mystic-950/85 backdrop-blur-md p-0 sm:p-6"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-mystic-950/85 p-0 sm:p-6"
             onClick={(e) => {
               if (e.target === e.currentTarget && (phase.kind === 'done' || phase.kind === 'error')) handleClose();
             }}
@@ -270,8 +270,8 @@ export function FindYourPlace({
               {(phase.kind === 'done' || phase.kind === 'error') && (
                 <button
                   onClick={handleClose}
-                  aria-label="Close"
-                  className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-mystic-800/60 hairline-gold-soft hover:bg-mystic-800 text-mystic-200 hover:text-gold flex items-center justify-center transition-colors"
+                  aria-label={t('common:actions.close', { defaultValue: 'Close' })}
+                  className="absolute top-3 right-3 z-10 w-11 h-11 rounded-full bg-mystic-800/60 hairline-gold-soft hover:bg-mystic-800 text-mystic-200 hover:text-gold flex items-center justify-center transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -298,13 +298,13 @@ export function FindYourPlace({
                 {phase.kind === 'error' && (
                   <div className="space-y-4">
                     {phase.result && <RevealHero result={phase.result}>{null}</RevealHero>}
-                    <div className="flex items-start gap-2 rounded-xl bg-red-900/30 border border-red-700/40 p-4">
-                      <AlertCircle className="w-5 h-5 text-red-300 flex-shrink-0 mt-0.5" aria-hidden />
+                    <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-4">
+                      <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" aria-hidden />
                       <div className="flex-1">
-                        <p className="text-sm text-red-200 font-medium mb-1">
+                        <p className="text-sm text-coral-light font-medium mb-1">
                           {t('celestial.findPlace.error.title', { defaultValue: "We couldn't finish your reading" })}
                         </p>
-                        <p className="text-xs text-red-300/80 leading-relaxed mb-3">
+                        <p className="text-meta text-coral-light/80 mb-3">
                           {phase.message}
                         </p>
                         <Button variant="ghost" size="sm" onClick={() => (phase.result ? handleReroll() : handleStart())}>
@@ -371,9 +371,9 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col items-center text-center gap-2"
       >
-        <div className="text-xs uppercase tracking-[0.3em] text-gold/80 font-medium">
+        <EyebrowLabel>
           {t('celestial.findPlace.hero.eyebrow', { defaultValue: 'Your destined place' })}
-        </div>
+        </EyebrowLabel>
         <div className="text-6xl" aria-hidden>{ccToFlag(result.city.cc)}</div>
         <h2 className="text-3xl font-display text-mystic-100 leading-tight">
           {result.city.name}
@@ -386,12 +386,12 @@ function RevealHero({ result, children }: { result: PlaceScore; children: React.
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="flex items-center justify-center gap-3 py-3 px-4 rounded-2xl bg-mystic-900/40 hairline-gold-soft"
+        className="flex items-center justify-center gap-3 py-3 px-4 rounded-card bg-mystic-900/40 hairline-gold-soft"
       >
         {result.contributingLines.slice(0, 4).map((line) => (
           <div key={`${line.planet}-${line.angle}`} className="flex flex-col items-center gap-1">
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-caption font-medium"
               style={{
                 backgroundColor: `${PLANET_COLOR[line.planet]}30`,
                 color: PLANET_COLOR[line.planet],
@@ -419,7 +419,7 @@ function ReadingLoading() {
   return (
     <div className="flex flex-col items-center gap-3 py-8">
       <Loader2 className="w-5 h-5 text-gold animate-spin" />
-      <p className="text-xs text-mystic-400">
+      <p className="text-meta text-mystic-400">
         {t('celestial.findPlace.reading.loading', { defaultValue: 'Composing your reading…' })}
       </p>
     </div>
@@ -451,7 +451,7 @@ function ReadingBody({
         {reading.verdict}
       </p>
 
-      <div className="rounded-2xl bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5">
+      <div className="rounded-card bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5">
         <ReadingProse text={reading.body} />
       </div>
 
@@ -475,14 +475,14 @@ function ReadingBody({
         </div>
       )}
 
-      <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 space-y-1">
+      <div className="rounded-card bg-gold/[0.08] border border-gold/20 p-4 space-y-1">
         <p className="font-display-eyebrow text-gold/80">
           {t('celestial.findPlace.reading.practiceLabel', { defaultValue: 'Your first month' })}
         </p>
         <p className="reading-copy">{reading.practice}</p>
       </div>
 
-      <div className="rounded-2xl bg-mystic-900/40 p-4 space-y-1">
+      <div className="rounded-card bg-mystic-900/40 p-4 space-y-1">
         <p className="font-display-eyebrow text-mystic-500">
           {t('celestial.findPlace.reading.cautionsLabel', { defaultValue: 'Honestly' })}
         </p>

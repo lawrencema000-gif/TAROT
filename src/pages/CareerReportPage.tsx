@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Briefcase, Lock, Moon, Gift, Share2, CheckCircle2, AlertCircle, Crown } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, Section, EmptyState, ResultLayout, ReadingProse } from '../components/ui';
-import { MysticalStar } from '../components/ui/MysticalStar';
+import { Card, Button, toast, Page, PageHeader, Section, EmptyState, ResultLayout, ReadingProse, SparkleFourPoint } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
-import { OrnateDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
   getCareerArchetype,
@@ -96,7 +94,7 @@ export function CareerReportPage() {
         subtitle: `${archetype.mbti} · ${t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}`,
         tagline: archetype.tagline,
         affirmation: archetype.affirmation,
-        brand: 'Arcana · Career Archetype',
+        brand: t('share.brand.careerArchetype', { defaultValue: 'Career archetype' }) as string,
       });
       const outcome = await shareOrDownload(
         blob,
@@ -105,6 +103,8 @@ export function CareerReportPage() {
       );
       if (outcome === 'downloaded') {
         toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+      } else if (outcome === 'failed') {
+        toast(t('common:actions.shareFailed'), 'error');
       }
     } catch {
       toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
@@ -146,16 +146,13 @@ export function CareerReportPage() {
           title={t('careerReport.title', { defaultValue: 'Career Archetype' })}
         />
 
-        <Card padding="lg" variant="ornate" className="text-center nebula-veil">
+        <Card padding="lg" variant="accent" className="text-center nebula-veil">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
             {archetype.name}
           </h2>
-          <div className="flex justify-center mb-3 text-gold/60">
-            <OrnateDivider width={120} />
-          </div>
           <p className="text-ui text-mystic-200 italic mb-4">
             {archetype.tagline}
           </p>
@@ -220,7 +217,7 @@ export function CareerReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
+            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
               <p className="text-ui text-mystic-200 mb-2">
                 {t('careerReport.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
@@ -415,7 +412,7 @@ export function CareerReportPage() {
           a phone; .reading-quote gives it the serif, the gold rule and a
           left edge instead of quote marks. */}
       <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30">
-        <MysticalStar size={20} halo={false} className="block text-gold mb-2" />
+        <SparkleFourPoint size={20} className="block text-gold mb-2" />
         <p className="reading-quote my-0">
           {archetype.affirmation}
         </p>

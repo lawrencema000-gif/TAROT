@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Star, Heart, Briefcase, Sun, Wind, Feather, Lock, Bookmark, BookmarkCheck, PenLine, Share2, TrendingUp, Gift, Globe, Shield, Flame, AlertTriangle, Droplets, Sword, Gem } from 'lucide-react';
 import { TarotCardIcon } from '../ui/NavIcons';
 import { Card, Button, Progress, toast, ReadingProse } from '../ui';
+import { ZODIAC_ICONS } from '../icons';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { savedHighlights } from '../../dal';
-import { getZodiacSign, zodiacData, getElementColor } from '../../utils/zodiac';
+import { getZodiacSign, zodiacData } from '../../utils/zodiac';
 import { localizeSignName } from '../../i18n/localizeNames';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 import {
@@ -22,6 +23,7 @@ import { awardXP } from '../../services/levelSystem';
 import { checkAchievementProgress } from '../../services/achievements';
 import { appStorage } from '../../lib/appStorage';
 import { useT } from '../../i18n/useT';
+import { localDateStr } from '../../utils/localDate';
 
 
 interface HoroscopeSectionProps {
@@ -37,9 +39,14 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
 
   // Arrays of weekly / monthly insight strings pulled from translation bundle.
 
-  const today = new Date().toISOString().split('T')[0];
+  // The local calendar date, like the Home ritual: a highlight saved after
+  // midnight local time belongs to that day's "Saved today" strip.
+  const today = localDateStr();
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const zodiacInfo = zodiacData[zodiacSign];
+  // Drawn, as on the Home ritual card: the text symbol is a colour emoji on Android.
+  const SignGlyph = ZODIAC_ICONS[zodiacInfo.name as ZodiacSignPC];
+  const signName = localizeSignName(zodiacInfo.name as ZodiacSignPC);
   const horoscope = generateDailyHoroscope(zodiacSign, today);
   const dailyReading = generateDailyReading({ sign: zodiacSign, date: today });
   const planetaryTransit = getPlanetaryTransit(today);
@@ -126,16 +133,18 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
     <div className="space-y-6">
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-4 mb-6">
-          <div className={`w-16 h-16 rounded-2xl bg-mystic-800 flex items-center justify-center text-3xl ${getElementColor(zodiacInfo.element)}`}>
-            {zodiacInfo.symbol}
+          <div className="w-16 h-16 rounded-card bg-gold/10 text-gold flex items-center justify-center">
+            <SignGlyph size={36} strokeWidth={1.5} aria-label={signName} />
           </div>
           <div className="flex-1">
-            <h2 className="font-display text-2xl text-gold">{localizeSignName(zodiacInfo.name as ZodiacSignPC)}</h2>
+            <h2 className="font-display text-2xl text-gold">{signName}</h2>
             <p className="text-meta text-mystic-400">{zodiacInfo.dateRange}</p>
           </div>
           <button
             onClick={handleSave}
-            className="p-2 rounded-full hover:bg-mystic-800 transition-colors active:scale-90"
+            aria-label={t('horoscope.saveLabel', { defaultValue: 'Save horoscope' })}
+            aria-pressed={isSaved}
+            className="p-3 rounded-full hover:bg-mystic-800 transition-colors active:scale-90"
           >
             {isSaved ? (
               <BookmarkCheck className="w-5 h-5 text-gold" />
@@ -165,7 +174,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-control">
               <Heart className="w-5 h-5 text-cosmic-rose flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.love')}</h4>
@@ -173,7 +182,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-control">
               <Briefcase className="w-5 h-5 text-cosmic-blue flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.work')}</h4>
@@ -181,7 +190,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-mystic-800/50 rounded-control">
               <Sun className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.mood')}</h4>
@@ -196,15 +205,15 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
             <div>
               <h4 className="heading-display-md text-mystic-100 mb-3">{t('horoscope.luckyFocus')}</h4>
               <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 bg-mystic-800/30 rounded-xl">
+                <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.color')}</p>
                   <p className="text-sm text-mystic-200 font-medium">{horoscope.luckyColor}</p>
                 </div>
-                <div className="text-center p-3 bg-mystic-800/30 rounded-xl">
+                <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.number')}</p>
                   <p className="text-lg font-display text-gold">{horoscope.luckyNumber}</p>
                 </div>
-                <div className="text-center p-3 bg-mystic-800/30 rounded-xl">
+                <div className="text-center p-3 bg-mystic-800/30 rounded-control">
                   <p className="text-meta text-mystic-400 mb-1">{t('horoscope.luckyLabels.vibe')}</p>
                   <p className="text-sm text-mystic-200 font-medium">
                     {vibeLabel}
@@ -213,7 +222,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
+            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-control">
               <Wind className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.todaysMood')}</h4>
@@ -221,23 +230,23 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
-              <Shield className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-control">
+              <Shield className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.shadowInsight')}</h4>
                 <p className="reading-copy">{dailyReading.shadow}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-orange-900/10 border border-orange-500/20 rounded-xl">
-              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 bg-gold/10 border border-gold/25 rounded-control">
+              <AlertTriangle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.caution')}</h4>
                 <p className="reading-copy">{dailyReading.caution}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-xl">
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/10 to-cosmic-blue/10 border border-gold/20 rounded-control">
               <Globe className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.planetaryTransit')}</h4>
@@ -245,7 +254,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-cosmic-rose/10 to-gold/10 border border-cosmic-rose/20 rounded-xl">
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-cosmic-rose/10 to-gold/10 border border-cosmic-rose/20 rounded-control">
               <Feather className="w-5 h-5 text-cosmic-rose flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.dailyAffirmation')}</h4>
@@ -253,7 +262,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
+            <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-control">
               <TarotCardIcon className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="heading-display-md text-mystic-200 mb-2">{t('horoscope.cardOfTheDay')}</h4>
@@ -271,7 +280,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
 
             {showExtras && (
               <>
-                <div className="flex items-start gap-3 p-4 bg-gold/5 border border-gold/20 rounded-xl">
+                <div className="flex items-start gap-3 p-4 bg-gold/5 border border-gold/20 rounded-control">
                   <Gift className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="heading-display-md text-mystic-200 mb-2">{t('horoscope.luckyNumbersLabel')}</h4>
@@ -288,7 +297,7 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/5 to-mystic-800/30 border border-gold/10 rounded-xl">
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-gold/5 to-mystic-800/30 border border-gold/10 rounded-control">
                   <Flame className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.miniRitual')}</h4>
@@ -296,8 +305,8 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-xl">
-                  <TrendingUp className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-mystic-800/30 rounded-control">
+                  <TrendingUp className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="heading-display-md text-mystic-200 mb-1">{t('horoscope.actionStep')}</h4>
                     <p className="reading-copy">{dailyReading.actionStep}</p>
@@ -308,7 +317,8 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
 
             <button
               onClick={() => setShowExtras(!showExtras)}
-              className="w-full text-sm text-mystic-400 hover:text-gold transition-colors"
+              aria-expanded={showExtras}
+              className="w-full min-h-[44px] text-sm text-mystic-400 hover:text-gold transition-colors"
             >
               {showExtras ? t('horoscope.showLess') : t('horoscope.showMore')}
             </button>
@@ -317,15 +327,15 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
       </Card>
 
       <div className="grid grid-cols-3 gap-2">
-        <Button variant="outline" onClick={handleSave}>
-          {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+        <Button variant="outline" onClick={handleSave} aria-label={t('horoscope.saveLabel', { defaultValue: 'Save horoscope' })} aria-pressed={isSaved}>
+          {isSaved ? <BookmarkCheck className="w-4 h-4" aria-hidden /> : <Bookmark className="w-4 h-4" aria-hidden />}
         </Button>
         <Button variant="outline" onClick={handleJournalPrompt}>
           <PenLine className="w-4 h-4" />
           {t('horoscope.journalButton')}
         </Button>
-        <Button variant="outline" onClick={handleShare}>
-          <Share2 className="w-4 h-4" />
+        <Button variant="outline" onClick={handleShare} aria-label={t('horoscope.shareLabel', { defaultValue: 'Share horoscope' })}>
+          <Share2 className="w-4 h-4" aria-hidden />
         </Button>
       </div>
 

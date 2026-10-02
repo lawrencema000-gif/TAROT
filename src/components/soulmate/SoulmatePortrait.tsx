@@ -93,7 +93,7 @@ export function SoulmatePortrait() {
           <img
             src={`data:${data.imageMime || 'image/jpeg'};base64,${data.image}`}
             alt={t('soulmatePortrait.alt', { defaultValue: "Symbolic illustrated portrait generated from your chart's relationship symbolism" })}
-            className="w-full rounded-2xl border border-gold/20"
+            className="w-full rounded-card border border-gold/20"
           />
           <ReadingProse text={data.caption} lede={false} />
 

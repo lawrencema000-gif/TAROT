@@ -81,7 +81,7 @@ export function BlogPage() {
                 {post.excerpt && (
                   <p className="text-sm text-mystic-400 line-clamp-2">{post.excerpt}</p>
                 )}
-                <div className="flex items-center gap-3 text-xs text-mystic-500">
+                <div className="flex items-center gap-3 text-meta text-mystic-500">
                   {post.published_at && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -110,7 +110,8 @@ export function BlogPage() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="p-2 rounded-lg bg-mystic-800/50 text-mystic-300 disabled:opacity-30 hover:bg-mystic-700/50 transition-colors"
+            aria-label={t('blog.prevPage', { defaultValue: 'Previous page' }) as string}
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-mystic-800/50 text-mystic-300 disabled:opacity-30 hover:bg-mystic-700/50 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -120,7 +121,8 @@ export function BlogPage() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="p-2 rounded-lg bg-mystic-800/50 text-mystic-300 disabled:opacity-30 hover:bg-mystic-700/50 transition-colors"
+            aria-label={t('blog.nextPage', { defaultValue: 'Next page' }) as string}
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-mystic-800/50 text-mystic-300 disabled:opacity-30 hover:bg-mystic-700/50 transition-colors"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

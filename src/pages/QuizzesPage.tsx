@@ -35,8 +35,7 @@ import {
   Quote,
 } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../components/ui/NavIcons';
-import { MysticalStar } from '../components/ui/MysticalStar';
-import { Card, Button, PageHeader, Page, ResultLayout, Disclosure, Progress, ProgressRing, Tag, toast } from '../components/ui';
+import { Card, Button, PageHeader, Page, ResultLayout, Disclosure, Progress, ProgressRing, Tag, toast, SparkleFourPoint, EyebrowLabel } from '../components/ui';
 import * as QuizIcons from '../components/ui/QuizIcons';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
@@ -81,6 +80,17 @@ import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 import { getZodiacElement, getZodiacSign } from '../utils/zodiac';
 
 import type { QuizDefinition } from '../types';
+
+// Quiz data names a palette token; Tailwind only emits classes it can read
+// whole, so the class is looked up here rather than composed at runtime.
+const TILE_INK: Record<string, string> = {
+  gold: 'text-gold',
+  teal: 'text-teal',
+  coral: 'text-coral',
+  'cosmic-blue': 'text-cosmic-blue',
+  'cosmic-rose': 'text-cosmic-rose',
+  'cosmic-violet': 'text-cosmic-violet',
+};
 
 type QuizState = 'list' | 'taking' | 'results';
 
@@ -601,13 +611,17 @@ export function QuizzesPage() {
     return (
       <Page spacing="md">
         <div className="flex items-center gap-4">
-          <button onClick={resetQuiz} className="p-2 -ml-2 hover:bg-mystic-800 rounded-full transition-colors">
-            <ArrowLeft className="w-5 h-5 text-mystic-400" />
+          <button
+            onClick={resetQuiz}
+            className="-ml-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-mystic-800 rounded-full transition-colors"
+            aria-label={tApp('quizzes.backToQuizzes', { defaultValue: 'Back to quizzes' })}
+          >
+            <ArrowLeft className="w-5 h-5 text-mystic-400" aria-hidden />
           </button>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <p className="text-sm font-medium text-mystic-200">{currentQ} / {totalQuestions}</p>
-              <p className="text-xs text-mystic-500">{Math.round(progressPercent)}%</p>
+              <p className="text-meta text-mystic-500">{Math.round(progressPercent)}%</p>
             </div>
             <Progress value={progressPercent} tone="gold" size="sm" label="Quiz progress" />
           </div>
@@ -641,7 +655,7 @@ export function QuizzesPage() {
               <button
                 key={option.value}
                 onClick={() => answerQuestion(question.id, option.value)}
-                className={`w-full p-4 text-left border rounded-xl transition-all active:scale-[0.98] ${
+                className={`w-full p-4 text-left border rounded-control transition-all active:scale-[0.98] ${
                   isMoodCheck
                     ? 'bg-mystic-800/30 hover:bg-gold/10 border-mystic-700 hover:border-gold/30'
                     : 'bg-mystic-800/50 hover:bg-mystic-700/50 border-mystic-600/50 hover:border-gold/30'
@@ -694,10 +708,10 @@ export function QuizzesPage() {
                 };
                 const Icon = icons[dim] || Zap;
                 return (
-                  <div key={dim} className="flex items-center gap-3 p-3 bg-mystic-800/30 rounded-xl">
+                  <div key={dim} className="flex items-center gap-3 p-3 bg-mystic-800/30 rounded-control">
                     <Icon className="w-5 h-5 text-gold" />
                     <div className="flex-1">
-                      <p className="text-xs text-mystic-500 capitalize">{dim}</p>
+                      <p className="text-caption text-mystic-500 capitalize">{dim}</p>
                       <div className="flex items-center gap-2">
                         <Progress value={(value / 5) * 100} tone="gold" size="sm" className="flex-1" label={dim} />
                         <span className="text-sm text-mystic-300">{value}/5</span>
@@ -777,10 +791,11 @@ export function QuizzesPage() {
             subtitle: result.quiz.title,
             tagline,
             affirmation,
-            brand: `Arcana · ${result.quiz.title}`,
+            brand: result.quiz.title,
           });
           const out = await shareOrDownload(blob, `arcana-${result.quiz.id}-${resultKey}.png`, `My ${result.quiz.title}: ${name}`);
           if (out === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+          else if (out === 'failed') toast(tApp('common:actions.shareFailed'), 'error');
         } catch {
           toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
         }
@@ -821,7 +836,7 @@ export function QuizzesPage() {
                 }) as string;
                 return (
                   <div key={d} className="flex items-center gap-3">
-                    <span className={`text-xs flex-1 ${isPrimary ? 'text-gold font-medium' : 'text-mystic-400'}`}>
+                    <span className={`text-meta flex-1 ${isPrimary ? 'text-gold font-medium' : 'text-mystic-400'}`}>
                       {dimName}
                     </span>
                     <Progress
@@ -832,7 +847,7 @@ export function QuizzesPage() {
                       label={dimName}
                       className="flex-1 max-w-[140px]"
                     />
-                    <span className="text-xs text-mystic-500 w-6 text-right">{score}</span>
+                    <span className="text-meta text-mystic-500 w-6 text-right">{score}</span>
                   </div>
                 );
               })}
@@ -841,7 +856,7 @@ export function QuizzesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card padding="lg">
-              <h3 className="font-medium text-emerald-400 mb-3">
+              <h3 className="font-medium text-teal mb-3">
                 {tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}
               </h3>
               <ul className="space-y-2 text-mystic-300 text-sm">
@@ -849,7 +864,7 @@ export function QuizzesPage() {
               </ul>
             </Card>
             <Card padding="lg">
-              <h3 className="font-medium text-pink-400 mb-3">
+              <h3 className="font-medium text-coral mb-3">
                 {tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}
               </h3>
               <ul className="space-y-2 text-mystic-300 text-sm">
@@ -936,10 +951,11 @@ export function QuizzesPage() {
                       subtitle: elements,
                       tagline,
                       affirmation,
-                      brand: 'Arcana · Ayurveda',
+                      brand: tApp('share.brand.ayurveda', { defaultValue: 'Ayurveda' }),
                     });
                     const out = await shareOrDownload(blob, `arcana-ayurveda-${key}.png`, `My Ayurvedic dosha: ${primaryName}`);
                     if (out === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                    else if (out === 'failed') toast(tApp('common:actions.shareFailed'), 'error');
                   } catch {
                     toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
                   }
@@ -974,7 +990,7 @@ export function QuizzesPage() {
                       label={doshaName}
                       className="flex-1 max-w-[140px]"
                     />
-                    <span className="text-xs text-mystic-500 w-6 text-right">{ayResult.scores[d]}</span>
+                    <span className="text-meta text-mystic-500 w-6 text-right">{ayResult.scores[d]}</span>
                   </div>
                 );
               })}
@@ -982,11 +998,11 @@ export function QuizzesPage() {
           </Card>
 
           <Card padding="lg">
-            <h3 className="font-medium text-emerald-400 mb-2">
+            <h3 className="font-medium text-teal mb-2">
               {tApp('ayurveda.thrivingLabel', { defaultValue: 'When you\'re in balance' })}
             </h3>
             <p className="text-mystic-300 text-sm leading-relaxed mb-4">{thriving}</p>
-            <h3 className="font-medium text-pink-400 mb-2">
+            <h3 className="font-medium text-coral mb-2">
               {tApp('ayurveda.imbalancedLabel', { defaultValue: 'When you\'re out of balance' })}
             </h3>
             <p className="text-mystic-300 text-sm leading-relaxed">{outOfBalance}</p>
@@ -1039,7 +1055,7 @@ export function QuizzesPage() {
       return (
         <ResultLayout
           eyebrow={result.quiz.title}
-          glyph={<MysticalStar className="w-10 h-10 text-gold" />}
+          glyph={<QuizIcons.ShadowMaskIcon className="w-10 h-10 text-gold" />}
           verdict={name}
           subtitle={<span className="italic">"{tagline}"</span>}
           onBack={resetQuiz}
@@ -1056,10 +1072,11 @@ export function QuizzesPage() {
                       subtitle: tagline,
                       tagline: tarotPairing,
                       affirmation,
-                      brand: 'Arcana · Shadow Archetype',
+                      brand: tApp('share.brand.shadowArchetype', { defaultValue: 'Shadow Archetype' }),
                     });
                     const outcome = await shareOrDownload(blob, `arcana-shadow-${key}.png`, `My shadow archetype is ${name}. ${tagline}`);
                     if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                    else if (outcome === 'failed') toast(tApp('common:actions.shareFailed'), 'error');
                   } catch {
                     toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
                   }
@@ -1076,12 +1093,12 @@ export function QuizzesPage() {
           defaultDetailOpen
         >
           <Card padding="lg">
-            <h3 className="font-medium text-emerald-400 mb-3">{tApp('quizzes.resultSections.gift', { defaultValue: 'The gift' })}</h3>
+            <h3 className="font-medium text-teal mb-3">{tApp('quizzes.resultSections.gift', { defaultValue: 'The gift' })}</h3>
             <p className="text-mystic-300 text-sm leading-relaxed">{gift}</p>
           </Card>
 
           <Card padding="lg">
-            <h3 className="font-medium text-pink-400 mb-3">{tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}</h3>
+            <h3 className="font-medium text-coral mb-3">{tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}</h3>
             <p className="text-mystic-300 text-sm leading-relaxed">{shadow}</p>
           </Card>
 
@@ -1096,7 +1113,7 @@ export function QuizzesPage() {
               {tApp('quizzes.resultSections.affirmation', { defaultValue: 'Your affirmation' })}
             </h3>
             <p className="text-mystic-200 italic leading-relaxed mb-4">"{affirmation}"</p>
-            <p className="text-xs text-mystic-500">
+            <p className="text-caption text-mystic-500">
               {tApp('quizzes.resultSections.tarotPairing', { defaultValue: 'Tarot pairing' })}: <span className="text-gold/80">{tarotPairing}</span>
             </p>
           </Card>
@@ -1145,10 +1162,11 @@ export function QuizzesPage() {
                       subtitle: tagline,
                       tagline: affirmation,
                       affirmation: whenDominant,
-                      brand: 'Arcana · Element Affinity',
+                      brand: tApp('share.brand.elementAffinity', { defaultValue: 'Element Affinity' }),
                     });
                     const outcome = await shareOrDownload(blob, `arcana-element-${key}.png`, `My element is ${name}. ${tagline}`);
                     if (outcome === 'downloaded') toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                    else if (outcome === 'failed') toast(tApp('common:actions.shareFailed'), 'error');
                   } catch {
                     toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
                   }
@@ -1165,7 +1183,7 @@ export function QuizzesPage() {
           defaultDetailOpen
         >
           {natalElement && (
-            <Card padding="lg" className={elementsMatch ? 'border-emerald-400/30' : 'border-cosmic-blue/30'}>
+            <Card padding="lg" className={elementsMatch ? 'border-teal/30' : 'border-cosmic-blue/30'}>
               <h3 className="font-medium text-gold mb-2 flex items-center gap-2">
                 <HoroscopeWheelIcon className="w-4 h-4" />
                 {tApp('quizzes.elements.chartVsBehaviour', { defaultValue: 'Chart vs. behaviour' })}
@@ -1180,13 +1198,13 @@ export function QuizzesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card padding="lg">
-              <h3 className="font-medium text-emerald-400 mb-3">{tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}</h3>
+              <h3 className="font-medium text-teal mb-3">{tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}</h3>
               <ul className="space-y-2 text-mystic-300 text-sm">
                 {strengths.map((s, i) => <li key={i}>• {s}</li>)}
               </ul>
             </Card>
             <Card padding="lg">
-              <h3 className="font-medium text-pink-400 mb-3">{tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}</h3>
+              <h3 className="font-medium text-coral mb-3">{tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}</h3>
               <ul className="space-y-2 text-mystic-300 text-sm">
                 {shadow.map((s, i) => <li key={i}>• {s}</li>)}
               </ul>
@@ -1226,11 +1244,11 @@ export function QuizzesPage() {
       return (
         <ResultLayout
           eyebrow={result.quiz.title}
-          glyph={<MysticalStar className="w-10 h-10 text-gold" />}
+          glyph={<QuizIcons.TarotCourtIcon className="w-10 h-10 text-gold" />}
           verdict={name}
           subtitle={
             <>
-              <span className="block text-xs tracking-widest text-gold/70 uppercase">{archetype}</span>
+              <EyebrowLabel className="block">{archetype}</EyebrowLabel>
               <span className="block italic">"{tagline}"</span>
             </>
           }
@@ -1248,7 +1266,7 @@ export function QuizzesPage() {
                       subtitle: archetype,
                       tagline,
                       affirmation,
-                      brand: 'Arcana · Tarot Court Card Match',
+                      brand: tApp('share.brand.tarotCourt', { defaultValue: 'Tarot Court Card Match' }),
                     });
                     const outcome = await shareOrDownload(
                       blob,
@@ -1257,6 +1275,8 @@ export function QuizzesPage() {
                     );
                     if (outcome === 'downloaded') {
                       toast(tApp('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+                    } else if (outcome === 'failed') {
+                      toast(tApp('common:actions.shareFailed'), 'error');
                     }
                   } catch {
                     toast(tApp('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
@@ -1283,7 +1303,7 @@ export function QuizzesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card padding="lg">
-              <h3 className="font-medium text-emerald-400 mb-3">
+              <h3 className="font-medium text-teal mb-3">
                 {tApp('quizzes.resultSections.strengths', { defaultValue: 'Strengths' })}
               </h3>
               <ul className="space-y-2 text-mystic-300 text-sm">
@@ -1291,7 +1311,7 @@ export function QuizzesPage() {
               </ul>
             </Card>
             <Card padding="lg">
-              <h3 className="font-medium text-pink-400 mb-3">
+              <h3 className="font-medium text-coral mb-3">
                 {tApp('quizzes.resultSections.shadow', { defaultValue: 'Shadow side' })}
               </h3>
               <ul className="space-y-2 text-mystic-300 text-sm">
@@ -1366,7 +1386,7 @@ export function QuizzesPage() {
               <ul className="space-y-2">
                 {typeInfo?.strengths.map((strength, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
                     <span className="text-mystic-300 text-sm">{strength}</span>
                   </li>
                 ))}
@@ -1377,8 +1397,8 @@ export function QuizzesPage() {
               <ul className="space-y-2">
                 {typeInfo?.blindSpots.map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-full bg-orange-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                    <div className="w-4 h-4 rounded-full bg-gold/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gold" />
                     </div>
                     <span className="text-mystic-300 text-sm">{item}</span>
                   </li>
@@ -1390,8 +1410,8 @@ export function QuizzesPage() {
               <ul className="space-y-2">
                 {typeInfo?.underStress.map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-full bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <div className="w-4 h-4 rounded-full bg-coral/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-coral" />
                     </div>
                     <span className="text-mystic-300 text-sm">{item}</span>
                   </li>
@@ -1426,7 +1446,7 @@ export function QuizzesPage() {
             <Disclosure variant="row" label={tApp('quizzes.resultSections.growthQuests')} icon={<Target />} {...sectionRow('growth')}>
               <div className="space-y-4">
                 {typeInfo?.growthQuests.map((quest, i) => (
-                  <div key={i} className="p-4 bg-gold/5 border border-gold/20 rounded-xl">
+                  <div key={i} className="p-4 bg-gold/5 border border-gold/20 rounded-control">
                     <h4 className="font-medium text-gold text-sm mb-1">{quest.title}</h4>
                     <p className="text-mystic-400 text-sm">{quest.description}</p>
                   </div>
@@ -1438,8 +1458,8 @@ export function QuizzesPage() {
               <Disclosure variant="row" label={tApp('quizzes.resultSections.stressSignature')} icon={<Zap />} {...sectionRow('stressSignature')}>
                 <p className="text-mystic-300 text-sm leading-relaxed">{typeInfo.stressSignature}</p>
                 {typeInfo.recoveryPath && (
-                  <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/20 rounded-xl">
-                    <p className="text-xs text-emerald-400 uppercase tracking-wide mb-2">{tApp('quizzes.resultSections.recoveryPath')}</p>
+                  <div className="mt-4 p-4 bg-teal/10 border border-teal/25 rounded-control">
+                    <EyebrowLabel className="block mb-2 !text-teal">{tApp('quizzes.resultSections.recoveryPath')}</EyebrowLabel>
                     <p className="text-mystic-300 text-sm">{typeInfo.recoveryPath}</p>
                   </div>
                 )}
@@ -1480,7 +1500,7 @@ export function QuizzesPage() {
               <p className="text-mystic-300 text-sm leading-relaxed italic">{typeInfo.miniRitual}</p>
               {typeInfo.journalPrompt && (
                 <div className="mt-4 p-3 bg-mystic-800/50 rounded-lg">
-                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{tApp('quizzes.resultSections.journalPrompt', { defaultValue: "Journal prompt" })}</p>
+                  <EyebrowLabel className="block mb-1">{tApp('quizzes.resultSections.journalPrompt', { defaultValue: "Journal prompt" })}</EyebrowLabel>
                   <p className="text-mystic-300 text-sm italic">{typeInfo.journalPrompt}</p>
                 </div>
               )}
@@ -1509,7 +1529,7 @@ export function QuizzesPage() {
       // Static class names: Tailwind purges `text-${color}` templates.
       const dimensions = [
         { key: 'openness', label: 'Openness', color: 'text-cosmic-blue' },
-        { key: 'conscientiousness', label: 'Conscientiousness', color: 'text-emerald-400' },
+        { key: 'conscientiousness', label: 'Conscientiousness', color: 'text-teal' },
         { key: 'extraversion', label: 'Extraversion', color: 'text-gold' },
         { key: 'agreeableness', label: 'Agreeableness', color: 'text-cosmic-rose' },
         { key: 'neuroticism', label: tApp('quizzes.resultSections.emotionalStability'), color: 'text-mystic-300' },
@@ -1540,7 +1560,7 @@ export function QuizzesPage() {
                       <span className={color}>{score}%</span>
                     </div>
                     <Progress value={score} tone={score >= 50 ? 'gold' : 'neutral'} size="sm" label={label} />
-                    <p className="text-xs text-mystic-500 mt-1">
+                    <p className="text-caption text-mystic-500 mt-1">
                       {isHigh ? tApp('quizzes.resultSections.higherThanAverage') : isLow ? tApp('quizzes.resultSections.lowerThanAverage') : tApp('quizzes.resultSections.averageRange')}
                     </p>
                   </div>
@@ -1556,14 +1576,14 @@ export function QuizzesPage() {
             return (
               <Card key={key} padding="lg">
                 <div className="flex items-center gap-3 mb-3">
-                  {isHigh ? <TrendingUp className="w-5 h-5 text-emerald-400" /> : <TrendingDown className="w-5 h-5 text-cosmic-blue" />}
+                  {isHigh ? <TrendingUp className="w-5 h-5 text-teal" /> : <TrendingDown className="w-5 h-5 text-cosmic-blue" />}
                   <h3 className="font-medium text-mystic-200">{label}</h3>
                 </div>
                 <p className="text-mystic-400 text-sm mb-4">
                   {isHigh ? info.highDescription : info.lowDescription}
                 </p>
                 <div className="space-y-2">
-                  <p className="text-xs text-mystic-500 uppercase">{tApp('quizzes.resultSections.growthTips', { defaultValue: "Growth tips" })}</p>
+                  <EyebrowLabel className="block">{tApp('quizzes.resultSections.growthTips', { defaultValue: "Growth tips" })}</EyebrowLabel>
                   {(isHigh ? info.growthTips.high : info.growthTips.low).slice(0, 2).map((tip, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <Lightbulb className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
@@ -1573,15 +1593,15 @@ export function QuizzesPage() {
                 </div>
                 {info.growthLever && (
                   <div className="mt-4 p-3 bg-gold/5 border border-gold/20 rounded-lg">
-                    <p className="text-xs text-gold uppercase tracking-wide mb-1">{tApp('quizzes.resultSections.growthLever', { defaultValue: "Growth lever" })}</p>
+                    <EyebrowLabel className="block mb-1">{tApp('quizzes.resultSections.growthLever', { defaultValue: "Growth lever" })}</EyebrowLabel>
                     <p className="text-mystic-300 text-sm">{isHigh ? info.growthLever.high : info.growthLever.low}</p>
                   </div>
                 )}
                 {info.tarotArchetype && (
                   <div className="mt-4 p-3 bg-mystic-800/50 rounded-lg">
-                    <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{tApp('quizzes.resultSections.tarotArchetype', { defaultValue: "Tarot archetype" })}</p>
+                    <EyebrowLabel className="block mb-1">{tApp('quizzes.resultSections.tarotArchetype', { defaultValue: "Tarot archetype" })}</EyebrowLabel>
                     <p className="text-sm text-gold font-medium">{isHigh ? info.tarotArchetype.high.card : info.tarotArchetype.low.card}</p>
-                    <p className="text-mystic-400 text-xs mt-1">{isHigh ? info.tarotArchetype.high.reason : info.tarotArchetype.low.reason}</p>
+                    <p className="text-mystic-400 text-caption mt-1">{isHigh ? info.tarotArchetype.high.reason : info.tarotArchetype.low.reason}</p>
                   </div>
                 )}
               </Card>
@@ -1652,21 +1672,21 @@ export function QuizzesPage() {
               <div className="flex items-start gap-3">
                 <Target className="w-5 h-5 text-gold flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-mystic-500">{tApp('quizzes.resultSections.coreMotivation', { defaultValue: "Core motivation" })}</p>
+                  <p className="text-caption text-mystic-500">{tApp('quizzes.resultSections.coreMotivation', { defaultValue: "Core motivation" })}</p>
                   <p className="text-mystic-300 text-sm">{typeInfo.coreMotivation}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-gold flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-mystic-500">{tApp('quizzes.resultSections.coreFear', { defaultValue: "Core fear" })}</p>
+                  <p className="text-caption text-mystic-500">{tApp('quizzes.resultSections.coreFear', { defaultValue: "Core fear" })}</p>
                   <p className="text-mystic-300 text-sm">{typeInfo.coreFear}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Heart className="w-5 h-5 text-cosmic-rose flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-mystic-500">{tApp('quizzes.resultSections.coreDesire', { defaultValue: "Core desire" })}</p>
+                  <p className="text-caption text-mystic-500">{tApp('quizzes.resultSections.coreDesire', { defaultValue: "Core desire" })}</p>
                   <p className="text-mystic-300 text-sm">{typeInfo.coreDesire}</p>
                 </div>
               </div>
@@ -1675,14 +1695,14 @@ export function QuizzesPage() {
 
           <Card padding="lg">
             <div className="flex items-center gap-3 mb-4">
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <TrendingUp className="w-5 h-5 text-teal" />
               <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.growthDirection', { defaultValue: "Growth direction" })}</h3>
             </div>
-            <div className="p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-xl">
+            <div className="p-4 bg-teal/10 border border-teal/25 rounded-control">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-mystic-400">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: enResult.primaryType })}</span>
-                <ArrowRight className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-400 font-medium">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: typeInfo.growthPath.direction })}</span>
+                <ArrowRight className="w-4 h-4 text-teal" />
+                <span className="text-teal font-medium">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: typeInfo.growthPath.direction })}</span>
               </div>
               <p className="text-mystic-300 text-sm">{typeInfo.growthPath.description}</p>
             </div>
@@ -1690,14 +1710,14 @@ export function QuizzesPage() {
 
           <Card padding="lg">
             <div className="flex items-center gap-3 mb-4">
-              <TrendingDown className="w-5 h-5 text-orange-400" />
+              <TrendingDown className="w-5 h-5 text-gold" />
               <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.stressDirection', { defaultValue: "Stress direction" })}</h3>
             </div>
-            <div className="p-4 bg-orange-900/20 border border-orange-500/30 rounded-xl">
+            <div className="p-4 bg-gold/10 border border-gold/25 rounded-control">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-mystic-400">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: enResult.primaryType })}</span>
-                <ArrowRight className="w-4 h-4 text-orange-400" />
-                <span className="text-orange-400 font-medium">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: typeInfo.stressPath.direction })}</span>
+                <ArrowRight className="w-4 h-4 text-gold" />
+                <span className="text-gold font-medium">{tApp('quizzes.resultSections.enneagramType', { defaultValue: 'Type {{n}}', n: typeInfo.stressPath.direction })}</span>
               </div>
               <p className="text-mystic-300 text-sm">{typeInfo.stressPath.description}</p>
             </div>
@@ -1755,7 +1775,7 @@ export function QuizzesPage() {
               <p className="text-mystic-300 text-sm leading-relaxed italic">{typeInfo.miniRitual}</p>
               {typeInfo.journalPrompt && (
                 <div className="mt-4 p-3 bg-mystic-800/50 rounded-lg">
-                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{tApp('quizzes.resultSections.journalPrompt', { defaultValue: "Journal prompt" })}</p>
+                  <EyebrowLabel className="block mb-1">{tApp('quizzes.resultSections.journalPrompt', { defaultValue: "Journal prompt" })}</EyebrowLabel>
                   <p className="text-mystic-300 text-sm italic">{typeInfo.journalPrompt}</p>
                 </div>
               )}
@@ -1771,10 +1791,10 @@ export function QuizzesPage() {
 
       // Static class names: Tailwind purges `text-${color}` templates.
       const styleColors: Record<string, string> = {
-        secure: 'text-emerald-400',
+        secure: 'text-teal',
         anxious: 'text-cosmic-rose',
         avoidant: 'text-cosmic-blue',
-        'fearful-avoidant': 'text-orange-400',
+        'fearful-avoidant': 'text-gold',
       };
 
       return (
@@ -1823,7 +1843,7 @@ export function QuizzesPage() {
                   <span className="text-cosmic-rose">{atResult.anxiety}%</span>
                 </div>
                 <Progress value={atResult.anxiety} tone="neutral" size="sm" label="Anxiety" />
-                <p className="text-xs text-mystic-500 mt-1">{tApp('quizzes.resultSections.fearOfAbandonmentAndNeedForReassurance', { defaultValue: "Fear of abandonment and need for reassurance" })}</p>
+                <p className="text-caption text-mystic-500 mt-1">{tApp('quizzes.resultSections.fearOfAbandonmentAndNeedForReassurance', { defaultValue: "Fear of abandonment and need for reassurance" })}</p>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
@@ -1831,7 +1851,7 @@ export function QuizzesPage() {
                   <span className="text-cosmic-blue">{atResult.avoidance}%</span>
                 </div>
                 <Progress value={atResult.avoidance} tone="neutral" size="sm" label="Avoidance" />
-                <p className="text-xs text-mystic-500 mt-1">{tApp('quizzes.resultSections.discomfortWithClosenessAndDependence', { defaultValue: "Discomfort with closeness and dependence" })}</p>
+                <p className="text-caption text-mystic-500 mt-1">{tApp('quizzes.resultSections.discomfortWithClosenessAndDependence', { defaultValue: "Discomfort with closeness and dependence" })}</p>
               </div>
             </div>
           </Card>
@@ -1853,13 +1873,13 @@ export function QuizzesPage() {
 
           <Card padding="lg">
             <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-5 h-5 text-orange-400" />
+              <AlertTriangle className="w-5 h-5 text-gold" />
               <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.commonTriggers', { defaultValue: "Common triggers" })}</h3>
             </div>
             <ul className="space-y-2">
               {styleInfo.triggers.map((trigger, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0 mt-2" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0 mt-2" />
                   <span className="text-mystic-300 text-sm">{trigger}</span>
                 </li>
               ))}
@@ -1898,7 +1918,7 @@ export function QuizzesPage() {
           {styleInfo.pathToSecure && (
             <Card padding="lg">
               <div className="flex items-center gap-3 mb-4">
-                <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <TrendingUp className="w-5 h-5 text-teal" />
                 <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.pathToSecure', { defaultValue: "Path to secure" })}</h3>
               </div>
               <p className="text-mystic-300 text-sm leading-relaxed">{styleInfo.pathToSecure}</p>
@@ -2011,13 +2031,13 @@ export function QuizzesPage() {
 
         <Card padding="lg">
           <div className="flex items-center gap-3 mb-4">
-            <CheckCircle className="w-5 h-5 text-emerald-400" />
+            <CheckCircle className="w-5 h-5 text-teal" />
             <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.whatYouNeed', { defaultValue: "What you need" })}</h3>
           </div>
           <ul className="space-y-2">
             {primaryInfo?.whatYouNeed.map((item, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 mt-2" />
+                <div className="w-1.5 h-1.5 rounded-full bg-teal flex-shrink-0 mt-2" />
                 <span className="text-mystic-300 text-sm">{item}</span>
               </li>
             ))}
@@ -2026,13 +2046,13 @@ export function QuizzesPage() {
 
         <Card padding="lg">
           <div className="flex items-center gap-3 mb-4">
-            <XCircle className="w-5 h-5 text-red-400" />
+            <XCircle className="w-5 h-5 text-coral" />
             <h3 className="font-medium text-mystic-200">{tApp('quizzes.resultSections.whatToAvoid', { defaultValue: "What to avoid" })}</h3>
           </div>
           <ul className="space-y-2">
             {primaryInfo?.whatToAvoid.map((item, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0 mt-2" />
+                <div className="w-1.5 h-1.5 rounded-full bg-coral flex-shrink-0 mt-2" />
                 <span className="text-mystic-300 text-sm">{item}</span>
               </li>
             ))}
@@ -2048,7 +2068,7 @@ export function QuizzesPage() {
             {primaryInfo?.weeklyChecklist.map((item, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-mystic-900/50 rounded-lg">
                 <span className="text-mystic-300 text-sm flex-1">{item.task}</span>
-                <span className="text-xs text-gold/70 ml-3 whitespace-nowrap">{item.frequency}</span>
+                <span className="text-meta text-gold/70 ml-3 whitespace-nowrap">{item.frequency}</span>
               </div>
             ))}
           </div>
@@ -2056,14 +2076,14 @@ export function QuizzesPage() {
 
         {primaryInfo?.whenHealthy && (
           <Card padding="lg">
-            <h3 className="font-medium text-emerald-400 mb-3">{tApp('quizzes.resultSections.whenThisLanguageIsWellFed', { defaultValue: "When this language is well-fed" })}</h3>
+            <h3 className="font-medium text-teal mb-3">{tApp('quizzes.resultSections.whenThisLanguageIsWellFed', { defaultValue: "When this language is well-fed" })}</h3>
             <p className="text-mystic-300 text-sm leading-relaxed">{primaryInfo.whenHealthy}</p>
           </Card>
         )}
 
         {primaryInfo?.whenDeprived && (
           <Card padding="lg">
-            <h3 className="font-medium text-orange-400 mb-3">{tApp('quizzes.resultSections.whenThisLanguageGoesUnmet', { defaultValue: "When this language goes unmet" })}</h3>
+            <h3 className="font-medium text-gold mb-3">{tApp('quizzes.resultSections.whenThisLanguageGoesUnmet', { defaultValue: "When this language goes unmet" })}</h3>
             <p className="text-mystic-300 text-sm leading-relaxed">{primaryInfo.whenDeprived}</p>
           </Card>
         )}
@@ -2110,7 +2130,7 @@ export function QuizzesPage() {
       ) : (
         <div className="space-y-4">
           {quizzes.map(({ quiz, metadata }) => {
-            const Icon = iconMap[metadata.icon] || MysticalStar;
+            const Icon = iconMap[metadata.icon] || SparkleFourPoint;
             const lastResult = getLastResult(quiz.id);
             const hasResult = !!lastResult;
 
@@ -2123,7 +2143,7 @@ export function QuizzesPage() {
                 className="active:scale-[0.98] transition-transform"
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-2xl bg-mystic-800 flex items-center justify-center flex-shrink-0 text-${metadata.color}`}>
+                  <div className={`w-14 h-14 rounded-control bg-mystic-800 flex items-center justify-center flex-shrink-0 ${TILE_INK[metadata.color] ?? 'text-gold'}`}>
                     <Icon className="w-7 h-7" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -2136,7 +2156,7 @@ export function QuizzesPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-mystic-500 mb-3">
+                    <div className="flex items-center gap-3 text-meta text-mystic-500 mb-3">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {metadata.timeEstimate}

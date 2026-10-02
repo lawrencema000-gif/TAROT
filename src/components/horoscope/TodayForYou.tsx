@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { RefreshCw, Moon, Zap, Heart, Briefcase, DollarSign, Flame, Check, X, BookOpen } from 'lucide-react';
 import { useT } from '../../i18n/useT';
-import { Card, Skeleton, MysticalStar } from '../ui';
+import { Card, Skeleton, SparkleFourPoint } from '../ui';
 import { useDailyHoroscope } from '../../hooks/useAstrology';
 import { useAuth } from '../../context/AuthContext';
 import { adsService } from '../../services/ads';
@@ -77,7 +77,11 @@ export function TodayForYou() {
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl font-semibold text-mystic-100">{t('horoscope.todayForYou.heading')}</h2>
-        <button onClick={() => refresh()} className="p-2 rounded-lg hover:bg-mystic-800/60 transition-colors cursor-pointer">
+        <button
+          onClick={() => refresh()}
+          aria-label={t('common:actions.refresh', { defaultValue: 'Refresh' })}
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-mystic-800/60 transition-colors cursor-pointer"
+        >
           <RefreshCw className="w-4 h-4 text-mystic-400" />
         </button>
       </div>
@@ -85,7 +89,7 @@ export function TodayForYou() {
       <Card variant="glow" padding="lg">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <MysticalStar size={16} className="text-gold" />
+            <SparkleFourPoint size={16} className="text-gold" />
             <span className="text-sm font-medium text-gold">{content.theme}</span>
           </div>
           <p className="text-mystic-200 leading-relaxed">{content.summary}</p>
@@ -94,16 +98,16 @@ export function TodayForYou() {
 
       <Card padding="md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-mystic-800/60 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-control bg-mystic-800/60 flex items-center justify-center">
             <Moon className="w-5 h-5 text-mystic-300" />
           </div>
           <div>
-            <div className="text-xs text-mystic-400">{t('horoscope.todayForYou.moonIn')}</div>
+            <div className="text-meta text-mystic-400">{t('horoscope.todayForYou.moonIn')}</div>
             <div className="flex items-center gap-1.5">
               <ZodiacGlyph sign={content.moonSign as ZodiacSign} size={20} className="text-gold" />
               <span className="font-medium text-mystic-200">{localizeSignName(content.moonSign as ZodiacSign)}</span>
               {content.moonHouse && (
-                <span className="text-xs text-mystic-500">{t('horoscope.todayForYou.houseParen', { num: content.moonHouse })}</span>
+                <span className="text-meta text-mystic-500">{t('horoscope.todayForYou.houseParen', { num: content.moonHouse })}</span>
               )}
             </div>
           </div>
@@ -120,12 +124,12 @@ export function TodayForYou() {
             {content.transitHighlights.map((tr, i) => (
               <div
                 key={i}
-                className={`px-3 py-2.5 rounded-xl border ${ASPECT_COLORS[tr.aspect] || 'text-mystic-300 border-mystic-700/30 bg-mystic-800/30'}`}
+                className={`px-3 py-2.5 rounded-control border ${ASPECT_COLORS[tr.aspect] || 'text-mystic-300 border-mystic-700/30 bg-mystic-800/30'}`}
               >
-                <div className="text-xs font-medium mb-0.5">
+                <div className="text-meta font-medium mb-0.5">
                   {localizePlanetName(tr.planet)} {localizeAspectName(tr.aspect)} {localizePlanetName(tr.natalPlanet)}
                 </div>
-                <div className="text-xs opacity-80">{tr.brief}</div>
+                <div className="text-meta opacity-80">{tr.brief}</div>
               </div>
             ))}
           </div>
@@ -140,9 +144,9 @@ export function TodayForYou() {
             <Card key={key} padding="sm" className="space-y-2">
               <div className={`flex items-center gap-2 ${color}`}>
                 <Icon className="w-4 h-4" />
-                <span className="text-xs font-medium">{t(`horoscope.todayForYou.categories.${key}`)}</span>
+                <span className="text-meta font-medium">{t(`horoscope.todayForYou.categories.${key}`)}</span>
               </div>
-              <p className="text-xs text-mystic-300 leading-relaxed">{text}</p>
+              <p className="text-meta text-mystic-300">{text}</p>
             </Card>
           );
         })}
@@ -155,7 +159,7 @@ export function TodayForYou() {
               <Zap className="w-4 h-4 text-gold" />
             </div>
             <div>
-              <div className="text-xs font-medium text-gold mb-1">{t('horoscope.todayForYou.powerMove')}</div>
+              <div className="text-meta font-medium text-gold mb-1">{t('horoscope.todayForYou.powerMove')}</div>
               <p className="text-sm text-mystic-200">{content.powerMove}</p>
             </div>
           </div>
@@ -165,24 +169,24 @@ export function TodayForYou() {
       <div className="grid grid-cols-2 gap-3">
         {content.doList && content.doList.length > 0 && (
           <Card padding="sm" className="space-y-2">
-            <div className="text-xs font-medium text-teal flex items-center gap-1.5">
+            <div className="text-meta font-medium text-teal flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5" /> {t('horoscope.todayForYou.doLabel')}
             </div>
             <ul className="space-y-1">
               {content.doList.map((item, i) => (
-                <li key={i} className="text-xs text-mystic-300">{item}</li>
+                <li key={i} className="text-meta text-mystic-300">{item}</li>
               ))}
             </ul>
           </Card>
         )}
         {content.avoidList && content.avoidList.length > 0 && (
           <Card padding="sm" className="space-y-2">
-            <div className="text-xs font-medium text-coral flex items-center gap-1.5">
+            <div className="text-meta font-medium text-coral flex items-center gap-1.5">
               <X className="w-3.5 h-3.5" /> {t('horoscope.todayForYou.avoidLabel')}
             </div>
             <ul className="space-y-1">
               {content.avoidList.map((item, i) => (
-                <li key={i} className="text-xs text-mystic-300">{item}</li>
+                <li key={i} className="text-meta text-mystic-300">{item}</li>
               ))}
             </ul>
           </Card>
@@ -196,7 +200,7 @@ export function TodayForYou() {
               <Flame className="w-4 h-4 text-mystic-300" />
             </div>
             <div>
-              <div className="text-xs font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.miniRitual')}</div>
+              <div className="text-meta font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.miniRitual')}</div>
               <p className="text-sm text-mystic-200">{content.ritual}</p>
             </div>
           </div>
@@ -210,7 +214,7 @@ export function TodayForYou() {
               <BookOpen className="w-4 h-4 text-mystic-300" />
             </div>
             <div>
-              <div className="text-xs font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.journalPrompt')}</div>
+              <div className="text-meta font-medium text-mystic-400 mb-1">{t('horoscope.todayForYou.journalPrompt')}</div>
               <p className="text-sm text-mystic-200 italic">{content.journalPrompt}</p>
             </div>
           </div>

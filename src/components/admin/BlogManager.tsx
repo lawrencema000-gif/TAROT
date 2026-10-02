@@ -53,7 +53,7 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
   };
 
   return (
-    <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden">
+    <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-card overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-4 text-left hover:bg-mystic-800/30 transition-colors"
@@ -64,7 +64,7 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
           </div>
           <div>
             <h3 className="font-medium text-mystic-100">Blog Manager</h3>
-            <p className="text-xs text-mystic-500">{posts.length} posts total</p>
+            <p className="text-meta text-mystic-500">{posts.length} posts total</p>
           </div>
         </div>
         {expanded ? <ChevronUp className="w-5 h-5 text-mystic-400" /> : <ChevronDown className="w-5 h-5 text-mystic-400" />}
@@ -102,10 +102,10 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
                   )}
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium text-mystic-100 truncate">{post.title}</h4>
-                    <div className="flex items-center gap-2 text-xs text-mystic-500">
+                    <div className="flex items-center gap-2 text-meta text-mystic-500">
                       <span>{post.published_at ? new Date(post.published_at).toLocaleDateString() : 'Draft'}</span>
-                      {post.archived && <span className="text-amber-400">Archived</span>}
-                      {!post.published && <span className="text-red-400">Unpublished</span>}
+                      {post.archived && <span className="text-gold">Archived</span>}
+                      {!post.published && <span className="text-coral">Unpublished</span>}
                       {post.tags.length > 0 && <span>· {post.tags.slice(0, 2).join(', ')}</span>}
                     </div>
                   </div>
@@ -113,23 +113,26 @@ export function BlogManager({ posts, onRefresh }: BlogManagerProps) {
                     <button
                       onClick={() => togglePublish(post)}
                       title={post.published ? 'Unpublish' : 'Publish'}
-                      className="p-2 rounded-lg hover:bg-mystic-700/50 transition-colors"
+                      aria-label={post.published ? 'Unpublish' : 'Publish'}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-mystic-700/50 transition-colors"
                     >
-                      {post.published ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-mystic-500" />}
+                      {post.published ? <Eye className="w-4 h-4 text-teal" /> : <EyeOff className="w-4 h-4 text-mystic-500" />}
                     </button>
                     <button
                       onClick={() => toggleArchive(post)}
                       title={post.archived ? 'Restore' : 'Archive'}
-                      className="p-2 rounded-lg hover:bg-mystic-700/50 transition-colors"
+                      aria-label={post.archived ? 'Restore' : 'Archive'}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-mystic-700/50 transition-colors"
                     >
-                      <Archive className={`w-4 h-4 ${post.archived ? 'text-amber-400' : 'text-mystic-500'}`} />
+                      <Archive className={`w-4 h-4 ${post.archived ? 'text-gold' : 'text-mystic-500'}`} />
                     </button>
                     <button
                       onClick={() => deletePost(post)}
                       title="Delete permanently"
-                      className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
+                      aria-label="Delete permanently"
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-coral/15 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                      <Trash2 className="w-4 h-4 text-coral" />
                     </button>
                   </div>
                 </div>

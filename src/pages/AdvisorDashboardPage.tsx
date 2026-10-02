@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Plus, Trash2, Users, Save, ChevronRight, Wallet, CreditCard } from 'lucide-react';
-import { Card, Button, Input, PageHeader, Page, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, EyebrowLabel, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -225,7 +225,7 @@ export function AdvisorDashboardPage() {
           {t('advisorDashboard.upcomingTitle', { defaultValue: 'Upcoming sessions' })}
         </h3>
         {upcoming.length === 0 ? (
-          <p className="text-xs text-mystic-500 italic">
+          <p className="text-meta text-mystic-500 italic">
             {t('advisorDashboard.noUpcoming', { defaultValue: 'No sessions booked yet.' })}
           </p>
         ) : (
@@ -234,17 +234,17 @@ export function AdvisorDashboardPage() {
               <button
                 key={s.id}
                 onClick={() => navigate(`/advisors/session/${s.id}`)}
-                className="w-full text-left p-3 bg-mystic-800/40 rounded-xl hover:bg-mystic-800/70 transition-colors"
+                className="w-full text-left p-3 bg-mystic-800/40 rounded-control hover:bg-mystic-800/70 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-mystic-100 font-medium">
                       {new Date(s.scheduledAt).toLocaleString()}
                     </p>
-                    <p className="text-xs text-mystic-400">
+                    <p className="text-meta text-mystic-400">
                       {s.durationMinutes}m · <span className="uppercase tracking-wider">{s.state}</span>
                     </p>
-                    {s.topic && <p className="text-xs text-mystic-300 italic mt-1">"{s.topic}"</p>}
+                    {s.topic && <p className="text-meta text-mystic-300 italic mt-1">"{s.topic}"</p>}
                   </div>
                   <ChevronRight className="w-4 h-4 text-mystic-500" />
                 </div>
@@ -262,7 +262,7 @@ export function AdvisorDashboardPage() {
         </h3>
         {!payoutAcct || !payoutAcct.payouts_enabled ? (
           <div>
-            <p className="text-xs text-mystic-400 mb-3">
+            <p className="text-meta text-mystic-400 mb-3">
               {t('advisorDashboard.payoutsSetupBody', {
                 defaultValue: 'Complete Stripe Connect onboarding to cash out your Moonstones as real money.',
               })}
@@ -279,11 +279,11 @@ export function AdvisorDashboardPage() {
         ) : (
           <div className="space-y-3">
             <div className="bg-mystic-800/40 rounded-lg p-3">
-              <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1">
+              <EyebrowLabel align="left" className="block mb-1">
                 {t('advisorDashboard.cashableLabel', { defaultValue: 'Cashable Moonstones' })}
-              </p>
+              </EyebrowLabel>
               <p className="text-2xl font-display text-gold">{cashable.toLocaleString()}</p>
-              <p className="text-[10px] text-mystic-500 mt-1">
+              <p className="text-caption text-mystic-500 mt-1">
                 {t('advisorDashboard.rateNote', {
                   defaultValue: '10 Moonstones = $1.00 · 30% platform fee · 70% to you',
                 })}
@@ -310,7 +310,7 @@ export function AdvisorDashboardPage() {
                   : t('advisorDashboard.cashoutCta', { defaultValue: 'Cash out' })}
               </Button>
             </div>
-            <p className="text-[10px] text-mystic-500 italic">
+            <p className="text-caption text-mystic-500 italic">
               {t('advisorDashboard.cashoutMinNote', { defaultValue: 'Minimum 100 Moonstones ($10 gross / $7 to you).' })}
             </p>
           </div>
@@ -329,14 +329,14 @@ export function AdvisorDashboardPage() {
             {t('advisorDashboard.addSlot', { defaultValue: 'Add slot' })}
           </Button>
         </div>
-        <p className="text-[11px] text-mystic-500 mb-3">
+        <p className="text-meta text-mystic-500 mb-3">
           {t('advisorDashboard.availabilityHint', {
             defaultValue: 'Clients can book 30-min buckets within these windows. Times are in your device timezone.',
           })}
         </p>
 
         {slots.length === 0 ? (
-          <div className="flex items-center gap-2 py-6 justify-center text-xs text-mystic-500">
+          <div className="flex items-center gap-2 py-6 justify-center text-meta text-mystic-500">
             <Clock className="w-3 h-3" />
             {t('advisorDashboard.noSlots', { defaultValue: 'No availability yet — add one above.' })}
           </div>
@@ -347,7 +347,7 @@ export function AdvisorDashboardPage() {
                 <select
                   value={s.dayOfWeek}
                   onChange={(e) => updateSlot(i, { dayOfWeek: parseInt(e.target.value) })}
-                  className="bg-mystic-900 border border-mystic-700/50 rounded-lg px-2 py-1.5 text-xs text-mystic-100"
+                  className="bg-mystic-900 border border-mystic-700/50 rounded-lg px-2 py-1.5 text-meta text-mystic-100"
                 >
                   {DAY_NAMES.map((d, idx) => (
                     <option key={idx} value={idx}>{d}</option>
@@ -357,18 +357,18 @@ export function AdvisorDashboardPage() {
                   type="time"
                   value={s.startTime}
                   onChange={(e) => updateSlot(i, { startTime: e.target.value })}
-                  className="bg-mystic-900 border border-mystic-700/50 rounded-lg px-2 py-1.5 text-xs text-mystic-100"
+                  className="bg-mystic-900 border border-mystic-700/50 rounded-lg px-2 py-1.5 text-meta text-mystic-100"
                 />
-                <span className="text-mystic-500 text-xs">–</span>
+                <span className="text-mystic-500 text-meta">–</span>
                 <input
                   type="time"
                   value={s.endTime}
                   onChange={(e) => updateSlot(i, { endTime: e.target.value })}
-                  className="bg-mystic-900 border border-mystic-700/50 rounded-lg px-2 py-1.5 text-xs text-mystic-100"
+                  className="bg-mystic-900 border border-mystic-700/50 rounded-lg px-2 py-1.5 text-meta text-mystic-100"
                 />
                 <button
                   onClick={() => removeSlot(i)}
-                  className="ml-auto text-mystic-500 hover:text-pink-400 p-1"
+                  className="ml-auto min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-coral"
                   aria-label="Remove slot"
                 >
                   <Trash2 className="w-3 h-3" />

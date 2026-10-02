@@ -8,7 +8,7 @@ import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
 import { supabase } from '../lib/supabase';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
-import { OrnateDivider } from '../components/ui';
+import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 
 /**
@@ -48,9 +48,9 @@ interface YearAheadData {
 }
 
 const INTENSITY_COLORS: Record<'soft' | 'neutral' | 'hard', string> = {
-  soft: 'text-emerald-400 border-emerald-400/30 bg-emerald-400/5',
+  soft: 'text-teal border-teal/25 bg-teal/10',
   neutral: 'text-cosmic-blue border-cosmic-blue/30 bg-cosmic-blue/5',
-  hard: 'text-pink-400 border-pink-400/30 bg-pink-400/5',
+  hard: 'text-coral border-coral/25 bg-coral/10',
 };
 
 export function YearAheadReportPage() {
@@ -191,16 +191,14 @@ export function YearAheadReportPage() {
           title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
         />
 
-        <Card padding="lg" variant="ornate" className="text-center nebula-veil">
+        <Card padding="lg" variant="accent" className="text-center nebula-veil">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
             {t('yearAhead.cardTitle', { defaultValue: '{{year}} — 12 monthly briefings', year: currentYear })}
           </h2>
-          <div className="flex justify-center mb-3 text-gold/60">
-            <OrnateDivider width={120} />
-          </div>
+          <SectionDivider width="w-32" className="mx-auto mb-3" />
           <p className="text-ui text-mystic-200 italic mb-4">
             {t('yearAhead.cardSub', {
               defaultValue: 'A month-by-month map of the biggest transits to your natal chart.',
@@ -260,7 +258,7 @@ export function YearAheadReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
+            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
               <p className="text-ui text-mystic-200 mb-2">
                 {t('yearAhead.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
@@ -429,7 +427,7 @@ export function YearAheadReportPage() {
               month.events.map((event, i) => (
                 <div
                   key={`${event.transitPlanet}-${event.natalPlanet}-${event.aspectType}-${i}`}
-                  className={`p-3 rounded-xl border ${INTENSITY_COLORS[event.intensity]}`}
+                  className={`p-3 rounded-control border ${INTENSITY_COLORS[event.intensity]}`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 mb-2">
                     <p className="text-ui font-medium tracking-wide">

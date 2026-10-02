@@ -855,11 +855,11 @@ export function calculateMoodCheck(scores: Record<string, number>): {
 }
 
 export const moodDescriptions: Record<string, { emoji: string; color: string; message: string; recommendation: string; journalPrompt: string; tarotSuggestion: string }> = {
-  Thriving: { emoji: '1f31f', color: 'text-emerald-400', message: 'You\'re in a great place! Use this energy wisely.', recommendation: 'Channel this energy into something meaningful. Start that project, have that conversation, or make that decision you have been putting off. High-energy days are rare—use them intentionally.', journalPrompt: 'What am I most proud of about the way I am showing up right now? How can I sustain this?', tarotSuggestion: 'The Sun – radiance, vitality, and clarity. This is your moment to shine.' },
-  Good: { emoji: '1f60a', color: 'text-green-400', message: 'Things are going well. Keep nurturing what\'s working.', recommendation: 'Maintain your current rhythm. Notice what is contributing to this good feeling and do more of it. A good day is a great day to invest in the people and habits that sustain you.', journalPrompt: 'What three things are working well in my life right now? How can I protect and nurture them?', tarotSuggestion: 'The Star – hope, calm, and steady renewal. You are on the right path.' },
-  Okay: { emoji: '1f610', color: 'text-yellow-400', message: 'You\'re managing. Small acts of self-care can help.', recommendation: 'Do one small thing for yourself that requires no effort to enjoy—a warm drink, a favorite song, a 10-minute walk. You do not need to feel great to take care of yourself. Small acts of kindness toward yourself add up.', journalPrompt: 'What is one thing I can do in the next hour that is just for me? What would feel genuinely nourishing right now?', tarotSuggestion: 'Temperance – balance and patience. This is a day for moderation, not big moves.' },
-  Struggling: { emoji: '1f614', color: 'text-orange-400', message: 'It\'s okay to not be okay. Be gentle with yourself.', recommendation: 'Lower the bar for today. Cancel what you can. Eat something nourishing. Reach out to one person who makes you feel safe. You are not behind—you are processing. Give yourself permission to do the minimum.', journalPrompt: 'What am I carrying right now that feels heavy? Is there one piece of it I could set down, even temporarily?', tarotSuggestion: 'The Moon – uncertainty and hidden depths. Trust that clarity will return. Rest in the not-knowing.' },
-  Depleted: { emoji: '1f62d', color: 'text-red-400', message: 'You need care right now. Prioritize rest and support.', recommendation: 'This is not a day for productivity. Your only job is to get through it gently. Sleep if you can. Eat something. Drink water. If you can, tell one person how you feel—you do not have to do this alone. Everything else can wait.', journalPrompt: 'What do I need most right now that I am not giving myself? Who in my life feels safe enough to ask for help?', tarotSuggestion: 'The Hermit – withdrawal and inner light. Even in your lowest moments, there is wisdom gathering inside you.' },
+  Thriving: { emoji: '1f31f', color: 'text-teal', message: 'You\'re in a great place! Use this energy wisely.', recommendation: 'Channel this energy into something meaningful. Start that project, have that conversation, or make that decision you have been putting off. High-energy days are rare—use them intentionally.', journalPrompt: 'What am I most proud of about the way I am showing up right now? How can I sustain this?', tarotSuggestion: 'The Sun – radiance, vitality, and clarity. This is your moment to shine.' },
+  Good: { emoji: '1f60a', color: 'text-teal', message: 'Things are going well. Keep nurturing what\'s working.', recommendation: 'Maintain your current rhythm. Notice what is contributing to this good feeling and do more of it. A good day is a great day to invest in the people and habits that sustain you.', journalPrompt: 'What three things are working well in my life right now? How can I protect and nurture them?', tarotSuggestion: 'The Star – hope, calm, and steady renewal. You are on the right path.' },
+  Okay: { emoji: '1f610', color: 'text-gold', message: 'You\'re managing. Small acts of self-care can help.', recommendation: 'Do one small thing for yourself that requires no effort to enjoy—a warm drink, a favorite song, a 10-minute walk. You do not need to feel great to take care of yourself. Small acts of kindness toward yourself add up.', journalPrompt: 'What is one thing I can do in the next hour that is just for me? What would feel genuinely nourishing right now?', tarotSuggestion: 'Temperance – balance and patience. This is a day for moderation, not big moves.' },
+  Struggling: { emoji: '1f614', color: 'text-coral', message: 'It\'s okay to not be okay. Be gentle with yourself.', recommendation: 'Lower the bar for today. Cancel what you can. Eat something nourishing. Reach out to one person who makes you feel safe. You are not behind—you are processing. Give yourself permission to do the minimum.', journalPrompt: 'What am I carrying right now that feels heavy? Is there one piece of it I could set down, even temporarily?', tarotSuggestion: 'The Moon – uncertainty and hidden depths. Trust that clarity will return. Rest in the not-knowing.' },
+  Depleted: { emoji: '1f62d', color: 'text-coral', message: 'You need care right now. Prioritize rest and support.', recommendation: 'This is not a day for productivity. Your only job is to get through it gently. Sleep if you can. Eat something. Drink water. If you can, tell one person how you feel—you do not have to do this alone. Everything else can wait.', journalPrompt: 'What do I need most right now that I am not giving myself? Who in my life feels safe enough to ask for help?', tarotSuggestion: 'The Hermit – withdrawal and inner light. Even in your lowest moments, there is wisdom gathering inside you.' },
 };
 
 export const quizMetadata = {
@@ -889,7 +889,7 @@ export const quizMetadata = {
     whatYouGet: ['Five trait scores with real-life interpretation', 'Strengths + potential pitfalls for each trait', 'Lifestyle and relationship suggestions', 'A "growth lever" for meaningful change'],
     // Pentagon with inner radar shape — the OCEAN scoring chart
     icon: 'big-five-pentagon',
-    color: 'emerald-400',
+    color: 'teal',
   },
   enneagram: {
     timeEstimate: '10-12 min',
@@ -903,7 +903,7 @@ export const quizMetadata = {
     whatYouGet: ['Your primary attachment pattern', 'Triggers + deactivation/activation behaviors', 'What you need from a partner to feel safe', 'A path toward secure attachment'],
     // Two interlocked rings with a heart at intersection — the bond
     icon: 'attachment-rings',
-    color: 'pink-400',
+    color: 'cosmic-rose',
   },
   'mbti-quick': {
     timeEstimate: '3 min',
@@ -931,7 +931,7 @@ export const quizMetadata = {
     whatYouGet: ['Your behavioural element (fire/water/air/earth)', 'How it differs from your astrology chart element', 'Strengths, shadow, and when it\'s running the show', 'An affirmation to carry'],
     // Four classical alchemy triangles — fire △, air △̄, water ▽, earth ▽̄
     icon: 'four-elements',
-    color: 'emerald-400',
+    color: 'teal',
   },
   'ayurveda-dosha': {
     timeEstimate: '5-7 min',

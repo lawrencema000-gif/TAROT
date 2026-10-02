@@ -8,7 +8,7 @@ import { useNatalChart } from '../../hooks/useAstrology';
 import type { ZodiacSign, Planet, Element, Modality, PlanetPlacement, Aspect } from '../../types/astrology';
 import { ZodiacGlyph, PlanetGlyph } from '../icons';
 import { localizeSignName, localizePlanetName, localizeAspectName } from '../../i18n/localizeNames';
-import { ASPECT_GLYPH, ASPECT_TONE, ELEMENT_TONE, MODALITY_TONE, type ChartTone } from '../../lib/chart';
+import { ASPECT_TONE, ELEMENT_TONE, MODALITY_TONE, type ChartTone } from '../../lib/chart';
 
 // Lazy-loaded interpretation data modules
 type PlanetInSignModule = typeof import('../../data/planetInSign');
@@ -49,20 +49,23 @@ function useInterpData() {
   return { loaded, ...modulesRef.current };
 }
 
-// Text class for each chart tone \u2014 the same hue the wheel draws the line in.
-const TONE_TEXT: Record<ChartTone, string> = {
-  neutral: 'text-mystic-300',
-  gold: 'text-gold',
-  teal: 'text-teal',
-  coral: 'text-coral',
-  blue: 'text-cosmic-blue-ink',
-  violet: 'text-cosmic-violet-ink',
-  rose: 'text-cosmic-rose',
+// An aspect is drawn the way the wheel draws it: a line between the two
+// planets in the aspect's tone. The Unicode aspect symbols (\u260c \u25b3 \u25a1 \u2026) are
+// emoji or tofu on Android, so the row and the detail header carry this
+// hairline and the localised aspect name instead.
+const TONE_LINE: Record<ChartTone, string> = {
+  neutral: 'bg-mystic-300',
+  gold: 'bg-gold',
+  teal: 'bg-teal',
+  coral: 'bg-coral',
+  blue: 'bg-cosmic-blue',
+  violet: 'bg-cosmic-violet',
+  rose: 'bg-cosmic-rose',
 };
 
-function aspectMark(type: string): { symbol: string; color: string } {
+function aspectMark(type: string): { line: string } {
   const tone = ASPECT_TONE[type] ?? 'neutral';
-  return { symbol: ASPECT_GLYPH[type] ?? '?', color: TONE_TEXT[tone] };
+  return { line: TONE_LINE[tone] };
 }
 
 export function BirthChart() {
@@ -77,7 +80,7 @@ export function BirthChart() {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-8 w-36" />
-        <Skeleton className="h-[320px] w-full rounded-2xl" />
+        <Skeleton className="h-[320px] w-full rounded-card" />
         <div className="grid grid-cols-3 gap-3">
           <Skeleton className="h-20" />
           <Skeleton className="h-20" />
@@ -100,7 +103,7 @@ export function BirthChart() {
 
   return (
     <div className="p-4 space-y-5">
-      <Card variant="ornate" padding="md" interactive className="nebula-veil" onClick={() => setExpandedBigThree(!expandedBigThree)}>
+      <Card variant="accent" padding="md" interactive className="nebula-veil" onClick={() => setExpandedBigThree(!expandedBigThree)}>
         <div className="flex items-center justify-between">
           <h3 className="font-display-hero text-xl text-mystic-100">{t('horoscope.birthChartView.yourBigThree')}</h3>
           {expandedBigThree ? <ChevronUp className="w-4 h-4 text-mystic-400" /> : <ChevronDown className="w-4 h-4 text-mystic-400" />}
@@ -111,7 +114,7 @@ export function BirthChart() {
             { label: 'Moon', labelI18n: t('horoscope.birthChartView.moon'), sign: bigThree.moon.sign },
             ...(bigThree.rising ? [{ label: 'Rising', labelI18n: t('horoscope.birthChartView.rising'), sign: bigThree.rising.sign }] : []),
           ].map((item) => (
-            <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-xl flex flex-col items-center">
+            <div key={item.label} className="flex-1 text-center py-2 bg-mystic-800/40 rounded-control flex flex-col items-center">
               <ZodiacGlyph sign={item.sign} size={26} className="text-gold mb-1" />
               <div className="text-meta text-mystic-400">{item.labelI18n}</div>
               <div className="text-ui font-medium text-mystic-100">{localizeSignName(item.sign)}</div>
@@ -128,7 +131,7 @@ export function BirthChart() {
               const signInterp = interp.getPlanetInSign?.(planet, sign);
               if (!signInterp) return null;
               return (
-                <div key={planet} className="p-3 bg-mystic-800/30 rounded-xl">
+                <div key={planet} className="p-3 bg-mystic-800/30 rounded-control">
                   <div className="text-ui font-medium text-mystic-100 mb-1">{t('horoscope.birthChartView.planetInSign', { planet: planetLabel, sign: localizeSignName(sign) })}</div>
                   <p className="reading-copy">{signInterp.core}</p>
                 </div>
@@ -153,7 +156,7 @@ export function BirthChart() {
             <button
               key={p.planet}
               onClick={() => setSelectedPlacement(p)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-mystic-800/40 transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-3 min-h-[44px] px-3 py-2.5 rounded-control hover:bg-mystic-800/40 transition-colors cursor-pointer text-left"
             >
               <PlanetGlyph planet={p.planet as Planet} size={22} className="text-gold flex-shrink-0" />
               <span className="text-sm text-mystic-200 flex-1">{localizePlanetName(p.planet as Planet)}</span>
@@ -218,10 +221,10 @@ export function BirthChart() {
                 <button
                   key={i}
                   onClick={() => setSelectedAspect(a)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-mystic-800/40 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-control hover:bg-mystic-800/40 transition-colors cursor-pointer text-left"
                 >
                   <PlanetGlyph planet={a.planet1 as Planet} size={20} className="text-gold" />
-                  <span className={`text-sm ${info.color}`}>{info.symbol}</span>
+                  <span className={`w-4 h-px flex-shrink-0 ${info.line}`} aria-hidden />
                   <PlanetGlyph planet={a.planet2 as Planet} size={20} className="text-gold" />
 
                   <span className="flex-1 text-meta text-mystic-400">
@@ -321,7 +324,7 @@ function PlacementDetail({ placement, getPlanetInSign, getGenericHouseInterp }: 
       )}
 
       {houseInterp && (
-        <div className="p-3 bg-mystic-800/30 rounded-xl space-y-2">
+        <div className="p-3 bg-mystic-800/30 rounded-control space-y-2">
           <h4 className="text-ui font-medium text-mystic-100">{t('horoscope.birthChartView.inHouse', { num: placement.house })}</h4>
           <p className="reading-copy">{houseInterp.expression}</p>
           <div className="flex flex-wrap gap-1.5">
@@ -365,7 +368,7 @@ function AspectDetail({ aspect, getAspectInterp, getGenericAspectInterp }: {
           <PlanetGlyph planet={aspect.planet1 as Planet} size={32} className="text-gold" framed />
           <div className="text-meta text-mystic-400 mt-1">{localizePlanetName(aspect.planet1 as Planet)}</div>
         </div>
-        <div className={`text-xl ${info.color}`} aria-hidden>{info.symbol}</div>
+        <div className={`w-10 h-px ${info.line}`} aria-hidden />
         <div className="text-center flex flex-col items-center">
           <PlanetGlyph planet={aspect.planet2 as Planet} size={32} className="text-gold" framed />
           <div className="text-meta text-mystic-400 mt-1">{localizePlanetName(aspect.planet2 as Planet)}</div>

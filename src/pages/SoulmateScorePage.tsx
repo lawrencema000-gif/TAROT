@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Share2, AlertCircle } from 'lucide-react';
-import { Card, Button, Input, Page, PageHeader, ResultLayout, Tag, toast } from '../components/ui';
+import { Card, Button, Input, Page, PageHeader, ResultLayout, Tag, toast, EyebrowLabel } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
@@ -281,8 +281,8 @@ export function SoulmateScorePage() {
             <Card padding="lg">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-mystic-400 mb-1.5">
-                    {t('soulmate.partnerNameLabel', { defaultValue: "Partner's name" })}
+                  <label className="block mb-1.5">
+                    <EyebrowLabel>{t('soulmate.partnerNameLabel', { defaultValue: "Partner's name" })}</EyebrowLabel>
                   </label>
                   <Input
                     value={partnerName}
@@ -292,8 +292,8 @@ export function SoulmateScorePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-mystic-400 mb-1.5">
-                    {t('soulmate.birthDateLabel', { defaultValue: 'Birth date' })}
+                  <label className="block mb-1.5">
+                    <EyebrowLabel>{t('soulmate.birthDateLabel', { defaultValue: 'Birth date' })}</EyebrowLabel>
                   </label>
                   <Input
                     type="date"
@@ -303,8 +303,8 @@ export function SoulmateScorePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-mystic-400 mb-1.5">
-                    {t('soulmate.birthTimeLabel', { defaultValue: 'Birth time (optional — sharpens the score)' })}
+                  <label className="block mb-1.5">
+                    <EyebrowLabel>{t('soulmate.birthTimeLabel', { defaultValue: 'Birth time (optional — sharpens the score)' })}</EyebrowLabel>
                   </label>
                   <Input
                     type="time"
@@ -403,7 +403,7 @@ export function SoulmateScorePage() {
                         <span className="text-mystic-200">
                           {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
                         </span>
-                        <span className="text-meta text-emerald-400/70">{a.type}</span>
+                        <span className="text-meta text-teal/70">{a.type}</span>
                       </div>
                     ))}
                   </div>
@@ -421,7 +421,7 @@ export function SoulmateScorePage() {
                         <span className="text-mystic-200">
                           {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
                         </span>
-                        <span className="text-meta text-pink-400/70">{a.type}</span>
+                        <span className="text-meta text-coral/70">{a.type}</span>
                       </div>
                     ))}
                   </div>

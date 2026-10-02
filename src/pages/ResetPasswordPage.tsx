@@ -172,7 +172,6 @@ export function ResetPasswordPage() {
         <div className="w-full max-w-sm text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
             <CheckCircle className="w-10 h-10 text-gold" />
-            <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
           </div>
           <PageHeader
             align="center"
@@ -257,7 +256,7 @@ export function ResetPasswordPage() {
           </Button>
         </form>
 
-        <p className="text-xs text-mystic-500 text-center mt-6">
+        <p className="text-caption text-mystic-500 text-center mt-6">
           {t('auth.passwordRequirementHint', { defaultValue: 'At least 8 characters. Use something you don\'t reuse elsewhere.' })}
         </p>
       </div>

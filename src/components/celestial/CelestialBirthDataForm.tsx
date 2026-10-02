@@ -140,7 +140,7 @@ export function CelestialBirthDataForm({ onSaved }: Props) {
         placeholder={t('celestial.form.placePlaceholder', { defaultValue: 'e.g. Tokyo, Japan' }) as string}
       />
 
-      <p className="text-xs text-mystic-500 leading-relaxed">
+      <p className="text-caption text-mystic-500">
         {t('celestial.form.accuracyHint', {
           defaultValue:
             'Birth time matters a lot here: without it we assume noon, and your rising and midheaven lines can land on the wrong continent. Add your time — even an approximate one — for a map you can trust.',
@@ -148,9 +148,9 @@ export function CelestialBirthDataForm({ onSaved }: Props) {
       </p>
 
       {error && (
-        <div className="flex items-start gap-2 rounded-xl bg-red-900/30 border border-red-700/40 p-3">
-          <AlertCircle className="w-4 h-4 text-red-300 flex-shrink-0 mt-0.5" aria-hidden />
-          <p className="text-xs text-red-200 leading-relaxed">{error}</p>
+        <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-3">
+          <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" aria-hidden />
+          <p className="text-meta text-coral-light">{error}</p>
         </div>
       )}
 

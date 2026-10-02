@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, type ReactElement } from 'react';
 import { Heart, Briefcase } from 'lucide-react';
-import { MysticalStar } from '../ui/MysticalStar';
-import { Sheet, Chip, toast } from '../ui';
+import { Sheet, Chip, SparkleFourPoint, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { useRitual } from '../../context/RitualContext';
@@ -102,6 +101,18 @@ interface TarotSectionProps {
   customSpread?: CustomSpreadInput;
 }
 
+/**
+ * What the ad sheet is open for: a locked spread (`spreadId` set), or one
+ * more reading past the free tier's daily allowance (`extra_reading`). One
+ * object rather than three flags, so that closing the sheet can dismiss
+ * exactly the request it was showing — and not a request the unlock handler
+ * queued a moment later (see handleAdUnlocked).
+ */
+interface AdRequest {
+  feature: PremiumFeature;
+  spreadId: string | null;
+}
+
 // Source-of-truth spread configs with i18n keys; .name/.description resolved at render time.
 const spreadConfigs = [
   { id: 'single',        i18n: 'single',       free: true,  count: 1  },
@@ -148,9 +159,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   const [loadingAI, setLoadingAI] = useState(false);
   const [showAIInterpretation, setShowAIInterpretation] = useState(false);
   const [interpretationView, setInterpretationView] = useState<'focus' | 'traditional'>('focus');
-  const [showWatchAdSheet, setShowWatchAdSheet] = useState(false);
-  const [pendingFeature, setPendingFeature] = useState<PremiumFeature | null>(null);
-  const [pendingSpreadId, setPendingSpreadId] = useState<string | null>(null);
+  const [adRequest, setAdRequest] = useState<AdRequest | null>(null);
   const [hasTemporaryAccess, setHasTemporaryAccess] = useState<Record<string, boolean>>({});
   const [dailyReadingCount, setDailyReadingCount] = useState(0);
   const [canWatchAd, setCanWatchAd] = useState(false);
@@ -227,11 +236,21 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
 
       accessMap['extra_reading'] = await rewardedAdsService.hasTemporaryAccess('extra_reading');
 
-      setHasTemporaryAccess(accessMap);
+      // Merge, never replace. The service only knows the legacy server-side
+      // grants (and answers false for everything since the Moonstone
+      // refactor); an unlock bought in this session lives in this state and
+      // is consumed at the deal. This effect re-ran as the ad sheet closed
+      // and overwrote the grant that had just been paid for, so a spread
+      // unlocked from the home grid asked to be unlocked again at Draw.
+      setHasTemporaryAccess(prev => {
+        const next = { ...prev };
+        for (const [key, granted] of Object.entries(accessMap)) next[key] = prev[key] || granted;
+        return next;
+      });
     };
 
     checkTemporaryAccess();
-  }, [profile?.isPremium, showWatchAdSheet]);
+  }, [profile?.isPremium, adRequest]);
 
   const shuffleArray = <T,>(input: T[]): T[] => {
     const arr = [...input];
@@ -252,31 +271,60 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
   };
 
   /**
-   * Start a reading of `spreadId`. The spread is pinned first, so the hero
-   * can never inherit the last Celtic Cross (which, once its ad unlock was
-   * spent, opened a paywall on the free daily draw). The free-tier daily
-   * gate lives here; the per-spread premium gate is the caller's.
+   * Everything between the reader and the shuffle, in one place and in one
+   * order: the spread's own gate (premium, or an unlock bought for one
+   * reading), then the free tier's daily allowance (or its one-reading
+   * unlock). Returns true when `spreadId` may be read now. Otherwise the
+   * reader has been sent to the ad sheet for the first thing in the way —
+   * or to the paywall where ads are not an option — and the caller stops.
+   *
+   * Both entries (the home grid and the focus step's Draw) and the return
+   * from the ad sheet run through here. They used not to: the ad that
+   * unlocked a spread sent the reader on to the focus step and the shuffle
+   * with the daily limit never asked, so a free reader at the limit could
+   * read all day for 50 Moonstones a spread.
+   *
+   * `access` lets the unlock handler evaluate against the grant it has just
+   * made, before the state update has landed.
    */
-  const beginReading = (spreadId: string) => {
-    setCurrentSpread(spreadId);
+  const clearGates = (spreadId: string, access: Record<string, boolean> = hasTemporaryAccess): boolean => {
+    const spread = getSpreadMeta(spreadId);
+    if (!spread) return false;
+    if (profile?.isPremium) return true;
 
-    if (isAtDailyLimit) {
-      if (hasTemporaryAccess['extra_reading']) {
-        resetReadingState();
-        setView('focus');
-        return;
+    if (!spread.free && !access[spreadId]) {
+      const feature = spreadTypeToFeature(spreadId);
+      if (feature && isNative() && canWatchAd) {
+        setAdRequest({ feature, spreadId });
+      } else {
+        onShowPaywall(spread.name);
       }
+      return false;
+    }
+
+    if (isAtDailyLimit && !access['extra_reading']) {
       if (isNative() && canWatchAd) {
-        setPendingFeature('extra_reading');
-        setPendingSpreadId(null);
-        setShowWatchAdSheet(true);
+        setAdRequest({ feature: 'extra_reading', spreadId: null });
       } else {
         onShowPaywall(t('readings.paywall.unlimited'));
       }
-      return;
+      return false;
     }
 
+    return true;
+  };
+
+  /**
+   * Start a reading of `spreadId`. The spread is pinned first, so the hero
+   * can never inherit the last Celtic Cross (which, once its ad unlock was
+   * spent, opened a paywall on the free daily draw). The reading state is
+   * cleared before the gates, so that an unlock bought from here returns to
+   * the focus step with no focus chosen — the reader has not chosen one.
+   */
+  const beginReading = (spreadId: string) => {
+    setCurrentSpread(spreadId);
     resetReadingState();
+    if (!clearGates(spreadId)) return;
     setView('focus');
   };
 
@@ -305,42 +353,42 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     setSelectedFocus(focus);
   };
 
+  /** The focus step's Draw: the gates again, since an unlock may have been spent since. */
   const handleDraw = () => {
     if (!selectedFocus) return;
-    const spread = getSpreadMeta(currentSpread);
-    if (!spread) return;
-
-    if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[currentSpread]) {
-      const feature = spreadTypeToFeature(currentSpread);
-      if (feature && isNative() && canWatchAd) {
-        setPendingFeature(feature);
-        setPendingSpreadId(currentSpread);
-        setShowWatchAdSheet(true);
-      } else {
-        onShowPaywall(spread.name);
-      }
-      return;
-    }
-
+    if (!clearGates(currentSpread)) return;
     setView('shuffle');
   };
 
-  const handleAdUnlocked = async () => {
-    setShowWatchAdSheet(false);
+  /**
+   * The ad sheet reports a spend. One spend buys one gate; the other may
+   * still be shut — a locked spread at the daily limit, or the daily limit
+   * on a spread that is open — so the gates run again against the new
+   * grant, and send the reader to the next request or the paywall rather
+   * than past it. Only when both are clear does the reading move on:
+   * unlocked from the focus step, the focus is chosen, so shuffle; unlocked
+   * from the home grid it is not yet, so ask first.
+   *
+   * The sheet calls `onClose` right after this. That close is scoped to the
+   * request it was showing (see the WatchAdSheet below), so a follow-up
+   * request made here survives it.
+   */
+  const handleAdUnlocked = () => {
+    if (!adRequest) return;
+    const granted = adRequest.feature === 'extra_reading' ? 'extra_reading' : adRequest.spreadId;
+    setAdRequest(null);
+    if (!granted) return;
 
-    if (pendingFeature === 'extra_reading') {
-      setHasTemporaryAccess(prev => ({ ...prev, extra_reading: true }));
+    const access = { ...hasTemporaryAccess, [granted]: true };
+    setHasTemporaryAccess(access);
+
+    if (!clearGates(currentSpread, access)) return;
+    if (selectedFocus) {
+      setView('shuffle');
+    } else {
       resetReadingState();
       setView('focus');
-    } else if (pendingSpreadId) {
-      setHasTemporaryAccess(prev => ({ ...prev, [pendingSpreadId]: true }));
-      // Unlocked from the focus step, the focus is chosen: shuffle. Unlocked
-      // from the home grid it is not yet: ask first.
-      setView(selectedFocus ? 'shuffle' : 'focus');
     }
-
-    setPendingFeature(null);
-    setPendingSpreadId(null);
   };
 
   /*
@@ -714,24 +762,9 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
     return null;
   };
 
+  /** The home grid. The same entry as the hero and the custom-spread launch: every gate, in order. */
   const handleSpreadSelect = (spreadId: string) => {
-    const spread = spreadConfigs.find(s => s.id === spreadId);
-    if (!spread) return;
-
-    if (!spread.free && !profile?.isPremium && !hasTemporaryAccess[spreadId]) {
-      const feature = spreadTypeToFeature(spreadId);
-      if (feature && isNative() && canWatchAd) {
-        setPendingFeature(feature);
-        setPendingSpreadId(spreadId);
-        setCurrentSpread(spreadId);
-        resetReadingState();
-        setShowWatchAdSheet(true);
-      } else {
-        onShowPaywall(spreadName(spread));
-      }
-      return;
-    }
-
+    if (!getSpreadMeta(spreadId)) return;
     beginReading(spreadId);
   };
 
@@ -873,7 +906,7 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
                   </>
                 ) : (
                   <div className="w-full h-full bg-mystic-850 flex flex-col items-center justify-center p-2">
-                    <MysticalStar size={24} halo={false} className="text-gold/50 mb-2 group-hover:text-gold transition-colors duration-fast" />
+                    <SparkleFourPoint size={20} className="text-gold/50 mb-2 group-hover:text-gold transition-colors duration-fast" />
                     <p className="text-caption text-center text-mystic-300 line-clamp-2">{card.name}</p>
                   </div>
                 )}
@@ -893,30 +926,34 @@ export function TarotSection({ onShowPaywall, customSpread }: TarotSectionProps)
         )}
       </Sheet>
 
-      {pendingFeature && (
+      {adRequest && (
         <WatchAdSheet
-          open={showWatchAdSheet}
-          onClose={() => {
-            setShowWatchAdSheet(false);
-            setPendingFeature(null);
-            setPendingSpreadId(null);
-          }}
+          // Keyed on the request, so a follow-up request (the daily limit
+          // right after a spread unlock) mounts a fresh sheet rather than
+          // re-dressing the one that just reported a spend.
+          key={`${adRequest.feature}:${adRequest.spreadId ?? ''}`}
+          open
+          // Dismiss this request only. The sheet calls onClose right after
+          // onSpent, and onSpent may have queued the next request by then.
+          onClose={() => setAdRequest(prev => (prev === adRequest ? null : prev))}
           actionKey={
-            pendingFeature === 'extra_reading'
+            adRequest.feature === 'extra_reading'
               ? 'tarot-extra-reading'
-              : `tarot-spread:${pendingSpreadId ?? 'unknown'}`
+              : `tarot-spread:${adRequest.spreadId ?? 'unknown'}`
           }
-          feature={pendingFeature}
-          spreadType={pendingSpreadId || undefined}
+          feature={adRequest.feature}
+          spreadType={adRequest.spreadId || undefined}
+          itemName={adRequest.spreadId ? getSpreadMeta(adRequest.spreadId)?.name : undefined}
           onSpent={handleAdUnlocked}
           onShowPaywall={() => {
-            setShowWatchAdSheet(false);
-            setPendingFeature(null);
-            setPendingSpreadId(null);
-            const spread = spreadConfigs.find(s => s.id === pendingSpreadId);
-            if (spread) {
-              onShowPaywall(spreadName(spread));
-            }
+            setAdRequest(null);
+            // The extra-reading request used to open nothing here: the
+            // "open everything with Premium" button on it did nothing.
+            onShowPaywall(
+              adRequest.spreadId
+                ? getSpreadMeta(adRequest.spreadId)?.name ?? t('readings.paywall.unlimited')
+                : t('readings.paywall.unlimited'),
+            );
           }}
         />
       )}

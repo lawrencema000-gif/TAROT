@@ -21,14 +21,14 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden">
+    <div className="bg-mystic-900/60 border border-mystic-700/50 rounded-card overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between p-4 text-left hover:bg-mystic-800/30 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-emerald-500" />
+          <div className="w-10 h-10 rounded-lg bg-teal/15 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-teal" />
           </div>
           <div>
             <h3 className="font-medium text-mystic-100">Ad Revenue Analytics</h3>
@@ -37,7 +37,7 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
         </div>
         <div className="flex items-center gap-3">
           {analytics && (
-            <span className="text-sm font-medium text-emerald-400">
+            <span className="text-sm font-medium text-teal">
               ${analytics.estimated_revenue.toFixed(2)}
             </span>
           )}
@@ -55,7 +55,7 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
             <div className="bg-mystic-800/40 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-4 h-4 text-mystic-400" />
-                <p className="text-xs text-mystic-400">Total Impressions</p>
+                <p className="text-meta text-mystic-400">Total Impressions</p>
               </div>
               <p className="text-xl font-semibold text-mystic-100">{analytics.total_impressions}</p>
             </div>
@@ -63,17 +63,17 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
             <div className="bg-mystic-800/40 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-4 h-4 text-mystic-400" />
-                <p className="text-xs text-mystic-400">Total Clicks</p>
+                <p className="text-meta text-mystic-400">Total Clicks</p>
               </div>
               <p className="text-xl font-semibold text-mystic-100">{analytics.total_clicks}</p>
             </div>
 
             <div className="bg-mystic-800/40 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
-                <DollarSign className="w-4 h-4 text-emerald-500" />
-                <p className="text-xs text-mystic-400">Est. Revenue</p>
+                <DollarSign className="w-4 h-4 text-teal" />
+                <p className="text-meta text-mystic-400">Est. Revenue</p>
               </div>
-              <p className="text-xl font-semibold text-emerald-400">
+              <p className="text-xl font-semibold text-teal">
                 ${analytics.estimated_revenue.toFixed(2)}
               </p>
             </div>
@@ -81,7 +81,7 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
             <div className="bg-mystic-800/40 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-4 h-4 text-mystic-400" />
-                <p className="text-xs text-mystic-400">CTR</p>
+                <p className="text-meta text-mystic-400">CTR</p>
               </div>
               <p className="text-xl font-semibold text-mystic-100">
                 {analytics.total_impressions > 0
@@ -93,7 +93,7 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="bg-mystic-800/40 rounded-lg p-3">
-              <p className="text-xs text-mystic-400 mb-2">Platform</p>
+              <p className="text-meta text-mystic-400 mb-2">Platform</p>
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-mystic-300">Android</span>
@@ -107,7 +107,7 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
             </div>
 
             <div className="bg-mystic-800/40 rounded-lg p-3">
-              <p className="text-xs text-mystic-400 mb-2">Triggers</p>
+              <p className="text-meta text-mystic-400 mb-2">Triggers</p>
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-mystic-300">Readings</span>
@@ -125,7 +125,7 @@ export function AdAnalyticsPanel({ analytics }: AdAnalyticsPanelProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-mystic-400">
+          <div className="flex items-center gap-2 text-meta text-mystic-400">
             <Calendar className="w-3.5 h-3.5" />
             <span>Last updated: {new Date(analytics.date).toLocaleDateString()}</span>
           </div>

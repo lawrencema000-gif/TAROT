@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Play, X, Coins, Crown } from 'lucide-react';
-import { Button, toast, FourCornerFlourishes, OrnateDivider } from '../ui';
+import { Button, toast } from '../ui';
 import { rewardedAdsService, MOONSTONES_PER_AD } from '../../services/rewardedAds';
 import { spendForAction, ACTION_COST } from '../../dal/moonstoneSpend';
 import { moonstones } from '../../dal';
@@ -213,18 +213,17 @@ export function WatchAdSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-mystic-950/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-mystic-950/80"
         onClick={onClose}
       />
 
       <div className="relative w-full max-w-sm bg-gradient-to-b from-mystic-900 to-mystic-950 rounded-sheet border border-gold/40 overflow-hidden animate-scale-in nebula-veil">
         <div className="absolute inset-[3px] rounded-[calc(1.5rem-3px)] border border-gold/15 pointer-events-none" />
-        <FourCornerFlourishes className="text-gold/60 z-10" size={28} />
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-gold/10 to-transparent" />
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
+          className="absolute top-3 right-3 z-20 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-mystic-800/50 hover:bg-mystic-800 transition-colors"
           aria-label={t('common:actions.close', { defaultValue: 'Close' }) as string}
         >
           <X className="w-4 h-4 text-mystic-400" />
@@ -232,19 +231,16 @@ export function WatchAdSheet({
 
         <div className="relative px-6 pt-8 pb-6">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/25 to-mystic-800 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-card bg-gradient-to-br from-gold/25 to-mystic-800 flex items-center justify-center">
               <Coins className="w-8 h-8 text-gold" />
             </div>
           </div>
 
-          <h2 className="font-display-hero text-2xl text-mystic-100 text-center mb-2">
+          <h2 className="font-display-hero text-2xl text-mystic-100 text-center mb-3">
             {itemName
               ? t('premium.watchAd.unlockNamed', { defaultValue: 'Unlock {{name}}', name: itemName })
               : t('premium.watchAd.unlockTitle', { defaultValue: 'Unlock this reading' })}
           </h2>
-          <div className="flex justify-center mb-3 text-gold/60">
-            <OrnateDivider width={140} />
-          </div>
 
           <p className="text-sm text-mystic-300 text-center mb-2 leading-relaxed">
             {earnOnly
@@ -262,7 +258,7 @@ export function WatchAdSheet({
           </p>
 
           {balance !== null && (
-            <p className="text-xs text-mystic-500 text-center mb-5">
+            <p className="text-meta text-mystic-500 text-center mb-5">
               {t('premium.watchAd.currentBalance', {
                 defaultValue: 'You have {{n}} Moonstones',
                 n: balance,
@@ -320,7 +316,7 @@ export function WatchAdSheet({
 
             <button
               onClick={onClose}
-              className="w-full py-2 text-sm text-mystic-500 hover:text-mystic-400 transition-colors"
+              className="w-full py-2 min-h-[44px] text-sm text-mystic-500 hover:text-mystic-400 transition-colors"
             >
               {t('premium.watchAd.notNow', { defaultValue: 'Not now' })}
             </button>
@@ -328,7 +324,7 @@ export function WatchAdSheet({
         </div>
 
         <div className="px-6 pb-6 pt-2 border-t border-mystic-800/50">
-          <p className="text-xs text-mystic-600 text-center leading-relaxed">
+          <p className="text-caption text-mystic-600 text-center">
             {t('premium.watchAd.footerDisclaimer', {
               defaultValue:
                 'With Premium there is nothing to spend: every spread, chart and reading is open, with no ads.',

@@ -8,10 +8,11 @@ import type { MapMode } from './useCelestialMapEngine';
  * of the map canvas with a frosted-glass background.
  *
  * Layout: vertical column on mobile (compact), horizontal on tablet+.
- * Each control is a 36×36 square so tap targets exceed Material's 44pt
- * with a small margin (icon-only with aria-label, no text).
+ * Each control is a 44×44 square so tap targets meet the 44pt minimum
+ * (icon-only with aria-label, no text).
  *
- * Visual treatment: `bg-mystic-900/70 backdrop-blur-md hairline-gold-soft`.
+ * Visual treatment: `bg-mystic-900 hairline-gold-soft` — an opaque fill
+ * from the ramp, so it needs no blur over the map.
  * The active mode is a gold hairline on a gold tint; hover lifts the fill.
  */
 
@@ -91,7 +92,7 @@ export function CelestialMapControls({
       initial={{ opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }}
-      className="absolute top-3 right-3 z-20 flex flex-col gap-1.5 p-1.5 rounded-2xl bg-mystic-900/70 backdrop-blur-md hairline-gold-soft"
+      className="absolute top-3 right-3 z-20 flex flex-col gap-1.5 p-1.5 rounded-card bg-mystic-900 hairline-gold-soft"
     >
       {buttons.map((btn, i) => {
         // Separator between mode toggle (first two) and zoom controls.
@@ -106,7 +107,7 @@ export function CelestialMapControls({
               onClick={btn.onClick}
               aria-label={btn.label}
               title={btn.label}
-              className={`relative w-9 h-9 rounded-xl flex items-center justify-center border transition-all active:scale-90 ${
+              className={`relative w-11 h-11 rounded-control flex items-center justify-center border transition-all active:scale-90 ${
                 btn.active
                   ? 'bg-gold/10 text-gold border-gold/50'
                   : 'border-transparent text-mystic-200 hover:text-gold hover:bg-mystic-800/60'

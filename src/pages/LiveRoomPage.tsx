@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, Heart, Play, Lock, Unlock } from 'lucide-react';
-import { Card, Button, Badge, Page, PageHeader, toast } from '../components/ui';
+import { Card, Button, Badge, Page, PageHeader, EyebrowLabel, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -192,7 +192,7 @@ export function LiveRoomPage() {
 
       <Card padding="md">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-mystic-400 flex items-center gap-1">
+          <p className="text-meta text-mystic-400 flex items-center gap-1">
             <Users className="w-3 h-3" />
             {t('liveRoom.listeners', { defaultValue: '{{n}} of {{cap}} seats taken', n: listenerCount, cap: room.capacity })}
           </p>
@@ -210,13 +210,13 @@ export function LiveRoomPage() {
         <VoiceStrip roomName={`live-room:${id}`} enabled={voiceEnabled} />
       ) : !isLive ? (
         <Card padding="md" className="bg-mystic-800/30">
-          <p className="text-xs text-mystic-500 text-center italic">
+          <p className="text-meta text-mystic-500 text-center italic">
             {t('liveRoom.notLiveYet', { defaultValue: 'Voice opens when the host starts the room.' })}
           </p>
         </Card>
       ) : !rsvpd ? (
         <Card padding="md" className="bg-mystic-800/30">
-          <p className="text-xs text-mystic-500 text-center italic">
+          <p className="text-meta text-mystic-500 text-center italic">
             {t('liveRoom.rsvpToJoin', { defaultValue: 'Save a seat first to join the voice room.' })}
           </p>
         </Card>
@@ -224,12 +224,12 @@ export function LiveRoomPage() {
 
       {/* Replay (for completed rooms with a recording) */}
       {room.state === 'completed' && room.recording_url && (
-        <Card padding="md" className={replayUnlocked ? 'border-emerald-400/30' : ''}>
+        <Card padding="md" className={replayUnlocked ? 'border-teal/25' : ''}>
           <div className="flex items-center gap-2 mb-3">
-            {replayUnlocked ? <Play className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4 text-mystic-400" />}
-            <p className="text-xs font-medium tracking-wide uppercase text-mystic-300">
+            {replayUnlocked ? <Play className="w-4 h-4 text-teal" /> : <Lock className="w-4 h-4 text-mystic-400" />}
+            <EyebrowLabel align="left" className="text-mystic-300">
               {t('liveRoom.replayHeading', { defaultValue: 'Replay' })}
-            </p>
+            </EyebrowLabel>
           </div>
           {replayUnlocked ? (
             <audio controls src={room.recording_url} className="w-full" />
@@ -252,7 +252,7 @@ export function LiveRoomPage() {
                       })}
                 </Button>
               ) : (
-                <p className="text-xs text-mystic-500 italic">{t('liveRoom.signInToUnlock', { defaultValue: 'Sign in to unlock the replay' })}</p>
+                <p className="text-meta text-mystic-500 italic">{t('liveRoom.signInToUnlock', { defaultValue: 'Sign in to unlock the replay' })}</p>
               )}
             </div>
           ) : (
@@ -267,10 +267,10 @@ export function LiveRoomPage() {
       {isLive && !isHost && user && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-3">
-            <Heart className="w-4 h-4 text-pink-400" />
-            <p className="text-xs font-medium text-pink-400 tracking-wide uppercase">
+            <Heart className="w-4 h-4 text-cosmic-rose" />
+            <EyebrowLabel align="left" className="text-cosmic-rose">
               {t('liveRoom.tipHost', { defaultValue: 'Tip the host' })}
-            </p>
+            </EyebrowLabel>
           </div>
           <div className="flex flex-wrap gap-2">
             {TIP_AMOUNTS.map((n) => (

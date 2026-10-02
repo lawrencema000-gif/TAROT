@@ -52,7 +52,9 @@
     "shareFailed": "共有できませんでした。もう一度お試しください。",
     "restore": "購入を復元",
     "manage": "サブスクを管理",
-    "loading": "読み込み中…"
+    "loading": "読み込み中…",
+    "send": "送信",
+    "refresh": "更新"
   },
   "labels": {
     "email": "メールアドレス",

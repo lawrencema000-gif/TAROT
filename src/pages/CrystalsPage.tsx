@@ -69,13 +69,13 @@ export function CrystalsPage() {
                 <Link
                   key={entry.slug}
                   to={`/crystals/${entry.slug}`}
-                  className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
+                  className="flex items-center justify-between p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ background: colorToHex(entry.color) }} aria-hidden />
                     <div className="min-w-0">
                       <div className="text-sm text-mystic-100 font-medium">{entry.name}</div>
-                      <div className="text-xs text-mystic-500 truncate">{entry.chakras.join(', ')} · Mohs {entry.hardness}</div>
+                      <div className="text-meta text-mystic-500 truncate">{entry.chakras.join(', ')} · Mohs {entry.hardness}</div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-mystic-500 flex-shrink-0" />

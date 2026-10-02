@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Aperture, TrendingUp, Layers, Hash, RotateCcw, Flame, Calendar } from 'lucide-react';
-import { PageHeader, Page, Tabs, Progress } from '../components/ui';
+import { PageHeader, Page, Tabs, Progress, EyebrowLabel } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getMirrorStats, type MirrorPeriod, type MirrorStats } from '../services/mirror';
 import { setPageMeta } from '../utils/seo';
@@ -103,12 +103,12 @@ export function MirrorPage() {
           </div>
 
           {stats.topCards.length > 1 && (
-            <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+            <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
               <h2 className="text-sm font-medium text-mystic-300 mb-3">{t('mirror.sections.topCards', { defaultValue: 'Top 5 cards' })}</h2>
               <ul className="space-y-2">
                 {stats.topCards.map((c, i) => (
                   <li key={c.name} className="flex items-center gap-3 text-sm">
-                    <span className="w-6 h-6 rounded-full bg-mystic-800 text-mystic-400 text-xs flex items-center justify-center">{i + 1}</span>
+                    <span className="w-6 h-6 rounded-full bg-mystic-800 text-mystic-400 text-caption flex items-center justify-center">{i + 1}</span>
                     <span className="flex-1 text-mystic-200">{c.name}</span>
                     <span className="text-mystic-500 tabular-nums">×{c.count}</span>
                   </li>
@@ -117,14 +117,14 @@ export function MirrorPage() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+          <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
             <h2 className="text-sm font-medium text-mystic-300 mb-3">{t('mirror.sections.suitBalance', { defaultValue: 'Suit balance (Minor Arcana)' })}</h2>
             <SuitBars breakdown={stats.suitBreakdown} />
           </section>
 
-          <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+          <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
             <h2 className="text-sm font-medium text-mystic-300 mb-2">{t('mirror.sections.majorMinor', { defaultValue: 'Major vs Minor' })}</h2>
-            <p className="text-xs text-mystic-500 mb-3">{t('mirror.sections.majorMinorNote', { defaultValue: 'Major Arcana = life themes; Minor = day-to-day energies.' })}</p>
+            <p className="text-caption text-mystic-500 mb-3">{t('mirror.sections.majorMinorNote', { defaultValue: 'Major Arcana = life themes; Minor = day-to-day energies.' })}</p>
             <ArcanaBar major={stats.arcanaBreakdown.major} minor={stats.arcanaBreakdown.minor} />
           </section>
         </div>
@@ -135,23 +135,23 @@ export function MirrorPage() {
 
 function StatCard({ icon: Icon, label, value }: { icon: typeof Calendar; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-3 text-center">
+    <div className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-3 text-center">
       <Icon className="w-4 h-4 text-gold mx-auto mb-1" />
       <div className="text-xl font-display text-mystic-100">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-mystic-500">{label}</div>
+      <EyebrowLabel className="block !text-mystic-500">{label}</EyebrowLabel>
     </div>
   );
 }
 
 function Highlight({ icon: Icon, label, value, caption }: { icon: typeof Calendar; label: string; value: string; caption: string }) {
   return (
-    <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4">
+    <div className="rounded-card border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4">
       <div className="flex items-center gap-2 mb-1">
         <Icon className="w-4 h-4 text-gold" />
-        <span className="text-xs uppercase tracking-wider text-gold">{label}</span>
+        <EyebrowLabel>{label}</EyebrowLabel>
       </div>
       <div className="font-display text-xl text-mystic-100">{value}</div>
-      <div className="text-xs text-mystic-500 mt-0.5">{caption}</div>
+      <div className="text-meta text-mystic-500 mt-0.5">{caption}</div>
     </div>
   );
 }
@@ -163,7 +163,7 @@ function SuitBars({ breakdown }: { breakdown: Record<string, number> }) {
       {Object.entries(breakdown).map(([suit, count]) => {
         const pct = Math.round((count / total) * 100);
         return (
-          <div key={suit} className="flex items-center gap-2 text-xs">
+          <div key={suit} className="flex items-center gap-2 text-meta">
             <span className="w-16 text-mystic-400">{suit}</span>
             <Progress value={pct} size="md" tone="gold" label={suit} className="flex-1" />
             <span className="w-10 text-right text-mystic-500 tabular-nums">{pct}%</span>
@@ -183,7 +183,7 @@ function ArcanaBar({ major, minor }: { major: number; minor: number }) {
         <div className="bg-gold h-full transition-[width] duration-deliberate ease-out" style={{ width: `${majorPct}%` }} />
         <div className="bg-cosmic-blue h-full flex-1" />
       </div>
-      <div className="flex justify-between text-xs text-mystic-500">
+      <div className="flex justify-between text-meta text-mystic-500">
         <span><span className="text-gold">●</span> Major {major}</span>
         <span><span className="text-cosmic-blue">●</span> Minor {minor}</span>
       </div>

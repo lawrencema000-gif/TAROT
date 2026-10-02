@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MysticalStar } from './MysticalStar';
+import { Loader2 } from 'lucide-react';
+import { SparkleFourPoint } from './Ornament';
 import { Tag } from './Chip';
 import { useImageLoader } from '../../hooks/useImageLoader';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -16,7 +17,7 @@ interface TarotCardFrameProps {
 }
 
 const sizeConfig = {
-  sm: { width: 'w-24', height: 'h-36', iconPx: 24, textSize: 'text-xs' },
+  sm: { width: 'w-24', height: 'h-36', iconPx: 24, textSize: 'text-caption' },
   md: { width: 'w-32', height: 'h-48', iconPx: 32, textSize: 'text-sm' },
   lg: { width: 'w-40', height: 'h-60', iconPx: 40, textSize: 'text-base' },
 };
@@ -69,7 +70,7 @@ export function TarotCardFrame({
       >
         <div
           className={`
-            absolute inset-0 rounded-xl overflow-hidden backface-hidden
+            absolute inset-0 rounded-control overflow-hidden backface-hidden
             bg-gradient-to-br from-mystic-800 via-mystic-850 to-mystic-900
             border-2 border-gold/30
             ${glowOnHover ? 'hover:border-gold/50 transition-all duration-slow' : ''}
@@ -91,14 +92,15 @@ export function TarotCardFrame({
                   />
                   {isLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <MysticalStar size={config.iconPx} halo={false} className="text-gold animate-pulse" />
+                      {/* The one loop in this file: a loader reporting state. */}
+                      <Loader2 size={config.iconPx} className="text-gold animate-spin" aria-hidden />
                     </div>
                   )}
                 </>
               ) : (
                 <>
                   <div className="flex-1 flex items-center justify-center">
-                    <MysticalStar size={config.iconPx} halo={false} className="text-gold" />
+                    <SparkleFourPoint size={config.iconPx} className="text-gold" />
                   </div>
                   <div className="absolute bottom-3 left-3 right-3 text-center">
                     <p className={`${config.textSize} font-display text-gold line-clamp-2`}>
@@ -111,12 +113,9 @@ export function TarotCardFrame({
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-full h-full bg-gradient-to-br from-mystic-700 to-mystic-900 flex items-center justify-center">
-                <div className="relative">
-                  <MysticalStar size={config.iconPx} halo={false} className="text-gold animate-pulse-slow" />
-                  <div className="absolute inset-0 animate-spin-slow">
-                    <div className="w-full h-full border-t border-gold/30 rounded-full" />
-                  </div>
-                </div>
+                {/* Face down: a still sparkle. The pulse and the orbiting ring
+                    reported nothing — a card waiting to be turned is at rest. */}
+                <SparkleFourPoint size={config.iconPx} className="text-gold" />
               </div>
             </div>
           )}
@@ -130,7 +129,7 @@ export function TarotCardFrame({
 
         <div
           className={`
-            absolute inset-0 rounded-xl overflow-hidden backface-hidden rotate-y-180
+            absolute inset-0 rounded-control overflow-hidden backface-hidden rotate-y-180
             bg-gradient-to-br from-mystic-700 via-mystic-800 to-mystic-900
             border-2 border-gold/20
           `}
@@ -138,8 +137,8 @@ export function TarotCardFrame({
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-3/4 h-3/4 border border-gold/30 rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <MysticalStar size={32} className="text-gold/60 mx-auto mb-2" />
-                <p className="text-xs text-gold/40 font-display">Arcana</p>
+                <SparkleFourPoint size={24} className="text-gold/60 mx-auto mb-2" />
+                <p className="text-caption text-gold/40 font-display">Arcana</p>
               </div>
             </div>
           </div>

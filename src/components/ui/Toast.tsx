@@ -27,8 +27,8 @@ const icons = {
 };
 
 const colors = {
-  success: 'text-emerald-400',
-  error: 'text-red-400',
+  success: 'text-teal',
+  error: 'text-coral',
   info: 'text-gold',
 };
 
@@ -53,7 +53,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
   };
 
   return (
-    <div className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-xl px-4 py-3">
+    <div className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3">
       <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-mystic-100">{message}</p>
@@ -61,7 +61,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
           <button
             onClick={handleAction}
             className="
-              mt-1 text-xs text-cosmic-blue flex items-center gap-0.5
+              mt-1 min-h-[44px] text-caption text-cosmic-blue flex items-center gap-0.5
               transition-[transform,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
               touch-manipulation [-webkit-tap-highlight-color:transparent]
               motion-safe:active:scale-[0.97] active:text-cosmic-blue/80
@@ -78,7 +78,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
         onClick={() => onDismiss(id)}
         aria-label="Dismiss"
         className="
-          text-mystic-400 flex-shrink-0 rounded-lg
+          text-mystic-400 flex-shrink-0 rounded-lg min-h-[44px] min-w-[44px] -my-2 -mr-3 flex items-center justify-center
           transition-[transform,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)]
           touch-manipulation [-webkit-tap-highlight-color:transparent]
           motion-safe:active:scale-90 active:text-mystic-200

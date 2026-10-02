@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useT } from '../i18n/useT';
 import { Link } from 'react-router-dom';
 import { Compass, ChevronRight } from 'lucide-react';
 import { PageHeader, Section } from '../components/ui';
-import { astrologyEntries, getAstroEntriesByCategory, type AstroCategory } from '../data/astrologyLearn';
+import { astrologyEntries, getAstroEntriesByCategory, type AstroCategory, type AstroEntry } from '../data/astrologyLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
+import type { ZodiacSign, Planet } from '../types/astrology';
 
 const SECTIONS: { id: AstroCategory; label: string; description: string }[] = [
   { id: 'sign', label: 'Zodiac Signs', description: 'The 12 archetypal signs — from Aries to Pisces.' },
@@ -13,6 +15,23 @@ const SECTIONS: { id: AstroCategory; label: string; description: string }[] = [
   { id: 'house', label: 'Houses', description: '12 houses — life areas the planets activate.' },
   { id: 'aspect', label: 'Aspects', description: 'Relationships between planets — conjunctions, trines, squares.' },
 ];
+
+/**
+ * Signs and planets render their drawn glyphs: the Unicode astrological
+ * symbols are colour emoji on Android. Houses (Roman numerals) and aspects
+ * keep their text symbol, which no platform emojifies.
+ */
+function entryGlyph(entry: AstroEntry, size: number): ReactNode {
+  if (entry.category === 'sign') {
+    const Glyph = ZODIAC_ICONS[entry.name as ZodiacSign];
+    if (Glyph) return <Glyph size={size} strokeWidth={1.5} aria-label={entry.name} />;
+  }
+  if (entry.category === 'planet') {
+    const Glyph = PLANET_ICONS[entry.name as Planet];
+    if (Glyph) return <Glyph size={size} strokeWidth={1.5} aria-label={entry.name} />;
+  }
+  return entry.symbol;
+}
 
 export function AstrologyLearnPage() {
   const { t } = useT('app');
@@ -69,10 +88,10 @@ export function AstrologyLearnPage() {
                 <Link
                   key={entry.slug}
                   to={`/astrology/${entry.slug}`}
-                  className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
+                  className="flex items-center justify-between p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-lg text-gold w-6 text-center">{entry.symbol}</span>
+                    <span className="text-lg text-gold w-6 flex items-center justify-center">{entryGlyph(entry, 20)}</span>
                     <span className="text-sm text-mystic-200">{entry.name}</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-mystic-500" />

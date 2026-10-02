@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, Check, Gift } from 'lucide-react';
 import { Badge, Button, DeckFan } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { getBillingService, PRODUCT_IDS } from '../../services/billing';
 import { useT } from '../../i18n/useT';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { PaywallSheet } from './PaywallSheet';
 
 const SESSION_KEY = 'trialReminder.shownThisSession.v1';
@@ -21,10 +22,11 @@ interface YearlyOffer {
 
 /**
  * A centred modal rather than a Sheet on purpose: it appears thirty seconds
- * into a session over whatever is on screen, which may itself be a Sheet at
- * z-50, so it sits one layer above. It still behaves as a dialog — labelled,
- * modal, dismissed by the scrim or Escape — and its entrance is the shared
- * slide-up, once.
+ * into a session over whatever is on screen, which may itself be a Sheet
+ * (z-50 and up, two per level), so it sits above the lot at z-60. It still
+ * behaves as a dialog — labelled, modal, focus held inside it and handed
+ * back on close, dismissed by the scrim or Escape — and its entrance is the
+ * shared slide-up, once.
  */
 export function TrialReminderModal() {
   const { user, profile } = useAuth();
@@ -32,6 +34,12 @@ export function TrialReminderModal() {
   const [open, setOpen] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [yearly, setYearly] = useState<YearlyOffer | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Focus lands on the dialog itself, so the first thing announced is its
+  // name (the headline) rather than "Close, button"; Tab then reaches the
+  // close button, the CTA and "Not now" in turn, and nothing behind.
+  const { isTop } = useFocusTrap(panelRef, open && !showPaywall, { initialFocus: panelRef });
 
   useEffect(() => {
     if (!user || !profile) return;
@@ -82,15 +90,16 @@ export function TrialReminderModal() {
     };
   }, [user, profile]);
 
-  // Escape closes the reminder, as it does every other dialog in the app.
+  // Escape closes the reminder, as it does every other dialog in the app —
+  // and only the reminder, when it is the dialog on top.
   useEffect(() => {
-    if (!open || showPaywall) return;
+    if (!open || showPaywall || !isTop) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, showPaywall]);
+  }, [open, showPaywall, isTop]);
 
   if (showPaywall) {
     return <PaywallSheet open onClose={() => { setShowPaywall(false); setOpen(false); }} />;
@@ -124,15 +133,19 @@ export function TrialReminderModal() {
         });
 
   return (
+    // The scrim is fill, not blur: an 85% canvas over the page separates the
+    // card from it as well as a blur did and costs nothing per frame.
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-mystic-950/80 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="trial-reminder-title"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-mystic-950/85"
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-md bg-mystic-850 border border-gold/25 rounded-sheet overflow-hidden animate-slide-up"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="trial-reminder-title"
+        tabIndex={-1}
+        className="relative w-full max-w-md bg-mystic-850 border border-gold/25 rounded-sheet overflow-hidden outline-none animate-slide-up"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0px)' }}
         onClick={(e) => e.stopPropagation()}
       >

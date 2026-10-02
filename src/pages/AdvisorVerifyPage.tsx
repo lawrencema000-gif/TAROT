@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Upload, Check, AlertCircle, Clock, XCircle } from 'lucide-react';
-import { Card, Button, Input, PageHeader, Page, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, EyebrowLabel, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -135,11 +135,11 @@ export function AdvisorVerifyPage() {
       )}
 
       {status === 'approved' && existing && (
-        <Card padding="lg" className="border-emerald-400/30 bg-emerald-400/5">
+        <Card padding="lg" className="border-teal/25 bg-teal/10">
           <div className="flex items-start gap-3">
-            <Check className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <Check className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-display text-lg text-emerald-400 mb-1">
+              <h3 className="font-display text-lg text-teal mb-1">
                 {t('advisorVerify.approvedTitle', { defaultValue: 'Verified' })}
               </h3>
               <p className="text-sm text-mystic-300">
@@ -154,11 +154,11 @@ export function AdvisorVerifyPage() {
       )}
 
       {status === 'rejected' && existing && (
-        <Card padding="lg" className="border-pink-400/30 bg-pink-400/5">
+        <Card padding="lg" className="border-coral/25 bg-coral/10">
           <div className="flex items-start gap-3">
-            <XCircle className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
+            <XCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-display text-lg text-pink-400 mb-1">
+              <h3 className="font-display text-lg text-coral mb-1">
                 {t('advisorVerify.rejectedTitle', { defaultValue: 'Not approved' })}
               </h3>
               {existing.admin_notes && (
@@ -167,7 +167,7 @@ export function AdvisorVerifyPage() {
                   {existing.admin_notes}
                 </p>
               )}
-              <p className="text-xs text-mystic-400">
+              <p className="text-meta text-mystic-400">
                 {t('advisorVerify.rejectedHelp', {
                   defaultValue: 'Contact advisors@tarotlife.app if you believe this is wrong.',
                 })}
@@ -196,12 +196,16 @@ export function AdvisorVerifyPage() {
           </Card>
 
           <Card padding="lg">
-            <label className="block text-xs uppercase tracking-widest text-mystic-500 mb-1">
-              {t('advisorVerify.legalNameLabel', { defaultValue: 'Legal name' })}
+            <label className="block mb-1">
+              <EyebrowLabel align="left">
+                {t('advisorVerify.legalNameLabel', { defaultValue: 'Legal name' })}
+            </EyebrowLabel>
             </label>
             <Input value={legalName} onChange={(e) => setLegalName(e.target.value)} maxLength={120} />
-            <label className="block text-xs uppercase tracking-widest text-mystic-500 mb-1 mt-3">
-              {t('advisorVerify.countryLabel', { defaultValue: 'Country (2-letter code, e.g. US)' })}
+            <label className="block mb-1 mt-3">
+              <EyebrowLabel align="left">
+                {t('advisorVerify.countryLabel', { defaultValue: 'Country (2-letter code, e.g. US)' })}
+            </EyebrowLabel>
             </label>
             <Input
               value={country}
@@ -212,8 +216,10 @@ export function AdvisorVerifyPage() {
           </Card>
 
           <Card padding="lg">
-            <label className="block text-xs uppercase tracking-widest text-mystic-500 mb-2">
-              {t('advisorVerify.idLabel', { defaultValue: 'Government ID (image)' })}
+            <label className="block mb-2">
+              <EyebrowLabel align="left">
+                {t('advisorVerify.idLabel', { defaultValue: 'Government ID (image)' })}
+            </EyebrowLabel>
             </label>
             <input
               ref={idInputRef}
@@ -233,8 +239,10 @@ export function AdvisorVerifyPage() {
           </Card>
 
           <Card padding="lg">
-            <label className="block text-xs uppercase tracking-widest text-mystic-500 mb-2">
-              {t('advisorVerify.selfieLabel', { defaultValue: 'Selfie video (say your name + today\'s date)' })}
+            <label className="block mb-2">
+              <EyebrowLabel align="left">
+                {t('advisorVerify.selfieLabel', { defaultValue: 'Selfie video (say your name + today\'s date)' })}
+            </EyebrowLabel>
             </label>
             <input
               ref={selfieInputRef}
@@ -266,7 +274,7 @@ export function AdvisorVerifyPage() {
               : t('advisorVerify.submitCta', { defaultValue: 'Submit for review' })}
           </Button>
 
-          <p className="text-[10px] text-center text-mystic-600 italic">
+          <p className="text-caption text-center text-mystic-600 italic">
             {t('advisorVerify.privacyNote', {
               defaultValue: 'Documents are encrypted and only visible to admin reviewers.',
             })}

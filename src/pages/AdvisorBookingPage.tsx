@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Moon, AlertCircle, Users } from 'lucide-react';
-import { Card, Button, Input, PageHeader, Page, Chip, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, Chip, EyebrowLabel, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisors, advisorSessions, moonstones } from '../dal';
@@ -157,7 +157,7 @@ export function AdvisorBookingPage() {
       <PageHeader
         icon={
           advisor.avatarUrl ? (
-            <img src={advisor.avatarUrl} alt={advisor.displayName} className="w-full h-full rounded-xl object-cover" />
+            <img src={advisor.avatarUrl} alt={advisor.displayName} className="w-full h-full rounded-control object-cover" />
           ) : undefined
         }
         title={advisor.displayName}
@@ -165,7 +165,7 @@ export function AdvisorBookingPage() {
           <>
             {advisor.headline}
             {advisor.hourlyRateCents && (
-              <span className="block text-xs text-mystic-500 mt-1">
+              <span className="block text-meta text-mystic-500 mt-1">
                 {t('advisorBooking.rate', {
                   defaultValue: 'Indicative rate: ${{dollars}}/hr',
                   dollars: (advisor.hourlyRateCents / 100).toFixed(0),
@@ -193,7 +193,7 @@ export function AdvisorBookingPage() {
             />
           ))}
         </div>
-        <p className="text-[11px] text-mystic-500 mt-3 flex items-center gap-1.5">
+        <p className="text-meta text-mystic-500 mt-3 flex items-center gap-1.5">
           <Moon className="w-3 h-3 text-gold" />
           {t('advisorBooking.costPreview', {
             defaultValue: '{{n}} Moonstones',
@@ -225,10 +225,10 @@ export function AdvisorBookingPage() {
           <div className="space-y-3">
             {groupedSlots.map(([day, ts]) => (
               <div key={day}>
-                <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1.5 flex items-center gap-1">
+                <EyebrowLabel align="left" className="flex items-center gap-1 mb-1.5">
                   <Clock className="w-3 h-3" />
                   {day}
-                </p>
+                </EyebrowLabel>
                 <div className="flex flex-wrap gap-2">
                   {ts.map((s) => (
                     <Chip
@@ -247,8 +247,10 @@ export function AdvisorBookingPage() {
       </Card>
 
       <Card padding="lg">
-        <label className="block mb-2 text-[10px] uppercase tracking-widest text-mystic-500">
-          {t('advisorBooking.topicLabel', { defaultValue: 'What do you want help with? (optional)' })}
+        <label className="block mb-2">
+          <EyebrowLabel align="left">
+            {t('advisorBooking.topicLabel', { defaultValue: 'What do you want help with? (optional)' })}
+          </EyebrowLabel>
         </label>
         <Input
           value={topic}
@@ -276,7 +278,7 @@ export function AdvisorBookingPage() {
             })}
       </Button>
 
-      <p className="text-[10px] text-center text-mystic-600 italic">
+      <p className="text-caption text-center text-mystic-600 italic">
         {t('advisorBooking.disclaimer', {
           defaultValue: 'Cancel for a full refund any time before the session starts.',
         })}

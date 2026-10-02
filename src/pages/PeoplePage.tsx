@@ -8,17 +8,21 @@ import { useAuth } from '../context/AuthContext';
 import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
 import { getZodiacSign } from '../utils/zodiac';
-import { SIGN_GLYPH } from '../lib/chart';
+import { ZODIAC_ICONS } from '../components/icons';
+import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
 
 const REL_LABEL: Record<string, string> = { self: 'You', partner: 'Partner', family: 'Family', friend: 'Friend', other: 'Other' };
 
-function signGlyphFor(birthDate: string): string {
+/** The drawn glyph for a birth date's sun sign; the generic people icon when the date cannot be read. */
+function SignGlyph({ birthDate }: { birthDate: string }) {
+  let Glyph: React.ComponentType<{ size?: number; strokeWidth?: number }> | null = null;
   try {
     const sign = getZodiacSign(birthDate);
-    const cap = sign.charAt(0).toUpperCase() + sign.slice(1);
-    return SIGN_GLYPH[cap] ?? '☉';
-  } catch { return '☉'; }
+    const cap = (sign.charAt(0).toUpperCase() + sign.slice(1)) as AstroSign;
+    Glyph = ZODIAC_ICONS[cap] ?? null;
+  } catch { Glyph = null; }
+  return Glyph ? <Glyph size={26} strokeWidth={1.5} /> : <Users className="w-5 h-5" aria-hidden />;
 }
 
 /** People — save friends & family birth data to view their charts and
@@ -64,13 +68,13 @@ export function PeoplePage() {
           <FriendCircleStats people={list} />
           {list.map((p) => (
             <button key={p.id} onClick={() => navigate(`/people/${p.id}`)}
-              className="w-full flex items-center gap-3 rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/30 transition-colors text-left active:scale-[0.99]">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 border border-gold/25 flex items-center justify-center text-2xl" style={{ fontFamily: 'serif' }}>
-                {signGlyphFor(p.birthDate)}
+              className="w-full flex items-center gap-3 rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/30 transition-colors text-left active:scale-[0.99]">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 border border-gold/25 text-gold flex items-center justify-center" aria-hidden>
+                <SignGlyph birthDate={p.birthDate} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-mystic-100 truncate">{p.name}</div>
-                <div className="text-xs text-mystic-500">
+                <div className="text-meta text-mystic-500">
                   {t(`people.relationship.${p.relationship}`, { defaultValue: REL_LABEL[p.relationship] })} · {new Date(p.birthDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                   {!p.birthTime && <> · {t('people.timeUnknown', { defaultValue: 'time unknown' })}</>}
                 </div>
@@ -78,7 +82,7 @@ export function PeoplePage() {
               <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
             </button>
           ))}
-          <p className="text-center text-xs text-mystic-600 pt-2"><Users className="w-3 h-3 inline mr-1" />{t('people.savedCount', { defaultValue: '{{n}} of 50 saved', n: list.length })}</p>
+          <p className="text-center text-caption text-mystic-600 pt-2"><Users className="w-3 h-3 inline mr-1" />{t('people.savedCount', { defaultValue: '{{n}} of 50 saved', n: list.length })}</p>
         </div>
       )}
 

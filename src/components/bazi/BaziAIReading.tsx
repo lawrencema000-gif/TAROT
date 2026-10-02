@@ -93,7 +93,7 @@ export function BaziAIReadingPanel({
 
   if (!isPremium) {
     return (
-      <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-6 sm:p-8 text-center">
+      <div className="rounded-card border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-6 sm:p-8 text-center">
         <Crown className="w-10 h-10 mx-auto mb-3 text-gold" />
         <h3 className="heading-display-md text-mystic-100 mb-2">
           Get your full personalised Bazi reading
@@ -111,7 +111,7 @@ export function BaziAIReadingPanel({
 
   if (loading && !reading) {
     return (
-      <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-8 text-center">
+      <div className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-8 text-center">
         <Loader2 className="w-8 h-8 mx-auto mb-3 text-gold animate-spin" />
         <p className="text-ui text-mystic-300 mb-1">Reading your chart…</p>
         <p className="text-meta text-mystic-400">This takes about 10 seconds the first time. Cached after that.</p>
@@ -121,8 +121,8 @@ export function BaziAIReadingPanel({
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-900/40 bg-red-950/20 p-5">
-        <p className="text-ui text-red-300 mb-3">Couldn't generate reading: {error}</p>
+      <div className="rounded-card border border-coral/25 bg-coral/10 p-5">
+        <p className="text-ui text-coral mb-3">Couldn't generate reading: {error}</p>
         <Button onClick={() => doFetch(false)} variant="outline">
           <RefreshCw className="w-4 h-4 mr-2" /> Try again
         </Button>
@@ -156,7 +156,7 @@ export function BaziAIReadingPanel({
         return (
           <section
             key={key}
-            className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-5"
+            className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-5"
           >
             <h3 className="heading-display-md text-mystic-100 mb-3">{title}</h3>
             <ReadingProse text={text} lede={key === 'core_summary'} />

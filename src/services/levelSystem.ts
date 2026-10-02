@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import { supabase } from '../lib/supabase';
 // TODO(Phase 2): services should not import from components/. The streak
 // milestone notification should be emitted via an event/callback the UI
@@ -135,49 +136,88 @@ export function getXPProgress(
   };
 }
 
+/** The milestone ladder moonstone_award_streak_milestone() pays, in order. */
+export const STREAK_MILESTONES = [7, 14, 30, 60, 100, 365] as const;
+export type StreakMilestone = (typeof STREAK_MILESTONES)[number];
+
+/**
+ * XP exists for four of the six rungs: xp_activities.activity_type is
+ * CHECK-constrained to this list (migration 20260807150000), so 14 and 60
+ * pay Moonstones only until a migration adds their types.
+ */
+const STREAK_MILESTONE_XP: Partial<Record<StreakMilestone, ActivityType>> = {
+  7: 'streak_milestone_7',
+  30: 'streak_milestone_30',
+  100: 'streak_milestone_100',
+  365: 'streak_milestone_365',
+};
+
+/**
+ * Award one streak milestone the user has just crossed.
+ *
+ * The caller decides what was crossed from ritual_streak()'s
+ * {previous_streak, streak} — for each rung m, previous < m && streak >= m —
+ * so a rung passed on a day the count moved by more than one is not lost,
+ * and 14 and 60 are claimed at last. XP where a type exists; Moonstones for
+ * every rung, through an RPC that is idempotent per (user, day) and checks
+ * the rung against profiles.streak, which ritual_streak() has just written.
+ */
 export async function checkAndAwardStreakMilestone(
   userId: string,
-  newStreak: number
+  milestone: StreakMilestone,
 ): Promise<XPReward | null> {
-  const milestones: Array<{ streak: number; type: ActivityType }> = [
-    { streak: 7, type: 'streak_milestone_7' },
-    { streak: 30, type: 'streak_milestone_30' },
-    { streak: 100, type: 'streak_milestone_100' },
-    { streak: 365, type: 'streak_milestone_365' },
-  ];
-
-  await checkAchievementProgress(userId, 'streak_achieved', newStreak);
-
-  for (const milestone of milestones) {
-    if (newStreak === milestone.streak) {
-      const result = await awardXP(userId, milestone.type);
-
-      // Also award Moonstones via the streak RPC. Idempotent per
-      // (user, streak_day) — safe to call on every milestone hit.
-      let moonstonesAwarded = 0;
-      try {
-        const { data: streakData } = await supabase.rpc('moonstone_award_streak_milestone', {
-          p_streak_day: milestone.streak,
-        });
-        const row = Array.isArray(streakData) ? streakData[0] : streakData;
-        if (row?.amount_awarded && !row.is_duplicate) {
-          moonstonesAwarded = row.amount_awarded as number;
-        }
-      } catch {
-        // RPC errors shouldn't block the XP toast.
-      }
-
-      if (result) {
-        const label = moonstonesAwarded > 0
-          ? `${milestone.streak}-day streak! +${result.xp_earned} XP · +${moonstonesAwarded} Moonstones`
-          : `${milestone.streak}-day streak milestone! +${result.xp_earned} XP`;
-        toast(label, 'success');
-      }
-      return result;
+  // The Moonstone RPC is the ledger: it pays once per (user, rung) and tells
+  // us whether this call was the first. XP has no such uniqueness, so it is
+  // paid only on a first award — which also makes the call safe to repeat
+  // for every rung at or below the streak, in any order, from any sync.
+  let moonstonesAwarded = 0;
+  let fresh = false;
+  try {
+    const { data: streakData, error } = await supabase.rpc('moonstone_award_streak_milestone', {
+      p_streak_day: milestone,
+    });
+    if (error) return null;
+    const row = Array.isArray(streakData) ? streakData[0] : streakData;
+    if (row && !row.is_duplicate && (row.amount_awarded as number) > 0) {
+      fresh = true;
+      moonstonesAwarded = row.amount_awarded as number;
     }
+  } catch {
+    return null;
   }
+  if (!fresh) return null;
 
-  return null;
+  const xpType = STREAK_MILESTONE_XP[milestone];
+  const result = xpType ? await awardXP(userId, xpType) : null;
+
+  const xp = result?.xp_earned ?? 0;
+  const label =
+    xp > 0 && moonstonesAwarded > 0
+      ? i18n.t('celebration.streak.milestoneToastMoonstones', {
+          ns: 'app',
+          defaultValue: '{{days}}-day streak. +{{xp}} XP · +{{moonstones}} Moonstones',
+          days: milestone,
+          xp,
+          moonstones: moonstonesAwarded,
+        })
+      : xp > 0
+        ? i18n.t('celebration.streak.milestoneToast', {
+            ns: 'app',
+            defaultValue: '{{days}}-day streak. +{{xp}} XP',
+            days: milestone,
+            xp,
+          })
+        : moonstonesAwarded > 0
+          ? i18n.t('celebration.streak.milestoneToastMoonstonesOnly', {
+              ns: 'app',
+              defaultValue: '{{days}}-day streak. +{{moonstones}} Moonstones',
+              days: milestone,
+              moonstones: moonstonesAwarded,
+            })
+          : null;
+  if (label) toast(label, 'success');
+
+  return result;
 }
 
 export async function getRecentXPActivities(

@@ -47,7 +47,7 @@ import App from './App.tsx';
 import { initAnalytics } from './services/analytics';
 import { captureAttributionFromUrl } from './utils/attribution';
 import { initWebVitals } from './utils/webVitals';
-import './i18n/config'; // must load before any component that calls useT()
+import i18n, { i18nReady } from './i18n/config'; // must load before any component that calls useT()
 import './index.css';
 import { applyPersistedReadingScale } from './utils/readingScale';
 
@@ -166,11 +166,28 @@ initAnalytics();
 initWebVitals();
 captureAttributionFromUrl();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const mount = () => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+};
+
+// English is bundled, so i18next finished initialising while config.ts
+// evaluated and the first render happens right here, as before. Any other
+// locale fetches its own bundles (UI strings + the tarot corpus) as lazy
+// chunks first, so the first paint is already in that language instead of
+// flashing English. `i18nReady` never rejects: a bundle that fails to load
+// leaves the app in English rather than on a blank screen.
+if (i18n.isInitialized) {
+  mount();
+} else {
+  // Mount in the chosen language when its bundles arrive, and in English
+  // after a bounded wait if they do not: a blank screen is worse than a
+  // flash of the fallback.
+  void Promise.race([i18nReady, new Promise<void>((r) => setTimeout(r, 2500))]).then(mount);
+}
 
 // Request App Tracking Transparency permission on iOS 14.5+.
 //

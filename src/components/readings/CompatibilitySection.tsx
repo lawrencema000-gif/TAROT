@@ -16,6 +16,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Card, Button, Input, Chip, Tag, Progress, ProgressRing } from '../ui';
+import { ZODIAC_ICONS } from '../icons';
 import { useAuth } from '../../context/AuthContext';
 import { getZodiacSign, zodiacData, getCompatibility } from '../../utils/zodiac';
 import type { ZodiacSign } from '../../types';
@@ -80,6 +81,10 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
 
   const userSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const userInfo = zodiacData[userSign];
+  // Drawn glyphs: U+2648–2653 are colour emoji on Android. The glyph set is
+  // keyed by the astrology type's capitalised names.
+  const UserGlyph = ZODIAC_ICONS[userInfo.name as ZodiacSignPC];
+  const userName = localizeSignName(userInfo.name as ZodiacSignPC);
 
   const handleCalculate = () => {
     if (!profile?.isPremium && mode !== 'love') {
@@ -188,12 +193,14 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
   if (showResult && result) {
     const partnerSign = getZodiacSign(partnerBirthDate);
     const partnerInfo = zodiacData[partnerSign];
+    const PartnerGlyph = ZODIAC_ICONS[partnerInfo.name as ZodiacSignPC];
+    const partnerSignName = localizeSignName(partnerInfo.name as ZodiacSignPC);
 
     return (
       <div className="space-y-6">
         <button
           onClick={handleReset}
-          className="text-sm text-mystic-400 hover:text-mystic-300"
+          className="inline-flex items-center min-h-[44px] text-sm text-mystic-400 hover:text-mystic-300"
         >
           {t('compatibility.startOver')}
         </button>
@@ -201,17 +208,17 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
         <div className="text-center">
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-mystic-800 flex items-center justify-center text-2xl mb-1">
-                {userInfo.symbol}
+              <div className="w-16 h-16 rounded-full bg-mystic-800 text-mystic-100 flex items-center justify-center mb-1">
+                <UserGlyph size={32} strokeWidth={1.5} aria-label={userName} />
               </div>
-              <p className="text-xs text-mystic-400">{t('compatibility.you')}</p>
+              <p className="text-meta text-mystic-400">{t('compatibility.you')}</p>
             </div>
             <Heart className="w-6 h-6 text-cosmic-rose" />
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-mystic-800 flex items-center justify-center text-2xl mb-1">
-                {partnerInfo.symbol}
+              <div className="w-16 h-16 rounded-full bg-mystic-800 text-mystic-100 flex items-center justify-center mb-1">
+                <PartnerGlyph size={32} strokeWidth={1.5} aria-label={partnerSignName} />
               </div>
-              <p className="text-xs text-mystic-400">{partnerName || localizeSignName(partnerInfo.name as ZodiacSignPC)}</p>
+              <p className="text-meta text-mystic-400">{partnerName || partnerSignName}</p>
             </div>
           </div>
 
@@ -226,7 +233,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
             >
               <div className="flex flex-col items-center">
                 <span className="text-3xl font-display text-gold">{result.overallScore}%</span>
-                <span className="text-xs text-mystic-400">{t('compatibility.match')}</span>
+                <span className="text-meta text-mystic-400">{t('compatibility.match')}</span>
               </div>
             </ProgressRing>
           </div>
@@ -358,7 +365,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           <p className="text-sm text-mystic-300">{result.advice}</p>
         </Card>
 
-        <p className="text-xs text-mystic-500 text-center italic">
+        <p className="text-caption text-mystic-500 text-center italic">
           {t('compatibility.reflectionDisclaimer')}
         </p>
       </div>
@@ -369,7 +376,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
     <div className="space-y-6">
       <div className="flex items-start gap-2 p-3 bg-mystic-800/50 border border-mystic-700 rounded-lg">
         <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-mystic-500 leading-relaxed">
+        <p className="text-caption text-mystic-500">
           {t('compatibility.disclaimer')}
         </p>
       </div>
@@ -423,12 +430,12 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
 
       <Card variant="glow" padding="lg">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-14 h-14 rounded-full bg-mystic-800 flex items-center justify-center text-2xl">
-            {userInfo.symbol}
+          <div className="w-14 h-14 rounded-full bg-mystic-800 text-mystic-100 flex items-center justify-center">
+            <UserGlyph size={28} strokeWidth={1.5} aria-label={userName} />
           </div>
           <div>
-            <p className="text-xs text-mystic-500">{t('compatibility.you')}</p>
-            <h3 className="font-display text-lg text-gold">{localizeSignName(userInfo.name as ZodiacSignPC)}</h3>
+            <p className="text-meta text-mystic-500">{t('compatibility.you')}</p>
+            <h3 className="font-display text-lg text-gold">{userName}</h3>
           </div>
         </div>
 
@@ -455,7 +462,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
           </div>
 
           <div className="pt-2 border-t border-mystic-700">
-            <p className="text-xs text-mystic-500 mb-3">{t('compatibility.optionalLabel')}</p>
+            <p className="text-meta text-mystic-500 mb-3">{t('compatibility.optionalLabel')}</p>
 
             <div className="space-y-3">
               <div>
@@ -473,7 +480,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                   {!showAllMbti && (
                     <button
                       onClick={() => setShowAllMbti(true)}
-                      className="px-2 py-1 text-xs text-mystic-500 hover:text-gold transition-colors"
+                      className="px-2 py-1 min-h-[44px] self-center text-caption text-mystic-500 hover:text-gold transition-colors"
                     >
                       {t('compatibility.moreMbti', { count: mbtiTypes.length - 8 })}
                     </button>
@@ -486,7 +493,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
                 <select
                   value={partnerLoveLanguage}
                   onChange={(e) => setPartnerLoveLanguage(e.target.value)}
-                  className="w-full px-4 py-3 bg-mystic-800 border border-mystic-700 rounded-xl text-mystic-100 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 outline-none"
+                  className="w-full px-4 py-3 bg-mystic-800 border border-mystic-700 rounded-control text-mystic-100 focus:border-gold/50 focus:ring-1 focus:ring-gold/50 outline-none"
                 >
                   <option value="">{t('compatibility.selectPlaceholder')}</option>
                   {loveLanguageKeys.map(key => (

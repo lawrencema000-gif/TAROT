@@ -142,7 +142,7 @@ export function DreamInterpreterPage() {
             onChange={(e) => setDreamText(e.target.value)}
             rows={8}
             disabled={stage === 'loading'}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 disabled:opacity-50"
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 disabled:opacity-50"
             placeholder={t('dream.placeholder', {
               defaultValue:
                 "I was standing by a dark ocean and couldn't find my way home. A bird flew overhead carrying something in its beak...",
@@ -207,11 +207,13 @@ function AiResultView({
         subtitle: reading.emotionalTone,
         tagline: reading.coreTheme.slice(0, 180),
         affirmation: reading.integrationSuggestion,
-        brand: 'Arcana · Dream Interpreter',
+        brand: t('share.brand.dream', { defaultValue: 'Dream interpreter' }) as string,
       });
       const out = await shareOrDownload(blob, 'arcana-dream-reading.png', 'My dream reading on Arcana');
       if (out === 'downloaded') {
         toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+      } else if (out === 'failed') {
+        toast(t('common:actions.shareFailed'), 'error');
       }
     } catch {
       toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
@@ -292,9 +294,9 @@ function AiResultView({
       )}
 
       {/* Shadow prompt */}
-      <Card padding="lg" className="bg-gradient-to-br from-pink-500/5 to-mystic-900 border-pink-500/20">
+      <Card padding="lg" className="bg-gradient-to-br from-cosmic-rose/10 to-mystic-900 border-cosmic-rose/25">
         <div className="flex items-center gap-2 mb-2">
-          <AlertTriangle className="w-4 h-4 text-pink-400" />
+          <AlertTriangle className="w-4 h-4 text-cosmic-rose" />
           <h3 className="heading-display-md text-mystic-100">
             {t('dream.shadowPromptLabel', { defaultValue: 'Shadow question' })}
           </h3>
@@ -377,7 +379,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
                 <p className="text-ui font-medium text-mystic-100 mb-0.5">{c.color.color}</p>
                 <div className="reading-copy">
                   <p>{c.color.meaning}</p>
-                  <p><span className="text-pink-400 font-medium">Shadow:</span> {c.color.shadow}</p>
+                  <p><span className="text-cosmic-rose font-medium">Shadow:</span> {c.color.shadow}</p>
                 </div>
               </div>
             ))}
@@ -516,11 +518,13 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
         subtitle: t('dream.archetypeLabel', { defaultValue: 'A dream symbol reading' }) as string,
         tagline: reading.coreTheme.replace(/\*\*/g, ''),
         affirmation: String(affirmation),
-        brand: 'Arcana · Dream Interpreter',
+        brand: t('share.brand.dream', { defaultValue: 'Dream interpreter' }) as string,
       });
       const out = await shareOrDownload(blob, 'arcana-dream-reading.png', 'My dream reading on Arcana');
       if (out === 'downloaded') {
         toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+      } else if (out === 'failed') {
+        toast(t('common:actions.shareFailed'), 'error');
       }
     } catch {
       toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');

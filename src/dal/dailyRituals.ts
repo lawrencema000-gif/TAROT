@@ -102,6 +102,58 @@ export async function upsert(ritual: DailyRitualUpsert): Promise<Result<void>> {
   return { ok: true, data: undefined };
 }
 
+export interface StreakSync {
+  /** Consecutive local days with a completed ritual, ending today or yesterday. */
+  streak: number;
+  /** profiles.streak as it stood before this call; milestones are awarded by crossing. */
+  previousStreak: number;
+  /** The last completed ritual (YYYY-MM-DD), or null if there is none. */
+  lastCompleted: string | null;
+}
+
+/**
+ * Recompute the streak from the rows and write it to the profile, server
+ * side: public.ritual_streak(p_today) (migration 20260928000000). `todayLocal`
+ * is the user's local calendar date (localDateStr) — the same basis the
+ * ritual rows are keyed on; the server rejects a date more than a day from
+ * UTC. Called on app open so a broken streak shows as broken, and after the
+ * upsert that completes a ritual so the new number and the constellation
+ * agree.
+ */
+export async function syncStreak(todayLocal: string): Promise<Result<StreakSync>> {
+  // AuthContext awaits this inside fetchProfile, whose in-flight guard is
+  // only released on the way out: a thrown fetch error (offline, aborted)
+  // must come back as a Result, never as a rejection.
+  let data: unknown;
+  try {
+    const res = await supabase.rpc('ritual_streak', { p_today: todayLocal });
+    if (res.error) {
+      captureException('dal.dailyRituals.syncStreak', res.error, { todayLocal });
+      return { ok: false, error: res.error.message };
+    }
+    data = res.data;
+  } catch (err) {
+    captureException('dal.dailyRituals.syncStreak', err, { todayLocal });
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { streak?: number | null; previous_streak?: number | null; last_completed?: string | null }
+    | null
+    | undefined;
+  if (!row) {
+    captureException('dal.dailyRituals.syncStreak', new Error('ritual_streak returned no row'), { todayLocal });
+    return { ok: false, error: 'ritual_streak returned no row' };
+  }
+  return {
+    ok: true,
+    data: {
+      streak: Number(row.streak ?? 0),
+      previousStreak: Number(row.previous_streak ?? 0),
+      lastCompleted: row.last_completed ? String(row.last_completed) : null,
+    },
+  };
+}
+
 export async function countForUser(userId: string): Promise<Result<number>> {
   const { count, error } = await supabase
     .from('daily_rituals')

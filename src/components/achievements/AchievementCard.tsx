@@ -1,11 +1,6 @@
 import { Lock, Crown, Star } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
-import {
-  getRarityColor,
-  getRarityBorder,
-  getRarityBackground,
-} from '../../services/achievements';
 import { Badge, Progress, type Tone } from '../ui';
 
 // Rarity → the nearest primitive tone (blue = cosmic-blue, violet stands in
@@ -15,6 +10,28 @@ const RARITY_TONE: Record<AchievementRarity, Tone> = {
   rare: 'blue',
   epic: 'violet',
   legendary: 'gold',
+};
+
+// The same four tones as token classes, for the parts of the card the
+// primitives do not cover (icon ink, border, tint). The -ink variants are
+// the AA text colours for the two cool tones on their own tints.
+const RARITY_TEXT: Record<AchievementRarity, string> = {
+  common: 'text-mystic-400',
+  rare: 'text-cosmic-blue-ink',
+  epic: 'text-cosmic-violet-ink',
+  legendary: 'text-gold',
+};
+const RARITY_BORDER: Record<AchievementRarity, string> = {
+  common: 'border-mystic-600',
+  rare: 'border-cosmic-blue/25',
+  epic: 'border-cosmic-violet/25',
+  legendary: 'border-gold/25',
+};
+const RARITY_BG: Record<AchievementRarity, string> = {
+  common: 'from-mystic-700/30 to-mystic-800/30',
+  rare: 'from-cosmic-blue/15 to-mystic-800/30',
+  epic: 'from-cosmic-violet/15 to-mystic-800/30',
+  legendary: 'from-gold/15 to-mystic-800/30',
 };
 
 interface AchievementCardProps {
@@ -44,16 +61,16 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
   const progressPercentage = Math.min((achievement.progress / achievement.target) * 100, 100);
   const Icon = getIcon(achievement.icon_name);
 
-  const rarityColor = getRarityColor(achievement.rarity);
-  const rarityBorder = getRarityBorder(achievement.rarity);
-  const rarityBg = getRarityBackground(achievement.rarity);
+  const rarityColor = RARITY_TEXT[achievement.rarity];
+  const rarityBorder = RARITY_BORDER[achievement.rarity];
+  const rarityBg = RARITY_BG[achievement.rarity];
   const rarityTone = RARITY_TONE[achievement.rarity];
 
   return (
     <button
       onClick={onPress}
       className={`
-        relative w-full p-4 rounded-2xl border transition-all duration-slow
+        relative w-full p-4 rounded-card border transition-all duration-slow
         ${isUnlocked
           ? `bg-gradient-to-br ${rarityBg} ${rarityBorder}`
           : 'bg-mystic-800/40 border-mystic-700/30'
@@ -64,7 +81,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
       `}
     >
       {isPremiumLocked && (
-        <div className="absolute inset-0 backdrop-blur-sm bg-mystic-900/60 z-10 flex flex-col items-center justify-center rounded-2xl">
+        <div className="absolute inset-0 bg-mystic-900 z-10 flex flex-col items-center justify-center rounded-card">
           <Badge tone="gold">
             <Crown className="w-3 h-3" aria-hidden />
             Premium
@@ -74,7 +91,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
 
       <div className="flex gap-3">
         <div className={`
-          relative flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center
+          relative flex-shrink-0 w-14 h-14 rounded-control flex items-center justify-center
           transition-all duration-slow
           ${isUnlocked
             ? `bg-gradient-to-br ${rarityBg}`
@@ -87,7 +104,6 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
             <Icon className={`
               w-7 h-7 transition-all duration-slow
               ${isUnlocked ? rarityColor : 'text-mystic-500'}
-              ${isUnlocked && achievement.rarity === 'legendary' ? 'animate-pulse' : ''}
             `} />
           )}
 
@@ -113,7 +129,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
           </div>
 
           <p className={`
-            mt-1 text-xs leading-relaxed line-clamp-2
+            mt-1 text-meta line-clamp-2
             ${isUnlocked ? 'text-mystic-300' : 'text-mystic-500'}
             ${isLocked && !isPremiumLocked && achievement.is_hidden ? 'blur-sm select-none' : ''}
           `}>
@@ -126,10 +142,10 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
           {!isUnlocked && !isPremiumLocked && (
             <div className="mt-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-mystic-500">
+                <span className="text-meta text-mystic-500">
                   {achievement.progress} / {achievement.target}
                 </span>
-                <span className="text-[10px] text-mystic-500">
+                <span className="text-meta text-mystic-500">
                   {Math.round(progressPercentage)}%
                 </span>
               </div>
@@ -144,10 +160,10 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
 
           {isUnlocked && (
             <div className="mt-2 flex items-center gap-3">
-              <span className={`text-xs font-medium ${rarityColor}`}>
+              <span className={`text-meta font-medium ${rarityColor}`}>
                 +{achievement.xp_reward} XP
               </span>
-              <span className="text-[10px] text-mystic-500">
+              <span className="text-meta text-mystic-500">
                 {new Date(achievement.unlocked_at!).toLocaleDateString()}
               </span>
             </div>

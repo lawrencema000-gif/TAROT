@@ -188,25 +188,25 @@ export function PartnerCompatPage() {
           </h3>
           <div className="space-y-3 mb-5">
             <div>
-              <label className="text-xs text-mystic-500 mb-1 block">
+              <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.yourBirth', { defaultValue: 'Your birth date' })}
               </label>
               <Input type="date" value={myBirth} onChange={(e) => setMyBirth(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-mystic-500 mb-1 block">
+              <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.yourBirthTime', { defaultValue: 'Your birth time (sharpens the reading — includes the Moon)' })}
               </label>
               <Input type="time" value={myBirthTime} onChange={(e) => setMyBirthTime(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-mystic-500 mb-1 block">
+              <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.yourMbti', { defaultValue: 'Your MBTI type (optional)' })}
               </label>
               <select
                 value={myMbti}
                 onChange={(e) => setMyMbti(e.target.value as MbtiType)}
-                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
+                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
               >
                 <option value="">{t('compat.selectOrSkip', { defaultValue: 'Select or skip' })}</option>
                 {MBTI_TYPES.map((type) => (
@@ -221,25 +221,25 @@ export function PartnerCompatPage() {
           </h3>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-mystic-500 mb-1 block">
+              <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.partnerBirth', { defaultValue: "Partner's birth date" })}
               </label>
               <Input type="date" value={partnerBirth} onChange={(e) => setPartnerBirth(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-mystic-500 mb-1 block">
+              <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.partnerBirthTime', { defaultValue: "Partner's birth time (optional)" })}
               </label>
               <Input type="time" value={partnerBirthTime} onChange={(e) => setPartnerBirthTime(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-mystic-500 mb-1 block">
+              <label className="text-caption text-mystic-500 mb-1 block">
                 {t('compat.partnerMbti', { defaultValue: "Partner's MBTI (optional)" })}
               </label>
               <select
                 value={partnerMbti}
                 onChange={(e) => setPartnerMbti(e.target.value as MbtiType)}
-                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
+                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
               >
                 <option value="">{t('compat.selectOrSkip', { defaultValue: 'Select or skip' })}</option>
                 {MBTI_TYPES.map((type) => (
@@ -270,9 +270,9 @@ export function PartnerCompatPage() {
   }
 
   if (stage === 'result' && result) {
-    const scoreColor = result.overallScore >= 80 ? 'text-emerald-400'
+    const scoreColor = result.overallScore >= 80 ? 'text-teal'
       : result.overallScore >= 60 ? 'text-gold'
-      : 'text-pink-400';
+      : 'text-coral';
 
     const handleShare = async () => {
       try {
@@ -283,10 +283,11 @@ export function PartnerCompatPage() {
             ? `${result.synastry.harmoniousCount} harmonious · ${result.synastry.challengingCount} challenging · ${result.synastry.intenseCount} intense aspects`
             : `${myMbti || ''}${myMbti && partnerMbti ? ' × ' : ''}${partnerMbti || ''}`,
           affirmation: result.synastry?.crossAspects[0]?.interpretation ?? (result.mbti?.note || ''),
-          brand: 'Arcana · Partner Compatibility',
+          brand: t('share.brand.partnerCompat', { defaultValue: 'Partner compatibility' }) as string,
         });
         const out = await shareOrDownload(blob, 'arcana-compatibility.png', `Our compatibility: ${result.overallScore}%`);
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+        else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
       } catch {
         toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
       }
@@ -309,7 +310,7 @@ export function PartnerCompatPage() {
           <div className={`font-display text-7xl ${scoreColor} mb-3`}>{result.overallScore}%</div>
           <div className="flex justify-center items-center gap-3 text-meta text-mystic-400">
             {myMbti && <span>{myMbti}</span>}
-            <Heart className="w-4 h-4 text-pink-400" />
+            <Heart className="w-4 h-4 text-cosmic-rose" />
             {partnerMbti && <span>{partnerMbti}</span>}
           </div>
         </Card>
@@ -321,20 +322,20 @@ export function PartnerCompatPage() {
               {t('compat.synastryLabel', { defaultValue: 'Astrology Synastry' })}
             </h3>
             <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="text-center px-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
-                <p className="text-2xl font-display text-emerald-400">{result.synastry.harmoniousCount}</p>
+              <div className="text-center px-1 py-2 rounded-control bg-teal/10 border border-teal/25">
+                <p className="text-2xl font-display text-teal">{result.synastry.harmoniousCount}</p>
                 <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.harmoniousLabel', { defaultValue: 'Harmonious' })}
                 </p>
               </div>
-              <div className="text-center px-1 py-2 rounded-xl bg-gold/10 border border-gold/20">
+              <div className="text-center px-1 py-2 rounded-control bg-gold/10 border border-gold/20">
                 <p className="text-2xl font-display text-gold">{result.synastry.intenseCount}</p>
                 <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.intenseLabel', { defaultValue: 'Intense' })}
                 </p>
               </div>
-              <div className="text-center px-1 py-2 rounded-xl bg-pink-500/10 border border-pink-400/20">
-                <p className="text-2xl font-display text-pink-400">{result.synastry.challengingCount}</p>
+              <div className="text-center px-1 py-2 rounded-control bg-coral/10 border border-coral/25">
+                <p className="text-2xl font-display text-coral">{result.synastry.challengingCount}</p>
                 <p className="text-meta text-mystic-400 mt-1">
                   {t('compat.challengingLabel', { defaultValue: 'Challenging' })}
                 </p>
@@ -410,7 +411,7 @@ export function PartnerCompatPage() {
           const insights = computeCompositeInsights(result.synastry);
           if (insights.length === 0) return null;
           return (
-            <Card padding="lg" className="border-pink-400/20">
+            <Card padding="lg" className="border-cosmic-rose/25">
               <h3 className="heading-display-md text-mystic-100 mb-3">
                 {t('compat.compositeLabel', { defaultValue: 'Your relationship as a third entity' })}
               </h3>
@@ -423,7 +424,7 @@ export function PartnerCompatPage() {
               <div className="space-y-3">
                 {insights.map((ins, i) => (
                   <div key={i}>
-                    <p className="text-ui text-pink-400 font-medium mb-0.5">{ins.pairing}</p>
+                    <p className="text-ui text-cosmic-rose font-medium mb-0.5">{ins.pairing}</p>
                     <ReadingProse text={ins.reading} lede={false} />
                   </div>
                 ))}

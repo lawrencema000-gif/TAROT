@@ -448,7 +448,10 @@
       "howFeeling": "今日の気分は?",
       "tags": "タグ",
       "attachments": "添付",
-      "tarotLinked": "タロットリーディングをリンク済み"
+      "tarotLinked": "タロットリーディングをリンク済み",
+      "goToPrompt": "プロンプト{{n}}",
+      "unlinkReading": "リーディングのリンクを解除",
+      "promptOf": "プロンプト {{n}} / {{total}}"
     },
     "toast": {
       "unlockPremiumLock": "ロック済みエントリーを見るにはプレミアムに登録してください",
@@ -463,7 +466,9 @@
     "startWriting": "最初のエントリーを書く",
     "editor": {
       "cancel": "キャンセル"
-    }
+    },
+    "prevWeek": "前の週",
+    "nextWeek": "次の週"
   },
   "quizzes": {
     "title": "診断",
@@ -1616,7 +1621,9 @@
       "noAspectsMatch": "このフィルターに一致するアスペクトはありません",
       "aspectPair": "{{a}} - {{b}}",
       "planetInSign": "{{planet}}が{{sign}}"
-    }
+    },
+    "saveLabel": "ホロスコープを保存",
+    "shareLabel": "ホロスコープをシェア"
   },
   "profile": {
     "title": "プロフィール",
@@ -1750,7 +1757,9 @@
     "comeBackSoon": "タロットの知見や精神的なガイダンスをお楽しみに。",
     "articleNotFound": "記事が見つかりません。",
     "readingTime": "{{n}} 分で読めます",
-    "by": "著者: {{author}}"
+    "by": "著者: {{author}}",
+    "prevPage": "前のページ",
+    "nextPage": "次のページ"
   },
   "tarot": {
     "title": "タロットカードの意味",
@@ -2731,8 +2740,15 @@
         "week": "まる一週間、毎晩欠かさず。",
         "month": "ひと月まるごと、毎晩。",
         "hundred": "百の夜。",
-        "year": "一年分の夜。"
-      }
+        "year": "一年分の夜。",
+        "fortnight": "二週間分の夜。",
+        "sixty": "六十の夜。"
+      },
+      "milestoneToast": "{{days}}日連続。+{{xp}} XP",
+      "milestoneToastMoonstones": "{{days}}日連続。+{{xp}} XP · +{{moonstones}} ムーンストーン",
+      "milestoneToastMoonstonesOnly": "{{days}}日連続。+{{moonstones}} ムーンストーン",
+      "notStarted": "まだ連続記録はありません。",
+      "startTonight": "今夜の儀式を終えると、記録が始まります。"
     },
     "levelUp": {
       "title": "レベルアップ。",
@@ -4287,7 +4303,9 @@
     "postedUnderReview": "投稿されました—まもなくチームが確認します。",
     "commentUnderReview": "コメントを投稿しました—まもなくチームが確認します。",
     "contentBlocked": "このコンテンツはコミュニティガイドラインに反しています。",
-    "publishPost": "投稿を公開"
+    "publishPost": "投稿を公開",
+    "youMarker": "あなた",
+    "options": "オプション"
   },
   "common": {
     "mainContent": "メインコンテンツ",
@@ -4879,7 +4897,8 @@
     "reversed": "逆位置",
     "composerPlaceholder": "続けて聞く…",
     "seedMessage": "今{{card}}を引きました。いまそれが示しているかもしれないことと、どう向き合えばいいか手助けしてください。",
-    "aiFailed": "オラクルに接続できませんでした。接続を確認して、もう一度尋ねてください。"
+    "aiFailed": "オラクルに接続できませんでした。接続を確認して、もう一度尋ねてください。",
+    "thinking": "オラクルが考えています…"
   },
   "journalCoach": {
     "askCta": "ジャーナルコーチに聞く",
@@ -5559,6 +5578,21 @@
   },
   "share": {
     "youAnd": "あなたと{{name}}",
-    "yourCompatibility": "あなたの相性"
+    "yourCompatibility": "あなたの相性",
+    "brand": {
+      "bazi": "八字",
+      "careerArchetype": "キャリアのアーキタイプ",
+      "dream": "夢解き",
+      "fengShui": "風水の八卦",
+      "humanDesign": "ヒューマンデザイン",
+      "iching": "易経",
+      "partnerCompat": "パートナー相性",
+      "runes": "ルーン",
+      "ayurveda": "アーユルヴェーダ",
+      "shadowArchetype": "影の元型診断",
+      "elementAffinity": "エレメント親和性",
+      "tarotCourt": "タロットコートカード診断",
+      "cosmicProfile": "コスミックプロファイル"
+    }
   }
 }

@@ -15,12 +15,12 @@ export function Header({
   const { t } = useT();
   // Shared icon-button class. `hairline-gold-soft` adds a 1px low-opacity
   // gold border that survives against any background (Celestial,
-  // user-uploaded image, solid). Slightly larger touch target than the
-  // pre-redesign 36×36; we want 40×40 minimum for thumb comfort.
+  // user-uploaded image, solid). The fill is opaque `mystic-900` rather than
+  // a blur over whatever is behind: elevation is fill. 44×44 touch target.
   const iconBtn =
-    'p-2.5 rounded-xl hairline-gold-soft text-mystic-300 ' +
-    'transition-all duration-base active:scale-95 backdrop-blur-sm ' +
-    'hover:text-mystic-100 hover:border-gold/30 hover:bg-mystic-900/50';
+    'p-3 rounded-control hairline-gold-soft text-mystic-300 bg-mystic-900 ' +
+    'transition-all duration-base active:scale-95 ' +
+    'hover:text-mystic-100 hover:border-gold/30 hover:bg-mystic-850';
 
   return (
     <header className="flex items-end justify-between mb-6">

@@ -50,14 +50,14 @@ export function UpdateAvailableBanner() {
   };
 
   return (
-    <div className="fixed bottom-20 left-2 right-2 z-40 mx-auto max-w-md rounded-2xl border border-gold/40 bg-gradient-to-r from-mystic-900/95 to-mystic-800/95 p-3 backdrop-blur">
+    <div className="fixed bottom-20 left-2 right-2 z-40 mx-auto max-w-md rounded-card border border-gold/40 bg-mystic-850 p-3">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gold/20">
           <Download className="h-4 w-4 text-gold" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-mystic-100">{t('updateBanner.title', { defaultValue: 'A new version is available' })}</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-mystic-300">
+          <p className="mt-0.5 text-meta text-mystic-300">
             {t('updateBanner.body', { defaultValue: 'Includes recent fixes and improvements. Update from Google Play to get them.' })}
           </p>
           <div className="mt-2 flex gap-2">
@@ -68,7 +68,7 @@ export function UpdateAvailableBanner() {
         <button
           onClick={handleDismiss}
           aria-label={t('updateBanner.dismiss', { defaultValue: 'Dismiss' })}
-          className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-mystic-500 hover:bg-mystic-800 hover:text-mystic-300 transition-colors"
+          className="flex h-11 w-11 -mt-2 -mr-2 flex-none items-center justify-center rounded-full text-mystic-500 hover:bg-mystic-800 hover:text-mystic-300 transition-colors"
         >
           <X className="h-4 w-4" />
         </button>

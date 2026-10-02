@@ -166,21 +166,29 @@ export async function checkAndAwardStreakMilestone(
   userId: string,
   milestone: StreakMilestone,
 ): Promise<XPReward | null> {
-  const xpType = STREAK_MILESTONE_XP[milestone];
-  const result = xpType ? await awardXP(userId, xpType) : null;
-
+  // The Moonstone RPC is the ledger: it pays once per (user, rung) and tells
+  // us whether this call was the first. XP has no such uniqueness, so it is
+  // paid only on a first award — which also makes the call safe to repeat
+  // for every rung at or below the streak, in any order, from any sync.
   let moonstonesAwarded = 0;
+  let fresh = false;
   try {
-    const { data: streakData } = await supabase.rpc('moonstone_award_streak_milestone', {
+    const { data: streakData, error } = await supabase.rpc('moonstone_award_streak_milestone', {
       p_streak_day: milestone,
     });
+    if (error) return null;
     const row = Array.isArray(streakData) ? streakData[0] : streakData;
-    if (row?.amount_awarded && !row.is_duplicate) {
+    if (row && !row.is_duplicate && (row.amount_awarded as number) > 0) {
+      fresh = true;
       moonstonesAwarded = row.amount_awarded as number;
     }
   } catch {
-    // RPC errors shouldn't block the XP toast.
+    return null;
   }
+  if (!fresh) return null;
+
+  const xpType = STREAK_MILESTONE_XP[milestone];
+  const result = xpType ? await awardXP(userId, xpType) : null;
 
   const xp = result?.xp_earned ?? 0;
   const label =

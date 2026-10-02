@@ -207,7 +207,7 @@ function AiResultView({
         subtitle: reading.emotionalTone,
         tagline: reading.coreTheme.slice(0, 180),
         affirmation: reading.integrationSuggestion,
-        brand: t('share.brand.dream', { defaultValue: 'Dream Interpreter' }) as string,
+        brand: t('share.brand.dream', { defaultValue: 'Dream interpreter' }) as string,
       });
       const out = await shareOrDownload(blob, 'arcana-dream-reading.png', 'My dream reading on Arcana');
       if (out === 'downloaded') {
@@ -518,7 +518,7 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
         subtitle: t('dream.archetypeLabel', { defaultValue: 'A dream symbol reading' }) as string,
         tagline: reading.coreTheme.replace(/\*\*/g, ''),
         affirmation: String(affirmation),
-        brand: t('share.brand.dream', { defaultValue: 'Dream Interpreter' }) as string,
+        brand: t('share.brand.dream', { defaultValue: 'Dream interpreter' }) as string,
       });
       const out = await shareOrDownload(blob, 'arcana-dream-reading.png', 'My dream reading on Arcana');
       if (out === 'downloaded') {

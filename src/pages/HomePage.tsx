@@ -232,17 +232,18 @@ export function HomePage() {
 
       // The streak is the rituals: now that tonight's row is complete, have
       // the server recount from the rows and write the profile. The number
-      // beside the constellation is this one, so the two agree. Milestones
-      // are awarded by crossing — previous < m <= streak — so a rung passed
-      // when the count moved by more than one is not lost, and 14 and 60
+      // beside the constellation is this one, so the two agree. Every rung
+      // at or below the streak is offered to the server, which pays each
+      // once (the Moonstone ledger is keyed by rung) — so it does not matter
+      // whether another sync wrote the new number first, and 14 and 60
       // (Moonstones only) are claimed at last.
       const synced = await dailyRituals.syncStreak(today);
       if (synced.ok) {
-        const { streak: newStreak, previousStreak } = synced.data;
+        const { streak: newStreak } = synced.data;
         setStreak(newStreak);
         checkAchievementProgress(user.id, 'streak_achieved', newStreak);
         for (const m of STREAK_MILESTONES) {
-          if (previousStreak < m && newStreak >= m) {
+          if (newStreak >= m) {
             await checkAndAwardStreakMilestone(user.id, m);
           }
         }

@@ -94,7 +94,7 @@ export function CareerReportPage() {
         subtitle: `${archetype.mbti} · ${t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}`,
         tagline: archetype.tagline,
         affirmation: archetype.affirmation,
-        brand: t('share.brand.careerArchetype', { defaultValue: 'Career Archetype' }) as string,
+        brand: t('share.brand.careerArchetype', { defaultValue: 'Career archetype' }) as string,
       });
       const outcome = await shareOrDownload(
         blob,

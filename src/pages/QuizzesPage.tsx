@@ -81,6 +81,17 @@ import { getZodiacElement, getZodiacSign } from '../utils/zodiac';
 
 import type { QuizDefinition } from '../types';
 
+// Quiz data names a palette token; Tailwind only emits classes it can read
+// whole, so the class is looked up here rather than composed at runtime.
+const TILE_INK: Record<string, string> = {
+  gold: 'text-gold',
+  teal: 'text-teal',
+  coral: 'text-coral',
+  'cosmic-blue': 'text-cosmic-blue',
+  'cosmic-rose': 'text-cosmic-rose',
+  'cosmic-violet': 'text-cosmic-violet',
+};
+
 type QuizState = 'list' | 'taking' | 'results';
 
 interface QuizProgress {
@@ -2132,7 +2143,7 @@ export function QuizzesPage() {
                 className="active:scale-[0.98] transition-transform"
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-control bg-mystic-800 flex items-center justify-center flex-shrink-0 text-${metadata.color}`}>
+                  <div className={`w-14 h-14 rounded-control bg-mystic-800 flex items-center justify-center flex-shrink-0 ${TILE_INK[metadata.color] ?? 'text-gold'}`}>
                     <Icon className="w-7 h-7" />
                   </div>
                   <div className="flex-1 min-w-0">

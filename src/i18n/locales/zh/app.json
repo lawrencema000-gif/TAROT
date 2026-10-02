@@ -450,7 +450,8 @@
       "attachments": "附件",
       "tarotLinked": "已关联塔罗牌阵",
       "goToPrompt": "提示语 {{n}}",
-      "unlinkReading": "移除关联的牌阵"
+      "unlinkReading": "移除关联的牌阵",
+      "promptOf": "提示 {{n}} / {{total}}"
     },
     "toast": {
       "unlockPremiumLock": "升级高级版才能查看已锁定条目",

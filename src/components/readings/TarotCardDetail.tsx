@@ -59,7 +59,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
                 }`}
               />
               {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-card" role="status" aria-label={t('tarot.detail.tabs.meaning')}>
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-card" role="status" aria-label={t('common:actions.loading', { defaultValue: 'Loading…' })}>
                   <Loader2 className="w-8 h-8 text-gold animate-spin" aria-hidden />
                 </div>
               )}

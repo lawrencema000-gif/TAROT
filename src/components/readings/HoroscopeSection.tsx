@@ -23,6 +23,7 @@ import { awardXP } from '../../services/levelSystem';
 import { checkAchievementProgress } from '../../services/achievements';
 import { appStorage } from '../../lib/appStorage';
 import { useT } from '../../i18n/useT';
+import { localDateStr } from '../../utils/localDate';
 
 
 interface HoroscopeSectionProps {
@@ -38,7 +39,9 @@ export function HoroscopeSection({ onShowPaywall }: HoroscopeSectionProps) {
 
   // Arrays of weekly / monthly insight strings pulled from translation bundle.
 
-  const today = new Date().toISOString().split('T')[0];
+  // The local calendar date, like the Home ritual: a highlight saved after
+  // midnight local time belongs to that day's "Saved today" strip.
+  const today = localDateStr();
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : 'aries';
   const zodiacInfo = zodiacData[zodiacSign];
   // Drawn, as on the Home ritual card: the text symbol is a colour emoji on Android.

@@ -592,7 +592,8 @@
       "attachments": "Attachments",
       "tarotLinked": "Tarot reading linked",
       "goToPrompt": "Prompt {{n}}",
-      "unlinkReading": "Remove the linked reading"
+      "unlinkReading": "Remove the linked reading",
+      "promptOf": "Prompt {{n}} of {{total}}"
     },
     "toast": {
       "unlockPremiumLock": "Unlock premium to view locked entries",
@@ -5370,8 +5371,8 @@
     "yourCompatibility": "Your compatibility",
     "brand": {
       "bazi": "Bazi",
-      "careerArchetype": "Career Archetype",
-      "dream": "Dream Interpreter",
+      "careerArchetype": "Career archetype",
+      "dream": "Dream interpreter",
       "fengShui": "Feng Shui Bagua",
       "humanDesign": "Human Design",
       "iching": "I-Ching",

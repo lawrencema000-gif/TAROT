@@ -183,7 +183,10 @@ const mount = () => {
 if (i18n.isInitialized) {
   mount();
 } else {
-  void i18nReady.then(mount);
+  // Mount in the chosen language when its bundles arrive, and in English
+  // after a bounded wait if they do not: a blank screen is worse than a
+  // flash of the fallback.
+  void Promise.race([i18nReady, new Promise<void>((r) => setTimeout(r, 2500))]).then(mount);
 }
 
 // Request App Tracking Transparency permission on iOS 14.5+.

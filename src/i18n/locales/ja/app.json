@@ -450,7 +450,8 @@
       "attachments": "添付",
       "tarotLinked": "タロットリーディングをリンク済み",
       "goToPrompt": "プロンプト{{n}}",
-      "unlinkReading": "リーディングのリンクを解除"
+      "unlinkReading": "リーディングのリンクを解除",
+      "promptOf": "プロンプト {{n}} / {{total}}"
     },
     "toast": {
       "unlockPremiumLock": "ロック済みエントリーを見るにはプレミアムに登録してください",

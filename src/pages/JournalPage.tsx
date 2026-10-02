@@ -938,11 +938,11 @@ export function JournalPage() {
           <div className="flex-1 overflow-y-auto p-6 space-y-5">
             {!editingEntry && selectedTemplate && (
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-y-1">
                   <EyebrowLabel align="left" className="text-mystic-500">
-                    Prompt {currentPromptIndex + 1} of {selectedTemplate.prompts.length}
+                    {t('journal.editSheet.promptOf', { defaultValue: 'Prompt {{n}} of {{total}}', n: currentPromptIndex + 1, total: selectedTemplate.prompts.length })}
                   </EyebrowLabel>
-                  <div className="flex flex-wrap justify-end">
+                  <div className="flex shrink-0 ml-auto">
                     {selectedTemplate.prompts.map((_, i) => (
                       <button
                         key={i}

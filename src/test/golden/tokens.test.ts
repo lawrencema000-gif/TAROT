@@ -95,7 +95,7 @@ const RULES: Rule[] = [
   {
     name: 'MysticalStar',
     re: /<MysticalStar\b/,
-    allowed: new Set(['src/components/ui/MysticalStar.tsx']),
+    allowed: new Set(),
   },
   {
     // Elevation is by fill; a blur costs a compositing layer and hides
@@ -123,6 +123,9 @@ describe('the design system holds on every screen', () => {
         }
         if (h.length) found.push(`${f.path}: ${[...new Set(h)].join(', ')} (${h.length})`);
       }
+      // An allowance for a file that no longer exists would silently exempt
+      // a re-created one.
+      for (const p of rule.allowed) if (!files.some((f) => f.path === p)) stale.push(`${p} (missing)`);
       expect(found).toEqual([]);
       expect(stale).toEqual([]);
     });

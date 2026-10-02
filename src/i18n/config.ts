@@ -161,6 +161,11 @@ const initPromise = i18n
     ns: NAMESPACES,
     defaultNS: 'common',
     partialBundledLanguages: true,
+    // One quick retry, not i18next's five with doubling waits: a chunk that
+    // failed once is in the browser's module map as failed anyway, and the
+    // app must not sit on a blank screen for eleven seconds before English.
+    maxRetries: 1,
+    retryTimeout: 300,
 
     detection: {
       // Intentionally excludes 'navigator' — users on Japanese-locale phones

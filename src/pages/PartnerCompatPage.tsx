@@ -283,7 +283,7 @@ export function PartnerCompatPage() {
             ? `${result.synastry.harmoniousCount} harmonious · ${result.synastry.challengingCount} challenging · ${result.synastry.intenseCount} intense aspects`
             : `${myMbti || ''}${myMbti && partnerMbti ? ' × ' : ''}${partnerMbti || ''}`,
           affirmation: result.synastry?.crossAspects[0]?.interpretation ?? (result.mbti?.note || ''),
-          brand: t('share.brand.partnerCompat', { defaultValue: 'Partner Compatibility' }) as string,
+          brand: t('share.brand.partnerCompat', { defaultValue: 'Partner compatibility' }) as string,
         });
         const out = await shareOrDownload(blob, 'arcana-compatibility.png', `Our compatibility: ${result.overallScore}%`);
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');

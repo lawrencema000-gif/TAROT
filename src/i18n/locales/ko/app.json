@@ -450,7 +450,8 @@
       "attachments": "첨부",
       "tarotLinked": "타로 리딩 연결됨",
       "goToPrompt": "프롬프트 {{n}}",
-      "unlinkReading": "연결된 리딩 제거"
+      "unlinkReading": "연결된 리딩 제거",
+      "promptOf": "프롬프트 {{n}} / {{total}}"
     },
     "toast": {
       "unlockPremiumLock": "잠긴 기록을 보려면 프리미엄을 해제하세요",

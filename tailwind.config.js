@@ -225,7 +225,9 @@ export default {
   safelist: [
     'text-cosmic-blue',
     'text-cosmic-rose',
-    'text-emerald-400',
+    'text-teal',
+    'text-coral',
+    'text-cosmic-violet',
     'text-gold',
     'text-mystic-300',
   ],

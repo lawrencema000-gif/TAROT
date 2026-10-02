@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/vendor-tz-CizgpVsm.js","assets/vendor-react-D4vxpNZB.js"])))=>i.map(i=>d[i]);
+import{a5 as n}from"./vendor-Cm3WmXCe.js";import"./vendor-react-D4vxpNZB.js";async function l(t,r){try{const{default:o}=await n(async()=>{const{default:a}=await import("./vendor-tz-CizgpVsm.js").then(e=>e.t);return{default:a}},__vite__mapDeps([0,1]));return o(t,r)??null}catch{return null}}export{l as deriveBirthTz};

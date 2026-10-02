@@ -207,7 +207,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
         )}
 
         {feedback && (
-          <div className="rounded-lg bg-emerald-900/30 px-4 py-2 text-sm text-emerald-200">
+          <div className="rounded-lg bg-teal/10 border border-teal/25 px-4 py-2 text-sm text-teal" role="status">
             {feedback}
           </div>
         )}
@@ -219,7 +219,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
               <button
                 onClick={handleWatchAd}
                 disabled={adBusy || !adAvailable}
-                className="flex w-full items-center justify-between rounded-xl border border-gold/30 bg-mystic-800/60 p-4 text-left transition hover:border-gold/60 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center justify-between rounded-control border border-gold/30 bg-mystic-800/60 p-4 text-left transition hover:border-gold/60 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   <Gift className="h-5 w-5 text-gold" />
@@ -227,7 +227,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
                     <div className="text-sm font-medium text-mystic-50">
                       {tr('moonstones.earnSheet.watchAdTitle', { defaultValue: 'Watch a short video' })}
                     </div>
-                    <div className="text-xs text-mystic-300">
+                    <div className="text-meta text-mystic-300">
                       {adAvailable
                         ? tr('moonstones.earnSheet.watchAdSub', { defaultValue: 'Earn {{n}} Moonstones', n: MOONSTONES_PER_AD })
                         : tr('moonstones.earnSheet.watchAdNotReady', { defaultValue: 'No ad is ready right now' })}
@@ -243,7 +243,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
               <button
                 onClick={handleCheckin}
                 disabled={checkinBusy}
-                className="flex w-full items-center justify-between rounded-xl border border-mystic-700/50 bg-mystic-800/60 p-4 text-left transition hover:border-gold/40 disabled:opacity-50"
+                className="flex w-full items-center justify-between rounded-control border border-mystic-700/50 bg-mystic-800/60 p-4 text-left transition hover:border-gold/40 disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   <CalendarCheck className="h-5 w-5 text-mystic-200" />
@@ -251,7 +251,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
                     <div className="text-sm font-medium text-mystic-50">
                       {tr('moonstones.earnSheet.checkinTitle', { defaultValue: 'Daily check-in' })}
                     </div>
-                    <div className="text-xs text-mystic-300">
+                    <div className="text-meta text-mystic-300">
                       {tr('moonstones.earnSheet.checkinSub', {
                         defaultValue: '{{min}} to {{max}} Moonstones, rising with your streak',
                         min: CHECKIN_MIN,
@@ -267,7 +267,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
             )}
 
             {checkinDone && (
-              <div className="rounded-xl border border-mystic-700/30 bg-mystic-900/30 p-4 text-center text-xs text-mystic-400">
+              <div className="rounded-control border border-mystic-700/30 bg-mystic-900/30 p-4 text-center text-meta text-mystic-400">
                 {tr('moonstones.earnSheet.checkinClaimed', { defaultValue: 'You’ve already checked in today.' })}
               </div>
             )}
@@ -277,7 +277,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
         {/* Premium upsell — always shown */}
         <button
           onClick={handleGetPremium}
-          className="flex w-full items-center justify-between rounded-xl border border-gold/40 bg-gradient-to-r from-gold/10 to-mystic-800/60 p-4 text-left transition hover:border-gold/70"
+          className="flex w-full items-center justify-between rounded-control border border-gold/40 bg-gradient-to-r from-gold/10 to-mystic-800/60 p-4 text-left transition hover:border-gold/70"
         >
           <div className="flex items-center gap-3">
             <Crown className="h-5 w-5 text-gold" />
@@ -285,7 +285,7 @@ export function EarnMoonstonesSheet({ open, onClose, reason, balance, resetAt, o
               <div className="text-sm font-medium text-gold">
                 {tr('moonstones.earnSheet.premiumTitle', { defaultValue: 'Get Premium' })}
               </div>
-              <div className="text-xs text-mystic-200">
+              <div className="text-meta text-mystic-200">
                 {tr('moonstones.earnSheet.premiumSub', { defaultValue: 'No Moonstones to spend, no ads, every spread and chart' })}
               </div>
             </div>

@@ -552,7 +552,7 @@ export function AdminPage() {
           return (
             <div
               key={section.id}
-              className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl overflow-hidden"
+              className="bg-mystic-900/60 border border-mystic-700/50 rounded-card overflow-hidden"
             >
               <button
                 onClick={() => setExpandedSection(isExpanded ? null : section.id)}
@@ -578,7 +578,7 @@ export function AdminPage() {
                         {progress.uploaded}/{progress.total}
                       </span>
                       {progress.uploaded === progress.total && progress.total > 0 && (
-                        <Check className="w-4 h-4 text-emerald-500" />
+                        <Check className="w-4 h-4 text-teal" />
                       )}
                     </div>
                   )}
@@ -607,7 +607,7 @@ export function AdminPage() {
                           <div
                             className={`aspect-[2/3] rounded-lg border-2 overflow-hidden ${
                               card.image_url
-                                ? 'border-emerald-500/50'
+                                ? 'border-teal/50'
                                 : 'border-mystic-600/50 border-dashed'
                             }`}
                           >
@@ -626,7 +626,7 @@ export function AdminPage() {
                               <button
                                 onClick={() => handleCardUploadClick(card)}
                                 disabled={uploading === card.id}
-                                className="p-2 bg-gold rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-50"
+                                aria-label="Upload card image" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-gold rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-50"
                               >
                                 <Upload className="w-4 h-4 text-mystic-950" />
                               </button>
@@ -634,14 +634,14 @@ export function AdminPage() {
                                 <button
                                   onClick={() => deleteCardImage(card)}
                                   disabled={uploading === card.id}
-                                  className="p-2 bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                                  aria-label="Delete image" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-coral rounded-lg hover:bg-coral-dark transition-colors disabled:opacity-50"
                                 >
                                   <Trash2 className="w-4 h-4 text-white" />
                                 </button>
                               )}
                             </div>
                           </div>
-                          <p className="mt-1 text-xs text-mystic-400 text-center truncate">
+                          <p className="mt-1 text-caption text-mystic-400 text-center truncate">
                             {card.name.replace('The ', '').split(' of ')[0]}
                           </p>
                         </div>
@@ -673,7 +673,7 @@ export function AdminPage() {
                                   <button
                                     onClick={() => deleteStorageFile(file)}
                                     disabled={uploading === file.path}
-                                    className="p-2 bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                                    aria-label="Delete image" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-coral rounded-lg hover:bg-coral-dark transition-colors disabled:opacity-50"
                                   >
                                     <Trash2 className="w-4 h-4 text-white" />
                                   </button>
@@ -711,7 +711,7 @@ export function AdminPage() {
                                 </div>
                                 <div>
                                   <h4 className="text-sm font-medium text-mystic-100">{label}</h4>
-                                  <p className="text-xs text-mystic-400">
+                                  <p className="text-meta text-mystic-400">
                                     {iconUrl ? 'Custom' : 'Default'}
                                   </p>
                                 </div>
@@ -722,7 +722,7 @@ export function AdminPage() {
                                   size="sm"
                                   onClick={() => handleIconUploadClick(type)}
                                   disabled={isUploading}
-                                  className="flex-1 gap-1.5 text-xs"
+                                  className="flex-1 gap-1.5"
                                 >
                                   <Upload className="w-3.5 h-3.5" />
                                   {iconUrl ? 'Replace' : 'Upload'}
@@ -733,7 +733,7 @@ export function AdminPage() {
                                     size="sm"
                                     onClick={() => deleteCustomIcon(type)}
                                     disabled={isUploading}
-                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2"
+                                    aria-label="Remove custom icon" className="text-coral hover:text-coral-light hover:bg-coral/10 px-2"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
@@ -770,7 +770,7 @@ export function AdminPage() {
                                   <button
                                     onClick={() => deleteStorageFile(file)}
                                     disabled={uploading === file.path}
-                                    className="p-2 bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                                    aria-label="Delete image" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-coral rounded-lg hover:bg-coral-dark transition-colors disabled:opacity-50"
                                   >
                                     <Trash2 className="w-4 h-4 text-white" />
                                   </button>

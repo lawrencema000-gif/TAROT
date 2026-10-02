@@ -173,7 +173,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
         </div>
 
         {profile?.birthDate && (
-          <div className="flex gap-3 justify-center text-xs">
+          <div className="flex gap-3 justify-center text-meta">
             <div className="px-3 py-1.5 bg-mystic-800/40 rounded-lg border border-mystic-700/30">
               <span className="text-mystic-500">{t('horoscope.onboarding.dateLabel')}</span>{' '}
               <span className="text-mystic-200">{profile.birthDate}</span>
@@ -203,14 +203,14 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           </div>
 
           {selectedLocation && (
-            <div className="flex items-center gap-2 p-3 bg-gold/10 border border-gold/20 rounded-xl">
+            <div className="flex items-center gap-2 p-3 bg-gold/10 border border-gold/20 rounded-control">
               <Check className="w-4 h-4 text-gold flex-shrink-0" />
               <span className="text-sm text-mystic-200 truncate">{selectedLocation.displayName}</span>
             </div>
           )}
 
           {!selectedLocation && geoResults.length > 0 && (
-            <div className="rounded-xl border border-mystic-700/60 bg-mystic-900/80 overflow-hidden max-h-48 overflow-y-auto">
+            <div className="rounded-control border border-mystic-700/60 bg-mystic-900/80 overflow-hidden max-h-48 overflow-y-auto">
               {geoResults.map((r, i) => (
                 <button
                   key={i}
@@ -228,11 +228,11 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
           )}
 
           {!selectedLocation && !geoLoading && geoError && (
-            <p className="text-xs text-amber-400/80">{geoError}</p>
+            <p className="text-meta text-gold/80">{geoError}</p>
           )}
 
           {computeError && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            <div className="p-3 bg-coral/10 border border-coral/25 rounded-control text-coral text-sm">
               {computeError}
             </div>
           )}
@@ -250,7 +250,7 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
         </Button>
 
         {!selectedLocation && !computing && (
-          <p className="text-center text-xs text-mystic-500">{t('horoscope.onboarding.selectLocationToContinue')}</p>
+          <p className="text-center text-meta text-mystic-500">{t('horoscope.onboarding.selectLocationToContinue')}</p>
         )}
       </div>
     );
@@ -259,8 +259,8 @@ export function HoroscopeOnboarding({ onComplete, computeChart }: Props) {
   return (
     <div className="space-y-6 py-4">
       <div className="text-center space-y-3">
-        <div className="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-          <AlertCircle className="w-7 h-7 text-red-400" />
+        <div className="w-14 h-14 mx-auto rounded-full bg-coral/10 border border-coral/25 flex items-center justify-center">
+          <AlertCircle className="w-7 h-7 text-coral" />
         </div>
         <h2 className="font-display text-xl font-semibold text-mystic-100">{t('horoscope.onboarding.chartComputationFailed')}</h2>
         <p className="text-mystic-400 text-sm max-w-sm mx-auto">
@@ -319,7 +319,7 @@ function ChartComputeProgress() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-8">
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-pulse">
+      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center animate-scale-in">
         <HoroscopeWheelIcon className="w-8 h-8 text-gold" />
       </div>
 
@@ -332,7 +332,7 @@ function ChartComputeProgress() {
           return (
             <div
               key={i}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-deliberate ${
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-control transition-all duration-deliberate ${
                 isActive
                   ? 'bg-gold/10 border border-gold/25'
                   : isDone
@@ -393,9 +393,9 @@ export function BigThreeDisplay({ bigThree }: { bigThree: { sun: { sign: ZodiacS
   return (
     <div className="flex gap-3 justify-center">
       {items.map((item) => (
-        <div key={item.label} className="flex flex-col items-center px-4 py-3 bg-mystic-800/40 rounded-xl border border-mystic-700/30">
+        <div key={item.label} className="flex flex-col items-center px-4 py-3 bg-mystic-800/40 rounded-control border border-mystic-700/30">
           <ZodiacGlyph sign={item.sign} size={30} className="text-gold mb-1.5" framed />
-          <div className="text-xs text-mystic-400">{item.label}</div>
+          <div className="text-meta text-mystic-400">{item.label}</div>
           <div className="text-sm font-medium text-mystic-200">{item.sign}</div>
         </div>
       ))}

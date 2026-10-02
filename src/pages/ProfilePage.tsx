@@ -20,7 +20,9 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup } from '../components/ui';
+import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, ListSkeleton } from '../components/ui';
+import { ZODIAC_ICONS } from '../components/icons';
+import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
@@ -84,6 +86,10 @@ export function ProfilePage() {
 
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
   const zodiacInfo = zodiacSign ? zodiacData[zodiacSign] : null;
+  // utils/zodiac keys signs in lower case; the glyph set uses the capitalised names.
+  const SignGlyph = zodiacSign
+    ? ZODIAC_ICONS[(zodiacSign.charAt(0).toUpperCase() + zodiacSign.slice(1)) as AstroSign]
+    : null;
 
   useEffect(() => {
     if (profile) {
@@ -213,9 +219,9 @@ export function ProfilePage() {
           <div className="relative">
             {/* Persona avatar — the "Starlit Seeker" portrait. The gradient
                 fill is the whole treatment; no ring, no halo. */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 flex items-center justify-center">
-              {zodiacInfo ? (
-                <span className="text-4xl">{zodiacInfo.symbol}</span>
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 text-gold flex items-center justify-center">
+              {zodiacInfo && SignGlyph ? (
+                <SignGlyph size={40} strokeWidth={1.4} aria-label={zodiacInfo.name} />
               ) : (
                 <User className="w-10 h-10 text-mystic-400" />
               )}
@@ -233,8 +239,8 @@ export function ProfilePage() {
             )}
             <p className="text-sm text-mystic-500 truncate mt-0.5">{profile?.email}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setShowEditProfile(true)}>
-            <Edit2 className="w-4 h-4" />
+          <Button variant="ghost" size="sm" onClick={() => setShowEditProfile(true)} aria-label={t('profile.editProfileSheet.title')}>
+            <Edit2 className="w-4 h-4" aria-hidden />
           </Button>
         </div>
 
@@ -250,24 +256,24 @@ export function ProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           {/* Stat tiles sit on the card, so they take one step up the fill
               ladder (mystic-800) rather than a hairline. */}
-          <div className="bg-mystic-800 rounded-xl p-3 text-center">
+          <div className="bg-mystic-800 rounded-control p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Flame className="w-4 h-4 text-gold" />
               <span className="text-2xl font-display text-mystic-100">{profile?.streak || 0}</span>
             </div>
-            <p className="text-xs text-mystic-500">{t('profile.dayStreak')}</p>
+            <p className="text-caption text-mystic-500">{t('profile.dayStreak')}</p>
           </div>
-          <div className="bg-mystic-800 rounded-xl p-3 text-center">
+          <div className="bg-mystic-800 rounded-control p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Star className="w-4 h-4 text-cosmic-blue" />
               <span className="text-2xl font-display text-mystic-100">{t('profile.level', { n: profile?.level || 1 })}</span>
             </div>
-            <p className="text-xs text-mystic-500">{localizeSeekerRank(profile?.seekerRank)}</p>
+            <p className="text-caption text-mystic-500">{localizeSeekerRank(profile?.seekerRank)}</p>
           </div>
         </div>
 
         <div className="mt-4">
-          <div className="flex justify-between text-xs mb-1">
+          <div className="flex justify-between text-meta mb-1">
             <span className="text-mystic-500">{t('profile.xpProgress')}</span>
             <span className="text-gold">{t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}</span>
           </div>
@@ -304,9 +310,9 @@ export function ProfilePage() {
       {formatBirthProfile() && (
         <Section title={t('profile.birthProfile')} headingLevel="h3" spacing="sm">
           <div className="flex items-start gap-3">
-            {zodiacInfo && (
-              <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center text-xl">
-                {zodiacInfo.symbol}
+            {zodiacInfo && SignGlyph && (
+              <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center" aria-hidden>
+                <SignGlyph size={24} strokeWidth={1.5} />
               </div>
             )}
             <div>
@@ -426,7 +432,7 @@ export function ProfilePage() {
         />
       </ListRowGroup>
 
-      <p className="text-center text-xs text-mystic-600 px-4">
+      <p className="text-center text-caption text-mystic-600 px-4">
         {t('profile.disclaimer')}
       </p>
 
@@ -458,7 +464,7 @@ export function ProfilePage() {
             </div>
 
             {selectedLocation && (
-              <div className="flex items-center gap-2 p-3 mt-2 bg-gold/10 border border-gold/20 rounded-xl">
+              <div className="flex items-center gap-2 p-3 mt-2 bg-gold/10 border border-gold/20 rounded-control">
                 <Check className="w-4 h-4 text-gold flex-shrink-0" />
                 <span className="text-sm text-mystic-200 truncate">{selectedLocation.displayName}</span>
               </div>
@@ -481,7 +487,7 @@ export function ProfilePage() {
             )}
 
             {!selectedLocation && !geoLoading && geoError && (
-              <p className="text-xs text-amber-400/80 mt-1">{geoError}</p>
+              <p className="text-caption text-gold/80 mt-1">{geoError}</p>
             )}
           </div>
 
@@ -509,11 +515,7 @@ export function ProfilePage() {
       <Sheet open={showSaved} onClose={() => setShowSaved(false)} title="Saved">
         <div className="space-y-3">
           {loadingSaved ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-20 bg-mystic-800/30 rounded-xl animate-pulse" />
-              ))}
-            </div>
+            <ListSkeleton count={3} />
           ) : savedHighlights.length === 0 ? (
             <EmptyState
               variant="inline"
@@ -536,7 +538,7 @@ export function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-mystic-200 capitalize">{highlight.highlight_type}</p>
-                    <p className="text-xs text-mystic-500">{new Date(highlight.date).toLocaleDateString()}</p>
+                    <p className="text-meta text-mystic-500">{new Date(highlight.date).toLocaleDateString()}</p>
                   </div>
                 </div>
               </Card>

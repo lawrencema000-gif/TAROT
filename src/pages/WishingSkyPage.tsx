@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Moon, Heart, Flag, HandHeart, X } from 'lucide-react';
-import { Card, Button, Chip, Input, Page, Sheet, Tag, toast, PageHeader, EmptyState, MysticalStar } from '../components/ui';
+import { Card, Button, Chip, Input, Page, Sheet, Tag, toast, PageHeader, EmptyState, SparkleFourPoint, EyebrowLabel } from '../components/ui';
 import { WishSky } from '../components/wishes/WishSky';
 import { wishes as wishesDal } from '../dal';
 import {
@@ -137,7 +137,7 @@ export function WishingSkyPage() {
       />
 
       {/* The sky itself. Deliberately tall: it is the point of the page. */}
-      <div className="relative rounded-2xl overflow-hidden border border-mystic-800/60 bg-[#070912]"
+      <div className="relative rounded-card overflow-hidden border border-mystic-800/60 bg-mystic-950"
            style={{ height: 'min(60vh, 460px)' }}>
         {loading ? (
           <div className="absolute inset-0 grid place-items-center text-sm text-mystic-500">
@@ -168,7 +168,7 @@ export function WishingSkyPage() {
           {user && (
             <Button variant="primary" size="sm" className="pointer-events-auto"
                     onClick={() => setComposing(true)}>
-              <MysticalStar size={14} halo={false} className="mr-1.5" /> {t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}
+              <SparkleFourPoint size={14} className="mr-1.5" /> {t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}
             </Button>
           )}
         </div>
@@ -193,7 +193,7 @@ export function WishingSkyPage() {
             className="w-full text-left py-2.5 border-b border-mystic-800/40 last:border-0 hover:bg-mystic-900/40 rounded-lg px-2 -mx-2 transition-colors"
           >
             <p className="text-sm text-mystic-200 leading-relaxed">{w.text}</p>
-            <div className="flex items-center gap-2 mt-1 text-[11px] text-mystic-600">
+            <div className="flex items-center gap-2 mt-1 text-meta text-mystic-600">
               <span>{themeLabel(w.theme)}</span>
               {w.echoCount > 0 && <span>· {w.echoCount} {w.echoCount === 1 ? 'echo' : 'echoes'}</span>}
               {w.openToHelp && <span className="text-teal">· {t('wishingSky.openToHelp', { defaultValue: 'open to help' })}</span>}
@@ -215,16 +215,16 @@ export function WishingSkyPage() {
               onChange={(e) => setText(e.target.value.slice(0, MAX_WISH))}
               rows={4}
               placeholder={t('wishingSky.placeholder', { defaultValue: 'I wish…' })}
-              className="w-full rounded-xl bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
+              className="w-full rounded-control bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
             />
             <div className="flex justify-between items-start gap-2 mt-1">
-              <p className="text-[11px] text-mystic-600">
+              <p className="text-caption text-mystic-600">
                 {t('wishingSky.publicNote', { defaultValue: 'Everyone using Arcana can read this.' })}
               </p>
-              <span className="text-[11px] text-mystic-600 flex-shrink-0">{text.length}/{MAX_WISH}</span>
+              <span className="text-meta text-mystic-600 flex-shrink-0">{text.length}/{MAX_WISH}</span>
             </div>
             {contactWarning && (
-              <p className="text-[12px] text-coral mt-2 leading-relaxed">
+              <p className="text-caption text-coral mt-2">
                 {t('wishingSky.contactWarning', {
                   defaultValue: 'That looks like {{what}}. Please take it out — a wish is public, and contact details on a public wish are how scams find people. Turn on "open to help" below instead, and anyone kind can write to you privately.',
                   what: contactWarning === 'email'
@@ -236,7 +236,7 @@ export function WishingSkyPage() {
           </div>
 
           <div>
-            <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">{t('wishingSky.themeLabel', { defaultValue: 'What is it about?' })}</label>
+            <label className="block mb-1.5"><EyebrowLabel>{t('wishingSky.themeLabel', { defaultValue: 'What is it about?' })}</EyebrowLabel></label>
             <div className="flex flex-wrap gap-2">
               {WISH_THEMES.map((th) => (
                 <Chip key={th.key} label={th.label} selected={theme === th.key} onSelect={() => setTheme(th.key)} />
@@ -244,14 +244,14 @@ export function WishingSkyPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-mystic-800 p-3 space-y-2">
+          <div className="rounded-control border border-mystic-800 p-3 space-y-2">
             <label className="flex items-start gap-3 cursor-pointer">
               <input type="checkbox" checked={openToHelp}
                      onChange={(e) => setOpenToHelp(e.target.checked)}
                      className="mt-1 accent-gold w-4 h-4" />
               <span>
                 <span className="text-sm text-mystic-200">{t('wishingSky.openToHelpLabel', { defaultValue: 'Let people offer to help' })}</span>
-                <span className="block text-[12px] text-mystic-500 leading-relaxed mt-0.5">
+                <span className="block text-caption text-mystic-500 mt-0.5">
                   {t('wishingSky.openToHelpBody', { defaultValue: 'Anyone can send you a private message about this wish. They never see your contact details — you read what they wrote and decide whether to reply.' })}
                 </span>
               </span>
@@ -268,7 +268,7 @@ export function WishingSkyPage() {
 
           <Button variant="primary" fullWidth disabled={!text.trim() || !!contactWarning || saving}
                   onClick={submitWish}>
-            <MysticalStar size={16} halo={false} className="mr-2" />
+            <SparkleFourPoint size={16} className="mr-2" />
             {saving ? t('wishingSky.lighting', { defaultValue: 'Lighting…' }) : t('wishingSky.lightStar', { defaultValue: 'Light my star' })}
           </Button>
         </div>
@@ -279,7 +279,7 @@ export function WishingSkyPage() {
         {selected && (
           <div className="space-y-4">
             <p className="text-base text-mystic-100 leading-relaxed">{selected.text}</p>
-            <div className="text-xs text-mystic-500">
+            <div className="text-meta text-mystic-500">
               {themeLabel(selected.theme)}
               {selected.wisherLabel && <> · {selected.wisherLabel}</>}
               {selected.echoCount > 0 && <> · {selected.echoCount} {selected.echoCount === 1 ? 'echo' : 'echoes'}</>}
@@ -304,12 +304,12 @@ export function WishingSkyPage() {
                 </Button>
               )}
               {user && selected.userId === user.id && (
-                <span className="text-xs text-mystic-500 self-center">{t('wishingSky.thisIsYours', { defaultValue: 'This one is yours.' })}</span>
+                <span className="text-caption text-mystic-500 self-center">{t('wishingSky.thisIsYours', { defaultValue: 'This one is yours.' })}</span>
               )}
             </div>
 
             {myEchoes.has(selected.id) && (
-              <p className="text-[12px] text-mystic-500 leading-relaxed">
+              <p className="text-caption text-mystic-500">
                 {t('wishingSky.linked', { defaultValue: 'Your star and theirs are linked in the sky now.' })}
               </p>
             )}
@@ -328,19 +328,19 @@ export function WishingSkyPage() {
             onChange={(e) => setOfferMessage(e.target.value.slice(0, 500))}
             rows={4}
             placeholder={t('wishingSky.offerPlaceholder', { defaultValue: 'What you could do, and how you would like to help…' })}
-            className="w-full rounded-xl bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
+            className="w-full rounded-control bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
           />
           <Button variant="primary" fullWidth disabled={!offerMessage.trim() || saving} onClick={sendOffer}>
             {saving ? t('wishingSky.sending', { defaultValue: 'Sending…' }) : t('wishingSky.sendPrivately', { defaultValue: 'Send privately' })}
           </Button>
           <button onClick={() => setOffering(false)}
-                  className="w-full text-xs text-mystic-500 inline-flex items-center justify-center gap-1">
+                  className="w-full min-h-[44px] text-caption text-mystic-500 inline-flex items-center justify-center gap-1">
             <X className="w-3 h-3" /> {t('wishingSky.neverMind', { defaultValue: 'Never mind' })}
           </button>
         </div>
       </Sheet>
 
-      <p className="text-center text-xs text-mystic-600 max-w-sm mx-auto">
+      <p className="text-center text-caption text-mystic-600 max-w-sm mx-auto">
         {t('wishingSky.footer', { defaultValue: 'Wishes are public and anyone can read them. Never put a phone number, an address or an email in one — if you are open to help, people can reach you privately instead.' })}
       </p>
     </Page>

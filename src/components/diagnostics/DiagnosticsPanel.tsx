@@ -135,7 +135,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
   return (
     <Sheet open={open} onClose={onClose} title="Developer Diagnostics">
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-3 bg-mystic-800/50 rounded-xl">
+        <div className="flex items-center justify-between p-3 bg-mystic-800/50 rounded-control">
           <div className="flex items-center gap-2">
             {getPlatform() === 'web' ? (
               <Globe className="w-4 h-4 text-cosmic-blue" />
@@ -145,7 +145,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
             <span className="text-sm text-mystic-300">{getPlatform()}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span id="diagnostics-dev-mode-label" className="text-xs text-mystic-500">Dev Mode</span>
+            <span id="diagnostics-dev-mode-label" className="text-meta text-mystic-500">Dev Mode</span>
             <Switch
               checked={devModeEnabled}
               onChange={toggleDevMode}
@@ -155,24 +155,24 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 p-3 bg-mystic-800/30 rounded-xl">
+        <div className="grid grid-cols-3 gap-2 p-3 bg-mystic-800/30 rounded-control">
           <div className="text-center">
             <div className="text-lg font-semibold text-mystic-100">{logs.length}</div>
-            <div className="text-xs text-mystic-500">Total Logs</div>
+            <div className="text-meta text-mystic-500">Total Logs</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-coral">{errors.length}</div>
-            <div className="text-xs text-mystic-500">Errors</div>
+            <div className="text-meta text-mystic-500">Errors</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-mystic-100">
               {sessionState.hasSession ? (
-                <CheckCircle className="w-5 h-5 text-emerald-500 mx-auto" />
+                <CheckCircle className="w-5 h-5 text-teal mx-auto" />
               ) : (
                 <AlertCircle className="w-5 h-5 text-mystic-500 mx-auto" />
               )}
             </div>
-            <div className="text-xs text-mystic-500">Session</div>
+            <div className="text-meta text-mystic-500">Session</div>
           </div>
         </div>
 
@@ -195,7 +195,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as typeof filter)}
-                className="px-3 py-1.5 bg-mystic-800 border border-mystic-700 rounded-lg text-sm text-mystic-200 focus:outline-none focus:border-gold/50"
+                className="min-h-[44px] px-3 py-1.5 bg-mystic-800 border border-mystic-700 rounded-lg text-sm text-mystic-200 focus:outline-none focus:border-gold/50"
               >
                 <option value="all">All Logs</option>
                 <option value="auth">Auth Only</option>
@@ -206,7 +206,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                 <select
                   value={focusedCorrelationId || ''}
                   onChange={(e) => setFocusedCorrelationId(e.target.value || null)}
-                  className="px-3 py-1.5 bg-mystic-800 border border-mystic-700 rounded-lg text-sm text-mystic-200 focus:outline-none focus:border-gold/50 max-w-[200px]"
+                  className="min-h-[44px] px-3 py-1.5 bg-mystic-800 border border-mystic-700 rounded-lg text-sm text-mystic-200 focus:outline-none focus:border-gold/50 max-w-[200px]"
                 >
                   <option value="">All Sessions</option>
                   {correlationIds.map(id => (
@@ -219,7 +219,8 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
 
               <button
                 onClick={refreshLogs}
-                className="p-1.5 bg-mystic-800 border border-mystic-700 rounded-lg hover:bg-mystic-700 transition-colors"
+                aria-label="Refresh logs"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-mystic-800 border border-mystic-700 rounded-lg hover:bg-mystic-700 transition-colors"
               >
                 <RefreshCw className="w-4 h-4 text-mystic-400" />
               </button>
@@ -251,11 +252,11 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                         {getLogIcon(log.level)}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-mystic-500">
+                            <span className="text-caption font-mono text-mystic-500">
                               {formatTimestamp(log.timestamp)}
                             </span>
                             {log.elapsed && (
-                              <span className="text-xs text-mystic-500 flex items-center gap-0.5">
+                              <span className="text-caption text-mystic-500 flex items-center gap-0.5">
                                 <Clock className="w-3 h-3" />
                                 {log.elapsed}ms
                               </span>
@@ -264,7 +265,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                           <p className="text-sm text-mystic-200 font-medium truncate">
                             {log.step}
                           </p>
-                          <p className="text-xs text-mystic-400 truncate">
+                          <p className="text-meta text-mystic-400 truncate">
                             {log.message}
                           </p>
                         </div>
@@ -282,19 +283,19 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                       <div className="mt-2 pt-2 border-t border-mystic-700/50">
                         {log.correlationId && log.correlationId !== 'no-correlation' && (
                           <div className="mb-2">
-                            <span className="text-xs text-mystic-500">Correlation ID: </span>
-                            <span className="text-xs font-mono text-mystic-300">
+                            <span className="text-caption text-mystic-500">Correlation ID: </span>
+                            <span className="text-caption font-mono text-mystic-300">
                               {log.correlationId}
                             </span>
                           </div>
                         )}
                         {log.data && (
-                          <pre className="text-xs font-mono text-mystic-300 bg-mystic-900/50 p-2 rounded-lg overflow-x-auto">
+                          <pre className="text-caption font-mono text-mystic-300 bg-mystic-900/50 p-2 rounded-lg overflow-x-auto">
                             {JSON.stringify(log.data, null, 2)}
                           </pre>
                         )}
                         {devModeEnabled && log.stackTrace && (
-                          <pre className="mt-2 text-xs font-mono text-coral/80 bg-coral/5 p-2 rounded-lg overflow-x-auto">
+                          <pre className="mt-2 text-caption font-mono text-coral/80 bg-coral/5 p-2 rounded-lg overflow-x-auto">
                             {log.stackTrace}
                           </pre>
                         )}
@@ -311,7 +312,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {errors.length === 0 ? (
               <div className="text-center py-8 text-mystic-500">
-                <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-500 opacity-50" />
+                <CheckCircle className="w-8 h-8 mx-auto mb-2 text-teal opacity-50" />
                 <p className="text-sm">No errors recorded</p>
               </div>
             ) : (
@@ -324,19 +325,19 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
                     <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-mystic-500">
+                        <span className="text-caption font-mono text-mystic-500">
                           {formatTimestamp(log.timestamp)}
                         </span>
                       </div>
                       <p className="text-sm text-coral font-medium">{log.step}</p>
                       <p className="text-sm text-mystic-300 mt-1">{log.message}</p>
                       {log.data && (
-                        <pre className="mt-2 text-xs font-mono text-mystic-400 bg-mystic-900/50 p-2 rounded-lg overflow-x-auto">
+                        <pre className="mt-2 text-caption font-mono text-mystic-400 bg-mystic-900/50 p-2 rounded-lg overflow-x-auto">
                           {JSON.stringify(log.data, null, 2)}
                         </pre>
                       )}
                       {devModeEnabled && log.stackTrace && (
-                        <pre className="mt-2 text-xs font-mono text-coral/70 bg-coral/5 p-2 rounded-lg overflow-x-auto whitespace-pre-wrap">
+                        <pre className="mt-2 text-caption font-mono text-coral/70 bg-coral/5 p-2 rounded-lg overflow-x-auto whitespace-pre-wrap">
                           {log.stackTrace}
                         </pre>
                       )}
@@ -352,7 +353,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
           <div className="space-y-3">
             <div className="p-3 bg-mystic-800/30 rounded-lg">
               <h4 className="text-sm font-medium text-mystic-200 mb-2">Auth Configuration</h4>
-              <div className="space-y-1 text-xs">
+              <div className="space-y-1 text-meta">
                 <div className="flex justify-between">
                   <span className="text-mystic-500">Flow Type</span>
                   <span className="text-mystic-300 font-mono">{authConfig.flowType}</span>
@@ -376,10 +377,10 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
 
             <div className="p-3 bg-mystic-800/30 rounded-lg">
               <h4 className="text-sm font-medium text-mystic-200 mb-2">Session State</h4>
-              <div className="space-y-1 text-xs">
+              <div className="space-y-1 text-meta">
                 <div className="flex justify-between">
                   <span className="text-mystic-500">Has Session</span>
-                  <span className={`font-mono ${sessionState.hasSession ? 'text-emerald-500' : 'text-coral'}`}>
+                  <span className={`font-mono ${sessionState.hasSession ? 'text-teal' : 'text-coral'}`}>
                     {String(sessionState.hasSession)}
                   </span>
                 </div>
@@ -396,7 +397,7 @@ export function DiagnosticsSheet({ open, onClose }: DiagnosticsSheetProps) {
 
             <div className="p-3 bg-mystic-800/30 rounded-lg">
               <h4 className="text-sm font-medium text-mystic-200 mb-2">Environment</h4>
-              <div className="space-y-1 text-xs">
+              <div className="space-y-1 text-meta">
                 <div className="flex justify-between">
                   <span className="text-mystic-500">Platform</span>
                   <span className="text-mystic-300 font-mono">{getPlatform()}</span>
@@ -455,22 +456,22 @@ interface CompactErrorDisplayProps {
 
 export function CompactErrorDisplay({ message, hint, likelyCause, onViewDetails }: CompactErrorDisplayProps) {
   return (
-    <div className="p-4 bg-coral/10 border border-coral/20 rounded-xl">
+    <div className="p-4 bg-coral/10 border border-coral/20 rounded-control">
       <div className="flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-coral">{message}</p>
           {hint && (
-            <p className="text-xs text-mystic-400 mt-1">{hint}</p>
+            <p className="text-meta text-mystic-400 mt-1">{hint}</p>
           )}
           {likelyCause && (
-            <p className="text-xs text-mystic-500 mt-1 italic">
+            <p className="text-meta text-mystic-500 mt-1 italic">
               Likely cause: {likelyCause}
             </p>
           )}
           <button
             onClick={onViewDetails}
-            className="mt-2 text-xs text-cosmic-blue hover:text-cosmic-blue/80 transition-colors"
+            className="mt-2 min-h-[44px] inline-flex items-center text-meta text-cosmic-blue hover:text-cosmic-blue/80 transition-colors"
           >
             View diagnostics
           </button>

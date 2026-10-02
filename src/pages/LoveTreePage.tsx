@@ -174,7 +174,7 @@ export function LoveTreePage() {
     return (
       <Page spacing="md">
         <div className="flex items-center justify-between">
-          <button onClick={handleBack} className="flex items-center gap-1.5 text-mystic-400 hover:text-mystic-200 text-sm">
+          <button onClick={handleBack} className="flex items-center gap-1.5 min-h-[44px] text-mystic-400 hover:text-mystic-200 text-sm">
             <ArrowLeft className="w-4 h-4" />
             {t('loveTree.back', { defaultValue: 'Back' })}
           </button>
@@ -212,13 +212,13 @@ export function LoveTreePage() {
                 <button
                   key={opt.value}
                   onClick={() => handleAnswer(opt.value)}
-                  className="w-full text-left p-3 rounded-xl border border-mystic-700/40 bg-mystic-900/40 hover:bg-mystic-800/60 hover:border-gold/30 active:scale-[0.98] transition-all"
+                  className="w-full text-left p-3 rounded-control border border-mystic-700/40 bg-mystic-900/40 hover:bg-mystic-800/60 hover:border-gold/30 active:scale-[0.98] transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-mystic-200">
                       {t(`loveTree.likert.${opt.value}`, { defaultValue: opt.label })}
                     </span>
-                    <span className="text-xs text-mystic-500">{opt.value}</span>
+                    <span className="text-meta text-mystic-500">{opt.value}</span>
                   </div>
                 </button>
               ))}
@@ -288,7 +288,7 @@ export function LoveTreePage() {
           </ul>
         </Card>
 
-        <Card padding="lg" className="bg-gradient-to-br from-pink-500/5 to-mystic-900 border-pink-400/20">
+        <Card padding="lg" className="bg-gradient-to-br from-cosmic-rose/10 to-mystic-900 border-cosmic-rose/25">
           <p className="font-display-eyebrow mb-2">
             {t('loveTree.inLoveLabel', { defaultValue: 'In love' })}
           </p>

@@ -1,12 +1,13 @@
 import { useState, lazy, Suspense } from 'react';
 import { ArrowLeft, BookOpen, Coins, RotateCcw, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast, OrnateDivider, Page, PageHeader, ResultLayout, Section } from '../components/ui';
+import { Card, Button, toast, SectionDivider, Page, PageHeader, ResultLayout, Section } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { CoinToss, type CoinFace } from '../components/iching/CoinToss';
 import {
   castReading,
   HEXAGRAMS,
+  LINES_TO_HEXAGRAM,
   type CastResult,
 } from '../data/ichingHexagrams';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
@@ -14,6 +15,39 @@ import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
 type Stage = 'intro' | 'casting' | 'result';
 
 const LiuYaoPanel = lazy(() => import('../components/iching/LiuYaoPanel').then(m => ({ default: m.LiuYaoPanel })));
+
+// Hexagram number -> six-line pattern (bottom to top, '1' yang / '0' yin),
+// inverted from the cast lookup so the glyph is drawn rather than typed:
+// U+4DC0-4DFF is missing from most Android fonts and shows as a tofu box.
+const HEXAGRAM_LINES: Record<number, string> = {};
+for (const [pattern, n] of Object.entries(LINES_TO_HEXAGRAM)) HEXAGRAM_LINES[n] = pattern;
+
+function HexagramGlyph({
+  number,
+  label,
+  size = 56,
+  className = '',
+}: { number: number; label: string; size?: number; className?: string }) {
+  const rows = (HEXAGRAM_LINES[number] ?? '').split('').reverse(); // top line first
+  const stroke = Math.max(2, Math.round(size / 14));
+  const gap = (size - 6 * stroke) / 5;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={className} role="img" aria-label={label}>
+      {rows.map((line, i) => {
+        const y = i * (stroke + gap);
+        return line === '1' ? (
+          <rect key={i} x={0} y={y} width={size} height={stroke} rx={stroke / 2} fill="currentColor" />
+        ) : (
+          <g key={i}>
+            <rect x={0} y={y} width={size * 0.42} height={stroke} rx={stroke / 2} fill="currentColor" />
+            <rect x={size * 0.58} y={y} width={size * 0.42} height={stroke} rx={stroke / 2} fill="currentColor" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 
 export function IChingPage() {
   const { t } = useT('app');
@@ -82,7 +116,7 @@ export function IChingPage() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               rows={3}
-              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
               placeholder={t('iching.questionPlaceholder', {
                 defaultValue: 'What would be most helpful for me to understand right now?',
               }) as string}
@@ -106,9 +140,7 @@ export function IChingPage() {
           align="center"
           title={t('iching.casting', { defaultValue: 'Casting the coins…' })}
         />
-        <div className="text-gold/60">
-          <OrnateDivider width={120} />
-        </div>
+        <SectionDivider tone="gold" width="w-32" />
 
         {/* Actual three-coin toss animation, centered. Each of the six
             tosses retriggers the arc via a keyed remount + reset of the
@@ -168,11 +200,11 @@ export function IChingPage() {
     const handleShare = async () => {
       try {
         const blob = await renderShareCard({
-          title: `${primary.symbol} ${localizedName}`,
+          title: localizedName,
           subtitle: `${t('iching.hexagramLabel', { defaultValue: 'Hexagram' })} ${primary.number}`,
           tagline: localizedTagline,
           affirmation: localizedJournal,
-          brand: 'Arcana · I-Ching',
+          brand: t('share.brand.iching', { defaultValue: 'I-Ching' }) as string,
         });
         const out = await shareOrDownload(
           blob,
@@ -181,6 +213,8 @@ export function IChingPage() {
         );
         if (out === 'downloaded') {
           toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+        } else if (out === 'failed') {
+          toast(t('common:actions.shareFailed'), 'error');
         }
       } catch {
         toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
@@ -191,7 +225,7 @@ export function IChingPage() {
       <Page spacing="sm">
         <button
           onClick={reset}
-          className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors"
+          className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           {t('iching.backToStart', { defaultValue: 'Cast again' })}
@@ -207,7 +241,7 @@ export function IChingPage() {
         )}
 
         <ResultLayout
-          glyph={<span className="text-6xl leading-none">{primary.symbol}</span>}
+          glyph={<HexagramGlyph number={primary.number} size={56} label={`${t('iching.hexagramLabel', { defaultValue: 'Hexagram' })} ${primary.number}`} />}
           eyebrow={`${t('iching.hexagramLabel', { defaultValue: 'Hexagram' })} ${primary.number}`}
           verdict={localizedName}
           subtitle={`${primary.pinyin} · ${primary.chinese}`}
@@ -290,7 +324,7 @@ export function IChingPage() {
                 </h3>
               </div>
               <div className="flex items-center gap-4">
-                <div className="text-5xl">{transformed.symbol}</div>
+                <HexagramGlyph number={transformed.number} size={44} className="text-cosmic-blue shrink-0" label={`${t('iching.hexagramLabel', { defaultValue: 'Hexagram' })} ${transformed.number}`} />
                 <div>
                   <p className="text-mystic-200 font-display text-lg">
                     {t(`iching.hexagrams.${transformed.number}.name`, { defaultValue: transformed.name })}

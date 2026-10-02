@@ -171,14 +171,14 @@ export function MoodDiaryPage() {
                 <button
                   key={cat}
                   onClick={() => setSelected(cat)}
-                  className={`p-3 rounded-xl border transition-all active:scale-95 ${
+                  className={`p-3 rounded-control border transition-all active:scale-95 ${
                     isActive
                       ? 'bg-gold/10 border-gold/50'
                       : 'bg-mystic-800/30 border-mystic-700/30 hover:border-mystic-600'
                   }`}
                 >
                   <div className="text-2xl mb-1">{info.emoji}</div>
-                  <div className={`text-[11px] ${isActive ? 'text-gold' : 'text-mystic-300'}`}>
+                  <div className={`text-caption ${isActive ? 'text-gold' : 'text-mystic-300'}`}>
                     {t(`mood.categories.${cat}.name`, { defaultValue: info.name })}
                   </div>
                 </button>
@@ -211,7 +211,7 @@ export function MoodDiaryPage() {
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 maxLength={200}
-                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
                 placeholder={t('mood.notePlaceholder', { defaultValue: 'What coloured today?' }) as string}
               />
             </>
@@ -462,8 +462,8 @@ function InsightCard({
     : Minus;
   const DriftIcon = driftIcon;
   const driftTint =
-    pattern.drift === 'rising' ? 'text-emerald-400'
-    : pattern.drift === 'falling' ? 'text-pink-400'
+    pattern.drift === 'rising' ? 'text-teal'
+    : pattern.drift === 'falling' ? 'text-coral'
     : 'text-mystic-400';
 
   return (
@@ -485,7 +485,7 @@ function InsightCard({
                   <p className="text-meta text-mystic-400">
                     {t('mood.heaviestDayLabel', { defaultValue: 'Heaviest day' }) as string}
                   </p>
-                  <p className="text-pink-400 font-medium">{pattern.heaviestDay}</p>
+                  <p className="text-coral font-medium">{pattern.heaviestDay}</p>
                 </div>
               )}
               {pattern.lightestDay && (
@@ -493,7 +493,7 @@ function InsightCard({
                   <p className="text-meta text-mystic-400">
                     {t('mood.lightestDayLabel', { defaultValue: 'Lightest day' }) as string}
                   </p>
-                  <p className="text-emerald-400 font-medium">{pattern.lightestDay}</p>
+                  <p className="text-teal font-medium">{pattern.lightestDay}</p>
                 </div>
               )}
               <div className="bg-mystic-800/40 rounded-lg px-2.5 py-2 col-span-2">

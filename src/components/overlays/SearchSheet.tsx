@@ -52,7 +52,7 @@ export function SearchSheet({ open, onClose }: SearchSheetProps) {
                   <button
                     key={index}
                     onClick={() => setQuery(search)}
-                    className="w-full text-left px-3 py-2 rounded-lg text-mystic-200 hover:bg-mystic-800/50 transition-colors"
+                    className="w-full text-left px-3 py-2 min-h-[44px] rounded-lg text-mystic-200 hover:bg-mystic-800/50 transition-colors"
                   >
                     {search}
                   </button>
@@ -70,7 +70,7 @@ export function SearchSheet({ open, onClose }: SearchSheetProps) {
                   return (
                     <button
                       key={index}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl bg-mystic-800/50 border border-mystic-700/50 hover:border-gold/30 transition-all"
+                      className="flex items-center gap-3 px-4 py-3 rounded-control bg-mystic-800/50 border border-mystic-700/50 hover:border-gold/30 transition-all"
                     >
                       <Icon className="w-5 h-5 text-gold" />
                       <span className="text-mystic-100">{t(link.labelKey)}</span>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { RotateCcw, Share2 } from 'lucide-react';
-import { Card, Button, Page, Section, toast, PageHeader } from '../components/ui';
-import { MysticalStar } from '../components/ui/MysticalStar';
+import { RotateCcw, Share2, Loader2 } from 'lucide-react';
+import { Card, Button, Page, Section, toast, PageHeader, SparkleFourPoint } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
 import { castRunes, type RuneCastResult } from '../data/runes';
@@ -32,7 +31,7 @@ export function RunesPage() {
   if (stage === 'intro') {
     return (
       <Page spacing="md">
-        <PageHeader title={t('runes.title', { defaultValue: 'Runes' })} icon={<MysticalStar className="w-6 h-6 text-gold" />} />
+        <PageHeader title={t('runes.title', { defaultValue: 'Runes' })} icon={<SparkleFourPoint size={20} />} />
         <Section
           spacing="lg"
         >
@@ -50,7 +49,7 @@ export function RunesPage() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               rows={3}
-              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
               placeholder={t('runes.questionPlaceholder', {
                 defaultValue: 'What do I most need to understand right now?',
               }) as string}
@@ -59,7 +58,7 @@ export function RunesPage() {
         </Section>
 
         <Button variant="primary" size="lg" fullWidth onClick={startCast}>
-          <MysticalStar className="w-5 h-5 mr-2" />
+          <SparkleFourPoint size={18} className="mr-2" />
           {t('runes.castButton', { defaultValue: 'Cast the runes' })}
         </Button>
       </Page>
@@ -69,7 +68,7 @@ export function RunesPage() {
   if (stage === 'casting') {
     return (
       <Page spacing="md" className="flex flex-col items-center justify-center min-h-[60vh]">
-        <MysticalStar size={40} className="text-gold animate-pulse" halo={false} />
+        <Loader2 className="w-10 h-10 text-gold animate-spin mb-3" aria-hidden />
         <p className="text-mystic-200 text-lg font-display text-center">
           {t('runes.casting', { defaultValue: 'Casting...' })}
         </p>
@@ -92,10 +91,11 @@ export function RunesPage() {
           subtitle: t('runes.castLabel', { defaultValue: 'Three-rune cast' }) as string,
           tagline: `${firstRune.rune.name} · ${cast.runes[1].rune.name} · ${cast.runes[2].rune.name}`,
           affirmation: firstRune.rune.prompt,
-          brand: 'Arcana · Runes',
+          brand: t('share.brand.runes', { defaultValue: 'Runes' }) as string,
         });
         const out = await shareOrDownload(blob, 'arcana-runes.png', 'My rune cast');
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+        else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
       } catch {
         toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
       }
@@ -132,7 +132,7 @@ export function RunesPage() {
                 </p>
                 <p className="text-ui text-mystic-100 font-medium mt-1">{r.rune.name}</p>
                 {r.reversed && (
-                  <div className="inline-flex items-center gap-1 text-[10px] text-pink-400 mt-1">
+                  <div className="inline-flex items-center gap-1 text-caption text-coral mt-1">
                     <RotateCcw className="w-2.5 h-2.5" />
                     <span>{t('runes.reversed', { defaultValue: 'merkstave' })}</span>
                   </div>
@@ -161,7 +161,7 @@ export function RunesPage() {
                 : r.rune.upright}
             </p>
             <p className="reading-copy mb-3">{r.rune.interpretation}</p>
-            <div className="p-3 mb-3 rounded-xl bg-mystic-800/40 border border-mystic-700/30">
+            <div className="p-3 mb-3 rounded-control bg-mystic-800/40 border border-mystic-700/30">
               <p className="font-display-eyebrow text-cosmic-blue mb-1">
                 {t('runes.whenItLandsLabel', { defaultValue: 'When this lands for you' })}
               </p>

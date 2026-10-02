@@ -30,7 +30,7 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
     const spirit = SPIRIT_MEANINGS[l.spirit];
     return (
       <div className="border-b border-mystic-800/40 last:border-0">
-        <button onClick={() => setOpenLine(open ? null : l.position)} className="w-full flex items-center gap-2 py-2 text-left">
+        <button onClick={() => setOpenLine(open ? null : l.position)} aria-expanded={open} className="w-full min-h-[44px] flex items-center gap-2 py-2 text-left">
           {/* the line itself, drawn */}
           <span className="w-9 flex-shrink-0 flex items-center justify-center">
             {l.line === 'yang'
@@ -54,9 +54,9 @@ export function LiuYaoPanel({ lineValues }: { lineValues: LineValue[] }) {
           <span className="text-meta text-mystic-400" style={{ fontFamily: 'serif' }}>
             {SPIRIT_INFO[l.spirit].cn}
           </span>
-          {l.moving && <span className="text-gold text-[10px] uppercase tracking-wider">動</span>}
-          {l.isWorld && <span className="text-cosmic-violetLight text-xs" style={{ fontFamily: 'serif' }}>世</span>}
-          {l.isResponse && <span className="text-mystic-400 text-xs" style={{ fontFamily: 'serif' }}>應</span>}
+          {l.moving && <span className="text-gold text-caption" style={{ fontFamily: 'serif' }}>動</span>}
+          {l.isWorld && <span className="text-cosmic-violetLight text-caption" style={{ fontFamily: 'serif' }}>世</span>}
+          {l.isResponse && <span className="text-mystic-400 text-caption" style={{ fontFamily: 'serif' }}>應</span>}
           <ChevronDown className={`w-4 h-4 text-mystic-600 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
         {open && (

@@ -76,8 +76,8 @@ export function SharedReadingPage() {
         {cards.map(({ card, reversed }, idx) => {
           const imgUrl = getBundledFullPath(card.id);
           return (
-            <div key={`${card.id}-${idx}`} className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-3">
-              <div className="aspect-[2/3] rounded-xl bg-mystic-950 overflow-hidden mb-2">
+            <div key={`${card.id}-${idx}`} className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-3">
+              <div className="aspect-[2/3] rounded-control bg-mystic-950 overflow-hidden mb-2">
                 {imgUrl ? (
                   <img
                     src={imgUrl}
@@ -86,7 +86,7 @@ export function SharedReadingPage() {
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-mystic-500">{card.name}</div>
+                  <div className="w-full h-full flex items-center justify-center text-caption text-mystic-500">{card.name}</div>
                 )}
               </div>
               <div className="text-meta text-center text-mystic-400 mb-0.5">Position {idx + 1}</div>
@@ -97,7 +97,7 @@ export function SharedReadingPage() {
         })}
       </div>
 
-      <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+      <div className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
         <h2 className="heading-display-md text-mystic-100 mb-2">What this reading suggests</h2>
         <div className="reading-copy">
           {cards.map(({ card, reversed }, idx) => (
@@ -112,14 +112,14 @@ export function SharedReadingPage() {
       <div className="flex flex-col sm:flex-row gap-2">
         <button
           onClick={handleCopy}
-          className="flex-1 py-3 rounded-xl border border-mystic-700 text-mystic-200 hover:text-mystic-100 hover:border-mystic-500 transition-colors"
+          className="flex-1 py-3 rounded-control border border-mystic-700 text-mystic-200 hover:text-mystic-100 hover:border-mystic-500 transition-colors"
         >
           <Link2 className="w-4 h-4 inline mr-2" />
           {shareCopied ? 'Copied!' : 'Copy share link'}
         </button>
         <button
           onClick={() => navigate('/')}
-          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold"
+          className="flex-1 py-3 rounded-control bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold"
         >
           Get your own reading on Arcana
         </button>

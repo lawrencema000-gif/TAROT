@@ -289,7 +289,7 @@ export function CelestialMapPage() {
             onClick={() => {
               window.location.href = '/profile';
             }}
-            className="block mt-4 mx-auto text-xs text-mystic-500 hover:text-mystic-300 underline underline-offset-2 transition-colors"
+            className="block mt-4 mx-auto min-h-[44px] text-meta text-mystic-500 hover:text-mystic-300 underline underline-offset-2 transition-colors"
           >
             {t('celestial.needBirthDate.secondary', { defaultValue: 'Edit full profile instead' })}
           </button>
@@ -399,7 +399,7 @@ export function CelestialMapPage() {
           initial={{ opacity: 0, scale: 0.985 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-          className="rounded-2xl overflow-hidden hairline-gold-soft"
+          className="rounded-card overflow-hidden hairline-gold-soft"
           style={{ aspectRatio: '4 / 3', minHeight: 360 }}
         >
           {filteredLines && (

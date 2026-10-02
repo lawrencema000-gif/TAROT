@@ -10,7 +10,7 @@ import { useNatalChart } from '../hooks/useAstrology';
 import { ChartWheel, type OverlayPlanet } from '../components/chart/ChartWheel';
 import { PaywallSheet, WatchAdSheet } from '../components/premium';
 import { ZodiacGlyph, PlanetGlyph } from '../components/icons';
-import { OrnateDivider } from '../components/ui';
+import { SectionDivider } from '../components/ui';
 import { MOONSTONES_PER_AD } from '../services/rewardedAds';
 import {
   HOUSE_THEMES,
@@ -37,9 +37,9 @@ const NATAL_COST = 200;
 
 const ASPECT_META: Record<AspectType, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
   conjunction: { label: 'Conjunction',  color: 'text-gold',         icon: Circle },
-  trine:       { label: 'Trine',        color: 'text-emerald-400',  icon: Triangle },
+  trine:       { label: 'Trine',        color: 'text-teal',         icon: Triangle },
   sextile:     { label: 'Sextile',      color: 'text-cosmic-blue',  icon: Triangle },
-  square:      { label: 'Square',       color: 'text-pink-400',     icon: Square },
+  square:      { label: 'Square',       color: 'text-coral',        icon: Square },
   opposition:  { label: 'Opposition',   color: 'text-cosmic-violetLight',icon: Minus },
 };
 
@@ -297,16 +297,14 @@ export function NatalChartReportPage() {
           title={t('natalReport.title', { defaultValue: 'Full Natal Chart' })}
         />
 
-        <Card padding="lg" variant="ornate" className="text-center nebula-veil">
+        <Card padding="lg" variant="accent" className="text-center nebula-veil">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/25 to-cosmic-violet/25 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6 text-gold" />
           </div>
           <h2 className="heading-display-lg text-mystic-100 mb-2">
             {t('natalReport.cardTitle', { defaultValue: 'Your complete birth chart — printable' })}
           </h2>
-          <div className="flex justify-center mb-3 text-gold/60">
-            <OrnateDivider width={120} />
-          </div>
+          <SectionDivider width="w-32" className="mx-auto mb-3" />
           <p className="text-ui text-mystic-200 italic mb-4">
             {t('natalReport.cardSub', {
               defaultValue: 'Every planet in its sign and house, every aspect, with interpretations.',
@@ -369,7 +367,7 @@ export function NatalChartReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-xl bg-mystic-900/40 border border-mystic-700/30 text-left">
+            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
               <p className="text-ui text-mystic-200 mb-2">
                 {t('natalReport.orEarnMoonstones', {
                   defaultValue: 'Or unlock with {{n}} Moonstones',
@@ -507,7 +505,7 @@ export function NatalChartReportPage() {
         )}
 
         {variant === 'synastry' && !partnerPlanets && (
-          <div className="bg-mystic-800/40 rounded-xl p-3 mb-3 space-y-2">
+          <div className="bg-mystic-800/40 rounded-control p-3 mb-3 space-y-2">
             <p className="font-display-eyebrow">
               {t('natalReport.synastryPrompt', { defaultValue: 'Partner birth data' })}
             </p>
@@ -517,21 +515,21 @@ export function NatalChartReportPage() {
               onChange={(e) => setPartnerName(e.target.value)}
               placeholder={t('natalReport.partnerNamePlaceholder', { defaultValue: 'Partner name (optional)' })}
               maxLength={80}
-              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-xl px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-pink-400/40"
+              className="w-full bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100 placeholder-mystic-600 focus:outline-none focus:border-cosmic-rose/40"
             />
             <div className="flex gap-2">
               <input
                 type="date"
                 value={partnerBirthDate}
                 onChange={(e) => setPartnerBirthDate(e.target.value)}
-                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-xl px-3 py-2 text-ui text-mystic-100"
+                className="flex-1 bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
               <input
                 type="time"
                 value={partnerBirthTime}
                 onChange={(e) => setPartnerBirthTime(e.target.value)}
                 placeholder="optional"
-                className="bg-mystic-900/60 border border-mystic-700/50 rounded-xl px-3 py-2 text-ui text-mystic-100"
+                className="bg-mystic-900/60 border border-mystic-700/50 rounded-control px-3 py-2 text-ui text-mystic-100"
               />
             </div>
             <Button
@@ -555,7 +553,7 @@ export function NatalChartReportPage() {
           />
           {loadingVariant && (
             <div
-              className="absolute inset-0 flex flex-col items-center justify-center bg-mystic-950/60 backdrop-blur-sm rounded-xl animate-fade-in"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-mystic-850 rounded-control animate-fade-in"
               role="status"
               aria-live="polite"
             >
@@ -575,7 +573,7 @@ export function NatalChartReportPage() {
             {partnerAspects.slice(0, 8).map((a, i) => (
               <div key={i} className="text-ui text-mystic-200 flex items-center justify-between">
                 <span>
-                  <span className="text-pink-400">{a.partnerPlanet}</span>
+                  <span className="text-cosmic-rose">{a.partnerPlanet}</span>
                   {' '}{a.type}{' '}
                   <span className="text-gold">{a.natalPlanet}</span>
                 </span>
@@ -586,13 +584,11 @@ export function NatalChartReportPage() {
         )}
       </Card>
 
-      <Card padding="lg" variant="ornate" className="card-print nebula-veil">
+      <Card padding="lg" variant="accent" className="card-print nebula-veil">
         <p className="font-display-eyebrow text-center mb-2">
           {t('natalReport.bigThreeHeading', { defaultValue: 'The Big Three' })}
         </p>
-        <div className="flex justify-center mb-4 text-gold/60">
-          <OrnateDivider width={140} />
-        </div>
+        <SectionDivider width="w-36" className="mx-auto mb-4" />
         <div className="grid grid-cols-3 gap-3 relative">
           <div className="text-center flex flex-col items-center">
             <ZodiacGlyph sign={natal.bigThree.sun.sign} size={36} className="text-gold mb-1.5" framed />

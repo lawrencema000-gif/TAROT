@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Heart, Copy, Share2, Check, Link as LinkIcon } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
-import { Button, toast } from '../ui';
+import { Button, EyebrowLabel, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { compatInvites } from '../../dal';
@@ -94,8 +94,8 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
     <Sheet open={open} onClose={onClose} title={t('compatInvite.createTitle', { defaultValue: 'Invite someone' })}>
       <div className="space-y-4 pb-4">
         <div className="text-center pt-1">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400/20 to-gold/15 flex items-center justify-center mx-auto mb-2">
-            <Heart className="w-5 h-5 text-pink-400" />
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cosmic-rose/20 to-gold/15 flex items-center justify-center mx-auto mb-2">
+            <Heart className="w-5 h-5 text-cosmic-rose" />
           </div>
           <p className="text-sm text-mystic-400 leading-relaxed max-w-xs mx-auto">
             {t('compatInvite.createSubtitle', {
@@ -107,14 +107,14 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
         {!code && (
           <>
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-2">
+              <EyebrowLabel align="left" className="block mb-2">
                 {t('compatInvite.pickKind', { defaultValue: 'Compatibility kind' })}
-              </p>
+              </EyebrowLabel>
               <div className="flex gap-2">
                 {hasMbti && (
                   <button
                     onClick={() => setKind('mbti')}
-                    className={`flex-1 px-3 py-2.5 text-xs rounded-xl border transition-all ${
+                    className={`flex-1 min-h-[44px] px-3 py-2.5 text-meta rounded-control border transition-all ${
                       kind === 'mbti'
                         ? 'bg-gold/15 text-gold border-gold/40'
                         : 'bg-mystic-800/40 text-mystic-300 border-mystic-700/40'
@@ -126,7 +126,7 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
                 {hasBirthDate && (
                   <button
                     onClick={() => setKind('zodiac')}
-                    className={`flex-1 px-3 py-2.5 text-xs rounded-xl border transition-all ${
+                    className={`flex-1 min-h-[44px] px-3 py-2.5 text-meta rounded-control border transition-all ${
                       kind === 'zodiac'
                         ? 'bg-gold/15 text-gold border-gold/40'
                         : 'bg-mystic-800/40 text-mystic-300 border-mystic-700/40'
@@ -137,7 +137,7 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
                 )}
               </div>
               {!hasMbti && !hasBirthDate && (
-                <p className="text-xs text-mystic-500 mt-2">
+                <p className="text-meta text-mystic-500 mt-2">
                   {t('compatInvite.nothingToShare', {
                     defaultValue: 'Take the personality quiz or add your birth date first.',
                   })}
@@ -160,11 +160,11 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
         )}
 
         {code && (
-          <div className="bg-mystic-900/60 border border-gold/20 rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1">
+          <div className="bg-mystic-900/60 border border-gold/20 rounded-card p-4">
+            <EyebrowLabel align="left" className="block mb-1">
               {t('compatInvite.yourLink', { defaultValue: 'Your invite link' })}
-            </p>
-            <p className="font-mono text-xs text-gold break-all mb-3">{inviteUrl}</p>
+            </EyebrowLabel>
+            <p className="font-mono text-meta text-gold break-all mb-3">{inviteUrl}</p>
             <div className="flex gap-2">
               <Button variant="outline" fullWidth onClick={handleCopy}>
                 {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
@@ -175,7 +175,7 @@ export function InviteFriendSheet({ open, onClose, defaultKind }: InviteFriendSh
                 {t('compatInvite.shareLink', { defaultValue: 'Share my invite link' })}
               </Button>
             </div>
-            <p className="text-[10px] text-mystic-500 mt-3 text-center">
+            <p className="text-caption text-mystic-500 mt-3 text-center">
               {t('compatInvite.expiresNote', { defaultValue: 'Link expires in 90 days.' })}
             </p>
           </div>

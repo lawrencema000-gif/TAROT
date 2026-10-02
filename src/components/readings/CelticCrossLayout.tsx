@@ -191,11 +191,17 @@ export function CelticCrossLayout({
 
           {slot(3)}
           {/* The significator with the crossing card lying across it. Both
-              labels sit beneath, upright — a label turned 90° is not a label. */}
+              labels sit beneath, upright — a label turned 90° is not a label.
+
+              The crossing card is turned 90° and slid down 40% of the card's
+              height, as a reader lays it: centred on the significator it
+              covered the face it crosses. On the 56×84 slot the turned card
+              spans 56px tall, centred 33.6px low, so it reaches 19.6px below
+              the slot — the mb-5 (20px) keeps the labels clear of it. */}
           <div className="flex flex-col items-center gap-1 w-16">
-            <div className="relative w-14 aspect-[2/3]">
+            <div className="relative w-14 aspect-[2/3] mb-5">
               <div className="absolute inset-0">{renderCard(0)}</div>
-              <div className="absolute inset-0 z-10" style={{ transform: 'rotate(90deg)' }}>
+              <div className="absolute inset-0 z-10" style={{ transform: 'translateY(40%) rotate(90deg)' }}>
                 {renderCard(1)}
               </div>
             </div>

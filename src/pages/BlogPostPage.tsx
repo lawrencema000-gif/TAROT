@@ -79,7 +79,7 @@ export function BlogPostPage() {
         <p className="text-mystic-400 mb-4">{t('blog.articleNotFound')}</p>
         <button
           onClick={() => navigate('/blog')}
-          className="text-gold hover:text-gold/80 text-sm transition-colors"
+          className="text-gold hover:text-gold/80 text-sm transition-colors min-h-[44px] px-2"
         >
           {t('common:nav.backToNews')}
         </button>
@@ -141,7 +141,7 @@ export function BlogPostPage() {
             overhangs; at lg in the signed-in shell it sits 16px inside the
             edge, which reads as a deliberate inset rather than a spill. */}
         {post.cover_image && (
-          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-xl mb-6">
+          <div className="-mx-4 max-w-none overflow-hidden rounded-none lg:rounded-card mb-6">
             <img
               src={post.cover_image}
               alt={post.title}

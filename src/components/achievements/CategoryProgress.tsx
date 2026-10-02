@@ -35,7 +35,7 @@ export function CategoryProgress({
     <button
       onClick={onSelect}
       className={`
-        flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-slow
+        flex flex-col items-center gap-2 p-3 rounded-control transition-all duration-slow
         ${isSelected
           ? 'bg-gold/10 border border-gold/30'
           : 'bg-mystic-800/30 border border-transparent hover:bg-mystic-700/30'
@@ -57,12 +57,12 @@ export function CategoryProgress({
 
       <div className="text-center">
         <p className={`
-          text-[10px] font-medium transition-colors duration-slow
+          text-caption font-medium transition-colors duration-slow
           ${isSelected ? 'text-gold' : 'text-mystic-400'}
         `}>
           {getCategoryDisplayName(category)}
         </p>
-        <p className="text-[10px] text-mystic-500">
+        <p className="text-caption text-mystic-500">
           {unlocked}/{total}
         </p>
       </div>

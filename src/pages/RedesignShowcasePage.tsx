@@ -1,4 +1,4 @@
-import { Heart, Feather, Sun, BookOpen, Flower } from 'lucide-react';
+import { Heart, Feather } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -20,14 +20,9 @@ import {
   BrandMark,
   BrandWordmark,
   BrandLockup,
-  FeaturePill,
-  FeaturePillGroup,
-  RitualRow,
-  AvailableNowLabel,
   TarotCardIcon,
   DeckFan,
   CardBack,
-  MysticalStar,
   ListRow,
   ListRowGroup,
 } from '../components/ui';
@@ -179,14 +174,6 @@ export function RedesignShowcasePage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-mystic-400 text-sm">MysticalStar — gold beside white (per-instance gradient ids), halo on / off</p>
-          <div className="flex items-center gap-4">
-            <MysticalStar size={56} className="text-gold" />
-            <MysticalStar size={56} className="text-mystic-100" />
-            <MysticalStar size={40} halo={false} className="text-gold" />
-          </div>
-        </div>
 
         <div className="space-y-2" data-showcase="wheel">
           <p className="text-mystic-400 text-sm">ChartWheel — the one wheel: ASC at 9 o’clock, seam sign 30°, stellium spread, ℞, legend</p>
@@ -238,53 +225,6 @@ export function RedesignShowcasePage() {
         </div>
       </section>
 
-      {/* Phase 2: Home row primitives */}
-      <section className="space-y-4">
-        <EyebrowLabel rules>Phase 2 · Home-row primitives</EyebrowLabel>
-
-        <div className="space-y-2">
-          <p className="text-mystic-400 text-sm">FeaturePillGroup — 3-up feature shortcuts</p>
-          <FeaturePillGroup>
-            <FeaturePill icon={<Sun />} label="Astrology" />
-            <FeaturePill icon={<TarotCardIcon />} label="Tarot" />
-            <FeaturePill icon={<BookOpen />} label="Journal" />
-          </FeaturePillGroup>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-mystic-400 text-sm">RitualRow — daily-ritual horizontal pill (gold accent)</p>
-          <RitualRow
-            icon={<TarotCardIcon />}
-            label="Today's reading"
-            meta="Tap to draw your card"
-            accent="gold"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-mystic-400 text-sm">RitualRow — purple accent (matches Ad 1's lotus pill)</p>
-          <RitualRow
-            icon={<Flower />}
-            label="Daily ritual"
-            meta="7 day streak"
-            accent="purple"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-mystic-400 text-sm">RitualRow — teal &amp; coral variants</p>
-          <RitualRow icon={<Feather />} label="Reflection" meta="2 entries this week" accent="teal" />
-          <RitualRow icon={<Heart />} label="Compatibility" meta="New invite from Maya" accent="coral" />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-mystic-400 text-sm">AvailableNowLabel — marketing trust strip</p>
-          <div className="flex flex-col items-center gap-2 py-4">
-            <AvailableNowLabel />
-            <AvailableNowLabel>Apple version coming soon</AvailableNowLabel>
-          </div>
-        </div>
-      </section>
 
       {/* Phase 2 retheme: shell components */}
       <section className="space-y-3">

@@ -26,6 +26,8 @@ import {
   detectOAuthIssues,
 } from '../utils/authErrors';
 import { migrateGuestData } from '../services/storage';
+import { syncStreak } from '../dal/dailyRituals';
+import { localDateStr } from '../utils/localDate';
 import { getLocale } from '../i18n/config';
 import i18n from 'i18next';
 
@@ -161,9 +163,10 @@ function mapDbToProfile(db: DbProfile): UserProfile {
 
 // Strict allowlist of fields the client is permitted to write.
 // Server-managed fields (is_premium, is_ad_free, level,
-// total_readings, total_journal_entries) are excluded here AND
-// protected by a DB trigger as defense-in-depth.
-// streak and lastRitualDate are client-writable (updated on ritual completion).
+// total_readings, total_journal_entries, streak, last_ritual_date) are
+// excluded here AND protected by a DB trigger as defense-in-depth.
+// The streak and its date are recomputed from daily_rituals by the
+// ritual_streak() RPC (migration 20260928000000); nothing else writes them.
 const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   displayName: 'display_name',
   birthDate: 'birth_date',
@@ -187,8 +190,6 @@ const PROFILE_WRITABLE_FIELDS: Record<string, string> = {
   card_back_url: 'card_back_url',
   background_url: 'background_url',
   subscribedToNewsletter: 'subscribed_to_newsletter',
-  streak: 'streak',
-  lastRitualDate: 'last_ritual_date',
   locale: 'locale',
   destinedPlace: 'destined_place',
 };
@@ -247,6 +248,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearOAuthTimeout]);
 
   const fetchProfileInFlight = useRef<string | null>(null);
+  // `${userId}:${localDate}` of the last ritual_streak() sync. fetchProfile
+  // runs on every visibility change, realtime profile update and poll; the
+  // streak is recomputed once per local day per signed-in user, not on each.
+  const streakSyncedRef = useRef<string | null>(null);
   // Tracks the currently-signed-in user id so fetchProfile() can skip
   // state writes if the user signed out (or switched accounts) while the
   // profile query was in flight. Set in the onAuthStateChange listener.
@@ -335,33 +340,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('[Auth] Locale sync failed:', e);
       }
 
-      // Update streak on app open
-      const today = new Date().toISOString().split('T')[0];
-      const lastDate = profile.lastRitualDate;
-      if (lastDate !== today) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        const newStreak = lastDate === yesterdayStr ? (profile.streak || 0) + 1 : 1;
+      // The streak is the rituals, and a day is the user's day. On the first
+      // profile load of each local day, have the server recompute the streak
+      // from daily_rituals (ritual_streak writes profiles.streak and
+      // last_ritual_date), so a broken streak shows as broken on open. The
+      // old app-open "+1 if yesterday, else 1" counter lived here; it counted
+      // launches, not rituals, and the trigger reverted its write anyway.
+      const localToday = localDateStr();
+      const syncKey = `${userId}:${localToday}`;
+      if (streakSyncedRef.current !== syncKey) {
+        streakSyncedRef.current = syncKey;
+        const synced = await syncStreak(localToday);
 
-        await supabase
-          .from('profiles')
-          .update({ streak: newStreak, last_ritual_date: today })
-          .eq('id', userId);
-
-        // Re-check stale-write guard: streak update is a second await hop,
-        // so the user may have signed out between the read and the write.
+        // Re-check stale-write guard: the sync is a second await hop, so the
+        // user may have signed out between the read and the write.
         if (!mountedRef.current || activeUserIdRef.current !== userId) {
           fetchProfileInFlight.current = null;
           return;
         }
 
-        setProfile(prev => prev ? { ...prev, streak: newStreak, lastRitualDate: today } : prev);
+        if (synced.ok) {
+          const { streak, lastCompleted } = synced.data;
+          setProfile(prev => prev ? { ...prev, streak, lastRitualDate: lastCompleted ?? undefined } : prev);
+        } else {
+          // Try again on the next fetch; the stored value stands until then.
+          streakSyncedRef.current = null;
+        }
 
-        // Check birthday achievement
+        // Check birthday achievement, on the local date
         if (profile.birthDate) {
           const birthParts = profile.birthDate.split('-');
-          const todayParts = today.split('-');
+          const todayParts = localToday.split('-');
           if (birthParts[1] === todayParts[1] && birthParts[2] === todayParts[2]) {
             import('../services/achievements').then(({ checkAchievementProgress }) => {
               checkAchievementProgress(userId, 'birthday_login');

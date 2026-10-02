@@ -55,7 +55,7 @@ export function AdvisorsPage() {
       <Page spacing="sm">
         <button
           onClick={() => setView('directory')}
-          className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200"
+          className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200"
         >
           <ArrowLeft className="w-4 h-4" />
           {t('advisors.back', { defaultValue: 'All advisors' })}
@@ -69,7 +69,7 @@ export function AdvisorsPage() {
             <div>
               <h2 className="heading-display-lg text-mystic-100">{selected.displayName}</h2>
               {selected.ratingAvg !== null && (
-                <div className="flex items-center gap-1 text-xs text-gold">
+                <div className="flex items-center gap-1 text-meta text-gold">
                   <Star className="w-3 h-3 fill-current" />
                   <span>{selected.ratingAvg.toFixed(1)}</span>
                   <span className="text-mystic-500">({selected.ratingCount})</span>
@@ -87,7 +87,7 @@ export function AdvisorsPage() {
         <div className="grid grid-cols-2 gap-3">
           {selected.yearsExperience !== null && (
             <Card padding="md">
-              <div className="flex items-center gap-2 text-xs text-mystic-500 mb-1">
+              <div className="flex items-center gap-2 text-meta text-mystic-500 mb-1">
                 <Clock className="w-3 h-3" />
                 <span>{t('advisors.yearsLabel', { defaultValue: 'Experience' })}</span>
               </div>
@@ -96,7 +96,7 @@ export function AdvisorsPage() {
           )}
           {selected.languages.length > 0 && (
             <Card padding="md">
-              <div className="flex items-center gap-2 text-xs text-mystic-500 mb-1">
+              <div className="flex items-center gap-2 text-meta text-mystic-500 mb-1">
                 <Globe className="w-3 h-3" />
                 <span>{t('advisors.languagesLabel', { defaultValue: 'Languages' })}</span>
               </div>
@@ -107,7 +107,7 @@ export function AdvisorsPage() {
 
         {selected.specialties.length > 0 && (
           <Card padding="md">
-            <p className="text-xs text-mystic-500 mb-2">{t('advisors.specialtiesLabel', { defaultValue: 'Specialties' })}</p>
+            <p className="text-meta text-mystic-500 mb-2">{t('advisors.specialtiesLabel', { defaultValue: 'Specialties' })}</p>
             <div className="flex flex-wrap gap-1">
               {selected.specialties.map((s) => (
                 <Tag key={s} tone="neutral" size="md">
@@ -120,7 +120,7 @@ export function AdvisorsPage() {
 
         {selected.hourlyRateCents !== null && (
           <Card padding="md" className="bg-mystic-800/20">
-            <p className="text-xs text-mystic-500 mb-1">{t('advisors.rateLabel', { defaultValue: 'Indicative rate' })}</p>
+            <p className="text-meta text-mystic-500 mb-1">{t('advisors.rateLabel', { defaultValue: 'Indicative rate' })}</p>
             <p className="text-mystic-200 text-sm">${(selected.hourlyRateCents / 100).toFixed(0)} / hour</p>
           </Card>
         )}
@@ -143,7 +143,7 @@ export function AdvisorsPage() {
             <h3 className="font-medium text-gold mb-3">
               {t('advisors.expressInterest', { defaultValue: 'Express interest' })}
             </h3>
-            <p className="text-xs text-mystic-400 mb-3 italic">
+            <p className="text-meta text-mystic-400 mb-3 italic">
               {t('advisors.bookingsComingSoon', {
                 defaultValue: 'Paid sessions are rolling out gradually. Tell us what you’d like help with — when this advisor opens bookings, a Book a session button appears on this page.',
               })}
@@ -156,7 +156,7 @@ export function AdvisorsPage() {
               placeholder={t('advisors.topicPlaceholder', {
                 defaultValue: 'What would you like to work on? (optional)',
               }) as string}
-              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
+              className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 mb-3"
             />
             <Button variant="primary" fullWidth onClick={submitInterest} disabled={submitting}>
               <Send className="w-4 h-4 mr-2" />
@@ -216,13 +216,13 @@ export function AdvisorsPage() {
                 <div className="flex items-center gap-2 mb-0.5">
                   <h3 className="font-display text-lg text-mystic-100">{advisor.displayName}</h3>
                   {advisor.ratingAvg !== null && (
-                    <div className="flex items-center gap-0.5 text-xs text-gold">
+                    <div className="flex items-center gap-0.5 text-meta text-gold">
                       <Star className="w-3 h-3 fill-current" />
                       <span>{advisor.ratingAvg.toFixed(1)}</span>
                     </div>
                   )}
                 </div>
-                <p className="text-gold/70 text-xs italic mb-2 line-clamp-1">{advisor.headline}</p>
+                <p className="text-gold/70 text-meta italic mb-2 line-clamp-1">{advisor.headline}</p>
                 <div className="flex flex-wrap gap-1">
                   {advisor.specialties.slice(0, 3).map((s) => (
                     <Tag key={s} tone="neutral">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Gift, Copy, Share2, Check } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
-import { Button, Input, toast } from '../ui';
+import { Button, EyebrowLabel, Input, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { useAuth } from '../../context/AuthContext';
 import { referrals } from '../../dal';
@@ -150,10 +150,10 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
           </p>
         </div>
 
-        <div className="bg-mystic-900/60 border border-gold/20 rounded-xl p-4">
-          <p className="text-[10px] uppercase tracking-wider text-mystic-500 mb-1">
+        <div className="bg-mystic-900/60 border border-gold/20 rounded-card p-4">
+          <EyebrowLabel align="left" className="block mb-1">
             {t('referral.yourCodeLabel', { defaultValue: 'Your code' })}
-          </p>
+          </EyebrowLabel>
           {loading && !myCode ? (
             <p className="text-sm text-mystic-400">{t('common:actions.loading', { defaultValue: 'Loading…' })}</p>
           ) : myCode ? (
@@ -172,7 +172,7 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
             </Button>
           </div>
           {invitesCount !== null && invitesCount > 0 && (
-            <p className="text-xs text-mystic-400 mt-3 flex items-center gap-1.5">
+            <p className="text-meta text-mystic-400 mt-3 flex items-center gap-1.5">
               <Gift className="w-3 h-3 text-gold" />
               {t('referral.invitesCount', {
                 defaultValue: '{{n}} friends joined with your code',
@@ -183,11 +183,11 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
         </div>
 
         {canRedeem && (
-          <div className="bg-mystic-900/40 border border-mystic-800 rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-wider text-mystic-500 mb-1">
+          <div className="bg-mystic-900/40 border border-mystic-800 rounded-card p-4">
+            <EyebrowLabel align="left" className="block mb-1">
               {t('referral.redeemLabel', { defaultValue: 'Got a code?' })}
-            </p>
-            <p className="text-xs text-mystic-400 mb-3">
+            </EyebrowLabel>
+            <p className="text-meta text-mystic-400 mb-3">
               {t('referral.redeemHelper', {
                 defaultValue: 'Enter a friend\'s code in your first 30 days to claim 100 Moonstones.',
               })}
@@ -215,7 +215,7 @@ export function ReferralSheet({ open, onClose }: ReferralSheetProps) {
         )}
 
         {redeemed && !canRedeem && (
-          <div className="text-center text-xs text-mystic-500 italic">
+          <div className="text-center text-caption text-mystic-500 italic">
             {t('referral.alreadyRedeemed', { defaultValue: 'You\'ve already redeemed a referral code.' })}
           </div>
         )}

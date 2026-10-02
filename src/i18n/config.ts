@@ -1,61 +1,53 @@
 /**
- * i18next configuration — bundled namespaces + lazy-loaded HTTP backend.
+ * i18next configuration — English bundled, every other locale lazy.
  *
  * Resolution order for the active language:
  *   1. ?lang=XX URL param (debug / deep-link override)
  *   2. profiles.locale (authenticated user — set via setLocale())
  *   3. localStorage 'arcana_locale' (anonymous user preference)
- *   4. navigator.language (browser default)
- *   5. 'en' fallback
+ *   4. 'en' fallback
  *
- * Static namespaces (bundled into main chunk):
- *   - common    — navigation, buttons, toasts, errors, validation
+ * Namespaces (all five load for the active locale before the app renders):
+ *   - common     — navigation, buttons, toasts, errors, validation
+ *   - app        — every screen
  *   - onboarding
  *   - landing
+ *   - tarot      — the translated tarot corpus (card names and meanings)
+ *                  that `localizeCard.ts` reads; English needs none
  *
- * Lazy namespaces (fetched from /locales/{lang}/{ns}.json when first used):
- *   - tarot, meanings, horoscope, quizzes, journal, premium, admin, blog
+ * English ships in the main chunk, because it is the fallback for every
+ * key in every locale and the first render must never wait for it. The
+ * Japanese, Korean and Chinese bundles are dynamic imports — each is its
+ * own hashed chunk (`assets/i18n-<lng>-<ns>-<hash>.js`, see vite.config.ts)
+ * that only a visitor reading that language downloads. i18next asks the
+ * `lazyBundleBackend` below for them: at init for the detected language
+ * (main.tsx waits for `i18nReady` before mounting) and inside
+ * `changeLanguage`, which emits `languageChanged` only once every
+ * namespace has landed, so no screen renders a half-translated state.
  *
  * Fallback chain: all non-en locales fall back to en for missing keys so
  * an unfinished translation never surfaces a bare key to the user.
  */
 
-import i18n from 'i18next';
+import i18n, { type BackendModule, type ReadCallback, type ResourceKey } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import HttpBackend from 'i18next-http-backend';
 
-// Bundled (shipped in main JS) — always available at boot
+// Bundled (shipped in main JS) — always available at boot, and the fallback
+// for every other locale.
 import enCommon from './locales/en/common.json';
-import jaCommon from './locales/ja/common.json';
-import koCommon from './locales/ko/common.json';
-import zhCommon from './locales/zh/common.json';
 import enOnboarding from './locales/en/onboarding.json';
-import jaOnboarding from './locales/ja/onboarding.json';
-import koOnboarding from './locales/ko/onboarding.json';
-import zhOnboarding from './locales/zh/onboarding.json';
 import enLanding from './locales/en/landing.json';
-import jaLanding from './locales/ja/landing.json';
-import koLanding from './locales/ko/landing.json';
-import zhLanding from './locales/zh/landing.json';
 import enApp from './locales/en/app.json';
-import jaApp from './locales/ja/app.json';
-import koApp from './locales/ko/app.json';
-import zhApp from './locales/zh/app.json';
 
 export const SUPPORTED_LOCALES = ['en', 'ja', 'ko', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
-const LAZY_NAMESPACES = [
-  'tarot',
-  'meanings',
-  'horoscope',
-  'quizzes',
-  'journal',
-  'premium',
-  'admin',
-  'blog',
-] as const;
+/** The namespaces screens read with `useT()` / `t()`. */
+export const UI_NAMESPACES = ['common', 'app', 'onboarding', 'landing'] as const;
+/** The translated tarot corpus. Not a `t()` namespace: `localizeCard.ts` reads the bundle whole. */
+export const TAROT_CORPUS_NS = 'tarot';
+const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS];
 
 export const LOCALE_STORAGE_KEY = 'arcana_locale';
 
@@ -78,34 +70,107 @@ export function normalizeLocale(code: string | null | undefined): SupportedLocal
   return null;
 }
 
-i18n
-  .use(HttpBackend)
+// ---------------------------------------------------------------------------
+// Lazy bundles. Each arrow is a literal `import()` so Vite can see the file
+// and emit it as its own chunk; a template-string import would glob the whole
+// locales folder. English is deliberately absent: it is bundled above.
+// ---------------------------------------------------------------------------
+
+type LazyLocale = Exclude<SupportedLocale, 'en'>;
+type BundleLoader = () => Promise<{ default: ResourceKey }>;
+
+const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
+  ja: {
+    common: () => import('./locales/ja/common.json'),
+    app: () => import('./locales/ja/app.json'),
+    onboarding: () => import('./locales/ja/onboarding.json'),
+    landing: () => import('./locales/ja/landing.json'),
+    [TAROT_CORPUS_NS]: () => import('./locales/ja/tarot.json'),
+  },
+  ko: {
+    common: () => import('./locales/ko/common.json'),
+    app: () => import('./locales/ko/app.json'),
+    onboarding: () => import('./locales/ko/onboarding.json'),
+    landing: () => import('./locales/ko/landing.json'),
+    [TAROT_CORPUS_NS]: () => import('./locales/ko/tarot.json'),
+  },
+  zh: {
+    common: () => import('./locales/zh/common.json'),
+    app: () => import('./locales/zh/app.json'),
+    onboarding: () => import('./locales/zh/onboarding.json'),
+    landing: () => import('./locales/zh/landing.json'),
+    [TAROT_CORPUS_NS]: () => import('./locales/zh/tarot.json'),
+  },
+};
+
+/** The signatures main.tsx's stale-chunk guard reloads on. */
+const STALE_CHUNK_RE = /dynamically imported module|Importing a module script failed|not a valid JavaScript MIME type/;
+
+/**
+ * An i18next backend that resolves a (language, namespace) pair to the
+ * dynamic import above. i18next calls it only for bundles the store does not
+ * already hold (`partialBundledLanguages`), so English never reaches it.
+ */
+const lazyBundleBackend: BackendModule = {
+  type: 'backend',
+  init() {
+    /* nothing to configure */
+  },
+  read(language: string, namespace: string, callback: ReadCallback) {
+    const locale = normalizeLocale(language);
+    if (!locale || locale === 'en') {
+      callback(null, {});
+      return;
+    }
+    const load = LAZY_BUNDLES[locale][namespace];
+    if (!load) {
+      // Not retryable: nothing will appear for a namespace we do not ship.
+      callback(new Error(`[i18n] no bundle for ${locale}/${namespace}`), false);
+      return;
+    }
+    load().then(
+      (mod) => callback(null, mod.default),
+      (err: unknown) => {
+        const error = err instanceof Error ? err : new Error(String(err));
+        // `true` asks i18next to retry (a transient network failure).
+        callback(error, true);
+        // A chunk that no longer exists means this tab is on an obsolete
+        // bundle. Surface it as an unhandled rejection so the stale-chunk
+        // guard in main.tsx can do its one-shot reload, as it would for any
+        // other missing chunk.
+        if (STALE_CHUNK_RE.test(error.message)) void Promise.reject(error);
+      },
+    );
+  },
+};
+
+const initPromise = i18n
+  .use(lazyBundleBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp },
-      ja: { common: jaCommon, onboarding: jaOnboarding, landing: jaLanding, app: jaApp },
-      ko: { common: koCommon, onboarding: koOnboarding, landing: koLanding, app: koApp },
-      zh: { common: zhCommon, onboarding: zhOnboarding, landing: zhLanding, app: zhApp },
+      // The empty tarot corpus marks the namespace as present for English,
+      // so i18next never asks the backend for it.
+      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp, [TAROT_CORPUS_NS]: {} },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LOCALES as unknown as string[],
     nonExplicitSupportedLngs: true,
     load: 'languageOnly',
-    ns: ['common'],
+    ns: NAMESPACES,
     defaultNS: 'common',
     partialBundledLanguages: true,
-
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
-    },
 
     detection: {
       // Intentionally excludes 'navigator' — users on Japanese-locale phones
       // would otherwise see a Japanese UI before they get a chance to pick.
       // English is the fallback (fallbackLng above); users opt into ja/ko/zh
       // via the onboarding language picker or settings sheet.
+      //
+      // The inline preload script vite.config.ts injects into index.html
+      // mirrors this order (?lang, then localStorage) to start fetching the
+      // locale chunks before the main bundle has even parsed.
       order: ['querystring', 'localStorage'],
       lookupQuerystring: 'lang',
       lookupLocalStorage: LOCALE_STORAGE_KEY,
@@ -120,14 +185,25 @@ i18n
       useSuspense: false, // safer default — components decide per-hook
     },
 
-    // Enable the missingKey event in DEV only. In production the HttpBackend
-    // would POST to loadPath and log 404s in the console, spooking users.
-    // The missingKey listener below still fires in all modes.
+    // Enable the missingKey event in DEV only; the listener below logs it.
+    // The backend has no `create`, so nothing is ever POSTed anywhere.
     saveMissing: import.meta.env.DEV,
     saveMissingTo: 'current',
     updateMissing: false,
     missingKeyHandler: undefined,
   });
+
+/**
+ * Resolves once the detected language's bundles are in the store. For
+ * English that is already true when this module finishes evaluating
+ * (`i18n.isInitialized`), so main.tsx mounts synchronously; for ja/ko/zh it
+ * waits for the lazy chunks. Never rejects: a failed bundle falls back to
+ * English and the app still renders.
+ */
+export const i18nReady: Promise<void> = initPromise.then(
+  () => undefined,
+  () => undefined,
+);
 
 /** Change language at runtime + persist to localStorage. */
 export async function setLocale(locale: SupportedLocale): Promise<void> {
@@ -192,8 +268,17 @@ i18n.on('languageChanged', loadCjkFonts);
 // real-world adoption by locale. Fires once per change, regardless of how
 // the change was initiated (LanguageDropdown click, programmatic setLocale,
 // URL ?lang= param).
+//
+// Not on the language i18next settles on at init. i18next emits
+// `languageChanged` from inside init too, before it flips `isInitialized`
+// (changeLanguage's `done` emits, then the init callback sets the flag).
+// While every locale was bundled, init finished synchronously and that
+// first event had no listener yet; now that ja/ko/zh wait for their lazy
+// chunks it arrives here — and a returning Japanese reader would otherwise
+// log a "language change" on every cold start.
 i18n.on('languageChanged', (lng: string) => {
   if (typeof window === 'undefined') return;
+  if (!i18n.isInitialized) return;
   try {
     const w = window as unknown as {
       gtag?: (...args: unknown[]) => void;
@@ -228,5 +313,4 @@ i18n.on('missingKey', (lngs: readonly string[], namespace: string, key: string) 
   }
 });
 
-export { LAZY_NAMESPACES };
 export default i18n;

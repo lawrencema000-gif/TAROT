@@ -1,8 +1,5 @@
 import type { TarotCard } from '../types';
-import { getLocale, type SupportedLocale } from './config';
-import jaTarot from './locales/ja/tarot.json';
-import koTarot from './locales/ko/tarot.json';
-import zhTarot from './locales/zh/tarot.json';
+import i18n, { getLocale, TAROT_CORPUS_NS, type SupportedLocale } from './config';
 
 /**
  * Shape of the localized card fields. All optional — missing fields fall
@@ -23,24 +20,29 @@ interface TarotBundle {
   cards: Record<string, LocalizedCardFields>;
 }
 
-const BUNDLES: Partial<Record<SupportedLocale, TarotBundle>> = {
-  ja: jaTarot as TarotBundle,
-  ko: koTarot as TarotBundle,
-  zh: zhTarot as TarotBundle,
-};
-
 /**
- * Return a copy of `card` with any translated fields overlaid from the
- * active locale bundle. Unknown cards or missing fields fall back to the
- * English source. Locale `en` is a no-op (returns the original card).
+ * The translated corpus for `locale`, read from the i18next store.
+ *
+ * The corpus is the `tarot` namespace of `src/i18n/locales/<lng>/tarot.json`.
+ * It is not imported here: i18next fetches it as a lazy chunk together with
+ * the UI bundles whenever the locale is (at init) or becomes (changeLanguage)
+ * ja/ko/zh, and `languageChanged` fires only after every namespace has
+ * landed — so by the time `getLocale()` says 'ja', the Japanese corpus is in
+ * memory and these synchronous helpers find it. English needs no corpus.
+ *
+ * If a caller nevertheless runs before the corpus is in the store (or the
+ * fetch failed and the app carried on in English), the card is returned as
+ * is: English rather than a crash. react-i18next re-renders every `useT()`
+ * consumer on `languageChanged`, which is when the corpus becomes readable.
  */
-export function localizeCard(card: TarotCard, locale: SupportedLocale = getLocale()): TarotCard {
-  if (locale === 'en') return card;
+function corpusFor(locale: SupportedLocale): TarotBundle | null {
+  if (locale === 'en') return null;
+  const bundle = i18n.getResourceBundle(locale, TAROT_CORPUS_NS) as Partial<TarotBundle> | undefined;
+  return bundle?.cards ? (bundle as TarotBundle) : null;
+}
 
-  const bundle = BUNDLES[locale];
-  if (!bundle) return card;
-
-  const tr = bundle.cards?.[String(card.id)];
+function overlay(card: TarotCard, bundle: TarotBundle): TarotCard {
+  const tr = bundle.cards[String(card.id)];
   if (!tr) return card;
 
   return {
@@ -56,9 +58,23 @@ export function localizeCard(card: TarotCard, locale: SupportedLocale = getLocal
   };
 }
 
+/**
+ * Return a copy of `card` with any translated fields overlaid from the
+ * active locale bundle. Unknown cards or missing fields fall back to the
+ * English source. Locale `en` is a no-op (returns the original card).
+ */
+export function localizeCard(card: TarotCard, locale: SupportedLocale = getLocale()): TarotCard {
+  if (locale === 'en') return card;
+  const bundle = corpusFor(locale);
+  return bundle ? overlay(card, bundle) : card;
+}
+
 export function localizeCards(cards: TarotCard[], locale: SupportedLocale = getLocale()): TarotCard[] {
   if (locale === 'en') return cards;
-  return cards.map(c => localizeCard(c, locale));
+  // One store lookup for the whole deck rather than one per card.
+  const bundle = corpusFor(locale);
+  if (!bundle) return cards;
+  return cards.map(c => overlay(c, bundle));
 }
 
 let deckIndexCache: Map<string, TarotCard> | null = null;

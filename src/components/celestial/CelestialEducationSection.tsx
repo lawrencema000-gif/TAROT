@@ -38,7 +38,7 @@ const USE_CASES: Array<{
     titleDefault: 'Where to settle',
     bodyKey: 'celestial.use.home.body',
     bodyDefault: 'Find the places that feel like home before you arrive — where your nervous system softens, family bonds deepen, and roots come naturally.',
-    accent: 'from-emerald-400/15 to-mystic-900/60 border-emerald-400/20',
+    accent: 'from-teal/15 to-mystic-900/60 border-teal/25',
   },
   {
     id: 'career',
@@ -47,7 +47,7 @@ const USE_CASES: Array<{
     titleDefault: 'Where your work shines',
     bodyKey: 'celestial.use.career.body',
     bodyDefault: 'Discover the cities where doors open, your reputation builds faster, and the right people notice. Best for relocations, sabbaticals, or job hunts.',
-    accent: 'from-amber-400/15 to-mystic-900/60 border-amber-400/20',
+    accent: 'from-gold/15 to-mystic-900/60 border-gold/25',
   },
   {
     id: 'love',
@@ -56,7 +56,7 @@ const USE_CASES: Array<{
     titleDefault: 'Where love finds you',
     bodyKey: 'celestial.use.love.body',
     bodyDefault: 'Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last.',
-    accent: 'from-rose-400/15 to-mystic-900/60 border-rose-400/20',
+    accent: 'from-cosmic-rose/15 to-mystic-900/60 border-cosmic-rose/25',
   },
   {
     id: 'travel',
@@ -65,7 +65,7 @@ const USE_CASES: Array<{
     titleDefault: 'Where to roam',
     bodyKey: 'celestial.use.travel.body',
     bodyDefault: 'The destinations where adventure, expansion, and "this changed me" moments come unbidden. Plan vacations the universe co-signs.',
-    accent: 'from-sky-400/15 to-mystic-900/60 border-sky-400/20',
+    accent: 'from-cosmic-blue/15 to-mystic-900/60 border-cosmic-blue/25',
   },
   {
     id: 'healing',
@@ -74,7 +74,7 @@ const USE_CASES: Array<{
     titleDefault: 'Where to heal',
     bodyKey: 'celestial.use.healing.body',
     bodyDefault: 'Quiet places where grief moves, anxiety eases, and the body remembers how to rest. Useful for retreats, recovery, and long-overdue stillness.',
-    accent: 'from-violet-400/15 to-mystic-900/60 border-violet-400/20',
+    accent: 'from-cosmic-violet/15 to-mystic-900/60 border-cosmic-violet/25',
   },
   {
     id: 'growth',
@@ -83,7 +83,7 @@ const USE_CASES: Array<{
     titleDefault: 'Where you transform',
     bodyKey: 'celestial.use.growth.body',
     bodyDefault: 'Intense places that crack you open — best when you are ready for radical change, identity shifts, and the version of yourself that hasn\'t arrived yet.',
-    accent: 'from-fuchsia-400/15 to-mystic-900/60 border-fuchsia-400/20',
+    accent: 'from-coral/15 to-mystic-900/60 border-coral/25',
   },
 ];
 
@@ -152,10 +152,10 @@ export function CelestialEducationSection({ onPickLifeArea }: Props) {
               transition={{ delay: 0.2 + i * 0.05, duration: 0.3, ease: 'easeOut' }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onPickLifeArea(useCase.id)}
-              className={`text-left p-4 rounded-2xl bg-gradient-to-br ${useCase.accent} hairline-gold-soft border transition-all hover:hairline-gold focus:outline-none focus:ring-2 focus:ring-gold/30`}
+              className={`text-left p-4 rounded-card bg-gradient-to-br ${useCase.accent} hairline-gold-soft border transition-all hover:hairline-gold focus:outline-none focus:ring-2 focus:ring-gold/30`}
             >
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-mystic-900/60 flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 rounded-control bg-mystic-900/60 flex items-center justify-center flex-shrink-0">
                   <useCase.icon className="w-4 h-4 text-gold" aria-hidden />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -231,7 +231,7 @@ export function CelestialAnglesSection() {
         {angles.map((angle) => (
           <div
             key={angle.key}
-            className="p-4 rounded-xl bg-mystic-900/40 hairline-gold-soft"
+            className="p-4 rounded-control bg-mystic-900/40 hairline-gold-soft"
           >
             <div className="flex items-start gap-3">
               <angle.icon className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" aria-hidden />

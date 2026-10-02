@@ -13,9 +13,9 @@ interface VoiceStripProps {
 const STATE_COPY: Record<LiveKitState, { label: string; tone: string }> = {
   idle:        { label: '',                 tone: 'text-mystic-500' },
   connecting:  { label: 'Connecting…',      tone: 'text-cosmic-blue' },
-  connected:   { label: 'Voice on',         tone: 'text-emerald-400' },
+  connected:   { label: 'Voice on',         tone: 'text-teal' },
   disconnected:{ label: 'Voice ended',      tone: 'text-mystic-500' },
-  error:       { label: 'Voice error',      tone: 'text-pink-400' },
+  error:       { label: 'Voice error',      tone: 'text-coral' },
   unavailable: { label: 'Voice coming soon',tone: 'text-mystic-500' },
 };
 
@@ -35,11 +35,11 @@ export function VoiceStrip({ roomName, enabled }: VoiceStripProps) {
   const isConnecting = state === 'connecting';
 
   return (
-    <div className="rounded-xl border border-mystic-800/70 bg-mystic-900/60 p-3">
+    <div className="rounded-card border border-mystic-800/70 bg-mystic-900/60 p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <AudioLines className={`w-4 h-4 flex-shrink-0 ${copy.tone}`} />
-          <p className={`text-xs truncate ${copy.tone}`}>
+          <p className={`text-meta truncate ${copy.tone}`}>
             {copy.label ? t(`voice.state.${state}`, { defaultValue: copy.label }) : t('voice.notConnected', { defaultValue: 'Voice off' })}
           </p>
         </div>
@@ -48,10 +48,10 @@ export function VoiceStrip({ roomName, enabled }: VoiceStripProps) {
             <button
               onClick={toggleMic}
               aria-label={micMuted ? 'Unmute' : 'Mute'}
-              className={`p-2 rounded-full transition-colors ${
+              className={`p-3.5 rounded-full transition-colors ${
                 micMuted
                   ? 'bg-mystic-800 text-mystic-400 hover:bg-mystic-700'
-                  : 'bg-emerald-400/20 text-emerald-400'
+                  : 'bg-teal/15 text-teal'
               }`}
             >
               {micMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}

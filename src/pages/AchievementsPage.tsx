@@ -129,16 +129,16 @@ export function AchievementsPage() {
       <div className="min-h-screen bg-gradient-to-b from-mystic-900 via-mystic-800 to-mystic-900">
         <Page spacing="md" className="max-w-lg mx-auto">
           <PageHeader title={t('pageTitles.achievements.title')} />
-          <Skeleton className="h-48 rounded-2xl" />
-          <Skeleton className="h-24 rounded-2xl" />
+          <Skeleton className="h-48 rounded-card" />
+          <Skeleton className="h-24 rounded-card" />
           <div className="flex gap-2 overflow-x-auto">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-20 rounded-xl flex-shrink-0" />
+              <Skeleton key={i} className="h-24 w-20 rounded-control flex-shrink-0" />
             ))}
           </div>
           <div className="grid grid-cols-2 gap-3">
             {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-2xl" />
+              <Skeleton key={i} className="h-32 rounded-card" />
             ))}
           </div>
         </Page>
@@ -191,7 +191,7 @@ export function AchievementsPage() {
         </div>
 
         <Page spacing="md" className="p-4">
-          <div className="bg-mystic-800/30 rounded-2xl p-4 border border-mystic-700/30">
+          <div className="bg-mystic-800/30 rounded-card p-4 border border-mystic-700/30">
             <RankProgressBar
               currentRank={profile?.seekerRank || 'Novice Seeker'}
               currentXP={profile?.xp || 0}
@@ -207,7 +207,7 @@ export function AchievementsPage() {
           />
 
           {recentUnlocks.length > 0 && (
-            <div className="bg-gradient-to-r from-gold/10 to-amber-500/10 rounded-2xl p-4 border border-gold/20">
+            <div className="bg-gold/10 rounded-card p-4 border border-gold/25">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gold flex items-center gap-2">
                   <Award className="w-4 h-4" />
@@ -219,12 +219,12 @@ export function AchievementsPage() {
                 {recentUnlocks.map((achievement) => (
                   <div
                     key={achievement.id}
-                    className="flex-1 flex flex-col items-center gap-1 p-2 rounded-xl bg-mystic-800/30"
+                    className="flex-1 flex flex-col items-center gap-1 p-2 rounded-control bg-mystic-800/30"
                   >
                     <div className="w-10 h-10 rounded-lg bg-mystic-700/30 flex items-center justify-center">
                       <Trophy className="w-5 h-5 text-gold" />
                     </div>
-                    <span className="text-[10px] text-mystic-300 text-center line-clamp-1">
+                    <span className="text-caption text-mystic-300 text-center line-clamp-1">
                       {achievement.name}
                     </span>
                   </div>

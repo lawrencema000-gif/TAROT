@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { BookOpen, Feather, Flower, MessageCircle, Moon, Send } from 'lucide-react';
+import { BookOpen, Feather, Flower, Loader2, MessageCircle, Moon, Send } from 'lucide-react';
 import { Card, Button, PageHeader, ReadingProse, toast, Page, Tabs } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { getLocale } from '../i18n/config';
@@ -27,7 +27,7 @@ const PERSONAS: Array<{
   { id: 'sage',      icon: BookOpen,      accent: 'text-gold' },
   { id: 'oracle',    icon: Feather,       accent: 'text-cosmic-violetLight' },
   { id: 'mystic',    icon: Moon,          accent: 'text-cosmic-blue' },
-  { id: 'priestess', icon: Flower,        accent: 'text-pink-400' },
+  { id: 'priestess', icon: Flower,        accent: 'text-cosmic-rose' },
 ];
 
 const STORAGE_KEY_PREFIX = 'arcana_companion_v1_';
@@ -174,7 +174,7 @@ export function AiCompanionPage() {
         action={
           <button
             onClick={clearConversation}
-            className="text-xs text-mystic-500 hover:text-mystic-300 px-2 py-1"
+            className="text-meta text-mystic-500 hover:text-mystic-300 px-2 py-1 min-h-[44px]"
           >
             {t('companion.newConversation', { defaultValue: 'New conversation' })}
           </button>
@@ -223,11 +223,11 @@ export function AiCompanionPage() {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'user' ? (
-              <div className="max-w-[85%] rounded-xl p-3 text-ui bg-gold/15 text-mystic-100 rounded-br">
+              <div className="max-w-[85%] rounded-control p-3 text-ui bg-gold/15 text-mystic-100 rounded-br">
                 {msg.content}
               </div>
             ) : (
-              <div className="max-w-[85%] rounded-xl p-3 bg-mystic-800/60 rounded-bl">
+              <div className="max-w-[85%] rounded-control p-3 bg-mystic-800/60 rounded-bl">
                 <ReadingProse text={msg.content} lede={false} className="whitespace-pre-line" />
               </div>
             )}
@@ -235,8 +235,9 @@ export function AiCompanionPage() {
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="bg-mystic-800/60 rounded-xl rounded-bl p-3 text-sm text-mystic-400 italic">
-              <span className="inline-block animate-pulse">
+            <div className="bg-mystic-800/60 rounded-control rounded-bl p-3 text-sm text-mystic-400 italic">
+              <span className="inline-flex items-center gap-1.5">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
                 {t('companion.thinking', { defaultValue: 'thinking…' })}
               </span>
             </div>
@@ -259,13 +260,14 @@ export function AiCompanionPage() {
             rows={2}
             maxLength={3000}
             placeholder={t('companion.placeholder', { defaultValue: 'Ask the companion...' }) as string}
-            className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-xl p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+            className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
           />
           <Button
             variant="primary"
             onClick={send}
             disabled={sending || !input.trim() || dailyUsed >= DAILY_LIMIT}
             className="px-4"
+            aria-label={t('common:actions.send', { defaultValue: 'Send' }) as string}
           >
             <Send className="w-4 h-4" />
           </Button>

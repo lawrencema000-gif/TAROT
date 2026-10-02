@@ -28,8 +28,7 @@ import {
   Search,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
-import { MysticalStar } from '../ui/MysticalStar';
-import { Button, Input, toast, Card, ListRow, ListRowGroup, Switch } from '../ui';
+import { Button, Input, toast, Card, ListRow, ListRowGroup, Switch, EyebrowLabel, SparkleFourPoint } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase'; // still used for profile read/write + delete_user_account RPC
 import { journalEntries, tarotReadings, quizResults } from '../../dal';
@@ -503,7 +502,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const renderBackButton = () => (
     <button
       onClick={() => setActiveSheet('main')}
-      className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 transition-colors mb-4"
+      className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 transition-colors mb-2"
     >
       <ChevronLeft className="w-4 h-4" />
       <span className="text-sm">{tAppSettings('settings.menu.backToSettings')}</span>
@@ -539,11 +538,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             icon={<Clock className="w-4 h-4" />}
           />
 
-          <div className="p-4 bg-mystic-800/40 rounded-xl border border-mystic-700/50 space-y-3">
+          <div className="p-4 bg-mystic-800/40 rounded-card border border-mystic-700/50 space-y-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-gold" />
               <span className="text-sm font-medium text-mystic-200">{tAppSettings('settings.birthCity')}</span>
-              <span className="text-xs text-mystic-500">(optional)</span>
+              <span className="text-caption text-mystic-500">(optional)</span>
             </div>
 
             <div className="relative">
@@ -579,11 +578,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             )}
 
             {cityQuery.length > 0 && cityQuery.length < 2 && (
-              <p className="text-xs text-mystic-500">{tAppSettings('settings.typeMinChars')}</p>
+              <p className="text-caption text-mystic-500">{tAppSettings('settings.typeMinChars')}</p>
             )}
 
             {!geoLoading && geoError && editForm.birthLat === undefined && (
-              <p className="text-xs text-amber-400/80">{geoError}</p>
+              <p className="text-caption text-gold" role="status">{geoError}</p>
             )}
           </div>
 
@@ -592,7 +591,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               <Mail className="w-4 h-4" />
               <span className="text-sm">{user?.email}</span>
             </div>
-            <p className="text-xs text-mystic-500 mt-1">{tAppSettings('settings.emailNotChangeable')}</p>
+            <p className="text-caption text-mystic-500 mt-1">{tAppSettings('settings.emailNotChangeable')}</p>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -628,7 +627,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             />
           </ListRowGroup>
 
-          <p className="text-xs text-mystic-500">
+          <p className="text-caption text-mystic-500">
             When enabled, you'll receive daily reminders to check your horoscope and complete your ritual.
           </p>
         </div>
@@ -655,7 +654,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 await refreshProfile();
                 toast(tAppSettings('settings.menu.themeChanged', { name: theme.name }), 'success');
               }}
-              className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+              className={`w-full p-4 rounded-control border-2 transition-all text-left ${
                 (profile?.theme || 'dark') === theme.id
                   ? 'border-gold bg-gold/10'
                   : 'border-mystic-700 hover:border-mystic-500'
@@ -694,7 +693,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   role="radio"
                   aria-checked={selected}
                   onClick={() => { setReadingScale(scale.id); setReadingScaleState(scale.id); }}
-                  className={`px-3 py-3 rounded-xl border-2 text-ui font-medium transition-colors duration-fast ${
+                  className={`px-3 py-3 rounded-control border-2 text-ui font-medium transition-colors duration-fast ${
                     selected
                       ? 'border-gold bg-gold/10 text-gold'
                       : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'
@@ -759,21 +758,21 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-mystic-300">{tAppSettings('settings.frequentlyAskedQuestions')}</h3>
 
-            <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <div className="p-4 bg-mystic-800/30 rounded-card">
               <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.accuracyQ')}</p>
               <p className="text-sm text-mystic-500 mt-2">
                 Tarot readings are meant for reflection and guidance, not prediction. They help you explore your thoughts and feelings.
               </p>
             </div>
 
-            <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <div className="p-4 bg-mystic-800/30 rounded-card">
               <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.cancelQ')}</p>
               <p className="text-sm text-mystic-500 mt-2">
                 Yes, you can cancel anytime from your device's app store subscription settings.
               </p>
             </div>
 
-            <div className="p-4 bg-mystic-800/30 rounded-xl">
+            <div className="p-4 bg-mystic-800/30 rounded-card">
               <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.secureQ')}</p>
               <p className="text-sm text-mystic-500 mt-2">
                 Yes, all your data is encrypted and stored securely. We never share or sell your information.
@@ -790,21 +789,21 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       <Sheet open={open} onClose={onClose} title="Terms of Service">
         {renderBackButton()}
         <div className="space-y-4 text-sm text-mystic-300">
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-2">{tAppSettings('settings.legal.entertainmentDisclaimer', { defaultValue: 'Entertainment disclaimer' })}</h4>
             <p>
               Arcana is designed for entertainment and self-reflection purposes only. All readings, horoscopes, and personality assessments should not be considered professional advice.
             </p>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.acceptanceOfTerms', { defaultValue: 'Acceptance of terms' })}</h4>
             <p>
               By using this app, you agree to use it responsibly and acknowledge that all content is for entertainment purposes only.
             </p>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.notProfessionalAdvice', { defaultValue: 'Not professional advice' })}</h4>
             <ul className="space-y-2 text-mystic-400">
               <li>- Medical or mental health diagnosis</li>
@@ -831,7 +830,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             This Privacy Policy explains how Arcana ("we", "us", "our") collects, uses, and shares information when you use our mobile application ("App").
           </p>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Information we collect</h4>
             <ul className="space-y-2 text-mystic-400">
               <li>
@@ -852,7 +851,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </ul>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">How we use information</h4>
             <ul className="space-y-2 text-mystic-400">
               <li>• Provide and operate the App and its features</li>
@@ -864,7 +863,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </ul>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Third-party services</h4>
             <p className="text-mystic-400 mb-2">
               The App may use third-party services to operate core functionality, including:
@@ -879,7 +878,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </p>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Sharing of information</h4>
             <p className="text-mystic-400 mb-2">
               We do not sell your personal information. We may share information:
@@ -891,28 +890,28 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </ul>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Data retention</h4>
             <p className="text-mystic-400">
               We retain information for as long as needed to provide the App and for legitimate business purposes (such as compliance and dispute resolution). You may request deletion where applicable.
             </p>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Security</h4>
             <p className="text-mystic-400">
               We use reasonable administrative, technical, and organizational safeguards to protect information. No method of transmission or storage is 100% secure.
             </p>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Children's privacy</h4>
             <p className="text-mystic-400">
               The App is not intended for children under 13 (or the age required by local law). We do not knowingly collect personal information from children.
             </p>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Your choices</h4>
             <ul className="space-y-2 text-mystic-400">
               <li>
@@ -924,7 +923,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </ul>
           </div>
 
-          <div className="p-4 bg-mystic-800/30 rounded-xl">
+          <div className="p-4 bg-mystic-800/30 rounded-card">
             <h4 className="font-medium text-gold mb-3">Contact</h4>
             <p className="text-mystic-400 mb-2">
               If you have questions or requests, contact:
@@ -950,7 +949,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       <Sheet open={open} onClose={onClose} title={tAppSettings('settings.deleteAccount.title')}>
         {renderBackButton()}
         <div className="space-y-6">
-          <div className="flex items-start gap-4 p-4 bg-coral/10 border border-coral/20 rounded-xl">
+          <div className="flex items-start gap-4 p-4 bg-coral/10 border border-coral/25 rounded-card">
             <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-medium text-coral mb-1">{tAppSettings('settings.actionCannotBeUndone')}</h3>
@@ -976,8 +975,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </Button>
 
             <div className="space-y-2">
-              <label className="text-xs text-mystic-400 uppercase tracking-wider">
-                {tAppSettings('settings.deleteAccount.typeToConfirm', { defaultValue: 'Type DELETE to confirm' })}
+              <label className="block">
+                <EyebrowLabel align="left">
+                  {tAppSettings('settings.deleteAccount.typeToConfirm', { defaultValue: 'Type DELETE to confirm' })}
+                </EyebrowLabel>
               </label>
               <Input
                 value={deleteConfirmText}
@@ -1016,8 +1017,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         {settingGroups.map((group, groupIndex) => (
           <div key={groupIndex}>
             {group.title && (
-              <h3 className="text-xs font-medium text-mystic-500 uppercase tracking-wider mb-3">
-                {group.title}
+              <h3 className="mb-3">
+                <EyebrowLabel align="left">{group.title}</EyebrowLabel>
               </h3>
             )}
             <ListRowGroup>
@@ -1040,11 +1041,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         ))}
 
         <div>
-          <h3 className="text-xs font-medium text-mystic-500 uppercase tracking-wider mb-3">
-            Card Back Design
+          <h3 className="mb-3">
+            <EyebrowLabel align="left">Card Back Design</EyebrowLabel>
           </h3>
           <Card variant="elevated" padding="md">
-            <p className="text-xs text-mystic-400 mb-4">
+            <p className="text-meta text-mystic-400 mb-4">
               Choose the design for the back of your tarot cards
             </p>
 
@@ -1062,7 +1063,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   onClick={() => handleSelectCardBack(null)}
                   disabled={savingCardBack}
                   className={`
-                    relative aspect-[2/3] rounded-xl border-2 transition-all overflow-hidden
+                    relative aspect-[2/3] rounded-control border-2 transition-all overflow-hidden
                     bg-gradient-to-br from-mystic-800 to-mystic-900
                     flex items-center justify-center min-h-[120px]
                     ${!profile?.card_back_url
@@ -1072,7 +1073,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     disabled:opacity-50
                   `}
                 >
-                  <span className="text-xs text-mystic-400 text-center px-1">{tAppSettings('settings.defaultLabel')}</span>
+                  <span className="text-caption text-mystic-400 text-center px-1">{tAppSettings('settings.defaultLabel')}</span>
                   {!profile?.card_back_url && (
                     <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
                       <Check className="w-3 h-3 text-mystic-900" />
@@ -1086,7 +1087,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     onClick={() => handleSelectCardBack(cardBack.url)}
                     disabled={savingCardBack}
                     className={`
-                      relative aspect-[2/3] rounded-xl border-2 transition-all overflow-hidden min-h-[120px]
+                      relative aspect-[2/3] rounded-control border-2 transition-all overflow-hidden min-h-[120px]
                       ${profile?.card_back_url === cardBack.url
                         ? 'border-gold'
                         : 'border-mystic-700 hover:border-mystic-500'
@@ -1110,7 +1111,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             )}
 
             {savingCardBack && (
-              <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gold">
+              <div className="flex items-center justify-center gap-2 mt-3 text-caption text-gold" role="status">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Saving...
               </div>
@@ -1119,11 +1120,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         </div>
 
         <div>
-          <h3 className="text-xs font-medium text-mystic-500 uppercase tracking-wider mb-3">
-            App Background
+          <h3 className="mb-3">
+            <EyebrowLabel align="left">App Background</EyebrowLabel>
           </h3>
           <Card variant="elevated" padding="md">
-            <p className="text-xs text-mystic-400 mb-4">
+            <p className="text-meta text-mystic-400 mb-4">
               Choose a custom background for the app
             </p>
 
@@ -1142,7 +1143,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   onClick={() => handleSelectBackground(null)}
                   disabled={savingBackground}
                   className={`
-                    relative aspect-video rounded-xl border-2 transition-all overflow-hidden
+                    relative aspect-video rounded-control border-2 transition-all overflow-hidden
                     bg-gradient-to-br from-mystic-800 to-mystic-900
                     flex items-center justify-center min-h-[100px]
                     ${!profile?.background_url
@@ -1154,7 +1155,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 >
                   <div className="flex flex-col items-center gap-1">
                     <ImageIcon className="w-5 h-5 text-mystic-400" />
-                    <span className="text-xs text-mystic-400">{tAppSettings('settings.defaultLabel')}</span>
+                    <span className="text-caption text-mystic-400">{tAppSettings('settings.defaultLabel')}</span>
                   </div>
                   {!profile?.background_url && (
                     <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
@@ -1173,7 +1174,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   onClick={() => handleSelectBackground(CELESTIAL_BG_URL)}
                   disabled={savingBackground}
                   className={`
-                    relative aspect-video rounded-xl border-2 transition-all overflow-hidden min-h-[100px]
+                    relative aspect-video rounded-control border-2 transition-all overflow-hidden min-h-[100px]
                     ${profile?.background_url === CELESTIAL_BG_URL
                       ? 'border-gold'
                       : 'border-mystic-700 hover:border-mystic-500'
@@ -1220,8 +1221,8 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                   ))}
                   {/* Label */}
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 py-1.5 bg-gradient-to-t from-mystic-950/80 to-transparent">
-                    <MysticalStar size={14} halo={false} className="text-gold" />
-                    <span className="text-xs font-medium text-mystic-100">
+                    <SparkleFourPoint size={12} className="text-gold" />
+                    <span className="text-caption font-medium text-mystic-100">
                       {tAppSettings('settings.celestialLabel', { defaultValue: 'Celestial' })}
                     </span>
                   </div>
@@ -1238,7 +1239,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                     onClick={() => handleSelectBackground(bg.url)}
                     disabled={savingBackground}
                     className={`
-                      relative aspect-video rounded-xl border-2 transition-all overflow-hidden min-h-[100px]
+                      relative aspect-video rounded-control border-2 transition-all overflow-hidden min-h-[100px]
                       ${profile?.background_url === bg.url
                         ? 'border-gold'
                         : 'border-mystic-700 hover:border-mystic-500'
@@ -1264,7 +1265,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             )}
 
             {savingBackground && (
-              <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gold">
+              <div className="flex items-center justify-center gap-2 mt-3 text-caption text-gold" role="status">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Saving...
               </div>
@@ -1277,14 +1278,14 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
             <div>
               <h4 className="text-sm font-medium text-mystic-300 mb-1">{tAppSettings('settings.disclaimerHeader')}</h4>
-              <p className="text-xs text-mystic-500 leading-relaxed">
+              <p className="text-caption text-mystic-500">
                 This app is for reflection and entertainment. It does not provide medical, legal, or financial advice.
               </p>
             </div>
           </div>
         </Card>
 
-        <div className="text-xs text-mystic-600 space-y-1">
+        <div className="text-caption text-mystic-600 space-y-1">
           <p>{tAppSettings('settings.disclaimerBody')}</p>
         </div>
 
@@ -1299,7 +1300,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 return next;
               });
             }}
-            className="w-full text-center text-xs text-mystic-600 hover:text-mystic-500 transition-colors"
+            className="w-full min-h-[44px] text-center text-caption text-mystic-600 hover:text-mystic-500 transition-colors"
           >
             Arcana v1.0.0
             {versionTapCount >= 5 && !isDevMode() && (

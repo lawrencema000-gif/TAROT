@@ -11,7 +11,7 @@ import { PersonAIReading } from '../components/people/PersonAIReading';
 import { people as peopleDal } from '../dal';
 import type { Person } from '../dal/people';
 import { supabase } from '../lib/supabase';
-import { type NatalChart, SIGN_GLYPH, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
+import { type NatalChart, toWheelChart, isPlanet, isZodiacSign, isAspectType } from '../lib/chart';
 import { readPet, SPECIES_INFO, PET_DISCLAIMER } from '../data/petAstrology';
 import { useT } from '../i18n/useT';
 import { localizePlanetName, localizeSignName, localizeAspectName } from '../i18n/localizeNames';
@@ -74,6 +74,7 @@ export function PersonDetailPage() {
 
   const isPet = person.relationship === 'pet';
   const petReading = isPet ? readPet(person.birthDate, person.species) : null;
+  const petSign = petReading ? petReading.sign.charAt(0).toUpperCase() + petReading.sign.slice(1) : null;
   const sun = chart?.planets.find((p) => p.planet === 'Sun');
   const moon = chart?.planets.find((p) => p.planet === 'Moon');
 
@@ -111,7 +112,7 @@ export function PersonDetailPage() {
         <>
           <Card className="p-4 space-y-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl">{SIGN_GLYPH[petReading.sign.charAt(0).toUpperCase() + petReading.sign.slice(1)] ?? ''}</span>
+              {petSign && isZodiacSign(petSign) && <ZodiacGlyph sign={petSign} size={28} className="text-gold shrink-0" />}
               <div>
                 <div className="heading-display-md text-mystic-100">{petReading.reading.headline}</div>
                 <div className="text-meta text-mystic-400">
@@ -235,7 +236,7 @@ export function PersonDetailPage() {
           <Pencil className="w-4 h-4 mr-2" /> {t('people.detail.edit', { defaultValue: 'Edit birth details' })}
         </Button>
       </div>
-      <button onClick={() => setConfirmDelete(true)} className="w-full text-center text-xs text-red-400/70 hover:text-red-400 py-2 flex items-center justify-center gap-1">
+      <button onClick={() => setConfirmDelete(true)} className="w-full min-h-[44px] text-center text-caption text-coral/70 hover:text-coral py-2 flex items-center justify-center gap-1">
         <Trash2 className="w-3.5 h-3.5" /> {t('people.detail.delete', { defaultValue: 'Delete {{name}}', name: person.name })}
       </button>
 

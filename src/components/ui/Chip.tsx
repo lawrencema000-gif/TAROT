@@ -244,7 +244,7 @@ export function Tag({ children, tone = 'neutral', size = 'sm', icon, className =
 export interface BadgeProps {
   children: ReactNode;
   tone?: Tone;
-  /** A breathing dot before the label, for LIVE and other now-things. */
+  /** A dot before the label, for LIVE and other now-things. It no longer breathes: nothing in the system loops except a loader. */
   pulse?: boolean;
   className?: string;
 }
@@ -255,7 +255,7 @@ export function Badge({ children, tone = 'gold', pulse = false, className = '' }
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-semibold uppercase tracking-wider ${TINT[tone]} ${className}`.trim()}
     >
-      {pulse && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" aria-hidden />}
+      {pulse && <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden />}
       {children}
     </span>
   );

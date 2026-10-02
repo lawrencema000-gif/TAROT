@@ -145,7 +145,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         <div className="w-full max-w-sm">
           <button
             onClick={() => { setShowVerifyEmail(false); setResendSent(false); }}
-            className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+            className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('auth.backToSignIn')}
@@ -154,7 +154,6 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
           <div className="text-center mb-10">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
               <Mail className="w-10 h-10 text-gold" />
-              <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
             <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
             <p className="text-mystic-400">
@@ -194,7 +193,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         <div className="w-full max-w-sm">
           <button
             onClick={() => { setShowResetPassword(false); setResetSent(false); }}
-            className="flex items-center gap-2 text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+            className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('auth.backToSignIn')}
@@ -207,7 +206,6 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               ) : (
                 <Mail className="w-10 h-10 text-gold" />
               )}
-              <div className="absolute inset-0 rounded-full border border-gold/20 animate-pulse-slow" />
             </div>
             <h1 className="heading-display-xl text-mystic-100 mb-2">
               {resetSent ? t('auth.checkEmail') : t('auth.resetPassword')}
@@ -278,7 +276,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             onClick={handleGoogleSignIn}
             disabled={googleLoading || loading || appleLoading}
             loading={googleLoading}
-            className=" bg-white hover:bg-gray-50 border-gray-300 text-gray-800"
+            className=" bg-white hover:bg-white/90 border-mystic-300 text-mystic-950"
           >
             <GoogleIcon className="w-5 h-5" />
             {t('onboarding:createAccount.googleCta')}
@@ -291,7 +289,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               onClick={handleAppleSignIn}
               disabled={googleLoading || loading || appleLoading}
               loading={appleLoading}
-              className=" bg-black hover:bg-gray-900 border-black text-white"
+              className=" bg-black hover:bg-black/90 border-black text-white"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
@@ -335,7 +333,8 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-mystic-400 hover:text-mystic-200 p-2"
+              aria-label={showPassword ? t('onboarding:createAccount.hidePassword') : t('onboarding:createAccount.showPassword')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-400 hover:text-mystic-200"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -349,7 +348,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         <button
           type="button"
           onClick={() => { setShowResetPassword(true); setResetEmail(email); }}
-          className="w-full mt-4 text-sm text-mystic-400 hover:text-gold transition-colors py-2"
+          className="w-full mt-4 min-h-[44px] text-sm text-mystic-400 hover:text-gold transition-colors py-2"
         >
           {t('auth.forgotPassword')}
         </button>
@@ -366,7 +365,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
           </Button>
         </div>
 
-        <p className="mt-8 text-xs text-center text-mystic-500">
+        <p className="mt-8 text-caption text-center text-mystic-500">
           {t('auth.termsNotice')}
           <br />This app is for entertainment purposes only.
         </p>

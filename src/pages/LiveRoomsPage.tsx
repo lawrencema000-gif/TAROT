@@ -129,7 +129,7 @@ export function LiveRoomsPage() {
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-display text-lg text-mystic-100">{room.title}</h3>
-                  <p className="text-xs text-mystic-400 mt-0.5 flex items-center gap-1">
+                  <p className="text-meta text-mystic-400 mt-0.5 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {when.toLocaleString()} · {room.duration_minutes}m
                   </p>
@@ -144,7 +144,7 @@ export function LiveRoomsPage() {
                 <p className="text-sm text-mystic-300 leading-relaxed mb-3">{room.description}</p>
               )}
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-mystic-500 flex items-center gap-1">
+                <p className="text-meta text-mystic-500 flex items-center gap-1">
                   <Users className="w-3 h-3" />
                   {t('liveRooms.capacity', { defaultValue: 'up to {{n}} listeners', n: room.capacity })}
                 </p>
@@ -167,7 +167,7 @@ export function LiveRoomsPage() {
                     )}
                   </Button>
                 ) : (
-                  <p className="text-xs text-mystic-500 italic">
+                  <p className="text-meta text-mystic-500 italic">
                     {t('liveRooms.signInToRsvp', { defaultValue: 'Sign in to save a seat' })}
                   </p>
                 )}
@@ -178,7 +178,7 @@ export function LiveRoomsPage() {
         })
       )}
 
-      <p className="text-[10px] text-center text-mystic-600 italic">
+      <p className="text-caption text-center text-mystic-600 italic">
         {t('liveRooms.voiceComingSoon', {
           defaultValue: 'Audio is rolling out gradually. Save a seat, then check back here — each room opens at its scheduled time.',
         })}

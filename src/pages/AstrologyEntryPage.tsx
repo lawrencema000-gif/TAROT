@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LearnEntryTemplate, LearnEntryNotFound, type LearnEntrySection } from '../components/learn/LearnEntryTemplate';
 import { getAstroEntry, astrologyEntries, type AstroCategory, type AstroEntry } from '../data/astrologyLearn';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
+import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
+import type { ZodiacSign, Planet } from '../types/astrology';
 
 const CATEGORY_LABELS: Record<string, string> = {
   sign: 'Zodiac Sign',
@@ -18,6 +20,23 @@ const FACTS: Record<AstroCategory, (e: AstroEntry) => Array<[string, string | nu
   house: (e) => [['House', e.houseNumber], ['Domain', e.domain], ['Natural sign', e.naturalSign]],
   aspect: (e) => [['Angle', e.aspectAngle === undefined ? undefined : `${e.aspectAngle}°`], ['Nature', e.aspectNature]],
 };
+
+/**
+ * Signs and planets render their drawn glyphs: the Unicode astrological
+ * symbols are colour emoji on Android. Houses (Roman numerals) and aspects
+ * keep their text symbol, which no platform emojifies.
+ */
+function entryGlyph(entry: AstroEntry, size: number): ReactNode {
+  if (entry.category === 'sign') {
+    const Glyph = ZODIAC_ICONS[entry.name as ZodiacSign];
+    if (Glyph) return <Glyph size={size} strokeWidth={1.5} aria-label={entry.name} />;
+  }
+  if (entry.category === 'planet') {
+    const Glyph = PLANET_ICONS[entry.name as Planet];
+    if (Glyph) return <Glyph size={size} strokeWidth={1.5} aria-label={entry.name} />;
+  }
+  return entry.symbol;
+}
 
 export function AstrologyEntryPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -90,7 +109,7 @@ export function AstrologyEntryPage() {
     <LearnEntryTemplate
       eyebrow={CATEGORY_LABELS[entry.category]}
       title={entry.name}
-      symbol={entry.symbol}
+      symbol={entryGlyph(entry, 28)}
       lede={entry.longDescription}
       facts={FACTS[entry.category](entry).map(([label, value]) => ({ label, value }))}
       sections={sections}

@@ -97,7 +97,7 @@ export function CelestialCitySearch({ onPick }: Props) {
           placeholder={t('celestial.search.placeholder', {
             defaultValue: 'Search a city or country…',
           }) as string}
-          className="w-full pl-11 pr-4 py-3 rounded-xl bg-mystic-800/50 hairline-gold-soft text-mystic-100 placeholder-mystic-500 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 transition-all"
+          className="w-full pl-11 pr-4 py-3 rounded-control bg-mystic-800/50 hairline-gold-soft text-mystic-100 placeholder-mystic-500 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 transition-all"
           aria-label={t('celestial.search.label', { defaultValue: 'Search a city' }) as string}
         />
       </div>
@@ -109,7 +109,7 @@ export function CelestialCitySearch({ onPick }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute z-20 left-0 right-0 mt-2 rounded-xl bg-mystic-900/95 backdrop-blur-md hairline-gold-soft overflow-hidden"
+            className="absolute z-20 left-0 right-0 mt-2 rounded-control bg-mystic-900 hairline-gold-soft overflow-hidden"
           >
             {results.map((city, i) => (
               <button
@@ -124,7 +124,7 @@ export function CelestialCitySearch({ onPick }: Props) {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-mystic-100 truncate">{city.name}</p>
-                  <p className="text-xs text-mystic-500 truncate">{city.country}</p>
+                  <p className="text-meta text-mystic-500 truncate">{city.country}</p>
                 </div>
               </button>
             ))}

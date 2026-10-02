@@ -132,14 +132,14 @@ export function HumanDesignPage() {
 
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-mystic-500 mb-1 flex items-center gap-2">
+              <label className="text-meta text-mystic-500 mb-1 flex items-center gap-2">
                 <Calendar className="w-3 h-3" />
                 {t('humanDesign.birthDate', { defaultValue: 'Birth date' })}
               </label>
               <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs text-mystic-500 mb-1 flex items-center gap-2">
+              <label className="text-meta text-mystic-500 mb-1 flex items-center gap-2">
                 <Clock className="w-3 h-3" />
                 {t('humanDesign.birthTime', { defaultValue: 'Birth time (sharpens the reading — without it we default to noon)' })}
               </label>
@@ -192,7 +192,7 @@ export function HumanDesignPage() {
           subtitle: `${t('humanDesign.profileLabel', { defaultValue: 'Profile' })} ${chart.profile}`,
           tagline: chart.strategy,
           affirmation: typeContent.affirmation || chart.signature,
-          brand: 'Arcana · Human Design',
+          brand: t('share.brand.humanDesign', { defaultValue: 'Human Design' }) as string,
         });
         const out = await shareOrDownload(
           blob,
@@ -200,6 +200,7 @@ export function HumanDesignPage() {
           `My Human Design: ${chart.type} (${chart.profile}). Strategy: ${chart.strategy}.`,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
+        else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
       } catch {
         toast(t('quizzes.share.failed', { defaultValue: 'Could not create share image' }), 'error');
       }
@@ -240,17 +241,17 @@ export function HumanDesignPage() {
       >
         {/* Signature / Not-self */}
         <div className="grid grid-cols-2 gap-3">
-          <Card padding="md" className="border-emerald-400/20">
+          <Card padding="md" className="border-teal/25">
             <p className="text-meta text-mystic-400 mb-1">
               {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
             </p>
-            <p className="text-lg text-emerald-400 font-display">{chart.signature}</p>
+            <p className="text-lg text-teal font-display">{chart.signature}</p>
           </Card>
-          <Card padding="md" className="border-pink-400/20">
+          <Card padding="md" className="border-coral/25">
             <p className="text-meta text-mystic-400 mb-1">
               {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
             </p>
-            <p className="text-lg text-pink-400 font-display">{chart.notSelfTheme}</p>
+            <p className="text-lg text-coral font-display">{chart.notSelfTheme}</p>
           </Card>
         </div>
 
@@ -366,7 +367,7 @@ export function HumanDesignPage() {
 
         {/* Strategy in practice — concrete scenarios per Type. */}
         {TYPE_CASES[typeKey(chart.type)] && TYPE_CASES[typeKey(chart.type)].length > 0 && (
-          <Card padding="lg" className="border-emerald-400/20">
+          <Card padding="lg" className="border-teal/25">
             <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
               <Target className="w-4 h-4" />
               {t('humanDesign.casesHeading', { defaultValue: 'Strategy in practice' })}
@@ -385,14 +386,14 @@ export function HumanDesignPage() {
                   </p>
                   <p className="reading-copy">{c.scenario}</p>
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="p-2.5 rounded-lg bg-pink-500/5 border border-pink-400/15">
-                      <p className="font-display-eyebrow text-pink-400 mb-1">
+                    <div className="p-2.5 rounded-lg bg-coral/10 border border-coral/15">
+                      <p className="font-display-eyebrow text-coral mb-1">
                         {t('humanDesign.wrongMoveLabel', { defaultValue: 'The reactive move' })}
                       </p>
                       <p className="reading-copy">{c.wrongMove}</p>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-400/15">
-                      <p className="font-display-eyebrow text-emerald-400 mb-1">
+                    <div className="p-2.5 rounded-lg bg-teal/10 border border-teal/15">
+                      <p className="font-display-eyebrow text-teal mb-1">
                         {t('humanDesign.alignedMoveLabel', { defaultValue: 'The aligned move' })}
                       </p>
                       <p className="reading-copy">{c.alignedMove}</p>
@@ -425,16 +426,16 @@ export function HumanDesignPage() {
                 <li key={i}>{step}</li>
               ))}
             </ol>
-            <div className="p-3 rounded-xl bg-pink-500/5 border border-pink-400/15 mb-2">
-              <p className="font-display-eyebrow text-pink-400 mb-1">
+            <div className="p-3 rounded-control bg-coral/10 border border-coral/15 mb-2">
+              <p className="font-display-eyebrow text-coral mb-1">
                 {t('humanDesign.commonMistakeLabel', { defaultValue: 'Common mistake' })}
               </p>
               <p className="reading-copy">
                 {AUTHORITY_SCRIPTS[chart.authority as Authority].commonMistake}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-400/15">
-              <p className="font-display-eyebrow text-emerald-400 mb-1">
+            <div className="p-3 rounded-control bg-teal/10 border border-teal/15">
+              <p className="font-display-eyebrow text-teal mb-1">
                 {t('humanDesign.realityCheckLabel', { defaultValue: 'Reality check' })}
               </p>
               <p className="reading-copy">
@@ -501,16 +502,18 @@ function Bodygraph({
   // Throat-G-Sacral on the midline, Ajna sits between Head and Throat,
   // Heart sits right of G, Spleen sits left of Sacral, Solar Plexus
   // sits right of Sacral).
+  // Fills are token values (tailwind.config.js): gold-light, teal, mystic-300,
+  // gold, coral, coral-light, cosmic-rose, cosmic-violet, gold-dark.
   const positions: Record<Center, { x: number; y: number; label: string; color: string; path: string }> = {
-    Head:        { x: 150, y: 30,  label: 'Head',         color: '#FFD54F', path: 'triangle-up' },
-    Ajna:        { x: 150, y: 90,  label: 'Ajna',         color: '#81C784', path: 'triangle-down' },
-    Throat:      { x: 150, y: 150, label: 'Throat',       color: '#A1887F', path: 'square' },
-    G:           { x: 150, y: 210, label: 'G / Identity', color: '#F4D668', path: 'diamond' },
-    Heart:       { x: 215, y: 225, label: 'Heart',        color: '#EF5350', path: 'triangle-down' },
-    SolarPlexus: { x: 230, y: 310, label: 'Solar Plexus', color: '#FF8A65', path: 'triangle-up' },
-    Sacral:      { x: 150, y: 285, label: 'Sacral',       color: '#F06292', path: 'square' },
-    Spleen:      { x: 70,  y: 295, label: 'Spleen',       color: '#7E57C2', path: 'triangle-up' },
-    Root:        { x: 150, y: 365, label: 'Root',         color: '#FFB74D', path: 'square' },
+    Head:        { x: 150, y: 30,  label: 'Head',         color: '#f4d668', path: 'triangle-up' },
+    Ajna:        { x: 150, y: 90,  label: 'Ajna',         color: '#4ecdc4', path: 'triangle-down' },
+    Throat:      { x: 150, y: 150, label: 'Throat',       color: '#c6c6d8', path: 'square' },
+    G:           { x: 150, y: 210, label: 'G / Identity', color: '#d4af37', path: 'diamond' },
+    Heart:       { x: 215, y: 225, label: 'Heart',        color: '#e07a5f', path: 'triangle-down' },
+    SolarPlexus: { x: 230, y: 310, label: 'Solar Plexus', color: '#f4a390', path: 'triangle-up' },
+    Sacral:      { x: 150, y: 285, label: 'Sacral',       color: '#d4848c', path: 'square' },
+    Spleen:      { x: 70,  y: 295, label: 'Spleen',       color: '#8e6eb5', path: 'triangle-up' },
+    Root:        { x: 150, y: 365, label: 'Root',         color: '#b8960f', path: 'square' },
   };
 
   const isDefined = (c: Center) => definedCenters.includes(c);
@@ -562,7 +565,7 @@ function Bodygraph({
         const defined = isDefined(center);
         const fill = defined ? pos.color : 'transparent';
         const stroke = defined ? pos.color : 'rgba(255,255,255,0.25)';
-        const labelColor = defined ? '#0a0a10' : '#bdbdcc';
+        const labelColor = defined ? '#07070f' : '#c6c6d8';
         return (
           <g key={center}>
             <CenterShape

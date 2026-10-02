@@ -111,7 +111,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-mystic-100">{resolvedLabel}</p>
-              <p className="text-[11px] text-mystic-400 mt-0.5 leading-relaxed">
+              <p className="text-meta text-mystic-400 mt-0.5">
                 {t('askOracle.subtitle', {
                   defaultValue: 'Personalized read based on your chart and memory',
                 })}
@@ -122,7 +122,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
       ) : (
         <button
           onClick={handleOpen}
-          className="inline-flex items-center gap-1.5 text-xs text-cosmic-violetLight hover:text-cosmic-violetLight/80 underline underline-offset-2"
+          className="inline-flex items-center gap-1.5 min-h-[44px] text-caption text-cosmic-violetLight hover:text-cosmic-violetLight/80 underline underline-offset-2"
         >
           <Sparkles className="w-3 h-3" />
           {resolvedLabel}
@@ -146,7 +146,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
           {loading && (
             <div className="py-8 text-center">
               <div className="loading-constellation mx-auto mb-3" />
-              <p className="text-xs text-mystic-500">
+              <p className="text-caption text-mystic-500">
                 {t('askOracle.drawing', { defaultValue: 'Drawing…' })}
               </p>
             </div>
@@ -198,7 +198,7 @@ export function AskOracleButton({ context, variant = 'subtle', label }: AskOracl
 
           <button
             onClick={() => setOpen(false)}
-            className="w-full py-2 text-xs text-mystic-500 hover:text-mystic-300 flex items-center justify-center gap-1 pt-2 border-t border-mystic-800"
+            className="w-full py-2 min-h-[44px] text-caption text-mystic-500 hover:text-mystic-300 flex items-center justify-center gap-1 pt-2 border-t border-mystic-800"
           >
             <X className="w-3 h-3" />
             {t('askOracle.close', { defaultValue: 'Close the Oracle' })}

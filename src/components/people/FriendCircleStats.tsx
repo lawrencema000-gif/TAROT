@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { Users } from 'lucide-react';
-import { Card } from '../ui';
+import { Card, EyebrowLabel } from '../ui';
+import { ZODIAC_ICONS } from '../icons';
 import { getZodiacSign, zodiacData } from '../../utils/zodiac';
-import { ELEMENT_COLOR, SIGN_GLYPH, SIGN_ORDER } from '../../lib/chart';
+import { ELEMENT_COLOR, SIGN_ORDER } from '../../lib/chart';
 import type { Person } from '../../dal/people';
 
 const MODALITY: Record<string, 'Cardinal' | 'Fixed' | 'Mutable'> = {
@@ -50,7 +51,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
 
   const Row = ({ data, colors, label }: { data: Record<string, number>; colors: Record<string, string>; label: string }) => (
     <div className="space-y-1.5">
-      <div className="text-[11px] uppercase tracking-wider text-mystic-500">{label}</div>
+      <EyebrowLabel align="left" className="block">{label}</EyebrowLabel>
       <div className="flex h-2 bg-mystic-800 rounded-full overflow-hidden">
         {Object.entries(data).map(([k, v]) => v > 0 && (
           <div key={k} title={`${k}: ${v}`} className="h-full transition-[width] duration-deliberate ease-out" style={{ width: `${(v / total) * 100}%`, background: colors[k] }} />
@@ -58,7 +59,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
         {Object.entries(data).filter(([, v]) => v > 0).map(([k, v]) => (
-          <span key={k} className="inline-flex items-center gap-1 text-[10px] text-mystic-400">
+          <span key={k} className="inline-flex items-center gap-1 text-caption text-mystic-400">
             <span className="w-2 h-2 rounded-full inline-block" style={{ background: colors[k] }} />{k} {v}
           </span>
         ))}
@@ -71,17 +72,19 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
       <div className="flex items-center gap-2">
         <Users className="w-4 h-4 text-gold" />
         <h3 className="heading-display-md text-mystic-100">Your circle</h3>
-        <span className="text-xs text-mystic-600 ml-auto">{total} people</span>
+        <span className="text-meta text-mystic-600 ml-auto">{total} people</span>
       </div>
 
       <Row data={stats.elements} colors={ELEMENT_COLOR} label="Elements" />
       <Row data={stats.modalities} colors={MODALITY_COLOR} label="Modalities" />
 
       <div className="space-y-1.5">
-        <div className="text-[11px] uppercase tracking-wider text-mystic-500">Signs</div>
+        <EyebrowLabel align="left" className="block">Signs</EyebrowLabel>
         <div className="grid grid-cols-6 gap-1.5">
           {SIGN_ORDER.map((sign) => {
             const count = stats.signs[sign] ?? 0;
+            // Drawn, not typed: U+2648–2653 come out as colour emoji on Android.
+            const Glyph = ZODIAC_ICONS[sign];
             return (
               <div key={sign} title={`${sign}: ${count}`} className="flex flex-col items-center gap-0.5">
                 <div className="w-full h-10 flex items-end">
@@ -91,7 +94,7 @@ export function FriendCircleStats({ people }: { people: Person[] }) {
                       background: count > 0 ? signColor(sign) : 'rgba(255,255,255,0.06)',
                     }} />
                 </div>
-                <span className="text-[13px] leading-none" style={{ fontFamily: 'serif', opacity: count > 0 ? 1 : 0.3 }}>{SIGN_GLYPH[sign]}</span>
+                <Glyph size={14} strokeWidth={1.8} className={count > 0 ? 'text-mystic-200' : 'text-mystic-200 opacity-30'} aria-label={sign} />
               </div>
             );
           })}

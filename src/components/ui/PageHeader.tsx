@@ -107,7 +107,7 @@ export const PageHeader = forwardRef<HTMLElement, PageHeaderProps>(
             <div className={`flex items-center gap-3 ${centered ? 'justify-center' : ''}`}>
               {icon && (
                 <span
-                  className="w-10 h-10 shrink-0 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold [&>svg]:w-5 [&>svg]:h-5"
+                  className="w-10 h-10 shrink-0 rounded-control bg-gold/15 border border-gold/30 flex items-center justify-center text-gold [&>svg]:w-5 [&>svg]:h-5"
                   aria-hidden
                 >
                   {icon}

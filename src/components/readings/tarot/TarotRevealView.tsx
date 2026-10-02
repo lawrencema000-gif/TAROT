@@ -218,7 +218,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center"
+          className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px]"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
@@ -227,7 +227,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
           onClick={onSave}
           disabled={!allRevealed}
           aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
-          className="p-2 rounded-full hover:bg-mystic-800 transition-[background-color,transform] duration-fast active:scale-90 disabled:opacity-50"
+          className="p-3 rounded-full hover:bg-mystic-800 transition-[background-color,transform] duration-fast active:scale-90 disabled:opacity-50"
         >
           {isSaved ? (
             <BookmarkCheck className="w-5 h-5 text-gold" />
@@ -347,7 +347,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                   <p className="text-caption text-mystic-400 leading-tight">{position}</p>
                   {/* Named as well as shown: an upside-down plate is not a label. */}
                   <p
-                    className="text-caption text-amber-400 leading-tight transition-opacity duration-base ease-out"
+                    className="text-caption text-gold leading-tight transition-opacity duration-base ease-out"
                     style={{
                       opacity: drawn.revealed && drawn.reversed ? 1 : 0,
                       transitionDelay: `${delay + FLIP_MS - 140}ms`,
@@ -422,7 +422,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                 </Card>
                 <button
                   onClick={onHideAIInterpretation}
-                  className="text-caption text-mystic-400 hover:text-mystic-300 transition-colors duration-fast"
+                  className="inline-flex items-center min-h-[44px] text-caption text-mystic-400 hover:text-mystic-300 transition-colors duration-fast"
                 >
                   {t('readings.revealView.showCardMeanings')}
                 </button>
@@ -474,12 +474,12 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       {showFocusContent ? (
                         <div className={`rounded-control p-3 ${
                           focusInterp.color === 'pink'
-                            ? 'bg-pink-500/10 border border-pink-500/20'
-                            : 'bg-blue-500/10 border border-blue-500/20'
+                            ? 'bg-cosmic-rose/10 border border-cosmic-rose/25'
+                            : 'bg-cosmic-blue/10 border border-cosmic-blue/25'
                         }`}>
                           <div className="flex items-center gap-2 mb-2">
-                            <focusInterp.icon className={`w-4 h-4 ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`} />
-                            <span className={`text-meta font-medium ${focusInterp.color === 'pink' ? 'text-pink-400' : 'text-blue-400'}`}>
+                            <focusInterp.icon className={`w-4 h-4 ${focusInterp.color === 'pink' ? 'text-cosmic-rose' : 'text-cosmic-blue-ink'}`} />
+                            <span className={`text-meta font-medium ${focusInterp.color === 'pink' ? 'text-cosmic-rose' : 'text-cosmic-blue-ink'}`}>
                               {focusInterp.label}
                             </span>
                           </div>
@@ -491,11 +491,11 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             {drawn.reversed ? (
-                              <ArrowDown className="w-3.5 h-3.5 text-amber-400" />
+                              <ArrowDown className="w-3.5 h-3.5 text-gold" />
                             ) : (
-                              <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
+                              <ArrowUp className="w-3.5 h-3.5 text-teal" />
                             )}
-                            <span className={`text-meta font-medium ${drawn.reversed ? 'text-amber-400' : 'text-emerald-400'}`}>
+                            <span className={`text-meta font-medium ${drawn.reversed ? 'text-gold' : 'text-teal'}`}>
                               {drawn.reversed ? t('readings.revealView.reversed') : t('readings.revealView.upright')}
                             </span>
                           </div>

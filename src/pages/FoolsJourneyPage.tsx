@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle2 } from 'lucide-react';
-import { Page, PageHeader, Tag } from '../components/ui';
+import { Page, PageHeader, Tag, EyebrowLabel } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { FOOLS_JOURNEY, getCurrentJourney } from '../data/foolsJourney';
 import { fullDeck } from '../data/tarotDeck';
@@ -25,7 +25,7 @@ export function FoolsJourneyPage() {
     return (
       <Page className="py-16 text-center">
         <p className="text-mystic-300 mb-4">{t('foolsJourney.signInHint', { defaultValue: "Sign in to see your Fool's Journey." })}</p>
-        <button onClick={() => navigate('/signin')} className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
+        <button onClick={() => navigate('/signin')} className="px-5 py-2 min-h-[44px] rounded-control bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
           {t('foolsJourney.signIn', { defaultValue: 'Sign in to walk the journey' })}
         </button>
       </Page>
@@ -45,16 +45,16 @@ export function FoolsJourneyPage() {
         subtitle={
           <>
             <span className="block italic">{current.theme}</span>
-            <span className="block text-xs text-mystic-500 mt-2">Level {currentLevel} of 22</span>
+            <span className="block text-meta text-mystic-500 mt-2">Level {currentLevel} of 22</span>
           </>
         }
       />
 
       {next && (
-        <section className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4 text-center">
-          <p className="text-[10px] uppercase tracking-wider text-gold mb-1">Next milestone</p>
+        <section className="rounded-card border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4 text-center">
+          <EyebrowLabel className="block mb-1">Next milestone</EyebrowLabel>
           <p className="text-mystic-100 font-display text-lg">{next.title}</p>
-          <p className="text-xs text-mystic-400 mt-1">{next.cardName} · {next.milestone}</p>
+          <p className="text-meta text-mystic-400 mt-1">{next.cardName} · {next.milestone}</p>
         </section>
       )}
 
@@ -67,7 +67,7 @@ export function FoolsJourneyPage() {
           return (
             <div
               key={level.level}
-              className={`rounded-2xl border p-3 flex items-center gap-3 transition-colors ${
+              className={`rounded-card border p-3 flex items-center gap-3 transition-colors ${
                 isCurrent
                   ? 'border-gold/50 bg-gold/10'
                   : isUnlocked
@@ -86,19 +86,19 @@ export function FoolsJourneyPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[10px] uppercase tracking-wider text-mystic-500">Level {level.level}</span>
+                  <EyebrowLabel className="text-mystic-500">Level {level.level}</EyebrowLabel>
                   {isCurrent && <Tag tone="gold">You are here</Tag>}
                   {isUnlocked && !isCurrent && <CheckCircle2 className="w-3 h-3 text-gold/70" />}
                 </div>
                 <h2 className={`text-sm font-medium truncate ${isUnlocked ? 'text-mystic-100' : 'text-mystic-500'}`}>{level.title}</h2>
-                <p className="text-xs text-mystic-400 truncate">{level.cardName} · {level.theme}</p>
+                <p className="text-meta text-mystic-400 truncate">{level.cardName} · {level.theme}</p>
               </div>
             </div>
           );
         })}
       </div>
 
-      <p className="text-xs text-mystic-500 text-center">
+      <p className="text-caption text-mystic-500 text-center">
         Each level unlocks as you build your daily practice — pulling cards, journaling readings, completing rituals.
       </p>
     </Page>

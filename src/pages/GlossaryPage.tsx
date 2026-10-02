@@ -76,7 +76,7 @@ export function GlossaryPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search terms…"
-          className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-sm"
+          className="w-full pl-9 pr-3 py-2.5 min-h-[44px] rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-sm"
         />
       </div>
 
@@ -119,15 +119,15 @@ function GlossaryRow({ entry }: { entry: typeof glossaryEntries[number] }) {
   return (
     <Link
       to={`/glossary/${entry.slug}`}
-      className="block p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
+      className="block p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
     >
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2 mb-0.5">
             <span className="text-sm font-medium text-mystic-100">{entry.term}</span>
-            {entry.pronunciation && <span className="text-[11px] text-mystic-500 italic">/{entry.pronunciation}/</span>}
+            {entry.pronunciation && <span className="text-caption text-mystic-500 italic">/{entry.pronunciation}/</span>}
           </div>
-          <p className="text-xs text-mystic-400 leading-relaxed">{entry.shortDefinition}</p>
+          <p className="text-meta text-mystic-400">{entry.shortDefinition}</p>
         </div>
       </div>
     </Link>

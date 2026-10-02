@@ -48,10 +48,11 @@ type Rule = { name: string; re: RegExp; allowed: Set<string> };
 const RULES: Rule[] = [
   {
     // Ambient loops that report no state. `animate-spin` on a loading
-    // indicator is state, and stays allowed everywhere.
+    // indicator is state, and stays allowed everywhere; the Skeleton's
+    // shimmer is its own keyframe (animate-shimmer), not a pulse.
     name: 'infinite animation classes',
     re: /\banimate-(?:pulse|pulse-slow|spin-slow|ping|bounce)\b/,
-    allowed: new Set(['src/components/ui/Skeleton.tsx']),
+    allowed: new Set(),
   },
   {
     name: 'micro-labels below the caption role',
@@ -87,7 +88,9 @@ const RULES: Rule[] = [
     // The symmetric-sparkle ornaments the audits called the tell.
     name: 'ornate cards, flourishes and dividers',
     re: /variant="ornate"|<FourCornerFlourishes\b|<OrnateDivider\b|<StarBurst\b/,
-    allowed: new Set(['src/components/ui/Card.tsx']),
+    // Card.tsx no longer renders FourCornerFlourishes: `ornate` resolves to
+    // `accent`, so the allowance it used to need is gone.
+    allowed: new Set(),
   },
   {
     name: 'MysticalStar',

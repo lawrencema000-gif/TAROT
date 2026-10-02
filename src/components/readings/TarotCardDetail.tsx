@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Heart, Briefcase, Feather, Compass, ArrowUp, ArrowDown, BookOpen, X, Star } from 'lucide-react';
-import { MysticalStar } from '../ui/MysticalStar';
+import { Heart, Briefcase, Feather, Compass, ArrowUp, ArrowDown, BookOpen, X, Star, Loader2 } from 'lucide-react';
+import { TarotCardIcon } from '../ui/NavIcons';
 import { Card, Tabs, Tag } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
@@ -42,7 +42,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
       <button
         onClick={onClose}
         aria-label={t('tarot.detail.closeLabel')}
-        className="absolute top-4 right-4 p-2 rounded-full bg-mystic-800/50 hover:bg-mystic-700 transition-colors z-10"
+        className="absolute top-4 right-4 p-3 rounded-full bg-mystic-800/50 hover:bg-mystic-700 transition-colors z-10"
       >
         <X className="w-5 h-5 text-mystic-300" />
       </button>
@@ -54,16 +54,16 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
               <img
                 src={imageUrl}
                 alt={card.name}
-                className={`w-full h-auto rounded-2xl border-2 border-gold/30 transition-opacity duration-slow ${
+                className={`w-full h-auto rounded-card border-2 border-gold/30 transition-opacity duration-slow ${
                   isLoading ? 'opacity-0' : 'opacity-100'
                 }`}
               />
               {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl">
-                  <MysticalStar size={48} halo={false} className="text-gold animate-pulse" />
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-card" role="status" aria-label={t('tarot.detail.tabs.meaning')}>
+                  <Loader2 className="w-8 h-8 text-gold animate-spin" aria-hidden />
                 </div>
               )}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-mystic-900/40 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 rounded-card bg-gradient-to-t from-mystic-900/40 to-transparent pointer-events-none" />
             </div>
             {reversed && (
               <Tag
@@ -77,8 +77,8 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
             )}
           </div>
         ) : (
-          <div className={`w-48 h-72 mx-auto bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-2xl border-2 border-gold/30 flex items-center justify-center ${reversed ? 'rotate-180' : ''}`}>
-            <MysticalStar size={64} className="text-gold" />
+          <div className={`w-48 h-72 mx-auto bg-gradient-to-br from-mystic-700 to-mystic-900 rounded-card border-2 border-gold/30 flex items-center justify-center ${reversed ? 'rotate-180' : ''}`}>
+            <TarotCardIcon className="w-16 h-16 text-gold" aria-hidden />
           </div>
         )}
       </div>
@@ -123,10 +123,10 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-emerald-500/20">
-                    <ArrowUp className="w-4 h-4 text-emerald-400" />
+                  <div className="p-1.5 rounded-lg bg-teal/15">
+                    <ArrowUp className="w-4 h-4 text-teal" />
                   </div>
-                  <h4 className="text-meta font-medium text-emerald-400 uppercase tracking-wide">{t('tarot.upright')}</h4>
+                  <h4 className="text-meta font-medium text-teal uppercase tracking-wide">{t('tarot.upright')}</h4>
                 </div>
                 <p className="reading-copy pl-8">
                   {card.meaningUpright}
@@ -135,10 +135,10 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-amber-500/20">
-                    <ArrowDown className="w-4 h-4 text-amber-400" />
+                  <div className="p-1.5 rounded-lg bg-gold/15">
+                    <ArrowDown className="w-4 h-4 text-gold" />
                   </div>
-                  <h4 className="text-meta font-medium text-amber-400 uppercase tracking-wide">{t('tarot.reversed')}</h4>
+                  <h4 className="text-meta font-medium text-gold uppercase tracking-wide">{t('tarot.reversed')}</h4>
                 </div>
                 <p className="reading-copy pl-8">
                   {card.meaningReversed}
@@ -151,18 +151,18 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
         {activeTab === 'love' && (
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-pink-500/20">
-                <Heart className="w-6 h-6 text-pink-400" />
+              <div className="p-3 rounded-control bg-cosmic-rose/15">
+                <Heart className="w-6 h-6 text-cosmic-rose" />
               </div>
               <div>
-                <h4 className="font-medium text-pink-400">{t('tarot.detail.loveTitle')}</h4>
+                <h4 className="font-medium text-cosmic-rose">{t('tarot.detail.loveTitle')}</h4>
                 <p className="text-meta text-mystic-400">{t('tarot.detail.loveSubtitle')}</p>
               </div>
             </div>
             <p className="reading-copy">
               {card.loveMeaning || t('tarot.detail.loveFallback')}
             </p>
-            <Card padding="sm" className="bg-pink-500/10 border-pink-500/20">
+            <Card padding="sm" className="bg-cosmic-rose/10 border-cosmic-rose/25">
               <p className="reading-copy">
                 <Star className="w-4 h-4 inline mr-2" />
                 {reversed
@@ -176,18 +176,18 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
         {activeTab === 'career' && (
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-blue-500/20">
-                <Briefcase className="w-6 h-6 text-blue-400" />
+              <div className="p-3 rounded-control bg-cosmic-blue/15">
+                <Briefcase className="w-6 h-6 text-cosmic-blue-ink" />
               </div>
               <div>
-                <h4 className="font-medium text-blue-400">{t('tarot.detail.careerTitle')}</h4>
+                <h4 className="font-medium text-cosmic-blue-ink">{t('tarot.detail.careerTitle')}</h4>
                 <p className="text-meta text-mystic-400">{t('tarot.detail.careerSubtitle')}</p>
               </div>
             </div>
             <p className="reading-copy">
               {card.careerMeaning || t('tarot.detail.careerFallback')}
             </p>
-            <Card padding="sm" className="bg-blue-500/10 border-blue-500/20">
+            <Card padding="sm" className="bg-cosmic-blue/10 border-cosmic-blue/25">
               <p className="reading-copy">
                 <Star className="w-4 h-4 inline mr-2" />
                 {reversed
@@ -201,7 +201,7 @@ export function TarotCardDetail({ card, reversed = false, onClose }: TarotCardDe
         {activeTab === 'reflect' && (
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-gold/20">
+              <div className="p-3 rounded-control bg-gold/20">
                 <Feather className="w-6 h-6 text-gold" />
               </div>
               <div>

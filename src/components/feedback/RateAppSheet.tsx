@@ -33,7 +33,7 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
   return (
     <div className="fixed inset-0 z-50">
       <div
-        className="absolute inset-0 bg-mystic-950/90 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-mystic-950/90 animate-fade-in"
         onClick={handleLater}
       />
 
@@ -41,7 +41,8 @@ export function RateAppSheet({ open, onClose, userId }: RateAppSheetProps) {
         <div className="bg-gradient-to-b from-mystic-850 to-mystic-900 rounded-sheet border border-gold/20 w-full max-w-sm p-8 text-center animate-scale-in relative">
           <button
             onClick={handleLater}
-            className="absolute top-4 right-4 p-2 rounded-full hover:bg-mystic-800 transition-colors"
+            aria-label={t('common:actions.close', { defaultValue: 'Close' })}
+            className="absolute top-3 right-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-mystic-800 transition-colors"
           >
             <X className="w-5 h-5 text-mystic-400" />
           </button>

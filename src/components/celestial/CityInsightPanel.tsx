@@ -185,7 +185,7 @@ export function CityInsightPanel({
       <div className="space-y-5">
         {/* ── Header: city name + distance from tap ─────────────── */}
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-mystic-800/60 hairline-gold-soft flex items-center justify-center text-2xl">
+          <div className="flex-shrink-0 w-12 h-12 rounded-card bg-mystic-800/60 hairline-gold-soft flex items-center justify-center text-2xl">
             {cityInfo ? ccToFlag(cityInfo.city.cc) : <MapPin className="w-5 h-5 text-gold" />}
           </div>
           <div className="flex-1 min-w-0">
@@ -209,7 +209,7 @@ export function CityInsightPanel({
 
         {/* ── No lines nearby ───────────────────────────────────── */}
         {visibleHits.length === 0 && allHits.length === 0 && (
-          <div className="rounded-2xl bg-mystic-800/40 hairline-gold-soft p-5">
+          <div className="rounded-card bg-mystic-800/40 hairline-gold-soft p-5">
             <p className="reading-copy">
               {t('celestial.city.noLines', {
                 defaultValue: 'No planetary lines run within 700 km of here. This place is celestially quiet for your chart — neither helping nor hindering.',
@@ -235,7 +235,7 @@ export function CityInsightPanel({
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06, duration: 0.3, ease: 'easeOut' }}
-                    className="rounded-xl bg-mystic-800/50 hairline-gold-soft overflow-hidden"
+                    className="rounded-control bg-mystic-800/50 hairline-gold-soft overflow-hidden"
                   >
                     <button
                       onClick={() => setExpandedKey(isExpanded ? null : key)}
@@ -295,7 +295,7 @@ export function CityInsightPanel({
         {hiddenCount > 0 && (
           <button
             onClick={onUpgrade}
-            className="w-full rounded-2xl bg-gradient-to-br from-gold/15 to-gold/5 border border-gold/30 p-4 text-left hover:from-gold/20 hover:to-gold/10 transition-all"
+            className="w-full rounded-card bg-gradient-to-br from-gold/15 to-gold/5 border border-gold/30 p-4 text-left hover:from-gold/20 hover:to-gold/10 transition-all"
           >
             <div className="flex items-center gap-3">
               <Crown className="w-5 h-5 text-gold flex-shrink-0" />
@@ -306,7 +306,7 @@ export function CityInsightPanel({
                     defaultValue: '{{count}} more planetary lines run through here',
                   })}
                 </p>
-                <p className="text-xs text-mystic-400 mt-0.5">
+                <p className="text-meta text-mystic-400 mt-0.5">
                   {t('celestial.city.unlockHint', {
                     defaultValue: 'Unlock the full map with Premium',
                   })}
@@ -318,7 +318,7 @@ export function CityInsightPanel({
 
         {/* ── AI Travel Reading CTA or result ───────────────────── */}
         {(visibleHits.length > 0 || allHits.length > 0) && !reading && (
-          <div className="rounded-2xl bg-mystic-900/60 hairline-gold-soft p-4 space-y-3">
+          <div className="rounded-card bg-mystic-900/60 hairline-gold-soft p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gold" />
               <h3 className="heading-display-md text-mystic-100">
@@ -333,9 +333,9 @@ export function CityInsightPanel({
               })}
             </p>
             {readingError && (
-              <div className="flex items-start gap-2 rounded-xl bg-red-900/30 border border-red-700/40 p-3">
-                <AlertCircle className="w-4 h-4 text-red-300 flex-shrink-0 mt-0.5" />
-                <p className="text-ui text-red-200">
+              <div className="flex items-start gap-2 rounded-control bg-coral/10 border border-coral/25 p-3">
+                <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" />
+                <p className="text-ui text-coral-light">
                   {t('celestial.city.aiReading.error', {
                     defaultValue: 'Could not generate the reading just now. Please try again in a moment.',
                   })}
@@ -375,7 +375,7 @@ export function CityInsightPanel({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="rounded-2xl bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5 space-y-4"
+            className="rounded-card bg-gradient-to-br from-gold/10 to-mystic-900/60 hairline-gold-soft p-5 space-y-4"
           >
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gold" />
@@ -404,13 +404,13 @@ export function CityInsightPanel({
                 ))}
               </div>
             )}
-            <div className="rounded-xl bg-mystic-900/40 p-3 space-y-1">
+            <div className="rounded-control bg-mystic-900/40 p-3 space-y-1">
               <p className="font-display-eyebrow text-mystic-500">
                 {t('celestial.city.aiReading.cautionsLabel', { defaultValue: 'Watch for' })}
               </p>
               <p className="reading-copy">{reading.cautionsNote}</p>
             </div>
-            <div className="rounded-xl bg-gold/10 border border-gold/20 p-3 space-y-1">
+            <div className="rounded-control bg-gold/10 border border-gold/20 p-3 space-y-1">
               <p className="font-display-eyebrow text-gold/80">
                 {t('celestial.city.aiReading.practiceLabel', { defaultValue: 'First three days here' })}
               </p>

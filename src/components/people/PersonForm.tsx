@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
-import { Button, Chip, Input, toast } from '../ui';
+import { Button, Chip, EyebrowLabel, Input, toast } from '../ui';
 import { useT } from '../../i18n/useT';
 import { CelestialCitySearch } from '../celestial/CelestialCitySearch';
 import { deriveBirthTz } from '../../utils/birthTz';
@@ -94,7 +94,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
       <Input label={t('people.form.name', { defaultValue: 'Name' })} icon={<User className="w-4 h-4" />} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('people.form.namePlaceholder', { defaultValue: 'e.g. Mom, Alex, Jamie' })} maxLength={80} />
 
       <div>
-        <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">{t('people.form.relationship', { defaultValue: 'Relationship' })}</label>
+        <label className="mb-1.5 block"><EyebrowLabel align="left">{t('people.form.relationship', { defaultValue: 'Relationship' })}</EyebrowLabel></label>
         <div className="flex flex-wrap gap-2">
           {RELATIONSHIPS.map((r) => (
             <Chip key={r.key} label={t(`people.relationship.${r.key}`, { defaultValue: r.label })} selected={relationship === r.key} onSelect={() => setRelationship(r.key)} />
@@ -104,7 +104,7 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
 
       {relationship === 'pet' && (
         <div>
-          <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block">{t('people.form.species', { defaultValue: 'Species' })}</label>
+          <label className="mb-1.5 block"><EyebrowLabel align="left">{t('people.form.species', { defaultValue: 'Species' })}</EyebrowLabel></label>
           <div className="flex flex-wrap gap-2">
             {SPECIES_KEYS.map((k) => (
               <Chip key={k} label={SPECIES_INFO[k].label} selected={species === k} onSelect={() => setSpecies(k)} />
@@ -117,12 +117,12 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
       <Input type="time" label={relationship === 'pet' ? t('people.form.petTime', { defaultValue: 'Time (optional — most adopted animals have none)' }) : t('people.form.birthTime', { defaultValue: 'Birth time (optional — sharpens the chart)' })} icon={<Clock className="w-4 h-4" />} value={birthTime} onChange={(e) => setBirthTime(e.target.value)} placeholder="--:--" />
 
       <div>
-        <label className="text-xs uppercase tracking-wider text-mystic-500 mb-1.5 block flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {t('people.form.birthPlace', { defaultValue: 'Birth place (optional)' })}</label>
+        <label className="mb-1.5 flex items-center gap-1.5 text-gold"><MapPin className="w-3.5 h-3.5" aria-hidden /> <EyebrowLabel align="left">{t('people.form.birthPlace', { defaultValue: 'Birth place (optional)' })}</EyebrowLabel></label>
         {place && <p className="text-sm text-gold mb-2">{place.name}</p>}
         <CelestialCitySearch onPick={handlePickCity} />
       </div>
 
-      {error && <p className="text-xs text-red-300 bg-red-900/30 border border-red-700/40 rounded-xl p-3">{error}</p>}
+      {error && <p role="alert" className="text-caption text-coral bg-coral/10 border border-coral/25 rounded-control p-3">{error}</p>}
 
       <div className="flex gap-2 pt-1">
         <Button variant="ghost" size="md" onClick={onCancel} className="flex-1">{t('people.form.cancel', { defaultValue: 'Cancel' })}</Button>

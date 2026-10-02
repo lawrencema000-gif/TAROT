@@ -5,8 +5,8 @@ export function MissingSupabaseConfig() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-mystic-950 via-mystic-900 to-mystic-950">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
-            <AlertTriangle className="w-10 h-10 text-amber-400" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gold/10 border border-gold/25 mb-6">
+            <AlertTriangle className="w-10 h-10 text-gold" />
           </div>
           <h1 className="text-2xl font-semibold text-white mb-2">
             Configuration Required
@@ -17,10 +17,10 @@ export function MissingSupabaseConfig() {
         </div>
 
         <div className="space-y-4 mb-8">
-          <div className="bg-mystic-800/50 rounded-xl p-4 border border-mystic-700/50">
+          <div className="bg-mystic-800/50 rounded-card p-4 border border-mystic-700/50">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                <FileCode className="w-4 h-4 text-cyan-400" />
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-cosmic-blue/15 flex items-center justify-center">
+                <FileCode className="w-4 h-4 text-cosmic-blue-ink" />
               </div>
               <div>
                 <h3 className="font-medium text-white mb-1">
@@ -33,16 +33,16 @@ export function MissingSupabaseConfig() {
             </div>
           </div>
 
-          <div className="bg-mystic-800/50 rounded-xl p-4 border border-mystic-700/50">
+          <div className="bg-mystic-800/50 rounded-card p-4 border border-mystic-700/50">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <Database className="w-4 h-4 text-emerald-400" />
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-teal/10 flex items-center justify-center">
+                <Database className="w-4 h-4 text-teal" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-white mb-1">
                   2. Add these variables
                 </h3>
-                <div className="bg-mystic-900/80 rounded-lg p-3 font-mono text-xs text-mystic-300 overflow-x-auto">
+                <div className="bg-mystic-900/80 rounded-lg p-3 font-mono text-caption text-mystic-300 overflow-x-auto">
                   <div className="whitespace-nowrap">VITE_SUPABASE_URL=https://your-project.supabase.co</div>
                   <div className="whitespace-nowrap">VITE_SUPABASE_ANON_KEY=your-anon-key</div>
                 </div>
@@ -50,10 +50,10 @@ export function MissingSupabaseConfig() {
             </div>
           </div>
 
-          <div className="bg-mystic-800/50 rounded-xl p-4 border border-mystic-700/50">
+          <div className="bg-mystic-800/50 rounded-card p-4 border border-mystic-700/50">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                <RefreshCw className="w-4 h-4 text-violet-400" />
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-cosmic-violet/15 flex items-center justify-center">
+                <RefreshCw className="w-4 h-4 text-cosmic-violet-ink" />
               </div>
               <div>
                 <h3 className="font-medium text-white mb-1">
@@ -67,10 +67,10 @@ export function MissingSupabaseConfig() {
           </div>
         </div>
 
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-          <p className="text-sm text-amber-200/80 text-center">
+        <div className="bg-gold/10 border border-gold/25 rounded-card p-4">
+          <p className="text-sm text-mystic-300 text-center">
             Get your Supabase credentials from your{' '}
-            <span className="text-amber-300 font-medium">Supabase Dashboard</span>{' '}
+            <span className="text-gold font-medium">Supabase Dashboard</span>{' '}
             under Project Settings &rarr; API
           </p>
         </div>

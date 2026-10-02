@@ -23,25 +23,25 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
   const { t } = useT('app');
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-mystic-950 border border-pink-400/40 rounded-2xl max-w-md w-full p-5 relative">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60">
+      <div className="bg-mystic-950 border border-coral/40 rounded-card max-w-md w-full p-5 relative">
         <button
           onClick={onClose}
           aria-label={t('common:actions.close', { defaultValue: 'Close' })}
-          className="absolute top-3 right-3 text-mystic-400 hover:text-mystic-100 p-1"
+          className="absolute top-1 right-1 min-h-[44px] min-w-[44px] flex items-center justify-center text-mystic-400 hover:text-mystic-100"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-pink-400/15 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-pink-400" />
+          <div className="w-10 h-10 rounded-full bg-coral/15 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-coral" />
           </div>
           <div className="pt-1">
             <h3 className="font-display text-lg text-mystic-100">
               {t('crisis.title', { defaultValue: 'You are not alone' })}
             </h3>
-            <p className="text-xs text-mystic-400 mt-1 leading-relaxed">
+            <p className="text-meta text-mystic-400 mt-1">
               {t('crisis.subtitle', {
                 defaultValue:
                   'We noticed some of what you wrote. If you are hurting right now, please reach for one of these — they are free and confidential.',
@@ -51,37 +51,37 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control">
             <Phone className="w-4 h-4 text-gold flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
                 {t('crisis.phone.title', { defaultValue: '988 Suicide & Crisis Lifeline' })}
               </p>
-              <p className="text-xs text-mystic-400 truncate">
+              <p className="text-meta text-mystic-400 truncate">
                 {t('crisis.phone.body', { defaultValue: 'Call or text 988 · 24/7 · US' })}
               </p>
             </div>
             <a
               href={`tel:${t('crisis.phone.number', { defaultValue: '988' })}`}
-              className="px-3 py-1.5 bg-gold/15 text-gold rounded-lg text-xs font-medium hover:bg-gold/25 transition-colors"
+              className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-gold/15 text-gold rounded-lg text-meta font-medium hover:bg-gold/25 transition-colors"
             >
               {t('crisis.phone.cta', { defaultValue: 'Call' })}
             </a>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control">
             {t('crisis.text.scheme', { defaultValue: 'sms' }) === 'sms' ? <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" /> : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
                 {t('crisis.text.title', { defaultValue: 'Crisis Text Line' })}
               </p>
-              <p className="text-xs text-mystic-400 truncate">
+              <p className="text-meta text-mystic-400 truncate">
                 {t('crisis.text.body', { defaultValue: 'Text HOME to 741741 · US/UK/CA/IE' })}
               </p>
             </div>
             <a
               href={`${t('crisis.text.scheme', { defaultValue: 'sms' })}:${t('crisis.text.number', { defaultValue: '741741' })}${t('crisis.text.keyword', { defaultValue: 'HOME' }) ? `?body=${t('crisis.text.keyword', { defaultValue: 'HOME' })}` : ''}`}
-              className="px-3 py-1.5 bg-cosmic-blue/15 text-cosmic-blue rounded-lg text-xs font-medium hover:bg-cosmic-blue/25 transition-colors"
+              className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-cosmic-blue/15 text-cosmic-blue rounded-lg text-meta font-medium hover:bg-cosmic-blue/25 transition-colors"
             >
               {t('crisis.text.cta', { defaultValue: 'Text' })}
             </a>
@@ -91,14 +91,14 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
             href="https://findahelpline.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-xl hover:border-mystic-700 transition-colors"
+            className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control hover:border-mystic-700 transition-colors"
           >
             <Globe className="w-4 h-4 text-cosmic-violetLight flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
                 {t('crisis.international.title', { defaultValue: 'International helplines' })}
               </p>
-              <p className="text-xs text-mystic-400 truncate">
+              <p className="text-meta text-mystic-400 truncate">
                 findahelpline.com
               </p>
             </div>

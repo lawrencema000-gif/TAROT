@@ -59,7 +59,7 @@ export function PersonAIReading({ personId, personName }: { personId: string; pe
       {reading && (
         <div className="space-y-3">
           <ReadingProse text={reading} />
-          <button onClick={() => setReading(null)} className="text-xs text-gold hover:text-gold-light">Read another focus →</button>
+          <button onClick={() => setReading(null)} className="inline-flex items-center min-h-[44px] text-caption text-gold hover:text-gold-light">Read another focus →</button>
         </div>
       )}
       {EarnSheet}

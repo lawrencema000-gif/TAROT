@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle } from 'lucide-react';
+import { Sparkles, Send, RefreshCw, Shuffle, MessageCircle, Loader2 } from 'lucide-react';
 import { Card, Button, PageHeader, ReadingProse, toast, Page, Badge } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -172,11 +172,11 @@ export function TarotCompanionPage() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'user' ? (
-                  <div className="max-w-[85%] px-3 py-2 rounded-2xl text-ui bg-gold/15 text-mystic-100 border border-gold/30">
+                  <div className="max-w-[85%] px-3 py-2 rounded-card text-ui bg-gold/15 text-mystic-100 border border-gold/30">
                     {m.content}
                   </div>
                 ) : (
-                  <div className="max-w-[85%] px-3 py-2 rounded-2xl bg-mystic-800/50 border border-mystic-700/40">
+                  <div className="max-w-[85%] px-3 py-2 rounded-card bg-mystic-800/50 border border-mystic-700/40">
                     <ReadingProse text={m.content} lede={false} className="whitespace-pre-line" />
                   </div>
                 )}
@@ -184,12 +184,9 @@ export function TarotCompanionPage() {
             ))}
             {sending && (
               <div className="flex justify-start">
-                <div className="bg-mystic-800/50 border border-mystic-700/40 px-3 py-2 rounded-2xl">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-mystic-500 animate-pulse" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-mystic-500 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-mystic-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
-                  </div>
+                <div className="bg-mystic-800/50 border border-mystic-700/40 px-3 py-2 rounded-card" role="status" aria-live="polite">
+                  <Loader2 className="w-4 h-4 text-mystic-400 animate-spin" aria-hidden />
+                  <span className="sr-only">{t('tarotCompanion.thinking', { defaultValue: 'The oracle is thinking…' })}</span>
                 </div>
               </div>
             )}
@@ -203,10 +200,10 @@ export function TarotCompanionPage() {
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
               placeholder={t('tarotCompanion.composerPlaceholder', { defaultValue: 'Ask a follow-up…' })}
               maxLength={2000}
-              className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-xl px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
+              className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control px-3 py-2 text-mystic-100 text-sm placeholder-mystic-600 focus:outline-none focus:border-gold/40"
             />
-            <Button variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className="px-4">
-              <Send className="w-4 h-4" />
+            <Button variant="primary" onClick={handleSend} disabled={sending || !draft.trim()} className="px-4" aria-label={t('common:actions.send', { defaultValue: 'Send' })}>
+              <Send className="w-4 h-4" aria-hidden />
             </Button>
           </div>
         </Card>

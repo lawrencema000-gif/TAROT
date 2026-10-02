@@ -26,7 +26,7 @@ import {
   Moon,
   Feather,
 } from 'lucide-react';
-import { Card, Button, Sheet, Input, toast, PageHeader, Section, EmptyState, Page, Tabs, Chip, Tag, Progress, type Tone } from '../components/ui';
+import { Card, Button, Sheet, Input, toast, PageHeader, Section, EmptyState, Page, Tabs, Chip, Tag, Progress, Skeleton, EyebrowLabel, type Tone } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -518,7 +518,8 @@ export function JournalPage() {
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => navigateWeek('prev')}
-                className="p-1.5 hover:bg-mystic-700/50 rounded-lg transition-colors"
+                aria-label={t('journal.prevWeek', { defaultValue: 'Previous week' })}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700/50 rounded-lg transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 text-mystic-400" />
               </button>
@@ -527,7 +528,8 @@ export function JournalPage() {
               </span>
               <button
                 onClick={() => navigateWeek('next')}
-                className="p-1.5 hover:bg-mystic-700/50 rounded-lg transition-colors"
+                aria-label={t('journal.nextWeek', { defaultValue: 'Next week' })}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700/50 rounded-lg transition-colors"
               >
                 <ChevronRight className="w-4 h-4 text-mystic-400" />
               </button>
@@ -545,7 +547,7 @@ export function JournalPage() {
                       : 'hover:bg-mystic-800/50'
                   }`}
                 >
-                  <span className="text-xs text-mystic-500">{formatDayName(day.date)}</span>
+                  <span className="text-meta text-mystic-500">{formatDayName(day.date)}</span>
                   <span className={`text-sm font-medium ${day.isToday ? 'text-gold' : 'text-mystic-200'}`}>
                     {day.date.getDate()}
                   </span>
@@ -560,11 +562,11 @@ export function JournalPage() {
           {!todayEntry && (
             <Card variant="glow" padding="lg" interactive onClick={openNewEntry}>
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gold/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-control bg-gold/20 flex items-center justify-center flex-shrink-0">
                   <Feather className="w-6 h-6 text-gold" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{t('journal.todaysPrompt')}</p>
+                  <EyebrowLabel align="left" className="block mb-1">{t('journal.todaysPrompt')}</EyebrowLabel>
                   <p className="text-mystic-100 leading-relaxed mb-2">{todayPrompt}</p>
                   <div className="flex items-center text-gold text-sm">
                     Start writing
@@ -582,7 +584,7 @@ export function JournalPage() {
               placeholder="Search entries..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl pl-12 pr-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50"
+              className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-control pl-12 pr-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50"
             />
           </div>
 
@@ -607,7 +609,7 @@ export function JournalPage() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-24 bg-mystic-800/30 rounded-xl animate-pulse" />
+                <Skeleton key={i} className="h-24 rounded-card" />
               ))}
             </div>
           ) : filteredEntries.length === 0 ? (
@@ -621,12 +623,12 @@ export function JournalPage() {
               {filteredEntries.map(entry => (
                 <Card key={entry.id} padding="md" interactive onClick={() => openEditEntry(entry)}>
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-mystic-800 flex items-center justify-center flex-shrink-0 text-xl">
+                    <div className="w-10 h-10 rounded-control bg-mystic-800 flex items-center justify-center flex-shrink-0 text-xl">
                       {entry.mood ? getMoodEmoji(entry.mood) : '📝'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-mystic-500">{formatDate(entry.date)}</span>
+                        <span className="text-meta text-mystic-500">{formatDate(entry.date)}</span>
                         {entry.is_locked && <Lock className="w-3 h-3 text-gold" />}
                         {entry.linked_reading_id && <Link2 className="w-3 h-3 text-cosmic-blue" />}
                       </div>
@@ -650,15 +652,17 @@ export function JournalPage() {
                     <div className="flex flex-col gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); openEditEntry(entry); }}
-                        className="p-2 hover:bg-mystic-700/50 rounded-lg transition-colors"
+                        aria-label={t('journal.editSheet.editEntry')}
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700/50 rounded-lg transition-colors"
                       >
                         <Edit2 className="w-4 h-4 text-mystic-400" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }}
-                        className="p-2 hover:bg-red-900/30 rounded-lg transition-colors"
+                        aria-label={t('common:actions.delete')}
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-coral/10 rounded-lg transition-colors"
                       >
-                        <Trash2 className="w-4 h-4 text-mystic-500 hover:text-red-400" />
+                        <Trash2 className="w-4 h-4 text-mystic-500 hover:text-coral" />
                       </button>
                     </div>
                   </div>
@@ -694,18 +698,18 @@ export function JournalPage() {
                   return (
                     <Card key={template.id} padding="md" interactive onClick={() => startTemplateEntry(template)}>
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-control bg-gold/20 flex items-center justify-center flex-shrink-0">
                           <CategoryIcon className="w-5 h-5 text-gold" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-mystic-100 mb-1">{template.title}</h4>
                           <p className="text-sm text-mystic-400 line-clamp-2">{template.description}</p>
                           <div className="flex items-center gap-3 mt-2">
-                            <span className="flex items-center gap-1 text-xs text-mystic-500">
+                            <span className="flex items-center gap-1 text-meta text-mystic-500">
                               <Clock className="w-3 h-3" />
                               {template.timeEstimate}
                             </span>
-                            <span className="text-xs text-mystic-500">{template.prompts.length} prompts</span>
+                            <span className="text-meta text-mystic-500">{template.prompts.length} prompts</span>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-mystic-500" />
@@ -747,7 +751,7 @@ export function JournalPage() {
               return (
                 <Card key={template.id} padding="md" interactive onClick={() => startTemplateEntry(template)}>
                   <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-mystic-800`}>
+                    <div className="w-10 h-10 rounded-control flex items-center justify-center flex-shrink-0 bg-mystic-800">
                       <CategoryIcon className="w-5 h-5 text-mystic-300" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -757,11 +761,11 @@ export function JournalPage() {
                       </div>
                       <p className="text-sm text-mystic-400 line-clamp-2">{template.description}</p>
                       <div className="flex items-center gap-3 mt-2">
-                        <span className="flex items-center gap-1 text-xs text-mystic-500">
+                        <span className="flex items-center gap-1 text-meta text-mystic-500">
                           <Clock className="w-3 h-3" />
                           {template.timeEstimate}
                         </span>
-                        <span className="text-xs text-mystic-500">{template.prompts.length} prompts</span>
+                        <span className="text-meta text-mystic-500">{template.prompts.length} prompts</span>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-mystic-500" />
@@ -779,12 +783,12 @@ export function JournalPage() {
             <Card padding="lg" className="text-center">
               <Flame className="w-8 h-8 text-gold mx-auto mb-2" />
               <p className="heading-display-xl text-mystic-100">{insights.currentStreak}</p>
-              <p className="text-xs text-mystic-400 mt-1">{t('journal.dayStreak')}</p>
+              <p className="text-meta text-mystic-400 mt-1">{t('journal.dayStreak')}</p>
             </Card>
             <Card padding="lg" className="text-center">
-              <TrendingUp className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+              <TrendingUp className="w-8 h-8 text-teal mx-auto mb-2" />
               <p className="heading-display-xl text-mystic-100">{insights.totalEntries}</p>
-              <p className="text-xs text-mystic-400 mt-1">{t('journal.totalEntries')}</p>
+              <p className="text-meta text-mystic-400 mt-1">{t('journal.totalEntries')}</p>
             </Card>
           </div>
 
@@ -795,7 +799,7 @@ export function JournalPage() {
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-2">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${
+                      className={`w-10 h-10 rounded-control flex items-center justify-center text-lg ${
                         day.mood
                           ? 'bg-mystic-800'
                           : 'bg-mystic-800/30 border border-dashed border-mystic-700'
@@ -803,7 +807,7 @@ export function JournalPage() {
                     >
                       {day.mood ? getMoodEmoji(day.mood) : ''}
                     </div>
-                    <span className="text-xs text-mystic-500">
+                    <span className="text-meta text-mystic-500">
                       {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)}
                     </span>
                   </div>
@@ -892,7 +896,7 @@ export function JournalPage() {
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs text-mystic-500">{day}</span>
+                  <span className="text-meta text-mystic-500">{day}</span>
                 </div>
               ))}
             </div>
@@ -902,15 +906,15 @@ export function JournalPage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-xl font-display text-gold">{insights.averageWordsPerEntry}</p>
-                <p className="text-xs text-mystic-400">{t('journal.avgWords')}</p>
+                <p className="text-meta text-mystic-400">{t('journal.avgWords')}</p>
               </div>
               <div className="text-center">
                 <p className="text-xl font-display text-cosmic-blue">{insights.last30DaysEntries}</p>
-                <p className="text-xs text-mystic-400">{t('journal.last30Days')}</p>
+                <p className="text-meta text-mystic-400">{t('journal.last30Days')}</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-display text-emerald-400">{insights.totalWords.toLocaleString()}</p>
-                <p className="text-xs text-mystic-400">{t('journal.totalWords')}</p>
+                <p className="text-xl font-display text-teal">{insights.totalWords.toLocaleString()}</p>
+                <p className="text-meta text-mystic-400">{t('journal.totalWords')}</p>
               </div>
             </div>
           </Section>
@@ -935,22 +939,27 @@ export function JournalPage() {
             {!editingEntry && selectedTemplate && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-mystic-500 uppercase tracking-wide">
+                  <EyebrowLabel align="left" className="text-mystic-500">
                     Prompt {currentPromptIndex + 1} of {selectedTemplate.prompts.length}
-                  </span>
-                  <div className="flex gap-1">
+                  </EyebrowLabel>
+                  <div className="flex flex-wrap justify-end">
                     {selectedTemplate.prompts.map((_, i) => (
                       <button
                         key={i}
+                        type="button"
                         onClick={() => setCurrentPromptIndex(i)}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          i === currentPromptIndex ? 'bg-gold' : i < currentPromptIndex ? 'bg-emerald-500' : 'bg-mystic-600'
-                        }`}
-                      />
+                        aria-label={t('journal.editSheet.goToPrompt', { defaultValue: 'Prompt {{n}}', n: i + 1 })}
+                        aria-current={i === currentPromptIndex ? 'step' : undefined}
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      >
+                        <span className={`w-2 h-2 rounded-full transition-colors ${
+                          i === currentPromptIndex ? 'bg-gold' : i < currentPromptIndex ? 'bg-teal' : 'bg-mystic-600'
+                        }`} />
+                      </button>
                     ))}
                   </div>
                 </div>
-                <div className="p-4 bg-gold/10 border border-gold/20 rounded-xl">
+                <div className="p-4 bg-gold/10 border border-gold/20 rounded-control">
                   <p className="text-mystic-100">{selectedTemplate.prompts[currentPromptIndex]}</p>
                 </div>
                 <div className="flex gap-2">
@@ -978,8 +987,8 @@ export function JournalPage() {
             )}
 
             {!editingEntry && !selectedTemplate && (
-              <div className="p-4 bg-mystic-800/30 rounded-xl">
-                <p className="text-xs text-mystic-500 uppercase tracking-wide mb-1">{t('journal.todaysPrompt')}</p>
+              <div className="p-4 bg-mystic-800/30 rounded-control">
+                <EyebrowLabel align="left" className="block mb-1">{t('journal.todaysPrompt')}</EyebrowLabel>
                 <p className="text-mystic-200 text-sm">{todayPrompt}</p>
               </div>
             )}
@@ -998,7 +1007,7 @@ export function JournalPage() {
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 rows={6}
-                className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl px-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50 resize-none"
+                className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-control px-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50 resize-none"
               />
 
               {journalCoachEnabled && content.trim().length >= 20 && !coachResult && (
@@ -1036,29 +1045,29 @@ export function JournalPage() {
               )}
 
               {coachResult && (
-                <div className="mt-3 p-3 bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/30 rounded-xl">
+                <div className="mt-3 p-3 bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/30 rounded-control">
                   <div className="flex items-center gap-1.5 mb-2">
                     <Sparkles className="w-3 h-3 text-cosmic-violetLight" />
-                    <p className="text-[10px] uppercase tracking-widest text-cosmic-violetLight">
+                    <EyebrowLabel align="left" className="text-cosmic-violetLight">
                       {t('journalCoach.observationLabel', { defaultValue: 'An observation' })}
-                    </p>
+                    </EyebrowLabel>
                   </div>
                   <p className="text-sm text-mystic-200 italic leading-relaxed mb-3">
                     {coachResult.observation}
                   </p>
-                  <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-1.5">
+                  <EyebrowLabel align="left" className="block text-mystic-500 mb-1.5">
                     {t('journalCoach.promptsLabel', { defaultValue: 'Sit with these' })}
-                  </p>
+                  </EyebrowLabel>
                   <ul className="space-y-1.5">
                     {coachResult.prompts.map((p, i) => (
-                      <li key={i} className="text-xs text-mystic-300 leading-relaxed pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violetLight">
+                      <li key={i} className="text-meta text-mystic-300 pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violetLight">
                         {p}
                       </li>
                     ))}
                   </ul>
                   <button
                     onClick={() => setCoachResult(null)}
-                    className="text-[10px] text-mystic-500 hover:text-mystic-300 mt-2 underline underline-offset-2"
+                    className="text-caption text-mystic-500 hover:text-mystic-300 mt-2 min-h-[44px] underline underline-offset-2"
                   >
                     {t('journalCoach.dismiss', { defaultValue: 'Hide these prompts' })}
                   </button>
@@ -1073,7 +1082,7 @@ export function JournalPage() {
                   <button
                     key={mood.value}
                     onClick={() => setSelectedMood(selectedMood === mood.value ? '' : mood.value)}
-                    className={`w-12 h-12 rounded-xl text-2xl flex items-center justify-center transition-all ${
+                    className={`w-12 h-12 rounded-control text-2xl flex items-center justify-center transition-all ${
                       selectedMood === mood.value
                         ? 'bg-gold/20 border-2 border-gold scale-110'
                         : 'bg-mystic-800/50 border border-mystic-700 hover:border-mystic-500'
@@ -1103,12 +1112,13 @@ export function JournalPage() {
             <div>
               <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.attachments')}</label>
               {linkedReadingId ? (
-                <div className="flex items-center gap-3 p-3 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-xl">
+                <div className="flex items-center gap-3 p-3 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-control">
                   <Link2 className="w-5 h-5 text-cosmic-blue" />
                   <span className="text-sm text-mystic-200 flex-1">{t('journal.editSheet.tarotLinked')}</span>
                   <button
                     onClick={() => setLinkedReadingId(null)}
-                    className="p-1 hover:bg-mystic-700 rounded-lg"
+                    aria-label={t('journal.editSheet.unlinkReading', { defaultValue: 'Remove the linked reading' })}
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700 rounded-lg"
                   >
                     <X className="w-4 h-4 text-mystic-400" />
                   </button>
@@ -1116,7 +1126,7 @@ export function JournalPage() {
               ) : (
                 <button
                   onClick={() => setShowAttachmentPicker(true)}
-                  className="w-full p-3 border border-dashed border-mystic-600 rounded-xl text-mystic-400 hover:border-gold/50 hover:text-gold transition-colors flex items-center justify-center gap-2"
+                  className="w-full p-3 border border-dashed border-mystic-600 rounded-control text-mystic-400 hover:border-gold/50 hover:text-gold transition-colors flex items-center justify-center gap-2"
                 >
                   <Link2 className="w-4 h-4" />
                   Link a tarot reading
@@ -1167,7 +1177,7 @@ export function JournalPage() {
                   setLinkedReadingId(reading.id);
                   setShowAttachmentPicker(false);
                 }}
-                className="w-full p-4 bg-mystic-800/50 border border-mystic-700 rounded-xl hover:border-gold/30 transition-colors text-left"
+                className="w-full p-4 bg-mystic-800/50 border border-mystic-700 rounded-control hover:border-gold/30 transition-colors text-left"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-cosmic-blue/20 flex items-center justify-center">
@@ -1175,7 +1185,7 @@ export function JournalPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-mystic-200 capitalize">{reading.spread_type} Spread</p>
-                    <p className="text-xs text-mystic-500">
+                    <p className="text-meta text-mystic-500">
                       {new Date(reading.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       {' - '}
                       {reading.cards.slice(0, 2).map(c => c.name).join(', ')}

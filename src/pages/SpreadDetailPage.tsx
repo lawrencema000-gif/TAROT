@@ -94,7 +94,7 @@ export function SpreadDetailPage() {
         subtitle={spread.longDescription}
       />
 
-      <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+      <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
         <h2 className="heading-display-md text-mystic-100 mb-3"><TarotCardIcon className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
         <ul className="reading-copy space-y-1.5">
           {spread.bestFor.map((b, i) => (
@@ -113,7 +113,7 @@ export function SpreadDetailPage() {
       >
         <ol className="space-y-3">
           {spread.positions.map((p) => (
-            <li key={p.position} className="rounded-xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+            <li key={p.position} className="rounded-control border border-mystic-800/60 bg-mystic-900/40 p-4">
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gold/15 border border-gold/30 text-gold text-sm font-display flex items-center justify-center">
                   {p.position}
@@ -128,7 +128,7 @@ export function SpreadDetailPage() {
         </ol>
       </Section>
 
-      <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+      <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
         <h2 className="heading-display-md text-mystic-100 mb-2">When to use</h2>
         <p className="reading-copy">{spread.whenToUse}</p>
       </section>
@@ -144,14 +144,14 @@ export function SpreadDetailPage() {
       </Section>
 
       {spread.history && (
-        <section className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 p-4">
+        <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
           <h2 className="heading-display-md text-mystic-100 mb-2">Origin & tradition</h2>
           <p className="reading-copy">{spread.history}</p>
         </section>
       )}
 
       <Section spacing="sm" title="Frequently asked questions">
-        <div className="rounded-2xl border border-mystic-800/60 bg-mystic-900/40 px-4">
+        <div className="rounded-card border border-mystic-800/60 bg-mystic-900/40 px-4">
           {spread.faqs.map((f, i) => (
             <Disclosure key={i} variant="row" label={f.q}>
               <p className="reading-copy">{f.a}</p>
@@ -164,7 +164,7 @@ export function SpreadDetailPage() {
         <Section spacing="sm" title="Related spreads">
           <div className="grid sm:grid-cols-2 gap-2">
             {related.map((r) => (
-              <Link key={r.slug} to={`/spreads/${r.slug}`} className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
+              <Link key={r.slug} to={`/spreads/${r.slug}`} className="flex items-center justify-between p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
                 <span className="text-sm text-mystic-200">{r.name}</span>
                 <ChevronRight className="w-4 h-4 text-mystic-500" />
               </Link>

@@ -46,7 +46,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
                   relative w-10 h-10 rounded-full flex items-center justify-center
                   transition-all duration-deliberate
                   ${isCurrent
-                    ? 'bg-gradient-to-br from-gold/30 to-amber-600/30 border-2 border-gold'
+                    ? 'bg-gradient-to-br from-gold/30 to-gold-dark/30 border-2 border-gold'
                     : isActive
                       ? 'bg-mystic-700/50 border border-gold/50'
                       : 'bg-mystic-800/50 border border-mystic-700/30'
@@ -65,12 +65,12 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
                   `}
                 />
                 {isCurrent && (
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gold animate-pulse" />
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gold" />
                 )}
               </div>
               <span
                 className={`
-                  mt-2 text-[9px] font-medium text-center max-w-[60px] leading-tight
+                  mt-2 text-caption font-medium text-center max-w-[60px]
                   ${isCurrent ? 'text-gold' : isActive ? 'text-mystic-400' : 'text-mystic-600'}
                 `}
               >
@@ -110,7 +110,7 @@ export function RankProgressBar({ currentRank, currentXP }: RankProgressBarProps
       </div>
 
       {nextRank && (
-        <p className="mt-2 text-center text-xs text-mystic-500">
+        <p className="mt-2 text-center text-meta text-mystic-500">
           {t('achievements.ranks.xpToNext', {
             xp: (nextRank.minXP - currentXP).toLocaleString(),
             name: t(`achievements.ranks.${nextRank.key}`),

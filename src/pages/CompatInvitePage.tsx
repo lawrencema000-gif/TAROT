@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ArrowRight, AlertCircle, UserPlus } from 'lucide-react';
-import { MysticalStar } from '../components/ui/MysticalStar';
-import { Card, Button, Page, PageHeader, ResultLayout, toast, ReadingProse } from '../components/ui';
+import { Card, Button, Page, PageHeader, ResultLayout, SparkleFourPoint, toast, ReadingProse } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { compatInvites } from '../dal';
@@ -132,7 +131,7 @@ export function CompatInvitePage() {
     return (
       <Card padding="lg">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" />
           <p className="text-ui text-mystic-400">
             {t('compatInvite.notFound', { defaultValue: 'This invite could not be found or has expired.' })}
           </p>
@@ -227,7 +226,7 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
 
   return (
     <ResultLayout
-      glyph={<Heart className="text-pink-400" />}
+      glyph={<Heart className="text-cosmic-rose" />}
       eyebrow={t('compatInvite.resultLabel', { defaultValue: 'Compatibility' })}
       verdict={<>{nameA} <span className="text-gold">+</span> {nameB}</>}
       subtitle={compat ? <span className="font-display text-4xl text-gold">{compat.overallScore}%</span> : undefined}
@@ -285,7 +284,7 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
             </h3>
             <ul className="reading-copy space-y-2">
               {compat.strengths.map((s, i) => (
-                <li key={i} className="pl-4 relative before:content-['✦'] before:absolute before:left-0 before:text-emerald-400">{s}</li>
+                <li key={i} className="pl-4 relative before:content-['✦'] before:absolute before:left-0 before:text-teal">{s}</li>
               ))}
             </ul>
           </Card>
@@ -295,13 +294,13 @@ function CompatResultView({ joined }: { joined: CompatJointResult }) {
             </h3>
             <ul className="reading-copy space-y-2">
               {compat.growthEdges.map((s, i) => (
-                <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-pink-400">{s}</li>
+                <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-cosmic-rose">{s}</li>
               ))}
             </ul>
           </Card>
           <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30">
             <div className="flex items-center gap-2 mb-2">
-              <MysticalStar size={16} halo={false} className="text-gold" />
+              <SparkleFourPoint size={16} className="text-gold" />
               <h3 className="heading-display-md text-mystic-100">
                 {t('compatInvite.advice', { defaultValue: 'For you two' })}
               </h3>

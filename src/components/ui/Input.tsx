@@ -48,7 +48,7 @@ function FieldError({ id, children }: { id: string; children: React.ReactNode })
       initial={reduce ? false : { opacity: 0, y: -2 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.16, ease: [0.22, 0.8, 0.25, 1] }}
-      className="mt-2 text-sm text-red-400"
+      className="mt-2 text-sm text-coral"
     >
       {children}
     </motion.p>
@@ -85,13 +85,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? errorId : undefined}
             className={`
-              w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl
+              w-full bg-mystic-800/50 border border-mystic-600/50 rounded-control
               px-4 py-3 text-mystic-100 placeholder-mystic-500
               ${FIELD_MOTION} ${FIELD_HOVER}
               focus:outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20
               disabled:opacity-50 disabled:cursor-not-allowed
               ${icon ? 'pl-12' : ''}
-              ${error ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20' : ''}
+              ${error ? 'border-coral/50 focus:border-coral/50 focus:ring-coral/20' : ''}
               ${className}
             `}
             {...props}
@@ -128,13 +128,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
           className={`
-            w-full bg-mystic-800/50 border border-mystic-600/50 rounded-xl
+            w-full bg-mystic-800/50 border border-mystic-600/50 rounded-control
             px-4 py-3 text-mystic-100 placeholder-mystic-500
             resize-none
             ${FIELD_MOTION} ${FIELD_HOVER}
             focus:outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20' : ''}
+            ${error ? 'border-coral/50 focus:border-coral/50 focus:ring-coral/20' : ''}
             ${className}
           `}
           {...props}

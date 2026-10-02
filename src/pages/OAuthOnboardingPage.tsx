@@ -347,21 +347,21 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
                     <Clock className="w-4 h-4 text-mystic-500" />
                     {t('oauth.basics.birthTime')}
-                    <span className="text-xs text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
+                    <span className="text-caption text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
                   </label>
                   <Input
                     type="time"
                     value={data.birthTime}
                     onChange={e => setData(d => ({ ...d, birthTime: e.target.value }))}
                   />
-                  <p className="text-xs text-mystic-500 mt-1.5">{t('oauth.basics.birthTimeHint')}</p>
+                  <p className="text-caption text-mystic-500 mt-1.5">{t('oauth.basics.birthTimeHint')}</p>
                 </div>
 
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
                     <MapPin className="w-4 h-4 text-mystic-500" />
                     {t('oauth.basics.birthPlace')}
-                    <span className="text-xs text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
+                    <span className="text-caption text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
                   </label>
                   <Input
                     value={data.birthPlace}
@@ -372,7 +372,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                   {data.birthLat && data.birthLon && (
                     <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
                       <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                      <span className="text-xs text-mystic-300">{t('oauth.basics.locationVerified')}</span>
+                      <span className="text-caption text-mystic-300">{t('oauth.basics.locationVerified')}</span>
                     </div>
                   )}
                   {showGeoResults && !data.birthLat && geoResults.length > 0 && (
@@ -388,7 +388,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                       ))}
                     </div>
                   )}
-                  <p className="text-xs text-mystic-500 mt-1.5">{t('oauth.basics.birthPlaceHint')}</p>
+                  <p className="text-caption text-mystic-500 mt-1.5">{t('oauth.basics.birthPlaceHint')}</p>
                 </div>
               </div>
             </div>
@@ -412,13 +412,13 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                     <button
                       key={option.value}
                       onClick={() => setData(d => ({ ...d, tonePreference: option.value }))}
-                      className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] flex items-center gap-4 ${
+                      className={`w-full p-4 rounded-control border transition-all text-left active:scale-[0.98] flex items-center gap-4 ${
                         isSelected
                           ? 'bg-gold/10 border-gold/50'
                           : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
                       }`}
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                      <div className={`w-12 h-12 rounded-control flex items-center justify-center transition-colors ${
                         isSelected ? 'bg-gold/20' : 'bg-mystic-700/30'
                       }`}>
                         <Icon className={`w-6 h-6 ${isSelected ? 'text-gold' : 'text-mystic-400'}`} />
@@ -455,7 +455,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
               <div className="space-y-4">
                 <button
                   onClick={() => setData(d => ({ ...d, notificationsEnabled: true }))}
-                  className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
+                  className={`w-full p-4 rounded-control border transition-all text-left active:scale-[0.98] ${
                     data.notificationsEnabled
                       ? 'bg-gold/10 border-gold/50'
                       : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'
@@ -479,7 +479,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
                 <button
                   onClick={() => setData(d => ({ ...d, notificationsEnabled: false }))}
-                  className={`w-full p-4 rounded-xl border transition-all text-left active:scale-[0.98] ${
+                  className={`w-full p-4 rounded-control border transition-all text-left active:scale-[0.98] ${
                     !data.notificationsEnabled
                       ? 'bg-gold/10 border-gold/50'
                       : 'bg-mystic-800/30 border-mystic-700/50 hover:border-mystic-600/50'

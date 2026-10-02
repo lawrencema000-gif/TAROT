@@ -43,7 +43,7 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 't
 }
 
 const variantStyles: Record<NonNullable<EmptyStateProps['variant']>, string> = {
-  panel: 'rounded-2xl border border-mystic-700 bg-mystic-850',
+  panel: 'rounded-card border border-mystic-700 bg-mystic-850',
   inline: '',
 };
 

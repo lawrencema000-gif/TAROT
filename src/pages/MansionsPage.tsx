@@ -64,7 +64,7 @@ export function MansionsPage() {
     return (
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div>
-          <div className="font-display-eyebrow text-emerald-400/80 mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
+          <div className="font-display-eyebrow text-teal/80 mb-1">{t('mansions.favoured', { defaultValue: '宜 · Favoured' })}</div>
           {acts.favourable.length === 0 ? (
             <p className="text-ui text-mystic-300 italic">
               The almanacs record nothing favoured here — a day to keep small rather than start.
@@ -78,7 +78,7 @@ export function MansionsPage() {
           )}
         </div>
         <div>
-          <div className="font-display-eyebrow text-rose-400/80 mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
+          <div className="font-display-eyebrow text-coral/80 mb-1">{t('mansions.avoided', { defaultValue: '忌 · Avoided' })}</div>
           {acts.unfavourable.length === 0 ? (
             <p className="text-ui text-mystic-300 italic">Nothing particular to avoid.</p>
           ) : (
@@ -208,7 +208,7 @@ export function MansionsPage() {
                     </>
                   }
                   meta={
-                    <span className={`uppercase tracking-wider ${m.fortune === 'auspicious' ? 'text-emerald-400/70' : 'text-rose-400/70'}`}>
+                    <span className={`uppercase tracking-wider ${m.fortune === 'auspicious' ? 'text-teal/70' : 'text-coral/70'}`}>
                       {m.fortune === 'auspicious' ? '吉' : '凶'}
                     </span>
                   }

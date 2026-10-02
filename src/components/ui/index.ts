@@ -49,13 +49,6 @@ export {
   RelationshipReadinessIcon,
   WellnessTypeIcon,
 } from './QuizIcons';
-export {
-  FeaturePill,
-  FeaturePillGroup,
-  RitualRow,
-  AvailableNowLabel,
-} from './HomeRow';
-export { MysticalStar } from './MysticalStar';
 export { CardBack, type CardBackProps } from './CardBack';
 export { DeckFan, type DeckFanProps, type DeckFanSize } from './DeckFan';
 export { Progress, ProgressRing, type ProgressProps } from './Progress';
@@ -64,7 +57,6 @@ export { Input, TextArea } from './Input';
 export { Chip, ChipGroup, InsightChip, Tag, Badge, type TagProps, type BadgeProps, type Tone } from './Chip';
 export { toast, ToastContainer } from './Toast';
 export { TarotCardFrame } from './TarotCardFrame';
-export { RitualCardStack } from './RitualCardStack';
 export {
   Skeleton,
   CardSkeleton,

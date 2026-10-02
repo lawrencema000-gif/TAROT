@@ -35,7 +35,13 @@ export interface UserProfile {
   isPremium: boolean;
   isAdFree: boolean;
   locale?: 'en' | 'ja' | 'ko' | 'zh';
+  /** Consecutive local calendar days, ending today or yesterday, with a
+   *  completed ritual. Recomputed from daily_rituals by the ritual_streak()
+   *  RPC on app open and on ritual completion; never written by the client
+   *  (a DB trigger reverts any such write). */
   streak: number;
+  /** YYYY-MM-DD of the last COMPLETED ritual, as ritual_streak() wrote it.
+   *  Before 2026-09-28 this held the last app-open date. */
   lastRitualDate?: string;
   mbtiType?: string;
   loveLanguage?: string;

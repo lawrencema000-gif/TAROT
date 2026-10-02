@@ -65,13 +65,13 @@ export function NumerologyLearnPage() {
                 <Link
                   key={entry.slug}
                   to={`/numerology/${entry.slug}`}
-                  className="flex items-center justify-between p-3 rounded-xl border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
+                  className="flex items-center justify-between p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl font-display text-gold w-8 text-center">{entry.number}</span>
                     <div>
                       <div className="text-sm text-mystic-100 font-medium">Number {entry.number}</div>
-                      <div className="text-xs text-mystic-500 truncate">{entry.tarotMajorArcana}</div>
+                      <div className="text-meta text-mystic-500 truncate">{entry.tarotMajorArcana}</div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-mystic-500 flex-shrink-0" />

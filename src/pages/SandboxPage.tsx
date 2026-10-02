@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Plus, Trash2, Sparkles, RotateCcw } from 'lucide-react';
-import { Card, Button, Page, Tag, MysticalStar, toast } from '../components/ui';
+import { Card, Button, Page, Tag, SparkleFourPoint, EyebrowLabel, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
@@ -304,7 +304,7 @@ export function SandboxPage() {
             <p className="text-sm font-medium text-mystic-300 mb-1">
               {t('sandbox.webglUnavailableTitle', { defaultValue: '3D preview is not available' })}
             </p>
-            <p className="text-xs text-mystic-500 max-w-xs leading-relaxed">
+            <p className="text-caption text-mystic-500 max-w-xs">
               {t('sandbox.webglUnavailableBody', {
                 defaultValue:
                   "Your browser or device doesn't support WebGL. You can still place archetypal objects and get an interpretation — the reading doesn't require the 3D view.",
@@ -321,15 +321,15 @@ export function SandboxPage() {
       </Card>
 
       <Card padding="lg">
-        <p className="text-[10px] uppercase tracking-widest text-mystic-500 mb-2">
+        <EyebrowLabel align="left" className="block mb-2">
           {t('sandbox.pickObject', { defaultValue: 'Choose an object' })}
-        </p>
+        </EyebrowLabel>
         <div className="grid grid-cols-5 gap-2">
           {ARCHETYPAL_OBJECTS.map((a) => (
             <button
               key={a.id}
               onClick={() => setSelectedArchetype(a)}
-              className={`p-2 rounded-xl border transition-all text-center ${
+              className={`p-2 rounded-control border transition-all text-center ${
                 selectedArchetype?.id === a.id
                   ? 'bg-gold/10 border-gold/50'
                   : 'bg-mystic-800/40 border-mystic-700/40 hover:border-mystic-600'
@@ -339,7 +339,7 @@ export function SandboxPage() {
                 className="w-6 h-6 rounded-full mx-auto mb-1"
                 style={{ backgroundColor: a.color, opacity: 0.8 }}
               />
-              <p className="text-[10px] text-mystic-300 truncate">{a.name}</p>
+              <p className="text-caption text-mystic-300 truncate">{a.name}</p>
             </button>
           ))}
         </div>
@@ -358,10 +358,10 @@ export function SandboxPage() {
       {placed.length > 0 && (
         <Card padding="md">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] uppercase tracking-widest text-mystic-500">
+            <EyebrowLabel align="left">
               {t('sandbox.placedLabel', { defaultValue: 'On the plinth' })}
-            </p>
-            <span className="text-[10px] text-mystic-500">{placed.length}</span>
+            </EyebrowLabel>
+            <span className="text-meta text-mystic-500">{placed.length}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {placed.map((p) => (
@@ -380,7 +380,7 @@ export function SandboxPage() {
         onClick={interpret}
         disabled={placed.length < 2 || loadingInterpretation}
       >
-        <MysticalStar size={16} className="mr-2" />
+        <SparkleFourPoint size={16} className="mr-2" />
         {loadingInterpretation
           ? t('sandbox.reading', { defaultValue: 'Reading the arrangement…' })
           : t('sandbox.interpretCta', { defaultValue: 'Read the arrangement' })}
@@ -390,9 +390,9 @@ export function SandboxPage() {
         <Card padding="lg">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-gold" />
-            <p className="text-[10px] uppercase tracking-widest text-gold">
+            <EyebrowLabel align="left">
               {t('sandbox.readingLabel', { defaultValue: 'The oracle reads' })}
-            </p>
+            </EyebrowLabel>
           </div>
           <p className="text-sm text-mystic-300 leading-relaxed whitespace-pre-line">{interpretation}</p>
           <Button variant="outline" size="sm" onClick={reset} className="mt-3">
@@ -402,7 +402,7 @@ export function SandboxPage() {
         </Card>
       )}
 
-      <p className="text-[10px] text-center text-mystic-600 italic">
+      <p className="text-caption text-center text-mystic-600 italic">
         {t('sandbox.preview', { defaultValue: 'Preview — drag-to-place and save/share are coming.' })}
       </p>
     </Page>

@@ -436,7 +436,7 @@ function AppContent() {
             <div className="flex items-center gap-4">
               <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cardMeanings', { defaultValue: 'Card meanings' })}</a>
               <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.blog', { defaultValue: 'Blog' })}</a>
-              <button onClick={() => navigate('/signin')} className="px-5 py-2 text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-xl transition-all">
+              <button onClick={() => navigate('/signin')} className="px-5 py-2 min-h-[44px] text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-control transition-all">
                 {t('publicNav.signIn', { defaultValue: 'Sign in' })}
               </button>
             </div>
@@ -546,7 +546,6 @@ function AppContent() {
               style={{ backgroundImage: `url(${profile.background_url})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-mystic-950/70 via-mystic-950/85 to-mystic-950/95" />
-            <div className="absolute inset-0 backdrop-blur-[2px]" />
           </div>
         ) : (
           <div className="fixed inset-0 z-0 opacity-60" />

@@ -270,7 +270,7 @@ export function QuickReadingPage() {
       {error && (
         <Card padding="md">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-pink-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" />
             <p className="text-meta text-mystic-400">
               {error === 'rate-limit'
                 ? t('quickReading.errorRateLimit', { defaultValue: 'You\'re asking fast — slow down and try again in a moment.' })

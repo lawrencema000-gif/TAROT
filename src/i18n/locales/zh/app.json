@@ -448,7 +448,9 @@
       "howFeeling": "你现在的感受?",
       "tags": "标签",
       "attachments": "附件",
-      "tarotLinked": "已关联塔罗牌阵"
+      "tarotLinked": "已关联塔罗牌阵",
+      "goToPrompt": "提示语 {{n}}",
+      "unlinkReading": "移除关联的牌阵"
     },
     "toast": {
       "unlockPremiumLock": "升级高级版才能查看已锁定条目",
@@ -463,7 +465,9 @@
     "startWriting": "写下我的第一条日记",
     "editor": {
       "cancel": "取消"
-    }
+    },
+    "prevWeek": "上一周",
+    "nextWeek": "下一周"
   },
   "quizzes": {
     "title": "测试",
@@ -1616,7 +1620,9 @@
       "noAspectsMatch": "没有匹配此筛选条件的相位",
       "aspectPair": "{{a}} - {{b}}",
       "planetInSign": "{{planet}}在{{sign}}"
-    }
+    },
+    "saveLabel": "保存运势",
+    "shareLabel": "分享运势"
   },
   "profile": {
     "title": "个人资料",
@@ -1750,7 +1756,9 @@
     "comeBackSoon": "塔罗洞察与心灵指引,敬请期待。",
     "articleNotFound": "未找到文章。",
     "readingTime": "阅读约 {{n}} 分钟",
-    "by": "作者:{{author}}"
+    "by": "作者:{{author}}",
+    "prevPage": "上一页",
+    "nextPage": "下一页"
   },
   "tarot": {
     "title": "塔罗牌意解读",
@@ -2731,8 +2739,15 @@
         "week": "整整一周，每晚都在。",
         "month": "整整一个月的夜晚。",
         "hundred": "一百个夜晚。",
-        "year": "一年的夜晚。"
-      }
+        "year": "一年的夜晚。",
+        "fortnight": "两周的夜晚。",
+        "sixty": "六十个夜晚。"
+      },
+      "milestoneToast": "连续 {{days}} 天。+{{xp}} XP",
+      "milestoneToastMoonstones": "连续 {{days}} 天。+{{xp}} XP · +{{moonstones}} 月光石",
+      "milestoneToastMoonstonesOnly": "连续 {{days}} 天。+{{moonstones}} 月光石",
+      "notStarted": "还没有连续记录。",
+      "startTonight": "完成今晚的仪式，开始你的连续记录。"
     },
     "levelUp": {
       "title": "升级了。",
@@ -4287,7 +4302,9 @@
     "postedUnderReview": "已发布——我们团队将尽快审核。",
     "commentUnderReview": "评论已发布——我们团队将尽快审核。",
     "contentBlocked": "此内容与我们的社区指南相冲突。",
-    "publishPost": "发布我的帖子"
+    "publishPost": "发布我的帖子",
+    "youMarker": "你",
+    "options": "选项"
   },
   "common": {
     "mainContent": "主要内容",
@@ -4879,7 +4896,8 @@
     "reversed": "逆位",
     "composerPlaceholder": "追问一下…",
     "seedMessage": "我刚抽到{{card}}。请帮我静心体会它此刻指向的内容。",
-    "aiFailed": "无法连接神谕，请检查网络连接后再问一次。"
+    "aiFailed": "无法连接神谕，请检查网络连接后再问一次。",
+    "thinking": "神谕正在思考…"
   },
   "journalCoach": {
     "askCta": "向日记教练提问",
@@ -5559,6 +5577,21 @@
   },
   "share": {
     "youAnd": "你和{{name}}",
-    "yourCompatibility": "你们的契合度"
+    "yourCompatibility": "你们的契合度",
+    "brand": {
+      "bazi": "八字",
+      "careerArchetype": "职业原型",
+      "dream": "解梦师",
+      "fengShui": "风水八卦",
+      "humanDesign": "人类图",
+      "iching": "易经",
+      "partnerCompat": "伴侣契合",
+      "runes": "符文",
+      "ayurveda": "阿育吠陀",
+      "shadowArchetype": "影子原型",
+      "elementAffinity": "元素亲和",
+      "tarotCourt": "塔罗宫廷牌匹配",
+      "cosmicProfile": "宇宙档案"
+    }
   }
 }

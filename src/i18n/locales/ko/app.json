@@ -448,7 +448,9 @@
       "howFeeling": "오늘 기분은 어떤가요?",
       "tags": "태그",
       "attachments": "첨부",
-      "tarotLinked": "타로 리딩 연결됨"
+      "tarotLinked": "타로 리딩 연결됨",
+      "goToPrompt": "프롬프트 {{n}}",
+      "unlinkReading": "연결된 리딩 제거"
     },
     "toast": {
       "unlockPremiumLock": "잠긴 기록을 보려면 프리미엄을 해제하세요",
@@ -463,7 +465,9 @@
     "startWriting": "첫 기록 쓰기",
     "editor": {
       "cancel": "취소"
-    }
+    },
+    "prevWeek": "이전 주",
+    "nextWeek": "다음 주"
   },
   "quizzes": {
     "title": "퀴즈",
@@ -1616,7 +1620,9 @@
       "noAspectsMatch": "이 필터와 일치하는 각도가 없습니다",
       "aspectPair": "{{a}} - {{b}}",
       "planetInSign": "{{sign}} {{planet}}"
-    }
+    },
+    "saveLabel": "운세 저장",
+    "shareLabel": "운세 공유"
   },
   "profile": {
     "title": "프로필",
@@ -1750,7 +1756,9 @@
     "comeBackSoon": "타로 인사이트와 영적 안내를 곧 만나보세요.",
     "articleNotFound": "기사를 찾을 수 없어요.",
     "readingTime": "{{n}}분 소요",
-    "by": "글: {{author}}"
+    "by": "글: {{author}}",
+    "prevPage": "이전 페이지",
+    "nextPage": "다음 페이지"
   },
   "tarot": {
     "title": "타로 카드 의미",
@@ -2731,8 +2739,15 @@
         "week": "일주일, 하룻밤도 빠짐없이.",
         "month": "한 달의 밤을 모두 채웠어요.",
         "hundred": "백 번째 밤이에요.",
-        "year": "일 년의 밤이 모였어요."
-      }
+        "year": "일 년의 밤이 모였어요.",
+        "fortnight": "두 주의 밤을 모두 채웠어요.",
+        "sixty": "예순 번째 밤이에요."
+      },
+      "milestoneToast": "{{days}}일 연속. +{{xp}} XP",
+      "milestoneToastMoonstones": "{{days}}일 연속. +{{xp}} XP · 문스톤 +{{moonstones}}개",
+      "milestoneToastMoonstonesOnly": "{{days}}일 연속. 문스톤 +{{moonstones}}개",
+      "notStarted": "아직 연속 기록이 없어요.",
+      "startTonight": "오늘 밤의 의식을 마치면 기록이 시작돼요."
     },
     "levelUp": {
       "title": "레벨 업.",
@@ -4287,7 +4302,9 @@
     "postedUnderReview": "게시되었습니다 — 곧 검토하겠습니다.",
     "commentUnderReview": "댓글이 게시되었습니다 — 곧 검토하겠습니다.",
     "contentBlocked": "이 콘텐츠는 커뮤니티 가이드라인에 위배됩니다.",
-    "publishPost": "내 글 올리기"
+    "publishPost": "내 글 올리기",
+    "youMarker": "나",
+    "options": "옵션"
   },
   "common": {
     "mainContent": "본문",
@@ -4879,7 +4896,8 @@
     "reversed": "역위",
     "composerPlaceholder": "이어 물어보기…",
     "seedMessage": "방금 {{card}}를 뽑았어요. 지금 이것이 무엇을 가리키는지 함께 머물며 살펴보게 도와줘요.",
-    "aiFailed": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 물어봐 주세요."
+    "aiFailed": "오라클에 연결하지 못했어요 — 연결을 확인하고 다시 물어봐 주세요.",
+    "thinking": "오라클이 생각하는 중…"
   },
   "journalCoach": {
     "askCta": "저널 코치에게 물어보기",
@@ -5559,6 +5577,21 @@
   },
   "share": {
     "youAnd": "당신과 {{name}}",
-    "yourCompatibility": "당신의 궁합"
+    "yourCompatibility": "당신의 궁합",
+    "brand": {
+      "bazi": "사주팔자",
+      "careerArchetype": "커리어 원형",
+      "dream": "꿈 해석기",
+      "fengShui": "풍수 팔괘",
+      "humanDesign": "휴먼디자인",
+      "iching": "주역",
+      "partnerCompat": "파트너 궁합",
+      "runes": "룬",
+      "ayurveda": "아유르베다",
+      "shadowArchetype": "그림자 원형",
+      "elementAffinity": "원소 친화성",
+      "tarotCourt": "타로 코트 카드 매칭",
+      "cosmicProfile": "코스믹 프로파일"
+    }
   }
 }

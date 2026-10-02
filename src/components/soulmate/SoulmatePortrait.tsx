@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Loader2, Sparkles, Download, RefreshCw, Heart } from 'lucide-react';
 import { Card, Button, Chip, toast, ReadingProse } from '../ui';
 import { useMoonstoneSpend } from '../../hooks/useMoonstoneSpend';
@@ -16,6 +16,13 @@ const VIBES = [
   { key: 'soulful', label: 'Soulful' },
 ] as const;
 
+const PORTRAIT_COST = 150;
+/** The image model takes ~55 s; past this the UI stops waiting and says so. */
+const PORTRAIT_TIMEOUT_MS = 90_000;
+/** When the waiting copy steps up — "still painting", then "nearly there". */
+const WAIT_STEP_1_MS = 10_000;
+const WAIT_STEP_2_MS = 30_000;
+
 /**
  * Soulmate Portrait — a symbolic, illustrated artwork of the qualities your
  * chart reaches for in a partner (Descendant + Venus + Mars + Moon).
@@ -23,33 +30,76 @@ const VIBES = [
  * It is deliberately NOT a photorealistic face. We show the exact symbolism
  * that shaped the image, so it reads as an interpretation of your chart
  * rather than a claim about a real person you'll meet.
+ *
+ * The generation is slow (≈54 s on the image model, ai-audit §3.7), so the
+ * button narrates the wait at 10 s and 30 s and gives up at 90 s with a
+ * message instead of spinning until the request dies.
  */
 export function SoulmatePortrait() {
-  const { tryConsume, EarnSheet } = useMoonstoneSpend('soulmate-portrait', { cost: 150 });
+  const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('soulmate-portrait', { cost: PORTRAIT_COST });
   const { t } = useT('app');
   const [vibe, setVibe] = useState<(typeof VIBES)[number]['key']>('romantic');
   const [data, setData] = useState<PortraitData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [waitStep, setWaitStep] = useState<0 | 1 | 2>(0);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Step the waiting copy while a request is in flight.
+  useEffect(() => {
+    if (!loading) {
+      setWaitStep(0);
+      return;
+    }
+    const t1 = window.setTimeout(() => setWaitStep(1), WAIT_STEP_1_MS);
+    const t2 = window.setTimeout(() => setWaitStep(2), WAIT_STEP_2_MS);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [loading]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const paint = async () => {
     const ok = await tryConsume();
     if (!ok) return;
     setLoading(true);
-    const { data: res, error } = await supabase.functions.invoke('ai-soulmate-portrait', { body: { vibe } });
-    setLoading(false);
-    if (error) {
-      const msg = (error as { message?: string })?.message || '';
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(), PORTRAIT_TIMEOUT_MS);
+    try {
+      const { data: res, error } = await supabase.functions.invoke('ai-soulmate-portrait', {
+        body: { vibe },
+        signal: controller.signal,
+      });
+      if (error) {
+        const msg = (error as { message?: string })?.message || '';
+        toast(
+          msg.includes('INSUFFICIENT')
+            ? t('soulmatePortrait.notEnough', { defaultValue: 'Not enough Moonstones' })
+            : t('soulmatePortrait.failed', { defaultValue: 'The portrait couldn’t be painted — try again.' }),
+          'error',
+        );
+        return;
+      }
+      const payload = (res?.data ?? res) as PortraitData;
+      if (payload?.image) setData(payload);
+      else toast(t('soulmatePortrait.failed', { defaultValue: 'The portrait couldn’t be painted — try again.' }), 'error');
+    } catch (e) {
+      const aborted = (e as { name?: string })?.name === 'AbortError' || controller.signal.aborted;
       toast(
-        msg.includes('INSUFFICIENT')
-          ? t('soulmatePortrait.notEnough', { defaultValue: 'Not enough Moonstones' })
-          : t('soulmatePortrait.failed', { defaultValue: "The portrait couldn't be painted — try again." }),
+        aborted
+          ? t('soulmatePortrait.timedOut', {
+              defaultValue: 'The portrait is taking longer than usual. Nothing was lost — try again in a moment.',
+            })
+          : t('soulmatePortrait.failed', { defaultValue: 'The portrait couldn’t be painted — try again.' }),
         'error',
       );
-      return;
+    } finally {
+      window.clearTimeout(timeout);
+      abortRef.current = null;
+      setLoading(false);
     }
-    const payload = (res?.data ?? res) as PortraitData;
-    if (payload?.image) setData(payload);
-    else toast(t('soulmatePortrait.failed', { defaultValue: "The portrait couldn't be painted — try again." }), 'error');
   };
 
   const download = () => {
@@ -62,10 +112,17 @@ export function SoulmatePortrait() {
     toast(t('soulmatePortrait.saved', { defaultValue: 'Saved' }), 'success');
   };
 
+  const waitingLabel =
+    waitStep === 2
+      ? t('soulmatePortrait.waitNearly', { defaultValue: 'Nearly there — portraits take up to 90 seconds' })
+      : waitStep === 1
+        ? t('soulmatePortrait.waitStill', { defaultValue: 'Still painting — this usually takes about a minute' })
+        : t('soulmatePortrait.painting', { defaultValue: 'Painting your portrait…' });
+
   return (
     <Card padding="lg" className="space-y-3">
       <div className="flex items-center gap-2">
-        <Heart className="w-4 h-4 text-gold" />
+        <Heart className="w-4 h-4 text-gold" aria-hidden />
         <h3 className="heading-display-md text-mystic-100">{t('soulmatePortrait.title', { defaultValue: 'Your soulmate portrait' })}</h3>
       </div>
 
@@ -76,15 +133,21 @@ export function SoulmatePortrait() {
           </p>
           <div className="flex flex-wrap gap-1.5">
             {VIBES.map((v) => (
-              <Chip key={v.key} label={t(`soulmatePortrait.vibe.${v.key}`, { defaultValue: v.label })} selected={vibe === v.key} onSelect={() => setVibe(v.key)} size="sm" />
+              <Chip key={v.key} label={t(`soulmatePortrait.vibe.${v.key}`, { defaultValue: v.label })} selected={vibe === v.key} onSelect={() => setVibe(v.key)} size="sm" disabled={loading} />
             ))}
           </div>
-          <Button variant="gold" fullWidth onClick={paint} disabled={loading}>
+          <Button variant="gold" fullWidth onClick={paint} disabled={loading} aria-live="polite">
             {loading
-              ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('soulmatePortrait.painting', { defaultValue: 'Painting your portrait…' })}</>
-              : <><Sparkles className="w-4 h-4 mr-2" /> {t('soulmatePortrait.paint', { defaultValue: 'Paint the portrait' })}</>}
+              ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {waitingLabel}</>
+              : <><Sparkles className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.paint', { defaultValue: 'Paint the portrait' })}</>}
           </Button>
-          <MoonstoneCostLine cost={150} />
+          {loading && (
+            <p className="text-meta text-mystic-400 text-center" role="status">
+              {t('soulmatePortrait.waitNote', { defaultValue: 'You can keep reading — the portrait appears here when it is done.' })}
+            </p>
+          )}
+          <MoonstoneCostLine cost={PORTRAIT_COST} />
+          {gateError && <p className="text-meta text-coral" role="alert">{gateError}</p>}
         </>
       )}
 
@@ -92,7 +155,7 @@ export function SoulmatePortrait() {
         <div className="space-y-3">
           <img
             src={`data:${data.imageMime || 'image/jpeg'};base64,${data.image}`}
-            alt={t('soulmatePortrait.alt', { defaultValue: "Symbolic illustrated portrait generated from your chart's relationship symbolism" })}
+            alt={t('soulmatePortrait.alt', { defaultValue: 'Symbolic illustrated portrait generated from your chart’s relationship symbolism' })}
             className="w-full rounded-card border border-gold/20"
           />
           <ReadingProse text={data.caption} lede={false} />
@@ -110,15 +173,15 @@ export function SoulmatePortrait() {
 
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={download}>
-              <Download className="w-4 h-4 mr-2" /> {t('soulmatePortrait.save', { defaultValue: 'Save the image' })}
+              <Download className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.save', { defaultValue: 'Save the image' })}
             </Button>
             <Button variant="ghost" className="flex-1" onClick={() => setData(null)}>
-              <RefreshCw className="w-4 h-4 mr-2" /> {t('soulmatePortrait.repaint', { defaultValue: 'Paint it again' })}
+              <RefreshCw className="w-4 h-4" aria-hidden /> {t('soulmatePortrait.repaint', { defaultValue: 'Paint it again' })}
             </Button>
           </div>
 
           <p className="text-caption text-mystic-500 italic">
-            {t('soulmatePortrait.disclaimer', { defaultValue: "An artistic interpretation of your chart's symbolism — not a depiction of a real person." })}
+            {t('soulmatePortrait.disclaimer', { defaultValue: 'An artistic interpretation of your chart’s symbolism — not a depiction of a real person.' })}
           </p>
         </div>
       )}

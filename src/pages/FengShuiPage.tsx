@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Home, Compass, Star, Bed, Briefcase, ChefHat, DoorOpen, Sofa, Bath, AlertTriangle, Wind, Target, Share2 } from 'lucide-react';
-import { Card, Button, Chip, Input, toast, Page, PageHeader, Section, Disclosure, Tag, EyebrowLabel } from '../components/ui';
+import { Card, Button, Chip, Input, toast, Page, PageHeader, Section, Disclosure, Tag, EyebrowLabel, ResultSheet } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -128,9 +128,9 @@ export function FengShuiPage() {
         </Card>
 
         {/* Personal Kua inputs — optional, but unlock 8-directions section. */}
-        <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
+        <Card padding="lg" className="bg-cosmic-violet/5 border-cosmic-violet/20">
           <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
-            <Compass className="w-4 h-4 text-cosmic-violetLight" />
+            <Compass className="w-4 h-4 text-cosmic-violet-ink" aria-hidden />
             {t('fengshui.kuaHeading', { defaultValue: 'Your personal Kua (optional)' })}
           </h3>
           <p className="reading-copy mb-3">
@@ -141,10 +141,11 @@ export function FengShuiPage() {
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-meta text-mystic-500 mb-1">
+              <label htmlFor="fengshui-birth-year" className="block text-ui font-medium text-mystic-300 mb-2">
                 {t('fengshui.birthYearLabel', { defaultValue: 'Birth year' })}
               </label>
               <Input
+                id="fengshui-birth-year"
                 type="number"
                 value={birthYear}
                 onChange={(e) => setBirthYear(e.target.value)}
@@ -154,13 +155,14 @@ export function FengShuiPage() {
               />
             </div>
             <div>
-              <label className="block text-meta text-mystic-500 mb-1">
+              <label htmlFor="fengshui-gender" className="block text-ui font-medium text-mystic-300 mb-2">
                 {t('fengshui.genderLabel', { defaultValue: 'Birth gender' })}
               </label>
               <select
+                id="fengshui-gender"
                 value={gender}
                 onChange={(e) => setGender(e.target.value as Gender)}
-                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm focus:outline-none focus:border-gold/40"
+                className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 min-h-[48px] text-mystic-100 text-ui focus:outline-none focus:border-gold/40"
               >
                 <option value="">{t('fengshui.selectOrSkip', { defaultValue: 'Select or skip' })}</option>
                 <option value="male">{t('fengshui.male', { defaultValue: 'Male' })}</option>
@@ -181,7 +183,7 @@ export function FengShuiPage() {
         </Card>
 
         <Button variant="primary" size="lg" fullWidth onClick={compute}>
-          <Wind className="w-5 h-5 mr-2" />
+          <Wind className="w-5 h-5" aria-hidden />
           {t('fengshui.reveal', { defaultValue: 'Reveal my Bagua' })}
         </Button>
       </Page>
@@ -222,11 +224,11 @@ export function FengShuiPage() {
           backLabel={t('fengshui.backToRate', { defaultValue: 'Re-rate' }) as string}
         />
 
-        {/* 3x3 Bagua grid */}
+        {/* 3x3 Bagua grid — the instrument stays on the canvas. */}
         <Card padding="lg">
-          <h3 className="heading-display-md text-mystic-100 mb-3">
+          <h2 className="heading-display-md text-mystic-100 mb-3">
             {t('fengshui.mapLabel', { defaultValue: 'Your Bagua map' })}
-          </h3>
+          </h2>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {BAGUA_AREA_ORDER.map((area) => {
               const info = BAGUA_AREAS[area];
@@ -236,7 +238,7 @@ export function FengShuiPage() {
               return (
                 <div
                   key={area}
-                  className={`aspect-square p-2 rounded-lg border flex flex-col items-center justify-center text-center ${
+                  className={`aspect-square p-2 rounded-inset border flex flex-col items-center justify-center text-center ${
                     isFocus ? 'border-coral/40 bg-coral/10'
                     : isStrong ? 'border-teal/40 bg-teal/10'
                     : 'border-mystic-700/30 bg-mystic-800/30'
@@ -245,7 +247,7 @@ export function FengShuiPage() {
                   <span className="text-caption text-mystic-400">
                     {t(`fengshui.areas.${area}.name`, { defaultValue: info.name }).split(' / ')[0]}
                   </span>
-                  <span className={`text-xl font-display mt-1 ${
+                  <span className={`text-title font-semibold tabular-nums mt-1 ${
                     isFocus ? 'text-coral'
                     : isStrong ? 'text-teal'
                     : score >= 4 ? 'text-gold' : 'text-mystic-400'
@@ -256,63 +258,66 @@ export function FengShuiPage() {
               );
             })}
           </div>
-          <p className="text-meta text-mystic-400 text-center">
+          <p className="text-meta text-mystic-400 text-center tabular-nums">
             {t('fengshui.overallScore', { defaultValue: 'Overall: {{n}} / 5', n: reading.overall.toFixed(1) })}
           </p>
         </Card>
 
-        <Card padding="lg" className="border-coral/25">
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="w-4 h-4 text-coral" />
-            <h3 className="font-display-eyebrow text-coral">
-              {t('fengshui.focusLabel', { defaultValue: 'Area needing attention' })}
-            </h3>
-          </div>
-          <h2 className="heading-display-lg text-mystic-100 mb-2">{focusName}</h2>
-          <p className="reading-copy mb-3">{focusMeaning}</p>
-          <p className="reading-copy mt-3 pt-3 border-t border-coral/15">
-            {t(`fengshui.areas.${reading.focusArea}.lowReading`, { defaultValue: focusInfo.lowReading })}
-          </p>
-          <p className="text-meta text-mystic-400 mt-3">
-            {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {focusInfo.element} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {focusInfo.color}
-          </p>
-        </Card>
+        {/* The reading, on paper: the area that wants attention, what to do
+            about it, and the area that is already carrying you. */}
+        <ResultSheet
+          headingLevel="h2"
+          glyph={<Target />}
+          eyebrow={t('fengshui.focusLabel', { defaultValue: 'Area needing attention' })}
+          title={focusName}
+          summaryHeading={t('fengshui.whatItGoverns', { defaultValue: 'What this area governs' })}
+          summary={focusMeaning}
+          disclaimer="general"
+        >
+          <div className="space-y-7">
+            <section>
+              <p className="reading-copy">
+                {t(`fengshui.areas.${reading.focusArea}.lowReading`, { defaultValue: focusInfo.lowReading })}
+              </p>
+              <p className="reading-meta mt-3">
+                {t('fengshui.elementLabel', { defaultValue: 'Element' })}: {focusInfo.element} · {t('fengshui.colorLabel', { defaultValue: 'Colour' })}: {focusInfo.color}
+              </p>
+            </section>
 
-        <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-          <h3 className="heading-display-md text-mystic-100 mb-3">
-            {t('fengshui.adjustmentsLabel', { defaultValue: 'Try these adjustments' })}
-          </h3>
-          <ul className="reading-copy space-y-2">
-            {adjustments.map((adj, i) => (
-              <li key={i}>• {adj}</li>
-            ))}
-          </ul>
-          <p className="text-meta text-mystic-400 mt-4">
-            {t('fengshui.placement', {
-              defaultValue: 'Place these adjustments in the {{dir}} of your room (oriented from the entry door).',
-              dir: focusInfo.direction,
-            })}
-          </p>
-        </Card>
+            <section>
+              <h3 className="heading-display-md heading-strong text-ink mb-2">
+                {t('fengshui.adjustmentsLabel', { defaultValue: 'Try these adjustments' })}
+              </h3>
+              <ul className="reading-copy list-disc pl-5 space-y-1.5">
+                {adjustments.map((adj, i) => (
+                  <li key={i}>{adj}</li>
+                ))}
+              </ul>
+              <p className="reading-meta mt-4">
+                {t('fengshui.placement', {
+                  defaultValue: 'Place these adjustments in the {{dir}} of your room (oriented from the entry door).',
+                  dir: focusInfo.direction,
+                })}
+              </p>
+            </section>
 
-        <Card padding="lg" className="border-teal/25">
-          <div className="flex items-center gap-2 mb-2">
-            <Wind className="w-4 h-4 text-teal" />
-            <h3 className="font-display-eyebrow text-teal">
-              {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
-            </h3>
+            <section className="border-t border-paper-hairline pt-6">
+              <EyebrowLabel tone="ink" align="left" className="block">
+                {t('fengshui.strongestLabel', { defaultValue: 'Your strongest area' })}
+              </EyebrowLabel>
+              <h3 className="heading-display-md heading-strong text-ink mt-1 mb-2">{strongName}</h3>
+              <p className="reading-copy">
+                {t(`fengshui.areas.${reading.strongestArea}.highReading`, { defaultValue: strongInfo.highReading })}
+              </p>
+            </section>
           </div>
-          <h2 className="heading-display-lg text-mystic-100 mb-2">{strongName}</h2>
-          <p className="reading-copy">
-            {t(`fengshui.areas.${reading.strongestArea}.highReading`, { defaultValue: strongInfo.highReading })}
-          </p>
-        </Card>
+        </ResultSheet>
 
         {/* ─── Personal Kua: 8 directions ─── */}
         {kua && (
           <Card padding="lg" className="border-cosmic-violet/30">
             <div className="flex items-center gap-2 mb-3">
-              <Compass className="w-4 h-4 text-cosmic-violetLight" />
+              <Compass className="w-4 h-4 text-cosmic-violet-ink" aria-hidden />
               <h3 className="heading-display-md text-mystic-100">
                 {t('fengshui.kuaResultHeading', {
                   defaultValue: 'Your 8 personal directions (Kua {{n}})',
@@ -335,7 +340,7 @@ export function FengShuiPage() {
               {(['sheng-qi', 'tian-yi', 'yan-nian', 'fu-wei'] as FavorableType[]).map((key) => (
                 <div key={key} className="p-3 rounded-control bg-teal/10 border border-teal/15">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-teal">{FAVORABLE_LABEL[key]}</span>
+                    <span className="text-ui font-medium text-teal">{FAVORABLE_LABEL[key]}</span>
                     <Tag tone="teal">
                       {DIRECTION_LABEL[kua.favorable[key]]}
                     </Tag>
@@ -352,7 +357,7 @@ export function FengShuiPage() {
               {(['jue-ming', 'wu-gui', 'liu-sha', 'huo-hai'] as UnfavorableType[]).map((key) => (
                 <div key={key} className="p-3 rounded-control bg-coral/10 border border-coral/15">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-coral">{UNFAVORABLE_LABEL[key]}</span>
+                    <span className="text-ui font-medium text-coral">{UNFAVORABLE_LABEL[key]}</span>
                     <Tag tone="rose">
                       {DIRECTION_LABEL[kua.unfavorable[key]]}
                     </Tag>
@@ -392,9 +397,9 @@ export function FengShuiPage() {
               return (
                 <div key={dir} className={`p-3 rounded-control border ${tint}`}>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-                    <span className="text-sm font-medium text-mystic-100">{DIRECTION_LABEL[dir]}</span>
-                    <span className="text-meta text-mystic-400">· Star {r.star}</span>
+                    <span className={`w-2 h-2 rounded-full ${dotColor}`} aria-hidden />
+                    <span className="text-ui font-medium text-mystic-100">{DIRECTION_LABEL[dir]}</span>
+                    <span className="text-meta text-mystic-400 tabular-nums">· {t('fengshui.starN', { defaultValue: 'Star {{n}}', n: r.star })}</span>
                   </div>
                   <div className="reading-copy">
                     <p>{r.meaning}</p>
@@ -432,9 +437,9 @@ export function FengShuiPage() {
                 key={room}
                 open={isOpen}
                 onOpenChange={(next) => setOpenRoom(next ? room : null)}
-                icon={<Icon className="text-cosmic-blue" />}
+                icon={<Icon className="text-cosmic-blue-ink" />}
                 label={g.name}
-                contentClassName="space-y-3 animate-fade-in"
+                contentClassName="space-y-3"
               >
                 <div>
                   <p className="font-display-eyebrow text-teal mb-1.5">
@@ -505,7 +510,7 @@ export function FengShuiPage() {
                 }
                 label={<span className="leading-snug">{p.problem}</span>}
                 description={p.location}
-                contentClassName="space-y-2 animate-fade-in"
+                contentClassName="space-y-2"
               >
                 <div>
                   <p className="font-display-eyebrow text-mystic-400 mb-0.5">
@@ -526,7 +531,7 @@ export function FengShuiPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" fullWidth onClick={handleShare}>
-            <Share2 className="w-4 h-4 mr-2" />
+            <Share2 className="w-4 h-4" aria-hidden />
             {t('fengshui.share', { defaultValue: 'Share my Bagua' })}
           </Button>
           <Button variant="outline" fullWidth onClick={() => setStage('rate')}>

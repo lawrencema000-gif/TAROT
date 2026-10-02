@@ -1,7 +1,8 @@
-import * as LucideIcons from 'lucide-react';
+import { Circle } from 'lucide-react';
 import type { AchievementCategory } from '../../services/achievements';
 import { getCategoryDisplayName, getCategoryIcon } from '../../services/achievements';
 import { ProgressRing } from '../ui';
+import { achievementIcon } from './achievementIcons';
 
 interface CategoryProgressProps {
   category: AchievementCategory;
@@ -9,16 +10,6 @@ interface CategoryProgressProps {
   total: number;
   isSelected?: boolean;
   onSelect?: () => void;
-}
-
-function getIcon(iconName: string): React.ElementType {
-  const pascalCase = iconName
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-
-  const icons = LucideIcons as unknown as Record<string, React.ElementType>;
-  return icons[pascalCase] || LucideIcons.Circle;
 }
 
 export function CategoryProgress({
@@ -29,7 +20,7 @@ export function CategoryProgress({
   onSelect,
 }: CategoryProgressProps) {
   const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
-  const Icon = getIcon(getCategoryIcon(category));
+  const Icon = achievementIcon(getCategoryIcon(category), Circle);
 
   return (
     <button

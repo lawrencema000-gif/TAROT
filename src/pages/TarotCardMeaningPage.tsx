@@ -1,11 +1,23 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AskOracleButton } from '../components/oracle/AskOracleButton';
-import { Disclosure, EmptyState, PageGrid, PageHeader } from '../components/ui';
+import {
+  AffirmationPanel,
+  Button,
+  Disclaimer,
+  EmptyState,
+  KeywordRow,
+  PageGrid,
+  PageHeader,
+  Paper,
+  TarotFace,
+} from '../components/ui';
+import { PaperDisclosure } from '../components/readings/tarot/PaperDisclosure';
 import { fullDeck } from '../data/tarotDeck';
 import { getEnrichment } from '../data/tarotEnrichment';
-import { getBundledFullPath, getBundledThumbPath } from '../config/bundledImages';
+import { getBundledFullPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { useT } from '../i18n/useT';
@@ -52,7 +64,7 @@ function getYesNoVerdict(card: TarotCard): { verdict: YesNoVerdict; keywords: st
 }
 
 /** Render-time localized Yes/No for the active locale. */
-function getYesNo(card: TarotCard, t: (key: string, opts?: Record<string, unknown>) => string, localizedName: string): { answer: string; explanation: string } {
+function getYesNo(card: TarotCard, t: (key: string, opts?: Record<string, unknown>) => string, localizedName: string): { verdict: YesNoVerdict; answer: string; explanation: string } {
   const { verdict, keywords } = getYesNoVerdict(card);
   const answer = t(`cardMeaning.yesNo.answer.${verdict}`);
   const kw = keywords.join(
@@ -62,7 +74,7 @@ function getYesNo(card: TarotCard, t: (key: string, opts?: Record<string, unknow
     ? `cardMeaning.yesNo.explanationKeywords.${verdict}`
     : `cardMeaning.yesNo.explanation.${verdict}`;
   const explanation = t(explanationKey, { name: localizedName, keywords: kw });
-  return { answer, explanation };
+  return { verdict, answer, explanation };
 }
 
 // Get cards in same group for navigation grid
@@ -71,6 +83,36 @@ function getRelatedCards(card: TarotCard): TarotCard[] {
   return fullDeck.filter(c => c.suit === card.suit);
 }
 
+/** The verdict pill on paper: the ink tier, never gold text. */
+const VERDICT_CLASS: Record<YesNoVerdict, string> = {
+  yes: 'bg-ink-teal/10 text-ink-teal',
+  no: 'bg-ink-coral/10 text-ink-coral',
+  maybe: 'bg-ink-gold/10 text-ink-gold',
+};
+
+/** A linked card name on paper: a quiet pill, ink-gold. */
+function CardLink({ name }: { name: string }) {
+  return (
+    <Link
+      to={`/tarot-meanings/${cardToSlug(name)}`}
+      className="inline-flex items-center rounded-full px-3 h-7 bg-ink-gold/10 text-ink-gold text-caption font-semibold no-underline"
+    >
+      {name}
+    </Link>
+  );
+}
+
+/**
+ * /tarot-meanings/:slug — one card's meaning.
+ *
+ * The face, the name, the keyword pills and the affirmation, then
+ * everything that is READ on ONE Paper: description, upright, reversed,
+ * love, career, yes or no, the reflection prompt, and — behind two
+ * disclosures — the esoteric correspondences and the card combinations.
+ * The FAQ (mirroring the FAQPage JSON-LD), the disclaimer and the email
+ * capture follow on the canvas. It used to be six stacked navy boxes,
+ * 6,486px tall, with the colours written as hex in `style`.
+ */
 export function TarotCardMeaningPage() {
   const { t } = useT('app');
   const { slug } = useParams<{ slug: string }>();
@@ -193,70 +235,64 @@ export function TarotCardMeaningPage() {
     window.scrollTo(0, 0);
   }, [card, enCard]);
 
-  if (!card) {
+  if (!card || !enCard) {
     return (
-      <div className="tm-page" style={{ padding: '120px 20px' }}>
+      <div className="tm-page py-16">
         <EmptyState
           title={t('tarot.cardNotFound')}
           action={
-            <button onClick={() => navigate('/tarot-meanings')} className="tm-bottom-btn">{t('tarot.backToAllCards')}</button>
+            <Button variant="outline" onClick={() => navigate('/tarot-meanings')}>{t('tarot.backToAllCards')}</Button>
           }
         />
       </div>
     );
   }
 
-  const imgPath = getBundledFullPath(card.id);
   const suitKeyMap: Record<string, string> = { wands: 'wands', cups: 'cups', swords: 'swords', pentacles: 'pentacles' };
   const suitLabel = card.suit
     ? t('tarot.suitMinorLabel', { suit: t(`tarot.${suitKeyMap[card.suit]}`) })
     : t('tarot.majorArcana');
   const elementKey = card.suit === 'wands' ? 'fire' : card.suit === 'cups' ? 'water' : card.suit === 'swords' ? 'air' : card.suit === 'pentacles' ? 'earth' : 'spirit';
+  const enrichment = getEnrichment(enCard.name);
 
   const relatedTitle = card.arcana === 'major'
     ? t('tarot.allMajorCards')
     : t('tarot.allSuitCards', { suit: t(`tarot.${suitKeyMap[card.suit!]}`) });
+
   // The deck rail: previous/next and the whole arcana or suit. Beside the
   // reading on desktop, below it on a phone — the same order the page had
   // as one column, so nothing moves for the reader who never sees a rail.
   const aside = (
     <>
-      {/* Prev/Next Navigation */}
-      <div className="tm-card-nav">
+      <nav className="tm-card-nav" aria-label={t('tarot.prevNext', { defaultValue: 'Previous and next card' })}>
         {prevCard ? (
           <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(prevCard.id)}`)}>
-            ← {prevCard.name}
+            <ChevronLeft className="w-4 h-4 inline -ml-1 mr-0.5" aria-hidden />
+            {prevCard.name}
           </button>
         ) : <div />}
         {nextCard ? (
           <button className="tm-card-nav-btn" onClick={() => navigate(`/tarot-meanings/${slugFromId(nextCard.id)}`)}>
-            {nextCard.name} →
+            {nextCard.name}
+            <ChevronRight className="w-4 h-4 inline ml-0.5 -mr-1" aria-hidden />
           </button>
         ) : <div />}
-      </div>
+      </nav>
 
-      {/* ── Full Card Navigation Grid (NEW) ── */}
       <div className="tm-related">
-        <h3 className="tm-related-title">
-          {card.arcana === 'major'
-            ? t('tarot.allMajorCards')
-            : t('tarot.allSuitCards', { suit: t(`tarot.${suitKeyMap[card.suit!]}`) })}
-        </h3>
+        <h2 className="tm-related-title">{relatedTitle}</h2>
         <div className="tm-related-grid">
           {relatedCards.map(rc => {
-            const thumb = getBundledThumbPath(rc.id);
             const isActive = rc.id === card.id;
             return (
               <button
                 key={rc.id}
                 className={`tm-related-card ${isActive ? 'active' : ''}`}
                 onClick={() => { if (!isActive) navigate(`/tarot-meanings/${slugFromId(rc.id)}`); }}
+                aria-label={rc.name}
+                aria-current={isActive ? 'page' : undefined}
               >
-                {thumb ? (
-                  <img src={thumb} alt={rc.name} className="tm-related-img" loading="lazy" />
-                ) : (
-                  <div className="tm-related-placeholder" aria-hidden="true" />
-                )}
+                <TarotFace card={rc} size="sm" detail="quiet" loading="lazy" alt="" className="tm-related-face" />
                 <span className="tm-related-name">{rc.name.replace('of ', '').replace('The ', '')}</span>
               </button>
             );
@@ -269,12 +305,12 @@ export function TarotCardMeaningPage() {
   return (
     <div className="tm-page">
       {/* Breadcrumb */}
-      <nav className="tm-breadcrumb">
-        <a href="/tarot-meanings">{t('tarot.allCards')}</a>
+      <nav className="tm-breadcrumb" aria-label="Breadcrumb">
+        <Link to="/tarot-meanings">{t('tarot.allCards')}</Link>
         <span className="tm-breadcrumb-sep">›</span>
         {card.suit && (
           <>
-            <a href={`/tarot-meanings?suit=${card.suit}`}>{t(`tarot.${suitKeyMap[card.suit]}`)}</a>
+            <Link to={`/tarot-meanings?suit=${card.suit}`}>{t(`tarot.${suitKeyMap[card.suit]}`)}</Link>
             <span className="tm-breadcrumb-sep">›</span>
           </>
         )}
@@ -286,242 +322,216 @@ export function TarotCardMeaningPage() {
         asideLabel={relatedTitle}
         asideClassName="lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto scrollbar-hide"
       >
-      {/* Card Header */}
-      <div className="tm-detail-header">
-        <div className="tm-detail-img-wrap">
-          {imgPath ? <img src={imgPath} alt={card.name} className="tm-detail-img" /> : <div className="tm-detail-placeholder" aria-hidden="true" />}
-        </div>
-        <div className="tm-detail-info">
-          <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-4" />
-          <div className="tm-detail-keywords">
-            {card.keywords.map(k => <span key={k} className="tm-detail-keyword">{k}</span>)}
-          </div>
-
-          {/* ── Cheat Sheet (NEW) ── */}
-          <div className="tm-cheatsheet">
-            <h3 className="tm-cheatsheet-title heading-display-md text-mystic-100">{t('tarot.quickReference')}</h3>
-            <table className="tm-cheatsheet-table">
-              <tbody>
-                <tr>
-                  <td className="tm-cs-label">{t('tarot.upright')}</td>
-                  <td className="tm-cs-value">{card.keywords.join(', ')}</td>
-                </tr>
-                <tr>
-                  <td className="tm-cs-label">{t('tarot.reversed')}</td>
-                  <td className="tm-cs-value">{card.meaningReversed.split('.')[0]}.</td>
-                </tr>
-                {yesNo && (
-                  <tr>
-                    <td className="tm-cs-label">{t('tarot.yesOrNo')}</td>
-                    <td className="tm-cs-value">
-                      <span className={`tm-yesno ${yesNo.answer.toLowerCase()}`}>{yesNo.answer}</span>
-                    </td>
-                  </tr>
-                )}
-                <tr>
-                  <td className="tm-cs-label">{t('tarot.element')}</td>
-                  <td className="tm-cs-value">{t(`tarot.elements.${elementKey}`)}</td>
-                </tr>
-              </tbody>
-            </table>
+      <div className="space-y-6 pb-8">
+        {/* The card: face, name, keywords, affirmation. */}
+        <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left gap-6">
+          <TarotFace card={card} size="xl" radius="card" loading="eager" alt="" />
+          <div className="flex-1 min-w-0 space-y-4">
+            <PageHeader as="h1" eyebrow={suitLabel || undefined} title={card.name} className="mb-0" />
+            <KeywordRow keywords={card.keywords.slice(0, 4)} className="sm:justify-start" />
+            {enrichment?.affirmation && <AffirmationPanel text={enrichment.affirmation} />}
           </div>
         </div>
-      </div>
 
-      {/* Card Description */}
-      <div className="tm-description">
-        <h2 className="tm-section-h2">{t('tarot.cardDescription')}</h2>
-        <p className="tm-description-text">{card.description}</p>
-      </div>
+        {/* Quick reference — a table, on the canvas. */}
+        <div className="tm-cheatsheet">
+          <h2 className="tm-cheatsheet-title heading-display-md text-mystic-100">{t('tarot.quickReference')}</h2>
+          <table className="tm-cheatsheet-table">
+            <tbody>
+              <tr>
+                <td className="tm-cs-label">{t('tarot.reversed')}</td>
+                <td className="tm-cs-value">{card.meaningReversed.split('.')[0]}.</td>
+              </tr>
+              {yesNo && (
+                <tr>
+                  <td className="tm-cs-label">{t('tarot.yesOrNo')}</td>
+                  <td className="tm-cs-value">
+                    <span className={`tm-yesno ${yesNo.verdict}`}>{yesNo.answer}</span>
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <td className="tm-cs-label">{t('tarot.element')}</td>
+                <td className="tm-cs-value">{t(`tarot.elements.${elementKey}`)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      {user && (
-        <div className="my-4">
+        {user && (
           <AskOracleButton
             variant="card"
             context={`the meaning of ${card.name} tarot card for me`}
             label={t('tarot.askOracleCta', { defaultValue: 'Read this card for me' }) as string}
           />
-        </div>
-      )}
-
-      {/* Upright & Reversed Meanings */}
-      <div className="tm-meanings">
-        <div className="tm-meaning-card upright">
-          <div className="tm-meaning-header">
-            <span className="tm-meaning-icon">↑</span>
-            <h2 className="tm-meaning-title">{t('tarot.uprightMeaning')}</h2>
-          </div>
-          <p className="tm-meaning-text">{card.meaningUpright}</p>
-        </div>
-        <div className="tm-meaning-card reversed">
-          <div className="tm-meaning-header">
-            <span className="tm-meaning-icon">↓</span>
-            <h2 className="tm-meaning-title">{t('tarot.reversedMeaning')}</h2>
-          </div>
-          <p className="tm-meaning-text">{card.meaningReversed}</p>
-        </div>
-      </div>
-
-      {/* Context Readings: Love, Career, Yes/No */}
-      <div className="tm-contexts-full">
-        {card.loveMeaning && (
-          <div className="tm-context-card">
-            <h3 className="tm-context-title heading-display-md text-mystic-100">{t('tarot.loveAndRelationships')}</h3>
-            <p className="tm-context-text">{card.loveMeaning}</p>
-          </div>
         )}
-        {card.careerMeaning && (
-          <div className="tm-context-card">
-            <h3 className="tm-context-title heading-display-md text-mystic-100">{t('tarot.careerAndFinances')}</h3>
-            <p className="tm-context-text">{card.careerMeaning}</p>
-          </div>
-        )}
-        {yesNo && (
-          <div className="tm-context-card">
-            <h3 className="tm-context-title heading-display-md text-mystic-100">{t('tarot.yesOrNoReading')}</h3>
-            <div className="tm-yesno-block">
-              <span className={`tm-yesno-badge ${yesNo.answer.toLowerCase()}`}>{yesNo.answer}</span>
-              <p className="tm-context-text">{yesNo.explanation}</p>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Reflection Prompt */}
-      {card.reflectionPrompt && (
-        <div className="tm-reflection">
-          <h3 className="tm-reflection-title heading-display-md text-mystic-100">{t('tarot.reflectionPrompt')}</h3>
-          <blockquote className="tm-reflection-text">{card.reflectionPrompt}</blockquote>
-        </div>
-      )}
+        {/* Everything that is read, on one sheet. */}
+        <Paper as="article" tail>
+          <div className="space-y-6">
+            <section>
+              <h2 className="heading-display-md heading-strong text-ink">{t('tarot.cardDescription')}</h2>
+              <p className="reading-copy mt-2">{card.description}</p>
+            </section>
 
-      {/* Astrology & Numerology — esoteric correspondences from Golden Dawn tradition */}
-      {enCard && (() => {
-        const enrichment = getEnrichment(enCard.name);
-        if (!enrichment) return null;
-        return (
-          <>
-            <div className="tm-contexts-full">
-              <div className="tm-context-card">
-                <h3 className="tm-context-title heading-display-md text-mystic-100">{t('cardMeaning.astrology', { defaultValue: 'Astrological correspondence' })}</h3>
-                <ul style={{ margin: 0, padding: '0 0 0 1.1em', color: '#c6c6d8', lineHeight: 1.7 }}>
-                  <li><strong style={{ color: '#f2f2f7' }}>{t('cardMeaning.element', { defaultValue: 'Element' })}:</strong> {enrichment.element}</li>
-                  {enrichment.planet && <li><strong style={{ color: '#f2f2f7' }}>{t('cardMeaning.planet', { defaultValue: 'Planet' })}:</strong> {enrichment.planet}</li>}
-                  {enrichment.zodiac && <li><strong style={{ color: '#f2f2f7' }}>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}:</strong> {enrichment.zodiac}</li>}
-                  {enrichment.decan && <li><strong style={{ color: '#f2f2f7' }}>{t('cardMeaning.decan', { defaultValue: 'Decan' })}:</strong> {enrichment.decan}</li>}
-                  {enrichment.hebrewLetter && <li><strong style={{ color: '#f2f2f7' }}>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}:</strong> {enrichment.hebrewLetter}</li>}
-                </ul>
-              </div>
-              <div className="tm-context-card">
-                <h3 className="tm-context-title heading-display-md text-mystic-100">{t('cardMeaning.numerology', { defaultValue: 'Numerology' })}</h3>
-                <p className="tm-context-text">{enrichment.numerology}</p>
-              </div>
-            </div>
+            <section>
+              <h2 className="heading-display-md heading-strong text-ink inline-flex items-center gap-2">
+                <ArrowUp className="w-4 h-4 text-ink-teal" aria-hidden />
+                {t('tarot.uprightMeaning')}
+              </h2>
+              <p className="reading-copy mt-2">{card.meaningUpright}</p>
+            </section>
 
-            {/* Card Combinations — reinforcing + opposing pairs */}
-            <div className="tm-contexts-full">
-              <div className="tm-context-card">
-                <h3 className="tm-context-title heading-display-md text-mystic-100">{t('cardMeaning.reinforcingCards', { defaultValue: 'Reinforcing cards' })}</h3>
-                <p className="tm-context-text" style={{ marginBottom: 8 }}>
-                  {t('cardMeaning.reinforcingIntro', { name: enCard.name, reason: enrichment.reinforcingReason.toLowerCase(), defaultValue: 'When {{name}} appears alongside these cards, the reading\'s energy intensifies — {{reason}}' })}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {enrichment.reinforcingCards.map((c) => {
-                    const slug = c.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                    return (
-                      <a key={c} href={`/tarot-meanings/${slug}`}
-                        style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#f4d668', textDecoration: 'none', fontSize: '0.85rem' }}>
-                        {c}
-                      </a>
-                    );
-                  })}
+            <section>
+              <h2 className="heading-display-md heading-strong text-ink inline-flex items-center gap-2">
+                <ArrowDown className="w-4 h-4 text-ink-gold" aria-hidden />
+                {t('tarot.reversedMeaning')}
+              </h2>
+              <p className="reading-copy mt-2">{card.meaningReversed}</p>
+            </section>
+
+            {card.loveMeaning && (
+              <section>
+                <h2 className="heading-display-md heading-strong text-ink">{t('tarot.loveAndRelationships')}</h2>
+                <p className="reading-copy mt-2">{card.loveMeaning}</p>
+              </section>
+            )}
+
+            {card.careerMeaning && (
+              <section>
+                <h2 className="heading-display-md heading-strong text-ink">{t('tarot.careerAndFinances')}</h2>
+                <p className="reading-copy mt-2">{card.careerMeaning}</p>
+              </section>
+            )}
+
+            {yesNo && (
+              <section>
+                <h2 className="heading-display-md heading-strong text-ink">{t('tarot.yesOrNoReading')}</h2>
+                <div className="mt-2 flex items-start gap-3">
+                  <span className={`shrink-0 inline-flex items-center rounded-full px-3 h-7 text-caption font-semibold uppercase tracking-[0.12em] ${VERDICT_CLASS[yesNo.verdict]}`}>
+                    {yesNo.answer}
+                  </span>
+                  <p className="reading-copy">{yesNo.explanation}</p>
                 </div>
-              </div>
-              <div className="tm-context-card">
-                <h3 className="tm-context-title heading-display-md text-mystic-100">{t('cardMeaning.opposingCards', { defaultValue: 'Opposing cards' })}</h3>
-                <p className="tm-context-text" style={{ marginBottom: 8 }}>
-                  {t('cardMeaning.opposingIntro', { name: enCard.name, reason: enrichment.opposingReason.toLowerCase(), defaultValue: 'These cards create tension with {{name}} — {{reason}}' })}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {enrichment.opposingCards.map((c) => {
-                    const slug = c.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                    return (
-                      <a key={c} href={`/tarot-meanings/${slug}`}
-                        style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(91, 157, 217, 0.1)', border: '1px solid rgba(91, 157, 217, 0.25)', color: '#a8c4e0', textDecoration: 'none', fontSize: '0.85rem' }}>
-                        {c}
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+              </section>
+            )}
 
-            {/* Visible FAQ — mirrors FAQPage JSON-LD so users see the same Q&A Google does */}
-            <div className="tm-context-card" style={{ marginTop: 16 }}>
-              <h3 className="tm-context-title heading-display-md text-mystic-100">{t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}</h3>
-              <div style={{ marginTop: 8 }}>
-                <Disclosure variant="row" label={`What does the ${enCard.name} tarot card mean?`}>
-                  <p style={{ color: '#c6c6d8', lineHeight: 1.7 }}>{enCard.meaningUpright}</p>
-                </Disclosure>
-                <Disclosure variant="row" label={`What does the ${enCard.name} mean reversed?`}>
-                  <p style={{ color: '#c6c6d8', lineHeight: 1.7 }}>{enCard.meaningReversed}</p>
-                </Disclosure>
-                <Disclosure variant="row" label={`Is the ${enCard.name} a yes or no card?`}>
-                  <p style={{ color: '#c6c6d8', lineHeight: 1.7 }}>
-                    <strong>{enrichment.yesNo}.</strong> {enrichment.yesNoReason}
-                  </p>
-                </Disclosure>
-                <Disclosure variant="row" label={`What is the astrological correspondence of the ${enCard.name}?`}>
-                  <p style={{ color: '#c6c6d8', lineHeight: 1.7 }}>
-                    {enCard.name} corresponds to the element of {enrichment.element}
-                    {enrichment.planet ? `, the planet ${enrichment.planet}` : ''}
-                    {enrichment.zodiac ? `, and the sign of ${enrichment.zodiac}` : ''}
-                    {enrichment.decan ? ` (decan: ${enrichment.decan})` : ''}
-                    {enrichment.hebrewLetter ? `. The Hebrew letter is ${enrichment.hebrewLetter}.` : '.'}
-                  </p>
-                </Disclosure>
-                <Disclosure variant="row" label={`What cards reinforce or oppose the ${enCard.name}?`}>
-                  <p style={{ color: '#c6c6d8', lineHeight: 1.7 }}>
-                    Reinforcing: {enrichment.reinforcingCards.join(', ')}. Opposing: {enrichment.opposingCards.join(', ')}.
-                  </p>
-                </Disclosure>
-              </div>
-            </div>
-          </>
-        );
-      })()}
+            {card.reflectionPrompt && (
+              <section>
+                <h2 className="heading-display-md heading-strong text-ink">{t('tarot.reflectionPrompt')}</h2>
+                <blockquote className="reading-quote mt-2">{card.reflectionPrompt}</blockquote>
+              </section>
+            )}
 
-      {/* ── Email Capture (NEW) ── */}
-      <div className="tm-email-capture">
-        {subscribed ? (
-          <div className="tm-email-success">
-            <span>✓</span> {t('tarot.youreIn')}
+            {enrichment && (
+              <div>
+                <PaperDisclosure label={t('cardMeaning.correspondences', { defaultValue: 'Astrology and numerology' })}>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.astrology', { defaultValue: 'Astrological correspondence' })}</h3>
+                      <ul className="reading-copy mt-1 list-disc pl-5 marker:text-ink-gold">
+                        <li><strong>{t('cardMeaning.element', { defaultValue: 'Element' })}:</strong> {enrichment.element}</li>
+                        {enrichment.planet && <li><strong>{t('cardMeaning.planet', { defaultValue: 'Planet' })}:</strong> {enrichment.planet}</li>}
+                        {enrichment.zodiac && <li><strong>{t('cardMeaning.zodiac', { defaultValue: 'Zodiac' })}:</strong> {enrichment.zodiac}</li>}
+                        {enrichment.decan && <li><strong>{t('cardMeaning.decan', { defaultValue: 'Decan' })}:</strong> {enrichment.decan}</li>}
+                        {enrichment.hebrewLetter && <li><strong>{t('cardMeaning.hebrewLetter', { defaultValue: 'Hebrew letter' })}:</strong> {enrichment.hebrewLetter}</li>}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.numerology', { defaultValue: 'Numerology' })}</h3>
+                      <p className="reading-copy mt-1">{enrichment.numerology}</p>
+                    </div>
+                  </div>
+                </PaperDisclosure>
+
+                <PaperDisclosure label={t('cardMeaning.combinations', { defaultValue: 'Card combinations' })}>
+                  <div className="space-y-5">
+                    <div>
+                      <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.reinforcingCards', { defaultValue: 'Reinforcing cards' })}</h3>
+                      <p className="reading-copy mt-1">
+                        {t('cardMeaning.reinforcingIntro', { name: card.name, reason: enrichment.reinforcingReason.toLowerCase(), defaultValue: 'When {{name}} appears alongside these cards, the reading’s energy intensifies — {{reason}}' })}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {enrichment.reinforcingCards.map((c) => <CardLink key={c} name={c} />)}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-ui font-semibold text-ink">{t('cardMeaning.opposingCards', { defaultValue: 'Opposing cards' })}</h3>
+                      <p className="reading-copy mt-1">
+                        {t('cardMeaning.opposingIntro', { name: card.name, reason: enrichment.opposingReason.toLowerCase(), defaultValue: 'These cards create tension with {{name}} — {{reason}}' })}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {enrichment.opposingCards.map((c) => <CardLink key={c} name={c} />)}
+                      </div>
+                    </div>
+                  </div>
+                </PaperDisclosure>
+
+                {/* Visible FAQ — mirrors the FAQPage JSON-LD so readers see the same Q&A Google does. */}
+                <PaperDisclosure label={t('cardMeaning.faq', { defaultValue: 'Frequently asked questions' })}>
+                  <dl className="space-y-4">
+                    {[
+                      [`What does the ${enCard.name} tarot card mean?`, enCard.meaningUpright],
+                      [`What does the ${enCard.name} mean reversed?`, enCard.meaningReversed],
+                      [`Is the ${enCard.name} a yes or no card?`, `${enrichment.yesNo}. ${enrichment.yesNoReason}`],
+                      [
+                        `What is the astrological correspondence of the ${enCard.name}?`,
+                        `${enCard.name} corresponds to the element of ${enrichment.element}` +
+                          (enrichment.planet ? `, the planet ${enrichment.planet}` : '') +
+                          (enrichment.zodiac ? `, and the sign of ${enrichment.zodiac}` : '') +
+                          (enrichment.decan ? ` (decan: ${enrichment.decan})` : '') +
+                          (enrichment.hebrewLetter ? `. The Hebrew letter is ${enrichment.hebrewLetter}.` : '.'),
+                      ],
+                      [
+                        `What cards reinforce or oppose the ${enCard.name}?`,
+                        `Reinforcing: ${enrichment.reinforcingCards.join(', ')}. Opposing: ${enrichment.opposingCards.join(', ')}.`,
+                      ],
+                    ].map(([q, a]) => (
+                      <div key={q}>
+                        <dt className="text-ui font-semibold text-ink">{q}</dt>
+                        <dd className="reading-copy mt-1">{a}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </PaperDisclosure>
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            <h3 className="tm-email-title heading-display-md text-mystic-100">{t('tarot.freeTarotGuide')}</h3>
-            <p className="tm-email-desc">{t('tarot.freeTarotGuideDesc')}</p>
-            <form className="tm-email-form" onSubmit={(e) => {
-              e.preventDefault();
-              if (email.includes('@')) setSubscribed(true);
-            }}>
-              <input
-                type="email"
-                placeholder={t('tarot.yourEmail')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="tm-email-input"
-                required
-                name="newsletter_email"
-                autoComplete="off"
-              />
-              <button type="submit" className="tm-email-btn">{t('tarot.getFreeGuide')}</button>
-            </form>
-            <p className="tm-email-note">{t('tarot.noSpam')}</p>
-          </>
-        )}
-      </div>
+        </Paper>
+        <Disclaimer kind="tarot" tail />
 
+        {/* Email capture */}
+        <div className="tm-email-capture">
+          {subscribed ? (
+            <div className="tm-email-success">
+              <span aria-hidden>✓</span> {t('tarot.youreIn')}
+            </div>
+          ) : (
+            <>
+              <h2 className="tm-email-title heading-display-md text-mystic-100">{t('tarot.freeTarotGuide')}</h2>
+              <p className="tm-email-desc">{t('tarot.freeTarotGuideDesc')}</p>
+              <form className="tm-email-form" onSubmit={(e) => {
+                e.preventDefault();
+                if (email.includes('@')) setSubscribed(true);
+              }}>
+                <input
+                  type="email"
+                  placeholder={t('tarot.yourEmail')}
+                  aria-label={t('tarot.yourEmail')}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="tm-email-input"
+                  required
+                  name="newsletter_email"
+                  autoComplete="off"
+                />
+                <button type="submit" className="tm-email-btn">{t('tarot.getFreeGuide')}</button>
+              </form>
+              <p className="tm-email-note">{t('tarot.noSpam')}</p>
+            </>
+          )}
+        </div>
+      </div>
       </PageGrid>
 
       {/* Bottom CTA */}

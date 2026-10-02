@@ -26,6 +26,7 @@ import { getCorsHeaders, handleCorsPreFlight } from "./cors.ts";
 import { callerKey, checkRateLimit, rateLimitHeaders } from "./rate-limit.ts";
 import { createLogger, getOrCreateCorrelationId, type Logger } from "./log.ts";
 import { captureEdgeException } from "./sentry.ts";
+import { AI_DEFAULT_CEILING, checkAiAccess } from "./ai-ceiling.ts";
 
 type AuthMode = "required" | "optional" | "webhook";
 
@@ -116,8 +117,10 @@ export interface HandlerOptions<TBody, TResp> {
    *
    * Only authenticated users are charged — anonymous callers of optional-auth
    * functions pass through free (matching the daily-ceiling behaviour). The
-   * debit is idempotent on the request correlation id, so a retried request
-   * is not double-charged. `cost` defaults to 50.
+   * debit is idempotent on the request correlation id; when the body carries
+   * a UUID `requestId` that id BECOMES the correlation id, so a client retry
+   * after a dropped connection (same requestId) is not charged twice and
+   * finds the same cached result. `cost` defaults to 50.
    */
   spend?: { actionKey: string; cost?: number };
   /**
@@ -150,7 +153,7 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
     // ── CORS preflight ──
     if (req.method === "OPTIONS") return handleCorsPreFlight(req);
 
-    const correlationId = getOrCreateCorrelationId(req);
+    let correlationId = getOrCreateCorrelationId(req);
     const cors = getCorsHeaders(req);
     const pathname = (() => {
       try { return new URL(req.url).pathname; } catch { return ""; }
@@ -222,7 +225,7 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
       );
 
       // ── Logger with full context ──
-      const log = createLogger({
+      let log = createLogger({
         ...baseLogCtx,
         userId: user?.id ?? null,
       });
@@ -291,6 +294,20 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
         body = parsed.data as TBody;
       }
 
+      // ── Client request id → correlation id ──
+      // A client that retries after a dropped connection sends the same
+      // `requestId` (uuid). Adopting it as the correlation id makes the
+      // Moonstone debit below idempotent across the retry (the spend RPC
+      // keys on this id) and lets the logs of both attempts be found
+      // together. Anything that is not a UUID is ignored.
+      const requestId = extractRequestId(body);
+      if (requestId && requestId !== correlationId) {
+        correlationId = requestId;
+        baseLogCtx.correlationId = correlationId;
+        log = createLogger({ ...baseLogCtx, userId: user?.id ?? null });
+        log.info("request.correlation_from_body");
+      }
+
       // ── Run user code ──
       const started = performance.now();
       const ctx: HandlerContext = {
@@ -307,44 +324,17 @@ export function handler<TBody = unknown, TResp = unknown>(opts: HandlerOptions<T
       log.info("request.start");
 
       // ── AI gate (killswitch + per-user daily ceiling) ──
+      // One implementation, shared with functions that gate themselves via
+      // ai-gate.ts — see _shared/ai-ceiling.ts.
       if (opts.ai) {
         const aiOpts = typeof opts.ai === "object" ? opts.ai : {};
-        const ceiling = aiOpts.ceiling ?? 200;
-
-        // Killswitch — instant pause via dashboard, no redeploy.
-        const { data: flag } = await supabase
-          .from("feature_flags")
-          .select("enabled")
-          .eq("key", "ai-enabled")
-          .maybeSingle();
-        if (flag && flag.enabled === false) {
+        const access = await checkAiAccess(supabase, log, ctx.userId, aiOpts.ceiling ?? AI_DEFAULT_CEILING);
+        if (access.allowed === false) {
           return errorEnvelope({
-            code: "AI_DISABLED",
-            message: "AI is temporarily paused. Try again in a few minutes.",
-            status: 503,
+            code: access.reason,
+            message: access.message,
+            status: access.status,
           }, cors, correlationId);
-        }
-
-        // Hard daily ceiling — only enforced for authenticated users.
-        if (ctx.userId) {
-          const { data: usageRow, error: usageErr } = await supabase.rpc(
-            "ai_check_and_record_usage",
-            { p_user_id: ctx.userId, p_ceiling: ceiling },
-          );
-          if (!usageErr) {
-            const row = Array.isArray(usageRow) ? usageRow[0] : usageRow;
-            if (row && row.allowed === false) {
-              return errorEnvelope({
-                code: "AI_DAILY_LIMIT",
-                message: `You've reached today's AI limit (${row.ceiling}/day). It resets at midnight UTC.`,
-                status: 429,
-              }, cors, correlationId);
-            }
-          } else {
-            // Fail-open on usage check errors — don't block legitimate users
-            // because the ceiling table is briefly unreachable.
-            log.warn("ai_gate.usage_check_failed", { err: usageErr.message });
-          }
         }
       }
 
@@ -519,6 +509,15 @@ function errorEnvelope(e: AppErrorShape, cors: Record<string, string>, correlati
       "X-Correlation-Id": correlationId,
     },
   });
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** `body.requestId` when it is a UUID; anything else is ignored, never used as a key. */
+function extractRequestId(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const v = (body as Record<string, unknown>).requestId;
+  return typeof v === "string" && UUID_RE.test(v) ? v.toLowerCase() : null;
 }
 
 /** Timing-safe string comparison. Avoids short-circuit leak. */

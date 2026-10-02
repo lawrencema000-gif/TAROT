@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { fullDeck } from '../../data/tarotDeck';
 import { getBundledFullPath } from '../../config/bundledImages';
 import { useT } from '../../i18n/useT';
 import { localizeCard } from '../../i18n/localizeCard';
@@ -16,6 +15,14 @@ import type { TarotCard } from '../../types';
  * card turns over once, and the meaning and keywords appear with a soft
  * CTA into onboarding.
  *
+ * The deck arrives on the first tap, not with the page. `tarotDeck.ts` is
+ * 86 KB gzipped — the meanings of all 78 cards — and a static import put
+ * it in the landing chunk for every visitor, most of whom never draw. The
+ * dynamic import below is fetched when "Draw" is pressed (one round trip
+ * the visitor spends looking at the three backs appearing) and cached for
+ * the session; the full meanings, keywords and `localizeCard` overlay stay
+ * exactly as they were, so nothing about the reading is slimmed.
+ *
  * Fires a gtag micro-conversion on draw so Google Ads can optimize for
  * engaged visitors even before they sign up.
  */
@@ -24,8 +31,17 @@ type Stage = 'prompt' | 'picking' | 'revealed';
 
 const CARD_BACK = '/card-backs/default.svg';
 
-function pickThreeRandom(): TarotCard[] {
-  const pool = [...fullDeck];
+type Deck = TarotCard[];
+let deckPromise: Promise<Deck> | null = null;
+function loadDeck(): Promise<Deck> {
+  if (!deckPromise) {
+    deckPromise = import('../../data/tarotDeck').then((m) => m.fullDeck);
+  }
+  return deckPromise;
+}
+
+function pickThreeRandom(deck: Deck): TarotCard[] {
+  const pool = [...deck];
   const out: TarotCard[] = [];
   for (let i = 0; i < 3; i++) {
     const idx = Math.floor(Math.random() * pool.length);
@@ -67,12 +83,27 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
   const [cards, setCards] = useState<TarotCard[]>([]);
   const [chosen, setChosen] = useState<TarotCard | null>(null);
   const [reversed, setReversed] = useState(false);
+  const [drawing, setDrawing] = useState(false);
+  const drawId = useRef(0);
 
   const startPicking = useCallback(() => {
-    setCards(pickThreeRandom());
-    setReversed(Math.random() < 0.3);
-    setStage('picking');
+    const id = ++drawId.current;
+    setDrawing(true);
     fireGtag('free_reading_started');
+    void loadDeck()
+      .then((deck) => {
+        if (id !== drawId.current) return;
+        setCards(pickThreeRandom(deck));
+        setReversed(Math.random() < 0.3);
+        setStage('picking');
+      })
+      .catch(() => {
+        // The deck chunk failed to load (offline, stale deploy): stay on the
+        // prompt so the visitor can try again rather than see three blanks.
+      })
+      .finally(() => {
+        if (id === drawId.current) setDrawing(false);
+      });
   }, []);
 
   const pickCard = useCallback((card: TarotCard) => {
@@ -100,9 +131,11 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
       {stage === 'prompt' && (
         <div>
           <TarotCardIcon className="w-7 h-7 text-gold mx-auto mb-2" />
-          <h3 className="heading-display-md text-mystic-100 mb-1">{t('demo.title')}</h3>
+          {/* h2: this sits directly under the page's h1, before any section
+              heading, so an h3 here skipped a level. */}
+          <h2 className="heading-display-md text-mystic-100 mb-1">{t('demo.title')}</h2>
           <p className="text-ui text-mystic-400 mb-4">{t('demo.sub')}</p>
-          <Button variant="gold" onClick={startPicking}>
+          <Button variant="gold" onClick={startPicking} loading={drawing}>
             {t('demo.drawBtn')}
           </Button>
         </div>
@@ -134,6 +167,8 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
               <img
                 src={getBundledFullPath(chosen.id)!}
                 alt={chosen.name}
+                width={400}
+                height={600}
                 loading="lazy"
                 decoding="async"
               />
@@ -145,7 +180,7 @@ export function FreeReadingDemo({ onSignUp }: FreeReadingDemoProps) {
             <p className="text-caption font-semibold uppercase tracking-wider text-gold mb-1">
               {reversed ? t('demo.reversed') : t('demo.upright')}
             </p>
-            <h4 className="heading-display-md text-mystic-100">{chosen.name}</h4>
+            <h3 className="heading-display-md text-mystic-100">{chosen.name}</h3>
             <div className="free-reading-keywords">
               {chosen.keywords.slice(0, 4).map(k => (
                 <span key={k} className="text-caption px-2 py-0.5 rounded-full bg-gold/10 text-gold">{k}</span>

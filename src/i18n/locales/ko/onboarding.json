@@ -2,7 +2,6 @@
   "language": {
     "title": "언어 선택",
     "subtitle": "설정에서 언제든지 변경할 수 있어요.",
-    "saveCta": "이 언어로 저장",
     "cta": "이 언어로 계속"
   },
   "welcome": {
@@ -33,15 +32,6 @@
     "userExists": "이미 가입된 이메일이에요. 로그인해 보세요.",
     "profileSaveFailed": "계정은 만들어졌지만 프로필이 저장되지 않았어요 — 연결을 확인하고 로그인해서 계속해 주세요.",
     "accountCreated": "계정이 만들어졌어요. 이제 당신에게 맞게 꾸며 볼게요."
-  },
-  "signIn": {
-    "heading": "다시 오신 것을 환영합니다",
-    "subheading": "이어서 시작해 보세요",
-    "googleCta": "Google로 로그인",
-    "divider": "또는 이메일로 로그인",
-    "submit": "로그인",
-    "forgotPassword": "비밀번호를 잊으셨나요?",
-    "switchToSignUp": "계정이 없으신가요? 가입하기"
   },
   "oauth": {
     "welcome": "환영해요, {{name}}님.",

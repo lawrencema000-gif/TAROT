@@ -119,7 +119,7 @@ export function TarotShuffleView({ isShuffling, cardBackUrl, onBack, onShuffle, 
       <style>{DECK_KEYFRAMES}</style>
       <button
         onClick={onBack}
-        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
+        className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px] -ml-1 pr-2"
       >
         <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}

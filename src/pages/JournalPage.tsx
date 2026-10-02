@@ -3,79 +3,116 @@ import {
   Plus,
   Search,
   Calendar,
-  Tag as TagIcon,
   ChevronRight,
   ChevronLeft,
-  Edit2,
   Trash2,
-  TrendingUp,
   Flame,
-  BarChart3,
+  TrendingUp,
   X,
   Link2,
   Lock,
   Sparkles,
   BookOpen,
   Lightbulb,
-  Star,
   FileText,
   Clock,
   Sun,
   Heart,
   Users,
   Moon,
-  Feather,
 } from 'lucide-react';
-import { Card, Button, Sheet, Input, toast, PageHeader, Section, EmptyState, Page, Tabs, Chip, Tag, Progress, Skeleton, EyebrowLabel, type Tone } from '../components/ui';
+import { useNavigate } from 'react-router-dom';
+import {
+  Card,
+  Button,
+  Sheet,
+  Input,
+  toast,
+  dismissToasts,
+  PageHeader,
+  Section,
+  EmptyState,
+  Page,
+  Tabs,
+  Chip,
+  Tag,
+  Skeleton,
+  EyebrowLabel,
+  ListRow,
+  ListRowGroup,
+  PageGrid,
+  Paper,
+  TarotCardIcon,
+  type Tone,
+} from '../components/ui';
+import { MoodGlyph, JOURNAL_MOOD_GLYPHS, type MoodGlyphId } from '../components/journal/MoodGlyphs';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { supabase } from '../lib/supabase';
 import { getLocale } from '../i18n/config';
 import { journalEntries, tarotReadings } from '../dal';
-// horoscopes loaded lazily to keep journal chunk small
 import { journalTemplates, templateCategories, getTemplatesForPersonality, JournalTemplate } from '../data/journalTemplates';
+import { MOOD_CATEGORIES, getTodayEntry as getTodayMood } from '../data/moodDiary';
 import { adsService } from '../services/ads';
 import { awardXP } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
 import { getDailyPrompt } from '../data/dailyPrompts';
+import { localDateStr, parseLocalDate } from '../utils/localDate';
 
-const moodEmojis = [
-  { emoji: '😊', label: 'Happy', value: 'happy' },
-  { emoji: '😌', label: 'Calm', value: 'calm' },
-  { emoji: '😰', label: 'Anxious', value: 'anxious' },
-  { emoji: '🙏', label: 'Grateful', value: 'grateful' },
-  { emoji: '✨', label: 'Inspired', value: 'inspired' },
-  { emoji: '😴', label: 'Tired', value: 'tired' },
-  { emoji: '😢', label: 'Sad', value: 'sad' },
-  { emoji: '😤', label: 'Frustrated', value: 'frustrated' },
-  { emoji: '🥰', label: 'Loved', value: 'loved' },
-  { emoji: '🤔', label: 'Thoughtful', value: 'thoughtful' },
+/**
+ * The ten moods. `value` is what the row stores; the label comes from
+ * `journal.moodNames.*` at render time; the glyph is drawn (MoodGlyphs).
+ */
+const MOODS: { value: string; defaultLabel: string; tone: Tone }[] = [
+  { value: 'happy', defaultLabel: 'Happy', tone: 'gold' },
+  { value: 'calm', defaultLabel: 'Calm', tone: 'blue' },
+  { value: 'anxious', defaultLabel: 'Anxious', tone: 'coral' },
+  { value: 'grateful', defaultLabel: 'Grateful', tone: 'teal' },
+  { value: 'inspired', defaultLabel: 'Inspired', tone: 'gold' },
+  { value: 'tired', defaultLabel: 'Tired', tone: 'neutral' },
+  { value: 'sad', defaultLabel: 'Sad', tone: 'blue' },
+  { value: 'frustrated', defaultLabel: 'Frustrated', tone: 'coral' },
+  { value: 'loved', defaultLabel: 'Loved', tone: 'rose' },
+  { value: 'thoughtful', defaultLabel: 'Thoughtful', tone: 'teal' },
 ];
 
-const categoryTags: { label: string; value: string; tone: Tone }[] = [
-  { label: 'Love', value: 'love', tone: 'rose' },
-  { label: 'Career', value: 'career', tone: 'blue' },
-  { label: 'Anxiety', value: 'anxiety', tone: 'coral' },
-  { label: 'Gratitude', value: 'gratitude', tone: 'teal' },
-  { label: 'Growth', value: 'growth', tone: 'gold' },
-  { label: 'Health', value: 'health', tone: 'teal' },
-  { label: 'Family', value: 'family', tone: 'rose' },
-  { label: 'Dreams', value: 'dreams', tone: 'neutral' },
+const TAGS: { value: string; defaultLabel: string; tone: Tone }[] = [
+  { value: 'love', defaultLabel: 'Love', tone: 'rose' },
+  { value: 'career', defaultLabel: 'Career', tone: 'blue' },
+  { value: 'anxiety', defaultLabel: 'Anxiety', tone: 'coral' },
+  { value: 'gratitude', defaultLabel: 'Gratitude', tone: 'teal' },
+  { value: 'growth', defaultLabel: 'Growth', tone: 'gold' },
+  { value: 'health', defaultLabel: 'Health', tone: 'teal' },
+  { value: 'family', defaultLabel: 'Family', tone: 'rose' },
+  { value: 'dreams', defaultLabel: 'Dreams', tone: 'neutral' },
 ];
 
-const moodTones: Record<string, Tone> = {
-  happy: 'gold',
-  calm: 'blue',
-  anxious: 'coral',
-  grateful: 'teal',
-  inspired: 'gold',
-  tired: 'neutral',
-  sad: 'blue',
-  frustrated: 'coral',
-  loved: 'rose',
-  thoughtful: 'teal',
+const POSITIVE_MOODS = ['happy', 'calm', 'grateful', 'inspired', 'loved'];
+
+/** Five muted hues for the two insight bar charts (design cues §6.7). */
+const BAR_HUES = ['bg-cosmic-violet', 'bg-coral-dark', 'bg-cosmic-blue', 'bg-gold-dark', 'bg-teal-dark'];
+
+/** The abbreviation on a row's trailing Tag for its linked spread. */
+const SPREAD_ABBR: Record<string, string> = {
+  single: 'I',
+  'single-card': 'I',
+  daily: 'I',
+  'three-card': 'III',
+  'past-present-future': 'III',
+  'celtic-cross': 'CC',
+  horseshoe: 'HS',
+  relationship: 'REL',
+  'yes-no': 'Y/N',
 };
+
+function spreadAbbr(type: string | undefined): string {
+  if (!type) return '';
+  return SPREAD_ABBR[type] ?? type.replace(/[^a-z0-9]/gi, '').slice(0, 3).toUpperCase();
+}
+
+/** The gate for the generated insight: enough entries, and some variety to speak of. */
+const INSIGHT_MIN_ENTRIES = 5;
 
 interface JournalEntry {
   id: string;
@@ -115,8 +152,33 @@ const categoryIcons: Record<string, typeof Sun> = {
   reflection: Moon,
 };
 
+/** True at the `lg` breakpoint — the PageGrid aside is mounted only there. */
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(min-width: 1024px)').matches
+      : false,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
+  return isDesktop;
+}
+
+function snippet(text: string, max = 72): string {
+  const line = text.replace(/\s+/g, ' ').trim();
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
 export function JournalPage() {
   const { t } = useT('app');
+  const locale = getLocale();
+  const navigate = useNavigate();
+  const isDesktop = useIsDesktop();
   const { user, profile, refreshProfile } = useAuth();
   const { triggerLevelUp } = useGamification();
   const journalCoachEnabled = useFeatureFlag('journal-coach');
@@ -128,6 +190,9 @@ export function JournalPage() {
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<JournalEntry | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreEntries, setHasMoreEntries] = useState(false);
@@ -145,11 +210,14 @@ export function JournalPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
 
-  const today = new Date().toISOString().split('T')[0];
-  const [todayPrompt, setTodayPrompt] = useState<string>(() => {
-    // placeholder — translated default replaced via t() once mounted
-    return 'What are you reflecting on today?';
-  });
+  // The user's local day, as the mood diary and the ritual count it. A
+  // UTC date put an 08:00 Tokyo entry on "yesterday".
+  const today = localDateStr();
+  // The day a new entry is written FOR. Tapping a past day in the week
+  // strip sets it; "Write today" resets it (R6 A5: every entry used to
+  // land on today).
+  const [draftDate, setDraftDate] = useState(today);
+  const [todayPrompt, setTodayPrompt] = useState<string>(() => t('journal.defaultPrompt', { defaultValue: 'What are you reflecting on today?' }));
 
   useEffect(() => {
     setTodayPrompt(getDailyPrompt(today));
@@ -158,6 +226,7 @@ export function JournalPage() {
   useEffect(() => {
     loadEntries();
     if (user) loadRecentReadings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const loadEntries = async () => {
@@ -200,20 +269,50 @@ export function JournalPage() {
     }
   };
 
+  // ── Labels ──────────────────────────────────────────────────────────
+  const moodLabel = useCallback(
+    (value: string) => {
+      const m = MOODS.find(x => x.value === value);
+      return t(`journal.moodNames.${value}`, { defaultValue: m?.defaultLabel ?? value });
+    },
+    [t],
+  );
+  const moodTone = (value: string): Tone => MOODS.find(x => x.value === value)?.tone ?? 'neutral';
+  const moodGlyph = (value: string): MoodGlyphId => JOURNAL_MOOD_GLYPHS[value] ?? 'cloud';
+  const tagLabel = useCallback(
+    (value: string) => {
+      const x = TAGS.find(tag => tag.value === value);
+      return t(`journal.tagNames.${value}`, { defaultValue: x?.defaultLabel ?? value });
+    },
+    [t],
+  );
+  const tagTone = (value: string): Tone => TAGS.find(x => x.value === value)?.tone ?? 'neutral';
+
+  const dateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }), [locale]);
+  const monthFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }), [locale]);
+  const narrowDayFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'narrow' }), [locale]);
+  const longDayFmt = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'long' }), [locale]);
+  const shortDateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }), [locale]);
+  const numberFmt = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+
+  const formatDate = (dateStr: string) => dateFmt.format(parseLocalDate(dateStr));
+
+  // ── Week strip ──────────────────────────────────────────────────────
   const calendarDays = useMemo(() => {
-    const days: { date: Date; dateStr: string; hasEntry: boolean; isToday: boolean }[] = [];
+    const days: { date: Date; dateStr: string; hasEntry: boolean; isToday: boolean; isFuture: boolean }[] = [];
     const startOfWeek = new Date(calendarDate);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = localDateStr(date);
       days.push({
         date,
         dateStr,
         hasEntry: entries.some(e => e.date === dateStr),
         isToday: dateStr === today,
+        isFuture: dateStr > today,
       });
     }
     return days;
@@ -225,7 +324,8 @@ export function JournalPage() {
     setCalendarDate(newDate);
   };
 
-  const openNewEntry = useCallback(() => {
+  // ── Editor ──────────────────────────────────────────────────────────
+  const resetDraft = () => {
     setEditingEntry(null);
     setSelectedTemplate(null);
     setCurrentPromptIndex(0);
@@ -234,15 +334,24 @@ export function JournalPage() {
     setSelectedMood('');
     setSelectedTags([]);
     setLinkedReadingId(null);
+    setCoachResult(null);
+  };
+
+  const openNewEntry = useCallback(() => {
+    resetDraft();
+    setDraftDate(today);
     setShowEditor(true);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today]);
 
   const openEditEntry = (entry: JournalEntry) => {
     if (entry.is_locked && !profile?.isPremium) {
       toast(t('journal.toast.unlockPremiumLock'), 'error');
       return;
     }
+    resetDraft();
     setEditingEntry(entry);
+    setDraftDate(entry.date);
     setTitle(entry.title || '');
     setContent(entry.content);
     setSelectedMood(entry.mood || '');
@@ -252,22 +361,24 @@ export function JournalPage() {
   };
 
   const openDayEntry = (dateStr: string) => {
+    if (dateStr > today) return;
     const existingEntry = entries.find(e => e.date === dateStr);
     if (existingEntry) {
       openEditEntry(existingEntry);
     } else {
-      setEditingEntry(null);
-      setTitle('');
-      setContent('');
-      setSelectedMood('');
-      setSelectedTags([]);
-      setLinkedReadingId(null);
+      resetDraft();
+      setDraftDate(dateStr);
       setShowEditor(true);
     }
   };
 
+  const closeEditor = () => {
+    setShowEditor(false);
+    setSelectedTemplate(null);
+  };
+
   const saveEntry = async (lock = false) => {
-    if (!user || !content.trim()) return;
+    if (!user || !content.trim() || saving) return;
 
     if (lock && !profile?.isPremium) {
       toast(t('journal.toast.upgradeToLock'), 'error');
@@ -278,6 +389,7 @@ export function JournalPage() {
       ? `${selectedTemplate.title}: ${selectedTemplate.prompts.join(' | ')}`
       : null;
 
+    const entryDate = editingEntry ? editingEntry.date : draftDate;
     const entryInput = {
       userId: user.id,
       title: title.trim(),
@@ -285,45 +397,68 @@ export function JournalPage() {
       mood: selectedMood,
       moodTags: selectedMood ? [selectedMood] : [],
       tags: selectedTags,
-      prompt: editingEntry ? (editingEntry.prompt ?? null) : (templatePrompt || todayPrompt),
-      date: editingEntry ? editingEntry.date : today,
+      prompt: editingEntry ? (editingEntry.prompt ?? null) : (templatePrompt || (entryDate === today ? todayPrompt : null)),
+      date: entryDate,
       linkedReadingId: linkedReadingId,
       isLocked: lock,
     };
 
-    if (editingEntry) {
-      await journalEntries.updateById(editingEntry.id, entryInput);
-    } else {
-      await journalEntries.insert(entryInput);
+    setSaving(true);
+    const res = editingEntry
+      ? await journalEntries.updateById(editingEntry.id, entryInput)
+      : await journalEntries.insert(entryInput);
+    setSaving(false);
+
+    if (!res.ok) {
+      toast(t('journal.toast.saveFailed', { defaultValue: 'Couldn’t save this entry — check your connection and try again.' }), 'error');
+      return;
     }
 
-    setShowEditor(false);
-    setSelectedTemplate(null);
+    const wasNew = !editingEntry;
+    closeEditor();
     loadEntries();
-    toast(lock ? t('journal.toast.savedLocked') : t('journal.toast.saved'), 'success');
+    // One confirmation. Anything an earlier step complained about (a coach
+    // error, a failed save) is withdrawn by the success (R6 A23).
+    dismissToasts();
 
-    if (!editingEntry) {
-      const xpResult = await awardXP(user.id, 'journal_entry');
-      if (xpResult) {
-        toast(t('journal.toast.xpEarned', { n: xpResult.xp_earned }), 'success');
-        if (xpResult.level_up) {
-          triggerLevelUp({
-            newLevel: xpResult.new_level,
-            seekerRank: xpResult.seeker_rank,
-            xpEarned: xpResult.xp_earned,
-          });
-        }
-      }
-      await refreshProfile();
-      await adsService.checkAndShowAd(profile?.isPremium || false, 'journal', profile?.isAdFree || false);
+    if (!wasNew) {
+      toast(lock ? t('journal.toast.savedLocked') : t('journal.toast.saved'), 'success');
+      return;
     }
+
+    const xpResult = await awardXP(user.id, 'journal_entry');
+    if (xpResult && xpResult.xp_earned > 0) {
+      toast(
+        lock
+          ? t('journal.toast.savedLockedXp', { defaultValue: 'Saved and locked · +{{n}} XP', n: xpResult.xp_earned })
+          : t('journal.toast.savedXp', { defaultValue: 'Saved · +{{n}} XP', n: xpResult.xp_earned }),
+        'success',
+      );
+      if (xpResult.level_up) {
+        triggerLevelUp({
+          newLevel: xpResult.new_level,
+          seekerRank: xpResult.seeker_rank,
+          xpEarned: xpResult.xp_earned,
+        });
+      }
+    } else {
+      toast(lock ? t('journal.toast.savedLocked') : t('journal.toast.saved'), 'success');
+    }
+    await refreshProfile();
+    await adsService.checkAndShowAd(profile?.isPremium || false, 'journal', profile?.isAdFree || false);
   };
 
-  const deleteEntry = async (entryId: string) => {
-    if (!user) return;
-    if (!confirm(t('journal.toast.deleteConfirm'))) return;
-
-    await journalEntries.deleteById(entryId, user.id);
+  const confirmDelete = async () => {
+    if (!user || !pendingDelete || deleting) return;
+    setDeleting(true);
+    const res = await journalEntries.deleteById(pendingDelete.id, user.id);
+    setDeleting(false);
+    if (!res.ok) {
+      toast(t('journal.toast.deleteFailed', { defaultValue: 'Couldn’t delete this entry — try again.' }), 'error');
+      return;
+    }
+    setPendingDelete(null);
+    if (editingEntry?.id === pendingDelete.id) closeEditor();
     loadEntries();
     toast(t('journal.toast.deleted'), 'success');
   };
@@ -331,114 +466,94 @@ export function JournalPage() {
   const toggleTag = (tagValue: string) => {
     setSelectedTags(prev =>
       prev.includes(tagValue)
-        ? prev.filter(t => t !== tagValue)
+        ? prev.filter(x => x !== tagValue)
         : [...prev, tagValue]
     );
   };
 
+  // ── Lists ───────────────────────────────────────────────────────────
   const filteredEntries = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return entries.filter(entry => {
-      const matchesSearch = !searchQuery ||
-        entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        entry.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        entry.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = !q ||
+        entry.content.toLowerCase().includes(q) ||
+        entry.title?.toLowerCase().includes(q) ||
+        entry.tags?.some(tag => tag.toLowerCase().includes(q) || tagLabel(tag).toLowerCase().includes(q));
 
       const matchesTag = !selectedTagFilter ||
         entry.tags?.includes(selectedTagFilter);
 
       return matchesSearch && matchesTag;
     });
-  }, [entries, searchQuery, selectedTagFilter]);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  };
-
-  const formatDayName = (date: Date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
-  };
+  }, [entries, searchQuery, selectedTagFilter, tagLabel]);
 
   const todayEntry = entries.find(e => e.date === today);
+  const todayMood = getTodayMood();
+
+  const readingById = useMemo(() => {
+    const map = new Map<string, TarotReading>();
+    for (const r of recentReadings) map.set(r.id, r);
+    return map;
+  }, [recentReadings]);
 
   const insights = useMemo(() => {
     const moodCounts: Record<string, number> = {};
     const tagCounts: Record<string, number> = {};
-    const moodByDay: Record<string, string[]> = {};
+    const writingDays: Record<number, number> = {};
+    const positiveByDay: Record<number, number> = {};
     const weeklyActivity: boolean[] = [];
 
-    const last30Days = entries.filter(e => {
-      const date = new Date(e.date);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return date >= thirtyDaysAgo;
-    });
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const last30Days = entries.filter(e => parseLocalDate(e.date) >= thirtyDaysAgo);
 
-    last30Days.forEach(entry => {
-      if (entry.mood) {
-        moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
-      }
-      entry.tags?.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      });
-      const dayOfWeek = new Date(entry.date).getDay();
-      if (!moodByDay[dayOfWeek]) moodByDay[dayOfWeek] = [];
-      if (entry.mood) moodByDay[dayOfWeek].push(entry.mood);
-    });
+    for (const entry of entries) {
+      if (entry.mood) moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
+      for (const tag of entry.tags ?? []) tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      const day = parseLocalDate(entry.date).getDay();
+      writingDays[day] = (writingDays[day] || 0) + 1;
+      if (entry.mood && POSITIVE_MOODS.includes(entry.mood)) positiveByDay[day] = (positiveByDay[day] || 0) + 1;
+    }
 
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      weeklyActivity.push(entries.some(e => e.date === dateStr));
+      weeklyActivity.push(entries.some(e => e.date === localDateStr(date)));
     }
 
     const last7DaysMoods: { date: string; mood: string | null }[] = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = localDateStr(date);
       const entry = entries.find(e => e.date === dateStr);
-      last7DaysMoods.push({
-        date: dateStr,
-        mood: entry?.mood || null,
-      });
+      last7DaysMoods.push({ date: dateStr, mood: entry?.mood || null });
     }
 
     const sortedMoods = Object.entries(moodCounts).sort((a, b) => b[1] - a[1]);
-    const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
     const totalMoods = sortedMoods.reduce((sum, [, count]) => sum + count, 0);
 
     let currentStreak = 0;
-    const sortedDates = [...new Set(entries.map(e => e.date))].sort().reverse();
-    for (let i = 0; i < sortedDates.length; i++) {
-      const expectedDate = new Date();
-      expectedDate.setDate(expectedDate.getDate() - i);
-      const expectedStr = expectedDate.toISOString().split('T')[0];
-      if (sortedDates.includes(expectedStr)) {
-        currentStreak++;
-      } else if (i === 0) {
-        continue;
-      } else {
-        break;
-      }
+    const dateSet = new Set(entries.map(e => e.date));
+    for (let i = 0; ; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      if (dateSet.has(localDateStr(d))) currentStreak++;
+      else if (i === 0) continue;
+      else break;
+      if (i > 400) break;
     }
 
-    const positiveMoods = ['happy', 'calm', 'grateful', 'inspired', 'loved'];
-    const bestDayMoods: Record<number, number> = {};
-    Object.entries(moodByDay).forEach(([day, moods]) => {
-      const positiveCount = moods.filter(m => positiveMoods.includes(m)).length;
-      bestDayMoods[parseInt(day)] = positiveCount;
-    });
-    const bestDay = Object.entries(bestDayMoods).sort((a, b) => b[1] - a[1])[0];
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const busiestDay = Object.entries(writingDays).sort((a, b) => b[1] - a[1])[0];
 
-    let generatedInsight = '';
-    if (sortedTags.length > 0 && bestDay) {
-      const topTag = sortedTags[0][0];
-      const topMood = sortedMoods[0]?.[0] || 'reflective';
-      generatedInsight = `You felt strongest on ${dayNames[parseInt(bestDay[0])]}s when you wrote about ${topTag}. Your ${topMood} entries often coincide with reflection and growth.`;
-    }
+    // Enough entries, and more than one mood or more than one theme —
+    // otherwise there is no pattern to report and we say so (R6 A13).
+    const hasSignal =
+      entries.length >= INSIGHT_MIN_ENTRIES && (sortedMoods.length >= 2 || sortedTags.length >= 2);
+
+    const wordCount = (e: JournalEntry) => e.word_count || e.content.split(/\s+/).filter(Boolean).length;
+    const totalWords = entries.reduce((sum, e) => sum + wordCount(e), 0);
 
     return {
       totalEntries: entries.length,
@@ -448,25 +563,47 @@ export function JournalPage() {
         count,
         percentage: totalMoods > 0 ? Math.round((count / totalMoods) * 100) : 0,
       })),
-      topTags: sortedTags,
+      topTags: sortedTags.slice(0, 5),
       weeklyActivity,
       last7DaysMoods,
       currentStreak: profile?.streak || currentStreak,
-      averageWordsPerEntry: entries.length > 0
-        ? Math.round(entries.reduce((sum, e) => sum + (e.word_count || e.content.split(' ').length), 0) / entries.length)
-        : 0,
-      generatedInsight,
-      totalWords: entries.reduce((sum, e) => sum + (e.word_count || e.content.split(' ').length), 0),
+      averageWordsPerEntry: entries.length > 0 ? Math.round(totalWords / entries.length) : 0,
+      totalWords,
+      hasSignal,
+      busiestDay: busiestDay ? Number(busiestDay[0]) : null,
+      topMood: sortedMoods[0] ?? null,
+      topTag: sortedTags[0] ?? null,
+      totalMoods,
     };
   }, [entries, profile?.streak]);
 
-  const getMoodEmoji = (mood: string) => {
-    return moodEmojis.find(m => m.value === mood)?.emoji || '📝';
-  };
+  const generatedInsight = useMemo(() => {
+    if (!insights.hasSignal || insights.busiestDay === null || !insights.topMood) return '';
+    // A date on the busiest weekday, for Intl to name it.
+    const d = new Date();
+    d.setDate(d.getDate() + ((insights.busiestDay - d.getDay() + 7) % 7));
+    const weekday = longDayFmt.format(d);
+    const common = {
+      weekday,
+      mood: moodLabel(insights.topMood[0]),
+      n: insights.topMood[1],
+      total: insights.totalMoods,
+    };
+    return insights.topTag
+      ? t('journal.insight.withTag', {
+          defaultValue: 'You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries), and you return to {{tag}} more than any other theme.',
+          ...common,
+          tag: tagLabel(insights.topTag[0]),
+        })
+      : t('journal.insight.summary', {
+          defaultValue: 'You write most often on {{weekday}}. Your most common mood is {{mood}} ({{n}} of {{total}} entries).',
+          ...common,
+        });
+  }, [insights, longDayFmt, moodLabel, tagLabel, t]);
 
   const filteredTemplates = useMemo(() => {
     if (!selectedTemplateCategory) return journalTemplates;
-    return journalTemplates.filter(t => t.category === selectedTemplateCategory);
+    return journalTemplates.filter(x => x.category === selectedTemplateCategory);
   }, [selectedTemplateCategory]);
 
   const recommendedTemplates = useMemo(() => {
@@ -475,31 +612,277 @@ export function JournalPage() {
   }, [profile]);
 
   const startTemplateEntry = (template: JournalTemplate) => {
+    resetDraft();
     setSelectedTemplate(template);
-    setCurrentPromptIndex(0);
-    setEditingEntry(null);
+    setDraftDate(today);
     setTitle(template.title);
-    setContent('');
-    setSelectedMood('');
     setSelectedTags(template.tags || []);
-    setLinkedReadingId(null);
     setShowEditor(true);
   };
 
   const tabs = [
-    { id: 'entries' as const, label: t('journal.tabs.entries'), icon: BookOpen },
-    { id: 'templates' as const, label: t('journal.tabs.templates'), icon: FileText },
-    { id: 'insights' as const, label: t('journal.tabs.insights'), icon: Lightbulb },
+    { id: 'entries' as const, label: t('journal.tabs.entries') },
+    { id: 'templates' as const, label: t('journal.tabs.templates') },
+    { id: 'insights' as const, label: t('journal.tabs.insights') },
   ];
+
+  const newEntryLabel = t('journal.newEntry', { defaultValue: 'New entry' });
+  const writeTodayLabel = todayEntry
+    ? t('journal.openToday', { defaultValue: 'Open today’s entry' })
+    : t('journal.writeToday', { defaultValue: 'Write today' });
+  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const isSearching = Boolean(searchQuery.trim() || selectedTagFilter);
+  const editorDateLabel = formatDate(draftDate);
+
+  const promptCard = !todayEntry && (
+    <Card padding="lg" interactive onClick={openNewEntry}>
+      <EyebrowLabel align="left" className="block mb-2">{t('journal.todaysPrompt')}</EyebrowLabel>
+      <p className="heading-display-md heading-strong text-mystic-100 text-balance">{todayPrompt}</p>
+      <span className="mt-3 inline-flex items-center gap-1 text-meta font-medium text-gold">
+        {t('journal.startWritingCta', { defaultValue: 'Start writing' })}
+        <ChevronRight className="w-4 h-4" aria-hidden />
+      </span>
+    </Card>
+  );
+
+  const templateRow = (template: JournalTemplate, tone: 'gold' | 'neutral') => {
+    const CategoryIcon = categoryIcons[template.category] || FileText;
+    const catInfo = templateCategories[template.category as keyof typeof templateCategories];
+    return (
+      <ListRow
+        key={template.id}
+        icon={<CategoryIcon />}
+        tone={tone}
+        label={template.title}
+        meta={
+          <>
+            <span className="tracking-[0.08em] uppercase text-caption text-mystic-500">
+              {t(`journal.templateCategories.${template.category}`, { defaultValue: catInfo?.name ?? template.category })}
+              {' · '}
+              {template.timeEstimate}
+              {' · '}
+              {t('journal.promptCount', { defaultValue: '{{n}} prompts', n: template.prompts.length })}
+            </span>
+            <span className="block">{template.description}</span>
+          </>
+        }
+        onClick={() => startTemplateEntry(template)}
+      />
+    );
+  };
+
+  const entriesMain = (
+    <div className="space-y-4">
+      <Card padding="md">
+        <div className="flex items-center justify-between mb-3">
+          <button
+            type="button"
+            onClick={() => navigateWeek('prev')}
+            aria-label={t('journal.prevWeek', { defaultValue: 'Previous week' })}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-inset text-mystic-400 [@media(hover:hover)]:hover:bg-mystic-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+          >
+            <ChevronLeft className="w-4 h-4" aria-hidden />
+          </button>
+          <span className="text-meta tracking-[0.08em] uppercase text-mystic-300 tabular-nums">
+            {monthFmt.format(calendarDays[0].date)}
+          </span>
+          <button
+            type="button"
+            onClick={() => navigateWeek('next')}
+            aria-label={t('journal.nextWeek', { defaultValue: 'Next week' })}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-inset text-mystic-400 [@media(hover:hover)]:hover:bg-mystic-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+          >
+            <ChevronRight className="w-4 h-4" aria-hidden />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1" role="group" aria-label={t('journal.weekStrip', { defaultValue: 'This week' })}>
+          {calendarDays.map(day => (
+            <button
+              key={day.dateStr}
+              type="button"
+              onClick={() => openDayEntry(day.dateStr)}
+              disabled={day.isFuture}
+              aria-label={`${formatDate(day.dateStr)}${day.hasEntry ? ` · ${t('journal.hasEntry', { defaultValue: 'has an entry' })}` : ''}`}
+              aria-current={day.isToday ? 'date' : undefined}
+              className={`flex flex-col items-center gap-1 py-2 rounded-inset border transition-[background-color,border-color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 disabled:opacity-40 ${
+                day.isToday
+                  ? 'bg-gold/10 border-gold/40'
+                  : day.hasEntry
+                  ? 'bg-mystic-800 border-mystic-700 [@media(hover:hover)]:hover:border-mystic-500'
+                  : 'border-transparent [@media(hover:hover)]:hover:bg-mystic-800'
+              }`}
+            >
+              <span className="text-caption text-mystic-500">{narrowDayFmt.format(day.date)}</span>
+              <span className={`text-ui font-medium tabular-nums ${day.isToday ? 'text-gold' : 'text-mystic-200'}`}>
+                {day.date.getDate()}
+              </span>
+              <span className={`w-1.5 h-1.5 rounded-full ${day.hasEntry ? 'bg-gold' : 'bg-transparent'}`} aria-hidden />
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Input
+        type="search"
+        placeholder={t('journal.searchPlaceholder', { defaultValue: 'Search entries' })}
+        aria-label={t('journal.searchPlaceholder', { defaultValue: 'Search entries' })}
+        value={searchQuery}
+        onChange={e => setSearchQuery(e.target.value)}
+        icon={<Search className="w-5 h-5" aria-hidden />}
+      />
+
+      <Button variant="gold" fullWidth onClick={todayEntry ? () => openEditEntry(todayEntry) : openNewEntry}>
+        <Plus className="w-4 h-4" aria-hidden />
+        {writeTodayLabel}
+      </Button>
+
+      <ListRowGroup>
+        <ListRow
+          icon={<MoodGlyph glyph={todayMood ? MOOD_CATEGORIES[todayMood.category].glyph : 'sun'} size={20} />}
+          tone="teal"
+          label={t('journal.dailyMood', { defaultValue: 'Daily mood' })}
+          meta={t('journal.dailyMoodSub', { defaultValue: 'Log how today feels in one tap' })}
+          value={todayMood ? t(`mood.categories.${todayMood.category}.name`, { defaultValue: MOOD_CATEGORIES[todayMood.category].name }) : undefined}
+          onClick={() => navigate('/mood-diary')}
+        />
+      </ListRowGroup>
+
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label={t('journal.editSheet.tags')}>
+        <Chip
+          label={t('journal.filterAll', { defaultValue: 'All' })}
+          selected={!selectedTagFilter}
+          onSelect={() => setSelectedTagFilter(null)}
+          size="sm"
+        />
+        {TAGS.map(tag => (
+          <Chip
+            key={tag.value}
+            label={tagLabel(tag.value)}
+            selected={selectedTagFilter === tag.value}
+            onSelect={() => setSelectedTagFilter(selectedTagFilter === tag.value ? null : tag.value)}
+            size="sm"
+          />
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <Skeleton key={i} className="h-16 rounded-card" />
+          ))}
+        </div>
+      ) : filteredEntries.length === 0 ? (
+        isSearching ? (
+          <EmptyState
+            icon={<Search />}
+            title={
+              searchQuery.trim()
+                ? t('journal.searchMiss', { defaultValue: 'Nothing matches ‘{{query}}’', query: searchQuery.trim() })
+                : t('journal.filterMiss', { defaultValue: 'No entries tagged {{tag}} yet', tag: tagLabel(selectedTagFilter ?? '') })
+            }
+            description={t('journal.searchMissSub', { defaultValue: 'Try another word, or clear the filter.' })}
+            action={
+              <Button variant="ghost" onClick={() => { setSearchQuery(''); setSelectedTagFilter(null); }}>
+                {t('journal.clearSearch', { defaultValue: 'Clear' })}
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<BookOpen />}
+            title={t('journal.emptyState')}
+            description={t('journal.emptyStateSub')}
+            action={
+              <Button variant="gold" onClick={openNewEntry}>
+                <Plus className="w-4 h-4" aria-hidden />
+                {t('journal.writeToday', { defaultValue: 'Write today' })}
+              </Button>
+            }
+          />
+        )
+      ) : (
+        <div className="space-y-3">
+          <ListRowGroup>
+            {filteredEntries.map(entry => {
+              const reading = entry.linked_reading_id ? readingById.get(entry.linked_reading_id) : undefined;
+              const abbr = reading ? spreadAbbr(reading.spread_type) : '';
+              const body = snippet(entry.content);
+              return (
+                <ListRow
+                  key={entry.id}
+                  icon={<MoodGlyph glyph={moodGlyph(entry.mood)} size={20} />}
+                  tone={entry.mood ? moodTone(entry.mood) : 'neutral'}
+                  label={entry.title || body}
+                  meta={
+                    <>
+                      <span className="tracking-[0.08em] uppercase text-caption text-mystic-500">{formatDate(entry.date)}</span>
+                      {entry.title && <span className="block">{body}</span>}
+                    </>
+                  }
+                  trailing={
+                    <span className="flex items-center gap-2 shrink-0">
+                      {entry.is_locked && <Lock className="w-3.5 h-3.5 text-mystic-500" aria-label={t('journal.lock.locked')} />}
+                      {entry.linked_reading_id && (
+                        <Tag tone="blue" icon={<Link2 className="w-3 h-3" aria-hidden />}>
+                          {abbr || t('journal.linkedShort', { defaultValue: 'Reading' })}
+                        </Tag>
+                      )}
+                      <ChevronRight className="w-5 h-5 text-mystic-500" aria-hidden />
+                    </span>
+                  }
+                  onClick={() => openEditEntry(entry)}
+                />
+              );
+            })}
+          </ListRowGroup>
+          {hasMoreEntries && !isSearching && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadMoreEntries}
+              disabled={loadingMore}
+              className="w-full"
+            >
+              {loadingMore ? t('journal.loadingMore') : t('journal.loadMore')}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const entriesAside = (
+    <div className="space-y-4">
+      {promptCard}
+      <Card padding="md">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-mystic-800 rounded-control p-3 text-center">
+            <Flame className="w-4 h-4 text-gold mx-auto mb-1" aria-hidden />
+            <p className="text-title font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.currentStreak)}</p>
+            <p className="text-caption text-mystic-500">{t('journal.dayStreak')}</p>
+          </div>
+          <div className="bg-mystic-800 rounded-control p-3 text-center">
+            <BookOpen className="w-4 h-4 text-teal mx-auto mb-1" aria-hidden />
+            <p className="text-title font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.totalEntries)}</p>
+            <p className="text-caption text-mystic-500">{t('journal.totalEntries')}</p>
+          </div>
+        </div>
+        <Button variant="ghost" size="sm" className="mt-3 w-full" onClick={() => setActiveTab('insights')}>
+          {t('journal.seeInsights', { defaultValue: 'See insights' })}
+          <ChevronRight className="w-4 h-4" aria-hidden />
+        </Button>
+      </Card>
+    </div>
+  );
 
   return (
     <Page spacing="sm">
       <PageHeader
         title={t('journal.title')}
         action={
-          <Button variant="primary" size="sm" onClick={openNewEntry}>
-            <Plus className="w-4 h-4" />
-            {t('journal.newEntry', { defaultValue: 'New entry' })}
+          <Button variant="primary" size="sm" onClick={openNewEntry} aria-label={newEntryLabel}>
+            <Plus className="w-4 h-4" aria-hidden />
+            <span className="hidden min-[400px]:inline">{newEntryLabel}</span>
           </Button>
         }
       />
@@ -513,175 +896,13 @@ export function JournalPage() {
       />
 
       {activeTab === 'entries' && (
-        <>
-          <Card padding="md">
-            <div className="flex items-center justify-between mb-3">
-              <button
-                onClick={() => navigateWeek('prev')}
-                aria-label={t('journal.prevWeek', { defaultValue: 'Previous week' })}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700/50 rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 text-mystic-400" />
-              </button>
-              <span className="text-sm text-mystic-300">
-                {calendarDays[0].date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </span>
-              <button
-                onClick={() => navigateWeek('next')}
-                aria-label={t('journal.nextWeek', { defaultValue: 'Next week' })}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700/50 rounded-lg transition-colors"
-              >
-                <ChevronRight className="w-4 h-4 text-mystic-400" />
-              </button>
-            </div>
-            <div className="flex justify-between gap-1">
-              {calendarDays.map(day => (
-                <button
-                  key={day.dateStr}
-                  onClick={() => openDayEntry(day.dateStr)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
-                    day.isToday
-                      ? 'bg-gold/20 border border-gold/30'
-                      : day.hasEntry
-                      ? 'bg-mystic-700/50 hover:bg-mystic-700'
-                      : 'hover:bg-mystic-800/50'
-                  }`}
-                >
-                  <span className="text-meta text-mystic-500">{formatDayName(day.date)}</span>
-                  <span className={`text-sm font-medium ${day.isToday ? 'text-gold' : 'text-mystic-200'}`}>
-                    {day.date.getDate()}
-                  </span>
-                  {day.hasEntry && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-gold" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          {!todayEntry && (
-            <Card variant="glow" padding="lg" interactive onClick={openNewEntry}>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-control bg-gold/20 flex items-center justify-center flex-shrink-0">
-                  <Feather className="w-6 h-6 text-gold" />
-                </div>
-                <div className="flex-1">
-                  <EyebrowLabel align="left" className="block mb-1">{t('journal.todaysPrompt')}</EyebrowLabel>
-                  <p className="text-mystic-100 leading-relaxed mb-2">{todayPrompt}</p>
-                  <div className="flex items-center text-gold text-sm">
-                    Start writing
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-mystic-500" />
-            <input
-              type="text"
-              placeholder="Search entries..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-control pl-12 pr-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50"
-            />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-            <Chip
-              label="All"
-              selected={!selectedTagFilter}
-              onSelect={() => setSelectedTagFilter(null)}
-              size="sm"
-            />
-            {categoryTags.map(tag => (
-              <Chip
-                key={tag.value}
-                label={tag.label}
-                selected={selectedTagFilter === tag.value}
-                onSelect={() => setSelectedTagFilter(selectedTagFilter === tag.value ? null : tag.value)}
-                size="sm"
-              />
-            ))}
-          </div>
-
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-24 rounded-card" />
-              ))}
-            </div>
-          ) : filteredEntries.length === 0 ? (
-            <EmptyState
-              icon={<BookOpen />}
-              title={t('journal.emptyState')}
-              description={t('journal.emptyStateSub')}
-            />
-          ) : (
-            <div className="space-y-3">
-              {filteredEntries.map(entry => (
-                <Card key={entry.id} padding="md" interactive onClick={() => openEditEntry(entry)}>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-control bg-mystic-800 flex items-center justify-center flex-shrink-0 text-xl">
-                      {entry.mood ? getMoodEmoji(entry.mood) : '📝'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-meta text-mystic-500">{formatDate(entry.date)}</span>
-                        {entry.is_locked && <Lock className="w-3 h-3 text-gold" />}
-                        {entry.linked_reading_id && <Link2 className="w-3 h-3 text-cosmic-blue" />}
-                      </div>
-                      {entry.title && (
-                        <h3 className="font-medium text-mystic-100 mb-1 line-clamp-1">{entry.title}</h3>
-                      )}
-                      <p className="text-mystic-300 text-sm line-clamp-2">{entry.content}</p>
-                      {entry.tags && entry.tags.length > 0 && (
-                        <div className="flex gap-1.5 mt-2 flex-wrap">
-                          {entry.tags.map(tagValue => {
-                            const tagInfo = categoryTags.find(t => t.value === tagValue);
-                            return (
-                              <Tag key={tagValue} tone={tagInfo?.tone || 'neutral'}>
-                                {tagInfo?.label || tagValue}
-                              </Tag>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openEditEntry(entry); }}
-                        aria-label={t('journal.editSheet.editEntry')}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700/50 rounded-lg transition-colors"
-                      >
-                        <Edit2 className="w-4 h-4 text-mystic-400" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }}
-                        aria-label={t('common:actions.delete')}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-coral/10 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-mystic-500 hover:text-coral" />
-                      </button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-              {hasMoreEntries && !searchQuery && !selectedTagFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={loadMoreEntries}
-                  disabled={loadingMore}
-                  className="w-full"
-                >
-                  {loadingMore ? t('journal.loadingMore') : t('journal.loadMore')}
-                </Button>
-              )}
-            </div>
-          )}
-        </>
+        isDesktop ? (
+          <PageGrid aside={entriesAside} asideLabel={t('journal.todaysPrompt')}>
+            {entriesMain}
+          </PageGrid>
+        ) : (
+          entriesMain
+        )
       )}
 
       {activeTab === 'templates' && (
@@ -690,90 +911,35 @@ export function JournalPage() {
             <Section
               headingLevel="h3"
               spacing="sm"
-              title={<span className="inline-flex items-center gap-2"><Star className="w-4 h-4 text-gold" /> Recommended for You</span>}
+              title={t('journal.recommended', { defaultValue: 'Recommended for you' })}
             >
-              <div className="space-y-3">
-                {recommendedTemplates.slice(0, 3).map(template => {
-                  const CategoryIcon = categoryIcons[template.category] || FileText;
-                  return (
-                    <Card key={template.id} padding="md" interactive onClick={() => startTemplateEntry(template)}>
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-control bg-gold/20 flex items-center justify-center flex-shrink-0">
-                          <CategoryIcon className="w-5 h-5 text-gold" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-mystic-100 mb-1">{template.title}</h4>
-                          <p className="text-sm text-mystic-400 line-clamp-2">{template.description}</p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <span className="flex items-center gap-1 text-meta text-mystic-500">
-                              <Clock className="w-3 h-3" />
-                              {template.timeEstimate}
-                            </span>
-                            <span className="text-meta text-mystic-500">{template.prompts.length} prompts</span>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-mystic-500" />
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
+              <ListRowGroup>
+                {recommendedTemplates.slice(0, 3).map(template => templateRow(template, 'gold'))}
+              </ListRowGroup>
             </Section>
           )}
 
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label={t('journal.tabs.templates')}>
             <Chip
-              label="All"
+              label={t('journal.filterAll', { defaultValue: 'All' })}
               selected={!selectedTemplateCategory}
               onSelect={() => setSelectedTemplateCategory(null)}
               size="sm"
             />
-            {Object.entries(templateCategories).map(([key, cat]) => {
-              const Icon = categoryIcons[key] || FileText;
-              return (
-                <Chip
-                  key={key}
-                  selected={selectedTemplateCategory === key}
-                  onSelect={() => setSelectedTemplateCategory(selectedTemplateCategory === key ? null : key)}
-                  size="sm"
-                >
-                  <Icon className="w-3 h-3" />
-                  {cat.name}
-                </Chip>
-              );
-            })}
+            {Object.entries(templateCategories).map(([key, cat]) => (
+              <Chip
+                key={key}
+                label={t(`journal.templateCategories.${key}`, { defaultValue: cat.name })}
+                selected={selectedTemplateCategory === key}
+                onSelect={() => setSelectedTemplateCategory(selectedTemplateCategory === key ? null : key)}
+                size="sm"
+              />
+            ))}
           </div>
 
-          <div className="space-y-3">
-            {filteredTemplates.map(template => {
-              const CategoryIcon = categoryIcons[template.category] || FileText;
-              const catInfo = templateCategories[template.category as keyof typeof templateCategories];
-              return (
-                <Card key={template.id} padding="md" interactive onClick={() => startTemplateEntry(template)}>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-control flex items-center justify-center flex-shrink-0 bg-mystic-800">
-                      <CategoryIcon className="w-5 h-5 text-mystic-300" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-mystic-100">{template.title}</h4>
-                        <Tag tone="neutral">{catInfo?.name}</Tag>
-                      </div>
-                      <p className="text-sm text-mystic-400 line-clamp-2">{template.description}</p>
-                      <div className="flex items-center gap-3 mt-2">
-                        <span className="flex items-center gap-1 text-meta text-mystic-500">
-                          <Clock className="w-3 h-3" />
-                          {template.timeEstimate}
-                        </span>
-                        <span className="text-meta text-mystic-500">{template.prompts.length} prompts</span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-mystic-500" />
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+          <ListRowGroup>
+            {filteredTemplates.map(template => templateRow(template, 'neutral'))}
+          </ListRowGroup>
         </div>
       )}
 
@@ -781,142 +947,149 @@ export function JournalPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <Card padding="lg" className="text-center">
-              <Flame className="w-8 h-8 text-gold mx-auto mb-2" />
-              <p className="heading-display-xl text-mystic-100">{insights.currentStreak}</p>
+              <Flame className="w-6 h-6 text-gold mx-auto mb-2" aria-hidden />
+              <p className="text-display font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.currentStreak)}</p>
               <p className="text-meta text-mystic-400 mt-1">{t('journal.dayStreak')}</p>
             </Card>
             <Card padding="lg" className="text-center">
-              <TrendingUp className="w-8 h-8 text-teal mx-auto mb-2" />
-              <p className="heading-display-xl text-mystic-100">{insights.totalEntries}</p>
+              <BookOpen className="w-6 h-6 text-teal mx-auto mb-2" aria-hidden />
+              <p className="text-display font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.totalEntries)}</p>
               <p className="text-meta text-mystic-400 mt-1">{t('journal.totalEntries')}</p>
             </Card>
           </div>
 
+          <Section headingLevel="h3" title={t('journal.personalInsight')}>
+            <Card padding="lg">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" aria-hidden />
+                <p className="text-ui text-mystic-200 leading-relaxed">
+                  {generatedInsight ||
+                    t('journal.insight.notYet', {
+                      defaultValue: 'Write a few more entries — a pattern shows here once there are five with more than one mood or theme.',
+                    })}
+                </p>
+              </div>
+            </Card>
+          </Section>
+
           <Section title={t('journal.moodTrend')} headingLevel="h3">
-            <div className="flex justify-between gap-1">
-              {insights.last7DaysMoods.map((day, i) => {
-                const date = new Date(day.date);
+            <div className="grid grid-cols-7 gap-1">
+              {insights.last7DaysMoods.map((day) => {
+                const date = parseLocalDate(day.date);
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div key={day.date} className="flex flex-col items-center gap-2">
                     <div
-                      className={`w-10 h-10 rounded-control flex items-center justify-center text-lg ${
+                      className={`w-10 h-10 rounded-control flex items-center justify-center ${
                         day.mood
-                          ? 'bg-mystic-800'
-                          : 'bg-mystic-800/30 border border-dashed border-mystic-700'
+                          ? `bg-mystic-800 ${TILE_INK[moodTone(day.mood)]}`
+                          : 'border border-dashed border-mystic-700 text-mystic-700'
                       }`}
+                      title={day.mood ? moodLabel(day.mood) : undefined}
                     >
-                      {day.mood ? getMoodEmoji(day.mood) : ''}
+                      {day.mood && <MoodGlyph glyph={moodGlyph(day.mood)} size={20} aria-label={moodLabel(day.mood)} />}
                     </div>
-                    <span className="text-meta text-mystic-500">
-                      {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)}
-                    </span>
+                    <span className="text-caption text-mystic-500">{narrowDayFmt.format(date)}</span>
                   </div>
                 );
               })}
             </div>
           </Section>
 
-          {insights.topTags.length > 0 && (
-            <Section
-              headingLevel="h3"
-              title={<span className="inline-flex items-center gap-2"><TagIcon className="w-4 h-4 text-mystic-500" /> {t('journal.mostCommonTags')}</span>}
-            >
-              <div className="space-y-3">
-                {insights.topTags.map(([tagValue, count]) => {
-                  const tagInfo = categoryTags.find(t => t.value === tagValue);
-                  const maxCount = insights.topTags[0][1];
-                  return (
-                    <div key={tagValue}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-mystic-300">{tagInfo?.label || tagValue}</span>
-                        <span className="text-mystic-500">{count}x</span>
-                      </div>
-                      <Progress value={count} max={maxCount} size="md" tone="gold" label={tagInfo?.label || tagValue} />
-                    </div>
-                  );
-                })}
-              </div>
-            </Section>
-          )}
-
           {insights.moodDistribution.length > 0 && (
-            <Section
-              headingLevel="h3"
-              title={<span className="inline-flex items-center gap-2"><BarChart3 className="w-4 h-4 text-mystic-500" /> {t('journal.moodDistribution')}</span>}
-            >
-              <div className="space-y-3">
-                {insights.moodDistribution.map(({ mood, percentage }) => {
-                  const moodInfo = moodEmojis.find(m => m.value === mood);
-                  return (
-                    <div key={mood}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-mystic-300 flex items-center gap-2">
-                          <span>{moodInfo?.emoji}</span>
-                          <span className="capitalize">{moodInfo?.label || mood}</span>
+            <Section headingLevel="h3" title={t('journal.commonMoods', { defaultValue: 'Common moods' })}>
+              <Card padding="md">
+                <ul className="space-y-3">
+                  {insights.moodDistribution.map(({ mood, count, percentage }, i) => (
+                    <li key={mood}>
+                      <div className="flex items-center justify-between gap-3 mb-1.5">
+                        <span className="flex items-center gap-2 text-ui text-mystic-200 min-w-0">
+                          <MoodGlyph glyph={moodGlyph(mood)} size={16} className="shrink-0 text-mystic-400" />
+                          <span className="truncate">{moodLabel(mood)}</span>
                         </span>
-                        <span className="text-mystic-500">{percentage}%</span>
+                        <span className="text-meta text-mystic-400 tabular-nums shrink-0">
+                          {numberFmt.format(count)} · {percentage}%
+                        </span>
                       </div>
-                      <Progress value={percentage} size="md" tone={moodTones[mood] || 'gold'} label={moodInfo?.label || mood} />
-                    </div>
-                  );
-                })}
-              </div>
+                      <div className="h-2 rounded-full bg-mystic-800 overflow-hidden" role="presentation">
+                        <div className={`h-full rounded-full ${BAR_HUES[i % BAR_HUES.length]}`} style={{ width: `${Math.max(4, percentage)}%` }} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             </Section>
           )}
 
-          {insights.generatedInsight && (
-            <Card padding="lg" className="bg-gold/5 border-gold/20">
-              <div className="flex items-start gap-3">
-                <Star className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-medium text-gold mb-2">{t('journal.personalInsight')}</h3>
-                  <p className="text-mystic-300 text-sm leading-relaxed">{insights.generatedInsight}</p>
-                </div>
-              </div>
-            </Card>
+          {insights.topTags.length > 0 && (
+            <Section headingLevel="h3" title={t('journal.commonTags', { defaultValue: 'Common tags' })}>
+              <Card padding="md">
+                <ul className="space-y-3">
+                  {insights.topTags.map(([tagValue, count], i) => {
+                    const max = insights.topTags[0][1];
+                    const pct = Math.round((count / max) * 100);
+                    return (
+                      <li key={tagValue}>
+                        <div className="flex items-center justify-between gap-3 mb-1.5">
+                          <span className="text-ui text-mystic-200 truncate">{tagLabel(tagValue)}</span>
+                          <span className="text-meta text-mystic-400 tabular-nums shrink-0">
+                            {t('journal.timesCount', { defaultValue: '{{n}}×', n: numberFmt.format(count) })}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-mystic-800 overflow-hidden" role="presentation">
+                          <div className={`h-full rounded-full ${BAR_HUES[i % BAR_HUES.length]}`} style={{ width: `${Math.max(4, pct)}%` }} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Card>
+            </Section>
           )}
 
-          <Section
-            headingLevel="h3"
-            title={<span className="inline-flex items-center gap-2"><Calendar className="w-4 h-4 text-mystic-500" /> {t('journal.thisWeek')}</span>}
-          >
-            <div className="flex justify-between gap-2">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      insights.weeklyActivity[i]
-                        ? 'bg-gold text-mystic-950'
-                        : 'bg-mystic-800 text-mystic-500'
-                    }`}
-                  >
-                    {insights.weeklyActivity[i] && (
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <polyline points="20,6 9,17 4,12" />
-                      </svg>
-                    )}
+          <Section headingLevel="h3" title={t('journal.thisWeek')}>
+            <div className="grid grid-cols-7 gap-1">
+              {insights.weeklyActivity.map((active, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                return (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        active ? 'bg-gold text-mystic-950' : 'bg-mystic-800 text-mystic-500'
+                      }`}
+                      aria-label={`${formatDate(localDateStr(d))}${active ? ` · ${t('journal.hasEntry', { defaultValue: 'has an entry' })}` : ''}`}
+                      role="img"
+                    >
+                      {active && (
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                          <polyline points="20,6 9,17 4,12" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-caption text-mystic-500">{narrowDayFmt.format(d)}</span>
                   </div>
-                  <span className="text-meta text-mystic-500">{day}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Section>
 
           <Section title={t('journal.writingStats')} headingLevel="h3">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <p className="text-xl font-display text-gold">{insights.averageWordsPerEntry}</p>
-                <p className="text-meta text-mystic-400">{t('journal.avgWords')}</p>
+            <Card padding="md">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <p className="text-title font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.averageWordsPerEntry)}</p>
+                  <p className="text-caption text-mystic-400">{t('journal.avgWords')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-title font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.last30DaysEntries)}</p>
+                  <p className="text-caption text-mystic-400">{t('journal.last30Days')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-title font-semibold tabular-nums text-mystic-100">{numberFmt.format(insights.totalWords)}</p>
+                  <p className="text-caption text-mystic-400">{t('journal.totalWords')}</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-xl font-display text-cosmic-blue">{insights.last30DaysEntries}</p>
-                <p className="text-meta text-mystic-400">{t('journal.last30Days')}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl font-display text-teal">{insights.totalWords.toLocaleString()}</p>
-                <p className="text-meta text-mystic-400">{t('journal.totalWords')}</p>
-              </div>
-            </div>
+            </Card>
           </Section>
 
           {entries.length === 0 && (
@@ -924,7 +1097,7 @@ export function JournalPage() {
               icon={<Lightbulb />}
               title={t('journal.insightsEmpty')}
               action={
-                <Button variant="primary" onClick={openNewEntry}>
+                <Button variant="gold" onClick={openNewEntry}>
                   {t('journal.startWriting', { defaultValue: 'Write my first entry' })}
                 </Button>
               }
@@ -933,11 +1106,16 @@ export function JournalPage() {
         </div>
       )}
 
-      <Sheet open={showEditor} onClose={() => { setShowEditor(false); setSelectedTemplate(null); }} title={editingEntry ? t('journal.editSheet.editEntry') : selectedTemplate ? selectedTemplate.title : t('journal.editSheet.newEntry')}>
+      {/* ── Editor ─────────────────────────────────────────────────── */}
+      <Sheet
+        open={showEditor}
+        onClose={closeEditor}
+        title={editingEntry ? t('journal.editSheet.editEntry') : selectedTemplate ? selectedTemplate.title : t('journal.editSheet.newEntry')}
+      >
         <div className="flex flex-col h-full -m-6">
-          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+          <div className="flex-1 overflow-y-auto">
             {!editingEntry && selectedTemplate && (
-              <div className="space-y-3">
+              <div className="px-6 pt-5 pb-2 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-y-1">
                   <EyebrowLabel align="left" className="text-mystic-500">
                     {t('journal.editSheet.promptOf', { defaultValue: 'Prompt {{n}} of {{total}}', n: currentPromptIndex + 1, total: selectedTemplate.prompts.length })}
@@ -959,9 +1137,6 @@ export function JournalPage() {
                     ))}
                   </div>
                 </div>
-                <div className="p-4 bg-gold/10 border border-gold/20 rounded-control">
-                  <p className="text-mystic-100">{selectedTemplate.prompts[currentPromptIndex]}</p>
-                </div>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -969,8 +1144,8 @@ export function JournalPage() {
                     onClick={() => setCurrentPromptIndex(Math.max(0, currentPromptIndex - 1))}
                     disabled={currentPromptIndex === 0}
                   >
-                    <ChevronLeft className="w-4 h-4" />
-                    Prev
+                    <ChevronLeft className="w-4 h-4" aria-hidden />
+                    {t('journal.editSheet.prevPrompt', { defaultValue: 'Previous' })}
                   </Button>
                   <div className="flex-1" />
                   <Button
@@ -979,37 +1154,64 @@ export function JournalPage() {
                     onClick={() => setCurrentPromptIndex(Math.min(selectedTemplate.prompts.length - 1, currentPromptIndex + 1))}
                     disabled={currentPromptIndex === selectedTemplate.prompts.length - 1}
                   >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
+                    {t('journal.editSheet.nextPrompt', { defaultValue: 'Next' })}
+                    <ChevronRight className="w-4 h-4" aria-hidden />
                   </Button>
                 </div>
               </div>
             )}
 
-            {!editingEntry && !selectedTemplate && (
-              <div className="p-4 bg-mystic-800/30 rounded-control">
-                <EyebrowLabel align="left" className="block mb-1">{t('journal.todaysPrompt')}</EyebrowLabel>
-                <p className="text-mystic-200 text-sm">{todayPrompt}</p>
-              </div>
-            )}
+            {/* The writing surface. The prompt is read, the entry is written
+                for meaning: both sit on paper with ink, flush to the sheet
+                edge (the px-4 wrapper absorbs Paper's -mx-4). The Input
+                primitive has no paper variant, so the two fields are styled
+                here with the ink roles. */}
+            <div className="px-4 pt-4">
+              <Paper className="!py-5">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <EyebrowLabel tone="ink" align="left">
+                    {editingEntry
+                      ? t('journal.editSheet.editEntry')
+                      : selectedTemplate
+                        ? t('journal.editSheet.promptOf', { defaultValue: 'Prompt {{n}} of {{total}}', n: currentPromptIndex + 1, total: selectedTemplate.prompts.length })
+                        : draftDate === today
+                          ? t('journal.todaysPrompt')
+                          : t('journal.entryFor', { defaultValue: 'Entry for {{date}}', date: editorDateLabel })}
+                  </EyebrowLabel>
+                  {/* The eyebrow already names the day for a past-day entry; say it once. */}
+                  {(editingEntry || selectedTemplate || draftDate === today) && (
+                    <span className="reading-caption tabular-nums shrink-0">{editorDateLabel}</span>
+                  )}
+                </div>
+                {!editingEntry && (selectedTemplate || draftDate === today) && (
+                  <p className="reading-lede mb-4">
+                    {selectedTemplate ? selectedTemplate.prompts[currentPromptIndex] : todayPrompt}
+                  </p>
+                )}
+                <input
+                  type="text"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  aria-label={t('journal.titlePlaceholder')}
+                  placeholder={t('journal.titlePlaceholder')}
+                  maxLength={120}
+                  className="w-full bg-transparent border-0 border-b border-paper-hairline pb-2 heading-display-md heading-strong text-ink placeholder:text-ink-muted focus:outline-none focus:border-ink-gold"
+                />
+                <textarea
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  aria-label={t('journal.editSheet.yourThoughts')}
+                  placeholder={t('journal.entryPlaceholder')}
+                  rows={8}
+                  className="w-full mt-4 bg-transparent border-0 p-0 text-body leading-relaxed text-ink placeholder:text-ink-muted resize-none focus:outline-none min-h-[12rem]"
+                />
+                <p className="reading-caption text-right tabular-nums mt-1">
+                  {t('journal.wordCount', { n: numberFmt.format(wordCount) })}
+                </p>
+              </Paper>
+            </div>
 
-            <Input
-              label="Title (optional)"
-              placeholder="Give your entry a name..."
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-2">{t('journal.editSheet.yourThoughts')}</label>
-              <textarea
-                placeholder="Write your reflection..."
-                value={content}
-                onChange={e => setContent(e.target.value)}
-                rows={6}
-                className="w-full bg-mystic-800/50 border border-mystic-600/50 rounded-control px-4 py-3 text-mystic-100 placeholder-mystic-500 focus:outline-none focus:border-gold/50 resize-none"
-              />
-
+            <div className="px-6 py-5 space-y-5">
               {journalCoachEnabled && content.trim().length >= 20 && !coachResult && (
                 <Button
                   variant="ghost"
@@ -1028,16 +1230,16 @@ export function JournalPage() {
                     });
                     setCoachLoading(false);
                     if (error) {
-                      toast(t('journalCoach.failed', { defaultValue: "Couldn't reach the journal coach — check your connection and try again." }), 'error');
+                      toast(t('journalCoach.failed', { defaultValue: 'Couldn’t reach the coach — check your connection and try again.' }), 'error');
                       return;
                     }
                     const payload = (data?.data ?? data) as { observation: string; prompts: string[] } | null;
                     if (payload) setCoachResult(payload);
                   }}
                   disabled={coachLoading}
-                  className="mt-2 gap-1"
+                  className="-ml-2 gap-1"
                 >
-                  <Sparkles className="w-3 h-3 text-gold" />
+                  <Sparkles className="w-4 h-4 text-gold" aria-hidden />
                   {coachLoading
                     ? t('journalCoach.thinking', { defaultValue: 'Reading…' })
                     : t('journalCoach.askCta', { defaultValue: 'Ask the journal coach' })}
@@ -1045,14 +1247,11 @@ export function JournalPage() {
               )}
 
               {coachResult && (
-                <div className="mt-3 p-3 bg-gradient-to-br from-cosmic-violet/10 to-mystic-900 border border-cosmic-violet/30 rounded-control">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Sparkles className="w-3 h-3 text-cosmic-violetLight" />
-                    <EyebrowLabel align="left" className="text-cosmic-violetLight">
-                      {t('journalCoach.observationLabel', { defaultValue: 'An observation' })}
-                    </EyebrowLabel>
-                  </div>
-                  <p className="text-sm text-mystic-200 italic leading-relaxed mb-3">
+                <Card padding="md" className="border-cosmic-violet/30">
+                  <EyebrowLabel align="left" className="!text-cosmic-violet-ink block mb-2">
+                    {t('journalCoach.observationLabel', { defaultValue: 'An observation' })}
+                  </EyebrowLabel>
+                  <p className="text-ui text-mystic-200 italic leading-relaxed mb-3">
                     {coachResult.observation}
                   </p>
                   <EyebrowLabel align="left" className="block text-mystic-500 mb-1.5">
@@ -1060,87 +1259,102 @@ export function JournalPage() {
                   </EyebrowLabel>
                   <ul className="space-y-1.5">
                     {coachResult.prompts.map((p, i) => (
-                      <li key={i} className="text-meta text-mystic-300 pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violetLight">
+                      <li key={i} className="text-meta text-mystic-300 pl-3 relative before:content-['—'] before:absolute before:left-0 before:text-cosmic-violet-ink">
                         {p}
                       </li>
                     ))}
                   </ul>
                   <button
+                    type="button"
                     onClick={() => setCoachResult(null)}
-                    className="text-caption text-mystic-500 hover:text-mystic-300 mt-2 min-h-[44px] underline underline-offset-2"
+                    className="text-caption text-mystic-500 [@media(hover:hover)]:hover:text-mystic-300 mt-2 min-h-[44px] underline underline-offset-2"
                   >
                     {t('journalCoach.dismiss', { defaultValue: 'Hide these prompts' })}
                   </button>
-                </div>
+                </Card>
               )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.howFeeling')}</label>
-              <div className="flex flex-wrap gap-2">
-                {moodEmojis.map(mood => (
-                  <button
-                    key={mood.value}
-                    onClick={() => setSelectedMood(selectedMood === mood.value ? '' : mood.value)}
-                    className={`w-12 h-12 rounded-control text-2xl flex items-center justify-center transition-all ${
-                      selectedMood === mood.value
-                        ? 'bg-gold/20 border-2 border-gold scale-110'
-                        : 'bg-mystic-800/50 border border-mystic-700 hover:border-mystic-500'
-                    }`}
-                    title={mood.label}
-                  >
-                    {mood.emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.tags')}</label>
-              <div className="flex flex-wrap gap-2">
-                {categoryTags.map(tag => (
-                  <Chip
-                    key={tag.value}
-                    label={tag.label}
-                    selected={selectedTags.includes(tag.value)}
-                    onSelect={() => toggleTag(tag.value)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-mystic-300 mb-3">{t('journal.editSheet.attachments')}</label>
-              {linkedReadingId ? (
-                <div className="flex items-center gap-3 p-3 bg-cosmic-blue/10 border border-cosmic-blue/30 rounded-control">
-                  <Link2 className="w-5 h-5 text-cosmic-blue" />
-                  <span className="text-sm text-mystic-200 flex-1">{t('journal.editSheet.tarotLinked')}</span>
-                  <button
-                    onClick={() => setLinkedReadingId(null)}
-                    aria-label={t('journal.editSheet.unlinkReading', { defaultValue: 'Remove the linked reading' })}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-mystic-700 rounded-lg"
-                  >
-                    <X className="w-4 h-4 text-mystic-400" />
-                  </button>
+              <div>
+                <p className="text-meta text-mystic-400 mb-3" id="journal-mood-label">{t('journal.editSheet.howFeeling')}</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-labelledby="journal-mood-label">
+                  {MOODS.map(mood => {
+                    const active = selectedMood === mood.value;
+                    return (
+                      <button
+                        key={mood.value}
+                        type="button"
+                        onClick={() => setSelectedMood(active ? '' : mood.value)}
+                        aria-pressed={active}
+                        aria-label={moodLabel(mood.value)}
+                        title={moodLabel(mood.value)}
+                        className={`w-12 h-12 rounded-control border flex items-center justify-center transition-[border-color,background-color,color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ${
+                          active
+                            ? 'bg-gold/10 border-gold text-gold'
+                            : 'bg-mystic-800 border-mystic-700 text-mystic-300 [@media(hover:hover)]:hover:border-mystic-500'
+                        }`}
+                      >
+                        <MoodGlyph glyph={moodGlyph(mood.value)} size={22} />
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : (
-                <button
-                  onClick={() => setShowAttachmentPicker(true)}
-                  className="w-full p-3 border border-dashed border-mystic-600 rounded-control text-mystic-400 hover:border-gold/50 hover:text-gold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Link2 className="w-4 h-4" />
-                  Link a tarot reading
-                </button>
-              )}
+                {selectedMood && <p className="text-caption text-mystic-400 mt-2">{moodLabel(selectedMood)}</p>}
+              </div>
+
+              <div>
+                <p className="text-meta text-mystic-400 mb-3" id="journal-tags-label">{t('journal.editSheet.tags')}</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-labelledby="journal-tags-label">
+                  {TAGS.map(tag => (
+                    <Chip
+                      key={tag.value}
+                      label={tagLabel(tag.value)}
+                      selected={selectedTags.includes(tag.value)}
+                      onSelect={() => toggleTag(tag.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-meta text-mystic-400 mb-3">{t('journal.editSheet.attachments')}</p>
+                {linkedReadingId ? (
+                  <ListRowGroup>
+                    <ListRow
+                      icon={<TarotCardIcon />}
+                      tone="blue"
+                      label={t('journal.editSheet.tarotLinked')}
+                      meta={(() => {
+                        const r = readingById.get(linkedReadingId);
+                        return r ? `${shortDateFmt.format(parseLocalDate(r.date))} · ${r.cards.slice(0, 2).map(c => c.name).join(', ')}` : undefined;
+                      })()}
+                      trailing={
+                        <button
+                          type="button"
+                          onClick={() => setLinkedReadingId(null)}
+                          aria-label={t('journal.editSheet.unlinkReading', { defaultValue: 'Remove the linked reading' })}
+                          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-inset text-mystic-400 [@media(hover:hover)]:hover:bg-mystic-700"
+                        >
+                          <X className="w-4 h-4" aria-hidden />
+                        </button>
+                      }
+                    />
+                  </ListRowGroup>
+                ) : (
+                  <Button variant="outline" fullWidth onClick={() => setShowAttachmentPicker(true)}>
+                    <Link2 className="w-4 h-4" aria-hidden />
+                    {t('journal.linkReading', { defaultValue: 'Link a reading' })}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="border-t border-mystic-800 p-6 pb-24 space-y-3 bg-mystic-900 safe-bottom">
+          <div className="border-t border-mystic-800 px-6 pt-4 pb-24 space-y-3 bg-mystic-900 safe-bottom">
             <div className="flex gap-3">
-              <Button variant="ghost" fullWidth onClick={() => setShowEditor(false)}>
+              <Button variant="ghost" fullWidth onClick={closeEditor}>
                 {t('journal.editor.cancel', { defaultValue: 'Cancel' })}
               </Button>
-              <Button variant="primary" fullWidth onClick={() => saveEntry(false)} disabled={!content.trim()}>
+              <Button variant="gold" fullWidth onClick={() => saveEntry(false)} disabled={!content.trim()} loading={saving}>
                 {t('journal.saveEntry', { defaultValue: 'Save this entry' })}
               </Button>
             </div>
@@ -1150,54 +1364,92 @@ export function JournalPage() {
                 variant="outline"
                 fullWidth
                 onClick={() => saveEntry(true)}
-                disabled={!content.trim()}
-                className="border-gold/30 text-gold"
+                disabled={!content.trim() || saving}
               >
-                <Lock className="w-4 h-4 mr-2" />
-                Save + Lock
+                <Lock className="w-4 h-4" aria-hidden />
+                {t('journal.saveAndLock', { defaultValue: 'Save and lock' })}
+              </Button>
+            )}
+
+            {editingEntry && (
+              <Button variant="ghost" fullWidth onClick={() => setPendingDelete(editingEntry)} className="text-coral [@media(hover:hover)]:hover:text-coral">
+                <Trash2 className="w-4 h-4" aria-hidden />
+                {t('journal.deleteEntry', { defaultValue: 'Delete this entry' })}
               </Button>
             )}
           </div>
         </div>
       </Sheet>
 
+      {/* ── Delete confirm (the app's Sheet, not window.confirm) ──────── */}
+      <Sheet
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        title={t('journal.deleteConfirmTitle', { defaultValue: 'Delete this entry?' })}
+      >
+        <div className="space-y-5">
+          <p className="text-ui text-mystic-300 leading-relaxed">
+            {t('journal.deleteConfirmBody', { defaultValue: 'It goes for good — there is no undo. Your other entries are not affected.' })}
+          </p>
+          {pendingDelete && (
+            <ListRowGroup>
+              <ListRow
+                icon={<MoodGlyph glyph={moodGlyph(pendingDelete.mood)} size={20} />}
+                tone={pendingDelete.mood ? moodTone(pendingDelete.mood) : 'neutral'}
+                label={pendingDelete.title || snippet(pendingDelete.content)}
+                meta={<span className="tracking-[0.08em] uppercase text-caption">{formatDate(pendingDelete.date)}</span>}
+              />
+            </ListRowGroup>
+          )}
+          <div className="flex gap-3">
+            <Button variant="ghost" fullWidth onClick={() => setPendingDelete(null)}>
+              {t('common:actions.cancel', { defaultValue: 'Cancel' })}
+            </Button>
+            <Button variant="destructive" fullWidth onClick={confirmDelete} loading={deleting}>
+              {t('common:actions.delete', { defaultValue: 'Delete' })}
+            </Button>
+          </div>
+        </div>
+      </Sheet>
+
+      {/* ── Link a reading ──────────────────────────────────────────── */}
       <Sheet
         open={showAttachmentPicker}
         onClose={() => setShowAttachmentPicker(false)}
-        title={t('journal.linkReading', { defaultValue: 'Link Reading' })}
+        title={t('journal.linkReading', { defaultValue: 'Link a reading' })}
       >
-        <div className="space-y-3">
-          {recentReadings.length === 0 ? (
-            <p className="text-center text-mystic-400 py-8">{t('journal.noReadings')}</p>
-          ) : (
-            recentReadings.map(reading => (
-              <button
+        {recentReadings.length === 0 ? (
+          <EmptyState variant="inline" icon={<TarotCardIcon />} title={t('journal.noReadings')} />
+        ) : (
+          <ListRowGroup>
+            {recentReadings.map(reading => (
+              <ListRow
                 key={reading.id}
+                icon={<TarotCardIcon />}
+                tone="blue"
+                label={t('journal.spreadRow', { defaultValue: '{{spread}} spread', spread: reading.spread_type.replace(/-/g, ' ') })}
+                meta={`${shortDateFmt.format(parseLocalDate(reading.date))} · ${reading.cards.slice(0, 2).map(c => c.name).join(', ')}${reading.cards.length > 2 ? '…' : ''}`}
+                trailing={<Tag tone="blue">{spreadAbbr(reading.spread_type)}</Tag>}
                 onClick={() => {
                   setLinkedReadingId(reading.id);
                   setShowAttachmentPicker(false);
                 }}
-                className="w-full p-4 bg-mystic-800/50 border border-mystic-700 rounded-control hover:border-gold/30 transition-colors text-left"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-cosmic-blue/20 flex items-center justify-center">
-                    <span className="text-lg">🎴</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-mystic-200 capitalize">{reading.spread_type} Spread</p>
-                    <p className="text-meta text-mystic-500">
-                      {new Date(reading.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      {' - '}
-                      {reading.cards.slice(0, 2).map(c => c.name).join(', ')}
-                      {reading.cards.length > 2 && '...'}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
+              />
+            ))}
+          </ListRowGroup>
+        )}
       </Sheet>
     </Page>
   );
 }
+
+/** Ink for a mood glyph on a mystic-800 tile, by tone. */
+const TILE_INK: Record<Tone, string> = {
+  neutral: 'text-mystic-300',
+  gold: 'text-gold',
+  teal: 'text-teal',
+  coral: 'text-coral',
+  blue: 'text-cosmic-blue-ink',
+  violet: 'text-cosmic-violet-ink',
+  rose: 'text-cosmic-rose',
+};

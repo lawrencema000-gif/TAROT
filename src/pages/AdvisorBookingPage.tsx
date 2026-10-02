@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Moon, AlertCircle, Users } from 'lucide-react';
-import { Card, Button, Input, PageHeader, Page, Chip, EyebrowLabel, toast } from '../components/ui';
+import { Card, Button, Input, PageHeader, Page, Chip, EyebrowLabel, EmptyState, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { advisors, advisorSessions, moonstones } from '../dal';
@@ -141,14 +141,27 @@ export function AdvisorBookingPage() {
     }
   };
 
-  if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
+  if (loading) return <div className="py-12 text-center text-mystic-500 text-ui">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
   if (!advisor) {
     return (
-      <Card padding="lg">
-        <p className="text-sm text-mystic-400">
-          {t('advisorBooking.notFound', { defaultValue: 'Advisor not found.' })}
-        </p>
-      </Card>
+      <Page spacing="md">
+        <PageHeader
+          onBack={() => navigate('/advisors')}
+          backLabel={t('advisors.back', { defaultValue: 'All advisors' }) as string}
+          title={t('advisorBooking.title', { defaultValue: 'Book a session' })}
+        />
+        <EmptyState
+          as="h2"
+          icon={<Users />}
+          title={t('advisorBooking.notFound', { defaultValue: 'This advisor isn’t here' })}
+          description={t('advisorBooking.notFoundBody', { defaultValue: 'The link may be old, or the advisor is no longer listed.' })}
+          action={
+            <Button variant="outline" onClick={() => navigate('/advisors')}>
+              {t('advisors.back', { defaultValue: 'All advisors' })}
+            </Button>
+          }
+        />
+      </Page>
     );
   }
 
@@ -179,7 +192,7 @@ export function AdvisorBookingPage() {
       />
 
       <Card padding="lg">
-        <h3 className="text-sm font-medium text-gold tracking-wide mb-3">
+        <h3 className="text-ui font-medium text-mystic-200 mb-3">
           {t('advisorBooking.durationLabel', { defaultValue: 'Session length' })}
         </h3>
         <div className="flex gap-2">
@@ -193,31 +206,31 @@ export function AdvisorBookingPage() {
             />
           ))}
         </div>
-        <p className="text-meta text-mystic-500 mt-3 flex items-center gap-1.5">
-          <Moon className="w-3 h-3 text-gold" />
+        <p className="text-meta text-mystic-500 mt-3 flex items-center gap-1.5 tabular-nums">
+          <Moon className="w-3 h-3 text-gold" aria-hidden />
           {t('advisorBooking.costPreview', {
             defaultValue: '{{n}} Moonstones',
             n: cost,
           })}
           {balance !== null && (
-            <span className="text-mystic-600 ml-1">
-              (balance: {balance})
+            <span className="text-mystic-500 ml-1">
+              {t('advisorBooking.balanceNote', { defaultValue: '· you have {{n}}', n: balance })}
             </span>
           )}
         </p>
       </Card>
 
       <Card padding="lg">
-        <h3 className="text-sm font-medium text-gold tracking-wide mb-3 flex items-center gap-1.5">
-          <Calendar className="w-4 h-4" />
+        <h3 className="text-ui font-medium text-mystic-200 mb-3 flex items-center gap-1.5">
+          <Calendar className="w-4 h-4 text-gold" aria-hidden />
           {t('advisorBooking.pickSlot', { defaultValue: 'Pick a time (next 7 days)' })}
         </h3>
         {groupedSlots.length === 0 ? (
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-mystic-500">
+            <AlertCircle className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" aria-hidden />
+            <p className="text-ui text-mystic-400">
               {t('advisorBooking.noAvailability', {
-                defaultValue: 'This advisor has not published availability yet. Check back soon.',
+                defaultValue: 'This advisor hasn’t published any times yet.',
               })}
             </p>
           </div>

@@ -1,7 +1,9 @@
 import { Trophy, Flame, Star, BookOpen, Brain } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { getLocale } from '../../i18n/config';
 
 interface AchievementStatsProps {
+  /** profiles.xp — the one XP figure the app reports (R6 A8). */
   totalXP: number;
   streak: number;
   totalReadings: number;
@@ -9,6 +11,11 @@ interface AchievementStatsProps {
   quizzesCompleted: number;
 }
 
+/**
+ * Five equal tiles, one figure each, one-line labels. The figures are
+ * Inter with tabular numerals; the streak is a bare count (its label says
+ * "Streak") so no tile wraps to two lines at 390 (R6 A30).
+ */
 export function AchievementStats({
   totalXP,
   streak,
@@ -17,66 +24,64 @@ export function AchievementStats({
   quizzesCompleted,
 }: AchievementStatsProps) {
   const { t } = useT('app');
+  const fmt = new Intl.NumberFormat(getLocale());
   const stats = [
     {
       icon: Star,
       label: t('achievements.stats.totalXP', { defaultValue: 'Total XP' }),
-      value: totalXP.toLocaleString(),
+      value: fmt.format(totalXP),
       color: 'text-gold',
       bgColor: 'bg-gold/10',
     },
     {
       icon: Flame,
       label: t('achievements.stats.streak', { defaultValue: 'Streak' }),
-      value: t('achievements.stats.streakDays', { count: streak, defaultValue: `${streak} days` }),
+      value: fmt.format(streak),
       color: 'text-coral',
       bgColor: 'bg-coral/10',
     },
     {
       icon: Trophy,
       label: t('achievements.stats.readings', { defaultValue: 'Readings' }),
-      value: totalReadings.toString(),
+      value: fmt.format(totalReadings),
       color: 'text-cosmic-blue-ink',
       bgColor: 'bg-cosmic-blue/10',
     },
     {
       icon: BookOpen,
       label: t('achievements.stats.journal', { defaultValue: 'Journal' }),
-      value: totalJournalEntries.toString(),
+      value: fmt.format(totalJournalEntries),
       color: 'text-teal',
       bgColor: 'bg-teal/10',
     },
     {
       icon: Brain,
       label: t('achievements.stats.quizzes', { defaultValue: 'Quizzes' }),
-      value: quizzesCompleted.toString(),
+      value: fmt.format(quizzesCompleted),
       color: 'text-cosmic-violet-ink',
       bgColor: 'bg-cosmic-violet/10',
     },
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <dl className="grid grid-cols-5 gap-2">
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
           <div
             key={stat.label}
-            className={`
-              flex flex-col items-center gap-1 p-2 rounded-control
-              ${stat.bgColor} border border-white/5
-            `}
+            className={`min-w-0 flex flex-col items-center gap-1 px-1 py-2.5 rounded-control ${stat.bgColor}`}
           >
-            <Icon className={`w-4 h-4 ${stat.color}`} />
-            <span className="text-meta font-semibold text-white">
+            <Icon className={`w-4 h-4 ${stat.color}`} aria-hidden />
+            <dd className="text-ui font-semibold tabular-nums text-mystic-100 leading-tight">
               {stat.value}
-            </span>
-            <span className="text-caption text-mystic-500">
+            </dd>
+            <dt className="text-caption text-mystic-500 whitespace-nowrap truncate max-w-full leading-tight">
               {stat.label}
-            </span>
+            </dt>
           </div>
         );
       })}
-    </div>
+    </dl>
   );
 }

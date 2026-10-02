@@ -2,7 +2,6 @@
   "language": {
     "title": "Choose your language",
     "subtitle": "You can change this later in Settings.",
-    "saveCta": "Save my language",
     "cta": "Continue with this language"
   },
   "welcome": {
@@ -33,15 +32,6 @@
     "userExists": "Try signing in instead.",
     "profileSaveFailed": "Your account was created, but your profile didn’t save — check your connection and sign in to continue.",
     "accountCreated": "Account created. Let’s personalize your experience."
-  },
-  "signIn": {
-    "heading": "Welcome back",
-    "subheading": "Pick up where you left off",
-    "googleCta": "Continue with Google",
-    "divider": "or sign in with email",
-    "submit": "Sign in",
-    "forgotPassword": "Forgot password?",
-    "switchToSignUp": "Don’t have an account? Sign up"
   },
   "oauth": {
     "welcome": "Welcome, {{name}}.",

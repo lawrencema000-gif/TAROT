@@ -118,7 +118,16 @@ export function PersonForm({ existing, onSaved, onCancel }: Props) {
 
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-gold"><MapPin className="w-3.5 h-3.5" aria-hidden /> <EyebrowLabel align="left">{t('people.form.birthPlace', { defaultValue: 'Birth place (optional)' })}</EyebrowLabel></label>
-        {place && <p className="text-sm text-gold mb-2">{place.name}</p>}
+        {place && (
+          <div className="mb-2">
+            <p className="text-ui text-gold">{place.name}</p>
+            {/* The picker resolves to the nearest city in the curated list,
+                not the exact street (R5 M-6): say so, without blocking. */}
+            <p className="text-meta text-mystic-400 mt-0.5">
+              {t('people.form.approxLocation', { defaultValue: 'Using the nearest listed city — an approximate location.' })}
+            </p>
+          </div>
+        )}
         <CelestialCitySearch onPick={handlePickCity} />
       </div>
 

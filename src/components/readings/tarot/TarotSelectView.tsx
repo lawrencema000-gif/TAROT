@@ -58,7 +58,7 @@ export function TarotSelectView({
     <div className="flex flex-col space-y-5">
       <button
         onClick={onBack}
-        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors self-start"
+        className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px] -ml-1 pr-2 self-start"
       >
         <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}

@@ -27,14 +27,15 @@ export function DailyMansionCard() {
   return (
     <Card padding="md" interactive role="link" tabIndex={0} onClick={() => navigate('/mansions')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/mansions'); } }}>
       <div className="flex items-center gap-4">
+        {/* The character is the tile (R5 m-14); the caption reads in the UI's language. */}
         <span className="w-12 h-12 rounded-control bg-gold/10 text-gold font-display text-title flex items-center justify-center shrink-0" aria-hidden>
           {mansion.cn}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 min-w-0">
             <EyebrowLabel>{t('home.todaysMansion', { defaultValue: 'Today’s mansion' })}</EyebrowLabel>
-            <span className="text-caption text-mystic-500">
-              {mansion.cn}{PLANET7_INFO[mansion.planet].cn}{mansion.animalCn}
+            <span className="text-caption text-mystic-500 truncate">
+              {mansion.pinyin} · {PLANET7_INFO[mansion.planet].en}
             </span>
           </div>
           <div className="text-ui text-mystic-100 mt-0.5">{meaning?.title}</div>

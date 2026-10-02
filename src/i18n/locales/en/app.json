@@ -3,8 +3,7 @@
     "greeting": {
       "morning": "Good morning",
       "afternoon": "Good afternoon",
-      "evening": "Good evening",
-      "night": "Good evening"
+      "evening": "Good evening"
     },
     "subtitle": "Three parts: your horoscope, one card, one question.",
     "level": "Level {{n}}",
@@ -22,9 +21,6 @@
     "loveTreeSub": "90 seconds, 12 questions → your attachment style as a living tree.",
     "streak": "Day {{n}} of the streak.",
     "savedToday": "Saved today",
-    "savedHighlights": "Saved Highlights",
-    "morningRitual": "Morning ritual",
-    "eveningRitual": "Evening ritual",
     "savedToHighlights": "Saved to highlights",
     "copiedToClipboard": "Copied to clipboard",
     "dayStreakLabel": "day streak",
@@ -79,7 +75,6 @@
     "resetPassword": "Reset password",
     "enterEmailForReset": "Enter your email to receive a password reset link",
     "enterEmail": "Please enter your email address.",
-    "resetSent": "Reset link sent. Check your inbox.",
     "resetFailed": "Couldn’t send the reset link — check the address and try again.",
     "sendResetLink": "Send reset link",
     "forgotPassword": "Forgot password?",
@@ -96,18 +91,13 @@
     "resetSuccessRecoveryHint": "Signing you out — please sign in again with your new password.",
     "resetLinkExpiredHint": "Reset links are one-shot. If yours expired, request another from the sign-in page.",
     "createAccount": "Create account",
-    "signUpLink": "Sign up",
-    "emailNotConfirmed": "Please verify your email before signing in.",
     "verifySentTo": "We sent a verification link to {{email}}. Please check your inbox.",
     "checkSpam": "Check your spam folder if you don’t see it.",
     "resetSentTo": "We’ve sent a reset link to {{email}}",
     "resetDidntReceive": "Didn’t receive the email? Check your spam folder or try again.",
     "tryAgain": "Try again",
     "orDivider": "or",
-    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy.",
-    "bootstrap": {
-      "signInAgain": "Sign in again"
-    }
+    "termsNotice": "By continuing, you agree to our Terms of Service and Privacy Policy."
   },
   "cardMeaning": {
     "yesNo": {
@@ -147,7 +137,6 @@
     "needBirthDate": {
       "title": "We need your birth date first",
       "body": "Your celestial map is drawn from your birth chart. Add your birth date (and time, if you know it) on the Profile page and your map will be ready.",
-      "cta": "Go to profile",
       "secondary": "Edit full profile instead"
     },
     "previewLock": {
@@ -300,11 +289,6 @@
       "dice": "Dice",
       "celestial": "Celestial Map"
     },
-    "dailyRemaining": "{{used}} / {{limit}} free readings today",
-    "upgradeForUnlimited": "Upgrade for unlimited",
-    "limitReached": "Daily limit reached",
-    "limitReachedMsg": "You’ve used all your free readings today. Upgrade for unlimited or come back tomorrow.",
-    "resetsAt": "Resets in {{hours}}h {{minutes}}m",
     "categories": {
       "daily": "Daily",
       "love": "Love",
@@ -313,16 +297,7 @@
       "shadow": "Shadow",
       "celtic": "Celtic Cross"
     },
-    "focusArea": "Focus area",
-    "focusPrompt": "What’s on your mind?",
-    "draw": "Draw cards",
-    "drawAgain": "Draw again",
-    "saveReading": "Save reading",
-    "shareReading": "Share",
-    "readingSaved": "Reading saved",
     "interpretation": "Interpretation",
-    "premiumInterpretation": "Premium insight",
-    "tryPremium": "Try Premium",
     "cards": {
       "past": "Past",
       "present": "Present",
@@ -462,13 +437,8 @@
       "future": "Future",
       "generic": "Position {{index}}"
     },
-    "focusInterpretation": {
-      "loveRelationships": "Love & Relationships",
-      "careerFinance": "Career & Finance"
-    },
     "paywall": {
-      "unlimited": "Unlimited Readings",
-      "aiInterpretation": "AI Interpretation"
+      "unlimited": "Unlimited Readings"
     },
     "spreadPositions": {
       "single": [
@@ -523,17 +493,7 @@
     "newEntry": "New entry",
     "entryPlaceholder": "What’s on your heart today?",
     "titlePlaceholder": "Title (optional)",
-    "moodLabel": "How are you feeling?",
-    "tagsLabel": "Tags",
-    "tagsPlaceholder": "Add a tag (press enter)",
-    "addPrompt": "Add a prompt",
-    "linkToReading": "Link to a reading",
-    "linkToCard": "Link to a card",
     "saveEntry": "Save this entry",
-    "saved": "Entry saved.",
-    "deleted": "Entry deleted.",
-    "noEntries": "No entries yet",
-    "noEntriesSub": "Start writing to remember what moved you today.",
     "wordCount": "{{n}} words",
     "moods": {
       "joyful": "Joyful",
@@ -547,17 +507,8 @@
       "confused": "Confused",
       "hopeful": "Hopeful"
     },
-    "prompts": {
-      "pick": "Pick a prompt",
-      "skip": "Skip prompt",
-      "picker": "Reflection prompts"
-    },
     "lock": {
-      "locked": "Locked",
-      "unlock": "Unlock",
-      "set": "Set a passcode",
-      "enter": "Enter your passcode",
-      "wrong": "Wrong passcode"
+      "locked": "Locked"
     },
     "tabs": {
       "entries": "Entries",
@@ -614,24 +565,8 @@
   },
   "quizzes": {
     "title": "Quizzes",
-    "questions": "Questions",
-    "takes": "takes",
-    "minutes": "min",
-    "startQuiz": "Start quiz",
-    "continueQuiz": "Continue",
     "retake": "Retake",
     "results": "Results",
-    "yourType": "Your type",
-    "yourResult": "Your result",
-    "viewResult": "View result",
-    "completed": "Completed",
-    "inProgress": "In progress",
-    "notStarted": "Not started",
-    "question": "Question {{n}} of {{total}}",
-    "next": "Next",
-    "previous": "Previous",
-    "submit": "See results",
-    "answerPlaceholder": "Choose your answer",
     "likert": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -1066,14 +1001,6 @@
           "Warning signs you’re out of balance"
         ]
       }
-    },
-    "types": {
-      "mbti": "MBTI",
-      "enneagram": "Enneagram",
-      "bigfive": "Big Five",
-      "loveLanguage": "Love Language",
-      "attachment": "Attachment Style",
-      "mood": "Mood Check"
     },
     "resultSections": {
       "strengths": "Strengths",
@@ -1580,30 +1507,13 @@
     "compareLocked": "Compare with a friend"
   },
   "horoscope": {
-    "title": "Horoscope",
-    "today": "Today",
     "energyScore": "Energy score",
-    "sections": {
-      "overview": "Overview",
-      "love": "Love",
-      "career": "Career",
-      "wellness": "Wellness",
-      "affirmation": "Daily affirmation",
-      "luckyNumbers": "Lucky numbers",
-      "luckyColors": "Lucky colors"
-    },
-    "birthChart": "Birth Chart",
-    "compatibility": "Compatibility",
-    "transits": "Transits",
-    "completeBirthChart": "Complete your birth profile to unlock",
-    "enterBirthInfo": "Enter birth info",
     "tabs": {
       "today": "Today",
       "chart": "Chart",
       "forecast": "Forecast",
       "explore": "Explore"
     },
-    "unlockPremium": "Unlock Premium Access",
     "general": "General",
     "love": "Love",
     "work": "Work",
@@ -1768,7 +1678,6 @@
     "shareLabel": "Share horoscope"
   },
   "profile": {
-    "title": "Profile",
     "birthProfile": "Birth profile",
     "birthPlaceOptional": "Birth place (optional)",
     "yourGoals": "Your goals",
@@ -1794,14 +1703,7 @@
     "compatInviteSub": "Share a link to get a joint reading",
     "premiumMember": "Premium is on",
     "premiumSub": "Every spread, chart and reading is open to you",
-    "manageSubscription": "Manage subscription",
     "editProfile": "Edit profile",
-    "signOut": "Sign out",
-    "signOutConfirm": "Sign out?",
-    "signOutConfirmMsg": "You can sign back in any time.",
-    "deleteAccount": "Delete account",
-    "deleteAccountConfirm": "Delete your account?",
-    "deleteAccountConfirmMsg": "This permanently removes your profile, readings, and journal entries.",
     "goals": {
       "love": "Love",
       "career": "Career",
@@ -1846,24 +1748,18 @@
       "myProfile": "My cosmic profile"
     },
     "yourProgress": "Your progress",
-    "saveProfile": "Save my profile",
     "toasts": {
       "saveFailed": "Couldn’t save your profile — check your connection and try again."
     },
     "untitled": "Your profile"
   },
   "achievements": {
-    "title": "Trophies",
     "noInCategory": "No achievements in this category yet.",
     "errorLoading": "Error loading achievements:",
-    "novicesSeeker": "Novice Seeker",
     "achievementsUnlocked": "Achievements unlocked",
     "xpEarned": "{{n}} XP earned",
     "recentUnlocks": "Recent unlocks",
     "all": "All",
-    "unlocked": "Unlocked",
-    "locked": "Locked",
-    "progress": "{{current}} / {{target}}",
     "categories": {
       "dedication": "Dedication",
       "exploration": "Exploration",
@@ -1899,7 +1795,6 @@
     "comeBackSoon": "Check back soon for tarot insights and spiritual guidance.",
     "articleNotFound": "Article not found.",
     "readingTime": "{{n}} min read",
-    "by": "By {{author}}",
     "prevPage": "Previous page",
     "nextPage": "Next page"
   },
@@ -2011,15 +1906,6 @@
     "askOracleCta": "Read this card for me"
   },
   "admin": {
-    "title": "Admin",
-    "subtitle": "Manage site content and configuration",
-    "unauthorized": "You don’t have access to the admin panel.",
-    "tabs": {
-      "blog": "Blog Posts",
-      "ads": "Ads",
-      "users": "Users",
-      "content": "Content"
-    },
     "verifications": {
       "toasts": {
         "loadFailed": "Couldn’t load the verification queue — tap Refresh to try again.",
@@ -2043,10 +1929,6 @@
     }
   },
   "premium": {
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "lifetime": "Lifetime",
-    "badge": "Premium",
     "trialReminder": {
       "badge": "{{days}} days free",
       "title": "Try Premium free for {{days}} days",
@@ -2144,7 +2026,6 @@
         "oneTime": "one-time"
       },
       "badges": {
-        "bestValue": "Best value",
         "foreverAccess": "Pay once",
         "save": "Save {{percent}}%"
       },
@@ -2364,8 +2245,6 @@
       "preferences": "Preferences",
       "notifications": "Notifications",
       "privacy": "Privacy",
-      "data": "Data",
-      "about": "About",
       "support": "Support"
     },
     "menu": {
@@ -2391,9 +2270,6 @@
       "themeChanged": "Theme changed to {{name}}",
       "updateFailed": "Couldn’t change that setting — check your connection and try again."
     },
-    "language": "Language",
-    "languageSub": "Choose your preferred language",
-    "theme": "Theme",
     "themes": {
       "dark": {
         "name": "Dark",
@@ -2408,30 +2284,8 @@
         "desc": "Starry night theme"
       }
     },
-    "fontSize": "Font size",
-    "fontSizes": {
-      "small": "Small",
-      "medium": "Medium",
-      "large": "Large"
-    },
-    "notificationsEnabled": "Daily notifications",
-    "notificationsSub": "Remind me for my daily ritual",
-    "notificationTime": "Notification time",
-    "tonePreference": "Tone",
-    "tones": {
-      "gentle": "Gentle",
-      "direct": "Direct",
-      "playful": "Playful"
-    },
-    "clearCache": "Clear cache",
-    "cacheCleared": "Cache cleared",
-    "exportData": "Export my data",
-    "privacyPolicy": "Privacy policy",
-    "termsOfService": "Terms of service",
     "contactSupport": "Contact support",
     "version": "Version {{v}}",
-    "about": "About Arcana",
-    "aboutText": "Arcana is your daily companion for tarot, astrology, journaling, and self-discovery.",
     "emailNotChangeable": "Email cannot be changed",
     "typeMinChars": "Type at least 2 characters to search",
     "saveChanges": "Save changes",
@@ -2486,14 +2340,11 @@
   },
   "search": {
     "placeholder": "Search cards, journal entries, horoscopes…",
-    "noResults": "No matches",
-    "noResultsSub": "Try different keywords",
     "recent": {
       "towerMeaning": "The Tower meaning",
       "loveCompatibilityAries": "Love compatibility Aries",
       "threeCardSpread": "Three card spread"
     },
-    "suggestions": "Suggestions",
     "recentSearches": "Recent searches",
     "quickLinks": "Quick links",
     "quickLink": {
@@ -2501,18 +2352,11 @@
       "journalPrompts": "Journal prompts",
       "personalityQuiz": "Personality quiz"
     },
-    "resultsFor": "Search results for \"{{query}}\" will appear here",
-    "sections": {
-      "cards": "Cards",
-      "journal": "Journal",
-      "horoscope": "Horoscope",
-      "articles": "Articles"
-    }
+    "resultsFor": "Search results for \"{{query}}\" will appear here"
   },
   "saved": {
     "title": "Saved",
     "empty": "No saved items yet",
-    "emptySub": "Tap the star on any reading, card, or insight to save it.",
     "emptySubAlt": "Star readings, journal entries, and quiz results to save them here",
     "filters": {
       "all": "All",
@@ -2884,32 +2728,14 @@
     }
   },
   "pageTitles": {
-    "home": {
-      "title": "Today"
-    },
-    "readings": {
-      "title": "Readings"
-    },
-    "quizzes": {
-      "title": "Quizzes"
-    },
     "horoscope": {
       "title": "Horoscope"
     },
     "achievements": {
       "title": "Achievements"
     },
-    "journal": {
-      "title": "Journal"
-    },
     "profile": {
       "title": "Profile"
-    },
-    "blog": {
-      "title": "News"
-    },
-    "admin": {
-      "title": "Admin"
     }
   },
   "dailyInsights": {
@@ -3259,7 +3085,6 @@
     "networkMessage": "We could not reach the server. Check your internet connection, then try again.",
     "notFoundTitle": "Page not found",
     "notFoundMessage": "This link does not go anywhere. The page may have been moved or removed.",
-    "retryContent": "Reload this content",
     "contentTitle": "Couldn’t load this {{type}}",
     "contentMessage": "It didn’t load this time. Reload to try again.",
     "contentRetry": "Reload {{type}}"
@@ -4079,10 +3904,6 @@
     "another": "Check another",
     "compatibilityLabel": "Compatibility",
     "mbtiLabel": "MBTI fit",
-    "astroLabel": "Astrology fit",
-    "strengthsLabel": "Strengths",
-    "growthLabel": "Growth edges",
-    "adviceLabel": "Advice",
     "yourBirthTime": "Your birth time (sharpens the reading — includes the Moon)",
     "partnerBirthTime": "Partner’s birth time (optional)",
     "computing": "Computing the aspects…",
@@ -4243,7 +4064,6 @@
     "mainContent": "Main content",
     "loading": "Loading…",
     "cancel": "Cancel",
-    "close": "Close",
     "back": "Back"
   },
   "moonstones": {
@@ -4253,7 +4073,6 @@
     "alreadyClaimed": "Come back tomorrow",
     "claimed": "+{{n}} Moonstones · Day {{d}} streak",
     "claimFailed": "Couldn’t claim today’s reward — check your connection and try again.",
-    "topUp": "Top up",
     "premiumLabel": "Premium · all readings unlocked",
     "earn": "Earn Moonstones",
     "costLine": "Each reading uses <gold>{{n}} Moonstones</gold>",
@@ -4303,23 +4122,6 @@
     "redraw": "Draw again",
     "retry": "Ask the Oracle again",
     "close": "Close the Oracle"
-  },
-  "moonstoneTopUp": {
-    "title": "Top up Moonstones",
-    "subtitle": "Unlock readings, tip live hosts, and book advisor sessions.",
-    "popular": "Popular",
-    "packLabel": {
-      "starter": "Starter",
-      "regular": "Regular",
-      "generous": "Generous",
-      "devotee": "Devotee"
-    },
-    "success": "{{n}} Moonstones on the way — takes a few seconds to land.",
-    "packNotFound": "That pack isn’t in the store right now — pick another or try again later.",
-    "stripeFailed": "Couldn’t open checkout — check your connection and try again.",
-    "generic": "The purchase didn’t complete. Try again in a moment.",
-    "securePayment": "Secure checkout powered by Stripe. One-time purchase — no subscription.",
-    "playStorePurchase": "Charged through Google Play. Manage purchases in your Google account."
   },
   "companion": {
     "title": "Companion",
@@ -4440,11 +4242,6 @@
       "present": "Present",
       "future": "Future"
     },
-    "reversedLabel": "Reversed",
-    "meaningLabel": "Meaning",
-    "journalPrompt": "Journal prompt",
-    "shareButton": "Share this cast",
-    "elementLabel": "Element",
     "questionLabel": "Your question (optional)",
     "questionPlaceholder": "What do I most need to understand right now?",
     "castLabel": "Three-rune cast",
@@ -4545,8 +4342,7 @@
     "earnHint": "Earn Moonstones via daily check-in, watching ads, or inviting friends.",
     "earnNow": "Watch an ad, earn {{n}} Moonstones",
     "eventCount": "{{n}} transits",
-    "retry": "Reload the forecast",
-    "stripeFailed": "Couldn’t open checkout — check your connection and try again."
+    "retry": "Reload the forecast"
   },
   "natalReport": {
     "title": "Full Natal Chart",
@@ -4571,9 +4367,6 @@
     "elementsHeading": "Elemental & modal balance",
     "aspectsHeading": "Aspects — the wiring between planets",
     "wheelHeading": "Your chart wheel",
-    "variantNatal": "Natal",
-    "variantTransits": "Transits today",
-    "loadingTransits": "Computing current positions…",
     "variant": {
       "natal": "Natal",
       "transits": "Transits today",
@@ -4594,8 +4387,7 @@
     "crossAspects": "Top cross-aspects",
     "disclaimer": "Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.",
     "upgradeToPremium": "See what Premium includes",
-    "earnNow": "Watch an ad, earn {{n}} Moonstones",
-    "stripeFailed": "Couldn’t open checkout — check your connection and try again."
+    "earnNow": "Watch an ad, earn {{n}} Moonstones"
   },
   "careerReport": {
     "title": "Career Archetype",
@@ -4626,8 +4418,7 @@
     "balanceShort": "Balance: {{n}}",
     "earnHint": "Earn Moonstones via daily check-in, watching ads, or inviting friends.",
     "earnNow": "Watch an ad, earn {{n}} Moonstones",
-    "fullReport": "The full report",
-    "stripeFailed": "Couldn’t open checkout — check your connection and try again."
+    "fullReport": "The full report"
   },
   "compatInvite": {
     "createTitle": "Invite someone",
@@ -5345,7 +5136,6 @@
     }
   },
   "spreadBuilder": {
-    "signIn": "Sign in to build a spread",
     "signInPrompt": "Custom spreads are saved to your account.",
     "signInCta": "Sign in to build a spread",
     "toasts": {

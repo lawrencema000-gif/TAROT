@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Download, AlertTriangle } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Chip, Page, PageHeader, Section, Disclosure, Disclaimer } from '../components/ui';
 import {
   INTENTIONS, scoreWindow, bestDays, daysToAvoid, toICS,
   type Intention, type DayScore,
@@ -74,14 +74,14 @@ export function AuspiciousDatesPage() {
         open={open}
         onOpenChange={(next) => setExpanded(next ? d.date : null)}
         icon={
-          <span className={`block text-2xl ${tone === 'good' ? 'text-gold' : 'text-coral/70'}`} style={{ fontFamily: 'serif' }}>
+          <span className={`block text-title ${tone === 'good' ? 'text-gold' : 'text-coral'}`} style={{ fontFamily: 'serif' }} lang="zh-Hant">
             {d.mansion.cn}
           </span>
         }
         label={
           <>
-            <span className="text-mystic-100 text-sm">{fmt(d.date)}</span>
-            <span className="text-mystic-600 text-meta"> · {MANSION_MEANINGS[d.mansion.key]?.title}</span>
+            <span className="text-mystic-100 text-ui">{fmt(d.date)}</span>
+            <span className="text-mystic-500 text-meta"> · {MANSION_MEANINGS[d.mansion.key]?.title}</span>
           </>
         }
         description={<span className="block truncate text-mystic-500">{d.reasons[0]?.text}</span>}
@@ -91,7 +91,7 @@ export function AuspiciousDatesPage() {
         <ul className="space-y-1">
           {d.reasons.map((r, i) => (
             <li key={i} className="text-meta">
-              <span className={r.weight > 0 ? 'text-teal/80' : 'text-coral/80'}>
+              <span className={`tabular-nums ${r.weight > 0 ? 'text-teal' : 'text-coral'}`}>
                 {r.weight > 0 ? '+' : ''}{r.weight}
               </span>{' '}
               <span className="text-mystic-300">{r.text}</span>
@@ -105,14 +105,23 @@ export function AuspiciousDatesPage() {
   return (
     <Page spacing="md">
       <PageHeader
-        eyebrow="擇日"
+        eyebrow={t('dates.eyebrow', { defaultValue: 'Chinese date selection' })}
         title={t('dates.title', { defaultValue: 'Pick a good day' })}
-        subtitle={t('dates.intro', {
-          defaultValue:
-            'Chinese date selection asks a different question from a birth chart: not what you are like, but when to do a particular thing. Each day is read from the lunar mansion that governs it — and, once we know your birth date, from how the day sits against your own pillars.',
-        })}
+        subtitle={
+          <>
+            <span className="block text-meta text-mystic-400 mb-1">
+              <span lang="zh-Hant">擇日</span>
+              {' · '}
+              {t('dates.lede', { defaultValue: 'Zeri — choosing the day for a thing' })}
+            </span>
+            {t('dates.intro', {
+              defaultValue:
+                'Chinese date selection asks a different question from a birth chart: not what you are like, but when to do a particular thing. Each day is read from the lunar mansion that governs it — and, once we know your birth date, from how the day sits against your own pillars.',
+            })}
+          </>
+        }
         onBack={() => navigate(-1)}
-        backLabel={t('common.back', { defaultValue: 'Back' }) as string}
+        backLabel={t('common:actions.back', { defaultValue: 'Back' }) as string}
         divider
       />
 
@@ -129,7 +138,7 @@ export function AuspiciousDatesPage() {
               selected={intention === k}
               onSelect={() => { setIntention(k); setExpanded(null); }}
             >
-              <span style={{ fontFamily: 'serif' }}>{INTENTIONS[k].cn}</span> {INTENTIONS[k].label}
+              <span style={{ fontFamily: 'serif' }} lang="zh-Hant">{INTENTIONS[k].cn}</span> {INTENTIONS[k].label}
             </Chip>
           ))}
         </div>
@@ -138,7 +147,7 @@ export function AuspiciousDatesPage() {
 
       {!birth && (
         <Card className="p-4">
-          <p className="text-sm text-mystic-300">
+          <p className="text-ui text-mystic-300">
             {t('dates.noBirth', {
               defaultValue:
                 'These are the almanac readings, which are the same for everyone. Add your birth date in your profile and each day is also checked against your own pillars — a clash there is the most common reason a traditional almanac says to pick another date.',
@@ -170,12 +179,13 @@ export function AuspiciousDatesPage() {
         </Section>
       )}
 
-      <p className="text-center text-caption text-mystic-600 max-w-sm mx-auto">
+      <p className="text-center text-caption text-mystic-500 max-w-sm mx-auto">
         {t('dates.disclaimer', {
           defaultValue:
             'A traditional custom, offered as one. It says nothing about health, money or law — and the score is a plain tally you can check line by line, not an oracle.',
         })}
       </p>
+      <Disclaimer kind="general" />
     </Page>
   );
 }

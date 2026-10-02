@@ -1,13 +1,21 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sprout, Share2, ArrowLeft } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Progress, ResultLayout, toast, ReadingProse } from '../components/ui';
+import { Heart, Sprout, Share2, ArrowLeft, RotateCcw } from 'lucide-react';
+import { Card, Button, Page, PageHeader, Progress, ResultLayout, toast, ReadingProse, AffirmationPanel, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
-import { LOVE_TREE_QUIZ, ATTACHMENT_INFO, scoreLoveTree } from '../data/loveTree';
+import {
+  LOVE_TREE_QUIZ,
+  ATTACHMENT_INFO,
+  ATTACHMENT_STYLE_OF,
+  attachmentFromStyle,
+  scoreLoveTree,
+  type Attachment,
+} from '../data/loveTree';
 import { LoveTree } from '../components/ritual/LoveTree';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { useAuth } from '../context/AuthContext';
 import { quizResults as quizResultsDal } from '../dal';
+import { supabase } from '../lib/supabase';
 
 /**
  * Love Tree — a 12-question attachment-style reading rendered as a
@@ -16,6 +24,11 @@ import { quizResults as quizResultsDal } from '../dal';
  * Flow:
  *   intro → quiz (one item at a time, 5-point Likert) → result (tree
  *   + description + strengths/growth + affirmation + share).
+ *
+ * The result persists: the quadrant is written to profiles.attachment_style
+ * (the same column the attachment quiz writes, with the same labels), so a
+ * return visit opens on "Your tree" with a Retake, instead of the intro as
+ * if nothing had happened (R7).
  *
  * The tree is pure SVG + framer-motion, branches/trunk-lean/leaf
  * density derived from attachment type. Shareable result card hooks
@@ -35,13 +48,16 @@ const LIKERT: Array<{ value: number; label: string }> = [
 
 export function LoveTreePage() {
   const { t } = useT('app');
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [stage, setStage] = useState<Stage>('intro');
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   // Guards the one-time persist per completed run (React re-renders /
   // StrictMode double-invoke would otherwise double-insert).
   const savedRef = useRef(false);
+  // Set when the user chooses to retake: the saved tree stays on the
+  // profile until a new run replaces it, but the page shows the quiz.
+  const [retaking, setRetaking] = useState(false);
 
   const totalItems = LOVE_TREE_QUIZ.length;
   const progress = Math.round(((index) / totalItems) * 100);
@@ -51,11 +67,34 @@ export function LoveTreePage() {
     return scoreLoveTree(answers);
   }, [stage, answers]);
 
-  // Persist the result to quiz_results on first entry to the result stage,
-  // mirroring how every other quiz persists (QuizzesPage). Uses a distinct
-  // quiz_type 'love-tree' — its 4-value scale ('fearful') differs from the
-  // regular attachment quiz ('fearful-avoidant'), so they must not share a
-  // type in history. Fire-and-forget; no-op when signed out.
+  // The quadrant already on the profile (from a previous run, or from the
+  // attachment quiz, which uses the same four labels). AuthContext does not
+  // map profiles.attachment_style into `profile` yet (request filed), so the
+  // column is read here as well; whichever source has it wins.
+  const [storedStyle, setStoredStyle] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    supabase
+      .from('profiles')
+      .select('attachment_style')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setStoredStyle((data as { attachment_style: string | null }).attachment_style);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+  const savedAttachment = useMemo<Attachment | null>(
+    () => attachmentFromStyle(profile?.attachmentStyle) ?? attachmentFromStyle(storedStyle),
+    [profile?.attachmentStyle, storedStyle],
+  );
+
+  // Persist the result on first entry to the result stage: a quiz_results
+  // row (quiz_type 'love-tree', mirroring every other quiz) and the quadrant
+  // on the profile. Fire-and-forget; no-op when signed out.
   useEffect(() => {
     if (stage !== 'result' || !result || !user || savedRef.current) return;
     savedRef.current = true;
@@ -67,7 +106,22 @@ export function LoveTreePage() {
       scores: result as unknown as Record<string, unknown>,
       label: ATTACHMENT_INFO[result.attachment].title,
     });
-  }, [stage, result, user]);
+    const style = ATTACHMENT_STYLE_OF[result.attachment];
+    void (async () => {
+      // updateProfile({ attachmentStyle }) is the canonical path, but
+      // AuthContext's writable-field map does not carry attachment_style yet
+      // (request filed with the orchestrator), so the column is written the
+      // way QuizzesPage writes it and the profile is re-read so the saved
+      // tree shows on the next visit.
+      const { error } = await supabase.from('profiles').update({ attachment_style: style }).eq('id', user.id);
+      if (error) {
+        console.warn('[LoveTree] could not persist attachment_style:', error.message);
+        return;
+      }
+      setStoredStyle(style);
+      await refreshProfile();
+    })();
+  }, [stage, result, user, refreshProfile]);
 
   const handleAnswer = (value: number) => {
     const item = LOVE_TREE_QUIZ[index];
@@ -92,15 +146,15 @@ export function LoveTreePage() {
   };
 
   const handleRestart = () => {
+    setRetaking(true);
     setStage('intro');
     setIndex(0);
     setAnswers({});
     savedRef.current = false;
   };
 
-  const handleShare = async () => {
-    if (!result) return;
-    const info = ATTACHMENT_INFO[result.attachment];
+  const shareAttachment = async (attachment: Attachment) => {
+    const info = ATTACHMENT_INFO[attachment];
     const shareText = t('loveTree.shareText', {
       defaultValue: 'My Arcana Love Tree: {{title}} — {{archetype}}. Find yours at arcana.app/love-tree',
       title: info.title,
@@ -113,7 +167,7 @@ export function LoveTreePage() {
         headline: info.title,
         body: info.archetype,
       },
-      `arcana-love-tree-${result.attachment}.png`,
+      `arcana-love-tree-${attachment}.png`,
       shareText,
     );
 
@@ -124,10 +178,23 @@ export function LoveTreePage() {
         await navigator.clipboard?.writeText(shareText);
         toast(t('common:actions.copied', { defaultValue: 'Copied' }), 'success');
       } catch {
-        toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
+        toast(t('common:actions.shareFailed', { defaultValue: 'Couldn’t share. Try again.' }), 'error');
       }
     }
   };
+
+  // ── Saved tree (a return visit) ────────────────────────────────
+  if (stage === 'intro' && savedAttachment && !retaking) {
+    return (
+      <AttachmentResult
+        attachment={savedAttachment}
+        eyebrow={t('loveTree.yourTree', { defaultValue: 'Your tree' })}
+        onRetake={handleRestart}
+        onShare={() => shareAttachment(savedAttachment)}
+        t={t}
+      />
+    );
+  }
 
   // ── Intro stage ─────────────────────────────────────────────────
   if (stage === 'intro') {
@@ -147,23 +214,28 @@ export function LoveTreePage() {
           <p className="font-display-eyebrow mb-2">
             {t('loveTree.howItWorksLabel', { defaultValue: 'How it works' })}
           </p>
-          <ul className="space-y-2 text-ui text-mystic-300">
-            <li>• {t('loveTree.how1', { defaultValue: 'Rate 12 short statements from strongly disagree to strongly agree.' })}</li>
-            <li>• {t('loveTree.how2', { defaultValue: 'We compute your anxiety + avoidance scores on the classical attachment grid.' })}</li>
-            <li>• {t('loveTree.how3', { defaultValue: 'You land in one of four quadrants — rendered as a distinct, animated tree.' })}</li>
+          <ul className="space-y-2 text-ui text-mystic-300 list-disc pl-5">
+            <li>{t('loveTree.how1', { defaultValue: 'Rate 12 short statements from strongly disagree to strongly agree.' })}</li>
+            <li>{t('loveTree.how2', { defaultValue: 'We compute your anxiety + avoidance scores on the classical attachment grid.' })}</li>
+            <li>{t('loveTree.how3', { defaultValue: 'You land in one of four quadrants — rendered as a distinct, animated tree.' })}</li>
           </ul>
         </Card>
 
         <Button variant="gold" size="lg" fullWidth onClick={() => setStage('quiz')}>
-          <Sprout className="w-4 h-4 mr-2" />
-          {t('loveTree.startCta', { defaultValue: 'Grow my tree' })}
+          <Sprout className="w-4 h-4" aria-hidden />
+          {retaking
+            ? t('loveTree.retakeCta', { defaultValue: 'Grow a new tree' })
+            : t('loveTree.startCta', { defaultValue: 'Grow my tree' })}
         </Button>
 
-        <p className="text-caption text-mystic-500 italic">
-          {t('loveTree.disclaimer', {
-            defaultValue: 'A tool for self-knowledge, not a clinical diagnosis. Attachment patterns can shift — this is a snapshot, not a verdict.',
-          })}
-        </p>
+        {retaking && savedAttachment && (
+          <Button variant="ghost" fullWidth onClick={() => setRetaking(false)}>
+            <ArrowLeft className="w-4 h-4" aria-hidden />
+            {t('loveTree.backToSaved', { defaultValue: 'Back to my tree' })}
+          </Button>
+        )}
+
+        <Disclaimer kind="quiz" />
       </Page>
     );
   }
@@ -174,11 +246,11 @@ export function LoveTreePage() {
     return (
       <Page spacing="md">
         <div className="flex items-center justify-between">
-          <button onClick={handleBack} className="flex items-center gap-1.5 min-h-[44px] text-mystic-400 hover:text-mystic-200 text-sm">
-            <ArrowLeft className="w-4 h-4" />
+          <button type="button" onClick={handleBack} className="flex items-center gap-1.5 min-h-[44px] text-mystic-400 hover:text-mystic-200 text-ui">
+            <ArrowLeft className="w-4 h-4" aria-hidden />
             {t('loveTree.back', { defaultValue: 'Back' })}
           </button>
-          <span className="text-meta text-mystic-400">
+          <span className="text-meta text-mystic-400 tabular-nums">
             {t('loveTree.progress', { defaultValue: '{{i}} of {{n}}', i: index + 1, n: totalItems })}
           </span>
         </div>
@@ -202,23 +274,24 @@ export function LoveTreePage() {
               <p className="font-display-eyebrow mb-2">
                 {t(`loveTree.dimensions.${item.dimension}`, { defaultValue: item.dimension })}
               </p>
-              <p className="font-display text-lg text-mystic-100 leading-relaxed">
+              <p className="heading-display-md text-mystic-100 text-balance">
                 {t(`loveTree.items.${item.id}`, { defaultValue: item.prompt })}
               </p>
             </Card>
 
-            <div className="space-y-2">
+            <div className="space-y-2" role="group" aria-label={t(`loveTree.items.${item.id}`, { defaultValue: item.prompt }) as string}>
               {LIKERT.map((opt) => (
                 <button
                   key={opt.value}
+                  type="button"
                   onClick={() => handleAnswer(opt.value)}
-                  className="w-full text-left p-3 rounded-control border border-mystic-700/40 bg-mystic-900/40 hover:bg-mystic-800/60 hover:border-gold/30 active:scale-[0.98] transition-all"
+                  className="w-full text-left p-3 min-h-[48px] rounded-control border border-mystic-700/40 bg-mystic-900/40 hover:bg-mystic-800/60 hover:border-gold/30 motion-safe:active:scale-[0.98] transition-[background-color,border-color,transform] duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-mystic-200">
+                    <span className="text-ui text-mystic-200">
                       {t(`loveTree.likert.${opt.value}`, { defaultValue: opt.label })}
                     </span>
-                    <span className="text-meta text-mystic-500">{opt.value}</span>
+                    <span className="text-meta text-mystic-500 tabular-nums">{opt.value}</span>
                   </div>
                 </button>
               ))}
@@ -231,80 +304,118 @@ export function LoveTreePage() {
 
   // ── Result stage ───────────────────────────────────────────────
   if (!result) return null;
-  const info = ATTACHMENT_INFO[result.attachment];
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.94 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <ResultLayout
-        onBack={handleRestart}
-        backLabel={t('loveTree.retake', { defaultValue: 'Retake' }) as string}
+      <AttachmentResult
+        attachment={result.attachment}
+        scores={{ anxiety: result.anxiety, avoidance: result.avoidance }}
         eyebrow={t('loveTree.yourStyle', { defaultValue: 'Your attachment style' })}
-        verdict={t(`loveTree.attachment.${result.attachment}.title`, { defaultValue: info.title })}
-        subtitle={
-          <span className="italic">
-            {t(`loveTree.attachment.${result.attachment}.archetype`, { defaultValue: info.archetype })}
-          </span>
-        }
-        summary={t(`loveTree.attachment.${result.attachment}.summary`, { defaultValue: info.summary }) as string}
-        actions={
-          <Button variant="gold" size="lg" fullWidth onClick={handleShare}>
-            <Share2 className="w-4 h-4 mr-2" />
-            {t('loveTree.share', { defaultValue: 'Share my tree' })}
-          </Button>
-        }
-        defaultDetailOpen
-      >
-        <Card padding="lg" className="text-center">
-          <LoveTree tree={info.tree} />
-          <div className="mt-3 flex justify-center gap-4 text-meta text-mystic-400">
-            <span>{t('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })}: {result.anxiety}</span>
-            <span>{t('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}: {result.avoidance}</span>
-          </div>
-        </Card>
-
-        <Card padding="lg">
-          <p className="font-display-eyebrow mb-2">
-            {t('loveTree.strengthsLabel', { defaultValue: 'Your natural strengths' })}
-          </p>
-          <ul className="reading-copy space-y-2">
-            {info.strengths.map((s, i) => (
-              <li key={i}>• {t(`loveTree.attachment.${result.attachment}.strengths.${i}`, { defaultValue: s })}</li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card padding="lg">
-          <p className="font-display-eyebrow mb-2">
-            {t('loveTree.growthLabel', { defaultValue: 'Where to grow' })}
-          </p>
-          <ul className="reading-copy space-y-2">
-            {info.growth.map((g, i) => (
-              <li key={i}>• {t(`loveTree.attachment.${result.attachment}.growth.${i}`, { defaultValue: g })}</li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card padding="lg" className="bg-gradient-to-br from-cosmic-rose/10 to-mystic-900 border-cosmic-rose/25">
-          <p className="font-display-eyebrow mb-2">
-            {t('loveTree.inLoveLabel', { defaultValue: 'In love' })}
-          </p>
-          <ReadingProse text={t(`loveTree.attachment.${result.attachment}.inLove`, { defaultValue: info.inLove }) as string} lede={false} />
-        </Card>
-
-        <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-          <p className="font-display-eyebrow mb-2">
-            {t('loveTree.affirmationLabel', { defaultValue: 'Your affirmation' })}
-          </p>
-          <p className="reading-quote my-0">
-            {t(`loveTree.attachment.${result.attachment}.affirmation`, { defaultValue: info.affirmation })}
-          </p>
-        </Card>
-      </ResultLayout>
+        onRetake={handleRestart}
+        onShare={() => shareAttachment(result.attachment)}
+        t={t}
+      />
     </motion.div>
+  );
+}
+
+/**
+ * The tree, read. Shared between a fresh result (with the two scores) and a
+ * saved one shown on return (the scores are not stored on the profile, so
+ * the line is omitted rather than invented).
+ */
+function AttachmentResult({
+  attachment,
+  scores,
+  eyebrow,
+  onRetake,
+  onShare,
+  t,
+}: {
+  attachment: Attachment;
+  scores?: { anxiety: number; avoidance: number };
+  eyebrow: string;
+  onRetake: () => void;
+  onShare: () => void;
+  t: (key: string, opts?: Record<string, unknown>) => unknown;
+}) {
+  const info = ATTACHMENT_INFO[attachment];
+  const tx = (key: string, opts?: Record<string, unknown>) => t(key, opts) as string;
+  return (
+    <ResultLayout
+      onBack={onRetake}
+      backLabel={tx('loveTree.retake', { defaultValue: 'Retake' })}
+      eyebrow={eyebrow}
+      verdict={tx(`loveTree.attachment.${attachment}.title`, { defaultValue: info.title })}
+      subtitle={
+        <span className="italic">
+          {tx(`loveTree.attachment.${attachment}.archetype`, { defaultValue: info.archetype })}
+        </span>
+      }
+      summary={tx(`loveTree.attachment.${attachment}.summary`, { defaultValue: info.summary })}
+      actions={
+        <>
+          <Button variant="outline" onClick={onRetake} className="flex-1">
+            <RotateCcw className="w-4 h-4" aria-hidden />
+            {tx('loveTree.retake', { defaultValue: 'Retake' })}
+          </Button>
+          <Button variant="gold" onClick={onShare} className="flex-1">
+            <Share2 className="w-4 h-4" aria-hidden />
+            {tx('loveTree.share', { defaultValue: 'Share my tree' })}
+          </Button>
+        </>
+      }
+      defaultDetailOpen
+      footer={<Disclaimer kind="quiz" />}
+    >
+      <Card padding="lg" className="text-center">
+        <LoveTree tree={info.tree} />
+        {scores && (
+          <div className="mt-3 flex justify-center gap-4 text-meta text-mystic-400 tabular-nums">
+            <span>{tx('loveTree.anxietyLabel', { defaultValue: 'Anxiety' })}: {scores.anxiety}</span>
+            <span>{tx('loveTree.avoidanceLabel', { defaultValue: 'Avoidance' })}: {scores.avoidance}</span>
+          </div>
+        )}
+      </Card>
+
+      <Card padding="lg">
+        <p className="font-display-eyebrow mb-2">
+          {tx('loveTree.strengthsLabel', { defaultValue: 'Your natural strengths' })}
+        </p>
+        <ul className="reading-copy space-y-2 list-disc pl-5">
+          {info.strengths.map((s, i) => (
+            <li key={i}>{tx(`loveTree.attachment.${attachment}.strengths.${i}`, { defaultValue: s })}</li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card padding="lg">
+        <p className="font-display-eyebrow mb-2">
+          {tx('loveTree.growthLabel', { defaultValue: 'Where to grow' })}
+        </p>
+        <ul className="reading-copy space-y-2 list-disc pl-5">
+          {info.growth.map((g, i) => (
+            <li key={i}>{tx(`loveTree.attachment.${attachment}.growth.${i}`, { defaultValue: g })}</li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card padding="lg" className="bg-cosmic-rose/10 border-cosmic-rose/25">
+        <p className="font-display-eyebrow mb-2">
+          {tx('loveTree.inLoveLabel', { defaultValue: 'In love' })}
+        </p>
+        <ReadingProse text={tx(`loveTree.attachment.${attachment}.inLove`, { defaultValue: info.inLove })} lede={false} />
+      </Card>
+
+      <AffirmationPanel
+        surface="canvas"
+        text={tx(`loveTree.attachment.${attachment}.affirmation`, { defaultValue: info.affirmation })}
+      />
+    </ResultLayout>
   );
 }
 

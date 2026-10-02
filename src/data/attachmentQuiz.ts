@@ -21,7 +21,7 @@ export const attachmentQuiz: QuizDefinition = {
     { id: 'at7', text: 'I am nervous when partners get too close to me.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at8', text: 'I worry about being abandoned.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
-    { id: 'at9', text: 'I am comfortable having others depend on me.', dimension: 'avoidance', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'at9', text: 'I am comfortable letting a partner see me when I am not at my best.', dimension: 'avoidance', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'at10', text: 'I often want to get closer than my partner wants to be.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at11', text: 'I find it difficult to trust others completely.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at12', text: 'I need a lot of reassurance that I am loved.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -31,20 +31,20 @@ export const attachmentQuiz: QuizDefinition = {
     { id: 'at16', text: 'My desire to be very close sometimes scares people away.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
     { id: 'at17', text: 'I am comfortable sharing my thoughts and feelings with others.', dimension: 'avoidance', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
-    { id: 'at18', text: 'I get frustrated when my partner is not available when I need them.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'at18', text: 'I do not mind when my partner is unavailable for a while.', dimension: 'anxiety', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'at19', text: 'I prefer not to show others how I feel deep down.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'at20', text: 'I worry that I will be hurt if I allow myself to become too close.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'at20', text: 'I worry that my partner will stop loving me once they really get to know me.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at21', text: 'I value my independence more than my relationships.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at22', text: 'I feel like I care more about others than they care about me.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at23', text: 'I feel uncomfortable when someone wants to get emotionally close.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'at24', text: 'I often wonder whether my partner truly loves me.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'at24', text: 'I rarely wonder whether my partner truly loves me.', dimension: 'anxiety', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
 
     { id: 'at25', text: 'I turn to my partner for many things, including comfort and reassurance.', dimension: 'avoidance', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'at26', text: 'When I\'m not in a relationship, I feel somewhat anxious and incomplete.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'at27', text: 'I feel comfortable asking others for help.', dimension: 'avoidance', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
-    { id: 'at28', text: 'I get jealous easily.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'at29', text: 'I am self-sufficient and don\'t need others to feel happy.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'at30', text: 'I feel anxious when my partner spends time away from me.', dimension: 'anxiety', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'at28', text: 'I am not a jealous person.', dimension: 'anxiety', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'at29', text: 'I would rather handle my problems alone than lean on a partner.', dimension: 'avoidance', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'at30', text: 'I feel fine when my partner spends time away from me.', dimension: 'anxiety', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
   ],
 };
 
@@ -52,14 +52,10 @@ export type AttachmentStyle = 'secure' | 'anxious' | 'avoidant' | 'fearful-avoid
 
 export interface AttachmentResult {
   style: AttachmentStyle;
+  /** 0-100 display score for the anxiety axis: ((mean − 1) / 4) × 100. */
   anxiety: number;
+  /** 0-100 display score for the avoidance axis. */
   avoidance: number;
-  percentages: {
-    secure: number;
-    anxious: number;
-    avoidant: number;
-    fearfulAvoidant: number;
-  };
 }
 
 export function calculateAttachment(scores: Record<string, number>): AttachmentResult {
@@ -111,24 +107,10 @@ export function calculateAttachment(scores: Record<string, number>): AttachmentR
   const anxiety = Math.round(((anxietyMean - 1) / 4) * 100);
   const avoidance = Math.round(((avoidanceMean - 1) / 4) * 100);
 
-  const secureScore = Math.max(0, 100 - (anxiety + avoidance) / 2);
-  const anxiousScore = anxiety * (1 - avoidance / 200);
-  const avoidantScore = avoidance * (1 - anxiety / 200);
-  const fearfulScore = (anxiety + avoidance) / 2;
-
-  const total = secureScore + anxiousScore + avoidantScore + fearfulScore;
-
-  return {
-    style,
-    anxiety,
-    avoidance,
-    percentages: {
-      secure: Math.round((secureScore / total) * 100),
-      anxious: Math.round((anxiousScore / total) * 100),
-      avoidant: Math.round((avoidantScore / total) * 100),
-      fearfulAvoidant: Math.round((fearfulScore / total) * 100),
-    },
-  };
+  // The old `percentages` block (secure / anxious / avoidant / fearful as
+  // four shares of 100) was an invented formula with no basis in the ECR
+  // model; the two axis scores and the quadrant are the whole result.
+  return { style, anxiety, avoidance };
 }
 
 export interface AttachmentStyleInfo {

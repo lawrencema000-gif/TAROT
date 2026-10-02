@@ -1,8 +1,8 @@
 import { lazy, Suspense, useState, useEffect, type ComponentType } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { CustomSpreadInput } from '../components/readings/TarotSection';
-import { Sun, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2 } from 'lucide-react';
-import { TarotCardIcon } from '../components/ui/NavIcons';
+import { Sun, Heart, BookOpen, Coins, Layers, Mountain, Cloud, Users, Home, Smile, Hash, Dice6, Globe2, Lock, ChevronLeft } from 'lucide-react';
+import { TarotCardIcon, PlayingCardIcon } from '../components/ui/NavIcons';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import {
   TarotSection,
@@ -13,11 +13,11 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
-import { PageHeader, CardSkeleton, Tabs, Page } from '../components/ui';
+import { PageHeader, CardSkeleton, Tabs, Page, ListRow, Badge } from '../components/ui';
 
 // Lazy-load the eastern-systems pages — keeps ~40-60 KB of static data out
 // of the main ReadingsPage bundle. Chunks only download when a user with
-// the matching feature flag actually opens the tab.
+// the matching feature flag actually opens the system.
 const IChingSection = lazy(() => import('./IChingPage').then(m => ({ default: m.IChingPage })));
 const HumanDesignSection = lazy(() => import('./HumanDesignPage').then(m => ({ default: m.HumanDesignPage })));
 const BaziSection = lazy(() => import('./BaziPage').then(m => ({ default: m.BaziPage })));
@@ -28,20 +28,34 @@ const FengShuiSection = lazy(() => import('./FengShuiPage').then(m => ({ default
 const RunesSection = lazy(() => import('./RunesPage').then(m => ({ default: m.RunesPage })));
 const DiceSection = lazy(() => import('./DicePage').then(m => ({ default: m.DicePage })));
 
-type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'runes' | 'dice' | 'celestial' | 'library';
+/**
+ * The strip: the three readings everyone has, the playing deck when its
+ * flag is on, one tab for the flag-gated systems (which used to be nine
+ * tabs in a row that scrolled off the screen), and the library.
+ */
+type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'cartomancy' | 'systems' | 'library';
+
+/** The systems behind the "More systems" tab. */
+type SystemId = 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'runes' | 'dice' | 'celestial';
+
+const SYSTEM_IDS: ReadonlySet<string> = new Set<SystemId>(['iching', 'human-design', 'bazi', 'dream', 'mood', 'partner', 'fengshui', 'runes', 'dice', 'celestial']);
 
 /**
- * Tabs another screen may open directly via `navigate('/readings', { state:
- * { tab } })` — Home's ritual card asks for the horoscope. Premium tabs are
- * not here: landing on one would skip the paywall the tab strip shows.
+ * Tabs and systems another screen may open directly via
+ * `navigate('/readings', { state: { tab } })` — Home's ritual card asks for
+ * the horoscope. Premium systems are not here: landing on one would skip the
+ * paywall the grid shows.
  */
-const LINKABLE_TABS: ReadonlySet<string> = new Set<ReadingTab>([
-  'tarot', 'horoscope', 'compatibility', 'iching', 'mood', 'fengshui', 'runes', 'dice', 'library',
+const LINKABLE: ReadonlySet<string> = new Set<ReadingTab | SystemId>([
+  'tarot', 'horoscope', 'compatibility', 'library', 'cartomancy',
+  'iching', 'mood', 'fengshui', 'runes', 'dice',
 ]);
 
-function initialTab(state: unknown): ReadingTab {
+function initialSelection(state: unknown): { tab: ReadingTab; system: SystemId | null } {
   const wanted = (state as { tab?: unknown } | null)?.tab;
-  return typeof wanted === 'string' && LINKABLE_TABS.has(wanted) ? (wanted as ReadingTab) : 'tarot';
+  if (typeof wanted !== 'string' || !LINKABLE.has(wanted)) return { tab: 'tarot', system: null };
+  if (SYSTEM_IDS.has(wanted)) return { tab: 'systems', system: wanted as SystemId };
+  return { tab: wanted as ReadingTab, system: null };
 }
 
 /** Lucide icons and the app's own SVG glyphs both satisfy this. */
@@ -50,8 +64,16 @@ type TabIcon = ComponentType<{ className?: string }>;
 interface TabDef {
   id: ReadingTab;
   labelKey: string;
+  defaultLabel?: string;
+  icon: TabIcon;
+}
+
+interface SystemDef {
+  id: SystemId;
+  labelKey: string;
   icon: TabIcon;
   premium?: boolean;
+  enabled: boolean;
 }
 
 export function ReadingsPage() {
@@ -60,7 +82,9 @@ export function ReadingsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const isPremium = !!profile?.isPremium;
-  const [activeTab, setActiveTab] = useState<ReadingTab>(() => initialTab(location.state));
+  const [initial] = useState(() => initialSelection(location.state));
+  const [activeTab, setActiveTab] = useState<ReadingTab>(initial.tab);
+  const [activeSystem, setActiveSystem] = useState<SystemId | null>(initial.system);
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState('');
 
@@ -91,47 +115,78 @@ export function ReadingsPage() {
   const runesEnabled = useFeatureFlag('runes');
   const diceEnabled = useFeatureFlag('dice');
   const celestialEnabled = useFeatureFlag('celestial-map');
+  const cartomancyEnabled = useFeatureFlag('cartomancy');
 
   const handleShowPaywall = (feature: string) => {
     setPaywallFeature(feature);
     setShowPaywall(true);
   };
 
-  // Premium-gated tabs stay visible to non-premium users so they can see
-  // what's available to unlock. Tapping a locked tab surfaces the paywall
-  // instead of silently ignoring. `premium: true` marks premium-only
-  // features (real AI, real ephemeris, real synastry); free features
-  // stay accessible for everyone the flag is enabled for.
+  // `premium: true` marks premium-only systems (real AI, real ephemeris,
+  // real synastry); they stay visible so a free reader can see what there
+  // is to unlock, and tapping one surfaces the paywall.
+  const allSystems: SystemDef[] = [
+    { id: 'iching', labelKey: 'readings.tabs.iching', icon: Coins, enabled: ichingEnabled },
+    { id: 'human-design', labelKey: 'readings.tabs.humanDesign', icon: Layers, premium: true, enabled: humanDesignEnabled },
+    { id: 'bazi', labelKey: 'readings.tabs.bazi', icon: Mountain, premium: true, enabled: baziEnabled },
+    { id: 'dream', labelKey: 'readings.tabs.dream', icon: Cloud, premium: true, enabled: dreamEnabled },
+    { id: 'mood', labelKey: 'readings.tabs.mood', icon: Smile, enabled: moodDiaryEnabled },
+    { id: 'partner', labelKey: 'readings.tabs.partner', icon: Users, premium: true, enabled: partnerCompatEnabled },
+    { id: 'fengshui', labelKey: 'readings.tabs.fengshui', icon: Home, enabled: fengShuiEnabled },
+    { id: 'runes', labelKey: 'readings.tabs.runes', icon: Hash, enabled: runesEnabled },
+    { id: 'dice', labelKey: 'readings.tabs.dice', icon: Dice6, enabled: diceEnabled },
+    { id: 'celestial', labelKey: 'readings.tabs.celestial', icon: Globe2, enabled: celestialEnabled },
+  ];
+  const systems = allSystems.filter((s) => s.enabled);
+
   const tabs: TabDef[] = [
     { id: 'tarot', labelKey: 'readings.tabs.tarot', icon: TarotCardIcon },
     { id: 'horoscope', labelKey: 'readings.tabs.horoscope', icon: Sun },
     { id: 'compatibility', labelKey: 'readings.tabs.compatibility', icon: Heart },
-    ...(ichingEnabled ? [{ id: 'iching' as const, labelKey: 'readings.tabs.iching', icon: Coins }] : []),
-    ...(humanDesignEnabled ? [{ id: 'human-design' as const, labelKey: 'readings.tabs.humanDesign', icon: Layers, premium: true }] : []),
-    ...(baziEnabled ? [{ id: 'bazi' as const, labelKey: 'readings.tabs.bazi', icon: Mountain, premium: true }] : []),
-    ...(dreamEnabled ? [{ id: 'dream' as const, labelKey: 'readings.tabs.dream', icon: Cloud, premium: true }] : []),
-    ...(moodDiaryEnabled ? [{ id: 'mood' as const, labelKey: 'readings.tabs.mood', icon: Smile }] : []),
-    ...(partnerCompatEnabled ? [{ id: 'partner' as const, labelKey: 'readings.tabs.partner', icon: Users, premium: true }] : []),
-    ...(fengShuiEnabled ? [{ id: 'fengshui' as const, labelKey: 'readings.tabs.fengshui', icon: Home }] : []),
-    ...(runesEnabled ? [{ id: 'runes' as const, labelKey: 'readings.tabs.runes', icon: Hash }] : []),
-    ...(diceEnabled ? [{ id: 'dice' as const, labelKey: 'readings.tabs.dice', icon: Dice6 }] : []),
-    ...(celestialEnabled ? [{ id: 'celestial' as const, labelKey: 'readings.tabs.celestial', icon: Globe2 }] : []),
+    ...(cartomancyEnabled ? [{ id: 'cartomancy' as const, labelKey: 'readings.tabs.cartomancy', defaultLabel: 'Playing cards', icon: PlayingCardIcon }] : []),
+    ...(systems.length > 0 ? [{ id: 'systems' as const, labelKey: 'readings.tabs.systems', defaultLabel: 'More systems', icon: Layers }] : []),
     { id: 'library', labelKey: 'readings.tabs.library', icon: BookOpen },
   ];
 
-  const handleTabClick = (tab: (typeof tabs)[number]) => {
-    if (tab.premium && !isPremium) {
-      handleShowPaywall(t(tab.labelKey) as string);
+  const tabLabel = (tab: TabDef) => (tab.defaultLabel ? t(tab.labelKey, { defaultValue: tab.defaultLabel }) : t(tab.labelKey));
+
+  const handleTabClick = (tab: TabDef) => {
+    if (tab.id === 'cartomancy') {
+      // The playing-card section has its own header, hub and library.
+      navigate('/cartomancy');
       return;
     }
-    if (tab.id === 'celestial') {
+    setActiveTab(tab.id);
+  };
+
+  const openSystem = (system: SystemDef) => {
+    if (system.premium && !isPremium) {
+      handleShowPaywall(t(system.labelKey) as string);
+      return;
+    }
+    if (system.id === 'celestial') {
       // Celestial Map is a standalone surface with its own header, map
       // canvas, and paywall — navigate rather than render inline.
       navigate('/celestial-map');
       return;
     }
-    setActiveTab(tab.id);
+    setActiveSystem(system.id);
   };
+
+  const systemView = (() => {
+    switch (activeSystem) {
+      case 'iching': return ichingEnabled ? <IChingSection /> : null;
+      case 'human-design': return humanDesignEnabled ? <HumanDesignSection /> : null;
+      case 'bazi': return baziEnabled ? <BaziSection /> : null;
+      case 'dream': return dreamEnabled ? <DreamInterpreterSection /> : null;
+      case 'mood': return moodDiaryEnabled ? <MoodDiarySection /> : null;
+      case 'partner': return partnerCompatEnabled ? <PartnerCompatSection /> : null;
+      case 'fengshui': return fengShuiEnabled ? <FengShuiSection /> : null;
+      case 'runes': return runesEnabled ? <RunesSection /> : null;
+      case 'dice': return diceEnabled ? <DiceSection /> : null;
+      default: return null;
+    }
+  })();
 
   return (
     <Page spacing="md">
@@ -140,9 +195,8 @@ export function ReadingsPage() {
       <Tabs<ReadingTab>
         items={tabs.map(tab => ({
           id: tab.id,
-          label: t(tab.labelKey),
+          label: tabLabel(tab),
           icon: tab.icon,
-          locked: !!tab.premium && !isPremium,
         }))}
         value={activeTab}
         onChange={(id) => {
@@ -166,58 +220,44 @@ export function ReadingsPage() {
         <CompatibilitySection onShowPaywall={handleShowPaywall} />
       )}
 
-      {activeTab === 'iching' && ichingEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <IChingSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'human-design' && humanDesignEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <HumanDesignSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'bazi' && baziEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <BaziSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'dream' && dreamEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <DreamInterpreterSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'mood' && moodDiaryEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <MoodDiarySection />
-        </Suspense>
-      )}
-
-      {activeTab === 'partner' && partnerCompatEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <PartnerCompatSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'fengshui' && fengShuiEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <FengShuiSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'runes' && runesEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <RunesSection />
-        </Suspense>
-      )}
-
-      {activeTab === 'dice' && diceEnabled && (
-        <Suspense fallback={<CardSkeleton />}>
-          <DiceSection />
-        </Suspense>
+      {activeTab === 'systems' && (
+        activeSystem && systemView ? (
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => setActiveSystem(null)}
+              className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px]"
+            >
+              <ChevronLeft className="w-4 h-4" aria-hidden />
+              {t('readings.systems.all', { defaultValue: 'All systems' })}
+            </button>
+            <Suspense fallback={<CardSkeleton />}>{systemView}</Suspense>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-ui text-mystic-400">
+              {t('readings.systems.lede', { defaultValue: 'Other ways of asking: oracles and systems from East and West.' })}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="list">
+              {systems.map((system) => {
+                const locked = !!system.premium && !isPremium;
+                const Icon = system.icon;
+                return (
+                  <div key={system.id} role="listitem" className="overflow-hidden rounded-card border border-mystic-700 bg-mystic-850">
+                    <ListRow
+                      size="lg"
+                      icon={locked ? <Lock /> : <Icon />}
+                      tone={locked ? 'violet' : 'gold'}
+                      label={t(system.labelKey)}
+                      trailing={locked ? <Badge tone="violet">{t('readings.systems.premium', { defaultValue: 'Premium' })}</Badge> : 'chevron'}
+                      onClick={() => openSystem(system)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )
       )}
 
       {activeTab === 'library' && (

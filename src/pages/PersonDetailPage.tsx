@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Pencil, Trash2, GitCompareArrows } from 'lucide-react';
-import { Card, Button, Sheet, toast, Page, PageHeader, Section, Disclosure, Skeleton, ReadingProse } from '../components/ui';
+import { Card, Button, Sheet, toast, Page, PageHeader, Section, Disclosure, Skeleton, ReadingProse, Disclaimer } from '../components/ui';
 import { ChartWheel } from '../components/chart/ChartWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
 import { AspectGrid } from '../components/charts/AspectGrid';
@@ -34,7 +34,10 @@ export function PersonDetailPage() {
   const [err, setErr] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [openPlanet, setOpenPlanet] = useState<string | null>('Sun');
+  // Every placement starts closed: the page is a chart, not an essay
+  // (R5 p-4, M-12). One row open at a time.
+  const [openPlanet, setOpenPlanet] = useState<string | null>(null);
+  const [showAllAspects, setShowAllAspects] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -162,7 +165,7 @@ export function PersonDetailPage() {
       {/* AI reading */}
       {chart && <PersonAIReading personId={person.id} personName={person.name} />}
 
-      {/* Placements with interpretations */}
+      {/* Placements — one line per planet; the interpretation opens on tap. */}
       {!isPet && chart && (
         <Card className="p-4 space-y-1">
           <h3 className="heading-display-md text-mystic-100 mb-2">{t('chartSuite.sections.placements', { defaultValue: 'Placements' })}</h3>
@@ -176,22 +179,23 @@ export function PersonDetailPage() {
                 variant="row"
                 open={open}
                 onOpenChange={(next) => setOpenPlanet(next ? p.planet : null)}
+                lazy
                 icon={
                   <span className="w-6 flex justify-center">
                     {isPlanet(p.planet) ? <PlanetGlyph planet={p.planet} size={20} className="text-mystic-200" /> : <span className="text-mystic-200">{p.planet.charAt(0)}</span>}
                   </span>
                 }
                 label={
-                  <>
+                  <span className="block truncate">
                     <span className="text-mystic-100">
                       {isZodiacSign(p.sign)
                         ? t('horoscope.birthChartView.planetInSign', { planet: planetName(p.planet), sign: localizeSignName(p.sign) })
                         : `${planetName(p.planet)} · ${p.sign}`}
                     </span>
-                    {p.house && <span className="text-meta text-mystic-400"> · {t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: p.house })}</span>}
                     {p.retrograde && <span className="text-coral text-meta"> ℞</span>}
-                  </>
+                  </span>
                 }
+                meta={p.house ? <span className="tabular-nums">{t('chartWheel.houseLabel', { defaultValue: 'House {{n}}', n: p.house })}</span> : undefined}
                 contentClassName="pl-9 reading-copy"
               >
                 {sText ? <p>{sText}</p> : <Skeleton height={14} width="80%" />}
@@ -209,21 +213,36 @@ export function PersonDetailPage() {
         </Section>
       )}
 
-      {/* Aspects */}
+      {/* Aspects — the grid, then one line per aspect; the reading opens on
+          tap and the list starts at three (R5 M-12). */}
       {chart && chart.aspects.length > 0 && (
         <Section title={t('people.detail.aspects', { defaultValue: 'Aspects' })} headingLevel="h3" contentClassName="space-y-3">
           <AspectGrid aspects={chart.aspects} />
-          <div className="space-y-3 pt-1">
-            {chart.aspects.slice(0, 6).map((a, i) => (
-              <div key={i} className="text-ui">
-                <span className="text-mystic-200">
-                  {planetName(a.planet1)} {isAspectType(a.type) ? localizeAspectName(a.type) : a.type} {planetName(a.planet2)}
-                </span>
-                <span className="text-meta text-mystic-400"> · {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
-                {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
-              </div>
+          <Card className="px-4 py-1">
+            {(showAllAspects ? chart.aspects : chart.aspects.slice(0, 3)).map((a, i) => (
+              <Disclosure
+                key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+                variant="row"
+                lazy
+                label={
+                  <span className="block truncate text-mystic-100">
+                    {planetName(a.planet1)} {isAspectType(a.type) ? localizeAspectName(a.type) : a.type} {planetName(a.planet2)}
+                  </span>
+                }
+                meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}
+                contentClassName="reading-copy"
+              >
+                {interp ? <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} /> : <Skeleton height={14} width="80%" />}
+              </Disclosure>
             ))}
-          </div>
+          </Card>
+          {chart.aspects.length > 3 && (
+            <Button variant="ghost" size="sm" fullWidth onClick={() => setShowAllAspects((v) => !v)} aria-expanded={showAllAspects}>
+              {showAllAspects
+                ? t('people.detail.showFewerAspects', { defaultValue: 'Show fewer aspects' })
+                : t('people.detail.showAllAspects', { defaultValue: 'Show all {{n}} aspects', n: chart.aspects.length })}
+            </Button>
+          )}
         </Section>
       )}
 
@@ -239,6 +258,8 @@ export function PersonDetailPage() {
       <button onClick={() => setConfirmDelete(true)} className="w-full min-h-[44px] text-center text-caption text-coral/70 hover:text-coral py-2 flex items-center justify-center gap-1">
         <Trash2 className="w-3.5 h-3.5" /> {t('people.detail.delete', { defaultValue: 'Delete {{name}}', name: person.name })}
       </button>
+
+      {!isPet && chart && <Disclaimer kind="astrology" />}
 
       <Sheet open={editing} onClose={() => setEditing(false)} title={t('people.detail.editTitle', { defaultValue: 'Edit {{name}}', name: person.name })}>
         <PersonForm existing={person} onSaved={() => { setEditing(false); load(); }} onCancel={() => setEditing(false)} />

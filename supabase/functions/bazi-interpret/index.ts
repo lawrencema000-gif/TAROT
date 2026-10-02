@@ -1,9 +1,17 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
+import {
+  GEMINI_MODELS,
+  extractJsonObject,
+  isReasoningModel,
+  openAIModels,
+  reasoningEffortFor,
+} from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 
 /**
  * Bazi AI interpretation — turns the user's structured Bazi chart
- * into a comprehensive narrative reading via Gemini 2.5 Flash.
+ * into a comprehensive narrative reading (OpenAI primary, Gemini fallback).
  *
  * The client computes the chart locally (deterministic — no LLM needed
  * for that part) and sends the full structured data here. We then
@@ -19,20 +27,21 @@ import { handler, AppError } from "../_shared/handler.ts";
  * returned immediately when it exists; re-generation requires a
  * `force=true` body flag (admin / debug only).
  *
- * AI provider chain (OpenAI primary, Gemini fallback):
- *   1. OPENAI_API_KEY → gpt-5 (3 attempts, then gpt-5-mini)
- *   2. GEMINI_API_KEY → gemini-2.5-flash → 2.0-flash-exp → 1.5-flash
- *   At least one of the two API keys must be set; both is best.
+ * AI provider chain (OpenAI primary, Gemini fallback): the model ids come
+ * from _shared/ai-providers.ts (openAIModels() / GEMINI_MODELS) so this
+ * function can never drift from the rest of the app. gpt-5 produces
+ * noticeably stronger 14-section Bazi narratives (better Ten-Gods reasoning,
+ * richer luck-pillar analysis) with reliable JSON-mode adherence; the
+ * smaller model covers retries; Gemini covers OpenAI outages. At least one
+ * of the two API keys must be set; both is best.
+ *
+ * Locale: the client sends `locale`; the shared instruction block is
+ * appended to the system prompt so a Japanese premium user gets a Japanese
+ * reading (they used to get English). The locale is part of the cache
+ * signature.
  *
  * Auth: required (subscription gate enforced inline).
  */
-
-// Provider chain — quality-first. gpt-5 produces noticeably stronger
-// 14-section Bazi narratives (better Ten-Gods reasoning, richer luck-
-// pillar analysis) than 4o-mini, with much more reliable JSON-mode
-// adherence. gpt-5-mini covers retries; Gemini covers OpenAI outages.
-const OPENAI_MODELS = ["gpt-5", "gpt-5-mini"];
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -61,15 +70,17 @@ interface BaziInput {
   currentLuckPillar?: { ageStart: number; ageEnd: number; stem: string; branch: string };
   annualLuck?: { year: number; stem: string; branch: string };
   force?: boolean; // bypass cache
+  /** UI locale ('en' | 'ja' | 'ko' | 'zh'); the reading is written in this language. */
+  locale?: string;
 }
 
-const SYSTEM_PROMPT = `You are a master practitioner of BaZi (八字) — Chinese Four Pillars of Destiny astrology — with thirty years of practice. You read in the lineage of classical texts (子平真诠, 滴天髓, 穷通宝鉴) but speak modern English fluently. You combine traditional rigour with practical wisdom for a contemporary reader.
+const SYSTEM_PROMPT = `You are a master practitioner of BaZi (八字) — Chinese Four Pillars of Destiny astrology — with thirty years of practice. You read in the lineage of classical texts (子平真诠, 滴天髓, 穷通宝鉴) but write fluently in the reader's own language (named at the end of these instructions). You combine traditional rigour with practical wisdom for a contemporary reader.
 
 Your job: write a long-form, deeply personalised BaZi reading from the structured chart data the user provides. The data is already computed correctly — do NOT recompute pillars, luck pillars, or branch relations. Trust the input; your job is interpretation, not arithmetic.
 
 WRITING STYLE
 - Direct, warm, considered. Like a thoughtful older friend who happens to be an expert.
-- Use specific Chinese terms (壬水 / Ren Water, 食神 / Eating God, 寅申冲 / Tiger-Monkey clash) followed by English translation on first mention. Drop the Chinese after.
+- Use specific Chinese terms (壬水 / Ren Water, 食神 / Eating God, 寅申冲 / Tiger-Monkey clash) followed by a translation in the reader's language on first mention. Drop the Chinese after.
 - Quote one or two short Chinese phrases inline where they add gravitas (e.g. "杀印相生").
 - No emojis, no exclamation marks, no horoscope-magazine fluff ("✨ amazing energy babes ✨"). Authentic, not performative.
 - Be opinionated. Take a clear view. The user wants insight, not hedging.
@@ -186,9 +197,11 @@ function buildUserPrompt(input: BaziInput): string {
   return lines.join("\n");
 }
 
-// Bumped on every model upgrade so the next request regenerates with
-// the new model rather than returning a stale 4o-mini cached reading.
-const MODEL_GENERATION = "v2-gpt5";
+// Bumped on every model/prompt upgrade so the next request regenerates
+// rather than returning a stale cached reading. v3: model ids come from
+// the shared chain, the locale instruction joins the prompt and the
+// signature (2026-10-02).
+const MODEL_GENERATION = "v3-gpt5-family-locale";
 
 function inputSignature(input: BaziInput): string {
   // Hash that invalidates the cache when ANY of these change:
@@ -202,6 +215,8 @@ function inputSignature(input: BaziInput): string {
   //     are visible immediately without manual cache clears.
   const parts = [
     MODEL_GENERATION,
+    // Language of the cached reading — switching the UI locale regenerates.
+    (input.locale || "en").toLowerCase().split("-")[0],
     input.birthDate,
     input.birthTime || "",
     input.gender,
@@ -237,10 +252,8 @@ interface ReadingShape {
 
 // gpt-5 and other reasoning models have different API constraints than
 // gpt-4o: no custom temperature, reasoning tokens consume the completion
-// budget. We pad max_completion_tokens and switch to reasoning_effort.
-function isReasoningModel(model: string): boolean {
-  return model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
-}
+// budget. We pad max_completion_tokens and switch to reasoning_effort
+// (isReasoningModel / reasoningEffortFor come from _shared/ai-providers.ts).
 
 // Per-call wall-clock cap. Real successful gpt-5 calls land in 60-90s. We
 // abort at 90s so a single slow call doesn't eat the whole edge-function
@@ -248,12 +261,12 @@ function isReasoningModel(model: string): boolean {
 // fallback to gpt-5-mini and Gemini.
 const PER_CALL_TIMEOUT_MS = 90_000;
 
-async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
+async function callOpenAIOnce(model: string, system: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
   const reasoning = isReasoningModel(model);
   const body: Record<string, unknown> = {
     model,
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: system },
       { role: "user", content: prompt },
     ],
     // Bazi readings are ~3000-4000 tokens of structured JSON. Reasoning
@@ -264,7 +277,7 @@ async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Pr
     response_format: { type: "json_object" },
   };
   if (reasoning) {
-    body.reasoning_effort = "minimal";
+    body.reasoning_effort = reasoningEffortFor(model);
   } else {
     body.temperature = 0.7;
   }
@@ -299,20 +312,23 @@ async function callOpenAIOnce(model: string, prompt: string, apiKey: string): Pr
   }
 }
 
-async function callGeminiOnce(model: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+async function callGeminiOnce(model: string, system: string, prompt: string, apiKey: string): Promise<{ ok: true; text: string } | { ok: false; status: number; body: string }> {
+  // Key in a header, never in the URL (URLs end up in logs).
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), PER_CALL_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        systemInstruction: { parts: [{ text: system }] },
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8000,
+          // Flash thinks before answering and the thoughts share this
+          // budget; 14 sections of JSON need the headroom.
+          maxOutputTokens: 12000,
           responseMimeType: "application/json",
         },
       }),
@@ -323,7 +339,8 @@ async function callGeminiOnce(model: string, prompt: string, apiKey: string): Pr
       return { ok: false, status: res.status, body: errBody };
     }
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const parts: Array<{ text?: string; thought?: boolean }> = data?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts.filter((p) => !p.thought && typeof p.text === "string").map((p) => p.text).join("");
     if (!text) return { ok: false, status: 0, body: "no text in response" };
     return { ok: true, text };
   } catch (e) {
@@ -372,7 +389,7 @@ function isReadingComplete(parsed: ReadingShape): boolean {
   return nonEmpty >= 12;
 }
 
-async function callAI(prompt: string): Promise<ReadingShape> {
+async function callAI(system: string, prompt: string): Promise<ReadingShape> {
   // Provider chain: OpenAI primary (better narrative quality), Gemini
   // fallback. With per-call AbortController at 90s and 1 retry per model,
   // worst-case wall-clock is ~360s (4 attempts × 90s) — but that's only
@@ -385,12 +402,12 @@ async function callAI(prompt: string): Promise<ReadingShape> {
 
   // ── OpenAI primary ── 1 retry per model (2 attempts each) instead of 3
   if (openaiKey) {
-    for (const model of OPENAI_MODELS) {
+    for (const model of openAIModels()) {
       for (let attempt = 0; attempt < 2; attempt++) {
-        const r = await callOpenAIOnce(model, prompt, openaiKey);
+        const r = await callOpenAIOnce(model, system, prompt, openaiKey);
         if (r.ok) {
           try {
-            const parsed = JSON.parse(r.text) as ReadingShape;
+            const parsed = JSON.parse(extractJsonObject(r.text)) as ReadingShape;
             if (!isReadingComplete(parsed)) {
               lastErr = `${model} returned incomplete reading (sections missing)`;
               break;
@@ -413,10 +430,10 @@ async function callAI(prompt: string): Promise<ReadingShape> {
   if (geminiKey) {
     for (const model of GEMINI_MODELS) {
       for (let attempt = 0; attempt < 2; attempt++) {
-        const r = await callGeminiOnce(model, prompt, geminiKey);
+        const r = await callGeminiOnce(model, system, prompt, geminiKey);
         if (r.ok) {
           try {
-            const parsed = JSON.parse(r.text) as ReadingShape;
+            const parsed = JSON.parse(extractJsonObject(r.text)) as ReadingShape;
             if (!isReadingComplete(parsed)) {
               lastErr = `gemini ${model} returned incomplete reading`;
               break;
@@ -484,9 +501,10 @@ Deno.serve(handler<BaziInput>({
       throw new AppError("AI_NOT_CONFIGURED", "No AI provider configured (OPENAI_API_KEY + GEMINI_API_KEY)", 503);
     }
 
-    ctx.log.info("bazi_interpret.generating", { userId: ctx.userId, year });
+    ctx.log.info("bazi_interpret.generating", { userId: ctx.userId, year, locale: body.locale ?? "en" });
     const userPrompt = buildUserPrompt(body);
-    const reading = await callAI(userPrompt);
+    const system = `${SYSTEM_PROMPT}\n\n${localeInstruction(body.locale, { jsonKeys: true })}`;
+    const reading = await callAI(system, userPrompt);
 
     // Upsert (one row per user per year)
     const { error: upsertErr } = await ctx.supabase

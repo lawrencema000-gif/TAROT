@@ -2,7 +2,6 @@
   "language": {
     "title": "选择语言",
     "subtitle": "稍后可在设置中更改。",
-    "saveCta": "保存语言",
     "cta": "使用此语言继续"
   },
   "welcome": {
@@ -33,15 +32,6 @@
     "userExists": "这个邮箱已经注册过了,直接登录就好。",
     "profileSaveFailed": "账号已创建，但资料未能保存。请检查网络连接后登录继续。",
     "accountCreated": "账号已创建。接下来为你定制专属体验。"
-  },
-  "signIn": {
-    "heading": "欢迎回来",
-    "subheading": "从上次的地方继续",
-    "googleCta": "使用 Google 登录",
-    "divider": "或使用邮箱登录",
-    "submit": "登录",
-    "forgotPassword": "忘记密码?",
-    "switchToSignUp": "还没有账号？立即注册"
   },
   "oauth": {
     "welcome": "欢迎，{{name}}。",

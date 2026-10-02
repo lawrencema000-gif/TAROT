@@ -1,36 +1,50 @@
 /**
  * The focus.
  *
- * Before the deck is touched the reader names what the reading is for.
- * Six areas, one row of chips, one button. All state is the parent's; this
- * is presentation and event forwarding.
+ * Before the deck is touched the reader names what the reading is for:
+ * six areas in one row of chips, and — optionally — the question itself,
+ * in one line. The question becomes the title of the result sheet and
+ * goes to the AI with the cards; without it the result is titled by the
+ * spread. All state is the parent's; this is presentation and event
+ * forwarding.
  *
  * The compass arrives once (a 300ms scale-in, `forwards`) and then holds.
- * It used to pulse forever — and a control that throbs is what a disabled
- * one looks like. The chips follow in a short cascade so the row reads as
- * a set being laid out. Under reduced motion the global block in index.css
- * pins both to a single frame.
+ * The chips follow in a short cascade so the row reads as a set being
+ * laid out. Under reduced motion the global block in index.css pins both
+ * to a single frame.
  */
 import { ChevronLeft, Compass, ChevronRight } from 'lucide-react';
-import { Chip, Button } from '../../ui';
+import { Chip, Button, Input } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { FOCUS_AREAS, FOCUS_AREA_I18N_KEY, type FocusArea } from './types';
 
+/** Long enough for a real question, short enough to stay a title. */
+const QUESTION_MAX = 140;
+
 interface TarotFocusViewProps {
   selectedFocus: FocusArea | null;
+  question: string;
   onBack: () => void;
   onSelect: (focus: FocusArea) => void;
+  onQuestionChange: (question: string) => void;
   onContinue: () => void;
 }
 
-export function TarotFocusView({ selectedFocus, onBack, onSelect, onContinue }: TarotFocusViewProps) {
+export function TarotFocusView({
+  selectedFocus,
+  question,
+  onBack,
+  onSelect,
+  onQuestionChange,
+  onContinue,
+}: TarotFocusViewProps) {
   const { t } = useT('app');
 
   return (
     <div className="space-y-6">
       <button
         onClick={onBack}
-        className="text-sm text-mystic-400 hover:text-mystic-300 transition-colors"
+        className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px] -ml-1 pr-2"
       >
         <ChevronLeft className="w-4 h-4" aria-hidden />
         {t('readings.back')}
@@ -61,6 +75,27 @@ export function TarotFocusView({ selectedFocus, onBack, onSelect, onContinue }: 
             />
           </div>
         ))}
+      </div>
+
+      <div className="space-y-1.5">
+        <Input
+          value={question}
+          onChange={(e) => onQuestionChange(e.target.value.slice(0, QUESTION_MAX))}
+          maxLength={QUESTION_MAX}
+          placeholder={t('readings.focusView.questionPlaceholder', { defaultValue: 'What’s on your mind?' })}
+          aria-label={t('readings.focusView.questionLabel', { defaultValue: 'Your question (optional)' })}
+          autoComplete="off"
+          enterKeyHint="done"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && selectedFocus) {
+              e.preventDefault();
+              onContinue();
+            }
+          }}
+        />
+        <p className="text-caption text-mystic-500 px-1">
+          {t('readings.focusView.questionHint', { defaultValue: 'Optional. It becomes the title of your reading.' })}
+        </p>
       </div>
 
       <Button

@@ -25,9 +25,11 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 import { createClient } from '@supabase/supabase-js';
 import {
-  loadContentData, wrapBody, SEO_STYLE,
+  loadContentData, wrapBody, SEO_STYLE, landingHeroBody, LANDING_STYLE,
   tarotCardBody, astroBody, crystalBody, glossaryBody, numerologyBody, spreadBody, blogPostBody,
+  cartomancyCardBody, cartomancyLessonBody,
   hubBody, tarotHubLinks, astroHubLinks, crystalHubLinks, glossaryHubLinks, numerologyHubLinks, spreadHubLinks, blogHubLinks,
+  cartomancyCardLinks, cartomancyLessonLinks,
 } from './seo-body.mjs';
 
 const DIST = resolve('dist');
@@ -322,6 +324,131 @@ function glossaryEntryMeta(slug) {
   };
 }
 
+// ── Cartomancy (src/data/cartomancy): hub, 54 card pages, 12-lesson guide ──
+// Slugs come from the data (`PlayingCard.slug`, `CartoLesson.slug`), never
+// from a name, so the route list is read from the esbuild bundle at run time.
+
+function cartomancyHubMeta(cardCount, lessonCount) {
+  return {
+    title: 'Cartomancy — Playing Card Reading | Arcana',
+    description: `Read an ordinary deck of playing cards: ${cardCount} card meanings, nine spreads from a single card to the Romany and the Wish spread, and a ${lessonCount}-lesson guide to suits, numbers, courts and combinations.`,
+    canonical: `${SITE_URL}/cartomancy`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${SITE_URL}/cartomancy`,
+      name: 'Cartomancy — Playing Card Reading',
+      url: `${SITE_URL}/cartomancy`,
+      description: 'Playing-card reading in the English and American tradition: card meanings, spreads and a guide.',
+    }],
+  };
+}
+
+function cartomancyCardsHubMeta(cards) {
+  return {
+    title: 'Playing Card Meanings — All 54 Cards in Cartomancy | Arcana',
+    description: 'Every playing card read in cartomancy: Hearts, Clubs, Diamonds and Spades from Ace to King, plus the two Jokers — upright, reversed, love, career, advice, timing and combinations.',
+    canonical: `${SITE_URL}/cartomancy/cards`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${SITE_URL}/cartomancy/cards`,
+      name: 'Playing Card Meanings',
+      url: `${SITE_URL}/cartomancy/cards`,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: cards.length,
+        itemListElement: cards.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, url: `${SITE_URL}/cartomancy/cards/${c.slug}` })),
+      },
+    }],
+  };
+}
+
+function cartomancyCardMeta(card) {
+  const url = `${SITE_URL}/cartomancy/cards/${card.slug}`;
+  return {
+    title: `${card.name} Meaning in Cartomancy — Playing Card Reading | Arcana`,
+    description: card.quickMeaning,
+    canonical: url,
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        '@id': `${url}#article`,
+        headline: `${card.name} Meaning in Cartomancy`,
+        description: card.quickMeaning,
+        url,
+        keywords: (card.keywords || []).join(', '),
+        author: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+        publisher: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+        isPartOf: { '@type': 'CollectionPage', '@id': `${SITE_URL}/cartomancy/cards` },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: 'Cartomancy', item: `${SITE_URL}/cartomancy` },
+          { '@type': 'ListItem', position: 3, name: 'Playing card meanings', item: `${SITE_URL}/cartomancy/cards` },
+          { '@type': 'ListItem', position: 4, name: card.name, item: url },
+        ],
+      },
+    ],
+  };
+}
+
+function cartomancyGuideHubMeta(lessons) {
+  return {
+    title: 'How to Read Playing Cards — The Cartomancy Guide | Arcana',
+    description: `${lessons.length} short lessons: the deck in your hand, the four suits, numbers Ace to Ten, the court cards, red and black, the Jokers, shuffling and asking well, one card and three, combinations, timing, the big spreads, and reading for others.`,
+    canonical: `${SITE_URL}/cartomancy/guide`,
+    jsonLd: [{
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${SITE_URL}/cartomancy/guide`,
+      name: 'The Cartomancy Guide',
+      url: `${SITE_URL}/cartomancy/guide`,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: lessons.length,
+        itemListElement: lessons.map((l, i) => ({ '@type': 'ListItem', position: i + 1, name: l.title, url: `${SITE_URL}/cartomancy/guide/${l.slug}` })),
+      },
+    }],
+  };
+}
+
+function cartomancyLessonMeta(lesson) {
+  const url = `${SITE_URL}/cartomancy/guide/${lesson.slug}`;
+  return {
+    title: `${lesson.title} — Cartomancy Guide, ${lesson.eyebrow || `Lesson ${lesson.order}`} | Arcana`,
+    description: lesson.lede,
+    canonical: url,
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        '@id': `${url}#article`,
+        headline: lesson.title,
+        description: lesson.lede,
+        url,
+        author: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+        publisher: { '@type': 'Organization', name: 'Arcana', url: SITE_URL },
+        isPartOf: { '@type': 'CollectionPage', '@id': `${SITE_URL}/cartomancy/guide` },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: 'Cartomancy', item: `${SITE_URL}/cartomancy` },
+          { '@type': 'ListItem', position: 3, name: 'Guide', item: `${SITE_URL}/cartomancy/guide` },
+          { '@type': 'ListItem', position: 4, name: lesson.title, item: url },
+        ],
+      },
+    ],
+  };
+}
+
 function blogHubMeta() {
   return {
     title: 'Blog — Tarot, Astrology, Daily Practice | Arcana',
@@ -380,36 +507,37 @@ function signupMeta() {
 // twitter, and injects JSON-LD <script>s before </head>.
 // ────────────────────────────────────────────────────────────────────
 
-// Canonical URLs must match what Netlify actually serves. The prerendered
-// files live at `x/index.html`, so Netlify serves them at the TRAILING-SLASH
-// URL (`/x/`) and 301-redirects the no-slash form. Previously canonical + og
-// + sitemap used the no-slash form → every URL was a redirect and each page's
-// canonical pointed at a redirecting URL. Normalize to the slash form so the
-// canonical is a direct 200 that matches the served + sitemap URL.
-function withSlash(u) {
-  return u.endsWith('/') ? u : `${u}/`;
-}
-
-/** Slash-normalize a site URL unless it's a file (has an extension) or an
- *  anchor-style @id. Query strings survive: /blog?q=x → /blog/?q=x. */
-function slashSiteUrl(u) {
+// URL form — ONE canonical, the slashless one, everywhere.
+//
+// Every route is written twice: `dist/x/index.html` (Netlify serves it at
+// `/x/`) and `dist/x.html` (served at `/x`, pretty URLs on), so neither form
+// redirects. The previous arrangement wrote only `x/index.html` and chose the
+// slash form as canonical; but the app links the slashless form everywhere
+// (TarotCardMeaningPage, PickACardPage, the footer, App.tsx), so every
+// in-app and every shared link cost a 301 (+776 ms on the card page in
+// Lighthouse). The canonical, the sitemap, the hub link lists and the JSON-LD
+// now all name the slashless form the links use; the slash form stays
+// reachable and points at it. Files (privacy-policy.html) and the root are
+// untouched.
+function withoutSlash(u) {
   const [base, qs] = u.split('?');
+  if (base === `${SITE_URL}/` || base === SITE_URL) return u;
   const last = base.split('/').pop();
   if (!last || last.includes('.') || last.includes('#')) return u;
-  const slashed = base.endsWith('/') ? base : `${base}/`;
-  return qs !== undefined ? `${slashed}?${qs}` : slashed;
+  const bare = base.replace(/\/+$/, '');
+  return qs !== undefined ? `${bare}?${qs}` : bare;
 }
 
 /** Deep-walk JSON-LD and normalize every URL-bearing string that points at
- *  our site to the trailing-slash form, so structured data agrees with the
- *  canonical + sitemap (they were emitting the no-slash redirect form). */
+ *  our site to the slashless form, so structured data agrees with the
+ *  canonical + sitemap. */
 function normalizeJsonLdUrls(node) {
   if (Array.isArray(node)) return node.map(normalizeJsonLdUrls);
   if (node && typeof node === 'object') {
     const out = {};
     for (const [k, v] of Object.entries(node)) {
       out[k] = (typeof v === 'string' && v.startsWith(SITE_URL))
-        ? slashSiteUrl(v)
+        ? withoutSlash(v)
         : normalizeJsonLdUrls(v);
     }
     return out;
@@ -417,9 +545,9 @@ function normalizeJsonLdUrls(node) {
   return node;
 }
 
-function rewriteHead(template, meta, body) {
+function rewriteHead(template, meta, body, opts = {}) {
   let html = template;
-  const canon = withSlash(meta.canonical);
+  const canon = withoutSlash(meta.canonical);
 
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(meta.title)}</title>`);
   html = html.replace(
@@ -480,9 +608,11 @@ function rewriteHead(template, meta, body) {
   // Static body content — the SEO fix. Injected inside #root; main.tsx uses
   // createRoot().render() which replaces these children on hydration, so
   // crawlers index the real content and users get instant first paint.
+  // `opts.raw` passes a body that is already wrapped (the landing hero);
+  // `opts.style` swaps the inline stylesheet.
   if (body) {
-    html = html.replace('</head>', `${SEO_STYLE}\n  </head>`);
-    html = html.replace('<div id="root"></div>', `<div id="root">${wrapBody(body)}</div>`);
+    html = html.replace('</head>', `${opts.style || SEO_STYLE}\n  </head>`);
+    html = html.replace('<div id="root"></div>', `<div id="root">${opts.raw ? body : wrapBody(body)}</div>`);
   }
 
   return html;
@@ -495,14 +625,16 @@ function escapeAttr(s) {
   return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
-function writeRoute(routePath, meta, template, body) {
-  const html = rewriteHead(template, meta, body);
-  // Map "/" → dist/index.html (overwrite root template too — outer routes
-  // should not rely on root meta), "/x" → dist/x/index.html
-  const cleanPath = routePath === '/' ? '' : routePath.replace(/^\/+/, '');
+function writeRoute(routePath, meta, template, body, opts) {
+  const html = rewriteHead(template, meta, body, opts);
+  // "/" → dist/index.html (overwrite the root template too — outer routes
+  // should not rely on root meta). "/x" → dist/x/index.html AND dist/x.html,
+  // so both `/x/` and `/x` are a direct 200 (see the URL-form note above).
+  const cleanPath = routePath === '/' ? '' : routePath.replace(/^\/+/, '').replace(/\/+$/, '');
   const outDir = cleanPath ? join(DIST, cleanPath) : DIST;
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, 'index.html'), html);
+  if (cleanPath) writeFileSync(join(DIST, `${cleanPath}.html`), html);
 }
 
 async function fetchBlogPosts() {
@@ -544,9 +676,14 @@ async function main() {
   const numeroMap = bySlug(data.numerologyEntries);
   const spreadMap = data.spreadMap || {};
 
+  // The landing hero as static HTML (LCP element); see landingHeroBody.
+  let heroStrings = null;
+  try { heroStrings = JSON.parse(readFileSync(resolve('src/i18n/locales/en/landing.json'), 'utf8')).hero; }
+  catch (e) { console.warn('[prerender-meta] landing.json unreadable — root gets a head-only page:', e.message); }
+
   // Public root + auth pages + main hubs. Hubs get crawlable link lists so
   // Googlebot can reach every leaf page from raw HTML.
-  writeRoute('/', homeMeta(), template); count++;
+  writeRoute('/', homeMeta(), template, heroStrings ? landingHeroBody(heroStrings) : undefined, { raw: true, style: LANDING_STYLE }); count++;
   writeRoute('/signin', signinMeta(), template); count++;
   writeRoute('/signup', signupMeta(), template); count++;
   writeRoute('/tarot-meanings', tarotMeaningsHubMeta(), template,
@@ -602,6 +739,34 @@ async function main() {
     const e = glossaryMap[slug];
     writeRoute(`/glossary/${slug}`, glossaryEntryMeta(slug), template, e ? glossaryBody(e) : '');
     count++;
+  }
+
+  // Cartomancy: hub, the card library, 54 card pages, the guide and 12 lessons.
+  const playingCards = data.PLAYING_CARDS_ALL || [];
+  const lessons = (data.CARTO_LESSONS || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  if (playingCards.length && lessons.length) {
+    writeRoute('/cartomancy', cartomancyHubMeta(playingCards.length, lessons.length), template,
+      hubBody('Cartomancy — Playing Card Reading', 'Read an ordinary deck: every card meaning, nine spreads, and a twelve-lesson guide to suits, numbers, courts and combinations.',
+        [
+          { href: `${SITE_URL}/cartomancy/cards`, label: 'Playing card meanings — all 54 cards' },
+          { href: `${SITE_URL}/cartomancy/guide`, label: 'How to read playing cards — the guide' },
+          ...cartomancyLessonLinks(lessons),
+          ...cartomancyCardLinks(playingCards),
+        ])); count++;
+    writeRoute('/cartomancy/cards', cartomancyCardsHubMeta(playingCards), template,
+      hubBody('Playing Card Meanings', 'Hearts, Clubs, Diamonds and Spades from Ace to King, and the two Jokers — upright, reversed, love, career, advice, timing and combinations.', cartomancyCardLinks(playingCards))); count++;
+    for (const card of playingCards) {
+      writeRoute(`/cartomancy/cards/${card.slug}`, cartomancyCardMeta(card), template, cartomancyCardBody(card));
+      count++;
+    }
+    writeRoute('/cartomancy/guide', cartomancyGuideHubMeta(lessons), template,
+      hubBody('How to Read Playing Cards', 'Twelve short lessons, in reading order, from the deck in your hand to reading for others.', cartomancyLessonLinks(lessons))); count++;
+    for (const lesson of lessons) {
+      writeRoute(`/cartomancy/guide/${lesson.slug}`, cartomancyLessonMeta(lesson), template, cartomancyLessonBody(lesson));
+      count++;
+    }
+  } else {
+    console.warn('[prerender-meta] cartomancy data missing — its routes were not written.');
   }
 
   // Blog posts (dynamic)

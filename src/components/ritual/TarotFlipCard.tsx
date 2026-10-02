@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { Bookmark, BookmarkCheck, Share2, HelpCircle, RotateCcw } from 'lucide-react';
-import { Tag } from '../ui';
+import { Tag, KeywordRow, Disclosure, TarotFace } from '../ui';
 import type { TarotCard } from '../../types';
 import { useProgressiveImage } from '../../hooks/useProgressiveImage';
 import { useT } from '../../i18n/useT';
 import { flipHaptics } from '../../utils/haptics';
+import { firstSentences, hasMoreThan } from '../readings/tarot/readingText';
 
 /*
  * Kept deliberately in step with the flip in
@@ -60,7 +61,7 @@ export function TarotFlipCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showReversed, setShowReversed] = useState(reversed);
 
-  const { src: cardImageUrl, isLoading: isCardLoading, isPlaceholder } = useProgressiveImage({
+  const { src: cardImageUrl } = useProgressiveImage({
     cardId: card.id,
     cardName: card.name,
     remoteUrl: card.imageUrl,
@@ -95,9 +96,13 @@ export function TarotFlipCard({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <div>
+        <div className="min-w-0">
           <p className="font-display-eyebrow text-mystic-500">{t('home.ritualCards.yourCard')}</p>
-          <h3 className="heading-display-md text-mystic-100">{t('home.ritualCards.tapToReveal')}</h3>
+          {/* The heading names what is on the table: the invitation before
+              the turn, the card after it (R5 m-2). */}
+          <h3 className="heading-display-md text-mystic-100 truncate">
+            {isFlipped ? card.name : t('home.ritualCards.tapToReveal')}
+          </h3>
         </div>
         {isFlipped && (
           <button
@@ -149,28 +154,15 @@ export function TarotFlipCard({
           </div>
 
           {/* Face — pre-turned 180° and mounted from the start, so the art
-              is decoded before the hinge moves. The art carries its own
-              matte, rule and name plate, so nothing is printed over it. */}
+              is decoded before the hinge moves. The plane carries the
+              reversal, so the face is drawn upright and the Tag below
+              names the orientation. */}
           <div
-            className="absolute inset-0 rounded-card overflow-hidden bg-mystic-850"
+            className="absolute inset-0"
             style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
             aria-hidden={!isFlipped}
           >
-            {cardImageUrl ? (
-              <img
-                src={cardImageUrl}
-                alt={card.name}
-                decoding="async"
-                draggable={false}
-                className={`w-full h-full object-cover pointer-events-none select-none transition-opacity duration-slow ease-out ${
-                  isCardLoading || isPlaceholder ? 'opacity-60' : 'opacity-100'
-                }`}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center p-4 text-center">
-                <h4 className="heading-display-md text-gold">{card.name}</h4>
-              </div>
-            )}
+            <TarotFace card={card} size="fill" radius="card" src={cardImageUrl || undefined} reversedTag={false} loading="eager" alt="" />
           </div>
         </div>
 
@@ -197,19 +189,19 @@ export function TarotFlipCard({
           className="space-y-4 animate-fade-in"
           style={{ animationDuration: '280ms', animationDelay: `${FLIP_MS - 160}ms`, animationFillMode: 'both' }}
         >
-          <div className="text-center">
-            <p className="text-ui text-mystic-300">
-              {showReversed ? card.meaningReversed : card.meaningUpright}
-            </p>
-          </div>
+          {/* Short by default (R5 M-12): the keywords, two sentences, and
+              the rest behind a disclosure — the actions stay in view. */}
+          {card.keywords?.length > 0 && <KeywordRow keywords={card.keywords.slice(0, 4)} />}
 
-          <div className="flex flex-wrap justify-center gap-2">
-            {card.keywords.slice(0, 4).map((keyword, i) => (
-              <Tag key={i} tone="neutral" size="md">
-                {keyword}
-              </Tag>
-            ))}
-          </div>
+          <p className="reading-copy text-center">
+            {firstSentences(showReversed ? card.meaningReversed : card.meaningUpright, 2)}
+          </p>
+
+          {hasMoreThan(showReversed ? card.meaningReversed : card.meaningUpright, 2) && (
+            <Disclosure variant="row" label={t('readings.result.readFullMeaning', { defaultValue: 'Read the full meaning' })}>
+              <p className="reading-copy">{showReversed ? card.meaningReversed : card.meaningUpright}</p>
+            </Disclosure>
+          )}
 
           <div className="flex items-center justify-center gap-2 pt-2">
             <button

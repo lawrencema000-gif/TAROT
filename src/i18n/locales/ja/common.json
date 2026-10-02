@@ -1,8 +1,6 @@
 {
   "app": {
-    "name": "Arcana",
-    "tagline": "自分を知る。一日一つの儀式で。",
-    "shortTagline": "毎日のリチュアル。"
+    "tagline": "自分を知る。一日一つの儀式で。"
   },
   "nav": {
     "home": "ホーム",
@@ -14,12 +12,10 @@
     "blog": "ブログ",
     "cardMeanings": "カード解説",
     "signIn": "ログイン",
-    "signOut": "ログアウト",
     "settings": "設定",
     "search": "検索",
     "saved": "保存済み",
     "back": "戻る",
-    "backToArcana": "← Arcana に戻る",
     "backToNews": "ニュース一覧へ",
     "trophies": "トロフィー",
     "news": "ニュース",
@@ -41,17 +37,11 @@
     "continue": "続ける",
     "cancel": "キャンセル",
     "delete": "削除",
-    "confirm": "確定",
     "close": "閉じる",
-    "skip": "スキップ",
     "retry": "もう一度",
-    "readMore": "続きを読む",
-    "copy": "コピー",
     "copied": "コピーしました。",
     "saved": "保存しました",
     "shareFailed": "共有できませんでした。もう一度お試しください。",
-    "restore": "購入を復元",
-    "manage": "サブスクを管理",
     "loading": "読み込み中…",
     "send": "送信",
     "refresh": "更新"
@@ -59,22 +49,8 @@
   "labels": {
     "email": "メールアドレス",
     "password": "パスワード",
-    "displayName": "表示名",
     "language": "言語",
-    "birthDate": "生年月日",
-    "birthTime": "出生時刻",
-    "birthPlace": "出生地",
-    "timezone": "タイムゾーン",
-    "loading": "読み込み中…",
-    "processing": "処理中…",
-    "today": "今日",
-    "yesterday": "昨日",
-    "optional": "任意",
-    "required": "必須",
-    "searchPlaceholder": "検索…",
-    "yes": "はい",
-    "no": "いいえ",
-    "maybe": "どちらとも言えない"
+    "loading": "読み込み中…"
   },
   "errors": {
     "generic": "うまくいきませんでした。接続を確認して、もう一度お試しください。",
@@ -139,14 +115,6 @@
     "invalidValue": "この値は無効です。"
   },
   "toast": {
-    "savedSuccess": "保存しました。",
-    "deletedSuccess": "削除しました。",
-    "copiedSuccess": "クリップボードにコピーしました。",
-    "welcomeBack": "お帰りなさい。",
-    "signedOut": "ログアウトしました。",
-    "offline": "オフラインです。一部の機能が使えません。",
-    "reconnected": "オンラインに戻りました。",
-    "updateAvailable": "新しいバージョンがあります。",
     "languageChanged": "言語を変更しました。"
   },
   "languages": {
@@ -154,12 +122,6 @@
     "ja": "日本語",
     "ko": "한국어",
     "zh": "简体中文"
-  },
-  "time": {
-    "morning": "朝",
-    "afternoon": "昼",
-    "evening": "夕方",
-    "night": "夜"
   },
   "auth": {
     "profileLoadFailed": "プロフィールを読み込めませんでした。ページを再読み込みしてもう一度お試しください。",

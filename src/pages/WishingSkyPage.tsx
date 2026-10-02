@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Moon, Heart, Flag, HandHeart, X } from 'lucide-react';
+import { Moon, Heart, Flag, HandHeart, X, Check } from 'lucide-react';
 import { Card, Button, Chip, Input, Page, Sheet, Tag, toast, PageHeader, EmptyState, SparkleFourPoint, EyebrowLabel } from '../components/ui';
 import { WishSky } from '../components/wishes/WishSky';
 import { wishes as wishesDal } from '../dal';
@@ -44,6 +44,11 @@ export function WishingSkyPage() {
   const [label, setLabel] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  // Report is two taps: the first arms the button, the second sends. The
+  // wish ids reported this session render a muted "Reported" instead.
+  const [reportArmed, setReportArmed] = useState(false);
+  const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     setPageMeta(
@@ -116,35 +121,47 @@ export function WishingSkyPage() {
 
   const reportWish = async (wish: Wish) => {
     if (!user) return;
+    if (!reportArmed) {
+      setReportArmed(true);
+      return;
+    }
+    setReporting(true);
     const res = await wishesDal.report(wish.id, user.id);
+    setReporting(false);
+    setReportArmed(false);
+    if (res.ok) setReportedIds((prev) => new Set(prev).add(wish.id));
     toast(
       res.ok
         ? t('wishingSky.reported', { defaultValue: 'Reported. Thank you — we will look at it.' })
-        : t('wishingSky.reportFailed', { defaultValue: "Couldn't send the report — try again." }),
+        : t('wishingSky.reportFailed', { defaultValue: 'Couldn’t send the report — try again.' }),
       res.ok ? 'success' : 'error',
     );
   };
 
   const themeLabel = (k: WishTheme) => WISH_THEMES.find((th) => th.key === k)?.label ?? t('wishingSky.themeOther', { defaultValue: 'Something else' });
 
+  // An empty sky does not need 460px of dark to say it is empty; a shorter
+  // canvas keeps "Make a wish" above the fold on first paint (R7).
+  const skyEmpty = !loading && sky.length === 0;
+
   return (
     <Page spacing="md">
       <PageHeader
         onBack={() => navigate(-1)}
         eyebrow={t('wishingSky.eyebrow', { defaultValue: 'The Wishing Sky' })}
-        title={t('wishingSky.title', { defaultValue: "Everyone's wishes, in one sky" })}
-        subtitle={t('wishingSky.subtitle', { defaultValue: "Every star here is someone's wish. Make one and yours joins them. When you echo a wish — say you want it for them too — a line is drawn between your star and theirs." })}
+        title={t('wishingSky.title', { defaultValue: 'Everyone’s wishes, in one sky' })}
+        subtitle={t('wishingSky.subtitle', { defaultValue: 'Every star here is someone’s wish. Make one and yours joins them. When you echo a wish — say you want it for them too — a line is drawn between your star and theirs.' })}
       />
 
-      {/* The sky itself. Deliberately tall: it is the point of the page. */}
+      {/* The sky itself. Deliberately tall once there is something in it. */}
       <div className="relative rounded-card overflow-hidden border border-mystic-800/60 bg-mystic-950"
-           style={{ height: 'min(60vh, 460px)' }}>
+           style={{ height: skyEmpty ? 240 : 'min(60vh, 460px)' }}>
         {loading ? (
-          <div className="absolute inset-0 grid place-items-center text-sm text-mystic-500">
+          <div className="absolute inset-0 grid place-items-center text-ui text-mystic-500">
             {t('wishingSky.loading', { defaultValue: 'Lighting the sky…' })}
           </div>
         ) : sky.length === 0 ? (
-          <div className="absolute inset-0 grid place-items-center px-8">
+          <div className="absolute inset-0 grid place-items-center px-6 pb-12">
             <EmptyState
               variant="inline"
               size="sm"
@@ -161,14 +178,14 @@ export function WishingSkyPage() {
         )}
 
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
-          <Tag tone="neutral">
-            {sky.length} {sky.length === 1 ? 'wish' : 'wishes'}
-            {links.length > 0 && <> · {links.length} linked</>}
+          <Tag tone="neutral" className="tabular-nums">
+            {t('wishingSky.wishCount', { defaultValue: '{{count}} wishes', count: sky.length })}
+            {links.length > 0 && <> · {t('wishingSky.linkedCount', { defaultValue: '{{count}} linked', count: links.length })}</>}
           </Tag>
           {user && (
             <Button variant="primary" size="sm" className="pointer-events-auto"
                     onClick={() => setComposing(true)}>
-              <SparkleFourPoint size={14} className="mr-1.5" /> {t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}
+              <SparkleFourPoint size={14} aria-hidden /> {t('wishingSky.makeWish', { defaultValue: 'Make a wish' })}
             </Button>
           )}
         </div>
@@ -176,8 +193,8 @@ export function WishingSkyPage() {
 
       {!user && (
         <Card className="p-4">
-          <p className="text-sm text-mystic-300">
-            {t('wishingSky.signInHint', { defaultValue: "Sign in to add your own star and to echo other people's wishes." })}
+          <p className="text-ui text-mystic-300">
+            {t('wishingSky.signInHint', { defaultValue: 'Sign in to add your own star and to echo other people’s wishes.' })}
           </p>
         </Card>
       )}
@@ -192,10 +209,10 @@ export function WishingSkyPage() {
             onClick={() => setSelected(w)}
             className="w-full text-left py-2.5 border-b border-mystic-800/40 last:border-0 hover:bg-mystic-900/40 rounded-lg px-2 -mx-2 transition-colors"
           >
-            <p className="text-sm text-mystic-200 leading-relaxed">{w.text}</p>
-            <div className="flex items-center gap-2 mt-1 text-meta text-mystic-600">
+            <p className="text-ui text-mystic-200 leading-relaxed">{w.text}</p>
+            <div className="flex items-center gap-2 mt-1 text-meta text-mystic-500">
               <span>{themeLabel(w.theme)}</span>
-              {w.echoCount > 0 && <span>· {w.echoCount} {w.echoCount === 1 ? 'echo' : 'echoes'}</span>}
+              {w.echoCount > 0 && <span className="tabular-nums">· {t('wishingSky.echoCount', { defaultValue: '{{count}} echoes', count: w.echoCount })}</span>}
               {w.openToHelp && <span className="text-teal">· {t('wishingSky.openToHelp', { defaultValue: 'open to help' })}</span>}
               {myWishIds.has(w.id) && <span className="text-gold">· {t('wishingSky.yours', { defaultValue: 'yours' })}</span>}
             </div>
@@ -215,13 +232,14 @@ export function WishingSkyPage() {
               onChange={(e) => setText(e.target.value.slice(0, MAX_WISH))}
               rows={4}
               placeholder={t('wishingSky.placeholder', { defaultValue: 'I wish…' })}
-              className="w-full rounded-control bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
+              aria-label={t('wishingSky.placeholder', { defaultValue: 'I wish…' }) as string}
+              className="w-full rounded-control bg-mystic-900/60 border border-mystic-700 p-3 text-ui text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
             />
             <div className="flex justify-between items-start gap-2 mt-1">
-              <p className="text-caption text-mystic-600">
+              <p className="text-caption text-mystic-500">
                 {t('wishingSky.publicNote', { defaultValue: 'Everyone using Arcana can read this.' })}
               </p>
-              <span className="text-meta text-mystic-600 flex-shrink-0">{text.length}/{MAX_WISH}</span>
+              <span className="text-meta text-mystic-500 flex-shrink-0 tabular-nums">{text.length}/{MAX_WISH}</span>
             </div>
             {contactWarning && (
               <p className="text-caption text-coral mt-2">
@@ -250,7 +268,7 @@ export function WishingSkyPage() {
                      onChange={(e) => setOpenToHelp(e.target.checked)}
                      className="mt-1 accent-gold w-4 h-4" />
               <span>
-                <span className="text-sm text-mystic-200">{t('wishingSky.openToHelpLabel', { defaultValue: 'Let people offer to help' })}</span>
+                <span className="text-ui text-mystic-200">{t('wishingSky.openToHelpLabel', { defaultValue: 'Let people offer to help' })}</span>
                 <span className="block text-caption text-mystic-500 mt-0.5">
                   {t('wishingSky.openToHelpBody', { defaultValue: 'Anyone can send you a private message about this wish. They never see your contact details — you read what they wrote and decide whether to reply.' })}
                 </span>
@@ -275,14 +293,14 @@ export function WishingSkyPage() {
       </Sheet>
 
       {/* ── a single wish ── */}
-      <Sheet open={!!selected && !offering} onClose={() => setSelected(null)} title={t('wishingSky.wishTitle', { defaultValue: 'A wish' })}>
+      <Sheet open={!!selected && !offering} onClose={() => { setSelected(null); setReportArmed(false); }} title={t('wishingSky.wishTitle', { defaultValue: 'A wish' })}>
         {selected && (
           <div className="space-y-4">
-            <p className="text-base text-mystic-100 leading-relaxed">{selected.text}</p>
-            <div className="text-meta text-mystic-500">
+            <p className="text-body text-mystic-100 leading-relaxed">{selected.text}</p>
+            <div className="text-meta text-mystic-500 tabular-nums">
               {themeLabel(selected.theme)}
               {selected.wisherLabel && <> · {selected.wisherLabel}</>}
-              {selected.echoCount > 0 && <> · {selected.echoCount} {selected.echoCount === 1 ? 'echo' : 'echoes'}</>}
+              {selected.echoCount > 0 && <> · {t('wishingSky.echoCount', { defaultValue: '{{count}} echoes', count: selected.echoCount })}</>}
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -299,9 +317,24 @@ export function WishingSkyPage() {
                 </Button>
               )}
               {user && selected.userId !== user.id && (
-                <Button variant="ghost" size="sm" onClick={() => reportWish(selected)}>
-                  <Flag className="w-3.5 h-3.5 mr-1.5" /> {t('wishingSky.report', { defaultValue: 'Report this wish' })}
-                </Button>
+                reportedIds.has(selected.id) ? (
+                  <Tag tone="neutral" size="md" icon={<Check className="w-3.5 h-3.5" aria-hidden />} className="self-center">
+                    {t('wishingSky.reportedTag', { defaultValue: 'Reported' })}
+                  </Tag>
+                ) : (
+                  <Button
+                    variant={reportArmed ? 'outline' : 'ghost'}
+                    size="sm"
+                    onClick={() => reportWish(selected)}
+                    loading={reporting}
+                    disabled={reporting}
+                  >
+                    {!reporting && <Flag className="w-3.5 h-3.5" aria-hidden />}
+                    {reportArmed
+                      ? t('wishingSky.reportConfirm', { defaultValue: 'Tap again to report' })
+                      : t('wishingSky.report', { defaultValue: 'Report this wish' })}
+                  </Button>
+                )
               )}
               {user && selected.userId === user.id && (
                 <span className="text-caption text-mystic-500 self-center">{t('wishingSky.thisIsYours', { defaultValue: 'This one is yours.' })}</span>
@@ -320,7 +353,7 @@ export function WishingSkyPage() {
       {/* ── offer help ── */}
       <Sheet open={offering} onClose={() => setOffering(false)} title={t('wishingSky.offerHelp', { defaultValue: 'Offer to help' })}>
         <div className="space-y-4">
-          <p className="text-sm text-mystic-400 leading-relaxed">
+          <p className="text-ui text-mystic-400 leading-relaxed">
             {t('wishingSky.offerIntro', { defaultValue: 'This goes only to them. They will see your message and can reply if they want to — neither of you has to share anything you would rather not.' })}
           </p>
           <textarea
@@ -328,7 +361,8 @@ export function WishingSkyPage() {
             onChange={(e) => setOfferMessage(e.target.value.slice(0, 500))}
             rows={4}
             placeholder={t('wishingSky.offerPlaceholder', { defaultValue: 'What you could do, and how you would like to help…' })}
-            className="w-full rounded-control bg-mystic-900/60 border border-mystic-700 p-3 text-sm text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
+            aria-label={t('wishingSky.offerPlaceholder', { defaultValue: 'What you could do, and how you would like to help…' }) as string}
+            className="w-full rounded-control bg-mystic-900/60 border border-mystic-700 p-3 text-ui text-mystic-100 placeholder:text-mystic-600 focus:border-gold/50 focus:outline-none"
           />
           <Button variant="primary" fullWidth disabled={!offerMessage.trim() || saving} onClick={sendOffer}>
             {saving ? t('wishingSky.sending', { defaultValue: 'Sending…' }) : t('wishingSky.sendPrivately', { defaultValue: 'Send privately' })}
@@ -340,7 +374,7 @@ export function WishingSkyPage() {
         </div>
       </Sheet>
 
-      <p className="text-center text-caption text-mystic-600 max-w-sm mx-auto">
+      <p className="text-center text-caption text-mystic-500 max-w-sm mx-auto">
         {t('wishingSky.footer', { defaultValue: 'Wishes are public and anyone can read them. Never put a phone number, an address or an email in one — if you are open to help, people can reach you privately instead.' })}
       </p>
     </Page>

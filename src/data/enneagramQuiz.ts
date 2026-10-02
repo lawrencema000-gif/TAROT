@@ -6,45 +6,45 @@ export const enneagramQuiz: QuizDefinition = {
   title: 'Enneagram Assessment',
   description: 'The Enneagram maps nine fundamental patterns of thinking, feeling, and behaving. Unlike personality quizzes that describe what you do, the Enneagram reveals why you do it—your core motivation, your deepest fear, and the automatic strategies you developed to navigate the world. You will receive your primary type, your wing, growth and stress paths, and a tarot archetype alignment that adds narrative depth to your pattern.',
   questions: [
-    { id: 'en1', text: 'I strive for perfection and have high standards for myself and others.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en2', text: 'I often put others\' needs before my own and enjoy helping people.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en1', text: 'I notice what is wrong with something before I notice what is right about it.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en2', text: 'I tend to know what someone needs before they ask for it.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en3', text: 'Achievement and success are very important to me.', dimension: 'type3', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en4', text: 'I often feel different from others and like something is missing in my life.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en4', text: 'I often feel that something essential is missing from my life that other people seem to have.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en5', text: 'I prefer to observe and understand before participating.', dimension: 'type5', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en6', text: 'I often anticipate potential problems and prepare for worst-case scenarios.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en7', text: 'I love variety and keeping my options open for new experiences.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en8', text: 'I am direct and assertive, and I don\'t back down from confrontation.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en6', text: 'I am most comfortable when I know exactly who and what I can rely on.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en7', text: 'I would rather try many new things than go deep into one.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en8', text: 'I say what I think directly, even when it causes friction.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en9', text: 'I value peace and harmony above most things.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
     { id: 'en10', text: 'I am very critical of myself when I make mistakes.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en11', text: 'I feel fulfilled when I can make a positive difference in someone\'s life.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en12', text: 'I adapt my presentation depending on who I\'m with.', dimension: 'type3', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en13', text: 'I am drawn to melancholy, beauty, and deep emotions.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en13', text: 'I am drawn to the bittersweet — beauty with a touch of sadness in it.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en14', text: 'I need a lot of private time and space to think.', dimension: 'type5', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en15', text: 'I often question authority and established systems.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en15', text: 'I find it hard to fully trust people in authority until they have proven themselves.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en16', text: 'I dislike being limited or constrained in any way.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en17', text: 'I naturally take charge in situations and protect those I care about.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en18', text: 'I tend to go along with others to avoid conflict.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en17', text: 'When something threatens the people I care about, I step in without hesitation.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en18', text: 'When a conflict is brewing, I tune out or go numb rather than engage.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
-    { id: 'en19', text: 'I have a strong sense of right and wrong.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en20', text: 'I sometimes struggle to say no to people.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en19', text: 'I feel a constant inner pressure to do things the correct way.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en20', text: 'I feel guilty when I turn down a request for help.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en21', text: 'I am highly motivated by recognition and achievement.', dimension: 'type3', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en22', text: 'I often feel misunderstood by others.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en23', text: 'Knowledge and competence are extremely important to me.', dimension: 'type5', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en24', text: 'I value loyalty and commitment in relationships.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en24', text: 'Once I have committed to a person or a group, I stay loyal even when it costs me.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en25', text: 'I prefer to focus on the positive and avoid painful emotions.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en26', text: 'I have a strong presence and people often look to me for leadership.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en26', text: 'In a group with no leader, I usually end up taking charge.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en27', text: 'I can see multiple perspectives and understand different viewpoints.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
     { id: 'en28', text: 'I often feel frustrated when things aren\'t done properly.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en29', text: 'I pride myself on being attuned to others\' needs and feelings.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en30', text: 'I work hard to project a successful image.', dimension: 'type3', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en31', text: 'I long for deep, authentic connection and self-expression.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en31', text: 'I need to express what is unique about me, even if it sets me apart.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en32', text: 'I feel drained by too much social interaction.', dimension: 'type5', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en33', text: 'I often worry about what could go wrong.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en34', text: 'I get bored easily and always seek new stimulation.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en35', text: 'I value strength and despise weakness or vulnerability.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en36', text: 'I sometimes struggle to assert my own priorities and preferences.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en35', text: 'I keep my softer feelings hidden because showing them feels unsafe.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en36', text: 'When someone asks what I want, I often genuinely do not know.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
     { id: 'en37', text: 'I believe there is a right way to do things.', dimension: 'type1', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en38', text: 'I feel hurt when my help is not appreciated.', dimension: 'type2', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -52,9 +52,9 @@ export const enneagramQuiz: QuizDefinition = {
     { id: 'en40', text: 'I am sensitive to criticism and rejection.', dimension: 'type4', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en41', text: 'I prefer to figure things out on my own rather than ask for help.', dimension: 'type5', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en42', text: 'I am skeptical and like to test people\'s trustworthiness.', dimension: 'type6', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en43', text: 'I am optimistic and see endless possibilities in life.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en43', text: 'I expect things to turn out well and move on quickly from disappointment.', dimension: 'type7', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'en44', text: 'I don\'t like feeling controlled or manipulated by others.', dimension: 'type8', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'en45', text: 'I often merge with others\' agendas and forget my own needs.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'en45', text: 'I lose track of my own opinions when I spend a lot of time with someone.', dimension: 'type9', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
   ],
 };
 
@@ -62,7 +62,12 @@ export interface EnneagramResult {
   primaryType: number;
   wing: number | null;
   scores: Record<string, number>;
+  /** Primary type first, then the top type of each of the two other centres (body 8-9-1, heart 2-3-4, head 5-6-7). */
   tritype: [number, number, number];
+  /** The top two types shared a raw sum and neither adjacent wing settled it. */
+  isTie: boolean;
+  /** The other type in an unbroken tie. */
+  coPrimary?: number;
 }
 
 export function calculateEnneagram(scores: Record<string, number>): EnneagramResult {
@@ -82,7 +87,26 @@ export function calculateEnneagram(scores: Record<string, number>): EnneagramRes
     .map(([type, score]) => ({ type: parseInt(type.replace('type', '')), score }))
     .sort((a, b) => b.score - a.score);
 
-  const primaryType = sorted[0].type;
+  // Primary tie rule: when two types share the top sum, prefer the one
+  // whose adjacent wing scores higher (the type that is better supported
+  // by its neighbours); if that is equal too, keep declared order and say
+  // so with isTie so the screen can name both.
+  const bestWingScore = (t: number) =>
+    Math.max(typeScores[`type${t === 1 ? 9 : t - 1}`], typeScores[`type${t === 9 ? 1 : t + 1}`]);
+  let primaryType = sorted[0].type;
+  let isTie = false;
+  let coPrimary: number | undefined;
+  if (sorted[1] && sorted[1].score === sorted[0].score) {
+    const a = sorted[0].type;
+    const b = sorted[1].type;
+    const wa = bestWingScore(a);
+    const wb = bestWingScore(b);
+    if (wb > wa) primaryType = b;
+    else if (wa === wb) {
+      isTie = true;
+      coPrimary = b;
+    }
+  }
 
   const wingCandidates = [
     primaryType === 1 ? 9 : primaryType - 1,
@@ -105,10 +129,15 @@ export function calculateEnneagram(scores: Record<string, number>): EnneagramRes
     group.reduce((max, type) =>
       typeScores[`type${type}`] > typeScores[`type${max}`] ? type : max, group[0]);
 
+  // The tritype is the primary plus the strongest type from EACH of the
+  // two other centres — one from body, one from heart, one from head. The
+  // previous version resolved all three slots to the primary's own centre
+  // and returned [3, 3, 3] for a Three.
+  const otherCentres = [bodyTypes, heartTypes, headTypes].filter((g) => !g.includes(primaryType));
   const tritype: [number, number, number] = [
-    getTopFromGroup(bodyTypes.includes(primaryType) ? bodyTypes : heartTypes.includes(primaryType) ? heartTypes : headTypes),
-    getTopFromGroup(heartTypes.includes(primaryType) ? heartTypes : bodyTypes.includes(primaryType) ? bodyTypes : headTypes),
-    getTopFromGroup(headTypes.includes(primaryType) ? headTypes : heartTypes.includes(primaryType) ? heartTypes : bodyTypes),
+    primaryType,
+    getTopFromGroup(otherCentres[0]),
+    getTopFromGroup(otherCentres[1]),
   ];
 
   return {
@@ -118,6 +147,8 @@ export function calculateEnneagram(scores: Record<string, number>): EnneagramRes
       Object.entries(typeScores).map(([k, v]) => [k.replace('type', ''), Math.round((v / 25) * 100)])
     ),
     tritype,
+    isTie,
+    coPrimary,
   };
 }
 
@@ -137,7 +168,6 @@ export interface EnneagramTypeInfo {
   wings: { wing: number; name: string; description: string }[];
   relationships: string;
   careers: string[];
-  famousExamples: string[];
   growthPractices: string[];
   realLifeExamples: string[];
   miniRitual: string;
@@ -153,7 +183,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To be good, right, and improve everything',
     coreFear: 'Being corrupt, evil, or defective',
     coreDesire: 'To have integrity and be balanced',
-    description: 'Ones are principled, purposeful, self-controlled, and perfectionistic. They have a strong sense of right and wrong and strive to improve themselves and the world around them.',
+    description: 'You are principled, purposeful, self-controlled, and perfectionistic. You have a strong sense of right and wrong and strive to improve yourself and the world around you.',
     healthyTraits: ['Wise', 'Discerning', 'Realistic', 'Noble', 'Morally heroic'],
     averageTraits: ['Orderly', 'Self-righteous', 'Critical', 'Perfectionistic', 'Rigid'],
     unhealthyTraits: ['Judgmental', 'Inflexible', 'Obsessive', 'Punitive', 'Self-destructive'],
@@ -165,7 +195,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Ones are loyal, committed partners who work hard on relationships. They may need to learn to accept imperfection in themselves and others.',
     careers: ['Teacher', 'Judge', 'Quality Control', 'Editor', 'Ethical Consultant', 'Nonprofit Leader'],
-    famousExamples: ['Mahatma Gandhi', 'Michelle Obama', 'Martha Stewart', 'Al Gore'],
     growthPractices: ['Practice self-compassion', 'Embrace imperfection', 'Allow yourself to play', 'Notice your inner critic'],
     realLifeExamples: ['You notice the crooked picture frame before you notice the painting', 'You have rewritten an email five times because the tone was not exactly right', 'You feel physically tense when things are disorganized or unfair', 'Your inner critic is louder than any external criticism you have ever received'],
     miniRitual: 'Place your hand on your chest and say: "I am allowed to be imperfect today. My worth is not measured by my correctness."',
@@ -179,7 +208,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To feel loved and needed',
     coreFear: 'Being unwanted or unworthy of love',
     coreDesire: 'To feel loved',
-    description: 'Twos are generous, demonstrative, people-pleasing, and possessive. They are genuinely caring but may struggle to acknowledge their own needs.',
+    description: 'You are generous, demonstrative, people-pleasing, and sometimes possessive. You care genuinely but may struggle to acknowledge your own needs.',
     healthyTraits: ['Loving', 'Caring', 'Adaptable', 'Insightful', 'Generous'],
     averageTraits: ['People-pleasing', 'Possessive', 'Intrusive', 'Demonstrative', 'Hovering'],
     unhealthyTraits: ['Manipulative', 'Self-deceptive', 'Entitled', 'Coercive', 'Victim mentality'],
@@ -191,7 +220,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Twos are devoted, nurturing partners who may need to learn to receive as well as give, and to express their own needs.',
     careers: ['Nurse', 'Teacher', 'Counselor', 'Social Worker', 'Customer Service', 'Hospitality'],
-    famousExamples: ['Mother Teresa', 'Dolly Parton', 'Bishop Desmond Tutu', 'Eleanor Roosevelt'],
     growthPractices: ['Identify your own needs', 'Practice receiving without giving back', 'Set healthy boundaries', 'Ask yourself why you\'re helping'],
     realLifeExamples: ['You know what everyone in the room needs before they ask', 'You have said "I am fine" while actively falling apart because someone else needed you', 'You feel anxious when you have nothing to give or no one to help', 'You remember small details about people that they have forgotten telling you'],
     miniRitual: 'Sit quietly and ask: "What do I need right now?" Do not answer with what someone else needs. Wait for your own answer. Honor it.',
@@ -205,7 +233,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To feel valuable and worthwhile',
     coreFear: 'Being worthless or without inherent value',
     coreDesire: 'To feel valuable and worthwhile',
-    description: 'Threes are adaptable, excelling, driven, and image-conscious. They are highly motivated by success and are excellent at reading what others value.',
+    description: 'You are adaptable, excelling, driven, and image-conscious. Success motivates you and you are excellent at reading what others value.',
     healthyTraits: ['Authentic', 'Self-accepting', 'Charming', 'Accomplished', 'Inspiring'],
     averageTraits: ['Competitive', 'Image-conscious', 'Efficient', 'Driven', 'Pragmatic'],
     unhealthyTraits: ['Deceptive', 'Narcissistic', 'Hostile', 'Exploitative', 'Vindictive'],
@@ -217,7 +245,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Threes bring energy and ambition to relationships. They may need to learn to be vulnerable and present rather than always achieving.',
     careers: ['Executive', 'Sales', 'Marketing', 'Entrepreneur', 'Politician', 'Actor'],
-    famousExamples: ['Oprah Winfrey', 'Tony Robbins', 'Tom Cruise', 'Taylor Swift'],
     growthPractices: ['Connect with your true feelings', 'Practice being rather than doing', 'Value yourself apart from achievements', 'Be authentic, not what others want'],
     realLifeExamples: ['You have achieved something impressive and immediately started planning the next achievement', 'You adjust your personality depending on who you are with to be what they value', 'You struggle to answer "who are you when you are not performing?"', 'You feel genuinely anxious when you are not productive, even on vacation'],
     miniRitual: 'Set a 5-minute timer and do nothing. No phone, no planning, no optimizing. Just exist. Notice the discomfort and sit with it.',
@@ -231,7 +258,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To find themselves and their significance',
     coreFear: 'Having no identity or personal significance',
     coreDesire: 'To find themselves and their significance',
-    description: 'Fours are expressive, dramatic, self-absorbed, and temperamental. They are deeply attuned to beauty and authenticity and seek to create a unique identity.',
+    description: 'You are expressive, dramatic, inward-looking, and temperamental. You are deeply attuned to beauty and authenticity and seek to create a unique identity.',
     healthyTraits: ['Creative', 'Inspired', 'Self-aware', 'Gentle', 'Transformative'],
     averageTraits: ['Melancholic', 'Self-absorbed', 'Withdrawn', 'Self-indulgent', 'Envious'],
     unhealthyTraits: ['Depressed', 'Self-destructive', 'Alienated', 'Tormented', 'Hopeless'],
@@ -243,7 +270,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Fours seek deep, authentic connection. They may need to learn to appreciate what they have rather than longing for what\'s missing.',
     careers: ['Artist', 'Writer', 'Therapist', 'Designer', 'Musician', 'Actor'],
-    famousExamples: ['Prince', 'Amy Winehouse', 'Frida Kahlo', 'Johnny Depp'],
     growthPractices: ['Practice gratitude for what you have', 'Take action despite feelings', 'Connect with others\' experiences', 'Balance emotion with reason'],
     realLifeExamples: ['You have felt homesick for a place you have never been', 'You are drawn to sad music even when you are happy because it feels more real', 'You have been told you are "too much" and "not enough" by the same person', 'You would rather feel pain than feel nothing at all'],
     miniRitual: 'Write one true sentence about how you feel right now. Do not make it beautiful. Do not edit it. Let it be raw and real and enough.',
@@ -257,7 +283,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To possess knowledge and understand the environment',
     coreFear: 'Being useless, helpless, or incapable',
     coreDesire: 'To be capable and competent',
-    description: 'Fives are perceptive, innovative, secretive, and isolated. They have a need to understand and tend to withdraw to conserve their energy.',
+    description: 'You are perceptive, innovative, private, and self-contained. You need to understand things and tend to withdraw to conserve your energy.',
     healthyTraits: ['Visionary', 'Objective', 'Open-minded', 'Perceptive', 'Pioneering'],
     averageTraits: ['Analytical', 'Detached', 'Preoccupied', 'High-strung', 'Provocative'],
     unhealthyTraits: ['Isolated', 'Nihilistic', 'Eccentric', 'Phobic', 'Delusional'],
@@ -269,7 +295,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Fives offer depth and insight in relationships. They may need to learn to share more of themselves and engage emotionally.',
     careers: ['Researcher', 'Scientist', 'Engineer', 'Professor', 'Analyst', 'Writer'],
-    famousExamples: ['Albert Einstein', 'Bill Gates', 'Stephen Hawking', 'Tim Burton'],
     growthPractices: ['Share knowledge with others', 'Take action before feeling ready', 'Connect with your body', 'Express emotions to trusted people'],
     realLifeExamples: ['You have chosen to study a topic instead of attending a social event, and felt relieved', 'You mentally calculate how much energy a situation will cost before entering it', 'You know more about a subject than most experts but would never call yourself an expert', 'You feel drained by small talk but can discuss a topic you love for hours'],
     miniRitual: 'Share one thing you learned today with another person. Not to teach. Just to connect through something you care about.',
@@ -283,7 +308,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To have security and support',
     coreFear: 'Being without support and guidance',
     coreDesire: 'To have security and support',
-    description: 'Sixes are engaging, responsible, anxious, and suspicious. They are excellent at troubleshooting but can become paralyzed by doubt.',
+    description: 'You are engaging, responsible, anxious, and watchful. You are excellent at troubleshooting but can be paralysed by doubt.',
     healthyTraits: ['Courageous', 'Loyal', 'Reliable', 'Hardworking', 'Self-confident'],
     averageTraits: ['Anxious', 'Suspicious', 'Ambivalent', 'Defensive', 'Evasive'],
     unhealthyTraits: ['Paranoid', 'Self-defeating', 'Overreacting', 'Panicky', 'Punitive'],
@@ -295,7 +320,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Sixes are loyal, committed partners who value trust. They may need to learn to trust themselves and not project fears onto partners.',
     careers: ['Security Analyst', 'Lawyer', 'Administrator', 'Teacher', 'Detective', 'Risk Manager'],
-    famousExamples: ['Mark Twain', 'Princess Diana', 'Bruce Springsteen', 'Ellen DeGeneres'],
     growthPractices: ['Trust your own judgment', 'Take action despite fear', 'Challenge worst-case thinking', 'Build internal authority'],
     realLifeExamples: ['You have a backup plan for your backup plan', 'You can spot what could go wrong in any situation within 30 seconds', 'You test people\'s loyalty before trusting them, sometimes without realizing it', 'You oscillate between questioning authority and desperately wanting someone trustworthy to follow'],
     miniRitual: 'Name one thing you are afraid of right now. Then name one thing you would do if you were not afraid. Take one small step toward the second thing.',
@@ -309,7 +333,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To be satisfied and content',
     coreFear: 'Being trapped in pain or deprivation',
     coreDesire: 'To be happy and free',
-    description: 'Sevens are spontaneous, versatile, acquisitive, and scattered. They are optimistic and seek variety but may avoid pain and limitation.',
+    description: 'You are spontaneous, versatile, acquisitive, and sometimes scattered. You are optimistic and seek variety but may avoid pain and limitation.',
     healthyTraits: ['Joyful', 'Accomplished', 'Grateful', 'Present', 'Satisfied'],
     averageTraits: ['Hyperactive', 'Uninhibited', 'Excessive', 'Distracted', 'Restless'],
     unhealthyTraits: ['Escapist', 'Infantile', 'Impulsive', 'Erratic', 'Manic'],
@@ -321,7 +345,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Sevens bring fun and adventure to relationships. They may need to learn to stay present during difficult times and process pain.',
     careers: ['Entrepreneur', 'Travel Writer', 'Event Planner', 'Marketing', 'Comedian', 'Chef'],
-    famousExamples: ['Robin Williams', 'Jim Carrey', 'Richard Branson', 'Elton John'],
     growthPractices: ['Sit with uncomfortable feelings', 'Finish what you start', 'Practice gratitude for what you have', 'Develop depth over breadth'],
     realLifeExamples: ['You have started planning your next vacation while still on the current one', 'You reframe every negative experience as a "learning opportunity" sometimes before you have actually felt the pain', 'You have more tabs open in your brain than most people have on their browser', 'You are the person who keeps the energy up in any room but sometimes wonder who you are when the room is empty'],
     miniRitual: 'Sit with one uncomfortable feeling for 60 seconds without reframing, distracting, or planning. Just feel it. Notice that it does not destroy you.',
@@ -335,7 +358,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To be self-reliant and in control',
     coreFear: 'Being harmed or controlled by others',
     coreDesire: 'To protect themselves and be in control',
-    description: 'Eights are self-confident, decisive, willful, and confrontational. They are natural leaders who protect others but may struggle with vulnerability.',
+    description: 'You are self-confident, decisive, wilful, and confrontational. You lead naturally and protect others but may struggle with vulnerability.',
     healthyTraits: ['Magnanimous', 'Heroic', 'Self-mastering', 'Decisive', 'Inspiring'],
     averageTraits: ['Dominating', 'Willful', 'Confrontational', 'Aggressive', 'Ruthless'],
     unhealthyTraits: ['Dictatorial', 'Destructive', 'Antisocial', 'Vengeful', 'Violent'],
@@ -347,7 +370,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Eights are protective, passionate partners. They may need to learn to be vulnerable and let others have power too.',
     careers: ['CEO', 'Entrepreneur', 'Trial Lawyer', 'Military Leader', 'Politician', 'Coach'],
-    famousExamples: ['Martin Luther King Jr.', 'Serena Williams', 'Winston Churchill', 'Pink'],
     growthPractices: ['Practice vulnerability', 'Let others lead sometimes', 'Notice and soften your impact', 'Connect with tender emotions'],
     realLifeExamples: ['You have been called "intimidating" by people who later said they felt safe with you', 'You can sense weakness or dishonesty in a room within minutes', 'You protect people fiercely and then dismiss your own vulnerability as unimportant', 'You would rather be disliked for being real than liked for being fake'],
     miniRitual: 'Tell one person something you need help with today. Not because you cannot handle it alone. Because letting someone in is the bravest thing a protector can do.',
@@ -361,7 +383,7 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     coreMotivation: 'To have inner peace and harmony',
     coreFear: 'Loss and separation',
     coreDesire: 'To have inner stability and peace of mind',
-    description: 'Nines are receptive, reassuring, complacent, and resigned. They seek harmony and merge with others but may lose touch with their own desires.',
+    description: 'You are receptive, reassuring, easy-going, and sometimes resigned. You seek harmony and merge with others but may lose touch with your own desires.',
     healthyTraits: ['Indomitable', 'Autonomous', 'Present', 'Embracing', 'Peaceful'],
     averageTraits: ['Disengaged', 'Appeasing', 'Passive', 'Complacent', 'Resigned'],
     unhealthyTraits: ['Dissociated', 'Neglectful', 'Stubborn', 'Depressed', 'Helpless'],
@@ -373,7 +395,6 @@ export const enneagramDescriptions: Record<number, EnneagramTypeInfo> = {
     ],
     relationships: 'Nines are accepting, supportive partners who create harmony. They may need to learn to assert their own needs and stay present.',
     careers: ['Counselor', 'Diplomat', 'Human Resources', 'Mediator', 'Librarian', 'Editor'],
-    famousExamples: ['Abraham Lincoln', 'Keanu Reeves', 'Queen Elizabeth II', 'Mr. Rogers'],
     growthPractices: ['Identify and express your own desires', 'Take action on your own behalf', 'Stay awake to conflict rather than numbing', 'Set and maintain priorities'],
     realLifeExamples: ['You have said "I do not mind, whatever you want" so many times you forgot what you actually want', 'You avoid conflict by going numb rather than by resolving it', 'People describe you as "easy-going" but do not realize how much you are holding back', 'You have merged so completely with someone else\'s preferences that you lost track of your own'],
     miniRitual: 'Name one thing you want today. Not what would be nice. Not what would make someone else happy. What you actually want. Then do it.',

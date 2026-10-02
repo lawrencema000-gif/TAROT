@@ -1,6 +1,21 @@
-import { useState, useCallback, useMemo } from 'react';
-import { Share2, Send, AlertCircle, RefreshCw, Quote, Zap } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, ReadingProse, toast } from '../components/ui';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Share2, Send, AlertCircle, RefreshCw, KeyRound } from 'lucide-react';
+import {
+  Button,
+  Chip,
+  Page,
+  PageHeader,
+  ReadingProse,
+  ResultSheet,
+  Tag,
+  AffirmationPanel,
+  Paper,
+  Skeleton,
+  toast,
+} from '../components/ui';
+import { TarotCardIcon, PlayingCardIcon } from '../components/ui/NavIcons';
+import { PlayingCardFace } from '../components/cartomancy/PlayingCardFace';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -11,6 +26,10 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { ORACLE_SUGGESTIONS, type OracleContext } from '../data/oracleSuggestions';
 import { localDateStr } from '../utils/localDate';
 import { ALL_CARDS, getBundledCardPath } from '../config/bundledImages';
+import { fullDeck } from '../data/tarotDeck';
+import { getEnrichment } from '../data/tarotEnrichment';
+import { getPlayingCard, getPlayingCardBySlug, PLAYING_CARDS_ALL } from '../data/cartomancy';
+import type { PlayingCard } from '../types/cartomancy';
 
 const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
   { key: 'general', label: 'Anything' },
@@ -23,18 +42,33 @@ const ORACLE_CONTEXTS: { key: OracleContext; label: string }[] = [
   { key: 'iching', label: 'I Ching' },
 ];
 
+type Deck = 'tarot' | 'playing';
+const DECK_KEY = 'arcana_quick_reading_deck';
+
+function readDeck(): Deck {
+  try {
+    return localStorage.getItem(DECK_KEY) === 'playing' ? 'playing' : 'tarot';
+  } catch {
+    return 'tarot';
+  }
+}
+
 /**
- * AI 3-second reading — single-shot Q&A with a grounded oracle voice.
- * Draws a card in the server, weaves it with the user's natal signals,
- * returns a 2-paragraph reading in under 3 seconds (with Gemini 2.0 Flash).
+ * Quick reading — single-shot Q&A with a grounded oracle voice. The server
+ * draws one card (tarot, or a playing card when `deck === 'playing'`),
+ * weaves it with the user's natal signals and returns a two-paragraph
+ * reading. `requestId` is stable per attempt so a retry after a dropped
+ * connection returns the same reading instead of charging twice.
  */
 
 interface QuickReadingCard {
   name: string;
   meaning: string;
-  /* The server sends a name and a meaning today; the rest are honoured
-     if a later version sends them, so the face can be chosen directly. */
+  /* Honoured when the server sends them (the AI contract this round):
+     `deck` names which pack the card came from, `id`/`slug` locate it. */
   id?: number;
+  slug?: string;
+  deck?: Deck;
   reversed?: boolean;
   imageUrl?: string;
 }
@@ -46,25 +80,84 @@ interface QuickReadingResponse {
 }
 
 /*
- * The card was drawn and never shown. Its face is in the bundle: resolve
- * it by id when the server gives one, else by name — the server's deck
- * uses the same names as the bundled majors — else by any URL it sent.
+ * The tarot face is in the bundle: resolve it by id when the server gives
+ * one, else by name — the server's deck uses the same names as the bundled
+ * majors — else by any URL it sent.
+ *
+ * TODO(B1a): render <TarotFace> from src/components/ui once it ships; the
+ * bundled image path is the interim face.
  */
-function faceFor(card: QuickReadingCard): string | null {
-  const wanted = card.name.trim().toLowerCase();
-  const id = typeof card.id === 'number' ? card.id : ALL_CARDS.find((c) => c.name.toLowerCase() === wanted)?.id;
+/** "Wheel of Fortune" and "The Wheel of Fortune" are the same card: the server's deck drops the article. */
+const cardKey = (name: string) => name.trim().toLowerCase().replace(/^the\s+/, '');
+
+function tarotFaceFor(card: QuickReadingCard): string | null {
+  const wanted = cardKey(card.name);
+  const id = typeof card.id === 'number' ? card.id : ALL_CARDS.find((c) => cardKey(c.name) === wanted)?.id;
   return (id !== undefined ? getBundledCardPath(id) : null) ?? card.imageUrl ?? null;
+}
+
+function tarotKeywordsFor(name: string): string[] {
+  const wanted = cardKey(name);
+  return fullDeck.find((c) => cardKey(c.name) === wanted)?.keywords.slice(0, 4) ?? [];
+}
+
+function playingCardFor(card: QuickReadingCard): PlayingCard | undefined {
+  if (typeof card.id === 'number') {
+    const byId = getPlayingCard(card.id);
+    if (byId) return byId;
+  }
+  if (card.slug) {
+    const bySlug = getPlayingCardBySlug(card.slug);
+    if (bySlug) return bySlug;
+  }
+  const wanted = card.name.trim().toLowerCase();
+  return PLAYING_CARDS_ALL.find((c) => c.name.toLowerCase() === wanted);
+}
+
+/**
+ * The summary is the opening of the first paragraph — at most two
+ * sentences, the lede the sheet centres — and everything after it is the
+ * body. The model's first paragraph runs to ninety words; centring all of
+ * it reads as a wall.
+ */
+function splitReading(text: string): { summary: string; rest: string } {
+  const parts = text
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return { summary: text.trim(), rest: '' };
+  const sentences = parts[0].split(/(?<=[.!?…][’”"')\]]?)\s+(?=\S)/);
+  const summary = sentences.slice(0, 2).join(' ');
+  const tail = sentences.slice(2).join(' ');
+  const rest = [tail, ...parts.slice(1)].filter(Boolean).join('\n\n');
+  return { summary, rest };
 }
 
 export function QuickReadingPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
-  const [question, setQuestion] = useState('');
+  const location = useLocation();
+  // Dice and other pages hand the question over in router state so the
+  // oracle opens with it already written.
+  const seeded = (location.state as { question?: string } | null)?.question;
+  const [question, setQuestion] = useState(() => (typeof seeded === 'string' ? seeded.slice(0, 500) : ''));
+  const [deck, setDeck] = useState<Deck>(readDeck);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QuickReadingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [context, setContext] = useState<OracleContext>('general');
   const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('quick-reading');
+  // One id per attempt. It survives a failure so "Try again" is the same
+  // request (and the same charge); it is cleared once a reading lands.
+  const attemptId = useRef<string | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DECK_KEY, deck);
+    } catch {
+      /* private mode */
+    }
+  }, [deck]);
 
   // "Guess what you want to ask" — 4 suggestion chips per lens, rotating
   // daily so the hub feels alive without any server round-trip.
@@ -81,6 +174,7 @@ export function QuickReadingPage() {
     if (question.trim().length < 3) return;
     const ok = await tryConsume();
     if (!ok) return;
+    if (!attemptId.current) attemptId.current = crypto.randomUUID();
     setLoading(true);
     setError(null);
     setResult(null);
@@ -98,7 +192,7 @@ export function QuickReadingPage() {
       ? question.trim()
       : `[${label} question] ${question.trim()}`.slice(0, 500);
     const { data, error: err } = await supabase.functions.invoke('ai-quick-reading', {
-      body: { question: sent, userContext },
+      body: { question: sent, userContext, deck, requestId: attemptId.current },
     });
     setLoading(false);
     if (err) {
@@ -115,10 +209,12 @@ export function QuickReadingPage() {
       setError('generic');
       return;
     }
+    attemptId.current = null;
     setResult(payload);
-  }, [question, profile, tryConsume, refund, context]);
+  }, [question, profile, tryConsume, refund, context, deck]);
 
   const reset = () => {
+    attemptId.current = null;
     setResult(null);
     setError(null);
     setQuestion('');
@@ -140,82 +236,124 @@ export function QuickReadingPage() {
     }
   };
 
-  if (result) {
-    const face = result.card ? faceFor(result.card) : null;
+  const title = t('quickReading.title', { defaultValue: 'Quick reading' });
+  const yourQuestion = t('quickReading.yourQuestion', { defaultValue: 'Your question' });
+
+  if (loading) {
     return (
       <Page spacing="md">
-        <PageHeader
-          icon={<Zap />}
-          title={t('quickReading.title', { defaultValue: '3-second reading' })}
-        />
-
-        <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-cosmic-violet/5">
-          <p className="font-display-eyebrow text-mystic-500 mb-2">
-            {t('quickReading.yourQuestion', { defaultValue: 'Your question' })}
-          </p>
-          <p className="text-ui text-mystic-200 italic">"{question}"</p>
-        </Card>
-
-        {result.card && (
-          <Card padding="lg" className="bg-mystic-900/60 border-gold/20">
-            {/* The card, shown: its face beside its name and meaning. A
-                reversed draw lies upside down, as it would on the table. */}
-            <div className={`flex items-center gap-4 ${face ? 'text-left' : 'text-center justify-center'}`}>
-              {face && (
-                <img
-                  src={face}
-                  alt={result.card.name}
-                  decoding="async"
-                  draggable={false}
-                  className={`w-20 shrink-0 aspect-[2/3] object-cover rounded-inset bg-mystic-850 select-none ${
-                    result.card.reversed ? 'rotate-180' : ''
-                  }`}
-                />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="font-display-eyebrow mb-1">
-                  {t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}
-                </p>
-                <h2 className="heading-display-md text-mystic-100 mb-1">
-                  {result.card.name}
-                  {result.card.reversed && (
-                    <span className="text-meta text-mystic-400 ml-2">{t('readings.revealView.reversedParen')}</span>
-                  )}
-                </h2>
-                <p className="text-ui text-mystic-300 italic">{result.card.meaning}</p>
+        <PageHeader title={title} />
+        <div role="status" aria-live="polite" aria-busy="true">
+          <Paper as="article">
+            <p className="sr-only">{t('quickReading.drawing', { defaultValue: 'Drawing…' })}</p>
+            <div className="mx-auto flex flex-col items-center gap-3">
+              <Skeleton variant="circular" width={28} height={28} />
+              <Skeleton width={96} height={12} />
+              <Skeleton width="80%" height={28} />
+            </div>
+            <div className="mt-8 flex items-center gap-4">
+              <Skeleton width={80} height={120} className="rounded-inset shrink-0" />
+              <div className="flex-1 space-y-2.5">
+                <Skeleton width="60%" height={20} />
+                <Skeleton width="40%" height={12} />
+                <Skeleton width="90%" height={12} />
               </div>
             </div>
-          </Card>
-        )}
-
-        <Card padding="lg">
-          <div className="flex items-start gap-2 mb-2">
-            <Quote className="w-4 h-4 text-cosmic-violetLight flex-shrink-0 mt-1.5" />
-            <ReadingProse text={result.reading} className="flex-1 min-w-0" />
-          </div>
-          {result.memoryUsed && (
-            <p className="text-meta text-mystic-400 mt-3 italic">
-              {t('quickReading.memoryUsed', { defaultValue: 'Drawing on what we\'ve talked about before.' })}
-            </p>
-          )}
-        </Card>
-
-        <div className="flex gap-2">
-          <Button variant="outline" fullWidth onClick={handleShare}>
-            <Share2 className="w-4 h-4 mr-2" />
-            {t('quickReading.share', { defaultValue: 'Share' })}
-          </Button>
-          <Button variant="primary" fullWidth onClick={reset}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {t('quickReading.askAnother', { defaultValue: 'Ask another' })}
-          </Button>
+            <div className="mt-8 space-y-2.5">
+              <Skeleton width="100%" height={14} />
+              <Skeleton width="96%" height={14} />
+              <Skeleton width="88%" height={14} />
+              <Skeleton width="70%" height={14} />
+            </div>
+          </Paper>
         </div>
+      </Page>
+    );
+  }
 
-        <p className="text-caption text-mystic-500 italic">
-          {t('quickReading.disclaimer', {
-            defaultValue: 'Readings are for self-reflection, not prediction or professional advice.',
-          })}
-        </p>
+  if (result) {
+    const { summary, rest } = splitReading(result.reading);
+    const card = result.card;
+    const cardDeck: Deck = card?.deck ?? (card && typeof card.id === 'number' && card.id >= 100 ? 'playing' : 'tarot');
+    const playing = card && cardDeck === 'playing' ? playingCardFor(card) : undefined;
+    const tarotFace = card && !playing ? tarotFaceFor(card) : null;
+    const keywords = card ? (playing ? playing.keywords.slice(0, 4) : tarotKeywordsFor(card.name)) : [];
+    const affirmation = card && !playing ? getEnrichment(card.name)?.affirmation : undefined;
+    return (
+      <Page spacing="md">
+        <PageHeader title={title} />
+        <ResultSheet
+          glyph={<KeyRound strokeWidth={1.5} />}
+          eyebrow={yourQuestion}
+          title={question.trim()}
+          summary={summary}
+          disclaimer="ai"
+        >
+          <div className="space-y-7">
+            {card && (
+              <section
+                className={`flex items-center gap-4 ${playing || tarotFace ? 'text-left' : 'justify-center text-center'}`}
+                aria-label={t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}
+              >
+                {playing ? (
+                  <div className="w-20 shrink-0 text-gold">
+                    <PlayingCardFace card={playing} detail="quiet" surface="paper" reversed={card.reversed} />
+                  </div>
+                ) : tarotFace ? (
+                  <img
+                    src={tarotFace}
+                    alt={card.name}
+                    decoding="async"
+                    draggable={false}
+                    className={`w-20 shrink-0 aspect-[2/3] object-cover rounded-inset select-none ${
+                      card.reversed ? 'rotate-180' : ''
+                    }`}
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1 space-y-2">
+                  <p className="reading-meta">{t('quickReading.cardLabel', { defaultValue: 'Card drawn' })}</p>
+                  <h3 className="heading-display-md heading-strong text-ink">
+                    {card.name}
+                    {card.reversed && (
+                      <span className="reading-meta ml-2 font-sans normal-case">
+                        {t('readings.revealView.reversedParen')}
+                      </span>
+                    )}
+                  </h3>
+                  {keywords.length > 0 && (
+                    // Left-aligned beside the face (KeywordRow centres its pills).
+                    <div className="flex flex-wrap gap-2">
+                      {keywords.map((k) => (
+                        <Tag key={k} variant="keyword">{k}</Tag>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {rest && <ReadingProse text={rest} lede={false} />}
+
+            {result.memoryUsed && (
+              <p className="reading-caption">
+                {t('quickReading.memoryUsed', { defaultValue: 'Drawing on what we’ve talked about before.' })}
+              </p>
+            )}
+
+            {affirmation && <AffirmationPanel text={affirmation} />}
+
+            <div className="flex gap-3">
+              <Button variant="outline" fullWidth onClick={handleShare}>
+                <Share2 className="w-4 h-4 mr-2" />
+                {t('quickReading.share', { defaultValue: 'Share' })}
+              </Button>
+              <Button variant="gold" fullWidth onClick={reset}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {t('quickReading.askAnother', { defaultValue: 'Ask another' })}
+              </Button>
+            </div>
+          </div>
+        </ResultSheet>
       </Page>
     );
   }
@@ -223,18 +361,29 @@ export function QuickReadingPage() {
   return (
     <Page spacing="md">
       <PageHeader
-        icon={<Zap />}
-        title={t('quickReading.title', { defaultValue: '3-second reading' })}
+        title={title}
+        subtitle={t('quickReading.intro', {
+          defaultValue: 'Ask anything. One card is drawn and read against your own signals in a short reading to sit with.',
+        })}
       />
 
-      <Card padding="lg" variant="glow">
-        <p className="reading-copy">
-          {t('quickReading.intro', {
-            defaultValue:
-              'Ask anything. A single card is drawn, woven with your signals, and returned as a short reading to sit with.',
-          })}
-        </p>
-      </Card>
+      {/* Which pack the card comes from. Remembered per device. */}
+      <div className="flex gap-2" role="group" aria-label={t('quickReading.deckLabel', { defaultValue: 'Deck' })}>
+        <Chip
+          selected={deck === 'tarot'}
+          onSelect={() => setDeck('tarot')}
+          icon={<TarotCardIcon className="w-4 h-4" />}
+        >
+          {t('quickReading.deckTarot', { defaultValue: 'Tarot' })}
+        </Chip>
+        <Chip
+          selected={deck === 'playing'}
+          onSelect={() => setDeck('playing')}
+          icon={<PlayingCardIcon className="w-4 h-4" />}
+        >
+          {t('quickReading.deckPlaying', { defaultValue: 'Playing cards' })}
+        </Chip>
+      </div>
 
       {/* Oracle lenses + daily-rotating suggestion chips */}
       <div className="space-y-2.5">
@@ -250,36 +399,38 @@ export function QuickReadingPage() {
         </div>
       </div>
 
-      <Card padding="lg">
-        <label className="block font-display-eyebrow text-mystic-500 mb-2">
+      <div>
+        <label htmlFor="quick-reading-question" className="block font-display-eyebrow text-mystic-400 mb-2">
           {t('quickReading.questionLabel', { defaultValue: 'Your question' })}
         </label>
         <textarea
+          id="quick-reading-question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          rows={4}
+          rows={3}
           maxLength={500}
-          placeholder={t('quickReading.questionPlaceholder', {
-            defaultValue: 'What is mine to focus on this week? Where is the friction in my work coming from? What am I avoiding?',
-          })}
-          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+          placeholder={t('quickReading.questionPlaceholder', { defaultValue: 'What’s on your mind?' })}
+          className="w-full bg-mystic-850 border border-mystic-700 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-500 resize-none focus:outline-none focus:border-gold/40"
         />
-        <p className="text-caption text-mystic-500 mt-1 text-right">{question.length} / 500</p>
-      </Card>
+        <p className="text-caption text-mystic-500 mt-1 text-right tabular-nums">{question.length} / 500</p>
+      </div>
 
       {error && (
-        <Card padding="md">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" />
-            <p className="text-meta text-mystic-400">
+        <div role="alert" className="flex items-start gap-3 rounded-card bg-mystic-850 border border-coral/30 p-4">
+          <AlertCircle className="w-4 h-4 text-coral flex-shrink-0 mt-0.5" aria-hidden />
+          <div className="flex-1 min-w-0">
+            <p className="text-ui text-mystic-100">
               {error === 'rate-limit'
-                ? t('quickReading.errorRateLimit', { defaultValue: 'You\'re asking fast — slow down and try again in a moment.' })
+                ? t('quickReading.errorRateLimit', { defaultValue: 'You’re asking fast — slow down and try again in a moment.' })
                 : error === 'unavailable'
                   ? t('quickReading.errorUnavailable', { defaultValue: 'Readings are temporarily unavailable.' })
                   : t('quickReading.errorGeneric', { defaultValue: 'Could not generate a reading. Try again.' })}
             </p>
+            <p className="text-meta text-mystic-400 mt-1">
+              {t('quickReading.errorNoCharge', { defaultValue: 'Nothing was charged for a reading you did not receive.' })}
+            </p>
           </div>
-        </Card>
+        </div>
       )}
 
       <MoonstoneCostLine />
@@ -290,10 +441,10 @@ export function QuickReadingPage() {
         onClick={submit}
         disabled={loading || question.trim().length < 3}
       >
-        {loading ? (
+        {error ? (
           <>
-            <div className="loading-constellation w-4 h-4 mr-2" />
-            {t('quickReading.drawing', { defaultValue: 'Drawing…' })}
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t('quickReading.tryAgain', { defaultValue: 'Try again' })}
           </>
         ) : (
           <>

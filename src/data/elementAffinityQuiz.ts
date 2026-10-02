@@ -76,11 +76,11 @@ export const elementAffinityQuiz: QuizDefinition = {
       { value: 3, label: '"You make things make sense."' },
       { value: 4, label: '"You make things last."' },
     ] },
-    { id: 'el10', text: 'The season I love most is…', dimension: 'EL', options: [
-      { value: 1, label: 'Summer — heat, long days, intensity.' },
-      { value: 2, label: 'Autumn — the poetry of change.' },
-      { value: 3, label: 'Spring — fresh ideas, new light.' },
-      { value: 4, label: 'Winter — stillness, depth, root time.' },
+    { id: 'el10', text: 'The weather I feel most alive in is…', dimension: 'EL', options: [
+      { value: 1, label: 'Hot, bright, intense sun.' },
+      { value: 2, label: 'Rain on the window — grey and soft.' },
+      { value: 3, label: 'Crisp, windy, clear air.' },
+      { value: 4, label: 'Cool and still, the smell of earth after rain.' },
     ] },
   ],
 };
@@ -88,16 +88,33 @@ export const elementAffinityQuiz: QuizDefinition = {
 export interface ElementAffinityResult {
   primary: Element;
   scores: Record<Element, number>;
+  /** The vote was split and neither tie-break question (el9, then el3) settled it. */
+  isTie: boolean;
+  /** The other element in an unbroken tie. */
+  coPrimary?: Element;
 }
 
+/**
+ * One vote per question; most votes wins. A tie goes to the element the
+ * respondent chose on el9 (the compliment that lands), then el3 (creative
+ * fuel); if neither is among the tied elements, declared order stands and
+ * `isTie` says so.
+ */
 export function calculateElementAffinity(answers: Record<string, number>): ElementAffinityResult {
   const scores: Record<Element, number> = { fire: 0, water: 0, air: 0, earth: 0 };
   for (const value of Object.values(answers)) {
     const element = ELEMENT_BY_VALUE[value];
     if (element) scores[element] += 1;
   }
-  const primary = (Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0]) as Element;
-  return { primary, scores };
+  const order: Element[] = ['fire', 'water', 'air', 'earth'];
+  const top = Math.max(...order.map((e) => scores[e]));
+  const tied = order.filter((e) => scores[e] === top);
+  if (tied.length === 1) return { primary: tied[0], scores, isTie: false };
+  for (const qid of ['el9', 'el3']) {
+    const pick = ELEMENT_BY_VALUE[answers[qid]];
+    if (pick && tied.includes(pick)) return { primary: pick, scores, isTie: false };
+  }
+  return { primary: tied[0], scores, isTie: true, coPrimary: tied[1] };
 }
 
 export interface ElementInfo {

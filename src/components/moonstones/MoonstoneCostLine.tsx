@@ -15,10 +15,17 @@ import { useT } from '../../i18n/useT';
 
 interface Props {
   cost?: number;
+  /**
+   * What the Moonstones buy. `reading` (default): "Each reading uses 50
+   * Moonstones". `conversation`: "Starting a conversation uses 50
+   * Moonstones" — the Companion charges once per fresh conversation, not
+   * per message, and the line should say so (R7).
+   */
+  wording?: 'reading' | 'conversation';
   className?: string;
 }
 
-export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props) {
+export function MoonstoneCostLine({ cost = ACTION_COST, wording = 'reading', className = '' }: Props) {
   const { t } = useT('app');
   const { user, profile } = useAuth();
   const [balance, setBalance] = useState<number | null>(null);
@@ -39,22 +46,33 @@ export function MoonstoneCostLine({ cost = ACTION_COST, className = '' }: Props)
   if (profile?.isPremium) return null;
 
   const insufficient = balance !== null && balance < cost;
+  const gold = <span className="font-semibold text-gold" />;
 
   return (
     <div className={`flex items-center gap-2 text-meta text-mystic-400 ${className}`}>
-      <Moon className="h-3.5 w-3.5 flex-none text-gold/70" />
+      <Moon className="h-3.5 w-3.5 flex-none text-gold/70" aria-hidden />
       <span>
-        <Trans
-          t={t}
-          i18nKey="moonstones.costLine"
-          defaults="Each reading uses <gold>{{n}} Moonstones</gold>"
-          values={{ n: cost }}
-          components={{ gold: <span className="font-semibold text-gold" /> }}
-        />
+        {wording === 'conversation' ? (
+          <Trans
+            t={t}
+            i18nKey="moonstones.costLineConversation"
+            defaults="Starting a conversation uses <gold>{{n}} Moonstones</gold>"
+            values={{ n: cost }}
+            components={{ gold }}
+          />
+        ) : (
+          <Trans
+            t={t}
+            i18nKey="moonstones.costLine"
+            defaults="Each reading uses <gold>{{n}} Moonstones</gold>"
+            values={{ n: cost }}
+            components={{ gold }}
+          />
+        )}
         {balance !== null && (
           <>
             {' · '}
-            <span className={insufficient ? 'text-coral' : ''}>
+            <span className={`tabular-nums ${insufficient ? 'text-coral' : ''}`}>
               {t('moonstones.youHave', { defaultValue: 'You have {{n}}', n: balance })}
             </span>
           </>

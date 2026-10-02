@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar, Lock, Moon, Gift, CheckCircle2, AlertCircle, TrendingUp, Clock, Star, Crown } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, EmptyState, Disclosure, ReadingProse, ResultSheet, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { isNative } from '../utils/platform';
 import { getLocale } from '../i18n/config';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -69,6 +70,8 @@ export function YearAheadReportPage() {
 
   const hasNatalChart = !!profile?.birthDate && !!profile?.birthTime && !!profile?.birthPlace;
   const currentYear = new Date().getFullYear();
+  // Rewarded ads only exist inside the native shell (R5 M-9).
+  const adAvailable = isNative();
 
   // The twelve months the forecast covers (the unlock reference is the
   // calendar year), named in the user's locale for the paywall's preview.
@@ -258,32 +261,41 @@ export function YearAheadReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-ui text-mystic-200 mb-2">
-                {t('yearAhead.orEarnMoonstones', {
-                  defaultValue: 'Or unlock with {{n}} Moonstones',
+            <div className="mt-3 space-y-2 text-left">
+              <Button variant="outline" fullWidth disabled>
+                <Moon className="w-4 h-4 mr-2" />
+                {t('yearAhead.unlockCta', {
+                  defaultValue: 'Unlock with {{n}} Moonstones',
                   n: YEAR_AHEAD_COST,
                 })}
-              </p>
-              <p className="text-meta text-mystic-400 mb-3">
-                {t('yearAhead.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
-                {' · '}
-                {t('yearAhead.earnHint', {
-                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
-                })}
-              </p>
-              <Button
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => setShowWatchAd(true)}
-              >
-                <Gift className="w-3.5 h-3.5 mr-1.5" />
-                {t('yearAhead.earnNow', {
-                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
-                  n: MOONSTONES_PER_AD,
-                })}
               </Button>
+              <p className="text-meta text-mystic-400 text-center tabular-nums">
+                {t('reportUnlock.shortfall', {
+                  defaultValue: 'You have {{have}} Moonstones — {{need}} more needed.',
+                  have: balance ?? 0,
+                  need: Math.max(0, YEAR_AHEAD_COST - (balance ?? 0)),
+                })}
+              </p>
+              {adAvailable ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  size="sm"
+                  onClick={() => setShowWatchAd(true)}
+                >
+                  <Gift className="w-3.5 h-3.5 mr-1.5" />
+                  {t('yearAhead.earnNow', {
+                    defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                    n: MOONSTONES_PER_AD,
+                  })}
+                </Button>
+              ) : (
+                <p className="text-meta text-mystic-400 text-center">
+                  {t('reportUnlock.earnHintWeb', {
+                    defaultValue: 'Earn Moonstones with the daily check-in or an invite, or open everything with Premium.',
+                  })}
+                </p>
+              )}
             </div>
           ))}
         </Card>
@@ -324,7 +336,7 @@ export function YearAheadReportPage() {
             </div>
           }
         />
-        {moonstonesEnabled && (
+        {moonstonesEnabled && adAvailable && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}
@@ -375,6 +387,13 @@ export function YearAheadReportPage() {
   }
   if (!data) return null;
 
+  // The year's narrative opens the report on paper: first paragraph as the
+  // summary, the rest as the body. The year itself is the eyebrow — a
+  // number, so it stays in Inter rather than the display serif.
+  const paragraphs = data.summary.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const arcSummary = paragraphs[0] ?? data.summary;
+  const arcRest = paragraphs.slice(1).join('\n\n');
+
   return (
     <Page spacing="md">
       <PageHeader
@@ -382,16 +401,16 @@ export function YearAheadReportPage() {
         title={t('yearAhead.title', { defaultValue: 'Year Ahead' })}
       />
 
-      <Card padding="lg" variant="glow" className="bg-gradient-to-br from-gold/5 via-mystic-900 to-mystic-900">
-        <div className="flex items-center gap-2 mb-3">
-          <Star className="w-4 h-4 text-gold" />
-          <p className="font-display-eyebrow">
-            {t('yearAhead.overall', { defaultValue: 'Overall arc' })}
-          </p>
-        </div>
-        {/* The year's narrative is the opening of the report: lede + drop cap. */}
-        <ReadingProse text={data.summary} />
-      </Card>
+      <ResultSheet
+        headingLevel="h2"
+        glyph={<Calendar strokeWidth={1.5} />}
+        eyebrow={String(currentYear)}
+        title={t('yearAhead.arcTitle', { defaultValue: 'The shape of your year' })}
+        summary={arcSummary}
+        summaryHeading={t('yearAhead.overall', { defaultValue: 'Overall arc' })}
+      >
+        {arcRest ? <ReadingProse text={arcRest} lede={false} /> : undefined}
+      </ResultSheet>
 
       {/* Twelve months used to be twelve identical cards, which is roughly
           six screens of scroll before the second half of the year. Each
@@ -433,8 +452,8 @@ export function YearAheadReportPage() {
                     <p className="text-ui font-medium tracking-wide">
                       {event.transitPlanet} {event.aspectType} {event.natalPlanet}
                     </p>
-                    <div className="flex items-center gap-1 text-meta text-mystic-400 shrink-0">
-                      <Clock className="w-3 h-3" />
+                    <div className="flex items-center gap-1 text-meta text-mystic-400 shrink-0 tabular-nums">
+                      <Clock className="w-3 h-3" aria-hidden />
                       {event.startDate === event.endDate
                         ? event.startDate
                         : `${event.startDate} → ${event.endDate}`}
@@ -448,12 +467,7 @@ export function YearAheadReportPage() {
         ))}
       </div>
 
-      <p className="text-caption text-mystic-500 italic">
-        {t('yearAhead.disclaimer', {
-          defaultValue:
-            'Astrology is a symbolic lens, not a prediction. Transits describe the archetypal weather — what you do within it is yours.',
-        })}
-      </p>
+      <Disclaimer kind="astrology" />
     </Page>
   );
 }

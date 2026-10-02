@@ -5,8 +5,11 @@ import {
   mbtiQuiz,
   loveLanguageQuiz,
 } from '../../data/quizzes';
-import { calculateBigFive, bigFiveQuiz } from '../../data/bigFiveQuiz';
+import { calculateBigFive, bigFiveBand, bigFiveQuiz } from '../../data/bigFiveQuiz';
 import { calculateAttachment, attachmentQuiz } from '../../data/attachmentQuiz';
+import { mbtiQuickQuiz } from '../../data/mbtiQuickQuiz';
+import { enneagramQuiz } from '../../data/enneagramQuiz';
+import { shadowArchetypeQuiz } from '../../data/shadowArchetypeQuiz';
 
 /**
  * GOLDEN reference tests for the four personality-quiz scorers.
@@ -115,6 +118,45 @@ describe('calculateMBTI — golden', () => {
     expect(result.dimensions.I).toBe(37);
     expect(result.type).toBe('ISTJ');
   });
+
+  // Phase 7 (R3 §2.1): the scorer exposes |first − second| per axis and a
+  // borderline flag so the result screen can show a coin flip as one.
+  // Rule: borderline when margin ≤ max(2, round(10% of the axis total)).
+  //   full quiz: total 72 → threshold max(2, 7) = 7
+  //   quick quiz: total 18 → threshold max(2, 2) = 2
+  it('all-3 on the full quiz: every margin 0 and every axis borderline', () => {
+    const result = calculateMBTI(allAnswers(mbtiQuiz, 3), mbtiQuiz);
+    expect(result.margins).toEqual({ EI: 0, SN: 0, TF: 0, JP: 0 });
+    expect(result.borderline).toEqual({ EI: true, SN: true, TF: true, JP: true });
+  });
+
+  it('all-5 on the full quiz: margin 60 − 12 = 48 on every axis, nothing borderline', () => {
+    const result = calculateMBTI(allAnswers(mbtiQuiz, 5), mbtiQuiz);
+    expect(result.margins.EI).toBe(48);
+    expect(result.borderline.EI).toBe(false);
+  });
+
+  it('full quiz: three items at 4 among neutrals is margin 6 ≤ 7 (borderline); four items is margin 8 (not)', () => {
+    const three = allAnswers(mbtiQuiz, 3);
+    three.ei1 = 4; three.ei3 = 4; three.ei5 = 4; // E = 36 + 3 = 39, I = 36 − 3 = 33 → margin 6
+    expect(calculateMBTI(three, mbtiQuiz).margins.EI).toBe(6);
+    expect(calculateMBTI(three, mbtiQuiz).borderline.EI).toBe(true);
+    const four = { ...three, ei7: 4 }; // margin 8
+    expect(calculateMBTI(four, mbtiQuiz).margins.EI).toBe(8);
+    expect(calculateMBTI(four, mbtiQuiz).borderline.EI).toBe(false);
+  });
+
+  it('quick quiz: one item at 4 among neutrals is margin 2 (borderline); two items is 4 (not)', () => {
+    const one = allAnswers(mbtiQuickQuiz, 3);
+    one.qei1 = 4; // E = 9 + 1 = 10, I = 9 − 1 = 8 → margin 2
+    const r1 = calculateMBTI(one, mbtiQuickQuiz);
+    expect(r1.margins.EI).toBe(2);
+    expect(r1.borderline.EI).toBe(true);
+    const two = { ...one, qei3: 4 };
+    const r2 = calculateMBTI(two, mbtiQuickQuiz);
+    expect(r2.margins.EI).toBe(4);
+    expect(r2.borderline.EI).toBe(false);
+  });
 });
 
 // ===========================================================================
@@ -146,6 +188,30 @@ describe('calculateLoveLanguage — golden', () => {
     expect(result.primary).toBe('words');
     expect(result.scores.words).toBe(15);
     expect(result.scores.gifts).toBe(6); // 3 items * 2
+    expect(result.isTie).toBe(false);
+  });
+
+  // Phase 7 (R3 §2.3): an equal top sum is broken by the number of
+  // "Strongly agree" (5) answers in each language; only when that is also
+  // equal is a co-primary declared, instead of object order (gifts first).
+  it('equal sums, different count of 5s: words 5,4,3 (one 5) beats touch 4,4,4 (none) at 12 each', () => {
+    const scores = allAnswers(loveLanguageQuiz, 1);
+    scores.ll2 = 5; scores.ll7 = 4; scores.ll12 = 3; // words = 12, one 5
+    scores.ll4 = 4; scores.ll9 = 4; scores.ll14 = 4; // touch = 12, no 5
+    const result = calculateLoveLanguage(scores);
+    expect(result.scores.words).toBe(12);
+    expect(result.scores.touch).toBe(12);
+    expect(result.primary).toBe('words');
+    expect(result.isTie).toBe(false);
+    expect(result.coPrimary).toBeUndefined();
+  });
+
+  it('equal sums AND equal 5s: words and touch all 5s → isTie with the other named as coPrimary', () => {
+    const scores = allAnswers(loveLanguageQuiz, 1);
+    for (const id of ['ll2', 'll7', 'll12', 'll4', 'll9', 'll14']) scores[id] = 5;
+    const result = calculateLoveLanguage(scores);
+    expect(result.isTie).toBe(true);
+    expect(new Set([result.primary, result.coPrimary])).toEqual(new Set(['words', 'touch']));
   });
 });
 
@@ -208,6 +274,25 @@ describe('calculateBigFive — golden', () => {
   it('percentiles alias mirrors percentageScore (backwards-compat getter)', () => {
     const result = calculateBigFive(allAnswers(bigFiveQuiz, 3));
     expect(result.percentiles).toEqual(result.percentageScore);
+  });
+
+  // Phase 7 (R3 F7): the result screen bands a score with a ten-point
+  // middle — > 55 leans high, < 45 leans low, otherwise balanced — so the
+  // neutral respondent above (exactly 50 everywhere) reads as balanced on
+  // every trait and never gets the high-trait copy.
+  it('bigFiveBand: 50 and the band edges', () => {
+    expect(bigFiveBand(50)).toBe('balanced');
+    expect(bigFiveBand(55)).toBe('balanced');
+    expect(bigFiveBand(56)).toBe('high');
+    expect(bigFiveBand(45)).toBe('balanced');
+    expect(bigFiveBand(44)).toBe('low');
+    expect(bigFiveBand(100)).toBe('high');
+    expect(bigFiveBand(0)).toBe('low');
+  });
+
+  it('all-Neutral renders the balanced branch on all five traits', () => {
+    const result = calculateBigFive(allAnswers(bigFiveQuiz, 3));
+    for (const d of dims) expect(bigFiveBand(result[d])).toBe('balanced');
   });
 });
 
@@ -276,5 +361,43 @@ describe('calculateAttachment — golden', () => {
     expect(result.style).toBe('fearful-avoidant');
     expect(result.anxiety).toBe(75);
     expect(result.avoidance).toBe(75);
+  });
+
+  // Phase 7 (R3 §2.7, F6): four anxiety items are reverse-keyed so the
+  // axis is no longer 15 forward / 0 reverse. The tests above still hold
+  // because answersForDimension sets RECORDED values (already pole-coded).
+  it('at18, at24, at28, at30 list Strongly Disagree first with value 5 (reverse-keyed anxiety)', () => {
+    for (const id of ['at18', 'at24', 'at28', 'at30']) {
+      const q = attachmentQuiz.questions.find((x) => x.id === id)!;
+      expect(q.dimension).toBe('anxiety');
+      expect(q.options[0]).toEqual({ value: 5, label: 'Strongly Disagree' });
+      expect(q.options[4]).toEqual({ value: 1, label: 'Strongly Agree' });
+    }
+    expect(attachmentQuiz.questions.filter((q) => q.dimension === 'anxiety' && q.options[0].value === 5)).toHaveLength(4);
+  });
+
+  it('the invented four-way percentages are gone: the result is the two axis scores and the quadrant', () => {
+    const result = calculateAttachment(allAnswers(attachmentQuiz, 3));
+    expect(Object.keys(result).sort()).toEqual(['anxiety', 'avoidance', 'style']);
+  });
+});
+
+// ===========================================================================
+// Label order — every Likert item in every curated quiz is drawn as declared,
+// so a reverse-keyed item must still START with "Strongly Disagree" (value 5).
+// ===========================================================================
+describe('Likert items keep Strongly Disagree first in every curated quiz', () => {
+  const LIKERT = new Set(['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree']);
+  it('values run 1..5 (forward) or 5..1 (reverse), never shuffled', () => {
+    let seen = 0;
+    for (const quiz of [mbtiQuiz, mbtiQuickQuiz, loveLanguageQuiz, bigFiveQuiz, enneagramQuiz, attachmentQuiz, shadowArchetypeQuiz]) {
+      for (const q of quiz.questions) {
+        expect(q.options.every((o) => LIKERT.has(o.label)), `${quiz.id}/${q.id} is a Likert item`).toBe(true);
+        expect(q.options[0].label, `${quiz.id}/${q.id}`).toBe('Strongly Disagree');
+        expect(['1,2,3,4,5', '5,4,3,2,1'], `${quiz.id}/${q.id}`).toContain(q.options.map((o) => o.value).join(','));
+        seen++;
+      }
+    }
+    expect(seen).toBe(48 + 12 + 15 + 50 + 45 + 30 + 21);
   });
 });

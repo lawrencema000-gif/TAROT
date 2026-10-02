@@ -15,6 +15,29 @@
 
 export type Attachment = 'secure' | 'anxious' | 'avoidant' | 'fearful';
 
+/**
+ * What the profile stores. The attachment quiz (src/data/attachmentQuiz.ts
+ * `AttachmentStyle`) writes `fearful-avoidant` for the fourth quadrant, and
+ * profiles.attachment_style is shared between the two tools — so the Love
+ * Tree persists the quiz's label and reads it back, while its own scorer
+ * keeps the short key its golden tests pin.
+ */
+export type AttachmentStyle = 'secure' | 'anxious' | 'avoidant' | 'fearful-avoidant';
+
+export const ATTACHMENT_STYLE_OF: Record<Attachment, AttachmentStyle> = {
+  secure: 'secure',
+  anxious: 'anxious',
+  avoidant: 'avoidant',
+  fearful: 'fearful-avoidant',
+};
+
+/** The quadrant a stored profile value names, or null for anything else. */
+export function attachmentFromStyle(value: unknown): Attachment | null {
+  if (typeof value !== 'string') return null;
+  const hit = (Object.keys(ATTACHMENT_STYLE_OF) as Attachment[]).find((k) => ATTACHMENT_STYLE_OF[k] === value);
+  return hit ?? null;
+}
+
 export type Dimension = 'anxiety' | 'avoidance';
 
 export interface LoveTreeItem {
@@ -154,7 +177,7 @@ export const ATTACHMENT_INFO: Record<Attachment, AttachmentInfo> = {
  *   anxiety  ≤ 3  AND  avoidance ≤ 3  → secure
  *   anxiety  >  3  AND  avoidance ≤ 3  → anxious
  *   anxiety  ≤ 3  AND  avoidance  > 3  → avoidant
- *   anxiety  >  3  AND  avoidance  > 3  → fearful
+ *   anxiety  >  3  AND  avoidance  > 3  → fearful (stored as 'fearful-avoidant')
  */
 export function scoreLoveTree(answers: Record<string, number>): {
   attachment: Attachment;

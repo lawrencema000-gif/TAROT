@@ -115,7 +115,9 @@ Deno.serve(handler<Req, Resp>({
   auth: "required",
   methods: ["POST"],
   rateLimit: { max: 15, windowMs: 60_000 },
-  ai: true,
+  // Deterministic astronomy, no model call: not under the AI killswitch or
+  // the AI daily ceiling. The 50-Moonstone price is a product decision kept
+  // as-is (owner item in the Phase 7 report).
   spend: { actionKey: "soulmate-score", cost: 50 },
   requestSchema: RequestSchema,
   run: async (ctx, body) => {

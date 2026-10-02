@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handler, AppError } from "../_shared/handler.ts";
+import { GEMINI_MODELS, isReasoningModel, openAIModels, reasoningEffortFor } from "../_shared/ai-providers.ts";
 import { marked } from "npm:marked@14.1.3";
 
 /**
@@ -25,18 +26,14 @@ import { marked } from "npm:marked@14.1.3";
  * has 75+ topics so missing one is fine.
  */
 
-// AI provider chain — quality-first to match the rest of the stack.
-// OpenAI gpt-5 primary; gpt-5-mini covers retries; Gemini 2.5/1.5 Flash
-// is the cross-provider fallback when OpenAI is unavailable. This runs
-// once per day on a cron, so a single 503 from one provider used to mean
-// no blog post that day. With the fallback chain, that's no longer
-// possible unless ALL three providers are down at the same moment.
-const OPENAI_MODELS = ["gpt-5", "gpt-5-mini"];
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash"];
-
-function isReasoningModel(model: string): boolean {
-  return model.startsWith("gpt-5") || model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
-}
+// AI provider chain — quality-first to match the rest of the stack. The
+// model ids come from _shared/ai-providers.ts (openAIModels() / GEMINI_MODELS)
+// so this cron can never drift from the app. OpenAI primary; Gemini Flash is
+// the cross-provider fallback when OpenAI is unavailable. This runs once per
+// day, so a single 503 from one provider used to mean no blog post that day.
+// With the fallback chain, that's no longer possible unless every provider
+// is down at the same moment.
+const OPENAI_MODELS = openAIModels();
 
 // Imagen requires a paid tier. We use Pollinations.ai instead — free, no
 // key, high quality, reasonably fast. Keeps the generator working on the
@@ -164,7 +161,7 @@ async function callOpenAI(prompt: string, model: string, apiKey: string): Promis
     max_completion_tokens: reasoning ? 24576 : 16384,
   };
   if (reasoning) {
-    body.reasoning_effort = "minimal";
+    body.reasoning_effort = reasoningEffortFor(model);
   } else {
     body.temperature = 0.7;
   }
@@ -183,12 +180,14 @@ async function callOpenAI(prompt: string, model: string, apiKey: string): Promis
 }
 
 async function callGemini(prompt: string, model: string, apiKey: string): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  // Key in a header, never in the URL (URLs end up in logs).
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: `${ARTICLE_SYSTEM}\n\n---\n\n${prompt}` }] }],
+      systemInstruction: { parts: [{ text: ARTICLE_SYSTEM }] },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.7, maxOutputTokens: 16384 },
     }),
   });
@@ -196,7 +195,8 @@ async function callGemini(prompt: string, model: string, apiKey: string): Promis
     throw new Error(`gemini ${model} ${res.status}: ${(await res.text()).slice(0, 300)}`);
   }
   const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const parts: Array<{ text?: string; thought?: boolean }> = data?.candidates?.[0]?.content?.parts ?? [];
+  const text = parts.filter((p) => !p.thought && typeof p.text === "string").map((p) => p.text).join("");
   if (!text) throw new Error(`gemini ${model}: empty response`);
   return text;
 }

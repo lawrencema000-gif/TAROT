@@ -9,7 +9,7 @@ import {
   Check,
   ArrowLeft,
 } from 'lucide-react';
-import { Button, DeckFan, Input, Progress, toast } from '../components/ui';
+import { Button, DeckFan, Input, Progress, toast, dismissToasts } from '../components/ui';
 import { displayNameFromEmail } from '../utils/displayName';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -53,7 +53,8 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(true);
+  // Marketing opt-in is off until the person turns it on (R6 A26).
+  const [subscribedToNewsletter, setSubscribedToNewsletter] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   // Step 0 = language picker, 1 = welcome, 2 = create account
@@ -71,6 +72,10 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
   useEffect(() => {
     trackOnboardingStepViewed({ step, stepName: stepNames[step] });
     stepStartTime.current = Date.now();
+    // A toast belongs to the step that raised it; it does not follow the
+    // person onto the next screen (R6 A34).
+    dismissToasts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const handleGoogleSignIn = async () => {
@@ -344,13 +349,16 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                       onChange={e => setPassword(e.target.value)}
                       placeholder={t('createAccount.passwordPlaceholder')}
                       icon={<Lock className="w-5 h-5" />}
+                      autoComplete="new-password"
+                      // Room for the eye: the placeholder used to run under it (R6 A26).
+                      className="pr-14"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? t('createAccount.hidePassword') : t('createAccount.showPassword')}
                       aria-pressed={showPassword}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-mystic-400 hover:text-mystic-200 p-2"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-400 hover:text-mystic-200"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -368,7 +376,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     }`}>
                       {subscribedToNewsletter && <Check className="w-3 h-3 text-mystic-900" />}
                     </div>
-                    <span className="text-sm text-mystic-400 leading-snug">
+                    <span className="text-meta text-mystic-400 leading-snug">
                       {t('createAccount.newsletter')}
                     </span>
                   </button>
@@ -385,7 +393,7 @@ export function OnboardingPage({ onComplete, onSwitchToSignIn }: OnboardingPageP
                     }`}>
                       {ageConfirmed && <Check className="w-3 h-3 text-mystic-900" />}
                     </div>
-                    <span className="text-sm text-mystic-400 leading-snug">
+                    <span className="text-meta text-mystic-400 leading-snug">
                       {t('createAccount.ageConfirm')}
                     </span>
                   </button>

@@ -8,7 +8,12 @@ import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { PaywallSheet } from './PaywallSheet';
 
 const SESSION_KEY = 'trialReminder.shownThisSession.v1';
+/** Counts the sessions this browser has opened; the reminder waits for the second. */
+const SESSION_COUNT_KEY = 'trialReminder.sessions.v1';
+const SESSION_COUNTED_KEY = 'trialReminder.sessionCounted.v1';
 const SHOW_AFTER_MS = 30_000;
+/** How often to look again while something else is open. */
+const RETRY_MS = 5_000;
 
 /**
  * The yearly plan as the store reports it. The modal only promises a trial
@@ -21,12 +26,49 @@ interface YearlyOffer {
 }
 
 /**
+ * Something modal is already up: a Sheet (which marks the body), the Earn
+ * sheet's paywall, a report dialog, the crisis banner, WatchAdSheet. The
+ * reminder never stacks a second upsell on top of any of them (R5 m-7).
+ */
+function somethingIsOpen(): boolean {
+  if (typeof document === 'undefined') return false;
+  if (document.body.classList.contains('sheet-open')) return true;
+  return document.querySelector('[role="dialog"], [aria-modal="true"]') !== null;
+}
+
+/**
+ * Which session this is, counted once per tab session. The first session is
+ * the one where the user is still finding their feet; the reminder is for
+ * the second visit onwards.
+ */
+function sessionNumber(): number {
+  try {
+    if (sessionStorage.getItem(SESSION_COUNTED_KEY) !== '1') {
+      const n = Number(localStorage.getItem(SESSION_COUNT_KEY) ?? '0') + 1;
+      localStorage.setItem(SESSION_COUNT_KEY, String(n));
+      sessionStorage.setItem(SESSION_COUNTED_KEY, '1');
+      return n;
+    }
+    return Number(localStorage.getItem(SESSION_COUNT_KEY) ?? '1');
+  } catch {
+    // Storage unavailable: treat as a returning visitor so the reminder can
+    // still be shown once, rather than never.
+    return 2;
+  }
+}
+
+/**
  * A centred modal rather than a Sheet on purpose: it appears thirty seconds
  * into a session over whatever is on screen, which may itself be a Sheet
  * (z-50 and up, two per level), so it sits above the lot at z-60. It still
  * behaves as a dialog — labelled, modal, focus held inside it and handed
  * back on close, dismissed by the scrim or Escape — and its entrance is the
  * shared slide-up, once.
+ *
+ * It waits for a free surface: if a sheet or dialog is open when the timer
+ * lands, it checks again every few seconds and shows only once nothing else
+ * is. And it waits for the second session, so a failed first action is never
+ * followed by two upsells in a row.
  */
 export function TrialReminderModal() {
   const { user, profile } = useAuth();
@@ -49,15 +91,22 @@ export function TrialReminderModal() {
     } catch {
       // sessionStorage unavailable — fall through, treat as not yet shown
     }
+    if (sessionNumber() < 2) return;
 
-    const timer = window.setTimeout(() => {
+    let timer = 0;
+    const attempt = () => {
+      if (somethingIsOpen()) {
+        timer = window.setTimeout(attempt, RETRY_MS);
+        return;
+      }
       try {
         sessionStorage.setItem(SESSION_KEY, '1');
       } catch {
         // ignore quota / privacy-mode failures
       }
       setOpen(true);
-    }, SHOW_AFTER_MS);
+    };
+    timer = window.setTimeout(attempt, SHOW_AFTER_MS);
 
     return () => window.clearTimeout(timer);
   }, [user, profile]);
@@ -169,7 +218,7 @@ export function TrialReminderModal() {
           <DeckFan size="sm" back={profile?.card_back_url} className="mb-3" />
 
           {hasTrial && (
-            <Badge tone="gold" className="mb-3">
+            <Badge tone="violet" className="mb-3">
               <Gift className="w-3.5 h-3.5" aria-hidden />
               {t('premium.trialReminder.badge', { defaultValue: '{{days}} days free', days: trialDays })}
             </Badge>

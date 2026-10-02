@@ -57,7 +57,7 @@ export { Sheet } from './Sheet';
 export { Input, TextArea } from './Input';
 export { Chip, ChipGroup, InsightChip, Tag, Badge, KeywordRow, type TagProps, type BadgeProps, type KeywordRowProps, type Tone } from './Chip';
 export { toast, dismissToasts, ToastContainer } from './Toast';
-export { TarotCardFrame } from './TarotCardFrame';
+export { TarotFace, type TarotFaceProps, type TarotFaceSize } from './TarotFace';
 export {
   Skeleton,
   CardSkeleton,

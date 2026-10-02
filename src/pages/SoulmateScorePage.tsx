@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Share2, AlertCircle } from 'lucide-react';
-import { Card, Button, Input, Page, PageHeader, ResultLayout, Tag, toast, EyebrowLabel } from '../components/ui';
+import { Card, Button, Input, Page, PageHeader, ResultLayout, Tag, toast, EyebrowLabel, EmptyState, Disclaimer } from '../components/ui';
+import { PLANET_ICONS } from '../components/icons';
+import type { Planet } from '../types/astrology';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +12,7 @@ import { shareOrDownloadCard } from '../utils/shareCard';
 import { useMoonstoneSpend } from '../hooks/useMoonstoneSpend';
 import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
 import { SoulmatePortrait } from '../components/soulmate/SoulmatePortrait';
+import { AspectGlyph } from '../components/soulmate/AspectGlyph';
 
 /**
  * Soulmate Score — Western-audience compatibility read.
@@ -22,7 +25,9 @@ import { SoulmatePortrait } from '../components/soulmate/SoulmatePortrait';
  *    count against.
  * 4. Renders a big share-ready score card with the 4 strongest aspects.
  *
- * Free feature, no paywall. Shareable result is the viral hook.
+ * Gated like every AI-adjacent reading: one reveal costs the standard
+ * Moonstone price (premium bypasses). The header must not say "Free"
+ * above a cost line (R7).
  */
 
 type AspectType = 'conjunction' | 'trine' | 'sextile' | 'square' | 'opposition';
@@ -93,18 +98,33 @@ function scoreAspects(aspects: CrossAspect[]): {
   return { score: clamped, vibe, harmonies, frictions };
 }
 
-const PLANET_SYMBOL: Record<string, string> = {
-  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
-  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
-};
+/** A planet name from the synastry payload, drawn — or nothing if unknown. */
+function PlanetMark({ name }: { name: string }) {
+  const Icon = PLANET_ICONS[name as Planet];
+  if (!Icon) return null;
+  return (
+    <span className="inline-flex shrink-0 text-gold" aria-hidden>
+      <Icon size={16} strokeWidth={1.6} />
+    </span>
+  );
+}
 
-const ASPECT_SYMBOL: Record<AspectType, string> = {
-  conjunction: '☌',
-  trine: '△',
-  sextile: '⚹',
-  square: '□',
-  opposition: '☍',
-};
+/** One cross-aspect: partner planet — aspect — natal planet, with the glyphs drawn. */
+function AspectRow({ aspect, tone, t }: { aspect: CrossAspect; tone: 'teal' | 'coral'; t: (k: string, o?: Record<string, unknown>) => string }) {
+  const aspectName = t(`soulmate.aspects.${aspect.type}`, { defaultValue: aspect.type });
+  return (
+    <li className="flex items-center justify-between gap-3 text-ui">
+      <span className="flex items-center gap-1.5 text-mystic-200 min-w-0">
+        <PlanetMark name={aspect.partnerPlanet} />
+        <span className="truncate">{aspect.partnerPlanet}</span>
+        <AspectGlyph aspect={aspect.type} size={14} className={`shrink-0 ${tone === 'teal' ? 'text-teal' : 'text-coral'}`} />
+        <span className="truncate">{aspect.natalPlanet}</span>
+        <PlanetMark name={aspect.natalPlanet} />
+      </span>
+      <span className={`shrink-0 text-meta ${tone === 'teal' ? 'text-teal' : 'text-coral'}`}>{aspectName}</span>
+    </li>
+  );
+}
 
 export function SoulmateScorePage() {
   const { t } = useT('app');
@@ -131,7 +151,7 @@ export function SoulmateScorePage() {
     return !Number.isNaN(d.getTime()) && d.getFullYear() > 1900;
   }, [partnerBirthDate]);
 
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('soulmate-score');
+  const { tryConsume, refund, EarnSheet, error: gateError } = useMoonstoneSpend('soulmate-score');
 
   const handleCompute = async () => {
     if (!canSubmit) return;
@@ -230,24 +250,19 @@ export function SoulmateScorePage() {
           icon={<Heart />}
           title={t('soulmate.title', { defaultValue: 'Soulmate Score' })}
         />
-        <Card padding="lg">
-          <div className="flex flex-col items-center text-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-mystic-800/60 border border-gold/20 flex items-center justify-center">
-              <AlertCircle className="w-6 h-6 text-gold" />
-            </div>
-            <h2 className="font-display text-lg text-mystic-100">
-              {t('soulmate.needsBirthData', { defaultValue: 'Add your birth data first' })}
-            </h2>
-            <p className="text-ui text-mystic-400 max-w-md">
-              {t('soulmate.needsBirthDataBody', {
-                defaultValue: "We need your birth date (time is a bonus) to compare charts. Add it in Settings → Edit Profile.",
-              })}
-            </p>
-            <Button variant="gold" onClick={() => navigate('/profile')} className="mt-2">
+        <EmptyState
+          as="h2"
+          icon={<AlertCircle />}
+          title={t('soulmate.needsBirthData', { defaultValue: 'Add your birth data first' })}
+          description={t('soulmate.needsBirthDataBody', {
+            defaultValue: 'We need your birth date (time is a bonus) to compare charts. Add it in Settings → Edit Profile.',
+          })}
+          action={
+            <Button variant="gold" onClick={() => navigate('/profile')}>
               {t('soulmate.goToProfile', { defaultValue: 'Add my birth details' })}
             </Button>
-          </div>
-        </Card>
+          }
+        />
       </Page>
     );
   }
@@ -264,7 +279,7 @@ export function SoulmateScorePage() {
           icon={<Heart />}
           title={t('soulmate.title', { defaultValue: 'Soulmate Score' })}
           subtitle={t('soulmate.subtitle', {
-            defaultValue: "A classical synastry read, distilled to one number. Free, shareable, fast.",
+            defaultValue: 'A classical synastry read, distilled to one number you can share.',
           })}
         />
       </motion.div>
@@ -319,10 +334,15 @@ export function SoulmateScorePage() {
                   disabled={!canSubmit || loading}
                   loading={loading}
                 >
-                  <Heart className="w-4 h-4 mr-2" />
-                  {t('soulmate.calculateCta', { defaultValue: 'Reveal the score' })}
+                  {!loading && <Heart className="w-4 h-4" aria-hidden />}
+                  {loading
+                    ? t('soulmate.computing', { defaultValue: 'Comparing your charts…' })
+                    : t('soulmate.calculateCta', { defaultValue: 'Reveal the score' })}
                 </Button>
                 <MoonstoneCostLine className="justify-center" />
+                {gateError && (
+                  <p className="text-meta text-coral text-center" role="alert">{gateError}</p>
+                )}
                 {EarnSheet}
               </div>
             </Card>
@@ -343,11 +363,12 @@ export function SoulmateScorePage() {
                   : t('soulmate.scoreNoName', { defaultValue: 'Your compatibility' })
               }
               verdict={
+                // A number, so Inter with tabular figures — never the display serif.
                 <motion.span
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                  className="inline-block font-display text-6xl text-gold"
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+                  className="inline-block font-body font-semibold text-hero tabular-nums text-gold"
                 >
                   {result.score}
                 </motion.span>
@@ -378,53 +399,37 @@ export function SoulmateScorePage() {
                     {t('soulmate.tryAnother', { defaultValue: 'Score another person' })}
                   </Button>
                   <Button variant="gold" onClick={handleShare} className="flex-1">
-                    <Share2 className="w-4 h-4 mr-2" />
+                    <Share2 className="w-4 h-4" aria-hidden />
                     {t('soulmate.share', { defaultValue: 'Share score' })}
                   </Button>
                 </>
               }
               defaultDetailOpen
-              footer={
-                <p className="text-caption text-mystic-500 italic">
-                  {t('soulmate.disclaimer', {
-                    defaultValue: "A score isn't a verdict — it's a mirror for conversation. Charts describe patterns, not fate.",
-                  })}
-                </p>
-              }
+              footer={<Disclaimer kind="astrology" />}
             >
               {result.harmonies.length > 0 && (
                 <Card padding="lg">
-                  <p className="font-display-eyebrow mb-2">
+                  <p className="font-display-eyebrow mb-3">
                     {t('soulmate.harmoniesHeading', { defaultValue: 'Where you flow together' })}
                   </p>
-                  <div className="space-y-2">
+                  <ul className="space-y-2.5">
                     {result.harmonies.map((a, i) => (
-                      <div key={i} className="flex items-center justify-between text-ui">
-                        <span className="text-mystic-200">
-                          {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
-                        </span>
-                        <span className="text-meta text-teal/70">{a.type}</span>
-                      </div>
+                      <AspectRow key={i} aspect={a} tone="teal" t={t as (k: string, o?: Record<string, unknown>) => string} />
                     ))}
-                  </div>
+                  </ul>
                 </Card>
               )}
 
               {result.frictions.length > 0 && (
                 <Card padding="lg">
-                  <p className="font-display-eyebrow mb-2">
+                  <p className="font-display-eyebrow mb-3">
                     {t('soulmate.frictionsHeading', { defaultValue: 'Where you stretch each other' })}
                   </p>
-                  <div className="space-y-2">
+                  <ul className="space-y-2.5">
                     {result.frictions.map((a, i) => (
-                      <div key={i} className="flex items-center justify-between text-ui">
-                        <span className="text-mystic-200">
-                          {PLANET_SYMBOL[a.partnerPlanet] ?? ''} {a.partnerPlanet} {ASPECT_SYMBOL[a.type]} {a.natalPlanet} {PLANET_SYMBOL[a.natalPlanet] ?? ''}
-                        </span>
-                        <span className="text-meta text-coral/70">{a.type}</span>
-                      </div>
+                      <AspectRow key={i} aspect={a} tone="coral" t={t as (k: string, o?: Record<string, unknown>) => string} />
                     ))}
-                  </div>
+                  </ul>
                 </Card>
               )}
 

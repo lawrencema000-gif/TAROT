@@ -1,6 +1,7 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { aiGate, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
-import { callAIJson } from "../_shared/ai-providers.ts";
+import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -48,12 +49,7 @@ interface Resp {
 }
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
-
-function localeName(code: string): string {
-  const normalized = code.toLowerCase().split("-")[0];
-  return ({ ja: "Japanese", ko: "Korean", zh: "Chinese" } as Record<string, string>)[normalized] || "English";
-}
+const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-dream-v2`;
 
 const SYSTEM = `You are a Jungian dream interpreter. The user will describe a dream they had. Your job is NOT to predict the future or tell them what will happen. Your job is to:
 
@@ -105,9 +101,9 @@ Schema:
 }`;
 
 async function callAI(dreamText: string, context: Req["userContext"]): Promise<Resp> {
-  const localeLine = context?.locale && context.locale !== "en"
-    ? `\n\nIMPORTANT: Respond in ${localeName(context.locale)}. Keep the Jungian voice; just translate naturally.`
-    : "";
+  // Shared per-locale instruction (_shared/locale.ts) closes the system
+  // prompt; JSON keys stay English, values follow the user's language.
+  const system = `${SYSTEM}\n\n${localeInstruction(context?.locale, { jsonKeys: true, keepVoice: true })}`;
 
   const ctxLines: string[] = [];
   if (context?.zodiacSign) ctxLines.push(`- Sun sign: ${context.zodiacSign}`);
@@ -116,10 +112,10 @@ async function callAI(dreamText: string, context: Req["userContext"]): Promise<R
     ? `\n\nContextual notes on the dreamer (use sparingly, do NOT lead with it):\n${ctxLines.join("\n")}`
     : "";
 
-  const userPrompt = `${ctxBlock}\n\nDream:\n${dreamText}\n\nReply with ONLY the JSON object matching the schema, nothing else.${localeLine}`;
+  const userPrompt = `${ctxBlock}\n\nDream:\n${dreamText}\n\nReply with ONLY the JSON object matching the schema, nothing else.`;
 
   const parsed = await callAIJson<Resp>({
-    system: SYSTEM,
+    system,
     userPrompt,
     temperature: 0.7,
     maxOutputTokens: 900,
@@ -145,7 +141,9 @@ async function callAI(dreamText: string, context: Req["userContext"]): Promise<R
 
 Deno.serve(handler<Req, Resp>({
   fn: "ai-dream-interpret",
-  auth: "optional",
+  // Required: the page always has a session, and an anonymous caller used
+  // to run the full model free, outside the ceiling and the spend (R2 §5).
+  auth: "required",
   methods: ["POST"],
   rateLimit: { max: 10, windowMs: 60_000 },
   ai: true,

@@ -17,11 +17,31 @@ export interface SpreadPosition {
   meaning: string;
 }
 
+/**
+ * One card's place on the spread's grid, for the SpreadGlyph: `x` runs
+ * left to right, `y` top to bottom, one cell per card; `r: 90` lays the
+ * card across (the Celtic Cross's crossing card). Fractions are allowed
+ * for an arc or a staircase. Structurally the same shape as
+ * SpreadGlyphPosition in src/components/icons/SpreadGlyph.tsx — kept
+ * separate so the data layer imports no component.
+ */
+export interface SpreadLayoutPosition {
+  x: number;
+  y: number;
+  r?: 0 | 90;
+}
+
 export interface TarotSpread {
   slug: string;
   name: string;
   category: SpreadCategory;
   cardCount: number;
+  /**
+   * The SpreadGlyph layout, one entry per position in order. See
+   * getSpreadLayout. (Named `glyph`, not `layout`: CartoSpread extends this
+   * type and already uses `layout` for its table layout.)
+   */
+  glyph?: SpreadLayoutPosition[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   durationMin: number;
   shortDescription: string;
@@ -44,6 +64,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'One Card Daily',
     category: 'general',
     cardCount: 1,
+    glyph: [{ x: 0, y: 0 }],
     difficulty: 'beginner',
     durationMin: 5,
     shortDescription:
@@ -109,6 +130,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Three Card: Past, Present, Future',
     category: 'general',
     cardCount: 3,
+    glyph: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }],
     difficulty: 'beginner',
     durationMin: 10,
     shortDescription:
@@ -186,6 +208,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Celtic Cross',
     category: 'general',
     cardCount: 10,
+    glyph: [{ x: 1, y: 1 }, { x: 1, y: 1, r: 90 }, { x: 1, y: 0 }, { x: 1, y: 2 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 1 }, { x: 3, y: 0 }],
     difficulty: 'advanced',
     durationMin: 45,
     shortDescription:
@@ -309,6 +332,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Horseshoe',
     category: 'general',
     cardCount: 7,
+    glyph: [{ x: 0, y: 2 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 1 }, { x: 4, y: 2 }],
     difficulty: 'intermediate',
     durationMin: 25,
     shortDescription:
@@ -412,6 +436,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Relationship Cross',
     category: 'love',
     cardCount: 5,
+    glyph: [{ x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 0 }, { x: 1, y: 2 }],
     difficulty: 'intermediate',
     durationMin: 20,
     shortDescription:
@@ -495,6 +520,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Soulmate Spread',
     category: 'love',
     cardCount: 7,
+    glyph: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
     difficulty: 'intermediate',
     durationMin: 30,
     shortDescription:
@@ -594,6 +620,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Love Yes/No',
     category: 'love',
     cardCount: 3,
+    glyph: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }],
     difficulty: 'beginner',
     durationMin: 8,
     shortDescription:
@@ -669,6 +696,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Career Path',
     category: 'career',
     cardCount: 5,
+    glyph: [{ x: 0, y: 2 }, { x: 1, y: 1.5 }, { x: 2, y: 1 }, { x: 3, y: 0.5 }, { x: 4, y: 0 }],
     difficulty: 'intermediate',
     durationMin: 20,
     shortDescription:
@@ -752,6 +780,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Job Decision',
     category: 'career',
     cardCount: 5,
+    glyph: [{ x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }],
     difficulty: 'intermediate',
     durationMin: 20,
     shortDescription:
@@ -835,6 +864,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Money Flow',
     category: 'career',
     cardCount: 6,
+    glyph: [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 1, y: 0 }],
     difficulty: 'intermediate',
     durationMin: 25,
     shortDescription:
@@ -928,6 +958,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Mind, Body, Spirit',
     category: 'daily',
     cardCount: 3,
+    glyph: [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }],
     difficulty: 'beginner',
     durationMin: 12,
     shortDescription:
@@ -999,6 +1030,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Weekly Forecast',
     category: 'daily',
     cardCount: 7,
+    glyph: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 0.5, y: 1 }, { x: 1.5, y: 1 }, { x: 2.5, y: 1 }],
     difficulty: 'intermediate',
     durationMin: 25,
     shortDescription:
@@ -1098,6 +1130,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Shadow Work',
     category: 'spiritual',
     cardCount: 5,
+    glyph: [{ x: 1, y: 1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
     difficulty: 'advanced',
     durationMin: 35,
     shortDescription:
@@ -1187,6 +1220,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Higher Self Guidance',
     category: 'spiritual',
     cardCount: 4,
+    glyph: [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
     difficulty: 'intermediate',
     durationMin: 20,
     shortDescription:
@@ -1268,6 +1302,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'New Moon Intentions',
     category: 'lunar',
     cardCount: 6,
+    glyph: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
     difficulty: 'intermediate',
     durationMin: 25,
     shortDescription:
@@ -1359,6 +1394,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Full Moon Release',
     category: 'lunar',
     cardCount: 6,
+    glyph: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
     difficulty: 'intermediate',
     durationMin: 25,
     shortDescription:
@@ -1452,6 +1488,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Crossroads',
     category: 'decision',
     cardCount: 5,
+    glyph: [{ x: 1, y: 2 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 0 }],
     difficulty: 'intermediate',
     durationMin: 20,
     shortDescription:
@@ -1535,6 +1572,7 @@ export const tarotSpreads: TarotSpread[] = [
     name: 'Yes-No Pulse',
     category: 'decision',
     cardCount: 5,
+    glyph: [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }],
     difficulty: 'beginner',
     durationMin: 12,
     shortDescription:
@@ -1638,4 +1676,54 @@ export function getSpreadsByCategory(
   category: SpreadCategory,
 ): TarotSpread[] {
   return allSpreads.filter((spread) => spread.category === category);
+}
+
+// ---------------------------------------------------------------------------
+// Spread layouts for the SpreadGlyph
+// ---------------------------------------------------------------------------
+
+/**
+ * Layouts for the twenty-two Major Arcana spreads (src/data/majorArcanaSpreads.ts),
+ * keyed by slug. The eighteen base spreads carry `glyph` inline above.
+ */
+export const MAJOR_ARCANA_SPREAD_LAYOUTS: Record<string, SpreadLayoutPosition[]> = {
+  'the-fool-spread': [{ x: 0, y: 2 }, { x: 1, y: 1 }, { x: 2, y: 0 }],
+  'the-magician-spread': [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+  'the-high-priestess-spread': [{ x: 1, y: 0 }, { x: 1, y: 2 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: 2, y: 1 }],
+  'the-empress-spread': [{ x: 1, y: 2 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 0 }, { x: 2, y: 1 }],
+  'the-emperor-spread': [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }],
+  'the-hierophant-spread': [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 1, y: 2 }],
+  'the-lovers-spread': [{ x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 0 }, { x: 1, y: 2 }, { x: 1, y: 1 }],
+  'the-chariot-spread': [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+  'strength-spread': [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+  'the-hermit-spread': [{ x: 0, y: 2 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }],
+  'the-wheel-of-fortune-spread': [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 0 }, { x: 1, y: 2 }],
+  'justice-spread': [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }],
+  'the-hanged-man-spread': [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+  'death-spread': [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 1.5, y: 0 }],
+  'temperance-spread': [{ x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 1, y: 0 }],
+  'the-devil-spread': [{ x: 1, y: 2 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 0 }],
+  'the-tower-spread': [{ x: 1, y: 2 }, { x: 0, y: 2 }, { x: 1, y: 0 }, { x: 2, y: 2 }, { x: 1, y: 1 }],
+  'the-star-spread': [{ x: 1, y: 2 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 0 }],
+  'the-moon-spread': [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 0.5 }, { x: 1, y: 2 }],
+  'the-sun-spread': [{ x: 1, y: 1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+  'judgement-spread': [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 1, y: 2 }],
+  'the-world-spread': [{ x: 1, y: 1 }, { x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 2, y: 2 }],
+};
+
+/** Rows of three, left to right, for a spread that carries no layout of its own. */
+export function defaultSpreadLayout(cardCount: number): SpreadLayoutPosition[] {
+  const n = Math.max(1, cardCount);
+  const cols = n <= 3 ? n : 3;
+  return Array.from({ length: n }, (_, i) => ({ x: i % cols, y: Math.floor(i / cols) }));
+}
+
+/**
+ * The glyph layout for a spread: its own, the Major Arcana table's, or rows
+ * of three. Always `cardCount` entries, in position order.
+ */
+export function getSpreadLayout(spread: Pick<TarotSpread, 'slug' | 'cardCount' | 'glyph'>): SpreadLayoutPosition[] {
+  const own = spread.glyph ?? MAJOR_ARCANA_SPREAD_LAYOUTS[spread.slug];
+  if (own && own.length === spread.cardCount) return own;
+  return defaultSpreadLayout(spread.cardCount);
 }

@@ -1,8 +1,6 @@
 {
   "app": {
-    "name": "Arcana",
-    "tagline": "나를 아는 하루 한 번의 의식.",
-    "shortTagline": "당신의 데일리 의식."
+    "tagline": "나를 아는 하루 한 번의 의식."
   },
   "nav": {
     "home": "홈",
@@ -14,12 +12,10 @@
     "blog": "블로그",
     "cardMeanings": "카드 의미",
     "signIn": "로그인",
-    "signOut": "로그아웃",
     "settings": "설정",
     "search": "검색",
     "saved": "저장됨",
     "back": "뒤로",
-    "backToArcana": "← Arcana로 돌아가기",
     "backToNews": "뉴스로 돌아가기",
     "trophies": "트로피",
     "news": "뉴스",
@@ -41,17 +37,11 @@
     "continue": "계속",
     "cancel": "취소",
     "delete": "삭제",
-    "confirm": "확인",
     "close": "닫기",
-    "skip": "건너뛰기",
     "retry": "다시 시도",
-    "readMore": "더 보기",
-    "copy": "복사",
     "copied": "복사했어요.",
     "saved": "저장됨",
     "shareFailed": "공유하지 못했어요. 다시 시도해 주세요.",
-    "restore": "구매 복원",
-    "manage": "구독 관리",
     "loading": "불러오는 중…",
     "send": "보내기",
     "refresh": "새로고침"
@@ -59,22 +49,8 @@
   "labels": {
     "email": "이메일",
     "password": "비밀번호",
-    "displayName": "표시 이름",
     "language": "언어",
-    "birthDate": "생년월일",
-    "birthTime": "출생 시각",
-    "birthPlace": "출생지",
-    "timezone": "시간대",
-    "loading": "불러오는 중…",
-    "processing": "처리 중…",
-    "today": "오늘",
-    "yesterday": "어제",
-    "optional": "선택",
-    "required": "필수",
-    "searchPlaceholder": "검색…",
-    "yes": "예",
-    "no": "아니요",
-    "maybe": "보통"
+    "loading": "불러오는 중…"
   },
   "errors": {
     "generic": "잘 되지 않았어요 — 연결을 확인하고 다시 시도해 주세요.",
@@ -139,14 +115,6 @@
     "invalidValue": "올바른 값이 아니에요."
   },
   "toast": {
-    "savedSuccess": "저장했습니다.",
-    "deletedSuccess": "삭제했습니다.",
-    "copiedSuccess": "클립보드에 복사되었습니다.",
-    "welcomeBack": "다시 만나서 반가워요.",
-    "signedOut": "로그아웃되었습니다.",
-    "offline": "오프라인이에요. 일부 기능을 사용할 수 없어요.",
-    "reconnected": "다시 온라인 상태입니다.",
-    "updateAvailable": "새 버전이 있습니다.",
     "languageChanged": "언어가 변경되었습니다."
   },
   "languages": {
@@ -154,12 +122,6 @@
     "ja": "日本語",
     "ko": "한국어",
     "zh": "简体中文"
-  },
-  "time": {
-    "morning": "아침",
-    "afternoon": "낮",
-    "evening": "저녁",
-    "night": "밤"
   },
   "auth": {
     "profileLoadFailed": "프로필을 불러오지 못했어요 — 페이지를 새로고침해 다시 시도해 주세요.",

@@ -13,11 +13,12 @@
 
 import { handler } from "../_shared/handler.ts";
 import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
-import { callAIText } from "../_shared/ai-providers.ts";
+import { AI_CHAIN_TAG, callAIText } from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
+const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-journal-v2`;
 
 const RequestSchema = z.object({
   entry: z.string().min(10).max(6000),
@@ -91,9 +92,8 @@ Deno.serve(handler<Req, Resp>({
     const ctxLines: string[] = [];
     if (userContext?.mbtiType) ctxLines.push(`MBTI: ${userContext.mbtiType}`);
     if (userContext?.enneagramType) ctxLines.push(`Enneagram: ${userContext.enneagramType}`);
-    const localeLine = userContext?.locale && userContext.locale !== "en"
-      ? `Respond in ${({ ja: "Japanese", ko: "Korean", zh: "Chinese" } as Record<string, string>)[userContext.locale.slice(0, 2)] || "English"}. JSON keys must stay in English.`
-      : "";
+    // Shared per-locale instruction (_shared/locale.ts); JSON keys stay English.
+    const localeLine = localeInstruction(userContext?.locale, { jsonKeys: true });
 
     const userPromptParts = [
       ctxLines.length ? `User signals: ${ctxLines.join(", ")}` : "",

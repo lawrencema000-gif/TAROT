@@ -186,11 +186,18 @@ export function useGeocode() {
   const [results, setResults] = useState<GeoResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * True when the server geocoder failed and the results came from the
+   * client-side fallback (R5 M-6). The fallback used to hide the failure
+   * entirely; callers show a non-blocking "approximate location" notice.
+   */
+  const [usedFallback, setUsedFallback] = useState(false);
 
   const search = useCallback(async (birthPlace: string) => {
-    if (!birthPlace.trim()) { setResults([]); return; }
+    if (!birthPlace.trim()) { setResults([]); setUsedFallback(false); return; }
     setLoading(true);
     setError(null);
+    setUsedFallback(false);
     try {
       const data = await callFn<{ results: GeoResult[] }>('astrology-geocode', { birthPlace });
       if (data.results?.length) {
@@ -203,6 +210,7 @@ export function useGeocode() {
     try {
       const fallbackResults = await geocodeClientFallback(birthPlace);
       setResults(fallbackResults);
+      setUsedFallback(fallbackResults.length > 0);
       if (!fallbackResults.length) {
         setError(tErr('geocodeNone', 'No places matched — try the nearest city, or add the country.'));
       }
@@ -215,7 +223,7 @@ export function useGeocode() {
     }
   }, []);
 
-  return { results, loading, error, search };
+  return { results, loading, error, search, usedFallback };
 }
 
 interface ChartResponse {

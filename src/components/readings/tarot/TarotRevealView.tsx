@@ -1,39 +1,32 @@
 /**
- * TarotSection reveal view — extracted from the monolithic TarotSection.tsx
- * as part of the `tarot-section-split` rollout.
+ * The reveal: the cards on the table, then the reading on paper.
  *
- * This is the largest of the extracted views: card reveal flipping,
- * position labels, focus/traditional/AI interpretation tabs, save +
- * new-reading actions. All state and handlers are passed in from the
- * parent — this component is pure presentation.
+ * The faces stay on navy — this is the reading table, Arcana's "green
+ * ground" — laid out as the spread: the spread's own layout coordinates
+ * place each card on a grid (a cross is a cross, a horseshoe an arch),
+ * the Celtic Cross keeps its dedicated layout, and a lone card sits large
+ * in the middle. Every face is a TarotFace; face down it is the Arcana
+ * back the reader drew by.
  *
- * The cards are laid out as the spread, not as a wrapped row: one card
- * sits alone and large; two or three share a row; five, six and seven
- * fall into rows of three. Every card is 2:3 with its position named
- * beneath it, and the face-down side is the Arcana back — the same
- * object the reader shuffled and drew, turned over.
+ * Once every card is up, the result arrives as a ResultSheet (see
+ * TarotReadingResult): the question or the spread as the title, a
+ * summary, one short section per card, the affirmation, "Start a new
+ * reading", the disclaimer. Save and share are icon buttons in the header.
+ * The AI chip sits above the sheet as the only secondary control.
+ *
+ * All state and handlers come from TarotSection; this is presentation.
  */
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { ChevronLeft,
-  Feather,
-  Bookmark,
-  BookmarkCheck,
-  Share2,
-  Info,
-  Brain,
-  Loader2,
-  Heart,
-  Briefcase,
-  ArrowUp,
-  ArrowDown } from 'lucide-react';
-import { Card, Button, Chip, Tabs, Tag, ReadingProse } from '../../ui';
+import { ChevronLeft, Bookmark, BookmarkCheck, Share2, Info, Brain, Loader2 } from 'lucide-react';
+import { Button, Chip, TarotFace } from '../../ui';
 import { useT } from '../../../i18n/useT';
 import { CelticCrossLayout } from '../CelticCrossLayout';
-import { getBundledFullPath } from '../../../config/bundledImages';
 import { flipHaptics } from '../../../utils/haptics';
 import type { TarotCard } from '../../../types';
-import type { FocusArea } from './types';
+import type { SpreadLayoutPosition } from '../../../data/tarotSpreads';
+import type { DrawnCard, FocusArea } from './types';
+import { TarotReadingResult } from './TarotReadingResult';
 
 /*
  * The flip.
@@ -45,9 +38,11 @@ import type { FocusArea } from './types';
  *
  * A reversed card turns INTO its reversal: the plane's end state adds a
  * half-turn on Z, so the card lands upside down as part of the same
- * motion rather than arriving already inverted. Both transforms are
- * always written out, at rest and turned, so the browser interpolates
- * them function by function instead of falling back to a matrix.
+ * motion rather than arriving already inverted (the plate turns with it,
+ * as a real card's would; the label beneath names the orientation). Both
+ * transforms are always written out, at rest and turned, so the browser
+ * interpolates them function by function instead of falling back to a
+ * matrix.
  *
  * Only `transform` and `opacity` move. The easing is a plain ease-out
  * with a long tail so the card decelerates into place instead of
@@ -75,14 +70,19 @@ const BACKFACE: CSSProperties = {
 const AT_REST = 'rotateY(0deg) rotateZ(0deg)';
 const turned = (reversed: boolean) => `rotateY(180deg) rotateZ(${reversed ? 180 : 0}deg)`;
 
-interface RevealCard { card: TarotCard; reversed: boolean; revealed: boolean; }
-interface FocusInterp { content: string; icon: typeof Heart; label: string; color: string; }
+const ICON_BUTTON =
+  'w-11 h-11 inline-flex items-center justify-center rounded-full transition-[background-color,transform] duration-fast ' +
+  '[@media(hover:hover)]:[&:hover:not(:active)]:bg-mystic-800 motion-safe:active:scale-90 disabled:opacity-40 ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50';
 
 interface TarotRevealViewProps {
-  drawnCards: RevealCard[];
+  drawnCards: DrawnCard[];
   currentSpread: string;
   spreadTitle: string;
+  /** The spread's glyph layout, one entry per card, used to lay the table. */
+  spreadLayout?: SpreadLayoutPosition[];
   selectedFocus: FocusArea | null;
+  question?: string | null;
   allRevealed: boolean;
   isSaved: boolean;
   isPremium: boolean;
@@ -90,11 +90,8 @@ interface TarotRevealViewProps {
   showAIInterpretation: boolean;
   aiInterpretation: string | null;
   loadingAI: boolean;
-  interpretationView: 'focus' | 'traditional';
   focusReadingLabel: string;
-  getCardImage: (card: TarotCard) => string | undefined;
   getPositionLabel: (index: number) => string;
-  getFocusInterpretation: (card: TarotCard, focus: FocusArea | null, reversed: boolean) => FocusInterp | null;
   onBack: () => void;
   onSave: () => void;
   onShare: () => void;
@@ -103,8 +100,13 @@ interface TarotRevealViewProps {
   onCardClick: (card: TarotCard, reversed: boolean) => void;
   onGetAIInterpretation: () => void;
   onHideAIInterpretation: () => void;
-  onSetInterpretationView: (view: 'focus' | 'traditional') => void;
   onNewReading: () => void;
+}
+
+/** Rows of three, for a spread that brought no layout. */
+function rowsOfThree(n: number): SpreadLayoutPosition[] {
+  const cols = n <= 3 ? n : 3;
+  return Array.from({ length: n }, (_, i) => ({ x: i % cols, y: Math.floor(i / cols) }));
 }
 
 export function TarotRevealView(props: TarotRevealViewProps) {
@@ -113,7 +115,9 @@ export function TarotRevealView(props: TarotRevealViewProps) {
     drawnCards,
     currentSpread,
     spreadTitle,
+    spreadLayout,
     selectedFocus,
+    question,
     allRevealed,
     isSaved,
     isPremium,
@@ -121,11 +125,8 @@ export function TarotRevealView(props: TarotRevealViewProps) {
     showAIInterpretation,
     aiInterpretation,
     loadingAI,
-    interpretationView,
     focusReadingLabel,
-    getCardImage,
     getPositionLabel,
-    getFocusInterpretation,
     onBack,
     onSave,
     onShare,
@@ -134,7 +135,6 @@ export function TarotRevealView(props: TarotRevealViewProps) {
     onCardClick,
     onGetAIInterpretation,
     onHideAIInterpretation,
-    onSetInterpretationView,
     onNewReading,
   } = props;
 
@@ -190,55 +190,64 @@ export function TarotRevealView(props: TarotRevealViewProps) {
   /*
    * The interpretation arrives after the LAST card has finished turning:
    * the longest delay in the event that completed the reveal, plus the
-   * flip itself, plus a beat. For a reveal-all of n cards that is
-   * stagger × (n − 1) + 520 + 120. Earlier events only ever hold smaller
-   * delays, so the maximum over every card is the tail of the last one.
+   * flip itself, plus a beat.
    */
   const revealTailMs =
     drawnCards.reduce((max, _, i) => Math.max(max, flipDelays.current[i] ?? 0), 0) + FLIP_MS + FLIP_SETTLE_MS;
 
   const count = drawnCards.length;
   const single = count === 1;
-  const spreadLayout = single
-    ? 'flex justify-center'
-    : count === 2
-      ? 'grid grid-cols-2 gap-x-3 gap-y-4 max-w-[15.75rem] mx-auto'
-      : 'grid grid-cols-3 gap-x-3 gap-y-4 max-w-sm mx-auto';
-  const radius = single ? 'rounded-card' : 'rounded-inset';
+
   /*
-   * The single card is the hero and gets the 512×768 face; a grid card
-   * is at most ~125px wide, which the 400×600 `full` variant covers at
-   * 3× without decoding a 1.5 MB bitmap per slot.
+   * The table. The spread's layout places each card on a CSS grid; a
+   * layout with half-cells (an arc, a staircase) doubles the grid so the
+   * halves land on whole tracks. The container narrows with the number of
+   * cards across, so two cards do not become two slabs.
    */
-  const faceFor = (card: TarotCard) =>
-    single ? getCardImage(card) : (getBundledFullPath(card.id) ?? getCardImage(card));
+  const layout = spreadLayout && spreadLayout.length === count ? spreadLayout : rowsOfThree(count);
+  const fractional = layout.some((p) => !Number.isInteger(p.x) || !Number.isInteger(p.y));
+  const scale = fractional ? 2 : 1;
+  const across = Math.max(...layout.map((p) => p.x)) + 1;
+  const gridCols = Math.round(across * scale);
+  const tableWidth =
+    across <= 1 ? 'max-w-[10rem]' : across <= 2 ? 'max-w-[15.75rem]' : across <= 3 ? 'max-w-sm' : 'max-w-md';
+  const radius: 'inset' | 'card' = single ? 'card' : 'inset';
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px]"
+          className="text-ui text-mystic-400 hover:text-mystic-300 transition-colors duration-fast inline-flex items-center min-h-[44px] -ml-1 pr-2"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden />
           {t('readings.back')}
         </button>
-        <button
-          onClick={onSave}
-          disabled={!allRevealed}
-          aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
-          className="p-3 rounded-full hover:bg-mystic-800 transition-[background-color,transform] duration-fast active:scale-90 disabled:opacity-50"
-        >
-          {isSaved ? (
-            <BookmarkCheck className="w-5 h-5 text-gold" />
-          ) : (
-            <Bookmark className="w-5 h-5 text-mystic-400" />
-          )}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onShare}
+            disabled={!allRevealed}
+            aria-label={t('readings.revealView.share', { defaultValue: 'Share this reading' })}
+            className={`${ICON_BUTTON} text-mystic-300`}
+          >
+            <Share2 className="w-5 h-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={!allRevealed}
+            aria-label={isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}
+            aria-pressed={isSaved}
+            className={`${ICON_BUTTON} ${isSaved ? 'text-gold' : 'text-mystic-300'}`}
+          >
+            {isSaved ? <BookmarkCheck className="w-5 h-5" aria-hidden /> : <Bookmark className="w-5 h-5" aria-hidden />}
+          </button>
+        </div>
       </div>
 
       <div className="text-center">
-        <p className="font-display-eyebrow text-mystic-400">{focusReadingLabel}</p>
+        {focusReadingLabel && <p className="font-display-eyebrow text-mystic-300">{focusReadingLabel}</p>}
         <h2 className="heading-display-md text-mystic-100">{spreadTitle}</h2>
       </div>
 
@@ -251,13 +260,20 @@ export function TarotRevealView(props: TarotRevealViewProps) {
           cardBackUrl={cardBackUrl ?? undefined}
         />
       ) : (
-        <div className={spreadLayout}>
+        <div
+          className={`grid gap-x-3 gap-y-4 mx-auto w-full ${tableWidth}`}
+          style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+        >
           {drawnCards.map((drawn, i) => {
             const delay = flipDelays.current[i] ?? 0;
-            const face = faceFor(drawn.card);
             const position = getPositionLabel(i);
+            const p = layout[i];
+            const cell: CSSProperties = {
+              gridColumn: `${Math.round(p.x * scale) + 1} / span ${scale}`,
+              gridRow: `${Math.round(p.y * scale) + 1} / span ${scale}`,
+            };
             return (
-              <div key={i} className={`flex flex-col items-center gap-2 ${single ? 'w-40' : 'w-full'}`}>
+              <div key={i} className="flex flex-col items-center gap-2 min-w-0" style={cell}>
                 {/*
                   Perspective and press feedback live on this wrapper; the
                   flip lives on the child. Two transforms on one element
@@ -271,7 +287,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                       ? t('readings.revealView.openCard', { name: drawn.card.name, defaultValue: 'Open {{name}}' })
                       : t('readings.revealView.revealPosition', { position, defaultValue: 'Reveal {{position}}' })
                   }
-                  className={`relative w-full aspect-[2/3] ${radius} select-none touch-manipulation [-webkit-tap-highlight-color:transparent] transition-transform duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 ${
+                  className={`relative w-full aspect-[2/3] ${radius === 'card' ? 'rounded-card' : 'rounded-inset'} select-none touch-manipulation [-webkit-tap-highlight-color:transparent] transition-transform duration-base ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 ${
                     drawn.revealed ? '' : 'motion-safe:hover:scale-[1.03] motion-safe:active:scale-95'
                   }`}
                   style={{ perspective: '1000px' }}
@@ -287,7 +303,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                   >
                     {/* Back — the Arcana back the reader drew this card by. */}
                     <div
-                      className={`absolute inset-0 ${radius} overflow-hidden bg-mystic-850`}
+                      className={`absolute inset-0 ${radius === 'card' ? 'rounded-card' : 'rounded-inset'} overflow-hidden bg-mystic-850 border border-gold/30`}
                       style={BACKFACE}
                     >
                       <img
@@ -301,30 +317,16 @@ export function TarotRevealView(props: TarotRevealViewProps) {
 
                     {/*
                       Face — mounted from the start, pre-turned 180° and
-                      hidden by backface-visibility. Rendering it only on
-                      reveal would mean decoding the image mid-flip, which
-                      is exactly when a mid-range phone can least afford it.
-                      The art carries its own matte, rule and name plate, so
-                      it gets rounded corners and nothing else.
+                      hidden by backface-visibility, so the bitmap is decoded
+                      before the hinge moves. The plane carries the reversal,
+                      so the face itself is drawn upright.
                     */}
                     <div
-                      className={`absolute inset-0 ${radius} overflow-hidden bg-mystic-850`}
+                      className="absolute inset-0"
                       style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
                       aria-hidden={!drawn.revealed}
                     >
-                      {face ? (
-                        <img
-                          src={face}
-                          alt={drawn.card.name}
-                          decoding="async"
-                          draggable={false}
-                          className="w-full h-full object-cover pointer-events-none select-none"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center p-2 text-center">
-                          <p className="text-caption text-mystic-300 line-clamp-3">{drawn.card.name}</p>
-                        </div>
-                      )}
+                      <TarotFace card={drawn.card} size="fill" radius={radius} reversedTag={false} loading="eager" alt="" />
                     </div>
                   </div>
                   {/*
@@ -343,7 +345,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                     <Info className="w-3.5 h-3.5 text-gold" />
                   </div>
                 </button>
-                <div className="text-center">
+                <div className="text-center min-w-0 w-full">
                   <p className="text-caption text-mystic-400 leading-tight">{position}</p>
                   {/* Named as well as shown: an upside-down plate is not a label. */}
                   <p
@@ -354,7 +356,7 @@ export function TarotRevealView(props: TarotRevealViewProps) {
                     }}
                     aria-hidden={!(drawn.revealed && drawn.reversed)}
                   >
-                    {drawn.reversed ? t('readings.revealView.reversed') : ' '}
+                    {drawn.reversed ? t('readings.revealView.reversed') : ' '}
                   </p>
                 </div>
               </div>
@@ -370,189 +372,59 @@ export function TarotRevealView(props: TarotRevealViewProps) {
       )}
 
       {/*
-        The interpretation arrives *after* the last card has turned, so the
+        The reading arrives *after* the last card has turned, so the
         sequence reads as cause and effect rather than as two things
         happening at once. `both` fill keeps it invisible during the delay;
-        without it the block would flash in at full opacity first. The
-        delay is computed above from the flip that completed the reveal.
+        without it the block would flash in at full opacity first.
       */}
       {allRevealed && (
         <div
-          className="space-y-6 animate-fade-in"
+          className="space-y-4 animate-fade-in"
           style={{ animationDuration: '320ms', animationDelay: `${revealTailMs}ms`, animationFillMode: 'both' }}
         >
-          <div className="border-t border-mystic-700 pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="heading-display-md text-mystic-100">{t('readings.interpretation')}</h3>
-              {!showAIInterpretation && (
-                <Chip
-                  variant="outline"
-                  size="sm"
-                  onClick={() => { if (!loadingAI) onGetAIInterpretation(); }}
-                  className={loadingAI ? 'opacity-50 pointer-events-none' : ''}
-                >
-                  {loadingAI ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      {t('readings.revealView.generating')}
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="w-3.5 h-3.5" />
-                      {isPremium ? t('readings.revealView.getAIInsight') : t('readings.revealView.premiumAI')}
-                    </>
-                  )}
-                </Chip>
-              )}
-            </div>
-
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <h3 className="text-ui font-medium text-mystic-200">{t('readings.interpretation')}</h3>
             {showAIInterpretation && aiInterpretation ? (
-              <div className="space-y-4">
-                <Card padding="lg" className="bg-gradient-to-br from-gold/5 via-cosmic-blue/5 to-gold/5 border-gold/20">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
-                      <Brain className="w-4 h-4 text-gold" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-ui font-medium text-mystic-100 mb-1">{t('readings.revealView.aiInterpretation')}</h4>
-                      <p className="text-meta text-mystic-400">{t('readings.revealView.aiSubtitle')}</p>
-                    </div>
-                  </div>
-                  <ReadingProse text={aiInterpretation} />
-                </Card>
-                <button
-                  onClick={onHideAIInterpretation}
-                  className="inline-flex items-center min-h-[44px] text-caption text-mystic-400 hover:text-mystic-300 transition-colors duration-fast"
-                >
-                  {t('readings.revealView.showCardMeanings')}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onHideAIInterpretation}
+                className="inline-flex items-center min-h-[44px] text-meta text-mystic-400 hover:text-mystic-300 transition-colors duration-fast"
+              >
+                {t('readings.revealView.showCardMeanings')}
+              </button>
             ) : (
-              <div className="space-y-4">
-                {(selectedFocus === 'Love' || selectedFocus === 'Career' || selectedFocus === 'Money') &&
-                 drawnCards.some(d => getFocusInterpretation(d.card, selectedFocus, d.reversed)) && (
-                  <Tabs
-                    size="sm"
-                    idPrefix="interp"
-                    aria-label={t('readings.interpretation')}
-                    className="mb-4"
-                    value={interpretationView}
-                    onChange={onSetInterpretationView}
-                    items={[
-                      {
-                        id: 'focus',
-                        icon: selectedFocus === 'Love' ? Heart : Briefcase,
-                        label: selectedFocus === 'Love'
-                          ? t('readings.revealView.loveFocus')
-                          : selectedFocus === 'Career'
-                            ? t('readings.revealView.careerFocus')
-                            : t('readings.revealView.moneyFocus'),
-                      },
-                      { id: 'traditional', icon: ArrowUp, label: t('readings.revealView.traditional') },
-                    ]}
-                  />
-                )}
-
-                {drawnCards.map((drawn, i) => {
-                  const focusInterp = getFocusInterpretation(drawn.card, selectedFocus, drawn.reversed);
-                  const showFocusContent = interpretationView === 'focus' && focusInterp;
-
-                  return (
-                    <div key={i} className="mb-6 last:mb-0">
-                      <div className="flex items-start gap-3 mb-2">
-                        <Tag tone="neutral" size="md">
-                          {getPositionLabel(i)}
-                        </Tag>
-                        <div className="flex-1">
-                          <h4 className="text-ui font-medium text-mystic-100">
-                            {drawn.card.name}
-                            {drawn.reversed && <span className="text-meta text-mystic-400 ml-2">{t('readings.revealView.reversedParen')}</span>}
-                          </h4>
-                        </div>
-                      </div>
-
-                      {showFocusContent ? (
-                        <div className={`rounded-control p-3 ${
-                          focusInterp.color === 'pink'
-                            ? 'bg-cosmic-rose/10 border border-cosmic-rose/25'
-                            : 'bg-cosmic-blue/10 border border-cosmic-blue/25'
-                        }`}>
-                          <div className="flex items-center gap-2 mb-2">
-                            <focusInterp.icon className={`w-4 h-4 ${focusInterp.color === 'pink' ? 'text-cosmic-rose' : 'text-cosmic-blue-ink'}`} />
-                            <span className={`text-meta font-medium ${focusInterp.color === 'pink' ? 'text-cosmic-rose' : 'text-cosmic-blue-ink'}`}>
-                              {focusInterp.label}
-                            </span>
-                          </div>
-                          <p className="reading-copy">
-                            {focusInterp.content}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            {drawn.reversed ? (
-                              <ArrowDown className="w-3.5 h-3.5 text-gold" />
-                            ) : (
-                              <ArrowUp className="w-3.5 h-3.5 text-teal" />
-                            )}
-                            <span className={`text-meta font-medium ${drawn.reversed ? 'text-gold' : 'text-teal'}`}>
-                              {drawn.reversed ? t('readings.revealView.reversed') : t('readings.revealView.upright')}
-                            </span>
-                          </div>
-                          <ReadingProse
-                            lede={false}
-                            text={(() => {
-                              const focus = selectedFocus;
-                              const focusMeaning =
-                                focus === 'Love'
-                                  ? drawn.card.loveMeaning
-                                  : focus === 'Career'
-                                    ? drawn.card.careerMeaning
-                                    : undefined;
-                              const mainText =
-                                focusMeaning ||
-                                (drawn.reversed ? drawn.card.meaningReversed : drawn.card.meaningUpright);
-                              const reversalAddon =
-                                focusMeaning && drawn.reversed
-                                  ? `\n\n${t('readings.revealView.reversalNote', { text: drawn.card.meaningReversed })}`
-                                  : '';
-                              return `${mainText}${reversalAddon}`;
-                            })()}
-                          />
-                        </div>
-                      )}
-
-                      {drawn.card.reflectionPrompt && showFocusContent && (
-                        <div className="mt-3 p-3 bg-gold/5 border border-gold/20 rounded-control">
-                          <p className="reading-copy text-mystic-100 flex items-start gap-2">
-                            <Feather className="w-4 h-4 mt-1.5 flex-shrink-0 text-gold" />
-                            <span>{drawn.card.reflectionPrompt}</span>
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <Chip
+                variant="outline"
+                size="sm"
+                onClick={() => { if (!loadingAI) onGetAIInterpretation(); }}
+                disabled={loadingAI}
+                icon={loadingAI ? <Loader2 className="animate-spin" /> : <Brain />}
+                label={
+                  loadingAI
+                    ? t('readings.revealView.generating')
+                    : isPremium
+                      ? t('readings.revealView.getAIInsight')
+                      : t('readings.revealView.premiumAI')
+                }
+              />
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <Button variant="outline" onClick={onSave}>
-              {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-              <span className="text-caption">{isSaved ? t('readings.revealView.saved') : t('readings.revealView.save')}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onShare}
-            >
-              <Share2 className="w-4 h-4" />
-              <span className="text-caption">{t('readings.revealView.share', { defaultValue: 'Share this reading' })}</span>
-            </Button>
-            <Button variant="gold" onClick={onNewReading}>
-              <span className="text-caption">{t('readings.revealView.newReading')}</span>
-            </Button>
-          </div>
+          <TarotReadingResult
+            cards={drawnCards}
+            getPositionLabel={getPositionLabel}
+            selectedFocus={selectedFocus}
+            question={question}
+            eyebrow={focusReadingLabel || spreadTitle}
+            title={spreadTitle}
+            aiInterpretation={showAIInterpretation ? aiInterpretation : null}
+            headingLevel="h2"
+            actions={
+              <Button variant="gold" size="lg" fullWidth onClick={onNewReading}>
+                {t('readings.revealView.newReading')}
+              </Button>
+            }
+          />
         </div>
       )}
     </div>

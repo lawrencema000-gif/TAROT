@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ScrollText, Lock, Printer, Moon, CheckCircle2, AlertCircle, Circle, Triangle, Square, Minus, Crown } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, Progress, Section, Tabs, EmptyState, Paper, Disclaimer } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { isNative } from '../utils/platform';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
@@ -35,12 +36,13 @@ import {
 
 const NATAL_COST = 200;
 
+// The aspect list sits on paper, so its hues are the ink tier (gold is 1.82:1 on cream).
 const ASPECT_META: Record<AspectType, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  conjunction: { label: 'Conjunction',  color: 'text-gold',         icon: Circle },
-  trine:       { label: 'Trine',        color: 'text-teal',         icon: Triangle },
-  sextile:     { label: 'Sextile',      color: 'text-cosmic-blue',  icon: Triangle },
-  square:      { label: 'Square',       color: 'text-coral',        icon: Square },
-  opposition:  { label: 'Opposition',   color: 'text-cosmic-violetLight',icon: Minus },
+  conjunction: { label: 'Conjunction',  color: 'text-ink-gold',   icon: Circle },
+  trine:       { label: 'Trine',        color: 'text-ink-teal',   icon: Triangle },
+  sextile:     { label: 'Sextile',      color: 'text-ink-blue',   icon: Triangle },
+  square:      { label: 'Square',       color: 'text-ink-coral',  icon: Square },
+  opposition:  { label: 'Opposition',   color: 'text-ink-violet', icon: Minus },
 };
 
 const PLANET_ONE_LINERS: Record<Planet, { sign: string; inSign: (s: ZodiacSign) => string }> = {
@@ -101,6 +103,9 @@ export function NatalChartReportPage() {
 
   const reference = profile?.birthDate ?? 'no-birth';
   const hasBirthData = !!profile?.birthDate;
+  // Rewarded ads only exist inside the native shell; on the web the page
+  // must not promise one (R5 M-9).
+  const adAvailable = isNative();
 
   const checkUnlock = useCallback(async () => {
     if (!user || !hasBirthData) {
@@ -367,32 +372,43 @@ export function NatalChartReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-ui text-mystic-200 mb-2">
-                {t('natalReport.orEarnMoonstones', {
-                  defaultValue: 'Or unlock with {{n}} Moonstones',
+            <div className="mt-3 space-y-2 text-left">
+              {/* The Moonstone path, disabled with the shortfall spelled out —
+                  never an ad promise the web cannot keep. */}
+              <Button variant="outline" fullWidth disabled>
+                <Moon className="w-4 h-4 mr-2" />
+                {t('natalReport.unlockCta', {
+                  defaultValue: 'Unlock with {{n}} Moonstones',
                   n: NATAL_COST,
                 })}
-              </p>
-              <p className="text-meta text-mystic-400 mb-3">
-                {t('natalReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
-                {' · '}
-                {t('natalReport.earnHint', {
-                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
-                })}
-              </p>
-              <Button
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => setShowWatchAd(true)}
-              >
-                <Moon className="w-3.5 h-3.5 mr-1.5" />
-                {t('natalReport.earnNow', {
-                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
-                  n: MOONSTONES_PER_AD,
-                })}
               </Button>
+              <p className="text-meta text-mystic-400 text-center tabular-nums">
+                {t('reportUnlock.shortfall', {
+                  defaultValue: 'You have {{have}} Moonstones — {{need}} more needed.',
+                  have: balance ?? 0,
+                  need: Math.max(0, NATAL_COST - (balance ?? 0)),
+                })}
+              </p>
+              {adAvailable ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  size="sm"
+                  onClick={() => setShowWatchAd(true)}
+                >
+                  <Moon className="w-3.5 h-3.5 mr-1.5" />
+                  {t('natalReport.earnNow', {
+                    defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                    n: MOONSTONES_PER_AD,
+                  })}
+                </Button>
+              ) : (
+                <p className="text-meta text-mystic-400 text-center">
+                  {t('reportUnlock.earnHintWeb', {
+                    defaultValue: 'Earn Moonstones with the daily check-in or an invite, or open everything with Premium.',
+                  })}
+                </p>
+              )}
             </div>
           ))}
         </Card>
@@ -420,7 +436,7 @@ export function NatalChartReportPage() {
             </div>
           ) : undefined}
         />
-        {moonstonesEnabled && (
+        {moonstonesEnabled && adAvailable && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}
@@ -595,7 +611,7 @@ export function NatalChartReportPage() {
             <p className="text-meta uppercase tracking-wider text-mystic-400">Sun</p>
             <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.sun.sign}</p>
             {natal.bigThree.sun.house && (
-              <p className="text-meta text-mystic-400 mt-0.5">House {natal.bigThree.sun.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">House {natal.bigThree.sun.house}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
@@ -603,7 +619,7 @@ export function NatalChartReportPage() {
             <p className="text-meta uppercase tracking-wider text-mystic-400">Moon</p>
             <p className="text-ui text-mystic-100 font-medium">{natal.bigThree.moon.sign}</p>
             {natal.bigThree.moon.house && (
-              <p className="text-meta text-mystic-400 mt-0.5">House {natal.bigThree.moon.house}</p>
+              <p className="text-meta text-mystic-400 mt-0.5 tabular-nums">House {natal.bigThree.moon.house}</p>
             )}
           </div>
           <div className="text-center flex flex-col items-center">
@@ -623,48 +639,6 @@ export function NatalChartReportPage() {
           </div>
         </div>
       </Card>
-
-      <Section
-        className="card-print"
-        headingLevel="h3"
-        spacing="sm"
-        title={t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
-      >
-        <div className="space-y-4">
-          {natal.planets.map((p) => {
-            const meta = PLANET_ONE_LINERS[p.planet];
-            const houseTheme = p.house ? HOUSE_THEMES[p.house - 1] : undefined;
-            return (
-              <div key={p.planet} className="border-b border-mystic-800/60 pb-4 last:border-b-0 last:pb-0">
-                {/* One line: the planet as a heading, its position as meta.
-                    The reading below used to be three tiers of dimmer grey
-                    (11px italic blurb / 12px in-sign line / 11px house line);
-                    it is one paragraph on the body tier now. */}
-                <div className="flex items-center gap-2 mb-2">
-                  <PlanetGlyph planet={p.planet} size={20} className="text-gold" />
-                  <span className="text-ui font-medium text-mystic-100">
-                    {p.planet} in {p.sign}
-                  </span>
-                  <ZodiacGlyph sign={p.sign} size={18} className="text-mystic-300" />
-                  <span className="text-meta text-mystic-400">
-                    {p.degree.toFixed(1)}°
-                    {p.house ? ` · House ${p.house}` : ''}
-                  </span>
-                </div>
-                {(meta || houseTheme) && (
-                  <div className="reading-copy">
-                    <p>
-                      {meta && `${meta.sign} ${meta.inSign(p.sign)}`}
-                      {meta && houseTheme ? ' ' : ''}
-                      {houseTheme && `In your house of ${houseTheme}.`}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Section>
 
       <Section
         className="card-print"
@@ -717,48 +691,84 @@ export function NatalChartReportPage() {
         )}
       </Section>
 
-      <Section
-        className="card-print"
-        headingLevel="h3"
-        spacing="sm"
-        title={t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
-      >
-        {natal.aspects.length === 0 ? (
-          <EmptyState variant="inline" size="sm" title="No aspects computed." />
-        ) : (
-          <div className="space-y-1.5">
-            {natal.aspects.map((a, i) => {
-              const meta = ASPECT_META[a.type];
-              const Icon = meta.icon;
+      {/* The report body — what the user reads — sits on paper: the
+          placements and the aspect list, then the Disclaimer as the
+          sheet's tail. The wheel, the Big Three and the balance bars stay
+          on navy above it (they are chart, not prose). */}
+      <Paper as="article" tail className="card-print space-y-8">
+        <section>
+          <h3 className="heading-display-md heading-strong text-ink mb-4">
+            {t('natalReport.planetsHeading', { defaultValue: 'Planets in signs and houses' })}
+          </h3>
+          <div className="space-y-4">
+            {natal.planets.map((p) => {
+              const meta = PLANET_ONE_LINERS[p.planet];
+              const houseTheme = p.house ? HOUSE_THEMES[p.house - 1] : undefined;
               return (
-                <div
-                  key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
-                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-1.5 border-b border-mystic-800/50 last:border-b-0"
-                >
-                  <div className="flex items-center gap-2 text-ui text-mystic-200 min-w-0">
-                    <PlanetGlyph planet={a.planet1} size={18} className="text-gold" />
-                    <Icon className={`w-3 h-3 ${meta.color}`} />
-                    <PlanetGlyph planet={a.planet2} size={18} className="text-gold" />
-                    <span className="ml-2">
-                      {a.planet1} {meta.label.toLowerCase()} {a.planet2}
+                <div key={p.planet} className="border-b border-paper-hairline pb-4 last:border-b-0 last:pb-0">
+                  {/* One line: the planet as a heading, its position as meta;
+                      the reading is one paragraph on the body tier. */}
+                  <div className="flex items-center gap-2 mb-1.5 min-w-0">
+                    <PlanetGlyph planet={p.planet} size={20} className="text-ink-gold shrink-0" />
+                    <span className="text-ui font-medium text-ink truncate">
+                      {p.planet} in {p.sign}
+                    </span>
+                    <ZodiacGlyph sign={p.sign} size={18} className="text-ink-muted shrink-0" />
+                    <span className="text-meta text-ink-muted tabular-nums ml-auto shrink-0">
+                      {p.degree.toFixed(1)}°
+                      {p.house ? ` · House ${p.house}` : ''}
                     </span>
                   </div>
-                  <div className="text-meta text-mystic-400 shrink-0">
-                    orb {a.orb.toFixed(1)}°{a.applying ? ' · applying' : ''}
-                  </div>
+                  {(meta || houseTheme) && (
+                    <div className="reading-copy">
+                      <p>
+                        {meta && `${meta.sign} ${meta.inSign(p.sign)}`}
+                        {meta && houseTheme ? ' ' : ''}
+                        {houseTheme && `In your house of ${houseTheme}.`}
+                      </p>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
-        )}
-      </Section>
+        </section>
 
-      <p className="text-caption text-mystic-500 italic">
-        {t('natalReport.disclaimer', {
-          defaultValue:
-            'Astrology is a symbolic lens, not a prediction. Your chart is a map of your temperament — what you do with it is yours.',
-        })}
-      </p>
+        <section>
+          <h3 className="heading-display-md heading-strong text-ink mb-4">
+            {t('natalReport.aspectsHeading', { defaultValue: 'Aspects — the wiring between planets' })}
+          </h3>
+          {natal.aspects.length === 0 ? (
+            <p className="reading-meta">{t('natalReport.noAspects', { defaultValue: 'No aspects computed.' })}</p>
+          ) : (
+            <div>
+              {natal.aspects.map((a, i) => {
+                const meta = ASPECT_META[a.type];
+                const Icon = meta.icon;
+                return (
+                  <div
+                    key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+                    className="flex items-center justify-between gap-3 py-2 border-b border-paper-hairline last:border-b-0"
+                  >
+                    <div className="flex items-center gap-2 text-ui text-ink min-w-0">
+                      <PlanetGlyph planet={a.planet1} size={18} className="text-ink-gold shrink-0" />
+                      <Icon className={`w-3 h-3 shrink-0 ${meta.color}`} />
+                      <PlanetGlyph planet={a.planet2} size={18} className="text-ink-gold shrink-0" />
+                      <span className="ml-1 truncate">
+                        {a.planet1} {meta.label.toLowerCase()} {a.planet2}
+                      </span>
+                    </div>
+                    <div className="text-meta text-ink-muted shrink-0 tabular-nums">
+                      {a.orb.toFixed(1)}°{a.applying ? ' · applying' : ''}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </Paper>
+      <Disclaimer kind="astrology" tail />
     </Page>
   );
 }

@@ -13,19 +13,19 @@ export const mbtiQuiz: QuizDefinition = {
     { id: 'ei5', text: 'You enjoy being the center of attention.', dimension: 'EI', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'ei6', text: 'You prefer deep conversations with one person over group chats.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'ei7', text: 'You feel energized after meeting new people.', dimension: 'EI', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'ei8', text: 'You think before you speak in most situations.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'ei8', text: 'You like to work an idea out in your own head before you discuss it with anyone.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'ei9', text: 'You enjoy initiating conversations with strangers.', dimension: 'EI', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'ei10', text: 'You prefer working in a quiet environment with minimal interruptions.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'ei10', text: 'You do your best work alone, away from other people.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'ei11', text: 'You often process your thoughts by talking them out with others.', dimension: 'EI', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'ei12', text: 'You have a small circle of close friends rather than many acquaintances.', dimension: 'EI', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
 
     { id: 'sn1', text: 'You focus more on present realities than future possibilities.', dimension: 'SN', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'sn2', text: 'You often think about how things could be improved.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'sn2', text: 'You trust a hunch about where things are heading even before you can explain it.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'sn3', text: 'You prefer detailed instructions over general guidelines.', dimension: 'SN', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'sn4', text: 'You enjoy exploring abstract theories and ideas.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'sn5', text: 'You trust your direct experience more than theoretical concepts.', dimension: 'SN', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'sn6', text: 'You often see patterns and connections others miss.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
-    { id: 'sn7', text: 'You prefer practical solutions over innovative ones.', dimension: 'SN', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'sn6', text: 'You tend to read between the lines rather than take things at face value.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'sn7', text: 'You would rather use a method that has worked before than try one that is untested.', dimension: 'SN', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'sn8', text: 'You enjoy imagining future possibilities and scenarios.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'sn9', text: 'You pay close attention to sensory details in your environment.', dimension: 'SN', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'sn10', text: 'You often think about the deeper meaning behind events.', dimension: 'SN', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
@@ -37,13 +37,13 @@ export const mbtiQuiz: QuizDefinition = {
     { id: 'tf3', text: 'You value truth over tact.', dimension: 'TF', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'tf4', text: 'You consider how your actions affect others\' emotions.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'tf5', text: 'You prefer objective analysis over subjective interpretation.', dimension: 'TF', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'tf6', text: 'You find it easy to empathize with others\' feelings.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'tf6', text: 'When someone is upset, your first instinct is to comfort them rather than to solve the problem.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'tf7', text: 'You believe fairness is more important than mercy.', dimension: 'TF', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'tf8', text: 'You often make decisions based on your values and how they affect people.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'tf9', text: 'You prefer to give constructive criticism even if it might hurt someone.', dimension: 'TF', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'tf10', text: 'You often find yourself supporting others emotionally.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
-    { id: 'tf11', text: 'You tend to analyze pros and cons before making choices.', dimension: 'TF', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'tf12', text: 'You believe understanding someone\'s perspective is key to resolving conflict.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'tf11', text: 'You set your own feelings aside when you weigh a decision.', dimension: 'TF', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'tf12', text: 'You find it hard to make a decision you know will upset someone, even when it is the logical one.', dimension: 'TF', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
 
     { id: 'jp1', text: 'You prefer to have a detailed plan before starting a project.', dimension: 'JP', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'jp2', text: 'You enjoy keeping your options open and being spontaneous.', dimension: 'JP', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
@@ -55,8 +55,8 @@ export const mbtiQuiz: QuizDefinition = {
     { id: 'jp8', text: 'You are comfortable making last-minute changes to plans.', dimension: 'JP', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'jp9', text: 'You like to have clear expectations and deadlines.', dimension: 'JP', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'jp10', text: 'You prefer to explore multiple possibilities before deciding.', dimension: 'JP', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
-    { id: 'jp11', text: 'You feel accomplished when you complete tasks ahead of schedule.', dimension: 'JP', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'jp12', text: 'You believe the best plans can change based on circumstances.', dimension: 'JP', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'jp11', text: 'You like to settle a decision early rather than leave it open.', dimension: 'JP', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'jp12', text: 'You often start something without a plan and work it out as you go.', dimension: 'JP', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
   ],
 };
 
@@ -67,20 +67,20 @@ export const loveLanguageQuiz: QuizDefinition = {
   description: 'This assessment helps you discover how you most naturally give and receive love. Many relationship conflicts are not a lack of love\u2014they are a mismatch of expression. One person is offering time, the other is needing words. You will receive a primary and secondary love language, what it looks like when healthy versus deprived, clear ways to ask for what you need, and partner tips so the people who love you do not have to guess.',
   questions: [
     { id: 'll1', text: 'I feel most loved when someone gives me a thoughtful gift.', dimension: 'gifts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'll2', text: 'Hearing "I love you" and other words of affirmation means the world to me.', dimension: 'words', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'll2', text: 'Hearing someone say out loud what they appreciate about me stays with me for days.', dimension: 'words', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll3', text: 'I feel loved when someone helps me with tasks or chores.', dimension: 'acts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll4', text: 'Physical touch (hugs, holding hands) makes me feel connected.', dimension: 'touch', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'll5', text: 'I feel most loved when someone gives me their undivided attention.', dimension: 'time', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'll5', text: 'I would rather have one unhurried evening with someone than a week of quick check-ins.', dimension: 'time', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll6', text: 'A surprise gift shows me someone was thinking of me.', dimension: 'gifts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll7', text: 'Compliments and encouragement boost my spirits.', dimension: 'words', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll8', text: 'When someone does something helpful without being asked, I feel cared for.', dimension: 'acts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'll9', text: 'I feel close to someone when we\'re physically close.', dimension: 'touch', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'll9', text: 'Sitting close, a hand on my shoulder or an arm around me is how I know things are good between us.', dimension: 'touch', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll10', text: 'Quality one-on-one time is the best way to show me love.', dimension: 'time', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll11', text: 'I appreciate when someone picks out a gift specifically for me.', dimension: 'gifts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll12', text: 'Written notes or messages make me feel appreciated.', dimension: 'words', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll13', text: 'Having someone take care of errands or responsibilities for me is meaningful.', dimension: 'acts', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'll14', text: 'A warm embrace can instantly improve my mood.', dimension: 'touch', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'll15', text: 'Having someone\'s full attention during a conversation means everything to me.', dimension: 'time', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'll15', text: 'I notice immediately when someone looks at their phone while we are talking, and it stings.', dimension: 'time', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
   ],
 };
 
@@ -102,10 +102,30 @@ export const loveLanguageQuiz: QuizDefinition = {
  * Pass the quiz definition that the answers came from so we can look
  * up dimensions + keying. Defaults to mbtiQuiz for backward compat.
  */
+export type MBTIAxis = 'EI' | 'SN' | 'TF' | 'JP';
+
+export interface MBTIResult {
+  type: string;
+  dimensions: Record<string, number>;
+  /**
+   * |first − second| per axis in pole-coded points (E−I, S−N, T−F, J−P).
+   * One Likert step on one item moves an axis by 2, so a margin of 2 is
+   * one answer away from the midpoint.
+   */
+  margins: Record<MBTIAxis, number>;
+  /**
+   * An axis is borderline when its margin is within max(2, 10% of the
+   * axis total): one item on the quick quiz (total 18 → ≤2), three or
+   * four items on the full quiz (total 72 → ≤7). The result screen flags
+   * these so a coin-flip letter is not read as a verdict.
+   */
+  borderline: Record<MBTIAxis, boolean>;
+}
+
 export function calculateMBTI(
   scores: Record<string, number>,
   quizDef: QuizDefinition = mbtiQuiz,
-): { type: string; dimensions: Record<string, number> } {
+): MBTIResult {
   let e = 0, i = 0, s = 0, n = 0, t = 0, f = 0, j = 0, p = 0;
 
   // Every recorded answer value is already FIRST-pole strength on a 1-5
@@ -158,13 +178,41 @@ export function calculateMBTI(
     (t >= f ? 'T' : 'F') +
     (j >= p ? 'J' : 'P');
 
+  const axis = (first: number, second: number) => {
+    const margin = Math.abs(first - second);
+    const total = first + second;
+    return { margin, borderline: total > 0 && margin <= Math.max(2, Math.round(total * 0.1)) };
+  };
+  const ei = axis(e, i);
+  const sn = axis(s, n);
+  const tf = axis(t, f);
+  const jp = axis(j, p);
+
   return {
     type,
     dimensions: { E: e, I: i, S: s, N: n, T: t, F: f, J: j, P: p },
+    margins: { EI: ei.margin, SN: sn.margin, TF: tf.margin, JP: jp.margin },
+    borderline: { EI: ei.borderline, SN: sn.borderline, TF: tf.borderline, JP: jp.borderline },
   };
 }
 
-export function calculateLoveLanguage(scores: Record<string, number>): { primary: string; scores: Record<string, number> } {
+export interface LoveLanguageResult {
+  primary: string;
+  scores: Record<string, number>;
+  /** True when two languages share the top sum AND the same number of "Strongly agree" answers. */
+  isTie: boolean;
+  /** The other language in an unbroken tie, so the result screen can name both. */
+  coPrimary?: string;
+}
+
+/**
+ * Sum per language; the highest sum wins. Likert inflates every language
+ * together, so exact ties are common: a tie is broken by how many items
+ * in that language were answered "Strongly agree" (5), and only if that
+ * is also equal do we declare a co-primary rather than let object order
+ * (gifts first) decide for the person.
+ */
+export function calculateLoveLanguage(scores: Record<string, number>): LoveLanguageResult {
   const totals: Record<string, number> = {
     gifts: 0,
     words: 0,
@@ -172,17 +220,22 @@ export function calculateLoveLanguage(scores: Record<string, number>): { primary
     touch: 0,
     time: 0,
   };
+  const fives: Record<string, number> = { gifts: 0, words: 0, acts: 0, touch: 0, time: 0 };
 
   Object.entries(scores).forEach(([key, value]) => {
     const question = loveLanguageQuiz.questions.find(q => q.id === key);
     if (question?.dimension) {
       totals[question.dimension] += value;
+      if (value === 5) fives[question.dimension] += 1;
     }
   });
 
-  const primary = Object.entries(totals).sort((a, b) => b[1] - a[1])[0][0];
+  const ranked = Object.entries(totals).sort((a, b) => b[1] - a[1] || fives[b[0]] - fives[a[0]]);
+  const [primary, top] = ranked[0];
+  const [second, next] = ranked[1];
+  const isTie = top === next && fives[primary] === fives[second];
 
-  return { primary, scores: totals };
+  return { primary, scores: totals, isTie, coPrimary: isTie ? second : undefined };
 }
 
 export interface MBTITypeInfo {
@@ -208,7 +261,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
   INTJ: {
     title: 'The Architect',
     subtitle: 'Mastermind of Vision',
-    description: 'Strategic, independent, and determined. You see possibilities everywhere and work tirelessly to achieve your vision.',
+    description: 'Strategic, independent, and determined. You see where things are heading and work tirelessly toward that vision.',
     strengths: ['Strategic long-term thinking', 'Independent problem-solving', 'High standards and determination', 'Innovative systems design'],
     blindSpots: ['May dismiss emotional considerations', 'Can appear cold or unapproachable', 'Struggles with small talk', 'May overlook others\' contributions'],
     underStress: ['Becomes overly critical of self and others', 'Withdraws into isolation', 'Fixates on worst-case scenarios', 'May indulge in sensory escapes'],
@@ -221,7 +274,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ENFP', 'ENTP', 'INTJ', 'ENTJ'],
     realLifeExamples: ['You plan vacations with spreadsheets and still enjoy them', 'You are the friend people call when they need a strategy, not a pep talk', 'You can spend an entire weekend deep in a project and feel recharged', 'You mentally redesign systems everywhere you go\u2014restaurants, workflows, apps'],
-    stressSignature: 'Under stress, INTJs catastrophize and fixate on worst-case scenarios. The normally calm strategist becomes hyper-critical, withdrawn, and may indulge in uncharacteristic sensory escapes (binge-watching, overeating, impulsive purchases) to silence the mental noise.',
+    stressSignature: 'Under stress you catastrophize and fixate on worst-case scenarios. The calm strategist in you turns hyper-critical and withdrawn, and you may reach for uncharacteristic sensory escapes (binge-watching, overeating, impulsive purchases) to silence the mental noise.',
     recoveryPath: 'Return to solitude with a single clear problem to solve. Physical movement (walking, lifting) helps break the rumination loop. Write down the worst-case scenario, then write three realistic alternatives. Reconnect with your long-term vision.',
     miniRitual: 'Write down the one thing you can control today. Circle it. Let everything else wait.',
     journalPrompt: 'Where am I confusing perfectionism with standards? What would "good enough to move forward" look like?',
@@ -243,7 +296,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ENTJ', 'ESTJ', 'INTP', 'INTJ'],
     realLifeExamples: ['You have 47 browser tabs open and can justify every one', 'You correct people not to be rude but because the wrong answer genuinely bothers you', 'You can explain quantum physics but struggle to explain why you are upset', 'You start more projects than you finish but each one taught you something valuable'],
-    stressSignature: 'Under stress, INTPs become scattered, lose confidence in their usually sharp thinking, and may lash out emotionally in ways that surprise everyone, including themselves. The inner world that normally feels like a playground starts to feel like a trap.',
+    stressSignature: 'Under stress you scatter, lose confidence in your usually sharp thinking, and may lash out emotionally in ways that surprise everyone, including you. The inner world that normally feels like a playground starts to feel like a trap.',
     recoveryPath: 'Give yourself permission to stop analyzing. Move your body, build something tangible with your hands, or explain a complex idea to someone who will listen. The goal is to reconnect thinking with the physical world.',
     miniRitual: 'Pick up something physical (a pen, a tool, a cup) and describe it in as much detail as possible for 60 seconds. Get out of your head and into your senses.',
     journalPrompt: 'What idea have I been perfecting in my head that would benefit from being imperfect in the real world?',
@@ -265,7 +318,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['INTP', 'ISTP', 'ENTJ', 'INTJ'],
     realLifeExamples: ['You run meetings even when you are not in charge', 'You have a 5-year plan and update it quarterly', 'People either find you inspiring or intimidating\u2014rarely anything in between', 'You show love by solving problems and building a future together'],
-    stressSignature: 'Under stress, ENTJs become controlling, make decisions too quickly, and feel isolated by the weight of leadership. They may push people away precisely when they need support most, confusing vulnerability with weakness.',
+    stressSignature: 'Under stress you become controlling, decide too quickly, and feel isolated by the weight of leadership. You may push people away precisely when you need support most, confusing vulnerability with weakness.',
     recoveryPath: 'Delegate something meaningful and resist checking in. Take a full day off without a productivity agenda. Talk to someone you respect as an equal\u2014not to strategize, just to be heard.',
     miniRitual: 'Close your eyes and ask: "What would I do today if I had nothing to prove?" Sit with the answer for 60 seconds.',
     journalPrompt: 'Am I leading from vision or from a need to control? What would trusting others more actually look like?',
@@ -287,7 +340,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['INFJ', 'INTJ', 'ENTP', 'ENFP'],
     realLifeExamples: ['You play devil\'s advocate even when you agree with the other person', 'You have started at least 3 businesses, side projects, or "big ideas" this year', 'You can charm a room and then forget everyone\'s name', 'You get bored the moment something stops being intellectually stimulating'],
-    stressSignature: 'Under stress, ENTPs become argumentative, scattered, and start questioning their own competence. The normally confident debater turns inward with self-doubt, may start and abandon projects rapidly, and loses the thread of what actually matters.',
+    stressSignature: 'Under stress you become argumentative and scattered, and start questioning your own competence. The confident debater in you turns inward with self-doubt, starts and abandons projects rapidly, and loses the thread of what actually matters.',
     recoveryPath: 'Pick one thing and finish it\u2014however small. Reconnect with a person who makes you laugh without performing. Write down what you actually believe (not what you can argue) about something that matters to you.',
     miniRitual: 'Set a 5-minute timer. Work on one single thing without switching. When it rings, notice how it felt to focus.',
     journalPrompt: 'What am I debating externally that is actually an internal question I have not answered yet?',
@@ -309,7 +362,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ENTP', 'ENFP', 'INFJ', 'INTJ'],
     realLifeExamples: ['You know something is wrong with a friend before they tell you', 'You have a rich inner world that very few people have full access to', 'You often feel like you do not quite fit anywhere but are needed everywhere', 'You take on others\' emotions and need hours alone to decompress'],
-    stressSignature: 'Under stress, INFJs become overwhelmed by absorbed emotions, lose their sense of purpose, and may withdraw completely or become uncharacteristically sharp and critical. The "door slam"\u2014cutting someone off entirely\u2014is a last-resort protection mechanism.',
+    stressSignature: 'Under stress you are overwhelmed by the emotions you have absorbed, lose your sense of purpose, and may withdraw completely or turn uncharacteristically sharp and critical. The "door slam"\u2014cutting someone off entirely\u2014is your last-resort protection.',
     recoveryPath: 'Solitude is medicine, but isolation is not. Find one person who understands you and let them in. Journal to separate your feelings from others\' feelings. Return to your sense of purpose\u2014even re-reading your own past writing can help.',
     miniRitual: 'Place both hands on your chest. Breathe in and say silently: "This is mine." Breathe out and say: "That is theirs." Repeat 5 times.',
     journalPrompt: 'Whose feelings am I carrying right now that are not mine? What would I feel if I set them down?',
@@ -320,7 +373,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     subtitle: 'Dreamer of Dreams',
     description: 'Poetic, kind, and altruistic. You see the best in people and are always eager to help a good cause.',
     strengths: ['Deep empathy and compassion', 'Creative expression', 'Strong personal values', 'Open-minded acceptance'],
-    blindSpots: ['May avoid necessary conflict', 'Can be overly self-critical', 'Struggles with practical details', 'May lose touch with reality'],
+    blindSpots: ['May avoid necessary conflict', 'Can be overly self-critical', 'Struggles with practical details', 'May retreat into imagination when reality disappoints'],
     underStress: ['Becomes hypersensitive to criticism', 'May spiral into self-doubt', 'Withdraws from the world', 'Can become uncharacteristically harsh'],
     inRelationships: ['Seeks authentic, deep connection', 'Shows love through devoted attention', 'Needs acceptance of their inner world', 'Highly romantic and idealistic'],
     atWork: ['Thrives in creative, meaningful roles', 'Brings authenticity to teams', 'May struggle with rigid structures', 'Excellent at understanding others'],
@@ -331,7 +384,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ENFJ', 'ENTJ', 'INFP', 'INFJ'],
     realLifeExamples: ['You have cried during a commercial and felt no shame about it', 'You replay conversations in your head to understand them more deeply', 'You would rather be authentic and uncomfortable than fake and accepted', 'You have a creative project that means everything to you and terrifies you equally'],
-    stressSignature: 'Under stress, INFPs become hypersensitive to criticism, spiral into self-doubt, and may withdraw from the world entirely. They can become uncharacteristically harsh\u2014the shadow of their normally gentle nature emerges as sharp judgment aimed at themselves or others.',
+    stressSignature: 'Under stress you become hypersensitive to criticism, spiral into self-doubt, and may withdraw from the world entirely. You can turn uncharacteristically harsh\u2014the shadow of your gentle nature emerges as sharp judgment aimed at yourself or others.',
     recoveryPath: 'Create something\u2014anything\u2014without showing it to anyone. Spend time in nature. Re-read words that have moved you. Reconnect with the values that make you who you are, not the expectations that don\'t.',
     miniRitual: 'Write one sentence that is true about how you feel right now. Do not edit it. Do not judge it. Just let it exist.',
     journalPrompt: 'What dream am I protecting by keeping it private? What would happen if I shared it with one person I trust?',
@@ -353,7 +406,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['INFP', 'ISFP', 'ENFJ', 'INFJ'],
     realLifeExamples: ['You remember what people told you months ago and check in on it', 'You organize group events and then forget to take care of yourself afterward', 'You can sense when someone is struggling before they say a word', 'You have been called "too much" by people who needed exactly what you offered'],
-    stressSignature: 'Under stress, ENFJs take on everyone\'s problems, become controlling in their attempts to help, and may feel deeply unappreciated. The helper burns out and may become manipulative when direct communication fails.',
+    stressSignature: 'Under stress you take on everyone\'s problems, become controlling in your attempts to help, and may feel deeply unappreciated. The helper in you burns out and may turn manipulative when direct communication fails.',
     recoveryPath: 'Say no to one request. Receive care without immediately reciprocating. Ask yourself: "Am I helping because they need it, or because I need to feel needed?" Let someone else lead for a day.',
     miniRitual: 'Sit quietly and ask: "What do I need right now\u2014not what does anyone else need?" Wait for the honest answer.',
     journalPrompt: 'When I help others, am I giving from overflow or from a well that is running dry? What refills me?',
@@ -362,7 +415,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
   ENFP: {
     title: 'The Campaigner',
     subtitle: 'Champion of Possibilities',
-    description: 'Enthusiastic, creative, and sociable. You are free spirits who see life as full of possibilities.',
+    description: 'Enthusiastic, creative, and sociable. You are a free spirit who sees life as full of possibilities.',
     strengths: ['Infectious enthusiasm', 'Creative vision', 'Deep empathy', 'Excellent communication'],
     blindSpots: ['May struggle with follow-through', 'Can be overly sensitive to criticism', 'Difficulty with routine', 'May overcommit'],
     underStress: ['Becomes scattered and anxious', 'May seek external validation', 'Loses touch with values', 'Can become uncharacteristically harsh'],
@@ -375,7 +428,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['INTJ', 'INFJ', 'ENFP', 'ENTP'],
     realLifeExamples: ['You have made a best friend in a grocery store checkout line', 'You have 12 hobbies and genuinely love all of them', 'You can go from deeply philosophical to hilariously goofy in the same sentence', 'You feel everything at full volume and would not trade it for anything'],
-    stressSignature: 'Under stress, ENFPs become scattered, seek external validation frantically, and lose touch with their own values. The normally enthusiastic explorer becomes anxious, people-pleasing, and may make commitments they cannot keep.',
+    stressSignature: 'Under stress you scatter, seek external validation frantically, and lose touch with your own values. The enthusiastic explorer in you turns anxious and people-pleasing, and may make commitments you cannot keep.',
     recoveryPath: 'Finish one thing before starting anything new. Spend unstructured time with one person who sees you clearly. Return to a creative practice that is just for you\u2014not for an audience.',
     miniRitual: 'Name three things you are grateful for that have nothing to do with other people\'s opinions of you.',
     journalPrompt: 'What am I chasing right now\u2014and is it something I actually want, or something I think will make people love me?',
@@ -397,7 +450,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ESFP', 'ESTP', 'ISTJ', 'ISFJ'],
     realLifeExamples: ['You have a system for everything and it actually works', 'You remember details about conversations from years ago', 'You show love by being reliable, not by being dramatic', 'You feel genuinely stressed when plans change last minute'],
-    stressSignature: 'Under stress, ISTJs become rigid, controlling, and catastrophize about the future. The normally steady planner loses trust in the process and may become pessimistic or withdraw emotionally, unable to express what they need.',
+    stressSignature: 'Under stress you become rigid and controlling and catastrophize about the future. The steady planner in you loses trust in the process and may turn pessimistic or withdraw emotionally, unable to say what you need.',
     recoveryPath: 'Do something with a clear, immediate result\u2014clean a room, complete a task, organize something tangible. Then talk to someone you trust about what is actually worrying you, even if it feels inefficient.',
     miniRitual: 'Write down three things that are working well in your life right now. Let the evidence of stability calm the anxiety.',
     journalPrompt: 'What am I trying to control that might benefit from flexibility? Where would "good enough" actually be enough?',
@@ -419,7 +472,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ESFP', 'ESTP', 'ISFJ', 'ISTJ'],
     realLifeExamples: ['You remember everyone\'s coffee order and birthdate', 'You will sacrifice sleep to make sure someone you love is okay', 'You hold grudges quietly because you gave too many chances before speaking up', 'You feel invisible sometimes despite being the person holding everything together'],
-    stressSignature: 'Under stress, ISFJs become overly self-sacrificing, passive-aggressive, and deeply worried. They feel unappreciated but struggle to ask for what they need directly, building resentment beneath a caring exterior.',
+    stressSignature: 'Under stress you become overly self-sacrificing, passive-aggressive, and deeply worried. You feel unappreciated but struggle to ask directly for what you need, building resentment beneath a caring exterior.',
     recoveryPath: 'Do something purely for yourself with zero benefit to anyone else. Voice one need without apologizing for having it. Let something be imperfect and notice that the world does not end.',
     miniRitual: 'Look in a mirror and say: "My needs matter as much as anyone else\'s." Mean it.',
     journalPrompt: 'What am I doing for others that I wish someone would do for me? Can I ask for it directly?',
@@ -441,7 +494,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ISTP', 'INTP', 'ESTJ', 'ENTJ'],
     realLifeExamples: ['You are the person who takes charge when nobody else will', 'You have strong opinions about the "right way" to do most things', 'You show love through providing structure and stability', 'You feel personally offended by inefficiency'],
-    stressSignature: 'Under stress, ESTJs become controlling, rigid, and may lash out at what they perceive as incompetence. The organized leader becomes a micromanager, struggling to trust anyone else to do things "correctly."',
+    stressSignature: 'Under stress you become controlling and rigid and may lash out at what you perceive as incompetence. The organized leader in you turns micromanager, struggling to trust anyone else to do things "correctly."',
     recoveryPath: 'Let something go that does not actually matter. Ask questions instead of giving instructions. Do something purely for fun with no productive outcome. Remind yourself that connection is not a project to manage.',
     miniRitual: 'Take 60 seconds to do absolutely nothing. No planning, no fixing, no organizing. Just breathe.',
     journalPrompt: 'Am I managing my life or living it? What would happen if I let go of control for one afternoon?',
@@ -453,7 +506,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     description: 'Caring, social, and tradition-loving. You are always eager to help and do your duty.',
     strengths: ['Warm and caring nature', 'Strong sense of duty', 'Practical helpfulness', 'Social awareness'],
     blindSpots: ['May need external validation', 'Can be sensitive to criticism', 'May struggle with change', 'Can be judgmental'],
-    underStress: ['Becomes needy and clingy', 'May gossip or criticize', 'Feels rejected easily', 'Can become controlling'],
+    underStress: ['Becomes needy and clingy', 'May vent about people instead of to them', 'Feels rejected easily', 'Can become controlling'],
     inRelationships: ['Devoted and attentive partner', 'Shows love through care and service', 'Needs appreciation', 'Creates warm social environment'],
     atWork: ['Excellent at team harmony', 'Brings practical support', 'May struggle with conflict', 'Natural at customer relations'],
     growthQuests: [
@@ -463,7 +516,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ISFP', 'ISTP', 'ESFJ', 'ENFJ'],
     realLifeExamples: ['You know when something is wrong in a group before anyone speaks', 'You keep track of everyone\'s preferences and make sure they feel included', 'You take it personally when someone does not appreciate your effort', 'You are the social glue that holds friend groups and families together'],
-    stressSignature: 'Under stress, ESFJs become needy, seek validation compulsively, and may gossip or become judgmental. The normally warm caretaker feels rejected and may try to control social dynamics to feel safe.',
+    stressSignature: 'Under stress you become needy, seek validation compulsively, and may turn judgmental. The warm caretaker in you feels rejected and may try to control the social dynamics to feel safe.',
     recoveryPath: 'Make a decision based solely on what you want, without considering anyone else\'s reaction. Spend an evening alone doing something you genuinely enjoy. Practice accepting that not everyone needs to like you for you to be valuable.',
     miniRitual: 'Put your hand on your heart and say: "I am enough without anyone\'s approval today."',
     journalPrompt: 'Whose opinion am I shaping my choices around? What would I choose if only my own opinion mattered?',
@@ -485,7 +538,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ESTJ', 'ESFJ', 'ISTP', 'ESTP'],
     realLifeExamples: ['You fix things nobody asked you to fix just because you saw how', 'You prefer action over conversation in almost every situation', 'You need space the way other people need affection', 'You are calm in a crisis and restless when things are too predictable'],
-    stressSignature: 'Under stress, ISTPs withdraw emotionally, may act recklessly, and shut down all communication. The normally cool-headed problem solver becomes hypersensitive, reactive, or disappears entirely without explanation.',
+    stressSignature: 'Under stress you withdraw emotionally, may act recklessly, and shut down all communication. The cool-headed problem solver in you turns hypersensitive and reactive, or disappears entirely without explanation.',
     recoveryPath: 'Work with your hands\u2014build, repair, create something physical. Spend time alone but not isolated. When you are ready, express what you felt in simple, direct terms. You do not have to explain everything, just name it.',
     miniRitual: 'Pick up a tool or object and use it for its purpose for 60 seconds. Let the simplicity of doing ground you.',
     journalPrompt: 'What emotion have I been avoiding by staying busy? What would happen if I just sat with it for 5 minutes?',
@@ -507,7 +560,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ENFJ', 'ESFJ', 'ISFP', 'INFP'],
     realLifeExamples: ['You notice beauty in places other people walk right past', 'You would rather show someone how you feel than tell them', 'You shut down in conflict but feel everything intensely afterward', 'You have a creative gift that you probably undervalue'],
-    stressSignature: 'Under stress, ISFPs become withdrawn, moody, and overly self-critical. They may lose confidence in their creative gifts and become passive-aggressive rather than addressing conflict directly.',
+    stressSignature: 'Under stress you become withdrawn, moody, and overly self-critical. You may lose confidence in your creative gifts and turn passive-aggressive rather than addressing conflict directly.',
     recoveryPath: 'Create something\u2014art, music, food, a walk through a beautiful space. Reconnect with sensory experiences that remind you who you are. When you are ready, share one honest feeling with someone safe.',
     miniRitual: 'Touch something beautiful\u2014a fabric, a flower, warm water\u2014and let the sensation remind you that you are alive and present.',
     journalPrompt: 'What am I feeling that I have not given myself permission to express? What would it look like to honor it?',
@@ -529,7 +582,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ISTJ', 'ISFJ', 'ESTP', 'ISTP'],
     realLifeExamples: ['You are the first person to act and the last person to sit still', 'You learn by doing, not by reading about doing', 'You can talk to anyone and make it feel natural', 'You get bored in about 10 seconds if something is not stimulating'],
-    stressSignature: 'Under stress, ESTPs become impulsive, blame others, and lose patience with anything that requires slowing down. The action-oriented problem solver becomes reckless and may make decisions they regret later.',
+    stressSignature: 'Under stress you become impulsive, blame others, and lose patience with anything that requires slowing down. The action-oriented problem solver in you turns reckless and may make decisions you regret later.',
     recoveryPath: 'Wait 24 hours before making any significant decision. Do something physically challenging to burn off the restless energy. Then sit with one person and actually listen\u2014not to fix, just to hear.',
     miniRitual: 'Stand still for 60 seconds. Feel your feet on the ground. Count your breaths. That is it.',
     journalPrompt: 'What am I running from by staying in constant motion? What would I find if I stopped long enough to look?',
@@ -551,7 +604,7 @@ export const mbtiDescriptions: Record<string, MBTITypeInfo> = {
     ],
     compatibility: ['ISTJ', 'ISFJ', 'ESFP', 'ESTP'],
     realLifeExamples: ['You turn a boring Tuesday into something people remember', 'You feel things at full intensity and want everyone to feel alive too', 'You avoid heavy conversations but feel deeply when no one is watching', 'You are generous with your time, energy, and presence\u2014sometimes too generous'],
-    stressSignature: 'Under stress, ESFPs become scattered, anxious, and may overindulge in pleasures to avoid painful feelings. The normally joyful entertainer becomes uncharacteristically negative and may feel trapped by commitments.',
+    stressSignature: 'Under stress you scatter, grow anxious, and may overindulge in pleasures to avoid painful feelings. The joyful entertainer in you turns uncharacteristically negative and may feel trapped by commitments.',
     recoveryPath: 'Have one deep, meaningful conversation about feelings\u2014yours. Delay one gratification and notice that you survived. Spend a quiet evening reflecting on what brings you lasting joy versus temporary excitement.',
     miniRitual: 'Name one thing you feel grateful for that requires no audience. Let that gratitude be private and real.',
     journalPrompt: 'What am I performing for others that I could replace with something more honestly me?',
@@ -734,7 +787,7 @@ export const loveLanguageDescriptions: Record<string, LoveLanguageInfo> = {
 
 export const moodCheckQuiz: QuizDefinition = {
   id: 'mood-check-v1',
-  type: 'big-five',
+  type: 'mood-check',
   title: 'Quick Mood Check',
   description: 'A fast emotional weather report to help you name what you are carrying today. Instead of judging your mood as good or bad, this check-in focuses on patterns: stress load, energy level, emotional sensitivity, and what your nervous system is asking for right now. You will get a mood profile, a best-next-step recommendation, and a journal prompt so you can turn today\'s mood into insight instead of rumination.',
   questions: [
@@ -801,12 +854,21 @@ export const moodCheckQuiz: QuizDefinition = {
   ],
 };
 
-export function calculateMoodCheck(scores: Record<string, number>): {
+export type MoodNeed = 'rest' | 'support' | 'space' | 'action' | 'connection' | 'balance';
+
+export interface MoodCheckResult {
+  /** Thriving | Good | Okay | Struggling | Depleted — a key into moodDescriptions and quizzes.mood.<verdict>. */
   overallMood: string;
+  /** round(mean of the four scored dimensions × 20): 20..100. */
   moodScore: number;
   dimensions: Record<string, number>;
+  /** English suggestion for the chosen need; the screen reads quizzes.mood.suggestions.<need> with this as the fallback. */
   suggestion: string;
-} {
+  /** The need the person picked on mood5 (the suggestion's key). */
+  need: MoodNeed;
+}
+
+export function calculateMoodCheck(scores: Record<string, number>): MoodCheckResult {
   const dimensions: Record<string, number> = {
     energy: 0,
     emotion: 0,
@@ -835,35 +897,72 @@ export function calculateMoodCheck(scores: Record<string, number>): {
   else if (avgScore >= 1.5) overallMood = 'Struggling';
   else overallMood = 'Depleted';
 
-  const needLabels = ['Rest', 'Support', 'Space', 'Action', 'Connection'];
-  const need = needLabels[needValue - 1] || 'Balance';
-
-  const suggestions: Record<string, string> = {
-    Rest: 'Take a moment to breathe deeply. Consider a short nap or gentle stretching.',
-    Support: 'Reach out to someone you trust. Sometimes sharing how we feel can lighten the load.',
-    Space: 'Give yourself permission to step back. A quiet walk or journaling might help.',
-    Action: 'Channel your energy into something productive. Movement or a creative task could help.',
-    Connection: 'Text a friend or spend quality time with someone. Human connection heals.',
-  };
+  const needKeys: MoodNeed[] = ['rest', 'support', 'space', 'action', 'connection'];
+  const need: MoodNeed = needKeys[needValue - 1] ?? 'balance';
 
   return {
     overallMood,
     moodScore: Math.round(avgScore * 20),
     dimensions,
-    suggestion: suggestions[need] || 'Take a moment to check in with yourself and honor what you need.',
+    suggestion: MOOD_SUGGESTIONS[need],
+    need,
   };
 }
 
-export const moodDescriptions: Record<string, { emoji: string; color: string; message: string; recommendation: string; journalPrompt: string; tarotSuggestion: string }> = {
-  Thriving: { emoji: '1f31f', color: 'text-teal', message: 'You\'re in a great place! Use this energy wisely.', recommendation: 'Channel this energy into something meaningful. Start that project, have that conversation, or make that decision you have been putting off. High-energy days are rare—use them intentionally.', journalPrompt: 'What am I most proud of about the way I am showing up right now? How can I sustain this?', tarotSuggestion: 'The Sun – radiance, vitality, and clarity. This is your moment to shine.' },
-  Good: { emoji: '1f60a', color: 'text-teal', message: 'Things are going well. Keep nurturing what\'s working.', recommendation: 'Maintain your current rhythm. Notice what is contributing to this good feeling and do more of it. A good day is a great day to invest in the people and habits that sustain you.', journalPrompt: 'What three things are working well in my life right now? How can I protect and nurture them?', tarotSuggestion: 'The Star – hope, calm, and steady renewal. You are on the right path.' },
-  Okay: { emoji: '1f610', color: 'text-gold', message: 'You\'re managing. Small acts of self-care can help.', recommendation: 'Do one small thing for yourself that requires no effort to enjoy—a warm drink, a favorite song, a 10-minute walk. You do not need to feel great to take care of yourself. Small acts of kindness toward yourself add up.', journalPrompt: 'What is one thing I can do in the next hour that is just for me? What would feel genuinely nourishing right now?', tarotSuggestion: 'Temperance – balance and patience. This is a day for moderation, not big moves.' },
-  Struggling: { emoji: '1f614', color: 'text-coral', message: 'It\'s okay to not be okay. Be gentle with yourself.', recommendation: 'Lower the bar for today. Cancel what you can. Eat something nourishing. Reach out to one person who makes you feel safe. You are not behind—you are processing. Give yourself permission to do the minimum.', journalPrompt: 'What am I carrying right now that feels heavy? Is there one piece of it I could set down, even temporarily?', tarotSuggestion: 'The Moon – uncertainty and hidden depths. Trust that clarity will return. Rest in the not-knowing.' },
-  Depleted: { emoji: '1f62d', color: 'text-coral', message: 'You need care right now. Prioritize rest and support.', recommendation: 'This is not a day for productivity. Your only job is to get through it gently. Sleep if you can. Eat something. Drink water. If you can, tell one person how you feel—you do not have to do this alone. Everything else can wait.', journalPrompt: 'What do I need most right now that I am not giving myself? Who in my life feels safe enough to ask for help?', tarotSuggestion: 'The Hermit – withdrawal and inner light. Even in your lowest moments, there is wisdom gathering inside you.' },
+export const MOOD_SUGGESTIONS: Record<MoodNeed, string> = {
+  rest: 'Take a moment to breathe deeply. Consider a short nap or gentle stretching.',
+  support: 'Reach out to someone you trust. Sometimes sharing how we feel can lighten the load.',
+  space: 'Give yourself permission to step back. A quiet walk or journaling might help.',
+  action: 'Channel your energy into something productive. Movement or a creative task could help.',
+  connection: 'Text a friend or spend quality time with someone. Human connection heals.',
+  balance: 'Take a moment to check in with yourself and honor what you need.',
 };
 
-export const quizMetadata = {
+/** The four scored dimensions of the mood check, for labels. */
+export const MOOD_DIMENSIONS = ['energy', 'emotion', 'connection', 'clarity'] as const;
+
+/**
+ * `tone` names the verdict's temperature; the page maps it to an ink
+ * (MOOD_INK) the way quizMetadata.color goes through TILE_INK. Data does
+ * not own presentation, and Tailwind cannot see a class composed at
+ * runtime anyway.
+ */
+export type MoodTone = 'high' | 'steady' | 'low';
+
+export interface MoodVerdictInfo {
+  tone: MoodTone;
+  message: string;
+  recommendation: string;
+  journalPrompt: string;
+  tarotSuggestion: string;
+}
+
+export const moodDescriptions: Record<string, MoodVerdictInfo> = {
+  Thriving: { tone: 'high', message: 'You are in a strong place. Use this energy with intention.', recommendation: 'Channel this energy into something meaningful. Start that project, have that conversation, or make that decision you have been putting off. High-energy days are rare—use them intentionally.', journalPrompt: 'What am I most proud of about the way I am showing up right now? How can I sustain this?', tarotSuggestion: 'The Sun – radiance, vitality, and clarity. This is your moment to shine.' },
+  Good: { tone: 'high', message: 'Things are going well. Keep feeding what is working.', recommendation: 'Maintain your current rhythm. Notice what is contributing to this good feeling and do more of it. A good day is a great day to invest in the people and habits that sustain you.', journalPrompt: 'What three things are working well in my life right now? How can I protect and nurture them?', tarotSuggestion: 'The Star – hope, calm, and steady renewal. You are on the right path.' },
+  Okay: { tone: 'steady', message: 'You are managing. Small acts of care will help.', recommendation: 'Do one small thing for yourself that requires no effort to enjoy—a warm drink, a favorite song, a 10-minute walk. You do not need to feel great to take care of yourself. Small acts of kindness toward yourself add up.', journalPrompt: 'What is one thing I can do in the next hour that is just for me? What would feel genuinely nourishing right now?', tarotSuggestion: 'Temperance – balance and patience. This is a day for moderation, not big moves.' },
+  Struggling: { tone: 'low', message: 'It is okay to not be okay. Be gentle with yourself.', recommendation: 'Lower the bar for today. Cancel what you can. Eat something nourishing. Reach out to one person who makes you feel safe. You are not behind—you are processing. Give yourself permission to do the minimum.', journalPrompt: 'What am I carrying right now that feels heavy? Is there one piece of it I could set down, even temporarily?', tarotSuggestion: 'The Moon – uncertainty and hidden depths. Trust that clarity will return. Rest in the not-knowing.' },
+  Depleted: { tone: 'low', message: 'You need care right now. Rest and support come first.', recommendation: 'This is not a day for productivity. Your only job is to get through it gently. Sleep if you can. Eat something. Drink water. If you can, tell one person how you feel—you do not have to do this alone. Everything else can wait.', journalPrompt: 'What do I need most right now that I am not giving myself? Who in my life feels safe enough to ask for help?', tarotSuggestion: 'The Hermit – withdrawal and inner light. Even in your lowest moments, there is wisdom gathering inside you.' },
+};
+
+/**
+ * The four shelves of the quiz list (R6 A31): every quiz, curated or
+ * extra, names one so the page can group rows under Chip tabs instead of
+ * stacking thirty-three cards.
+ */
+export type QuizCategory = 'personality' | 'relationships' | 'wellbeing' | 'tarot-spirit';
+
+export interface QuizMetadataEntry {
+  timeEstimate: string;
+  whatYouGet: string[];
+  icon: string;
+  color: string;
+  category: QuizCategory;
+}
+
+export const quizMetadata: Record<string, QuizMetadataEntry> = {
   mbti: {
+    category: 'personality',
     timeEstimate: '10-15 min',
     whatYouGet: ['Your type profile with strengths + blind spots', 'Stress mode patterns + recovery strategies', 'Relationship style notes + communication tips', 'Tarot archetype alignment'],
     // Custom 4-quadrant glyph — visualizes the four MBTI dimensions
@@ -871,6 +970,7 @@ export const quizMetadata = {
     color: 'cosmic-blue',
   },
   'love-language': {
+    category: 'relationships',
     timeEstimate: '5-7 min',
     whatYouGet: ['Primary + secondary love language', '"When healthy" vs "when deprived" insight', 'Clear ways to ask for love in your language', 'Partner tips for supporting you'],
     // Heart with five radiating beams — one per love language
@@ -878,6 +978,7 @@ export const quizMetadata = {
     color: 'cosmic-rose',
   },
   'mood-check': {
+    category: 'wellbeing',
     timeEstimate: '30 sec',
     whatYouGet: ['A mood profile (calm/charged/drained/steady)', 'A "best next step" recommendation', 'A journal prompt for your current state', 'Optional tarot archetype suggestion'],
     // Sine wave over baseline — emotional rhythm
@@ -885,6 +986,7 @@ export const quizMetadata = {
     color: 'gold',
   },
   'big-five': {
+    category: 'personality',
     timeEstimate: '8-10 min',
     whatYouGet: ['Five trait scores with real-life interpretation', 'Strengths + potential pitfalls for each trait', 'Lifestyle and relationship suggestions', 'A "growth lever" for meaningful change'],
     // Pentagon with inner radar shape — the OCEAN scoring chart
@@ -892,6 +994,7 @@ export const quizMetadata = {
     color: 'teal',
   },
   enneagram: {
+    category: 'personality',
     timeEstimate: '10-12 min',
     whatYouGet: ['Your Enneagram type + wing', 'Growth and stress direction paths', 'Core motivation, fear, and desire', 'Tarot archetype alignment'],
     // The actual 9-pointed enneagram figure with classic internal lines
@@ -899,6 +1002,7 @@ export const quizMetadata = {
     color: 'gold',
   },
   attachment: {
+    category: 'relationships',
     timeEstimate: '5-7 min',
     whatYouGet: ['Your primary attachment pattern', 'Triggers + deactivation/activation behaviors', 'What you need from a partner to feel safe', 'A path toward secure attachment'],
     // Two interlocked rings with a heart at intersection — the bond
@@ -906,13 +1010,15 @@ export const quizMetadata = {
     color: 'cosmic-rose',
   },
   'mbti-quick': {
+    category: 'personality',
     timeEstimate: '3 min',
-    whatYouGet: ['Your 4-letter type, fast', 'Where your strengths live', 'Upgrade path to the full 70-question deep read', 'Tarot archetype alignment'],
+    whatYouGet: ['Your 4-letter type, fast', 'Where your strengths live', 'Upgrade path to the full 48-question deep read', 'Tarot archetype alignment'],
     // Same 4-quadrant base as MBTI but with a lightning bolt for "quick"
     icon: 'mbti-quick',
     color: 'cosmic-blue',
   },
   'court-match': {
+    category: 'tarot-spirit',
     timeEstimate: '4 min',
     whatYouGet: ['Which of 16 tarot court cards mirrors you', 'Your elemental style (fire/water/air/earth)', 'Your current maturity rank (page/knight/queen/king)', 'Strengths, shadow, and an affirmation to carry'],
     // Crown above tarot card outline — royal court
@@ -920,6 +1026,7 @@ export const quizMetadata = {
     color: 'gold',
   },
   'shadow-archetype': {
+    category: 'tarot-spirit',
     timeEstimate: '6 min',
     whatYouGet: ['Your dominant Jungian archetype (Lover, Warrior, Magician, Sovereign, Sage, Innocent, Explorer)', 'The gift it brings when healthy', 'The shadow it casts when wounded', 'A path toward integration + tarot pairing'],
     // Theatrical mask, half light / half shadow — the persona vs shadow
@@ -927,6 +1034,7 @@ export const quizMetadata = {
     color: 'cosmic-violet',
   },
   'element-affinity': {
+    category: 'tarot-spirit',
     timeEstimate: '2 min',
     whatYouGet: ['Your behavioural element (fire/water/air/earth)', 'How it differs from your astrology chart element', 'Strengths, shadow, and when it\'s running the show', 'An affirmation to carry'],
     // Four classical alchemy triangles — fire △, air △̄, water ▽, earth ▽̄
@@ -934,6 +1042,7 @@ export const quizMetadata = {
     color: 'teal',
   },
   'ayurveda-dosha': {
+    category: 'wellbeing',
     timeEstimate: '5-7 min',
     whatYouGet: ['Your primary dosha (Vata, Pitta, or Kapha)', 'Your secondary dosha if you\'re dual-type', 'Diet and lifestyle tips that actually suit you', 'Warning signs you\'re out of balance'],
     // Three petals + center dot — the three doshas around the prakriti

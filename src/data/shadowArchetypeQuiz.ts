@@ -44,7 +44,7 @@ export const shadowArchetypeQuiz: QuizDefinition = {
     { id: 'lov1', text: 'Deep emotional intimacy is what makes life worth living.', dimension: 'LOV', options: likert },
     { id: 'lov2', text: 'I often feel other people\'s emotions as vividly as my own.', dimension: 'LOV', options: likert },
     { id: 'lov3', text: 'I give myself fully when I love someone or something.', dimension: 'LOV', options: likert },
-    { id: 'war1', text: 'I am willing to fight — literally or metaphorically — for what I believe in.', dimension: 'WAR', options: likert },
+    { id: 'war1', text: 'I take a stand for what I believe in, even when it costs me.', dimension: 'WAR', options: likert },
     { id: 'war2', text: 'Discipline and follow-through are core to who I am.', dimension: 'WAR', options: likert },
     { id: 'war3', text: 'I step up to protect people who can\'t protect themselves.', dimension: 'WAR', options: likert },
     { id: 'mag1', text: 'I\'m drawn to hidden knowledge — the underneath of things.', dimension: 'MAG', options: likert },
@@ -53,13 +53,13 @@ export const shadowArchetypeQuiz: QuizDefinition = {
     { id: 'sov1', text: 'People naturally look to me to set the direction.', dimension: 'SOV', options: likert },
     { id: 'sov2', text: 'I feel responsible for the well-being of the systems I\'m part of.', dimension: 'SOV', options: likert },
     { id: 'sov3', text: 'I have a clear sense of what I am the standard-bearer for.', dimension: 'SOV', options: likert },
-    { id: 'sag1', text: 'I\'m happier as a teacher / witness than as the main character.', dimension: 'SAG', options: likert },
+    { id: 'sag1', text: 'I am happier as the one who watches and teaches than as the main character.', dimension: 'SAG', options: likert },
     { id: 'sag2', text: 'I need long solitary stretches to think things through.', dimension: 'SAG', options: likert },
     { id: 'sag3', text: 'I value understanding a thing deeply more than acting on it quickly.', dimension: 'SAG', options: likert },
     { id: 'inn1', text: 'I lead with hope, even when things look hard.', dimension: 'INN', options: likert },
     { id: 'inn2', text: 'The simple pleasures (a walk, a meal, good light) matter enormously to me.', dimension: 'INN', options: likert },
     { id: 'inn3', text: 'I trust people by default, not by evidence.', dimension: 'INN', options: likert },
-    { id: 'exp1', text: 'Routine feels like slow suffocation.', dimension: 'EXP', options: likert },
+    { id: 'exp1', text: 'I get restless when my days start to look the same.', dimension: 'EXP', options: likert },
     { id: 'exp2', text: 'I\'ve reinvented my life more than once.', dimension: 'EXP', options: likert },
     { id: 'exp3', text: 'Being somewhere unfamiliar is one of my favourite feelings.', dimension: 'EXP', options: likert },
   ],
@@ -68,20 +68,42 @@ export const shadowArchetypeQuiz: QuizDefinition = {
 export interface ShadowResult {
   archetype: ShadowArchetype;
   scores: Record<ShadowArchetype, number>;
+  /** The runner-up, named on the screen when the race was close. */
+  secondary: ShadowArchetype;
+  /** Top two sums are equal and neither had more "Strongly agree" answers. */
+  isTie: boolean;
+  /** Top sum minus runner-up sum, in raw Likert points (three items each). */
+  margin: number;
 }
 
+/**
+ * Sum the three items per archetype; highest wins. A tie is broken by the
+ * number of "Strongly agree" answers in each archetype, then stays a tie
+ * (declared order, `isTie` true) rather than silently handing it to the
+ * Lover because it was listed first.
+ */
 export function calculateShadowArchetype(answers: Record<string, number>): ShadowResult {
   const scores: Record<ShadowArchetype, number> = {
+    lover: 0, warrior: 0, magician: 0, sovereign: 0, sage: 0, innocent: 0, explorer: 0,
+  };
+  const fives: Record<ShadowArchetype, number> = {
     lover: 0, warrior: 0, magician: 0, sovereign: 0, sage: 0, innocent: 0, explorer: 0,
   };
   for (const q of shadowArchetypeQuiz.questions) {
     const value = answers[q.id];
     if (value === undefined || !q.dimension) continue;
     const archetype = SHADOW_DIMENSION_TO_ARCHETYPE[q.dimension];
-    if (archetype) scores[archetype] += value;
+    if (archetype) {
+      scores[archetype] += value;
+      if (value === 5) fives[archetype] += 1;
+    }
   }
-  const winner = (Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0]) as ShadowArchetype;
-  return { archetype: winner, scores };
+  const ranked = (Object.keys(scores) as ShadowArchetype[]).sort(
+    (a, b) => scores[b] - scores[a] || fives[b] - fives[a],
+  );
+  const [winner, secondary] = ranked;
+  const isTie = scores[winner] === scores[secondary] && fives[winner] === fives[secondary];
+  return { archetype: winner, scores, secondary, isTie, margin: scores[winner] - scores[secondary] };
 }
 
 export interface ShadowArchetypeInfo {

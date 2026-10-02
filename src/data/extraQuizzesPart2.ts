@@ -16,6 +16,66 @@ const likert = [
   { value: 4, label: 'Agree' },
   { value: 5, label: 'Strongly Agree' },
 ];
+// Reverse-keyed: "Strongly disagree" records 5. The option ORDER stays the
+// same on screen; only the recorded value flips, so a yea-sayer no longer
+// inflates every dimension together (F6).
+const likertRev = [
+  { value: 5, label: 'Strongly Disagree' },
+  { value: 4, label: 'Disagree' },
+  { value: 3, label: 'Neutral' },
+  { value: 2, label: 'Agree' },
+  { value: 1, label: 'Strongly Agree' },
+];
+
+// ---------------------------------------------------------------
+// Shared scoring helpers (imported by extraQuizzes.ts and Part3 — this
+// module is the leaf of the three, so it is the one that can be shared).
+// ---------------------------------------------------------------
+
+/** Two Likert means this close are a tie: the screen names both dimensions. */
+export const TIE_MARGIN = 0.25;
+/** Below this top mean nothing is elevated; shadow-flavoured quizzes return their `low` card. */
+export const LOW_SIGNAL = 2.5;
+
+/** Raw sum and Likert mean per dimension over the items that were answered. */
+export function likertMeans<K extends string>(
+  quiz: QuizDefinition,
+  answers: Record<string, number>,
+  dimensions: readonly K[],
+): { scores: Record<K, number>; averages: Record<K, number>; counts: Record<K, number> } {
+  const scores = Object.fromEntries(dimensions.map((d) => [d, 0])) as Record<K, number>;
+  const counts = Object.fromEntries(dimensions.map((d) => [d, 0])) as Record<K, number>;
+  for (const q of quiz.questions) {
+    const v = answers[q.id];
+    if (v === undefined || !q.dimension) continue;
+    const dim = q.dimension as K;
+    if (dim in scores) {
+      scores[dim] += v;
+      counts[dim] += 1;
+    }
+  }
+  const averages = Object.fromEntries(
+    dimensions.map((d) => [d, counts[d] > 0 ? scores[d] / counts[d] : 0]),
+  ) as Record<K, number>;
+  return { scores, averages, counts };
+}
+
+/**
+ * Highest mean wins; declared order breaks an exact tie but the tie is
+ * reported. `margin` is top minus runner-up; `isTie` when it is within
+ * TIE_MARGIN.
+ */
+export function rankDimensions<K extends string>(
+  averages: Record<K, number>,
+  dimensions: readonly K[],
+): { primary: K; secondary?: K; margin: number; isTie: boolean } {
+  const ranked = [...dimensions].sort((a, b) => averages[b] - averages[a]);
+  const primary = ranked[0];
+  const secondary = ranked[1];
+  const margin = secondary === undefined ? 0 : averages[primary] - averages[secondary];
+  const isTie = secondary !== undefined && margin <= TIE_MARGIN;
+  return { primary, secondary: isTie ? secondary : undefined, margin, isTie };
+}
 
 // 1. Jungian Cognitive Functions ----------------------------------
 export type JungianFunc = 'Ni' | 'Ne' | 'Si' | 'Se' | 'Ti' | 'Te' | 'Fi' | 'Fe';
@@ -24,20 +84,24 @@ export const jungianQuiz: QuizDefinition = {
   id: 'jungian-functions-v1',
   type: 'extra-dimensional',
   title: 'Jungian Cognitive Functions',
-  description: 'MBTI letters tell you the preference. Jungian functions tell you the *stack* — which mental process you lead with. Twelve questions to find your dominant function.',
+  description: 'MBTI letters tell you the preference. Jungian functions tell you the *stack* — which mental process you lead with. Sixteen questions to find your dominant function.',
   questions: [
-    { id: 'ni1', text: 'I often know what someone is going to say before they finish.', dimension: 'Ni', options: likert },
+    { id: 'ni1', text: 'I often sense how a situation will end long before the evidence is in.', dimension: 'Ni', options: likert },
     { id: 'ni2', text: 'I get single, clear visions of how things will unfold long-term.', dimension: 'Ni', options: likert },
     { id: 'ne1', text: 'My mind jumps between unrelated ideas and finds connections others miss.', dimension: 'Ne', options: likert },
     { id: 'ne2', text: 'I thrive on brainstorming many possibilities — more than executing one.', dimension: 'Ne', options: likert },
     { id: 'si1', text: 'I remember sensory details (smells, textures, exact phrases) from long ago.', dimension: 'Si', options: likert },
-    { id: 'si2', text: 'I rely on "this is how we do it" traditions and proven processes.', dimension: 'Si', options: likert },
+    { id: 'si2', text: 'I prefer methods that have proven themselves over time.', dimension: 'Si', options: likert },
     { id: 'se1', text: 'I\'m sharp and present in my body — fast reflexes, direct engagement with the physical world.', dimension: 'Se', options: likert },
+    { id: 'se2', text: 'I notice small physical details in a room — the light, a texture, who has moved.', dimension: 'Se', options: likert },
     { id: 'ti1', text: 'I quietly build logical frameworks in my head and test every claim against them.', dimension: 'Ti', options: likert },
+    { id: 'ti2', text: 'An explanation has to be internally consistent before I accept it, no matter who says it.', dimension: 'Ti', options: likert },
     { id: 'te1', text: 'I organise the external world — projects, people, systems — into efficient structures.', dimension: 'Te', options: likert },
+    { id: 'te2', text: 'I judge a plan by whether it gets results, not by how it feels.', dimension: 'Te', options: likert },
     { id: 'fi1', text: 'My values are deeply felt and non-negotiable, even if I don\'t explain them.', dimension: 'Fi', options: likert },
+    { id: 'fi2', text: 'I decide what is right for me by how it sits with my conscience, not by what others expect.', dimension: 'Fi', options: likert },
     { id: 'fe1', text: 'I read a group\'s emotional weather fast and adjust to keep harmony.', dimension: 'Fe', options: likert },
-    { id: 'fe2', text: 'I need others to be okay before I can be okay.', dimension: 'Fe', options: likert },
+    { id: 'fe2', text: 'I adjust my tone and words to what the people around me need to hear.', dimension: 'Fe', options: likert },
   ],
 };
 
@@ -63,12 +127,12 @@ export const loveStylesQuiz: QuizDefinition = {
   questions: [
     { id: 'er1', text: 'When I fall, I fall hard — physical, passionate, consuming.', dimension: 'eros', options: likert },
     { id: 'er2', text: 'Sensual connection is essential for me to feel loved.', dimension: 'eros', options: likert },
-    { id: 'er3', text: 'I believe in "the one" and I\'m willing to wait.', dimension: 'eros', options: likert },
-    { id: 'ph1', text: 'The best relationships are built on deep friendship first.', dimension: 'philia', options: likert },
+    { id: 'er3', text: 'Desire — wanting and being wanted — is at the centre of love for me.', dimension: 'eros', options: likert },
+    { id: 'ph1', text: 'I am most drawn to people I can talk with for hours.', dimension: 'philia', options: likert },
     { id: 'ph2', text: 'I need to respect someone as a person before I can love them as a partner.', dimension: 'philia', options: likert },
     { id: 'ph3', text: 'Shared values and conversation feed me more than grand romance.', dimension: 'philia', options: likert },
     { id: 'st1', text: 'Love grows slowly, through familiarity, not lightning strikes.', dimension: 'storge', options: likert },
-    { id: 'st2', text: 'My best relationships began as friendships that gradually deepened.', dimension: 'storge', options: likert },
+    { id: 'st2', text: 'The love I trust most grows out of long familiarity rather than a sudden spark.', dimension: 'storge', options: likert },
     { id: 'st3', text: 'Comfortable, steady, familiar love is what I actually want.', dimension: 'storge', options: likert },
     { id: 'ag1', text: 'I love even when I don\'t get love back — it\'s a choice, not a transaction.', dimension: 'agape', options: likert },
     { id: 'ag2', text: 'My love is at its best when it expects nothing.', dimension: 'agape', options: likert },
@@ -101,9 +165,9 @@ export const parentingQuiz: QuizDefinition = {
     { id: 'pm1', text: 'I avoid conflict by letting most things slide.', dimension: 'permissive', options: likert },
     { id: 'pm2', text: 'I want to be liked more than I want to be obeyed.', dimension: 'permissive', options: likert },
     { id: 'pm3', text: 'Rules feel like barriers to a good relationship.', dimension: 'permissive', options: likert },
-    { id: 'ng1', text: 'I let people figure things out on their own.', dimension: 'neglectful', options: likert },
+    { id: 'ng1', text: 'I often do not know what the people I am responsible for are dealing with.', dimension: 'neglectful', options: likert },
     { id: 'ng2', text: 'I don\'t have much energy to follow up on things consistently.', dimension: 'neglectful', options: likert },
-    { id: 'ng3', text: 'I trust people to manage themselves without my involvement.', dimension: 'neglectful', options: likert },
+    { id: 'ng3', text: 'I am usually preoccupied with my own concerns and miss what others need from me.', dimension: 'neglectful', options: likert },
   ],
 };
 
@@ -111,7 +175,7 @@ export const PARENTING_INFO: Record<ParentingStyle, DimensionalResultInfo> = {
   authoritative: { name: 'Authoritative', tagline: 'High warmth + high structure — research gold standard.', summary: 'You set firm boundaries AND explain them. You listen AND decide. Research consistently names this as the style that produces the most resilient children and high-functioning teams. It\'s also the hardest — it requires both warmth and spine.', strengths: ['Balance of support and standards', 'Builds secure attachment', 'Raises resilience'], shadow: ['Exhausting to sustain', 'Can slip into authoritarian under stress', 'High self-awareness required daily'], affirmation: 'I hold the line and I hold the hand. Both at once, because both matter.' },
   authoritarian: { name: 'Authoritarian', tagline: 'High structure + low warmth — demands obedience.', summary: 'You set rules and expect compliance. Obedience matters more than understanding. Short-term this produces compliance; long-term it produces kids/teams who either rebel or become anxious pleasers. Works in genuine crisis. Less in daily life.', strengths: ['Clear expectations', 'Fast compliance under crisis', 'Reliability'], shadow: ['Rebellion or fragility in those you raise', 'Relationships become transactional', 'Loneliness in the role'], affirmation: 'My firmness is a gift — and I soften it without losing it, because warmth doesn\'t weaken the rule.' },
   permissive: { name: 'Permissive', tagline: 'High warmth + low structure — avoids conflict.', summary: 'You prioritize closeness over rules. You want to be liked. Kids raised this way often struggle with boundaries and self-regulation because no one taught them the boundary from outside.', strengths: ['Warm presence', 'Easy rapport', 'Non-authoritarian'], shadow: ['Missing structure those you love actually need', 'Resentment building when you finally have to enforce', 'Their self-regulation underdeveloped'], affirmation: 'My love includes holding the line — saying no is also love.' },
-  neglectful: { name: 'Neglectful', tagline: 'Low warmth + low structure — absent.', summary: 'You are not really present. You have your own stuff. You let them figure it out. This is usually not intentional cruelty — it\'s overwhelm, depression, workload, or one\'s own unresolved trauma. It has the worst developmental outcomes of the four styles.', strengths: ['Independence they develop early', 'Low conflict (nothing to conflict about)'], shadow: ['Deep loneliness in those you raise', 'Attachment wounds that echo for life', 'Pattern may be inherited'], affirmation: 'Being present is the first gift — I show up for myself so I can show up for them.' },
+  neglectful: { name: 'Neglectful', tagline: 'Low warmth + low structure — absent.', summary: 'You are often not fully present — overwhelm, work or your own history take up the room. This pattern has the hardest outcomes of the four, and it is also the one that shifts most when attention returns.', strengths: ['Independence they develop early', 'Low conflict (nothing to conflict about)'], shadow: ['Deep loneliness in those you raise', 'Attachment wounds that echo for life', 'Pattern may be inherited'], affirmation: 'Being present is the first gift — I show up for myself so I can show up for them.' },
 };
 
 // 4. Learning Style (VARK) ----------------------------------------
@@ -121,7 +185,7 @@ export const learningQuiz: QuizDefinition = {
   id: 'learning-style-v1',
   type: 'extra-dimensional',
   title: 'Learning Style (VARK)',
-  description: 'Four ways we learn: Visual, Auditory, Reading/Writing, Kinesthetic. Twelve questions to reveal your preferred input channel so you can study, work, and grow more effectively.',
+  description: 'Four preferred channels for taking in information — Visual, Auditory, Reading/Writing, Kinesthetic. Twelve questions map your preference. Research does not show that matching teaching to a preferred style improves learning, so treat this as a map of what feels natural, not a prescription.',
   questions: [
     { id: 'vs1', text: 'Diagrams, charts, and mind maps help me understand better than text.', dimension: 'visual', options: likert },
     { id: 'vs2', text: 'I visualise what I read — I have to "see" it to get it.', dimension: 'visual', options: likert },
@@ -160,14 +224,38 @@ export const empathQuiz: QuizDefinition = {
     { id: 'hs1', text: 'Loud sounds, bright lights, strong smells overwhelm me more than most.', dimension: 'hsp', options: likert },
     { id: 'hs2', text: 'I notice subtleties (shifts in tone, small changes in environment) that others miss.', dimension: 'hsp', options: likert },
     { id: 'hs3', text: 'I need more alone time than average to regulate.', dimension: 'hsp', options: likert },
-    { id: 'bt1', text: 'Crowded places are both emotionally heavy AND sensory overwhelming for me.', dimension: 'both', options: likert },
-    { id: 'bt2', text: 'I need downtime after social events to recover fully.', dimension: 'both', options: likert },
-    { id: 'bt3', text: 'Stories of others\' suffering can ruin my whole day.', dimension: 'both', options: likert },
-    { id: 'nn1', text: 'Loud, crowded, emotionally intense situations energise me.', dimension: 'neither', options: likert },
-    { id: 'nn2', text: 'I don\'t pick up on other people\'s moods until they tell me.', dimension: 'neither', options: likert },
-    { id: 'nn3', text: 'I handle a lot of sensory input without needing recovery time.', dimension: 'neither', options: likert },
+    // "both" and "neither" are DERIVED from the two traits, not traits of
+    // their own, so these six items feed empath or hsp (three of them
+    // reverse-keyed) and scoreEmpathHsp decides the quadrant.
+    { id: 'bt1', text: 'Crowded places overwhelm my senses.', dimension: 'hsp', options: likert },
+    { id: 'bt2', text: 'I need downtime after busy environments to recover fully.', dimension: 'hsp', options: likert },
+    { id: 'bt3', text: 'Stories of other people\'s suffering can colour my whole day.', dimension: 'empath', options: likert },
+    { id: 'nn1', text: 'Loud, crowded, intense situations energise me.', dimension: 'hsp', options: likertRev },
+    { id: 'nn2', text: 'I do not pick up on other people\'s moods until they tell me.', dimension: 'empath', options: likertRev },
+    { id: 'nn3', text: 'I can take a lot of sensory input without needing recovery time.', dimension: 'hsp', options: likertRev },
   ],
 };
+
+/**
+ * Empath = mean of the five emotional-contagion items, HSP = mean of the
+ * seven sensory-processing items (both include their reverse-keyed
+ * items). Both when both means exceed 3.5; neither when both are at or
+ * below 3; otherwise the higher trait, with a tie flagged when they are
+ * within TIE_MARGIN.
+ */
+export function scoreEmpathHsp(answers: Record<string, number>): DimensionalResult<EmpathType> {
+  const dims = ['empath', 'hsp'] as const;
+  const { scores, averages } = likertMeans(empathQuiz, answers, dims);
+  const { empath, hsp } = averages;
+  let primary: EmpathType;
+  if (empath > 3.5 && hsp > 3.5) primary = 'both';
+  else if (empath <= 3 && hsp <= 3) primary = 'neither';
+  else primary = empath >= hsp ? 'empath' : 'hsp';
+  const margin = Math.abs(empath - hsp);
+  const isTie = (primary === 'empath' || primary === 'hsp') && margin <= TIE_MARGIN;
+  const secondary: EmpathType | undefined = isTie ? (primary === 'empath' ? 'hsp' : 'empath') : undefined;
+  return { primary, scores, averages, isTie, margin, secondary };
+}
 
 export const EMPATH_INFO: Record<EmpathType, DimensionalResultInfo> = {
   empath: { name: 'Empath', tagline: 'You absorb emotional fields, not just sensory input.', summary: 'Your core sensitivity is EMOTIONAL. You pick up other people\'s feelings and often carry them as your own. This is a gift and a burden. Learning to distinguish "mine" from "theirs" is the practice.', strengths: ['Deep attunement to others', 'Natural healer presence', 'Strong intuition about people'], shadow: ['Carrying other people\'s emotions home', 'Boundary confusion', 'Exhaustion from unprocessed emotional absorption'], affirmation: 'I feel what others feel — and I can return what isn\'t mine.' },
@@ -177,47 +265,141 @@ export const EMPATH_INFO: Record<EmpathType, DimensionalResultInfo> = {
 };
 
 // 6. Self-Compassion ----------------------------------------------
-export type SelfCompassionType = 'self-kind' | 'self-judging' | 'mindful' | 'over-identified';
+// Neff's six components (self-kindness ↔ self-judgment, common humanity ↔
+// isolation, mindfulness ↔ over-identification), original wording. The
+// result is a banded TOTAL, as the construct is defined, plus the weakest
+// component as the place to practise.
+export type SelfCompassionType = 'low' | 'moderate' | 'high';
+export type SelfCompassionComponent = 'self-kind' | 'self-judging' | 'mindful' | 'over-identified' | 'common-humanity' | 'isolation';
+
+export const SELF_COMPASSION_COMPONENTS: readonly SelfCompassionComponent[] = [
+  'self-kind', 'self-judging', 'common-humanity', 'isolation', 'mindful', 'over-identified',
+];
+
+/** Bar labels for the six components (the result cards are keyed by band, not component). */
+export const SELF_COMPASSION_COMPONENT_LABELS: Record<SelfCompassionComponent, string> = {
+  'self-kind': 'Self-kindness',
+  'self-judging': 'Self-judgment',
+  'common-humanity': 'Common humanity',
+  isolation: 'Isolation',
+  mindful: 'Mindfulness',
+  'over-identified': 'Over-identification',
+};
 
 export const selfCompassionQuiz: QuizDefinition = {
   id: 'self-compassion-v1',
   type: 'extra-dimensional',
   title: 'Self-Compassion',
-  description: 'Based on Kristin Neff\'s research. Twelve questions to measure how you actually treat yourself when you\'re struggling — and which direction you default to.',
+  description: 'Based on Kristin Neff\'s model of self-compassion. Sixteen questions on how you actually treat yourself when you are struggling — and which part of that is the place to practise.',
   questions: [
-    { id: 'sk1', text: 'When I fail, I\'m kind to myself about it.', dimension: 'self-kind', options: likert },
-    { id: 'sk2', text: 'I give myself the care I\'d give a close friend in the same situation.', dimension: 'self-kind', options: likert },
-    { id: 'sk3', text: 'During difficult times, I try to be gentle with myself.', dimension: 'self-kind', options: likert },
-    { id: 'sj1', text: 'I\'m critical of my own flaws and inadequacies.', dimension: 'self-judging', options: likert },
-    { id: 'sj2', text: 'When I notice negative things about myself, I tend to feel disappointed in who I am.', dimension: 'self-judging', options: likert },
-    { id: 'sj3', text: 'I have a hard time tolerating what I dislike about myself.', dimension: 'self-judging', options: likert },
-    { id: 'mn1', text: 'When difficult emotions arise, I try to stay balanced with them.', dimension: 'mindful', options: likert },
-    { id: 'mn2', text: 'I try to see my situations with perspective when I\'m upset.', dimension: 'mindful', options: likert },
-    { id: 'mn3', text: 'I observe my negative emotions without being swept by them.', dimension: 'mindful', options: likert },
-    { id: 'oi1', text: 'When something painful happens, I tend to dramatise the situation.', dimension: 'over-identified', options: likert },
-    { id: 'oi2', text: 'When I feel bad, I fixate on everything that\'s wrong.', dimension: 'over-identified', options: likert },
-    { id: 'oi3', text: 'I get carried away by my feelings when I\'m struggling.', dimension: 'over-identified', options: likert },
+    { id: 'sk1', text: 'When I fall short, I speak to myself the way I would to someone I love.', dimension: 'self-kind', options: likert },
+    { id: 'sk2', text: 'When I am struggling, I treat myself as kindly as I would treat a close friend.', dimension: 'self-kind', options: likert },
+    { id: 'sk3', text: 'In hard times I try to be gentle with myself.', dimension: 'self-kind', options: likert },
+    { id: 'sj1', text: 'I come down hard on myself for my flaws.', dimension: 'self-judging', options: likert },
+    { id: 'sj2', text: 'When I notice something I dislike about myself, I feel let down by who I am.', dimension: 'self-judging', options: likert },
+    { id: 'sj3', text: 'I have little patience with the parts of me I do not like.', dimension: 'self-judging', options: likert },
+    { id: 'ch1', text: 'When I struggle, I remind myself that struggling is part of being human.', dimension: 'common-humanity', options: likert },
+    { id: 'ch2', text: 'When I fail, I remember that other people fail too.', dimension: 'common-humanity', options: likert },
+    { id: 'is1', text: 'When I am down, it feels like everyone else is doing better than me.', dimension: 'isolation', options: likert },
+    { id: 'is2', text: 'When I fail, I feel alone in it.', dimension: 'isolation', options: likert },
+    { id: 'mn1', text: 'When a difficult feeling arises, I try to hold it steadily rather than push it away.', dimension: 'mindful', options: likert },
+    { id: 'mn2', text: 'When I am upset, I try to step back and see the bigger picture.', dimension: 'mindful', options: likert },
+    { id: 'mn3', text: 'I can notice a painful feeling without being carried off by it.', dimension: 'mindful', options: likert },
+    { id: 'oi1', text: 'When something goes wrong, I tend to make it bigger than it is.', dimension: 'over-identified', options: likert },
+    { id: 'oi2', text: 'When I feel low, I fixate on everything that is wrong with my life.', dimension: 'over-identified', options: likert },
+    { id: 'oi3', text: 'When I am struggling, my feelings run away with me.', dimension: 'over-identified', options: likert },
   ],
 };
 
 export const SELF_COMPASSION_INFO: Record<SelfCompassionType, DimensionalResultInfo> = {
-  'self-kind':    { name: 'Self-Kindness (dominant)', tagline: 'You default to treating yourself with care.', summary: 'You lead with gentleness toward yourself when things are hard. This is a developed skill — most people don\'t have it. Watch out for complacency: self-kindness isn\'t "no standards," it\'s care PLUS honesty.', strengths: ['Resilience', 'Emotional recovery', 'Modelling good self-care for others'], shadow: ['Occasional complacency', 'Can under-push yourself when pushing is right'], affirmation: 'I am on my own side — and I also hold high standards for who I am becoming.' },
-  'self-judging': { name: 'Self-Judgment (dominant)', tagline: 'You default to harshness with yourself.', summary: 'You\'re quick to criticise yourself. This is the most common default. It\'s also the most effortful to change. Self-judgment feels like high standards but is actually self-abuse. The practice is learning to address the failure without attacking the self.', strengths: ['High standards', 'Self-awareness', 'Drive toward improvement'], shadow: ['Shame spiral', 'Burnout', 'Unable to recover from failure as fast as self-kind people'], affirmation: 'I can hold high standards without treating myself as a failure. Both are possible at once.' },
-  mindful:        { name: 'Mindful (dominant)', tagline: 'You observe your feelings without drowning in them.', summary: 'You have developed the capacity to notice your suffering without being swept by it. This is the contemplative skill. Most people either drown in their emotions or suppress them — you\'re doing the third thing: staying with.', strengths: ['Emotional regulation', 'Wise perspective', 'Not reactive'], shadow: ['Can become over-detached', 'Sometimes observing becomes avoiding the feeling'], affirmation: 'I can be present with what hurts — and I still engage my life from where I am.' },
-  'over-identified': { name: 'Over-Identified (dominant)', tagline: 'You get swept by difficult emotions.', summary: 'When hard feelings come, you drown in them. You can\'t separate "I am feeling bad" from "everything is bad." This is workable. The skill is called defusion or decentering — learning to observe the feeling instead of being the feeling.', strengths: ['Emotional intensity (when channelled right)', 'Rich inner life', 'Empathy for intense emotions in others'], shadow: ['Rumination', 'Crisis spiral', 'Hard to recover from setbacks'], affirmation: 'I am not the feeling. I am the one feeling the feeling — and I can watch it pass.' },
+  low: {
+    name: 'Low self-compassion',
+    tagline: 'The inner voice is mostly a critic right now.',
+    summary: 'When things go wrong you tend to come down hard on yourself, feel alone in it and get carried off by the feeling. That is the most common starting point, and it is learnable: self-compassion is a skill, not a temperament. The component below is where the practice will pay off first.',
+    strengths: ['High standards — the drive is real', 'Honest with yourself about what hurts'],
+    shadow: ['Shame spirals that slow recovery', 'Treating a bad moment as evidence about your worth', 'Isolation when you most need company'],
+    affirmation: 'I can hold a high standard and still be on my own side.',
+  },
+  moderate: {
+    name: 'Growing self-compassion',
+    tagline: 'Kind on some days, hard on others.',
+    summary: 'You already treat yourself with some care, and you also still slip into judgment, isolation or over-identification when the pressure rises. Most people live here. The component below is the one pulling your total down — a small, deliberate practice there moves the whole picture.',
+    strengths: ['Access to kindness when you remember to use it', 'Some perspective on hard feelings', 'Willingness to look at how you treat yourself'],
+    shadow: ['Kindness that depends on the day going well', 'Perspective that evaporates under stress'],
+    affirmation: 'The way I speak to myself is a habit, and habits can change.',
+  },
+  high: {
+    name: 'Steady self-compassion',
+    tagline: 'You meet yourself the way you would meet a friend.',
+    summary: 'You speak to yourself kindly when you fall short, you remember that struggling is part of being human, and you can hold a hard feeling without drowning in it. That is a developed skill, not complacency — self-compassion is care plus honesty, and your answers show both.',
+    strengths: ['Fast emotional recovery', 'Honest self-assessment without self-attack', 'A model of self-care for the people around you'],
+    shadow: ['Can tip into letting yourself off too easily — check the standards are still there', 'Others may read your calm as not caring'],
+    affirmation: 'I am on my own side — and I still ask the most of myself.',
+  },
 };
+
+/**
+ * Total = mean of the three positive component means and the three
+ * reversed negative component means (6 − mean), banded low (< 2.5),
+ * moderate, high (> 3.5). `extra.weakest` is the component with the lowest
+ * compassion-coded mean — the "where to practise" card; `extra.total` is
+ * the banded number to one decimal.
+ */
+export function scoreSelfCompassion(answers: Record<string, number>): DimensionalResult<SelfCompassionType> {
+  const { scores, averages } = likertMeans(selfCompassionQuiz, answers, SELF_COMPASSION_COMPONENTS);
+  const negative = new Set<SelfCompassionComponent>(['self-judging', 'isolation', 'over-identified']);
+  const coded = Object.fromEntries(
+    SELF_COMPASSION_COMPONENTS.map((c) => [c, negative.has(c) ? 6 - averages[c] : averages[c]]),
+  ) as Record<SelfCompassionComponent, number>;
+  const positives = (['self-kind', 'common-humanity', 'mindful'] as const).map((c) => coded[c]);
+  const negatives = (['self-judging', 'isolation', 'over-identified'] as const).map((c) => coded[c]);
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const total = (mean(positives) + mean(negatives)) / 2;
+  const primary: SelfCompassionType = total < 2.5 ? 'low' : total > 3.5 ? 'high' : 'moderate';
+  const weakest = SELF_COMPASSION_COMPONENTS.reduce((w, c) => (coded[c] < coded[w] ? c : w), SELF_COMPASSION_COMPONENTS[0]);
+  return {
+    primary,
+    scores,
+    averages,
+    isTie: false,
+    margin: 0,
+    extra: { weakest, total: Math.round(total * 10) / 10 },
+  };
+}
 
 // 7. PHQ-2-style Depression Screener (clearly marked non-diagnostic)
 export type PHQ2Result = 'low' | 'mild' | 'moderate' | 'seek-support';
+
+/**
+ * The two PHQ-2 core items keep the instrument's own four-point FREQUENCY
+ * scale (0-3 → recorded 1-4) instead of an agreement Likert, so "Neutral"
+ * can no longer be read as "more than half the days". localizeQuiz applies
+ * the shared Likert labels per question, so the other ten items keep them.
+ */
+export const PHQ_FREQUENCY = [
+  { value: 1, label: 'Not at all' },
+  { value: 2, label: 'Several days' },
+  { value: 3, label: 'More than half the days' },
+  { value: 4, label: 'Nearly every day' },
+];
+
+/**
+ * Crisis resources for the screener's two higher results. English carries
+ * the US lines; the locale key `extraQuizzes.mood-screener.crisis` holds the
+ * per-country numbers (ja: いのちの電話 0570-783-556, ko: 109, zh: 北京心理危机研究与干预中心
+ * 010-82951332 — to be verified by the owner before shipping).
+ */
+export const MOOD_SCREENER_CRISIS =
+  'If you are in crisis right now: in the US, call or text 988 (Suicide and Crisis Lifeline) or text HOME to 741741 (Crisis Text Line). Elsewhere, contact your local emergency number or mental-health service. You are not alone.';
 
 export const phq2Quiz: QuizDefinition = {
   id: 'mood-screener-v1',
   type: 'extra-dimensional',
   title: 'Mood Check — 2-week screener',
-  description: 'A short self-reflection based on the PHQ-2 questionnaire, commonly used in wellness screenings. Twelve questions reflecting on the last two weeks. NOT a diagnosis — if your score is high, please reach out to a professional. In crisis: text HOME to 741741 or call 988 (US).',
+  description: 'A short self-reflection built around the two PHQ-2 questions used in wellness screenings, plus ten reflections on the same two weeks. Not a diagnosis — if your result is high, please reach out to a professional.',
   questions: [
-    { id: 'lw1', text: 'Over the last 2 weeks, I have felt down or depressed most days.', dimension: 'seek-support', options: likert },
-    { id: 'lw2', text: 'Over the last 2 weeks, I have had little interest or pleasure in doing things.', dimension: 'seek-support', options: likert },
+    { id: 'lw1', text: 'Over the last two weeks, how often have you felt down, depressed or hopeless?', dimension: 'seek-support', options: PHQ_FREQUENCY },
+    { id: 'lw2', text: 'Over the last two weeks, how often have you had little interest or pleasure in doing things?', dimension: 'seek-support', options: PHQ_FREQUENCY },
     { id: 'lw3', text: 'I have trouble sleeping, or I sleep too much, most nights.', dimension: 'moderate', options: likert },
     { id: 'lw4', text: 'I feel tired or low-energy much of the day.', dimension: 'moderate', options: likert },
     { id: 'lw5', text: 'I\'ve been eating much more or much less than usual.', dimension: 'moderate', options: likert },
@@ -225,9 +407,9 @@ export const phq2Quiz: QuizDefinition = {
     { id: 'mi2', text: 'My concentration is noticeably off lately.', dimension: 'mild', options: likert },
     { id: 'mi3', text: 'I feel more irritable than usual.', dimension: 'mild', options: likert },
     { id: 'mi4', text: 'I have stretches of being very self-critical.', dimension: 'mild', options: likert },
-    { id: 'lo1', text: 'I\'ve had more good days than difficult days this week.', dimension: 'low', options: likert },
-    { id: 'lo2', text: 'I\'ve been able to find pleasure in small things this week.', dimension: 'low', options: likert },
-    { id: 'lo3', text: 'I\'ve felt connected to the people around me this week.', dimension: 'low', options: likert },
+    { id: 'lo1', text: 'Over the last two weeks I have had more good days than difficult ones.', dimension: 'low', options: likert },
+    { id: 'lo2', text: 'Over the last two weeks I have been able to enjoy small things.', dimension: 'low', options: likert },
+    { id: 'lo3', text: 'Over the last two weeks I have felt connected to the people around me.', dimension: 'low', options: likert },
   ],
 };
 
@@ -235,7 +417,7 @@ export const PHQ2_INFO: Record<PHQ2Result, DimensionalResultInfo> = {
   low: { name: 'Low signal — baseline', tagline: 'Most signals suggest you\'re doing okay.', summary: 'Your answers suggest you\'re largely doing okay lately. The quiz can\'t see everything, and "okay" is not the same as "great" — but you\'re in a relatively regulated place. Keep tending what\'s working.', strengths: ['Regulation', 'Baseline steadiness', 'Connection to daily pleasures'], shadow: ['Can miss slow drift — check in periodically', 'Don\'t wait until things are bad to tend your wellbeing'], affirmation: 'I am mostly okay — and I tend my wellbeing like a garden, not an emergency.' },
   mild: { name: 'Mild signal', tagline: 'Some low mood is present — worth attending.', summary: 'Your answers suggest mild symptoms of low mood or low-grade depression. This is very common and is very workable. It does not mean you have a diagnosis. Simple interventions — movement, sunlight, connection, sleep hygiene — often shift this. If it persists past a few weeks, reach out.', strengths: ['Self-awareness that you\'re in a dip', 'Capacity to still engage'], shadow: ['Trying to power through without addressing', 'Self-criticism masking genuine tiredness', 'Writing off what good help could do'], affirmation: 'I\'m in a dip. I address it gently, with basic care, and I reach out if it doesn\'t lift.' },
   moderate: { name: 'Moderate signal', tagline: 'Multiple symptoms present — professional support worth considering.', summary: 'Several symptoms of sustained low mood show up in your answers. This deserves more attention than self-help alone can give. Consider talking to a therapist, GP, or mental-health service. You are not broken. This is workable and you deserve support.', strengths: ['Willingness to check in with yourself — that\'s real'], shadow: ['Isolation makes this worse', 'Waiting too long to reach out', 'Self-blame for being in this state'], affirmation: 'This is a load I don\'t have to carry alone. I reach out — today.' },
-  'seek-support': { name: 'Higher signal — reach out', tagline: 'Strong signals of sustained low mood — please talk to someone.', summary: 'Your answers show strong signals of persistent low mood. This is NOT a diagnosis, but it is a clear invitation to reach out to professional support. Crisis resources: Text HOME to 741741 (Crisis Text Line, US/UK/CA/Ireland), call 988 (US Suicide & Crisis Lifeline), or contact your local mental health services. You are not alone.', strengths: ['Being honest in this screener — that\'s strength'], shadow: ['The voice saying "I\'m fine, I don\'t need help" is often the voice that needs it most'], affirmation: 'I reach for real support. I call. I text. I ask. I am worth the reach.' },
+  'seek-support': { name: 'Higher signal — reach out', tagline: 'Strong signals of sustained low mood — please talk to someone.', summary: 'Your answers show strong signals of persistent low mood. This is not a diagnosis, but it is a clear invitation to reach out to professional support — a GP, a therapist or a local mental-health service. The crisis resources below are for right now, if right now is hard.', strengths: ['Being honest in this screener — that\'s strength'], shadow: ['The voice saying "I\'m fine, I don\'t need help" is often the voice that needs it most'], affirmation: 'I reach for real support. I call. I text. I ask. I am worth the reach.' },
 };
 
 // ---------------------------------------------------------------
@@ -252,16 +434,11 @@ export const PHQ2_INFO: Record<PHQ2Result, DimensionalResultInfo> = {
 // ("felt down or depressed" + "little interest or pleasure").
 const PHQ2_CORE_ITEM_IDS = ['lw1', 'lw2'] as const;
 
-// Map an agreement Likert answer (1-5) onto the PHQ-2 frequency scale
-// (0-3): linear rescale ((v - 1) * 3 / 4) rounded half-up, so the
-// Neutral midpoint resolves UP (toward the supportive result, never
-// away — this is a safety screener, so borderline reads as elevated):
-//   1 Strongly Disagree → 0  ("not at all")
-//   2 Disagree          → 1  ("several days")
-//   3 Neutral           → 2  (1.5 rounds up — borderline resolves up)
-//   4 Agree             → 2  ("more than half the days")
-//   5 Strongly Agree    → 3  ("nearly every day")
-const likertToPhq2 = (value: number): number => Math.round(((value - 1) * 3) / 4);
+// The two core items are recorded on the PHQ frequency scale itself
+// (1 "Not at all" … 4 "Nearly every day"), so the PHQ score is value − 1:
+//   1 → 0, 2 → 1, 3 → 2, 4 → 3. Clamped in case an old five-point answer
+// is replayed from a stored result.
+const toPhq2 = (value: number): number => Math.min(3, Math.max(0, value - 1));
 
 export function scoreMoodScreener(
   answers: Record<string, number>,
@@ -289,34 +466,39 @@ export function scoreMoodScreener(
   // supportive result, regardless of how positively the other items
   // were answered.
   const phq2Total = PHQ2_CORE_ITEM_IDS.reduce(
-    (total, id) => total + (answers[id] !== undefined ? likertToPhq2(answers[id]) : 0),
+    (total, id) => total + (answers[id] !== undefined ? toPhq2(answers[id]) : 0),
     0,
   );
+  const averages = Object.fromEntries(
+    dimensions.map((d) => [d, counts[d] > 0 ? scores[d] / counts[d] : 0]),
+  ) as Record<PHQ2Result, number>;
   if (phq2Total >= 3) {
-    return { primary: 'seek-support', scores };
+    return { primary: 'seek-support', scores, averages, isTie: false, margin: 0, extra: { phq2Total } };
   }
 
   // Below the cutoff: per-question-average typing (as the generic scorer
   // does), but iterating in ascending severity with >= so an exact tie
-  // resolves toward the MORE supportive/severe result, never away.
-  const averages = Object.fromEntries(
-    dimensions.map((d) => [d, counts[d] > 0 ? scores[d] / counts[d] : 0]),
-  ) as Record<PHQ2Result, number>;
+  // resolves toward the MORE supportive/severe result, never away. Ties
+  // are therefore resolved, not reported.
   let primary: PHQ2Result = dimensions[0];
   for (const d of dimensions) {
     if (averages[d] >= averages[primary]) primary = d;
   }
-  return { primary, scores };
+  const others = dimensions.filter((d) => d !== primary).map((d) => averages[d]);
+  const margin = averages[primary] - Math.max(...others);
+  return { primary, scores, averages, isTie: false, margin, extra: { phq2Total } };
 }
 
 // Combined export table — extraQuizzes.ts's EXTRA_QUIZ_SCORING will be
 // extended at the registration site to include these.
+// `dimensions` are the SCORED dimensions (the score bars); `info` may hold
+// more result keys than that (both / neither, the self-compassion bands).
 export const EXTRA_QUIZZES_PART2 = {
-  'jungian-functions-v1':   { quiz: jungianQuiz,         dimensions: ['Ni','Ne','Si','Se','Ti','Te','Fi','Fe'] as const, info: JUNGIAN_INFO,          emoji: '🧠' },
-  'love-styles-v1':         { quiz: loveStylesQuiz,      dimensions: ['eros','philia','storge','agape'] as const,        info: LOVE_STYLES_INFO,      emoji: '💛' },
-  'parenting-style-v1':     { quiz: parentingQuiz,       dimensions: ['authoritative','authoritarian','permissive','neglectful'] as const, info: PARENTING_INFO, emoji: '🏡' },
-  'learning-style-v1':      { quiz: learningQuiz,        dimensions: ['visual','auditory','reading','kinesthetic'] as const, info: VARK_INFO,          emoji: '📚' },
-  'empath-hsp-v1':          { quiz: empathQuiz,          dimensions: ['empath','hsp','both','neither'] as const,         info: EMPATH_INFO,           emoji: '🌀' },
-  'self-compassion-v1':     { quiz: selfCompassionQuiz,  dimensions: ['self-kind','self-judging','mindful','over-identified'] as const, info: SELF_COMPASSION_INFO, emoji: '🕊️' },
-  'mood-screener-v1':       { quiz: phq2Quiz,            dimensions: ['low','mild','moderate','seek-support'] as const, info: PHQ2_INFO,             emoji: '🌱' },
+  'jungian-functions-v1':   { quiz: jungianQuiz,         dimensions: ['Ni','Ne','Si','Se','Ti','Te','Fi','Fe'] as const, info: JUNGIAN_INFO as Record<string, DimensionalResultInfo> },
+  'love-styles-v1':         { quiz: loveStylesQuiz,      dimensions: ['eros','philia','storge','agape'] as const,        info: LOVE_STYLES_INFO as Record<string, DimensionalResultInfo> },
+  'parenting-style-v1':     { quiz: parentingQuiz,       dimensions: ['authoritative','authoritarian','permissive','neglectful'] as const, info: PARENTING_INFO as Record<string, DimensionalResultInfo> },
+  'learning-style-v1':      { quiz: learningQuiz,        dimensions: ['visual','auditory','reading','kinesthetic'] as const, info: VARK_INFO as Record<string, DimensionalResultInfo> },
+  'empath-hsp-v1':          { quiz: empathQuiz,          dimensions: ['empath','hsp'] as const,                          info: EMPATH_INFO as Record<string, DimensionalResultInfo> },
+  'self-compassion-v1':     { quiz: selfCompassionQuiz,  dimensions: SELF_COMPASSION_COMPONENTS,                         info: SELF_COMPASSION_INFO as Record<string, DimensionalResultInfo>, dimensionLabels: SELF_COMPASSION_COMPONENT_LABELS as Record<string, string> },
+  'mood-screener-v1':       { quiz: phq2Quiz,            dimensions: ['low','mild','moderate','seek-support'] as const, info: PHQ2_INFO as Record<string, DimensionalResultInfo> },
 };

@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   User,
-  Target,
   Crown,
   Bookmark,
   Flame,
@@ -10,34 +9,31 @@ import {
   Heart,
   Brain,
   Zap,
-  MapPin,
-  Search,
-  Loader2,
-  Check,
   Gift,
   Briefcase,
   Calendar,
   ScrollText,
+  Sparkles,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Sheet, Input, ChipGroup, toast, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, ListSkeleton } from '../components/ui';
+import { Card, Button, Sheet, EyebrowLabel, Section, EmptyState, PageHeader, Page, Progress, Tag, ListRow, ListRowGroup, ListSkeleton, PageGrid, TarotCardIcon, HoroscopeWheelIcon } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { localizeSeekerRank } from '../i18n/localizeRank';
+import { localizeSignName } from '../i18n/localizeNames';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
 import { CosmicProfileSection } from '../components/profile/CosmicProfileSection';
+import { EditProfileSheet } from '../components/profile/EditProfileForm';
 import { ReferralSheet } from '../components/referral/ReferralSheet';
 import { InviteFriendSheet } from '../components/compat/InviteFriendSheet';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { useAuth } from '../context/AuthContext';
-import { useGeocode } from '../hooks/useAstrology';
 import { savedHighlights as savedHighlightsDal } from '../dal';
 import { getZodiacSign, zodiacData } from '../utils/zodiac';
 import { getLevelThresholds, getXPProgress } from '../services/levelSystem';
 import { useT } from '../i18n/useT';
-import type { Goal } from '../types';
-// Value-based goal keys — labels pulled from app.profile.goals at render time.
-const goalValues: Goal[] = ['love', 'career', 'clarity', 'growth', 'wellness', 'creativity'];
+import { getLocale } from '../i18n/config';
+import { parseLocalDate } from '../utils/localDate';
 
 interface SavedHighlight {
   id: string;
@@ -46,9 +42,16 @@ interface SavedHighlight {
   content: Record<string, unknown>;
 }
 
+const ELEMENT_DEFAULT: Record<string, string> = {
+  fire: 'Fire',
+  earth: 'Earth',
+  air: 'Air',
+  water: 'Water',
+};
+
 export function ProfilePage() {
   const { t } = useT('app');
-  const goalOptions = goalValues.map(value => ({ label: t(`profile.goals.${value}`), value }));
+  const locale = getLocale();
   const loveLanguageLabels: Record<string, string> = {
     'words-of-affirmation': t('profile.loveLanguages.words-of-affirmation'),
     'quality-time': t('profile.loveLanguages.quality-time'),
@@ -56,9 +59,7 @@ export function ProfilePage() {
     'acts-of-service': t('profile.loveLanguages.acts-of-service'),
     'physical-touch': t('profile.loveLanguages.physical-touch'),
   };
-  const { profile, user, updateProfile } = useAuth();
-  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const { profile, user } = useAuth();
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
@@ -70,53 +71,25 @@ export function ProfilePage() {
   const yearAheadEnabled = useFeatureFlag('year-ahead-report');
   const natalReportEnabled = useFeatureFlag('natal-chart-report');
   const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
   const [savedHighlights, setSavedHighlights] = useState<SavedHighlight[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [xpProgress, setXpProgress] = useState({ current: 0, required: 100, percentage: 0 });
-  const [, setLevelThresholds] = useState<Map<number, number>>(new Map());
-  const [locationQuery, setLocationQuery] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; displayName: string } | null>(null);
-  const [editData, setEditData] = useState({
-    displayName: profile?.displayName || '',
-    birthTime: profile?.birthTime || '',
-    birthPlace: profile?.birthPlace || '',
-    goals: (profile?.goals || []) as Goal[],
-  });
 
   const zodiacSign = profile?.birthDate ? getZodiacSign(profile.birthDate) : null;
   const zodiacInfo = zodiacSign ? zodiacData[zodiacSign] : null;
   // utils/zodiac keys signs in lower case; the glyph set uses the capitalised names.
-  const SignGlyph = zodiacSign
-    ? ZODIAC_ICONS[(zodiacSign.charAt(0).toUpperCase() + zodiacSign.slice(1)) as AstroSign]
-    : null;
+  const sunAstro = zodiacSign ? ((zodiacSign.charAt(0).toUpperCase() + zodiacSign.slice(1)) as AstroSign) : null;
+  const SignGlyph = sunAstro ? ZODIAC_ICONS[sunAstro] : null;
+  const sunName = sunAstro ? localizeSignName(sunAstro) : '';
 
-  useEffect(() => {
-    if (profile) {
-      setEditData({
-        displayName: profile.displayName || '',
-        birthTime: profile.birthTime || '',
-        birthPlace: profile.birthPlace || '',
-        goals: profile.goals || [],
-      });
-      setLocationQuery(profile.birthPlace || '');
-      if (profile.birthLat && profile.birthLon) {
-        setSelectedLocation({
-          lat: profile.birthLat,
-          lon: profile.birthLon,
-          displayName: profile.birthPlace || '',
-        });
-      } else {
-        setSelectedLocation(null);
-      }
-    }
-  }, [profile]);
+  const numberFmt = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const dateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', year: 'numeric' }), [locale]);
+  const shortDateFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', year: 'numeric' }), [locale]);
+  const timeFmt = useMemo(() => new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }), [locale]);
 
   useEffect(() => {
     const loadLevelData = async () => {
       const thresholds = await getLevelThresholds();
-      setLevelThresholds(thresholds);
-
       if (profile) {
         const progress = getXPProgress(profile.xp || 0, profile.level || 1, thresholds);
         setXpProgress(progress);
@@ -142,153 +115,120 @@ export function ProfilePage() {
     setLoadingSaved(false);
   };
 
-  const handleLocationInput = (value: string) => {
-    setLocationQuery(value);
-    setEditData(d => ({ ...d, birthPlace: value }));
-    setSelectedLocation(null);
-
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    if (value.trim().length > 2) {
-      debounceRef.current = setTimeout(() => {
-        geoSearch(value);
-      }, 500);
-    }
-  };
-
-  const handleSelectLocation = (location: { lat: number; lon: number; displayName: string }) => {
-    setSelectedLocation(location);
-    setLocationQuery(location.displayName);
-    setEditData(d => ({ ...d, birthPlace: location.displayName }));
-  };
-
-  const handleSaveProfile = async () => {
-    setSaving(true);
-    const updateData: Record<string, unknown> = {
-      displayName: editData.displayName,
-      birthTime: editData.birthTime || undefined,
-      birthPlace: editData.birthPlace || undefined,
-      goals: editData.goals,
-    };
-
-    if (selectedLocation) {
-      updateData.birthLat = selectedLocation.lat;
-      updateData.birthLon = selectedLocation.lon;
-      // Resolve the birth-place IANA timezone from the coordinates so
-      // the DB trigger computes birth_utc with the right offset (the
-      // device tz fallback is wrong for users who moved since birth).
-      const { deriveBirthTz } = await import('../utils/birthTz');
-      const birthTz = await deriveBirthTz(selectedLocation.lat, selectedLocation.lon);
-      if (birthTz) updateData.birthTz = birthTz;
-    }
-
-    const { error } = await updateProfile(updateData);
-
-    setSaving(false);
-    if (error) {
-      console.error('[Profile] Save failed:', error.message);
-      toast(t('profile.toasts.saveFailed', { defaultValue: 'Couldn’t save your profile — check your connection and try again.' }), 'error');
-    } else {
-      toast(t('profile.profileUpdated'), 'success');
-      setShowEditProfile(false);
-    }
-  };
-
   const handleUpgrade = () => {
     setShowPaywall(true);
   };
 
-  const formatBirthProfile = () => {
+  /**
+   * "June 15, 1990 · 14:30 · Tokyo, Japan" — the three facts as a list,
+   * each through Intl for the locale. The DB `time` column carries seconds;
+   * the user typed minutes (R6 A19).
+   */
+  const birthLine = useMemo(() => {
     if (!profile?.birthDate) return null;
-    const date = new Date(profile.birthDate);
-    const dateStr = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const parts = [dateStr];
-    if (profile.birthTime) parts.push(`at ${profile.birthTime}`);
-    if (profile.birthPlace) parts.push(`in ${profile.birthPlace}`);
-    return parts.join(' ');
-  };
+    const parts = [dateFmt.format(parseLocalDate(profile.birthDate))];
+    if (profile.birthTime) {
+      const [h, m] = profile.birthTime.split(':').map(Number);
+      if (Number.isFinite(h) && Number.isFinite(m)) {
+        const d = new Date(2000, 0, 1, h, m);
+        parts.push(timeFmt.format(d));
+      }
+    }
+    if (profile.birthPlace) parts.push(profile.birthPlace);
+    return parts.join(' · ');
+  }, [profile?.birthDate, profile?.birthTime, profile?.birthPlace, dateFmt, timeFmt]);
 
-  return (
-    <Page spacing="sm">
-      <PageHeader title={t('pageTitles.profile.title')} />
+  const elementLabel = zodiacInfo
+    ? t(`profile.elements.${zodiacInfo.element}`, { defaultValue: ELEMENT_DEFAULT[zodiacInfo.element] ?? zodiacInfo.element })
+    : '';
 
-      <Card variant="glow" padding="lg">
-        <div className="flex items-start gap-4">
-          <div className="relative">
-            {/* Persona avatar — the "Starlit Seeker" portrait. The gradient
-                fill is the whole treatment; no ring, no halo. */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-mystic-700 to-cosmic-blue/30 text-gold flex items-center justify-center">
-              {zodiacInfo && SignGlyph ? (
-                <SignGlyph size={40} strokeWidth={1.4} aria-label={zodiacInfo.name} />
-              ) : (
-                <User className="w-10 h-10 text-mystic-400" />
-              )}
-            </div>
-            {profile?.isPremium && (
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gold rounded-full flex items-center justify-center">
-                <Crown className="w-4 h-4 text-mystic-950" />
-              </div>
+  const savedTypeLabel = (type: string) =>
+    t(`profile.savedTypes.${type}`, { defaultValue: type.charAt(0).toUpperCase() + type.slice(1) });
+  const SavedIcon = ({ type }: { type: string }) =>
+    type === 'tarot' ? <TarotCardIcon /> : type === 'horoscope' ? <HoroscopeWheelIcon /> : <Sparkles />;
+  const savedTone = (type: string) => (type === 'tarot' ? 'blue' : type === 'horoscope' ? 'gold' : 'violet') as const;
+
+  const identity = (
+    <Card padding="lg">
+      <div className="flex items-start gap-4">
+        <div className="relative shrink-0">
+          {/* The Sun-sign glyph stands for the person: one fill, no ring, no halo. */}
+          <div className="w-20 h-20 rounded-full bg-gold/10 text-gold flex items-center justify-center">
+            {zodiacInfo && SignGlyph ? (
+              <SignGlyph size={40} strokeWidth={1.4} aria-label={sunName} />
+            ) : (
+              <User className="w-10 h-10 text-mystic-400" aria-hidden />
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="heading-display-md text-mystic-100 truncate">{profile?.displayName || t('profile.untitled', { defaultValue: 'Your profile' })}</h2>
-            {zodiacInfo && (
-              <p className="text-gold text-sm mt-0.5">{zodiacInfo.name}</p>
-            )}
-            <p className="text-sm text-mystic-500 truncate mt-0.5">{profile?.email}</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setShowEditProfile(true)} aria-label={t('profile.editProfileSheet.title')}>
-            <Edit2 className="w-4 h-4" aria-hidden />
-          </Button>
-        </div>
-
-        {/* Eyebrow + divider above the stats grid — matches the
-            "Your progress" treatment from the mockup. */}
-        <div className="mt-6 mb-3 flex items-center gap-3">
-          <EyebrowLabel className="!text-mystic-400">
-            {t('profile.yourProgress', { defaultValue: 'Your progress' })}
-          </EyebrowLabel>
-          <span className="flex-1 h-px bg-gradient-to-r from-gold/30 to-transparent" aria-hidden />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {/* Stat tiles sit on the card, so they take one step up the fill
-              ladder (mystic-800) rather than a hairline. */}
-          <div className="bg-mystic-800 rounded-control p-3 text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Flame className="w-4 h-4 text-gold" />
-              <span className="text-2xl font-display text-mystic-100">{profile?.streak || 0}</span>
+          {profile?.isPremium && (
+            <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gold rounded-full flex items-center justify-center" aria-label={t('profile.premiumMember')} role="img">
+              <Crown className="w-4 h-4 text-mystic-950" aria-hidden />
             </div>
-            <p className="text-caption text-mystic-500">{t('profile.dayStreak')}</p>
-          </div>
-          <div className="bg-mystic-800 rounded-control p-3 text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Star className="w-4 h-4 text-cosmic-blue" />
-              <span className="text-2xl font-display text-mystic-100">{t('profile.level', { n: profile?.level || 1 })}</span>
-            </div>
-            <p className="text-caption text-mystic-500">{localizeSeekerRank(profile?.seekerRank)}</p>
-          </div>
+          )}
         </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="heading-display-md heading-strong text-mystic-100 truncate">{profile?.displayName || t('profile.untitled', { defaultValue: 'Your profile' })}</h2>
+          {zodiacInfo && (
+            <p className="text-ui text-gold mt-0.5">{sunName}</p>
+          )}
+          <p className="text-meta text-mystic-500 truncate mt-0.5">{profile?.email}</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => setShowEditProfile(true)} aria-label={t('profile.editProfileSheet.title')}>
+          <Edit2 className="w-4 h-4" aria-hidden />
+        </Button>
+      </div>
 
-        <div className="mt-4">
-          <div className="flex justify-between text-meta mb-1">
-            <span className="text-mystic-500">{t('profile.xpProgress')}</span>
-            <span className="text-gold">{t('home.xpValue', { current: xpProgress.current, required: xpProgress.required })}</span>
+      <div className="mt-6 mb-3">
+        <EyebrowLabel align="left" className="!text-mystic-400">
+          {t('profile.yourProgress', { defaultValue: 'Your progress' })}
+        </EyebrowLabel>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {/* Stat tiles sit on the card, so they take one step up the fill
+            ladder (mystic-800) rather than a hairline. Figures in Inter with
+            tabular numerals — a "1" in the display serif read as an "I" (R6 A29). */}
+        <div className="bg-mystic-800 rounded-control p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Flame className="w-4 h-4 text-gold" aria-hidden />
+            <span className="text-title font-semibold tabular-nums text-mystic-100">{numberFmt.format(profile?.streak || 0)}</span>
           </div>
-          {/* value is the service's own percentage rather than current/required:
-              getXPProgress reports 100% at max level, where required is 0 and a
-              current/required ratio would clamp to nothing. */}
-          <Progress
-            value={xpProgress.percentage}
-            max={100}
-            size="sm"
-            variant="gradient"
-            label={t('profile.xpProgress')}
-          />
+          <p className="text-caption text-mystic-500">{t('profile.dayStreak')}</p>
         </div>
-      </Card>
+        <div className="bg-mystic-800 rounded-control p-3 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Star className="w-4 h-4 text-cosmic-blue-ink" aria-hidden />
+            <span className="text-title font-semibold tabular-nums text-mystic-100">{t('profile.level', { n: numberFmt.format(profile?.level || 1) })}</span>
+          </div>
+          <p className="text-caption text-mystic-500">{localizeSeekerRank(profile?.seekerRank)}</p>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <div className="flex justify-between text-meta mb-1">
+          <span className="text-mystic-500">{t('profile.xpProgress')}</span>
+          <span className="text-gold tabular-nums">{t('home.xpValue', { current: numberFmt.format(xpProgress.current), required: numberFmt.format(xpProgress.required) })}</span>
+        </div>
+        {/* value is the service's own percentage rather than current/required:
+            getXPProgress reports 100% at max level, where required is 0 and a
+            current/required ratio would clamp to nothing. */}
+        <Progress
+          value={xpProgress.percentage}
+          max={100}
+          size="sm"
+          variant="gradient"
+          label={t('profile.xpProgress')}
+        />
+        <p className="text-caption text-mystic-500 mt-1.5 tabular-nums">
+          {t('profile.totalXp', { defaultValue: '{{n}} XP in total', n: numberFmt.format(profile?.xp || 0) })}
+        </p>
+      </div>
+    </Card>
+  );
+
+  const main = (
+    <div className="space-y-4">
+      {identity}
 
       {(profile?.mbtiType || profile?.loveLanguage) && (
         <Section title={t('profile.personalityBadges')} headingLevel="h3" spacing="sm">
@@ -307,35 +247,26 @@ export function ProfilePage() {
         </Section>
       )}
 
-      {formatBirthProfile() && (
+      {birthLine && (
         <Section title={t('profile.birthProfile')} headingLevel="h3" spacing="sm">
           <div className="flex items-start gap-3">
             {zodiacInfo && SignGlyph && (
-              <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center" aria-hidden>
+              <div className="w-10 h-10 rounded-control bg-gold/10 text-gold flex items-center justify-center shrink-0" aria-hidden>
                 <SignGlyph size={24} strokeWidth={1.5} />
               </div>
             )}
-            <div>
-              <p className="text-mystic-200">{formatBirthProfile()}</p>
-              <p className="text-sm text-mystic-500 mt-1">{t('profile.elementSign', { element: zodiacInfo?.element })}</p>
+            <div className="min-w-0">
+              <p className="text-ui text-mystic-200 tabular-nums">{birthLine}</p>
+              {zodiacInfo && (
+                <p className="text-meta text-mystic-500 mt-1">{t('profile.elementSign', { element: elementLabel })}</p>
+              )}
             </div>
           </div>
         </Section>
       )}
 
-      {profile?.birthDate && (
-        <CosmicProfileSection
-          birthDate={profile.birthDate}
-          displayName={profile.displayName}
-        />
-      )}
-
       {profile?.goals && profile.goals.length > 0 && (
-        <Section
-          headingLevel="h3"
-          spacing="sm"
-          title={<span className="inline-flex items-center gap-2"><Target className="w-4 h-4 text-mystic-500" /> {t('profile.yourGoals')}</span>}
-        >
+        <Section headingLevel="h3" spacing="sm" title={t('profile.yourGoals')}>
           <div className="flex flex-wrap gap-2">
             {profile.goals.map(goal => (
               <Tag key={goal} tone="gold" size="md">
@@ -355,7 +286,6 @@ export function ProfilePage() {
             label={<span className="text-gold">{t('profile.premiumMember')}</span>}
             meta={t('profile.premiumSub')}
             trailing={<Zap className="w-5 h-5 shrink-0 text-gold" aria-hidden />}
-            className="bg-gold/5"
           />
         ) : (
           <ListRow
@@ -373,7 +303,7 @@ export function ProfilePage() {
             size="lg"
             icon={<Briefcase />}
             tone="gold"
-            label={t('profile.careerReportTitle', { defaultValue: 'Career Archetype Report' })}
+            label={t('profile.careerReportTitle', { defaultValue: 'Career archetype report' })}
             meta={t('profile.careerReportSub', { defaultValue: 'Deep coaching read for {{mbti}}', mbti: profile.mbtiType })}
             onClick={() => navigate('/reports/career')}
           />
@@ -384,7 +314,7 @@ export function ProfilePage() {
             size="lg"
             icon={<Calendar />}
             tone="blue"
-            label={t('profile.yearAheadTitle', { defaultValue: 'Year Ahead Forecast' })}
+            label={t('profile.yearAheadTitle', { defaultValue: 'Year ahead forecast' })}
             meta={t('profile.yearAheadSub', { defaultValue: '12 months of transits to your chart' })}
             onClick={() => navigate('/reports/year-ahead')}
           />
@@ -395,7 +325,7 @@ export function ProfilePage() {
             size="lg"
             icon={<ScrollText />}
             tone="violet"
-            label={t('profile.natalReportTitle', { defaultValue: 'Full Natal Chart' })}
+            label={t('profile.natalReportTitle', { defaultValue: 'Full natal chart' })}
             meta={t('profile.natalReportSub', { defaultValue: 'Printable deep chart reading' })}
             onClick={() => navigate('/reports/natal-chart')}
           />
@@ -432,119 +362,54 @@ export function ProfilePage() {
         />
       </ListRowGroup>
 
-      <p className="text-center text-caption text-mystic-600 px-4">
+      <p className="text-center text-caption text-mystic-500 px-4">
         {t('profile.disclaimer')}
       </p>
+    </div>
+  );
 
-      <Sheet open={showEditProfile} onClose={() => setShowEditProfile(false)} title={t('profile.editProfileSheet.title')}>
-        <div className="space-y-6">
-          <Input
-            label={t('profile.editProfileSheet.displayName')}
-            value={editData.displayName}
-            onChange={e => setEditData(d => ({ ...d, displayName: e.target.value }))}
-            placeholder={t('profile.editProfileSheet.yourName')}
+  const cosmic = profile?.birthDate ? (
+    <CosmicProfileSection
+      birthDate={profile.birthDate}
+      displayName={profile.displayName}
+    />
+  ) : null;
+
+  return (
+    <Page spacing="sm">
+      <PageHeader title={t('pageTitles.profile.title')} />
+
+      {/* Desktop: the account on the left, the cosmic profile as the rail.
+          Phones: one column, the cosmic profile after the rows. */}
+      <PageGrid aside={cosmic} asideLabel={t('profile.cosmic.title', { defaultValue: 'Cosmic profile' })}>
+        {main}
+      </PageGrid>
+
+      <EditProfileSheet open={showEditProfile} onClose={() => setShowEditProfile(false)} />
+
+      <Sheet open={showSaved} onClose={() => setShowSaved(false)} title={t('profile.saved')}>
+        {loadingSaved ? (
+          <ListSkeleton count={3} />
+        ) : savedHighlights.length === 0 ? (
+          <EmptyState
+            variant="inline"
+            icon={<Bookmark />}
+            title={t('profile.noSaved')}
+            description={t('profile.noSavedSub')}
           />
-
-          <Input
-            label={t('profile.editProfileSheet.birthTimeOptional')}
-            type="time"
-            value={editData.birthTime}
-            onChange={e => setEditData(d => ({ ...d, birthTime: e.target.value }))}
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-2">{t('profile.birthPlaceOptional')}</label>
-            <div className="relative">
-              <Input
-                value={locationQuery}
-                onChange={e => handleLocationInput(e.target.value)}
-                placeholder={t('profile.editProfileSheet.searchCity')}
-                icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+        ) : (
+          <ListRowGroup>
+            {savedHighlights.map(highlight => (
+              <ListRow
+                key={highlight.id}
+                icon={<SavedIcon type={highlight.highlight_type} />}
+                tone={savedTone(highlight.highlight_type)}
+                label={savedTypeLabel(highlight.highlight_type)}
+                meta={<span className="tabular-nums">{shortDateFmt.format(parseLocalDate(highlight.date))}</span>}
               />
-            </div>
-
-            {selectedLocation && (
-              <div className="flex items-center gap-2 p-3 mt-2 bg-gold/10 border border-gold/20 rounded-control">
-                <Check className="w-4 h-4 text-gold flex-shrink-0" />
-                <span className="text-sm text-mystic-200 truncate">{selectedLocation.displayName}</span>
-              </div>
-            )}
-
-            {!selectedLocation && geoResults.length > 0 && (
-              <ListRowGroup className="mt-2 max-h-48 overflow-y-auto">
-                {geoResults.map((r, i) => (
-                  <ListRow
-                    key={i}
-                    size="md"
-                    icon={<MapPin />}
-                    label={r.displayName.split(', ')[0]}
-                    meta={r.displayName.split(', ').slice(1).join(', ') || undefined}
-                    trailing="none"
-                    onClick={() => handleSelectLocation(r)}
-                  />
-                ))}
-              </ListRowGroup>
-            )}
-
-            {!selectedLocation && !geoLoading && geoError && (
-              <p className="text-caption text-gold/80 mt-1">{geoError}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-mystic-300 mb-3">{t('profile.yourGoals')}</label>
-            <ChipGroup
-              options={goalOptions}
-              selected={editData.goals}
-              onChange={goals => setEditData(d => ({ ...d, goals: goals as Goal[] }))}
-              multiple
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button variant="ghost" fullWidth onClick={() => setShowEditProfile(false)}>
-              {t('common:actions.cancel', { defaultValue: 'Cancel' })}
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleSaveProfile} loading={saving}>
-              {t('profile.editProfileSheet.save', { defaultValue: 'Save my profile' })}
-            </Button>
-          </div>
-        </div>
-      </Sheet>
-
-      <Sheet open={showSaved} onClose={() => setShowSaved(false)} title="Saved">
-        <div className="space-y-3">
-          {loadingSaved ? (
-            <ListSkeleton count={3} />
-          ) : savedHighlights.length === 0 ? (
-            <EmptyState
-              variant="inline"
-              icon={<Bookmark />}
-              title={t('profile.noSaved')}
-              description={t('profile.noSavedSub')}
-            />
-          ) : (
-            savedHighlights.map(highlight => (
-              <Card key={highlight.id} padding="md">
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    highlight.highlight_type === 'tarot' ? 'bg-cosmic-blue/20' :
-                    highlight.highlight_type === 'horoscope' ? 'bg-gold/20' : 'bg-mystic-700'
-                  }`}>
-                    <span className="text-lg">
-                      {highlight.highlight_type === 'tarot' ? '🎴' :
-                       highlight.highlight_type === 'horoscope' ? '⭐' : '✨'}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-mystic-200 capitalize">{highlight.highlight_type}</p>
-                    <p className="text-meta text-mystic-500">{new Date(highlight.date).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
+            ))}
+          </ListRowGroup>
+        )}
       </Sheet>
 
       <PaywallSheet

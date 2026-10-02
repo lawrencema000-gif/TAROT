@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users, Grid3x3, Orbit, CalendarCheck, Star } from 'lucide-react';
-import { TarotCardIcon, HoroscopeWheelIcon } from '../ui/NavIcons';
+import { TarotCardIcon, HoroscopeWheelIcon, PlayingCardIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
 import { isMoreGroupRoute } from '../../context/UIContext';
@@ -17,7 +17,7 @@ interface BottomNavProps {
 // Label here is a translation key under common:nav.* — rendered via t().
 type TabDef = { id: Tab; labelKey: string; icon: React.ElementType };
 type ExternalItem = { id: string; labelKey: string; icon: React.ElementType; externalHref: string };
-type RouteItem = { id: string; labelKey: string; icon: React.ElementType; route: string };
+type RouteItem = { id: string; labelKey: string; icon: React.ElementType; route: string; /** English fallback until the key lands in every locale file. */ defaultLabel?: string };
 type MoreItem = TabDef | ExternalItem | RouteItem;
 
 const isExternal = (item: MoreItem): item is ExternalItem =>
@@ -55,6 +55,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   const whisperingWellEnabled = useFeatureFlag('whispering-well');
   const companionEnabled = useFeatureFlag('ai-companion');
   const advisorsEnabled = useFeatureFlag('advisors');
+  const cartomancyEnabled = useFeatureFlag('cartomancy');
 
   // Build the list of items inside the More menu.
   // People is a route (not a tab) — the Cosmos-update headline feature, so
@@ -66,6 +67,9 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
     { id: 'mansions', labelKey: 'nav.mansions', icon: Orbit, route: '/mansions' },
     { id: 'good-days', labelKey: 'nav.goodDays', icon: CalendarCheck, route: '/good-days' },
     { id: 'wishing-sky', labelKey: 'nav.wishingSky', icon: Star, route: '/wishing-sky' },
+    // The playing-card section sits under Readings too, but a reader who
+    // comes for it should not have to find the tab inside the tab strip.
+    ...(cartomancyEnabled ? [{ id: 'cartomancy', labelKey: 'nav.cartomancy', icon: PlayingCardIcon, route: '/cartomancy', defaultLabel: 'Playing cards' } as RouteItem] : []),
     ...moreMenuTabs,
   ];
   if (companionEnabled) {
@@ -151,7 +155,7 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                         <Icon className="w-5 h-5 transition-all duration-base" />
                       </div>
                       <span className={`text-caption font-medium ${isActive ? 'text-gold' : ''}`}>
-                        {t(item.labelKey)}
+                        {routed && item.defaultLabel ? t(item.labelKey, { defaultValue: item.defaultLabel }) : t(item.labelKey)}
                       </span>
                     </>
                   );

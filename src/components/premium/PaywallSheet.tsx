@@ -379,6 +379,11 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
   const [restoring, setRestoring] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
+  // The last outcome of the CTA or Restore, shown inside the sheet as well
+  // as toasted: a paywall opened over another sheet sits above the toast
+  // stack, so a toast alone can go unseen (R5 B-3 — a 500 from
+  // create-checkout-session left the CTA silent for seven seconds).
+  const [actionNotice, setActionNotice] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
   const [displayPlans, setDisplayPlans] = useState<DisplayPlan[]>([]);
   const [hasRealProducts, setHasRealProducts] = useState(false);
   const featureId = resolveFeatureId(feature, (key) => t(key) as string);
@@ -428,6 +433,7 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
 
   useEffect(() => {
     if (open) {
+      setActionNotice(null);
       loadProducts();
     }
   }, [open, loadProducts]);
@@ -460,6 +466,7 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
     }
 
     setPurchasing(true);
+    setActionNotice(null);
     try {
       const billing = getBillingService();
       const result = await billing.purchase(plan.productId, plan.product);
@@ -496,25 +503,40 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
             }
           })
           .catch(() => {/* swallow — UI is already correct */});
-      } else if (result.error || result.errorKey) {
-        const msg = result.errorKey ? t(result.errorKey, { defaultValue: result.error ?? '' }) : result.error ?? '';
-        if (msg) toast(msg, 'error');
-      }
-    } catch {
-      toast(
-        t('premium.paywall.toasts.purchaseFailed', {
+      } else if (result.errorKey === 'billing.purchaseCancelled') {
+        // The user backed out of the store sheet. Not a failure; say so once.
+        const msg = t('billing.purchaseCancelled', { defaultValue: 'Purchase cancelled — nothing was charged.' }) as string;
+        setActionNotice({ tone: 'info', text: msg });
+        toast(msg, 'info');
+      } else {
+        // ANY other non-success is surfaced. The old branch toasted only
+        // when the message resolved to something, so a server 500 with no
+        // usable copy produced nothing at all.
+        const generic = t('premium.paywall.toasts.purchaseFailed', {
           defaultValue:
             'The purchase didn’t complete — check your connection and try again. If you were charged, use Restore below.',
-        }),
-        'error',
-      );
+        }) as string;
+        const specific = result.errorKey ? (t(result.errorKey, { defaultValue: '' }) as string) : '';
+        const msg = specific || generic;
+        setActionNotice({ tone: 'error', text: msg });
+        toast(msg, 'error');
+      }
+    } catch {
+      const msg = t('premium.paywall.toasts.purchaseFailed', {
+        defaultValue:
+          'The purchase didn’t complete — check your connection and try again. If you were charged, use Restore below.',
+      }) as string;
+      setActionNotice({ tone: 'error', text: msg });
+      toast(msg, 'error');
     } finally {
       setPurchasing(false);
     }
   };
 
+  // Every path out of here says something — in the sheet and as a toast.
   const handleRestore = async () => {
     setRestoring(true);
+    setActionNotice(null);
     try {
       const billing = getBillingService();
       const purchases = await billing.restorePurchases();
@@ -532,22 +554,29 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
         );
         onClose();
         pollProfileUntilPremium(60_000, 2_000).catch(() => undefined);
+      } else if (!isNative()) {
+        // There is no store to ask on the web: a card subscription is tied
+        // to the account, so being signed in IS the restore.
+        const msg = t('premium.paywall.toasts.restoreWeb', {
+          defaultValue:
+            'Restore looks for app-store purchases. A card subscription is tied to this account — if you bought one here, it is already active once you sign in.',
+        }) as string;
+        setActionNotice({ tone: 'info', text: msg });
+        toast(msg, 'info');
       } else {
-        toast(
-          t('premium.paywall.toasts.noPurchases', {
-            defaultValue:
-              'No Premium purchase found on this account. Make sure you’re signed in to the store account you bought with, then try again.',
-          }),
-          'info',
-        );
+        const msg = t('premium.paywall.toasts.noPurchases', {
+          defaultValue:
+            'No Premium purchase found on this account. Make sure you’re signed in to the store account you bought with, then try again.',
+        }) as string;
+        setActionNotice({ tone: 'info', text: msg });
+        toast(msg, 'info');
       }
     } catch {
-      toast(
-        t('premium.paywall.toasts.restoreFailed', {
-          defaultValue: 'Couldn’t reach the store to restore your purchase. Check your connection and try again.',
-        }),
-        'error',
-      );
+      const msg = t('premium.paywall.toasts.restoreFailed', {
+        defaultValue: 'Couldn’t reach the store to restore your purchase. Check your connection and try again.',
+      }) as string;
+      setActionNotice({ tone: 'error', text: msg });
+      toast(msg, 'error');
     } finally {
       setRestoring(false);
     }
@@ -565,41 +594,31 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
           'Every tarot spread, your full birth chart, partner synastry and the horoscope tabs — with no ads and no Moonstones to spend.',
       });
 
-  // Continuity: what the user already has, from the profile counters the
-  // server maintains. Nothing is invented — a line is written only for a
-  // count above zero, and the sentence is omitted when all three are zero.
+  // Continuity: what the user already has. The streak is a real count (the
+  // ritual_streak RPC); the readings and journal counters on the profile
+  // count SAVED items, not what the user did, and quoted "Your 1 reading"
+  // to someone who had just made five (R5 m-6). Those two are named without
+  // a number; nothing is invented, and the sentence is omitted when there is
+  // nothing to name.
   const continuityItems: string[] = [];
   const readings = profile?.totalReadings ?? 0;
   const entries = profile?.totalJournalEntries ?? 0;
   const streak = profile?.streak ?? 0;
   if (readings > 0) {
-    continuityItems.push(
-      t('premium.paywall.continuity.readings', {
-        count: readings,
-        defaultValue: readings === 1 ? '{{count}} reading' : '{{count}} readings',
-      }),
-    );
+    continuityItems.push(t('premium.paywall.continuity.readingsPlain', { defaultValue: 'saved readings' }));
   }
   if (entries > 0) {
-    continuityItems.push(
-      t('premium.paywall.continuity.entries', {
-        count: entries,
-        defaultValue: entries === 1 ? '{{count}} journal entry' : '{{count}} journal entries',
-      }),
-    );
+    continuityItems.push(t('premium.paywall.continuity.entriesPlain', { defaultValue: 'journal' }));
   }
   if (streak > 0) {
     continuityItems.push(
       t('premium.paywall.continuity.streak', { count: streak, defaultValue: '{{count}}-day streak' }),
     );
   }
-  // One singular item ("your 1 reading", "your 7-day streak") takes the
-  // singular verb; everything else is plural.
+  // One item that is grammatically singular ("your journal", "your 7-day
+  // streak") takes the singular verb; everything else is plural.
   const singleSingular =
-    continuityItems.length === 1 &&
-    ((readings === 1 && entries === 0 && streak === 0) ||
-      (entries === 1 && readings === 0 && streak === 0) ||
-      (streak > 0 && readings === 0 && entries === 0));
+    continuityItems.length === 1 && readings === 0 && (entries > 0 || streak > 0);
   const continuityLine = continuityItems.length
     ? t(singleSingular ? 'premium.paywall.continuity.lineOne' : 'premium.paywall.continuity.line', {
         defaultValue: singleSingular ? 'Your {{items}} stays. Premium builds on it.' : 'Your {{items}} stay. Premium builds on them.',
@@ -612,6 +631,14 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
   const selected = displayPlans.find((p) => p.id === selectedPlan);
 
   const ctaLabel = (() => {
+    // The pending state is named, not only spun: on the web the CTA leaves
+    // for Stripe, on native it hands off to the store, and either can take
+    // a few seconds (R5 B-3 saw seven with no visible change).
+    if (purchasing) {
+      return isNative()
+        ? t('premium.paywall.cta.connectingStore', { defaultValue: 'Connecting to the store…' })
+        : t('premium.paywall.cta.openingCheckout', { defaultValue: 'Opening checkout…' });
+    }
     if (selectedPlan === 'lifetime') {
       return t('premium.paywall.cta.getLifetime', { defaultValue: 'Unlock Premium for life' });
     }
@@ -774,7 +801,7 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
           {loadingProducts ? (
             <div className="flex flex-col items-center justify-center py-8">
               <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mb-3" aria-hidden />
-              <p className="text-meta text-mystic-400">{t('premium.paywall.loadingPrices')}</p>
+              <p className="text-meta text-mystic-400">{t('premium.paywall.loadingPrices', { defaultValue: 'Loading prices…' })}</p>
             </div>
           ) : (
             <div
@@ -857,6 +884,18 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
           )}
         </div>
 
+        {/* ── Outcome of the last action ─────────────────────────── */}
+        {actionNotice && (
+          <Card
+            padding="sm"
+            className={`mt-6 flex items-start gap-3 ${actionNotice.tone === 'error' ? 'border-coral/30' : ''}`}
+            role={actionNotice.tone === 'error' ? 'alert' : 'status'}
+          >
+            <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 ${actionNotice.tone === 'error' ? 'text-coral' : 'text-gold'}`} aria-hidden />
+            <p className="flex-1 min-w-0 text-ui text-mystic-200">{actionNotice.text}</p>
+          </Card>
+        )}
+
         {/* ── Actions ────────────────────────────────────────────── */}
         <div className="mt-6 space-y-2">
           {/* When nothing can be bought, the notice above is the status; a
@@ -878,7 +917,9 @@ export function PaywallSheet({ open, onClose, feature, preview }: PaywallSheetPr
 
           <Button variant="ghost" fullWidth onClick={handleRestore} loading={restoring} disabled={restoring}>
             {!restoring && <RotateCcw className="w-4 h-4" aria-hidden />}
-            {t('premium.paywall.restorePurchase', { defaultValue: 'Restore purchases' })}
+            {restoring
+              ? t('premium.paywall.restoring', { defaultValue: 'Checking your purchases…' })
+              : t('premium.paywall.restorePurchase', { defaultValue: 'Restore purchases' })}
           </Button>
         </div>
 

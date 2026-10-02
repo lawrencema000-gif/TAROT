@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useCallback, useRef, type CSSProperties } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Share2, RotateCcw, Flame, BookOpen } from 'lucide-react';
-import { Button, Page, ResultLayout, Tag, toast } from '../components/ui';
+import { Button, Page, ResultLayout, Tag, TarotFace, toast } from '../components/ui';
+import { firstSentences } from '../components/readings/tarot/readingText';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../i18n/useT';
 import { useNavigate } from 'react-router-dom';
 import { getAllTarotCards } from '../services/tarotCards';
 import { drawSeededCards } from '../utils/cardDraw';
-import { getBundledCardPath, getBundledFullPath } from '../config/bundledImages';
+import { getBundledCardPath } from '../config/bundledImages';
 import { appStorage } from '../lib/appStorage';
 import { shareOrDownloadCard } from '../utils/shareCard';
 import { encodeReading, buildShareUrl } from '../services/shareableReadings';
@@ -219,8 +220,10 @@ export function PickACardPage() {
       shareText,
     );
 
-    if (result === 'downloaded') {
-      toast(t('common:actions.saved', { defaultValue: 'Saved' }), 'success');
+    if (result === 'shared') {
+      toast(t('readings.toasts.shared', { defaultValue: 'Shared' }), 'success');
+    } else if (result === 'downloaded') {
+      toast(t('readings.toasts.imageSaved', { defaultValue: 'Image saved to your downloads' }), 'success');
     } else if (result === 'failed') {
       // Final fallback to clipboard.
       try {
@@ -230,7 +233,7 @@ export function PickACardPage() {
         toast(t('common:actions.shareFailed', { defaultValue: "Couldn't share. Try again." }), 'error');
       }
     }
-    // 'shared' = native share sheet handled it silently.
+    // 'cancelled' = the reader closed the sheet; nothing to report.
   };
 
   // Always fall back to the Arcana back so every card-selection surface
@@ -296,7 +299,6 @@ export function PickACardPage() {
           const isChosen = chosen === i;
           const up = isChosen || allUp;
           const dimmed = allUp && chosen !== null && !isChosen;
-          const face = getBundledFullPath(opt.card.id) ?? getBundledCardPath(opt.card.id) ?? opt.card.imageUrl;
           const fanRotate = i === 0 ? -6 : i === 2 ? 6 : 0;
           /* Two phases: the fan deals in with a stagger; once the pick is
              resolved the dim, the lift and the others' turn land together
@@ -351,25 +353,14 @@ export function PickACardPage() {
                   />
                 </div>
                 {/* Face — pre-turned and mounted from the start so the art is
-                    decoded before the hinge moves. It frames itself. */}
+                    decoded before the hinge moves. The plane carries the
+                    reversal, so the face is drawn upright. */}
                 <div
-                  className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850"
+                  className="absolute inset-0"
                   style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
                   aria-hidden={!up}
                 >
-                  {face ? (
-                    <img
-                      src={face}
-                      alt={opt.card.name}
-                      decoding="async"
-                      className="w-full h-full object-cover pointer-events-none select-none"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center p-2 text-center">
-                      <p className="text-caption text-mystic-200 font-medium">{opt.card.name}</p>
-                    </div>
-                  )}
+                  <TarotFace card={opt.card} size="fill" reversedTag={false} loading="eager" alt="" />
                 </div>
               </motion.div>
             </motion.button>
@@ -393,7 +384,7 @@ export function PickACardPage() {
                 : t('pickACard.upright', { defaultValue: 'Upright' })
             }
             verdict={pickedCard.name}
-            summary={picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright}
+            summary={firstSentences(picked.reversed ? pickedCard.meaningReversed : pickedCard.meaningUpright, 2)}
             subtitle={
               pickedCard.keywords?.length > 0 ? (
                 <span className="inline-flex flex-wrap justify-center gap-1.5">

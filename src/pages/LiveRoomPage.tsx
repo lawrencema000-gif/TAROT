@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Mic, Clock, Users, Heart, Play, Lock, Unlock } from 'lucide-react';
-import { Card, Button, Badge, Page, PageHeader, EyebrowLabel, toast } from '../components/ui';
+import { Card, Button, Badge, Page, PageHeader, EyebrowLabel, EmptyState, toast } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
@@ -147,14 +147,27 @@ export function LiveRoomPage() {
     );
   };
 
-  if (loading) return <div className="py-12 text-center text-mystic-500">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
+  if (loading) return <div className="py-12 text-center text-mystic-500 text-ui">{t('common:actions.loading', { defaultValue: 'Loading…' })}</div>;
   if (!room) {
     return (
-      <Card padding="lg">
-        <p className="text-sm text-mystic-400">
-          {t('liveRoom.notFound', { defaultValue: 'Room not found.' })}
-        </p>
-      </Card>
+      <Page spacing="md">
+        <PageHeader
+          onBack={() => navigate('/live-rooms')}
+          backLabel={t('liveRoom.back', { defaultValue: 'All rooms' }) as string}
+          title={t('liveRoom.title', { defaultValue: 'Live room' })}
+        />
+        <EmptyState
+          as="h2"
+          icon={<Mic />}
+          title={t('liveRoom.notFound', { defaultValue: 'This room isn’t here' })}
+          description={t('liveRoom.notFoundBody', { defaultValue: 'It may have ended or been cancelled.' })}
+          action={
+            <Button variant="outline" onClick={() => navigate('/live-rooms')}>
+              {t('liveRoom.back', { defaultValue: 'All rooms' })}
+            </Button>
+          }
+        />
+      </Page>
     );
   }
 
@@ -178,7 +191,7 @@ export function LiveRoomPage() {
         action={
           isLive ? (
             <Badge tone="gold" pulse>
-              Live
+              {t('liveRooms.liveBadge', { defaultValue: 'Live' })}
             </Badge>
           ) : undefined
         }
@@ -186,7 +199,7 @@ export function LiveRoomPage() {
 
       {room.description && (
         <Card padding="lg" variant="glow">
-          <p className="text-sm text-mystic-300 leading-relaxed">{room.description}</p>
+          <p className="text-ui text-mystic-300 leading-relaxed">{room.description}</p>
         </Card>
       )}
 
@@ -199,7 +212,7 @@ export function LiveRoomPage() {
           {user && !isHost && (
             <Button variant={rsvpd ? 'outline' : 'primary'} size="sm" onClick={toggleRsvp}>
               {rsvpd
-                ? t('liveRoom.rsvpd', { defaultValue: 'You\'re in' })
+                ? t('liveRoom.rsvpd', { defaultValue: 'You’re in' })
                 : t('liveRoom.rsvp', { defaultValue: 'Save my seat' })}
             </Button>
           )}
@@ -235,7 +248,7 @@ export function LiveRoomPage() {
             <audio controls src={room.recording_url} className="w-full" />
           ) : room.replay_price_moonstones != null ? (
             <div>
-              <p className="text-sm text-mystic-300 mb-3">
+              <p className="text-ui text-mystic-300 mb-3">
                 {t('liveRoom.replayLocked', {
                   defaultValue: 'Listen anytime for {{n}} Moonstones.',
                   n: room.replay_price_moonstones,

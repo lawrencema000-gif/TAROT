@@ -1,177 +1,98 @@
 import { motion } from 'framer-motion';
-import { Home as HomeIcon, Heart, Briefcase, Plane, Wind, Sprout, Compass, Sun, Moon, Telescope } from 'lucide-react';
-import { Card } from '../ui';
+import { Heart, Sun, Moon, Telescope, Compass } from 'lucide-react';
+import { Disclosure } from '../ui';
 import { useT } from '../../i18n/useT';
 
 /**
- * Static educational + value-prop sections for the Celestial Map.
+ * Educational copy for the Celestial Map.
  *
- * Three sub-sections, each animated in on scroll:
- *   1. "What this is" — one-paragraph explainer of astrocartography.
- *   2. "What you can divine" — 6 use-case mini-cards (one per life
- *      area). Each is tappable to set the active filter.
- *   3. "How to read the lines" — explainer of AC / DC / MC / IC.
- *
- * The use-case grid is the marketing centrepiece — it tells users
- * what they can actually DO with this feature, in their own words.
+ *   1. `CelestialAboutDisclosure` — the two-paragraph astrocartography
+ *      lesson, behind a row that opens. It used to sit above the map (R5
+ *      p-3); the map comes first now and the lesson waits for the curious.
+ *   2. `LIFE_AREA_BLURBS` — one line per life area, shown under the filter
+ *      chip row for the active theme. These were six tinted cards before
+ *      the user saw any map; the chips already carry the same choice.
+ *   3. `CelestialAnglesSection` — AC / DC / MC / IC, after the map.
  */
 
 type LifeArea = 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth';
 
-interface Props {
-  onPickLifeArea: (area: LifeArea) => void;
-}
-
-const USE_CASES: Array<{
-  id: LifeArea;
-  icon: typeof Heart;
-  titleKey: string;
-  titleDefault: string;
-  bodyKey: string;
-  bodyDefault: string;
-  accent: string;
-}> = [
-  {
-    id: 'home',
-    icon: HomeIcon,
+export const LIFE_AREA_BLURBS: Record<LifeArea, { titleKey: string; titleDefault: string; bodyKey: string; bodyDefault: string }> = {
+  home: {
     titleKey: 'celestial.use.home.title',
     titleDefault: 'Where to settle',
     bodyKey: 'celestial.use.home.body',
     bodyDefault: 'Find the places that feel like home before you arrive — where your nervous system softens, family bonds deepen, and roots come naturally.',
-    accent: 'from-teal/15 to-mystic-900/60 border-teal/25',
   },
-  {
-    id: 'career',
-    icon: Briefcase,
+  career: {
     titleKey: 'celestial.use.career.title',
     titleDefault: 'Where your work shines',
     bodyKey: 'celestial.use.career.body',
     bodyDefault: 'Discover the cities where doors open, your reputation builds faster, and the right people notice. Best for relocations, sabbaticals, or job hunts.',
-    accent: 'from-gold/15 to-mystic-900/60 border-gold/25',
   },
-  {
-    id: 'love',
-    icon: Heart,
+  love: {
     titleKey: 'celestial.use.love.title',
     titleDefault: 'Where love finds you',
     bodyKey: 'celestial.use.love.body',
     bodyDefault: 'Map the places where romance arrives more easily, attractions deepen, and partnerships formed there tend to last.',
-    accent: 'from-cosmic-rose/15 to-mystic-900/60 border-cosmic-rose/25',
   },
-  {
-    id: 'travel',
-    icon: Plane,
+  travel: {
     titleKey: 'celestial.use.travel.title',
     titleDefault: 'Where to roam',
     bodyKey: 'celestial.use.travel.body',
     bodyDefault: 'The destinations where adventure, expansion, and "this changed me" moments come unbidden. Plan vacations the universe co-signs.',
-    accent: 'from-cosmic-blue/15 to-mystic-900/60 border-cosmic-blue/25',
   },
-  {
-    id: 'healing',
-    icon: Wind,
+  healing: {
     titleKey: 'celestial.use.healing.title',
     titleDefault: 'Where to heal',
     bodyKey: 'celestial.use.healing.body',
     bodyDefault: 'Quiet places where grief moves, anxiety eases, and the body remembers how to rest. Useful for retreats, recovery, and long-overdue stillness.',
-    accent: 'from-cosmic-violet/15 to-mystic-900/60 border-cosmic-violet/25',
   },
-  {
-    id: 'growth',
-    icon: Sprout,
+  growth: {
     titleKey: 'celestial.use.growth.title',
     titleDefault: 'Where you transform',
     bodyKey: 'celestial.use.growth.body',
     bodyDefault: 'Intense places that crack you open — best when you are ready for radical change, identity shifts, and the version of yourself that hasn\'t arrived yet.',
-    accent: 'from-coral/15 to-mystic-900/60 border-coral/25',
   },
-];
+};
 
-export function CelestialEducationSection({ onPickLifeArea }: Props) {
+/** The one-line theme hint under the filter chips. */
+export function LifeAreaBlurb({ area }: { area: LifeArea }) {
   const { t } = useT('app');
-
+  const blurb = LIFE_AREA_BLURBS[area];
   return (
-    <>
-      {/* ── What this is ──────────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="space-y-3"
-      >
-        <Card variant="ritual" padding="lg">
-          <div className="flex items-start gap-3">
-            <Compass className="w-5 h-5 text-gold flex-shrink-0 mt-1" aria-hidden />
-            <div className="space-y-2">
-              <h2 className="font-display-eyebrow text-gold/90">
-                {t('celestial.about.eyebrow', { defaultValue: 'Astrocartography' })}
-              </h2>
-              <div className="reading-copy">
-                <p>
-                  {t('celestial.about.body', {
-                  defaultValue:
-                    'Astrocartography maps where every planet was rising, setting, or at its highest point at the exact moment you were born — and projects those positions across the world. The result: a personal atlas of places that resonate with different parts of you. Some cities make your career line bright. Others fall on your love line, your healing line, your spotlight line. Move there and the energy follows.',
-                })}
-                </p>
-                <p>
-                  {t('celestial.about.tradition', {
-                    defaultValue:
-                      'Developed in the 1970s by astrologer Jim Lewis, astrocartography is now used by relocation consultants, traveler-astrologers, and curious humans planning their next chapter.',
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </motion.section>
+    <p className="text-meta text-mystic-400">
+      <span className="text-mystic-200 font-medium">{t(blurb.titleKey, { defaultValue: blurb.titleDefault })}</span>
+      {' · '}
+      {t(blurb.bodyKey, { defaultValue: blurb.bodyDefault })}
+    </p>
+  );
+}
 
-      {/* ── What you can divine ──────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
-        className="space-y-3"
-      >
-        <div className="space-y-1">
-          <h2 className="heading-display-md text-mystic-100">
-            {t('celestial.use.eyebrow', { defaultValue: 'What you can divine' })}
-          </h2>
-          <p className="text-ui text-mystic-400">
-            {t('celestial.use.subtitle', {
-              defaultValue: 'Tap a theme to filter the map for that intent.',
-            })}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {USE_CASES.map((useCase, i) => (
-            <motion.button
-              key={useCase.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.05, duration: 0.3, ease: 'easeOut' }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onPickLifeArea(useCase.id)}
-              className={`text-left p-4 rounded-card bg-gradient-to-br ${useCase.accent} hairline-gold-soft border transition-all hover:hairline-gold focus:outline-none focus:ring-2 focus:ring-gold/30`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-control bg-mystic-900/60 flex items-center justify-center flex-shrink-0">
-                  <useCase.icon className="w-4 h-4 text-gold" aria-hidden />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="heading-display-md text-mystic-100 mb-1">
-                    {t(useCase.titleKey, { defaultValue: useCase.titleDefault })}
-                  </h3>
-                  <p className="reading-copy">
-                    {t(useCase.bodyKey, { defaultValue: useCase.bodyDefault })}
-                  </p>
-                </div>
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </motion.section>
-    </>
+/** The astrocartography lesson, behind a row that opens. */
+export function CelestialAboutDisclosure() {
+  const { t } = useT('app');
+  return (
+    <Disclosure
+      lazy
+      icon={<Compass />}
+      label={t('celestial.about.disclosureLabel', { defaultValue: 'What is astrocartography?' })}
+      description={t('celestial.about.disclosureHint', { defaultValue: 'Two minutes on how the lines are drawn' })}
+      contentClassName="reading-copy"
+    >
+      <p>
+        {t('celestial.about.body', {
+          defaultValue:
+            'Astrocartography maps where every planet was rising, setting, or at its highest point at the exact moment you were born — and projects those positions across the world. The result: a personal atlas of places that resonate with different parts of you. Some cities make your career line bright. Others fall on your love line, your healing line, your spotlight line. Move there and the energy follows.',
+        })}
+      </p>
+      <p>
+        {t('celestial.about.tradition', {
+          defaultValue:
+            'Developed in the 1970s by astrologer Jim Lewis, astrocartography is now used by relocation consultants, traveler-astrologers, and curious humans planning their next chapter.',
+        })}
+      </p>
+    </Disclosure>
   );
 }
 
@@ -231,15 +152,15 @@ export function CelestialAnglesSection() {
         {angles.map((angle) => (
           <div
             key={angle.key}
-            className="p-4 rounded-control bg-mystic-900/40 hairline-gold-soft"
+            className="p-4 rounded-control bg-mystic-850 border border-mystic-700"
           >
             <div className="flex items-start gap-3">
               <angle.icon className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" aria-hidden />
               <div>
-                <p className="font-display-eyebrow text-gold/80 mb-1">
+                <p className="font-display-eyebrow mb-1">
                   {t(angle.labelKey, { defaultValue: angle.labelDefault })}
                 </p>
-                <p className="reading-copy">
+                <p className="text-ui text-mystic-300">
                   {t(angle.bodyKey, { defaultValue: angle.bodyDefault })}
                 </p>
               </div>

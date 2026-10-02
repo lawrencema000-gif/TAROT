@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   ChevronRight,
   ChevronLeft,
@@ -13,7 +13,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { Button, Input, Chip, DeckFan, EyebrowLabel, Progress, toast } from '../components/ui';
+import { Button, Input, Chip, DeckFan, EyebrowLabel, Progress, toast, dismissToasts } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import { localizeSignName } from '../i18n/localizeNames';
 import { getZodiacSign } from '../utils/zodiac';
@@ -120,6 +120,12 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   // Steps 0-3 collect; step 4 is the reveal, the one moment the data just
   // entered is handed back: "The Sun was in Leo when you were born."
   const REVEAL = 4;
+
+  // A toast belongs to the step that raised it; "Account created" should
+  // not still be on screen two steps later (R6 A34).
+  useEffect(() => {
+    dismissToasts();
+  }, [step]);
 
   const canProceed = () => {
     switch (step) {
@@ -308,7 +314,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-mystic-300 mb-2">
+                  <label className="block text-meta font-medium text-mystic-300 mb-2">
                     {t('oauth.basics.birthDate')} <span className="text-coral">*</span>
                   </label>
                   <Input
@@ -323,12 +329,12 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                     max={new Date().toISOString().split('T')[0]}
                   />
                   {birthDateError && (
-                    <p className="text-sm text-coral mt-2">{birthDateError}</p>
+                    <p className="text-meta text-coral mt-2" role="status">{birthDateError}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
+                  <label className="flex items-center gap-2 text-meta font-medium text-mystic-300 mb-2">
                     <Clock className="w-4 h-4 text-mystic-500" />
                     {t('oauth.basics.birthTime')}
                     <span className="text-caption text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
@@ -342,7 +348,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-mystic-300 mb-2">
+                  <label className="flex items-center gap-2 text-meta font-medium text-mystic-300 mb-2">
                     <MapPin className="w-4 h-4 text-mystic-500" />
                     {t('oauth.basics.birthPlace')}
                     <span className="text-caption text-mystic-500 font-normal">{t('oauth.basics.optional')}</span>
@@ -354,18 +360,18 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                     icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   />
                   {data.birthLat && data.birthLon && (
-                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-lg">
+                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-gold/10 border border-gold/20 rounded-inset">
                       <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
                       <span className="text-caption text-mystic-300">{t('oauth.basics.locationVerified')}</span>
                     </div>
                   )}
                   {showGeoResults && !data.birthLat && geoResults.length > 0 && (
-                    <div className="mt-1 space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-lg border border-mystic-700/40">
+                    <div className="mt-1 space-y-0.5 max-h-36 overflow-y-auto bg-mystic-800/60 rounded-inset border border-mystic-700/40">
                       {geoResults.map((r, i) => (
                         <button
                           key={i}
                           onClick={() => handleSelectGeoResult(r)}
-                          className="w-full text-left px-3 py-2 hover:bg-mystic-700/40 transition-colors text-sm text-mystic-300 truncate cursor-pointer"
+                          className="w-full text-left px-3 py-2 min-h-[44px] hover:bg-mystic-700/40 transition-colors text-ui text-mystic-300 truncate cursor-pointer"
                         >
                           {r.displayName}
                         </button>
@@ -411,7 +417,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
                         <p className={`font-medium ${isSelected ? 'text-gold' : 'text-mystic-200'}`}>
                           {option.label}
                         </p>
-                        <p className="text-sm text-mystic-500">{option.description}</p>
+                        <p className="text-meta text-mystic-500">{option.description}</p>
                       </div>
                     </button>
                   );
@@ -452,7 +458,7 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
 
                 {data.notificationsEnabled && (
                   <div className="px-4 animate-fade-in">
-                    <label className="block text-sm text-mystic-400 mb-2">{t('oauth.notifications.reminderTime')}</label>
+                    <label className="block text-meta text-mystic-400 mb-2">{t('oauth.notifications.reminderTime')}</label>
                     <Input
                       type="time"
                       value={data.notificationTime}

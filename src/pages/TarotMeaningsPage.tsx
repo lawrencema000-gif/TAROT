@@ -1,23 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '../components/ui';
+import { useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { DeckLibrary, type DeckFilter } from '../components/readings/DeckLibrary';
 import { fullDeck } from '../data/tarotDeck';
-import { getBundledThumbPath } from '../config/bundledImages';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 import { localizeCards } from '../i18n/localizeCard';
 import { getLocale } from '../i18n/config';
-
-type Filter = 'all' | 'major' | 'wands' | 'cups' | 'swords' | 'pentacles';
-
-const FILTERS: { id: Filter; labelKey: string }[] = [
-  { id: 'all', labelKey: 'tarot.allCards' },
-  { id: 'major', labelKey: 'tarot.majorArcana' },
-  { id: 'wands', labelKey: 'tarot.wands' },
-  { id: 'cups', labelKey: 'tarot.cups' },
-  { id: 'swords', labelKey: 'tarot.swords' },
-  { id: 'pentacles', labelKey: 'tarot.pentacles' },
-];
+import type { TarotCard } from '../types';
 
 // Slug lookup always uses English names so URLs stay stable across locales.
 const enNameById: Map<number, string> = new Map(fullDeck.map(c => [c.id, c.name]));
@@ -26,10 +15,17 @@ function slugFromCardId(id: number): string {
   return enName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
+const SUITS: DeckFilter[] = ['major', 'wands', 'cups', 'swords', 'pentacles'];
+
+/**
+ * /tarot-meanings — the public card library: the DeckLibrary (search, suit
+ * tabs, the faces, no captions) and a closing call to action. Tapping a
+ * card opens its meaning page.
+ */
 export function TarotMeaningsPage() {
   const { t } = useT('app');
-  const [filter, setFilter] = useState<Filter>('all');
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const locale = getLocale();
 
   useEffect(() => {
@@ -37,83 +33,25 @@ export function TarotMeaningsPage() {
   }, [t]);
 
   const localizedDeck = useMemo(() => localizeCards(fullDeck, locale), [locale]);
+  const suitParam = params.get('suit');
+  const initialFilter: DeckFilter = SUITS.includes(suitParam as DeckFilter) ? (suitParam as DeckFilter) : 'all';
 
-  const filteredCards = useMemo(() => {
-    if (filter === 'all') return localizedDeck;
-    if (filter === 'major') return localizedDeck.filter(c => c.arcana === 'major');
-    return localizedDeck.filter(c => c.suit === filter);
-  }, [filter, localizedDeck]);
-
-  const activeSuitKey = filter !== 'all' ? filter : null;
+  const open = (card: TarotCard) => navigate(`/tarot-meanings/${slugFromCardId(card.id)}`);
 
   return (
-    <div className="tm-page">
-      {/* Hero */}
-      <div className="tm-hero">
-        <PageHeader
-          align="center"
-          eyebrow={t('tarot.heroBadge')}
-          title={t('tarot.title')}
-          subtitle={t('tarot.heroSub')}
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="tm-filters">
-        {FILTERS.map(f => (
-          <button
-            key={f.id}
-            className={`tm-filter-btn ${filter === f.id ? 'active' : ''}`}
-            onClick={() => setFilter(f.id)}
-          >
-            {t(f.labelKey)}
-          </button>
-        ))}
-      </div>
-
-      {/* Section intro */}
-      {activeSuitKey && (
-        <div className="tm-section-intro">
-          <h2 className="tm-section-title">{t(`tarot.suits.${activeSuitKey}.title`)}</h2>
-          <p className="tm-section-subtitle">{t(`tarot.suits.${activeSuitKey}.subtitle`)}</p>
-          <div className="tm-section-divider" />
-          <p className="tm-section-desc">{t(`tarot.suits.${activeSuitKey}.desc`)}</p>
-        </div>
-      )}
-
-      {/* Card Grid */}
-      <div className="tm-grid">
-        {filteredCards.map(card => {
-          const thumb = getBundledThumbPath(card.id);
-          return (
-            <button
-              key={card.id}
-              className="tm-card"
-              onClick={() => navigate(`/tarot-meanings/${slugFromCardId(card.id)}`)}
-            >
-              <div className="tm-card-img-wrap">
-                {thumb ? (
-                  <img src={thumb} alt={card.name} className="tm-card-img" loading="lazy" />
-                ) : (
-                  <div className="tm-card-placeholder">
-                    <span>✦</span>
-                  </div>
-                )}
-              </div>
-              <div className="tm-card-info">
-                <h3 className="tm-card-name">{card.name}</h3>
-                <p className="tm-card-keywords">{card.keywords.slice(0, 3).join(' · ')}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Bottom CTA */}
-      <div className="tm-bottom-cta">
-        <p className="tm-bottom-text">{t('tarot.bottomText')}</p>
-        <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
-      </div>
+    <div className="tm-page py-6 sm:py-10">
+      <DeckLibrary
+        cards={localizedDeck}
+        onSelect={open}
+        showHeader
+        initialFilter={initialFilter}
+        footer={
+          <div className="tm-bottom-cta">
+            <p className="tm-bottom-text">{t('tarot.bottomText')}</p>
+            <a href="/" className="tm-bottom-btn">{t('tarot.tryFreeReading')}</a>
+          </div>
+        }
+      />
     </div>
   );
 }

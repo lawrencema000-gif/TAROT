@@ -1,7 +1,7 @@
 import { Lock, Crown, Star } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { Badge, Progress, type Tone } from '../ui';
+import { achievementIcon } from './achievementIcons';
 
 // Rarity → the nearest primitive tone (blue = cosmic-blue, violet stands in
 // for the fuchsia epics, legendary is gold).
@@ -40,16 +40,6 @@ interface AchievementCardProps {
   onPress?: () => void;
 }
 
-function getIcon(iconName: string): React.ElementType {
-  const pascalCase = iconName
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-
-  const icons = LucideIcons as unknown as Record<string, React.ElementType>;
-  return icons[pascalCase] || LucideIcons.Award;
-}
-
 function getRarityLabel(rarity: AchievementRarity): string {
   return rarity.charAt(0).toUpperCase() + rarity.slice(1);
 }
@@ -59,7 +49,7 @@ export function AchievementCard({ achievement, isPremium, onPress }: Achievement
   const isLocked = !isUnlocked;
   const isPremiumLocked = achievement.is_premium_only && !isPremium && isLocked;
   const progressPercentage = Math.min((achievement.progress / achievement.target) * 100, 100);
-  const Icon = getIcon(achievement.icon_name);
+  const Icon = achievementIcon(achievement.icon_name);
 
   const rarityColor = RARITY_TEXT[achievement.rarity];
   const rarityBorder = RARITY_BORDER[achievement.rarity];

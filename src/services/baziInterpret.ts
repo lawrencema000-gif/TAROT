@@ -8,6 +8,7 @@
 // page-view is a single SELECT to the cache table — no Gemini cost.
 
 import { supabase } from '../lib/supabase';
+import { getLocale } from '../i18n/config';
 import type { BaziResult, BaziPhase1Deepening } from '../data/bazi';
 import type { BaziDeepResult, Gender } from '../data/baziDeep';
 
@@ -55,6 +56,9 @@ export async function generateBaziReading(args: {
     birthTime,
     gender,
     force: !!force,
+    // The reading is written in the UI language; the server keys its
+    // per-user cache on this too, so switching locale regenerates.
+    locale: getLocale(),
     pillars: {
       year: { stem: result.year.stem, branch: result.year.branch },
       month: { stem: result.month.stem, branch: result.month.branch },

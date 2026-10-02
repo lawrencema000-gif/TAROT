@@ -80,7 +80,7 @@ export const tarotCourtQuiz: QuizDefinition = {
 
     // Rank questions (dimension: CR) — which rank?
     { id: 'cr1', text: 'My relationship with authority is…', dimension: 'CR', options: [
-      { value: 1, label: 'I question it — I\'m still learning the ropes.' },
+      { value: 1, label: 'I am still learning how it works.' },
       { value: 2, label: 'I challenge it through action.' },
       { value: 3, label: 'I guide others around me.' },
       { value: 4, label: 'I\'ve become it — I set the standard.' },
@@ -88,7 +88,7 @@ export const tarotCourtQuiz: QuizDefinition = {
     { id: 'cr2', text: 'In groups I tend to…', dimension: 'CR', options: [
       { value: 1, label: 'Ask a lot of questions and soak it all in.' },
       { value: 2, label: 'Push everyone toward action.' },
-      { value: 3, label: 'Hold space and listen deeply.' },
+      { value: 3, label: 'Steady the group and make sure every voice is heard.' },
       { value: 4, label: 'Make the final call.' },
     ] },
     { id: 'cr3', text: 'My relationship with change is…', dimension: 'CR', options: [
@@ -106,14 +106,14 @@ export const tarotCourtQuiz: QuizDefinition = {
     { id: 'cr5', text: 'When I master something I…', dimension: 'CR', options: [
       { value: 1, label: 'Share the excitement of discovering it.' },
       { value: 2, label: 'Teach through doing — lead by example.' },
-      { value: 3, label: 'Mentor gently, one person at a time.' },
+      { value: 3, label: 'Mentor quietly, one person at a time.' },
       { value: 4, label: 'Set the bar others aspire to.' },
     ] },
     { id: 'cr6', text: 'My emotional style is…', dimension: 'CR', options: [
       { value: 1, label: 'Open and fresh — I feel things vividly.' },
       { value: 2, label: 'Intense and driven.' },
-      { value: 3, label: 'Deep and containing — I hold others\' feelings too.' },
-      { value: 4, label: 'Measured and sovereign.' },
+      { value: 3, label: 'Deep and steady — I can sit with hard feelings, mine and other people\'s.' },
+      { value: 4, label: 'Measured — I feel things fully but choose when to show them.' },
     ] },
   ],
 };
@@ -124,6 +124,28 @@ export interface CourtMatchResult {
   rank: CourtRank;
   elementScores: Record<CourtElement, number>;
   rankScores: Record<CourtRank, number>;
+  /** The element vote was split and the tie-break question (ce6) did not settle it. */
+  elementTie: boolean;
+  /** The rank vote was split and the tie-break question (cr5) did not settle it. */
+  rankTie: boolean;
+}
+
+/**
+ * Pick the most-voted key; on a tie, the key the respondent chose on the
+ * named tie-break question wins (ce6 "What draws me most" for element,
+ * cr5 "When I master something" for rank). If the tie-break answer is not
+ * among the tied keys either, declared order stands and `tie` is true.
+ */
+function pickWithTieBreak<K extends string>(
+  scores: Record<K, number>,
+  order: K[],
+  tieBreak: K | undefined,
+): { key: K; tie: boolean } {
+  const top = Math.max(...order.map((k) => scores[k]));
+  const tied = order.filter((k) => scores[k] === top);
+  if (tied.length === 1) return { key: tied[0], tie: false };
+  if (tieBreak && tied.includes(tieBreak)) return { key: tieBreak, tie: false };
+  return { key: tied[0], tie: true };
 }
 
 export function calculateCourtMatch(answers: Record<string, number>): CourtMatchResult {
@@ -144,22 +166,25 @@ export function calculateCourtMatch(answers: Record<string, number>): CourtMatch
     }
   }
 
-  const element = (Object.entries(elementScores).reduce(
-    (acc, [k, v]) => (v > acc.v ? { k, v } : acc),
-    { k: 'wands', v: -1 },
-  ).k) as CourtElement;
-
-  const rank = (Object.entries(rankScores).reduce(
-    (acc, [k, v]) => (v > acc.v ? { k, v } : acc),
-    { k: 'page', v: -1 },
-  ).k) as CourtRank;
+  const el = pickWithTieBreak(
+    elementScores,
+    ['wands', 'cups', 'swords', 'pentacles'],
+    COURT_ELEMENT_BY_VALUE[answers.ce6],
+  );
+  const rk = pickWithTieBreak(
+    rankScores,
+    ['page', 'knight', 'queen', 'king'],
+    COURT_RANK_BY_VALUE[answers.cr5],
+  );
 
   return {
-    courtCard: `${rank}-of-${element}`,
-    element,
-    rank,
+    courtCard: `${rk.key}-of-${el.key}`,
+    element: el.key,
+    rank: rk.key,
     elementScores,
     rankScores,
+    elementTie: el.tie,
+    rankTie: rk.tie,
   };
 }
 

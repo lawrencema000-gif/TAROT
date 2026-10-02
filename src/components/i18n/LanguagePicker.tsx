@@ -1,12 +1,18 @@
 import { useCallback } from 'react';
+import { Check } from 'lucide-react';
 import { setLocale, getLocale, SUPPORTED_LOCALES, type SupportedLocale } from '../../i18n/config';
 import { useT } from '../../i18n/useT';
 
-const FLAGS: Record<SupportedLocale, string> = {
-  en: '🇺🇸',
-  ja: '🇯🇵',
-  ko: '🇰🇷',
-  zh: '🇨🇳',
+/**
+ * The language's own code, set as a small tracked label. Flag emoji were
+ * a nation standing in for a language, rendered by the platform font — and
+ * on Windows they fall back to "US" / "JP" text anyway (R6 A18).
+ */
+export const LOCALE_CODES: Record<SupportedLocale, string> = {
+  en: 'EN',
+  ja: 'JA',
+  ko: 'KO',
+  zh: 'ZH',
 };
 
 interface LanguagePickerProps {
@@ -14,6 +20,19 @@ interface LanguagePickerProps {
   onSelect?: (locale: SupportedLocale) => void;
   /** Compact layout for settings sheet vs. full-width for onboarding. */
   variant?: 'full' | 'compact';
+}
+
+function CodeTile({ code, active }: { code: string; active: boolean }) {
+  return (
+    <span
+      className={`inline-flex h-7 w-9 shrink-0 items-center justify-center rounded-inset text-caption font-semibold tracking-[0.12em] ${
+        active ? 'bg-gold/15 text-gold' : 'bg-mystic-800 text-mystic-300'
+      }`}
+      aria-hidden
+    >
+      {code}
+    </span>
+  );
 }
 
 /**
@@ -46,10 +65,11 @@ export function LanguagePicker({ onSelect, variant = 'full' }: LanguagePickerPro
             type="button"
             role="radio"
             aria-checked={current === code}
+            aria-label={`${t(`languages.${code}`)} (${LOCALE_CODES[code]})`}
             onClick={() => pick(code)}
             className={`lang-picker-chip ${current === code ? 'is-active' : ''}`}
           >
-            <span className="lang-picker-flag" aria-hidden>{FLAGS[code]}</span>
+            <span className="text-caption font-semibold tracking-[0.12em]" aria-hidden>{LOCALE_CODES[code]}</span>
             <span>{t(`languages.${code}`)}</span>
           </button>
         ))}
@@ -65,12 +85,13 @@ export function LanguagePicker({ onSelect, variant = 'full' }: LanguagePickerPro
           type="button"
           role="radio"
           aria-checked={current === code}
+          aria-label={`${t(`languages.${code}`)} (${LOCALE_CODES[code]})`}
           onClick={() => pick(code)}
           className={`lang-picker-row ${current === code ? 'is-active' : ''}`}
         >
-          <span className="lang-picker-flag" aria-hidden>{FLAGS[code]}</span>
+          <CodeTile code={LOCALE_CODES[code]} active={current === code} />
           <span className="lang-picker-name">{t(`languages.${code}`)}</span>
-          {current === code && <span className="lang-picker-check" aria-hidden>✓</span>}
+          {current === code && <Check className="w-5 h-5 text-gold shrink-0" aria-hidden />}
         </button>
       ))}
     </div>

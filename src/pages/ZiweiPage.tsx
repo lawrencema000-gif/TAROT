@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Input, Page, PageHeader, Section, Disclosure } from '../components/ui';
+import { Card, Button, Input, Page, PageHeader, Section, Disclosure, Disclaimer } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { ZiweiChart } from '../components/charts/ZiweiChart';
 import { computeZiweiChart } from '../data/ziwei';
@@ -17,6 +17,10 @@ import { setPageMeta } from '../utils/seo';
  * major divination tradition Arcana was missing. Every placement derives from
  * the ephemeris-computed lunar calendar, so charts stay correct rather than
  * drifting with a lookup table.
+ *
+ * The chart is the screen: it casts itself from the profile's birth data on
+ * arrival, and the long introduction sits in a Disclosure under the header
+ * rather than 1,000 characters above the first control (R7).
  */
 export function ZiweiPage() {
   const navigate = useNavigate();
@@ -26,12 +30,23 @@ export function ZiweiPage() {
   const { profile } = useAuth();
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   const [birthTime, setBirthTime] = useState(profile?.birthTime ?? '');
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(!!profile?.birthDate);
+  // The user has typed into the form; the profile arriving later must not
+  // overwrite what they entered.
+  const [touched, setTouched] = useState(false);
   const [openPalace, setOpenPalace] = useState<string | null>('life');
 
   useEffect(() => {
     setPageMeta('Zi Wei Dou Shu Chart', 'Cast your 紫微斗数 chart — 12 palaces, 14 major stars, and the four transformations, computed from the true lunar calendar.');
   }, []);
+
+  // Auto-cast: the profile can resolve after first paint, so follow it once.
+  useEffect(() => {
+    if (touched || !profile?.birthDate) return;
+    setBirthDate(profile.birthDate);
+    setBirthTime(profile.birthTime ?? '');
+    setSubmitted(true);
+  }, [profile?.birthDate, profile?.birthTime, touched]);
 
   const chart = useMemo(
     () => (submitted && birthDate ? computeZiweiChart(birthDate, birthTime || undefined) : null),
@@ -43,13 +58,25 @@ export function ZiweiPage() {
   return (
     <Page spacing="md">
       <PageHeader
-        eyebrow="紫微斗数"
+        eyebrow={t('ziwei.eyebrow', { defaultValue: 'Chinese astrology' })}
         title={t('ziwei.title', { defaultValue: 'Zi Wei Dou Shu' })}
-        subtitle={ZIWEI_INTRO}
+        subtitle={
+          <span className="block text-meta text-mystic-400">
+            <span lang="zh-Hant">紫微斗數</span>
+            {' · '}
+            {t('ziwei.lede', { defaultValue: 'Twelve palaces, fourteen major stars, four transformations — placed from your lunar birth date and hour.' })}
+          </span>
+        }
         onBack={() => navigate(-1)}
-        backLabel={t('common.back', { defaultValue: 'Back' }) as string}
-        divider
+        backLabel={t('common:actions.back', { defaultValue: 'Back' }) as string}
       />
+
+      <Disclosure
+        label={t('ziwei.aboutLabel', { defaultValue: 'About this system' })}
+        description={t('ziwei.aboutDescription', { defaultValue: 'What the chart is, and what it is not' })}
+      >
+        <p className="reading-copy">{ZIWEI_INTRO}</p>
+      </Disclosure>
 
       {!chart && (
         <Card className="p-4 space-y-4">
@@ -57,21 +84,21 @@ export function ZiweiPage() {
             type="date"
             label={t('ziwei.birthDate', { defaultValue: 'Birth date' })}
             value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
+            onChange={(e) => { setTouched(true); setBirthDate(e.target.value); }}
             max={new Date().toISOString().slice(0, 10)}
           />
           <Input
             type="time"
             label={t('ziwei.birthTime', { defaultValue: 'Birth time (the 時辰 sets your Life Palace — please give it if you can)' })}
             value={birthTime}
-            onChange={(e) => setBirthTime(e.target.value)}
+            onChange={(e) => { setTouched(true); setBirthTime(e.target.value); }}
           />
           <Button variant="primary" size="md" fullWidth disabled={!birthDate} onClick={() => setSubmitted(true)}>
-            <HoroscopeWheelIcon className="w-4 h-4 mr-2" /> {t('ziwei.cast', { defaultValue: 'Cast my chart' })}
+            <HoroscopeWheelIcon className="w-4 h-4" /> {t('ziwei.cast', { defaultValue: 'Cast my chart' })}
           </Button>
           {!birthTime && (
             <p className="text-meta text-mystic-400">
-              Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.
+              {t('ziwei.noTimeNote', { defaultValue: 'Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.' })}
             </p>
           )}
         </Card>
@@ -85,7 +112,7 @@ export function ZiweiPage() {
               centre={
                 <div className="space-y-0.5">
                   <div className="text-gold text-meta">{chart.bureauCn}</div>
-                  <div className="text-mystic-200 text-meta">
+                  <div className="text-mystic-200 text-meta tabular-nums">
                     農曆 {chart.lunar.isLeapMonth ? '閏' : ''}{chart.lunar.month}/{chart.lunar.day}
                   </div>
                   <div className="text-mystic-400 text-meta">{chart.yearStemCn}年 · {chart.hourBranchCn}時</div>
@@ -96,6 +123,12 @@ export function ZiweiPage() {
               }
             />
           </Card>
+
+          {!birthTime && (
+            <p className="text-meta text-mystic-400 text-center">
+              {t('ziwei.noTimeNote', { defaultValue: 'Without a birth time we assume noon (午時). The star pattern stays right, but your Life Palace may shift.' })}
+            </p>
+          )}
 
           <Section title={t('ziwei.bureau', { defaultValue: 'Your bureau' })} headingLevel="h3" spacing="sm">
             <p className="reading-copy">
@@ -108,12 +141,12 @@ export function ZiweiPage() {
             headingLevel="h3"
             contentClassName="space-y-3"
           >
-            {chart.transformations.map((t) => {
-              const meta = TRANSFORMATION_MEANINGS[t.kind];
-              const star = STAR_MEANINGS[t.star];
+            {chart.transformations.map((tr) => {
+              const meta = TRANSFORMATION_MEANINGS[tr.kind];
+              const star = STAR_MEANINGS[tr.star];
               return (
-                <div key={t.kind} className="text-ui">
-                  <span className="text-gold">{star?.cn ?? t.star} {meta.cn}</span>
+                <div key={tr.kind} className="text-ui">
+                  <span className="text-gold">{star?.cn ?? tr.star} {meta.cn}</span>
                   <span className="text-mystic-400"> · {meta.en}</span>
                   <p className="reading-copy mt-1">{meta.text}</p>
                 </div>
@@ -121,8 +154,10 @@ export function ZiweiPage() {
             })}
             {chart.yearStemCn === '庚' && (
               <p className="text-meta text-mystic-400 pt-1">
-                Schools disagree about 庚 years. We follow the 中州派 reading (陽祿 武權 陰科 同忌),
-                which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.
+                {t('ziwei.gengNote', {
+                  defaultValue:
+                    'Schools disagree about 庚 years. We follow the 中州派 reading (陽祿 武權 陰科 同忌), which is what most modern charts use; the 全書 lineage assigns 同科 相忌 instead.',
+                })}
               </p>
             )}
           </Section>
@@ -142,7 +177,7 @@ export function ZiweiPage() {
                     <>
                       <span className={p.isLife ? 'text-gold' : 'text-mystic-100'}>{p.cn}</span>
                       <span className="text-mystic-400 text-meta"> {meaning?.en ?? p.en}</span>
-                      {p.isBody && <span className="text-cosmic-violetLight text-meta"> · 身宮</span>}
+                      {p.isBody && <span className="text-cosmic-violet-ink text-meta"> · 身宮</span>}
                     </>
                   }
                   meta={
@@ -164,7 +199,9 @@ export function ZiweiPage() {
                   })}
                   {p.stars.length === 0 && (
                     <p className="reading-copy italic">
-                      An empty palace isn't a lack — it borrows from the palace opposite, and asks you to bring your own emphasis here.
+                      {t('ziwei.emptyPalace', {
+                        defaultValue: 'An empty palace isn’t a lack — it borrows from the palace opposite, and asks you to bring your own emphasis here.',
+                      })}
                     </p>
                   )}
                 </Disclosure>
@@ -172,10 +209,10 @@ export function ZiweiPage() {
             })}
           </Section>
 
-          <Button variant="ghost" fullWidth onClick={() => setSubmitted(false)}>{t('ziwei.recast', { defaultValue: 'Cast a different chart' })}</Button>
-          <p className="reading-caption">
-            For reflection and self-understanding — a symbolic system, not a prediction.
-          </p>
+          <Button variant="ghost" fullWidth onClick={() => { setTouched(true); setSubmitted(false); }}>
+            {t('ziwei.recast', { defaultValue: 'Cast a different chart' })}
+          </Button>
+          <Disclaimer kind="general" />
         </>
       )}
     </Page>

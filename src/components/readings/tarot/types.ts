@@ -1,11 +1,11 @@
 /**
- * Shared types for the split TarotSection sub-view components.
+ * Shared types for the TarotSection sub-view components.
  *
- * These mirror what TarotSection.tsx (the legacy monolith) defines inline.
  * Kept in a separate file so the extracted views can share them without
- * importing the monolith back, avoiding a circular dependency when the flag
- * rollout progresses.
+ * importing the parent back.
  */
+import type { TarotCard } from '../../../types';
+import type { SpreadCategory, SpreadLayoutPosition } from '../../../data/tarotSpreads';
 
 export type FocusArea = 'Love' | 'Career' | 'Self' | 'Money' | 'Health' | 'General';
 
@@ -21,3 +21,28 @@ export const FOCUS_AREA_I18N_KEY: Record<FocusArea, string> = {
   Health: 'readings.focusAreas.health',
   General: 'readings.focusAreas.general',
 };
+
+/** A card on the table: face down until `revealed`. */
+export interface DrawnCard {
+  card: TarotCard;
+  reversed: boolean;
+  revealed: boolean;
+}
+
+/**
+ * One row of the spread picker: a catalogue spread resolved to the id the
+ * reading flow casts (a legacy id where the catalogue entry is the same
+ * spread — `single`, `three-card`, `relationship`, `celtic-cross` — else
+ * the catalogue slug), with its localized name and one-liner, the free /
+ * premium rule and the glyph layout.
+ */
+export interface PickerSpread {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  count: number;
+  free: boolean;
+  category: SpreadCategory;
+  layout: SpreadLayoutPosition[];
+}

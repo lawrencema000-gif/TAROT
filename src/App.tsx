@@ -20,10 +20,9 @@ import { Header } from './components/layout/Header';
 import { WebAdSidebar } from './components/ads/WebAdSidebar';
 import { DevicePreview } from './components/dev/DevicePreview';
 import { ToastContainer, ListSkeleton, BrandMark, BrandWordmark } from './components/ui';
-import { SearchSheet, SavedSheet, SettingsSheet } from './components/overlays';
+import { SearchSheet, SavedSheet } from './components/overlays';
 import { MissingSupabaseConfig } from './components/setup';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
-import { DiagnosticsSheet } from './components/diagnostics';
 import { CelestialBackground } from './components/home/CelestialBackground';
 
 // Sentinel used to store "render the animated Celestial background"
@@ -34,13 +33,21 @@ const CELESTIAL_BG_URL = 'celestial://animated';
 
 // Eager imports — critical path (shown on first load)
 import { HomePage } from './pages/HomePage';
-import { OnboardingPage } from './pages/OnboardingPage';
-import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
-import { AuthPage } from './pages/AuthPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
 // Eager: the screen behind an unknown path must never itself depend on a
 // chunk that a stale deploy might have removed.
 import { NotFoundPage } from './pages/NotFoundPage';
+// The sign-up, sign-in and recovery screens are each one visit per account
+// (R8 §a3): a returning member never renders them, so they load on demand
+// behind the boot fallback rather than riding in the main chunk.
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
+const OAuthOnboardingPage = lazy(() => import('./pages/OAuthOnboardingPage').then(m => ({ default: m.OAuthOnboardingPage })));
+const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+// Overlays that most sessions never open: mounted on first open (and kept,
+// so the Sheet's exit still plays), fetched then.
+const SettingsSheet = lazy(() => import('./components/overlays/SettingsSheet').then(m => ({ default: m.SettingsSheet })));
+const DiagnosticsSheet = lazy(() => import('./components/diagnostics/DiagnosticsPanel').then(m => ({ default: m.DiagnosticsSheet })));
+const TrialReminderModal = lazy(() => import('./components/premium/TrialReminderModal').then(m => ({ default: m.TrialReminderModal })));
 // The marketing landing is a web-only cold-visitor screen; it and its
 // stylesheet load only when a signed-out browser lands on /.
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -104,6 +111,13 @@ const GlossaryEntryPage = lazy(() => import('./pages/GlossaryEntryPage').then(m 
 const CrystalsPage = lazy(() => import('./pages/CrystalsPage').then(m => ({ default: m.CrystalsPage })));
 const CrystalEntryPage = lazy(() => import('./pages/CrystalEntryPage').then(m => ({ default: m.CrystalEntryPage })));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
+// The playing-card section (flag `cartomancy`): hub, reading, library, guide.
+const CartomancyPage = lazy(() => import('./pages/CartomancyPage').then(m => ({ default: m.CartomancyPage })));
+const CartomancyReadingPage = lazy(() => import('./pages/CartomancyReadingPage').then(m => ({ default: m.CartomancyReadingPage })));
+const CartomancyCardsPage = lazy(() => import('./pages/CartomancyCardsPage').then(m => ({ default: m.CartomancyCardsPage })));
+const CartomancyCardPage = lazy(() => import('./pages/CartomancyCardPage').then(m => ({ default: m.CartomancyCardPage })));
+const CartomancyGuidePage = lazy(() => import('./pages/CartomancyGuidePage').then(m => ({ default: m.CartomancyGuidePage })));
+const CartomancyLessonPage = lazy(() => import('./pages/CartomancyLessonPage').then(m => ({ default: m.CartomancyLessonPage })));
 // Hidden /dev/redesign-showcase route — Phase 1 preview surface.
 // Not in BottomNav, not in any in-app link. Reach via URL only. Lazy
 // so it doesn't enter the main bundle.
@@ -116,7 +130,6 @@ import { adsService } from './services/ads';
 import { isSupabaseConfigured } from './lib/supabase';
 import { LevelUpCelebration } from './components/celebration/LevelUpCelebration';
 import { RateAppSheet } from './components/feedback';
-import { TrialReminderModal } from './components/premium';
 import { initializeUserAchievements } from './services/achievements';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -125,6 +138,23 @@ import { appStorage } from './lib/appStorage';
 
 const ONBOARDING_KEY = 'arcana_onboarding_complete';
 const isDev = import.meta.env.DEV;
+
+/** The boot screen, also the fallback while a lazily loaded entry screen arrives. */
+function BootFallback({ message }: { message: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center constellation-bg">
+      <div className="text-center">
+        <div className="loading-constellation mx-auto mb-4" />
+        <p className="text-mystic-400">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Public paths of the playing-card section; the reading itself needs an account. */
+function isPublicCartomancyPath(pathname: string): boolean {
+  return pathname.startsWith('/cartomancy') && !pathname.startsWith('/cartomancy/reading');
+}
 
 async function initializeNativeFeatures() {
   if (!isNative()) return;
@@ -217,8 +247,17 @@ function AppContent() {
   // Live rooms are at 0% and the page says "soon" throughout — same gap.
   const ichingEnabled = useFeatureFlag('iching');
   const liveRoomsEnabled = useFeatureFlag('live-rooms');
+  // The playing-card section. The hub, the card meanings and the guide are
+  // public (SEO); the reading is behind sign-in like every other reading.
+  const cartomancyEnabled = useFeatureFlag('cartomancy');
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth, passwordRecoveryMode } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
+  // The settings sheet is fetched on its first open and stays mounted after
+  // (the Sheet outlives `open` to play its exit).
+  const [settingsMounted, setSettingsMounted] = useState(false);
+  useEffect(() => {
+    if (activeOverlay === 'settings') setSettingsMounted(true);
+  }, [activeOverlay]);
   const location = useLocation();
   const navigate = useNavigate();
   const { levelUpEvent, dismissLevelUp, showRatePrompt, closeRatePrompt } = useGamification();
@@ -426,14 +465,16 @@ function AppContent() {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
-          <ResetPasswordPage />
+          <Suspense fallback={<BootFallback message={t('authBootstrap.loading', { defaultValue: 'Loading…' })} />}>
+            <ResetPasswordPage />
+          </Suspense>
         </div>
       </ErrorBoundary>
     );
   }
 
   // Public content pages (SEO) — render before auth guard
-  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe') || location.pathname.startsWith('/dev/'))) {
+  if (!user && (location.pathname.startsWith('/blog') || location.pathname.startsWith('/tarot-meanings') || location.pathname.startsWith('/reading/') || location.pathname.startsWith('/spreads') || location.pathname.startsWith('/astrology') || location.pathname.startsWith('/numerology') || location.pathname.startsWith('/glossary') || location.pathname.startsWith('/crystals') || location.pathname.startsWith('/unsubscribe') || location.pathname.startsWith('/dev/') || isPublicCartomancyPath(location.pathname))) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
         <div className="min-h-screen constellation-bg">
@@ -444,6 +485,9 @@ function AppContent() {
             </a>
             <div className="flex items-center gap-4">
               <a href="/tarot-meanings" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cardMeanings', { defaultValue: 'Card meanings' })}</a>
+              {cartomancyEnabled && (
+                <a href="/cartomancy" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.cartomancy', { defaultValue: 'Playing cards' })}</a>
+              )}
               <a href="/blog" className="text-sm text-mystic-400 hover:text-mystic-200 no-underline transition-colors">{t('common:nav.blog', { defaultValue: 'Blog' })}</a>
               <button onClick={() => navigate('/signin')} className="px-5 py-2 min-h-[44px] text-sm font-medium text-mystic-200 hover:text-white border border-mystic-700/50 hover:border-mystic-500 rounded-control transition-all">
                 {t('publicNav.signIn', { defaultValue: 'Sign in' })}
@@ -469,6 +513,11 @@ function AppContent() {
                 <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
+                <Route path="/cartomancy" element={cartomancyEnabled ? <CartomancyPage /> : <NotFoundPage />} />
+                <Route path="/cartomancy/cards" element={cartomancyEnabled ? <CartomancyCardsPage /> : <NotFoundPage />} />
+                <Route path="/cartomancy/cards/:slug" element={cartomancyEnabled ? <CartomancyCardPage /> : <NotFoundPage />} />
+                <Route path="/cartomancy/guide" element={cartomancyEnabled ? <CartomancyGuidePage /> : <NotFoundPage />} />
+                <Route path="/cartomancy/guide/:lesson" element={cartomancyEnabled ? <CartomancyLessonPage /> : <NotFoundPage />} />
                 {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
@@ -488,10 +537,12 @@ function AppContent() {
   if (showOnboarding && !user) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-        <OnboardingPage
-          onComplete={handleOnboardingComplete}
-          onSwitchToSignIn={handleSwitchToSignIn}
-        />
+        <Suspense fallback={<BootFallback message={t('authBootstrap.loading', { defaultValue: 'Loading…' })} />}>
+          <OnboardingPage
+            onComplete={handleOnboardingComplete}
+            onSwitchToSignIn={handleSwitchToSignIn}
+          />
+        </Suspense>
       </ErrorBoundary>
     );
   }
@@ -502,10 +553,12 @@ function AppContent() {
     if (isNative() || showAuthForm) {
       return (
         <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-          <AuthPage onSwitchToOnboarding={() => {
-            setShowOnboarding(true);
-            if (!isNative()) navigate('/signup');
-          }} />
+          <Suspense fallback={<BootFallback message={t('authBootstrap.loading', { defaultValue: 'Loading…' })} />}>
+            <AuthPage onSwitchToOnboarding={() => {
+              setShowOnboarding(true);
+              if (!isNative()) navigate('/signup');
+            }} />
+          </Suspense>
         </ErrorBoundary>
       );
     }
@@ -524,7 +577,9 @@ function AppContent() {
   if (profile && !profile.onboardingComplete) {
     return (
       <ErrorBoundary onOpenDiagnostics={openDiagnostics}>
-        <OAuthOnboardingPage onComplete={refreshProfile} />
+        <Suspense fallback={<BootFallback message={t('authBootstrap.loading', { defaultValue: 'Loading…' })} />}>
+          <OAuthOnboardingPage onComplete={refreshProfile} />
+        </Suspense>
       </ErrorBoundary>
     );
   }
@@ -651,6 +706,12 @@ function AppContent() {
                   <Route path="/spreads/builder" element={<SpreadBuilderPage />} />
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                  <Route path="/cartomancy" element={cartomancyEnabled ? <CartomancyPage /> : <Navigate to="/" replace />} />
+                  <Route path="/cartomancy/reading" element={cartomancyEnabled ? <CartomancyReadingPage /> : <Navigate to="/" replace />} />
+                  <Route path="/cartomancy/cards" element={cartomancyEnabled ? <CartomancyCardsPage /> : <Navigate to="/" replace />} />
+                  <Route path="/cartomancy/cards/:slug" element={cartomancyEnabled ? <CartomancyCardPage /> : <Navigate to="/" replace />} />
+                  <Route path="/cartomancy/guide" element={cartomancyEnabled ? <CartomancyGuidePage /> : <Navigate to="/" replace />} />
+                  <Route path="/cartomancy/guide/:lesson" element={cartomancyEnabled ? <CartomancyLessonPage /> : <Navigate to="/" replace />} />
                   {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
                   {/* Legacy: the Dice Oracle linked here before the AI hub moved
                       under /ai; an installed shortcut or a bookmark may still. */}
@@ -686,10 +747,14 @@ function AppContent() {
           open={activeOverlay === 'saved'}
           onClose={closeOverlay}
         />
-        <SettingsSheet
-          open={activeOverlay === 'settings'}
-          onClose={closeOverlay}
-        />
+        {settingsMounted && (
+          <Suspense fallback={null}>
+            <SettingsSheet
+              open={activeOverlay === 'settings'}
+              onClose={closeOverlay}
+            />
+          </Suspense>
+        )}
         {levelUpEvent && (
           <LevelUpCelebration
             open={!!levelUpEvent}
@@ -706,7 +771,9 @@ function AppContent() {
             userId={user.id}
           />
         )}
-        <TrialReminderModal />
+        <Suspense fallback={null}>
+          <TrialReminderModal />
+        </Suspense>
       </div>
     </ErrorBoundary>
   );
@@ -714,7 +781,17 @@ function AppContent() {
 
 function GlobalDiagnosticsSheet() {
   const { isOpen, closeDiagnostics } = useDiagnostics();
-  return <DiagnosticsSheet open={isOpen} onClose={closeDiagnostics} />;
+  // Fetched on the first open and kept mounted after, like the settings sheet.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (isOpen) setMounted(true);
+  }, [isOpen]);
+  if (!mounted) return null;
+  return (
+    <Suspense fallback={null}>
+      <DiagnosticsSheet open={isOpen} onClose={closeDiagnostics} />
+    </Suspense>
+  );
 }
 
 function AppWithProviders() {

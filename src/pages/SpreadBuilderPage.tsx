@@ -4,7 +4,7 @@ import { Plus, Trash2, Save, Play } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Page, PageHeader, EyebrowLabel, toast } from '../components/ui';
+import { Button, Page, PageHeader, EyebrowLabel, Sheet, toast } from '../components/ui';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
 
@@ -36,6 +36,9 @@ export function SpreadBuilderPage() {
   ]);
   const [saving, setSaving] = useState(false);
   const [savedSpreads, setSavedSpreads] = useState<SavedSpread[]>([]);
+  /** The saved spread whose delete is being confirmed (R5 M-8: destructive actions ask). */
+  const [pendingDelete, setPendingDelete] = useState<SavedSpread | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setPageMeta('Custom Spread Builder', 'Design your own tarot spread with custom card positions and meanings.');
@@ -111,23 +114,29 @@ export function SpreadBuilderPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('custom_spreads').delete().eq('id', id);
-    if (error) {
-      console.error('[SpreadBuilder] Delete failed:', error.message);
-      toast(t('spreadBuilder.toasts.deleteFailed', { defaultValue: 'Couldn’t delete that spread — check your connection and try again.' }), 'error');
-      return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('custom_spreads').delete().eq('id', id);
+      if (error) {
+        console.error('[SpreadBuilder] Delete failed:', error.message);
+        toast(t('spreadBuilder.toasts.deleteFailed', { defaultValue: 'Couldn’t delete that spread — check your connection and try again.' }), 'error');
+        return;
+      }
+      setSavedSpreads((prev) => prev.filter((s) => s.id !== id));
+      toast(t('spreadBuilder.toasts.deleted', { defaultValue: 'Spread deleted.' }), 'info');
+    } finally {
+      setDeleting(false);
+      setPendingDelete(null);
     }
-    setSavedSpreads((prev) => prev.filter((s) => s.id !== id));
-    toast(t('spreadBuilder.toasts.deleted', { defaultValue: 'Spread deleted.' }), 'info');
   };
 
   if (!user) {
     return (
       <Page className="py-16 text-center">
         <p className="text-mystic-300 mb-4">{t('spreadBuilder.signInPrompt', { defaultValue: 'Custom spreads are saved to your account.' })}</p>
-        <button onClick={() => navigate('/signin')} className="px-5 py-2 min-h-[44px] rounded-control bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold">
+        <Button variant="gold" onClick={() => navigate('/signin')}>
           {t('spreadBuilder.signInCta', { defaultValue: 'Sign in to build a spread' })}
-        </button>
+        </Button>
       </Page>
     );
   }
@@ -166,7 +175,7 @@ export function SpreadBuilderPage() {
           />
         </label>
 
-        <h2 className="text-sm font-medium text-mystic-300 mb-2 mt-5">Positions</h2>
+        <h2 className="text-ui font-medium text-mystic-300 mb-2 mt-5">Positions</h2>
         <div className="space-y-3">
           {positions.map((p, i) => (
             <div key={i} className="rounded-control border border-mystic-800/60 bg-mystic-950/40 p-3">
@@ -177,7 +186,7 @@ export function SpreadBuilderPage() {
                   value={p.name}
                   onChange={(e) => updatePosition(i, 'name', e.target.value)}
                   placeholder="Position name (e.g. The challenge)"
-                  className="flex-1 px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-sm"
+                  className="flex-1 px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-100 focus:border-gold/50 outline-none text-ui"
                   maxLength={60}
                 />
                 {positions.length > 1 && (
@@ -190,7 +199,7 @@ export function SpreadBuilderPage() {
                 value={p.meaning}
                 onChange={(e) => updatePosition(i, 'meaning', e.target.value)}
                 placeholder="What this position represents…"
-                className="w-full px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-300 focus:border-gold/50 outline-none text-sm"
+                className="w-full px-2 py-1 rounded-control bg-mystic-950 border border-mystic-800 text-mystic-300 focus:border-gold/50 outline-none text-ui"
                 rows={2}
                 maxLength={300}
               />
@@ -201,7 +210,7 @@ export function SpreadBuilderPage() {
         {positions.length < MAX_POSITIONS && (
           <button
             onClick={addPosition}
-            className="mt-3 w-full py-2 min-h-[44px] rounded-control border border-dashed border-mystic-700 text-mystic-400 hover:text-mystic-200 hover:border-gold/40 transition-colors flex items-center justify-center gap-1 text-sm"
+            className="mt-3 w-full py-2 min-h-[44px] rounded-control border border-dashed border-mystic-700 text-mystic-400 hover:text-mystic-200 hover:border-gold/40 transition-colors flex items-center justify-center gap-1 text-ui"
           >
             <Plus className="w-4 h-4" /> Add position ({positions.length}/{MAX_POSITIONS})
           </button>
@@ -210,7 +219,7 @@ export function SpreadBuilderPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="mt-4 w-full py-3 rounded-control bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+          className="mt-4 w-full py-3 min-h-[48px] rounded-control bg-gold text-mystic-950 font-semibold text-ui disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Saving…' : 'Save spread'}
@@ -225,8 +234,13 @@ export function SpreadBuilderPage() {
               <div key={s.id} className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
                 <div className="flex items-start justify-between gap-3 mb-1">
                   <h3 className="font-medium text-mystic-100">{s.name}</h3>
-                  <button onClick={() => handleDelete(s.id)} className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] -my-2 -mr-2 text-mystic-500 hover:text-coral" aria-label="Delete">
-                    <Trash2 className="w-4 h-4" />
+                  <button
+                    type="button"
+                    onClick={() => setPendingDelete(s)}
+                    className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] -my-2 -mr-2 rounded-full text-mystic-400 [@media(hover:hover)]:[&:hover:not(:active)]:text-coral active:text-coral focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+                    aria-label={t('spreadBuilder.deleteSpread', { defaultValue: 'Delete {{name}}', name: s.name })}
+                  >
+                    <Trash2 className="w-4 h-4" aria-hidden />
                   </button>
                 </div>
                 {s.description && <p className="text-meta text-mystic-400 mb-2">{s.description}</p>}
@@ -246,15 +260,37 @@ export function SpreadBuilderPage() {
                       },
                     })
                   }
-                  className="w-full py-2 min-h-[44px] rounded-control bg-gradient-to-r from-gold via-gold-dark to-gold text-mystic-950 font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                  className="w-full py-2 min-h-[44px] rounded-control bg-gold text-mystic-950 font-semibold text-ui flex items-center justify-center gap-2 motion-safe:active:scale-[0.98] transition-transform duration-fast"
                 >
-                  <Play className="w-4 h-4" /> Start a reading
+                  <Play className="w-4 h-4" aria-hidden /> {t('spreadBuilder.startReading', { defaultValue: 'Start a reading' })}
                 </button>
               </div>
             ))}
           </div>
         </section>
       )}
+
+      <Sheet
+        open={!!pendingDelete}
+        onClose={() => { if (!deleting) setPendingDelete(null); }}
+        title={t('spreadBuilder.deleteTitle', { defaultValue: 'Delete {{name}}?', name: pendingDelete?.name ?? '' })}
+      >
+        {pendingDelete && (
+          <div className="space-y-5">
+            <p className="text-ui text-mystic-300">
+              {t('spreadBuilder.deleteBody', { defaultValue: 'This removes the spread and its positions from your account. It can’t be undone.' })}
+            </p>
+            <div className="flex gap-3">
+              <Button variant="ghost" className="flex-1" onClick={() => setPendingDelete(null)} disabled={deleting}>
+                {t('common:actions.cancel', { defaultValue: 'Cancel' })}
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={() => handleDelete(pendingDelete.id)} loading={deleting}>
+                {t('common:actions.delete', { defaultValue: 'Delete' })}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Sheet>
     </Page>
   );
 }

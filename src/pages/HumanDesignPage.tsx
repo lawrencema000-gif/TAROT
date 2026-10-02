@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Compass, Target, Feather, Share2 } from 'lucide-react';
-import { Card, Button, Input, toast, Page, PageHeader, ResultLayout, Section, Disclosure, Tag } from '../components/ui';
+import { Calendar, Clock, Compass, Target, Share2, ArrowLeft } from 'lucide-react';
+import {
+  Card, Button, Input, toast, Page, PageHeader, Section, Disclosure, Tag,
+  ResultSheet, AffirmationPanel, EyebrowLabel, SparkleFourPoint,
+} from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
@@ -21,14 +24,11 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
  * gates on the HD Rave wheel, and derives the bodygraph: defined
  * centres, channels, Type, Authority, and Profile.
  *
- * The page renders:
- *   - Type card (Manifestor / Generator / MG / Projector / Reflector)
- *   - Strategy + Signature + Not-self theme
- *   - Authority with the concrete decision-making guidance
- *   - Profile (personality/design lines)
- *   - Interactive 9-centre bodygraph SVG
- *   - Defined channels list
- *   - All 13 Personality + 13 Design activations in a fold-out
+ * The page renders the reading on paper (ResultSheet: type, strategy,
+ * signature / not-self, authority, strengths, challenges, affirmation) and
+ * the instrument on the canvas beneath it (bodygraph, channels, activations,
+ * strategy-in-practice cases, the decision script). Type names come from
+ * humanDesign.types.<type>.name, which every locale carries.
  */
 
 type Stage = 'input' | 'loading' | 'result';
@@ -69,7 +69,7 @@ export function HumanDesignPage() {
   const [birthTime, setBirthTime] = useState('');
   const [chart, setChart] = useState<HdChart | null>(null);
   const [showActivations, setShowActivations] = useState(false);
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('human-design');
+  const { tryConsume, refund, EarnSheet, error: gateError } = useMoonstoneSpend('human-design');
 
   useEffect(() => {
     if (profile?.birthDate) setBirthDate(profile.birthDate);
@@ -132,18 +132,18 @@ export function HumanDesignPage() {
 
           <div className="space-y-3">
             <div>
-              <label className="text-meta text-mystic-500 mb-1 flex items-center gap-2">
-                <Calendar className="w-3 h-3" />
+              <label htmlFor="hd-birth-date" className="text-ui font-medium text-mystic-300 mb-1 flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" aria-hidden />
                 {t('humanDesign.birthDate', { defaultValue: 'Birth date' })}
               </label>
-              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+              <Input id="hd-birth-date" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
             </div>
             <div>
-              <label className="text-meta text-mystic-500 mb-1 flex items-center gap-2">
-                <Clock className="w-3 h-3" />
+              <label htmlFor="hd-birth-time" className="text-ui font-medium text-mystic-300 mb-1 flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5" aria-hidden />
                 {t('humanDesign.birthTime', { defaultValue: 'Birth time (sharpens the reading — without it we default to noon)' })}
               </label>
-              <Input type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
+              <Input id="hd-birth-time" type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} />
             </div>
           </div>
 
@@ -168,13 +168,15 @@ export function HumanDesignPage() {
             : t('humanDesign.calculate', { defaultValue: 'Reveal my design' })}
         </Button>
         <MoonstoneCostLine />
+        {gateError && <p className="text-meta text-coral" role="alert">{gateError}</p>}
         {EarnSheet}
       </Page>
     );
   }
 
   if (stage === 'result' && chart) {
-    const typeInfo = HD_TYPES[typeKey(chart.type)];
+    const key = typeKey(chart.type);
+    const typeInfo = HD_TYPES[key];
     const typeContent = typeInfo ?? {
       name: chart.type,
       summary: '',
@@ -184,11 +186,16 @@ export function HumanDesignPage() {
       tarotPairing: '',
       percentOfPopulation: '',
     };
+    // The locale's name for the type (humanDesign.types.<key>.name exists in
+    // en/ja/ko/zh); the edge function's English display string is the fallback.
+    const typeName = t(`humanDesign.types.${key}.name`, { defaultValue: chart.type }) as string;
+    const cases = TYPE_CASES[key] ?? [];
+    const script = AUTHORITY_SCRIPTS[chart.authority as Authority];
 
     const handleShare = async () => {
       try {
         const blob = await renderShareCard({
-          title: chart.type,
+          title: typeName,
           subtitle: `${t('humanDesign.profileLabel', { defaultValue: 'Profile' })} ${chart.profile}`,
           tagline: chart.strategy,
           affirmation: typeContent.affirmation || chart.signature,
@@ -196,8 +203,8 @@ export function HumanDesignPage() {
         });
         const out = await shareOrDownload(
           blob,
-          `arcana-human-design-${typeKey(chart.type)}.png`,
-          `My Human Design: ${chart.type} (${chart.profile}). Strategy: ${chart.strategy}.`,
+          `arcana-human-design-${key}.png`,
+          `My Human Design: ${typeName} (${chart.profile}). Strategy: ${chart.strategy}.`,
         );
         if (out === 'downloaded') toast(t('quizzes.share.downloaded', { defaultValue: 'Saved to your device' }), 'success');
         else if (out === 'failed') toast(t('common:actions.shareFailed'), 'error');
@@ -207,64 +214,105 @@ export function HumanDesignPage() {
     };
 
     return (
-      <ResultLayout
-        onBack={reset}
-        backLabel={t('humanDesign.backToInput', { defaultValue: 'Recalculate' }) as string}
-        glyph={<HoroscopeWheelIcon />}
-        eyebrow={typeContent.percentOfPopulation || t('humanDesign.title', { defaultValue: 'Human Design' })}
-        verdict={chart.type}
-        subtitle={
-          <>
-            <span className="block italic">"{chart.strategy}"</span>
-            <span className="block text-meta text-mystic-400 mt-1">
+      <Page spacing="sm">
+        <button
+          type="button"
+          onClick={reset}
+          className="flex items-center gap-2 min-h-[44px] text-ui text-mystic-400 hover:text-mystic-200 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" aria-hidden />
+          {t('humanDesign.backToInput', { defaultValue: 'Recalculate' })}
+        </button>
+
+        {/* The reading, on paper. */}
+        <ResultSheet
+          glyph={<HoroscopeWheelIcon />}
+          eyebrow={
+            typeContent.percentOfPopulation
+              ? t('humanDesign.eyebrowWithShare', { defaultValue: 'Human Design · {{share}} of people', share: typeContent.percentOfPopulation }) as string
+              : (t('humanDesign.title', { defaultValue: 'Human Design' }) as string)
+          }
+          title={typeName}
+          summaryHeading={t('humanDesign.strategyLabel', { defaultValue: 'Your strategy' })}
+          summary={chart.strategy}
+          disclaimer="general"
+        >
+          <div className="space-y-7">
+            <p className="reading-meta text-center">
               {t('humanDesign.profileLabel', { defaultValue: 'Profile' })}{' '}
-              <span className="text-gold font-medium">{chart.profile}</span>
+              <span className="text-ink font-medium tabular-nums">{chart.profile}</span>
               {' · '}
               {t('humanDesign.authorityLabel', { defaultValue: 'Authority' })}{' '}
-              <span className="text-cosmic-blue font-medium">{chart.authority}</span>
-            </span>
-          </>
-        }
-        summary={typeContent.summary || undefined}
-        actions={
-          <>
-            <Button variant="outline" fullWidth onClick={handleShare}>
-              <Share2 className="w-4 h-4 mr-2" />
-              {t('humanDesign.share', { defaultValue: 'Share my design' })}
-            </Button>
-            <Button variant="outline" fullWidth onClick={reset}>
-              {t('humanDesign.recalculate', { defaultValue: 'Calculate another chart' })}
-            </Button>
-          </>
-        }
-        defaultDetailOpen
-      >
-        {/* Signature / Not-self */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card padding="md" className="border-teal/25">
-            <p className="text-meta text-mystic-400 mb-1">
-              {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
+              <span className="text-ink font-medium">{chart.authority}</span>
             </p>
-            <p className="text-lg text-teal font-display">{chart.signature}</p>
-          </Card>
-          <Card padding="md" className="border-coral/25">
-            <p className="text-meta text-mystic-400 mb-1">
-              {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
-            </p>
-            <p className="text-lg text-coral font-display">{chart.notSelfTheme}</p>
-          </Card>
-        </div>
 
-        {/* Authority */}
-        <Section
-          title={<>{t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority' })}: {chart.authority}</>}
-          headingLevel="h3"
-          spacing="sm"
-        >
-          <p className="reading-copy">{chart.authorityExplanation}</p>
-        </Section>
+            {typeContent.summary && <p className="reading-copy">{typeContent.summary}</p>}
 
-        {/* Bodygraph SVG */}
+            {/* Signature / Not-self */}
+            <div className="grid grid-cols-2 gap-4 border-t border-paper-hairline pt-6">
+              <div>
+                <EyebrowLabel tone="ink" align="left" className="block">
+                  {t('humanDesign.signatureLabel', { defaultValue: 'Signature' })}
+                </EyebrowLabel>
+                <p className="font-display font-semibold text-title text-ink-teal mt-1">{chart.signature}</p>
+              </div>
+              <div>
+                <EyebrowLabel tone="ink" align="left" className="block">
+                  {t('humanDesign.notSelfLabel', { defaultValue: 'Not-self theme' })}
+                </EyebrowLabel>
+                <p className="font-display font-semibold text-title text-ink-coral mt-1">{chart.notSelfTheme}</p>
+              </div>
+            </div>
+
+            {/* Authority */}
+            <section>
+              <h3 className="heading-display-md heading-strong text-ink mb-2">
+                {t('humanDesign.authorityHeading', { defaultValue: 'Your inner authority' })}: {chart.authority}
+              </h3>
+              <p className="reading-copy">{chart.authorityExplanation}</p>
+            </section>
+
+            {/* Strengths / Challenges */}
+            {(typeContent.strengths?.length > 0 || typeContent.challenges?.length > 0) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {typeContent.strengths?.length > 0 && (
+                  <section>
+                    <h3 className="heading-display-md heading-strong text-ink mb-2">
+                      {t('humanDesign.strengthsLabel', { defaultValue: 'Strengths' })}
+                    </h3>
+                    <ul className="reading-copy list-disc pl-5 space-y-1.5">
+                      {typeContent.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                    </ul>
+                  </section>
+                )}
+                {typeContent.challenges?.length > 0 && (
+                  <section>
+                    <h3 className="heading-display-md heading-strong text-ink mb-2">
+                      {t('humanDesign.challengesLabel', { defaultValue: 'Challenges' })}
+                    </h3>
+                    <ul className="reading-copy list-disc pl-5 space-y-1.5">
+                      {typeContent.challenges.map((c, i) => <li key={i}>{c}</li>)}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            )}
+
+            {typeContent.affirmation && (
+              <div className="space-y-2">
+                <AffirmationPanel text={typeContent.affirmation} />
+                {typeContent.tarotPairing && (
+                  <p className="reading-meta text-center">
+                    {t('humanDesign.tarotPairingLabel', { defaultValue: 'Tarot pairing' })}:{' '}
+                    <span className="text-ink">{typeContent.tarotPairing}</span>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </ResultSheet>
+
+        {/* The instrument: bodygraph, channels, activations. */}
         <Card padding="lg">
           <h3 className="heading-display-md text-mystic-100 mb-3">
             {t('humanDesign.bodygraphLabel', { defaultValue: 'Your bodygraph' })}
@@ -274,7 +322,7 @@ export function HumanDesignPage() {
             definedGates={chart.definedGates}
             channels={chart.channels}
           />
-          <p className="text-meta text-mystic-400 mt-3 text-center">
+          <p className="text-meta text-mystic-400 mt-3 text-center tabular-nums">
             {chart.definedCenters.length}{' / 9 '}
             {t('humanDesign.centersDefined', { defaultValue: 'centres defined' })}
             {' · '}
@@ -283,7 +331,6 @@ export function HumanDesignPage() {
           </p>
         </Card>
 
-        {/* Channels */}
         {chart.channels.length > 0 && (
           <Section
             title={t('humanDesign.channelsHeading', { defaultValue: 'Your defined channels' })}
@@ -291,7 +338,7 @@ export function HumanDesignPage() {
           >
             <div className="flex flex-wrap gap-2">
               {chart.channels.map((c) => (
-                <Tag key={c} tone="violet" size="md">{c}</Tag>
+                <Tag key={c} tone="violet" size="md" className="tabular-nums">{c}</Tag>
               ))}
             </div>
             <p className="reading-copy mt-3">
@@ -303,33 +350,6 @@ export function HumanDesignPage() {
           </Section>
         )}
 
-        {/* Strengths / Challenges */}
-        {(typeContent.strengths?.length > 0 || typeContent.challenges?.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {typeContent.strengths?.length > 0 && (
-              <Card padding="lg">
-                <h3 className="heading-display-md text-mystic-100 mb-3">
-                  {t('humanDesign.strengthsLabel', { defaultValue: 'Strengths' })}
-                </h3>
-                <ul className="reading-copy space-y-2">
-                  {typeContent.strengths.map((s, i) => <li key={i}>• {s}</li>)}
-                </ul>
-              </Card>
-            )}
-            {typeContent.challenges?.length > 0 && (
-              <Card padding="lg">
-                <h3 className="heading-display-md text-mystic-100 mb-3">
-                  {t('humanDesign.challengesLabel', { defaultValue: 'Challenges' })}
-                </h3>
-                <ul className="reading-copy space-y-2">
-                  {typeContent.challenges.map((c, i) => <li key={i}>• {c}</li>)}
-                </ul>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {/* All activations — foldout */}
         <Disclosure
           label={t('humanDesign.activationsLabel', { defaultValue: 'All 26 activations' })}
           open={showActivations}
@@ -341,35 +361,23 @@ export function HumanDesignPage() {
             title={t('humanDesign.personalityLabel', { defaultValue: 'Personality (conscious) — at birth' }) as string}
             activations={chart.personality}
             tint="text-gold"
+            gateLabel={t('humanDesign.gateLabel', { defaultValue: 'Gate' }) as string}
+            lineLabel={t('humanDesign.lineLabel', { defaultValue: 'Line' }) as string}
           />
           <ActivationList
             title={t('humanDesign.designLabel', { defaultValue: 'Design (unconscious) — 88° of solar arc before birth' }) as string}
             activations={chart.design}
-            tint="text-cosmic-blue"
+            tint="text-cosmic-blue-ink"
+            gateLabel={t('humanDesign.gateLabel', { defaultValue: 'Gate' }) as string}
+            lineLabel={t('humanDesign.lineLabel', { defaultValue: 'Line' }) as string}
           />
         </Disclosure>
 
-        {typeContent.affirmation && (
-          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="heading-display-md text-gold mb-3 flex items-center gap-2">
-              <Feather className="w-4 h-4" />
-              {t('humanDesign.affirmationLabel', { defaultValue: 'Your affirmation' })}
-            </h3>
-            <blockquote className="reading-quote mt-0 mb-3">{typeContent.affirmation}</blockquote>
-            {typeContent.tarotPairing && (
-              <p className="text-meta text-mystic-400">
-                {t('humanDesign.tarotPairingLabel', { defaultValue: 'Tarot pairing' })}:{' '}
-                <span className="text-gold/80">{typeContent.tarotPairing}</span>
-              </p>
-            )}
-          </Card>
-        )}
-
         {/* Strategy in practice — concrete scenarios per Type. */}
-        {TYPE_CASES[typeKey(chart.type)] && TYPE_CASES[typeKey(chart.type)].length > 0 && (
+        {cases.length > 0 && (
           <Card padding="lg" className="border-teal/25">
             <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
-              <Target className="w-4 h-4" />
+              <Target className="w-4 h-4 text-teal" aria-hidden />
               {t('humanDesign.casesHeading', { defaultValue: 'Strategy in practice' })}
             </h3>
             <p className="text-ui text-mystic-400 mb-4 italic">
@@ -379,31 +387,32 @@ export function HumanDesignPage() {
               })}
             </p>
             <div className="space-y-4">
-              {TYPE_CASES[typeKey(chart.type)].map((c, i) => (
+              {cases.map((c, i) => (
                 <div key={i} className="space-y-2">
                   <p className="text-ui font-medium text-mystic-100">
                     {t('humanDesign.scenarioLabel', { defaultValue: 'Scenario' })}
                   </p>
                   <p className="reading-copy">{c.scenario}</p>
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="p-2.5 rounded-lg bg-coral/10 border border-coral/15">
+                    <div className="p-2.5 rounded-control bg-coral/10 border border-coral/15">
                       <p className="font-display-eyebrow text-coral mb-1">
                         {t('humanDesign.wrongMoveLabel', { defaultValue: 'The reactive move' })}
                       </p>
                       <p className="reading-copy">{c.wrongMove}</p>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-teal/10 border border-teal/15">
+                    <div className="p-2.5 rounded-control bg-teal/10 border border-teal/15">
                       <p className="font-display-eyebrow text-teal mb-1">
                         {t('humanDesign.alignedMoveLabel', { defaultValue: 'The aligned move' })}
                       </p>
                       <p className="reading-copy">{c.alignedMove}</p>
                     </div>
                   </div>
-                  <p className="text-meta text-gold/80 italic">
-                    ✦ {t('humanDesign.signatureFelt', { defaultValue: 'Signature felt' })}: {c.signature}
+                  <p className="text-meta text-gold italic flex items-start gap-1.5">
+                    <SparkleFourPoint size={10} className="mt-1 shrink-0" />
+                    <span>{t('humanDesign.signatureFelt', { defaultValue: 'Signature felt' })}: {c.signature}</span>
                   </p>
-                  {i < TYPE_CASES[typeKey(chart.type)].length - 1 && (
-                    <div className="h-px bg-mystic-800/50 mt-3" />
+                  {i < cases.length - 1 && (
+                    <div className="h-px bg-mystic-800/50 mt-3" aria-hidden />
                   )}
                 </div>
               ))}
@@ -412,17 +421,17 @@ export function HumanDesignPage() {
         )}
 
         {/* Authority decision-making script. */}
-        {AUTHORITY_SCRIPTS[chart.authority as Authority] && (
+        {script && (
           <Card padding="lg" className="border-cosmic-blue/30">
             <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
-              <Compass className="w-4 h-4" />
+              <Compass className="w-4 h-4 text-cosmic-blue-ink" aria-hidden />
               {t('humanDesign.decisionScriptHeading', {
                 defaultValue: 'How to make decisions: {{authority}}',
-                authority: AUTHORITY_SCRIPTS[chart.authority as Authority].authorityName,
+                authority: script.authorityName,
               })}
             </h3>
             <ol className="reading-copy list-decimal list-inside space-y-2 mb-4">
-              {AUTHORITY_SCRIPTS[chart.authority as Authority].decisionMakingScript.map((step, i) => (
+              {script.decisionMakingScript.map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
@@ -430,21 +439,27 @@ export function HumanDesignPage() {
               <p className="font-display-eyebrow text-coral mb-1">
                 {t('humanDesign.commonMistakeLabel', { defaultValue: 'Common mistake' })}
               </p>
-              <p className="reading-copy">
-                {AUTHORITY_SCRIPTS[chart.authority as Authority].commonMistake}
-              </p>
+              <p className="reading-copy">{script.commonMistake}</p>
             </div>
             <div className="p-3 rounded-control bg-teal/10 border border-teal/15">
               <p className="font-display-eyebrow text-teal mb-1">
                 {t('humanDesign.realityCheckLabel', { defaultValue: 'Reality check' })}
               </p>
-              <p className="reading-copy">
-                {AUTHORITY_SCRIPTS[chart.authority as Authority].realityCheck}
-              </p>
+              <p className="reading-copy">{script.realityCheck}</p>
             </div>
           </Card>
         )}
-      </ResultLayout>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="outline" fullWidth onClick={handleShare}>
+            <Share2 className="w-4 h-4" aria-hidden />
+            {t('humanDesign.share', { defaultValue: 'Share my design' })}
+          </Button>
+          <Button variant="outline" fullWidth onClick={reset}>
+            {t('humanDesign.recalculate', { defaultValue: 'Calculate another chart' })}
+          </Button>
+        </div>
+      </Page>
     );
   }
 
@@ -466,8 +481,8 @@ function typeKey(display: string): keyof typeof HD_TYPES {
 
 // ─── Activation list ─────────────────────────────────────────────
 function ActivationList({
-  title, activations, tint,
-}: { title: string; activations: Activation[]; tint: string }) {
+  title, activations, tint, gateLabel, lineLabel,
+}: { title: string; activations: Activation[]; tint: string; gateLabel: string; lineLabel: string }) {
   return (
     <div>
       <p className={`font-display-eyebrow mb-2 ${tint}`}>{title}</p>
@@ -478,10 +493,10 @@ function ActivationList({
             className="flex items-center justify-between py-1 border-b border-mystic-800/40 last:border-b-0 text-meta"
           >
             <span className="text-mystic-300">{a.body}</span>
-            <span className="text-mystic-200">
-              {t0('Gate')} <span className="text-gold">{a.gate}</span>
+            <span className="text-mystic-200 tabular-nums">
+              <span className="text-mystic-500">{gateLabel}</span> <span className="text-gold">{a.gate}</span>
               <span className="text-mystic-500 mx-1">·</span>
-              {t0('Line')} <span className="text-gold">{a.line}</span>
+              <span className="text-mystic-500">{lineLabel}</span> <span className="text-gold">{a.line}</span>
             </span>
           </div>
         ))}
@@ -489,7 +504,6 @@ function ActivationList({
     </div>
   );
 }
-function t0(s: string) { return <span className="text-mystic-500">{s}</span>; }
 
 // ─── Bodygraph SVG ────────────────────────────────────────────────
 // Simplified but recognisable 9-centre bodygraph. Defined centres

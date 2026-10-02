@@ -8,12 +8,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { AppError, handler } from "../_shared/handler.ts";
 import { callAIText } from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 import { computeNatalChart, CHART_VERSION, type NatalChart } from "../_shared/natal.ts";
 import { z } from "npm:zod@3.24.1";
 
 const RequestSchema = z.object({
   personId: z.string().uuid(),
   focus: z.enum(["overview", "love", "career", "growth"]).optional(),
+  /** UI locale ('en' | 'ja' | 'ko' | 'zh'); the reading is written in this language. */
+  locale: z.string().max(16).optional(),
+  requestId: z.string().uuid().optional(),
 });
 type Req = z.infer<typeof RequestSchema>;
 interface Resp { reading: string; }
@@ -73,8 +77,10 @@ Deno.serve(handler<Req, Resp>({
           timezone: person.birth_tz,
         });
 
+    // The locale instruction closes the system prompt so a non-English user
+    // gets the reading in their language (they used to get English).
     const reading = await callAIText({
-      system: SYSTEM,
+      system: `${SYSTEM}\n\n${localeInstruction(body.locale, { keepVoice: true })}`,
       history: [{ role: "user", content: brief(chart, person.name, body.focus ?? "overview") }],
       temperature: 0.85,
       maxOutputTokens: 420,

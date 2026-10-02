@@ -47,7 +47,9 @@ export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const UI_NAMESPACES = ['common', 'app', 'onboarding', 'landing'] as const;
 /** The translated tarot corpus. Not a `t()` namespace: `localizeCard.ts` reads the bundle whole. */
 export const TAROT_CORPUS_NS = 'tarot';
-const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS];
+/** The translated playing-card corpus (54 cards, 9 spreads, 12 lessons); `localizePlayingCard.ts` reads it whole. */
+export const CARTO_CORPUS_NS = 'cartomancy';
+const NAMESPACES: string[] = [...UI_NAMESPACES, TAROT_CORPUS_NS, CARTO_CORPUS_NS];
 
 export const LOCALE_STORAGE_KEY = 'arcana_locale';
 
@@ -86,6 +88,7 @@ const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
     onboarding: () => import('./locales/ja/onboarding.json'),
     landing: () => import('./locales/ja/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/ja/tarot.json'),
+    [CARTO_CORPUS_NS]: () => import('./locales/ja/cartomancy.json'),
   },
   ko: {
     common: () => import('./locales/ko/common.json'),
@@ -93,6 +96,7 @@ const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
     onboarding: () => import('./locales/ko/onboarding.json'),
     landing: () => import('./locales/ko/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/ko/tarot.json'),
+    [CARTO_CORPUS_NS]: () => import('./locales/ko/cartomancy.json'),
   },
   zh: {
     common: () => import('./locales/zh/common.json'),
@@ -100,6 +104,7 @@ const LAZY_BUNDLES: Record<LazyLocale, Record<string, BundleLoader>> = {
     onboarding: () => import('./locales/zh/onboarding.json'),
     landing: () => import('./locales/zh/landing.json'),
     [TAROT_CORPUS_NS]: () => import('./locales/zh/tarot.json'),
+    [CARTO_CORPUS_NS]: () => import('./locales/zh/cartomancy.json'),
   },
 };
 
@@ -150,9 +155,9 @@ const initPromise = i18n
   .use(initReactI18next)
   .init({
     resources: {
-      // The empty tarot corpus marks the namespace as present for English,
-      // so i18next never asks the backend for it.
-      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp, [TAROT_CORPUS_NS]: {} },
+      // The empty tarot and cartomancy corpora mark the namespaces as present
+      // for English, so i18next never asks the backend for them.
+      en: { common: enCommon, onboarding: enOnboarding, landing: enLanding, app: enApp, [TAROT_CORPUS_NS]: {}, [CARTO_CORPUS_NS]: {} },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LOCALES as unknown as string[],
@@ -252,14 +257,20 @@ syncDocumentLang(i18n.language);
 i18n.on('languageChanged', syncDocumentLang);
 
 // CJK faces load per locale, not for everyone. The Latin faces are
-// self-hosted (see index.css); Noto Sans / Serif JP, KR and SC are large,
-// so each is fetched from Google Fonts only once the user is actually
-// reading in that language. Offline Android falls back to the system's
-// own Noto CJK, which is what the stacks name anyway.
+// self-hosted (see index.css); Noto Sans JP, KR and SC are large, so each
+// is fetched from Google Fonts only once the user is actually reading in
+// that language. Offline Android falls back to the system's own Noto CJK,
+// which is what the stacks name anyway.
+//
+// Sans at 400 and 600 only (R8 §a7). The 500 weight and the three Noto
+// Serif families were five more font files per CJK visitor: the display
+// serif falls back to the system CJK face for the few heading glyphs the
+// Latin Cormorant lacks, and the body tier renders in 400/600, which is
+// all the type roles ask for.
 const CJK_FONTS: Record<string, string> = {
-  ja: 'family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@500;600',
-  ko: 'family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600',
-  zh: 'family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600',
+  ja: 'family=Noto+Sans+JP:wght@400;600',
+  ko: 'family=Noto+Sans+KR:wght@400;600',
+  zh: 'family=Noto+Sans+SC:wght@400;600',
 };
 function loadCjkFonts(lng: string) {
   if (typeof document === 'undefined') return;

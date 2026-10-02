@@ -9,7 +9,8 @@ import type { Planet, AspectType } from '../../types/astrology';
 import { supabase } from '../../lib/supabase';
 import { appStorage } from '../../lib/appStorage';
 import { localDateStr } from '../../utils/localDate';
-import { PLANET_GLYPH } from '../../lib/chart';
+import { isPlanet } from '../../lib/chart';
+import { PlanetGlyph } from '../icons';
 import { DAILY_SCORE_FRAMES } from '../../data/oracleSuggestions';
 
 interface Influence {
@@ -88,7 +89,8 @@ export function DailyCosmicScore() {
               style={{ transition: 'stroke-dasharray 0.8s ease-out' }} />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-display text-display leading-none">{data.score}</span>
+            {/* A number, so Inter — never the display serif. */}
+            <span className="font-sans text-display font-semibold tabular-nums leading-none">{data.score}</span>
           </div>
         </div>
         <div className="flex-1 min-w-0">
@@ -121,7 +123,11 @@ export function DailyCosmicScore() {
         <div className="space-y-1.5 pt-2 border-t border-mystic-700">
           {data.influences.map((inf, i) => (
             <div key={i} className="flex items-center gap-2 text-meta">
-              <span className="font-display" aria-hidden>{PLANET_GLYPH[inf.transiting]}</span>
+              {isPlanet(inf.transiting) ? (
+                <PlanetGlyph planet={inf.transiting} size={16} className="text-gold shrink-0" />
+              ) : (
+                <span className="w-4 text-center text-mystic-400" aria-hidden>{inf.transiting.charAt(0)}</span>
+              )}
               <span className="text-mystic-300 flex-1 truncate">
                 {t('home.cosmicScore.influence', {
                   defaultValue: '{{transiting}} {{type}} your {{natal}}',
@@ -129,9 +135,9 @@ export function DailyCosmicScore() {
                   type: localizeAspectName(inf.type as AspectType),
                   natal: localizePlanetName(inf.natal as Planet),
                 })}
-                <span className="text-mystic-500 text-caption"> · {inf.orb}°</span>
+                <span className="text-mystic-500 text-caption tabular-nums"> · {inf.orb}°</span>
               </span>
-              <span className={`tabular-nums ${inf.effect > 0 ? 'text-teal' : 'text-coral'}`}>
+              <span className={`font-sans tabular-nums ${inf.effect > 0 ? 'text-teal' : 'text-coral'}`}>
                 {inf.effect > 0 ? '+' : ''}{inf.effect}
               </span>
             </div>

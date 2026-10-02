@@ -92,28 +92,34 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   // automatically on `npx cap sync android` / `cap sync ios`.
   const loadSentry = async () => {
     try {
-      const SentryCap = await import('@sentry/capacitor');
-      const Sentry = await import('@sentry/react');
-      SentryCap.init(
+      // Destructured, not `const Sentry = await import(…)`: Rollup only
+      // tree-shakes a dynamic import whose used members it can see, and a
+      // namespace it cannot follow keeps every export of @sentry/react in
+      // vendor-sentry — Replay included, which is the reason it is dropped
+      // above. (AuthContext.tsx and telemetry.ts still take the namespace
+      // in a `.then((Sentry) => …)` callback; until they destructure too,
+      // the chunk keeps the full surface.)
+      const { init: initCapacitor } = await import('@sentry/capacitor');
+      const { init: initReact, captureException } = await import('@sentry/react');
+      initCapacitor(
         {
           dsn: import.meta.env.VITE_SENTRY_DSN,
           environment: import.meta.env.MODE,
           release,
-          integrations: [
-            // Replay records the last few seconds of user interaction (DOM
-            // mutations, clicks, network calls) when an error fires. Lets us
-            // literally watch what the user did before the crash.
-            // Sample rate 0 for happy-path sessions; 100% on error so every
-            // error has a replay attached.
-            Sentry.replayIntegration({
-              maskAllText: false,
-              maskAllInputs: true, // never record what users type into forms
-              blockAllMedia: false,
-            }),
-          ],
+          // No Session Replay. `replayIntegration` (the rrweb recorder,
+          // ~100 KB gz of the 150 KB vendor-sentry chunk, 102 KB of it
+          // reported unused on every page) buffered DOM mutations for every
+          // visitor so that the 0.x% who hit an error could have a replay
+          // attached. Not referencing it lets Rollup drop @sentry-internal/
+          // replay from the build entirely; a static `integrations: [...]`
+          // behind a runtime flag would keep it in the chunk. Errors keep
+          // their stack, breadcrumbs, tags and the pre-init queue below. To
+          // bring replays back, load them on demand with
+          // `Sentry.lazyLoadIntegration('replayIntegration')` after the
+          // first captured event (and allow browser.sentry-cdn.com in the
+          // CSP script-src) rather than re-adding the static import.
+          integrations: [],
           tracesSampleRate: 0.2,
-          replaysSessionSampleRate: 0,
-          replaysOnErrorSampleRate: 1.0,
           // Drop noisy errors that aren't actionable.
           ignoreErrors: [
             // Browser extensions / cross-origin junk.
@@ -138,11 +144,11 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         },
         // The 2nd arg is the inner @sentry/react init function — Capacitor
         // wrapper passes through after setting up the native bridge.
-        Sentry.init,
+        initReact,
       );
       // Flush pre-init errors.
       for (const { error, source } of preInitErrors) {
-        Sentry.captureException(error, { tags: { source } });
+        captureException(error, { tags: { source } });
       }
       preInitErrors.length = 0;
       window.onerror = origOnError;

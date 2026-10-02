@@ -95,7 +95,13 @@ export function AiCompanionPage() {
     } catch { /* ignore */ }
   }, [dailyUsed]);
 
-  const { tryConsume, EarnSheet } = useMoonstoneSpend('companion-session');
+  const { tryConsume, EarnSheet, error: gateError } = useMoonstoneSpend('companion-session');
+
+  // The daily cap is a safety rail, not the price. It is only shown once it
+  // is close to being the thing that stops the next message; otherwise the
+  // one rule on screen is the Moonstone cost of starting a conversation.
+  const remaining = Math.max(0, DAILY_LIMIT - dailyUsed);
+  const limitIsTheGate = remaining <= 3;
 
   const send = async () => {
     const trimmed = input.trim();
@@ -172,12 +178,11 @@ export function AiCompanionPage() {
         icon={<MessageCircle />}
         title={t('companion.title', { defaultValue: 'Companion' })}
         action={
-          <button
-            onClick={clearConversation}
-            className="text-meta text-mystic-500 hover:text-mystic-300 px-2 py-1 min-h-[44px]"
-          >
-            {t('companion.newConversation', { defaultValue: 'New conversation' })}
-          </button>
+          history.length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={clearConversation}>
+              {t('companion.newConversation', { defaultValue: 'New conversation' })}
+            </Button>
+          ) : undefined
         }
       />
 
@@ -213,7 +218,7 @@ export function AiCompanionPage() {
       {/* Message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-2">
         {history.length === 0 && (
-          <div className="text-center py-12 text-ui text-mystic-400 italic">
+          <div className="text-center py-12 px-4 text-ui text-mystic-400 italic max-w-prose mx-auto">
             {t('companion.emptyState', { defaultValue: 'Start by asking anything — a question held in your chest, a dream you want read, a name you want to understand.' })}
           </div>
         )}
@@ -235,7 +240,7 @@ export function AiCompanionPage() {
         ))}
         {sending && (
           <div className="flex justify-start">
-            <div className="bg-mystic-800/60 rounded-control rounded-bl p-3 text-sm text-mystic-400 italic">
+            <div className="bg-mystic-800/60 rounded-control rounded-bl p-3 text-meta text-mystic-400 italic">
               <span className="inline-flex items-center gap-1.5">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
                 {t('companion.thinking', { defaultValue: 'thinking…' })}
@@ -245,7 +250,7 @@ export function AiCompanionPage() {
         )}
       </div>
 
-      {/* Composer + limit */}
+      {/* Composer + the one gating rule */}
       <div className="space-y-2">
         <div className="flex gap-2">
           <textarea
@@ -259,8 +264,9 @@ export function AiCompanionPage() {
             }}
             rows={2}
             maxLength={3000}
-            placeholder={t('companion.placeholder', { defaultValue: 'Ask the companion...' }) as string}
-            className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+            placeholder={t('companion.placeholder', { defaultValue: 'Ask the companion…' }) as string}
+            aria-label={t('companion.placeholder', { defaultValue: 'Ask the companion…' }) as string}
+            className="flex-1 bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
           />
           <Button
             variant="primary"
@@ -269,18 +275,27 @@ export function AiCompanionPage() {
             className="px-4"
             aria-label={t('common:actions.send', { defaultValue: 'Send' }) as string}
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden />
           </Button>
         </div>
-        <p className="text-meta text-mystic-400 text-right">
-          {t('companion.dailyRemaining', {
-            defaultValue: '{{remaining}} messages left today',
-            remaining: Math.max(0, DAILY_LIMIT - dailyUsed),
-            n: dailyUsed,
-            limit: DAILY_LIMIT,
-          })}
-        </p>
-        {history.length === 0 && <MoonstoneCostLine className="mt-1" />}
+        {history.length === 0 && !limitIsTheGate && <MoonstoneCostLine wording="conversation" className="mt-1" />}
+        {limitIsTheGate && (
+          <p className="text-meta text-mystic-400 text-right tabular-nums" role="status">
+            {remaining === 0
+              ? t('companion.dailyLimitReached', { defaultValue: 'Daily message limit reached — come back tomorrow.' })
+              : t('companion.dailyRemaining', {
+                  defaultValue: '{{remaining}} messages left today',
+                  remaining,
+                  n: dailyUsed,
+                  limit: DAILY_LIMIT,
+                })}
+          </p>
+        )}
+        {gateError && (
+          <p className="text-meta text-coral" role="alert">
+            {gateError}
+          </p>
+        )}
       </div>
       {EarnSheet}
     </Page>

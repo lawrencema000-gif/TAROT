@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Briefcase, Lock, Moon, Gift, Share2, CheckCircle2, AlertCircle, Crown } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, Section, EmptyState, ResultLayout, ReadingProse, SparkleFourPoint } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, EmptyState, ResultLayout, ReadingProse, Paper, Disclaimer, AffirmationPanel } from '../components/ui';
 import { useT } from '../i18n/useT';
+import { isNative } from '../utils/platform';
 import { useAuth } from '../context/AuthContext';
 import { useFeatureFlag } from '../context/FeatureFlagContext';
 import { reportUnlocks, moonstones } from '../dal';
@@ -36,6 +37,8 @@ export function CareerReportPage() {
   const [showSubscription, setShowSubscription] = useState(false);
   const [showWatchAd, setShowWatchAd] = useState(false);
   const moonstonesEnabled = useFeatureFlag('moonstones');
+  // Rewarded ads only exist inside the native shell (R5 M-9).
+  const adAvailable = isNative();
 
   const checkUnlock = useCallback(async () => {
     if (!user || !mbti) {
@@ -217,32 +220,41 @@ export function CareerReportPage() {
               })}
             </Button>
           ) : (
-            <div className="mt-3 p-3 rounded-control bg-mystic-900/40 border border-mystic-700/30 text-left">
-              <p className="text-ui text-mystic-200 mb-2">
-                {t('careerReport.orEarnMoonstones', {
-                  defaultValue: 'Or unlock with {{n}} Moonstones',
+            <div className="mt-3 space-y-2 text-left">
+              <Button variant="outline" fullWidth disabled>
+                <Moon className="w-4 h-4 mr-2" />
+                {t('careerReport.unlockCta', {
+                  defaultValue: 'Unlock with {{n}} Moonstones',
                   n: CAREER_REPORT_COST_MOONSTONES,
                 })}
-              </p>
-              <p className="text-meta text-mystic-400 mb-3">
-                {t('careerReport.balanceShort', { defaultValue: 'Balance: {{n}}', n: balance ?? 0 })}
-                {' · '}
-                {t('careerReport.earnHint', {
-                  defaultValue: 'Earn Moonstones via daily check-in, watching ads, or inviting friends.',
-                })}
-              </p>
-              <Button
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => setShowWatchAd(true)}
-              >
-                <Gift className="w-3.5 h-3.5 mr-1.5" />
-                {t('careerReport.earnNow', {
-                  defaultValue: 'Watch an ad, earn {{n}} Moonstones',
-                  n: MOONSTONES_PER_AD,
-                })}
               </Button>
+              <p className="text-meta text-mystic-400 text-center tabular-nums">
+                {t('reportUnlock.shortfall', {
+                  defaultValue: 'You have {{have}} Moonstones — {{need}} more needed.',
+                  have: balance ?? 0,
+                  need: Math.max(0, CAREER_REPORT_COST_MOONSTONES - (balance ?? 0)),
+                })}
+              </p>
+              {adAvailable ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  size="sm"
+                  onClick={() => setShowWatchAd(true)}
+                >
+                  <Gift className="w-3.5 h-3.5 mr-1.5" />
+                  {t('careerReport.earnNow', {
+                    defaultValue: 'Watch an ad, earn {{n}} Moonstones',
+                    n: MOONSTONES_PER_AD,
+                  })}
+                </Button>
+              ) : (
+                <p className="text-meta text-mystic-400 text-center">
+                  {t('reportUnlock.earnHintWeb', {
+                    defaultValue: 'Earn Moonstones with the daily check-in or an invite, or open everything with Premium.',
+                  })}
+                </p>
+              )}
             </div>
           ))}
         </Card>
@@ -288,7 +300,7 @@ export function CareerReportPage() {
             </div>
           }
         />
-        {moonstonesEnabled && (
+        {moonstonesEnabled && adAvailable && (
           <WatchAdSheet
             open={showWatchAd}
             onClose={() => setShowWatchAd(false)}
@@ -303,7 +315,11 @@ export function CareerReportPage() {
     );
   }
 
-  // Unlocked — render the full report.
+  // Unlocked — the verdict block leads (navy), then the whole report reads
+  // on paper, closed by the Disclaimer. A report the user paid for is not
+  // hidden behind a disclosure.
+  const sectionTitle = 'heading-display-md heading-strong text-ink mb-3';
+  const bullet = 'pl-4 relative before:content-[\'•\'] before:absolute before:left-0 before:text-ink-muted';
   return (
     <ResultLayout
       eyebrow={`${archetype.mbti} · ${t('careerReport.shareLabel', { defaultValue: 'Career Archetype' })}`}
@@ -317,107 +333,79 @@ export function CareerReportPage() {
           {t('careerReport.share', { defaultValue: 'Share my archetype' })}
         </Button>
       }
-      detailLabel={t('careerReport.fullReport', { defaultValue: 'The full report' })}
-      defaultDetailOpen
-    >
-      <Section
-        headingLevel="h3"
-        spacing="sm"
-        title={t('careerReport.bestFit', { defaultValue: 'Best-fit roles' })}
-      >
-        <div className="grid grid-cols-2 gap-2">
-          {archetype.bestFitRoles.map((role, i) => (
-            <div key={i} className="text-ui text-mystic-100 bg-mystic-800/40 rounded-lg px-3 py-2">
-              {role}
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section
-        headingLevel="h3"
-        spacing="sm"
-        title={t('careerReport.drains', { defaultValue: 'Environments that drain you' })}
-      >
-        <ul className="reading-copy space-y-2">
-          {archetype.environmentsThatDrain.map((item, i) => (
-            <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-mystic-400">
-              {item}
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section
-        headingLevel="h3"
-        spacing="sm"
-        title={t('careerReport.collaboration', { defaultValue: 'Collaboration pattern' })}
-      >
-        <ReadingProse text={archetype.collaborationPattern} lede={false} />
-      </Section>
-
-      <Section
-        headingLevel="h3"
-        spacing="sm"
-        title={t('careerReport.blindSpots', { defaultValue: 'Blind spots' })}
-      >
-        <ul className="reading-copy space-y-2">
-          {archetype.blindSpots.map((item, i) => (
-            <li key={i} className="pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-mystic-400">
-              {item}
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Card padding="lg" className="bg-gradient-to-br from-cosmic-blue/5 to-mystic-900/80 border-cosmic-blue/20">
-        <h3 className="heading-display-md text-mystic-100 mb-3">
-          {t('careerReport.ninetyDays', { defaultValue: 'First 90 days' })}
-        </h3>
-        <div className="space-y-4">
-          {archetype.firstNinetyDays.map((phase) => (
-            <div key={phase.month} className="pl-4 border-l-2 border-cosmic-blue/30">
-              <p className="font-display-eyebrow mb-1">
-                {t('careerReport.monthLabel', { defaultValue: 'Month {{n}}', n: phase.month })}
-              </p>
-              <p className="text-body font-medium text-mystic-100 mb-2">{phase.focus}</p>
-              <ul className="reading-copy space-y-1.5">
-                {phase.actions.map((action, i) => (
-                  <li key={i}>
-                    {action}
-                  </li>
+      footer={
+        <>
+          <Paper as="article" tail className="space-y-8">
+            <section>
+              <h3 className={sectionTitle}>{t('careerReport.bestFit', { defaultValue: 'Best-fit roles' })}</h3>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-2 reading-copy">
+                {archetype.bestFitRoles.map((role, i) => (
+                  <li key={i} className={bullet}>{role}</li>
                 ))}
               </ul>
-            </div>
-          ))}
-        </div>
-      </Card>
+            </section>
 
-      <Section
-        headingLevel="h3"
-        spacing="sm"
-        title={t('careerReport.reflection', { defaultValue: 'Sit with these questions' })}
-      >
-        <ul className="reading-copy space-y-3">
-          {archetype.reflectionQuestions.map((q, i) => (
-            <li key={i} className="italic">
-              {i + 1}. {q}
-            </li>
-          ))}
-        </ul>
-      </Section>
+            <section>
+              <h3 className={sectionTitle}>{t('careerReport.drains', { defaultValue: 'Environments that drain you' })}</h3>
+              <ul className="reading-copy space-y-2">
+                {archetype.environmentsThatDrain.map((item, i) => (
+                  <li key={i} className={bullet}>{item}</li>
+                ))}
+              </ul>
+            </section>
 
-      {/* The affirmation is the report's one pull-quote. It used to be a
-          14px italic line centred in a card, which wraps to three lines on
-          a phone; .reading-quote gives it the serif, the gold rule and a
-          left edge instead of quote marks. */}
-      <Card padding="lg" className="bg-gradient-to-br from-gold/10 to-mystic-900 border-gold/30">
-        <SparkleFourPoint size={20} className="block text-gold mb-2" />
-        <p className="reading-quote my-0">
-          {archetype.affirmation}
-        </p>
-      </Card>
-    </ResultLayout>
+            <section>
+              <h3 className={sectionTitle}>{t('careerReport.collaboration', { defaultValue: 'Collaboration pattern' })}</h3>
+              <ReadingProse text={archetype.collaborationPattern} lede={false} />
+            </section>
+
+            <section>
+              <h3 className={sectionTitle}>{t('careerReport.blindSpots', { defaultValue: 'Blind spots' })}</h3>
+              <ul className="reading-copy space-y-2">
+                {archetype.blindSpots.map((item, i) => (
+                  <li key={i} className={bullet}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section>
+              <h3 className={sectionTitle}>{t('careerReport.ninetyDays', { defaultValue: 'First 90 days' })}</h3>
+              <div className="space-y-5">
+                {archetype.firstNinetyDays.map((phase) => (
+                  <div key={phase.month} className="pl-4 border-l-2 border-paper-hairline">
+                    <p className="font-display-eyebrow mb-1 tabular-nums">
+                      {t('careerReport.monthLabel', { defaultValue: 'Month {{n}}', n: phase.month })}
+                    </p>
+                    <p className="text-body font-medium text-ink mb-2">{phase.focus}</p>
+                    <ul className="reading-copy space-y-1.5">
+                      {phase.actions.map((action, i) => (
+                        <li key={i} className={bullet}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h3 className={sectionTitle}>{t('careerReport.reflection', { defaultValue: 'Sit with these questions' })}</h3>
+              <ol className="reading-copy space-y-3">
+                {archetype.reflectionQuestions.map((q, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="shrink-0 w-5 text-meta text-ink-muted tabular-nums pt-1">{i + 1}</span>
+                    <span>{q}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            {/* The affirmation is the report's one pull-quote. */}
+            <AffirmationPanel text={archetype.affirmation} />
+          </Paper>
+          <Disclaimer kind="general" tail />
+        </>
+      }
+    />
   );
 }
 

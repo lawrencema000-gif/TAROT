@@ -47,7 +47,16 @@ function sentrySourceMaps(): Plugin | null {
 // three non-English locales are dynamic imports in src/i18n/config.ts, so
 // each file is its own chunk; this names them legibly (assets/i18n-ja-app-
 // <hash>.js) and lets the preload plugin below find them in the bundle.
-const LOCALE_BUNDLE_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\]([a-z]+)[/\\]([a-z]+)\.json$/;
+// The learn-library overlays (learn-astrology.json …, src/i18n/learnOverlay.ts)
+// match too and are named the same way, but see ON_DEMAND_BUNDLE_RE: they are
+// fetched by the learn pages, not at boot.
+const LOCALE_BUNDLE_RE = /[/\\]src[/\\]i18n[/\\]locales[/\\]([a-z]+)[/\\]([a-z-]+)\.json$/;
+
+// Namespaces a route loads on demand. They must NOT be modulepreloaded with
+// the UI bundles: the four learn overlays are 25–60 KB gz each per locale,
+// and only a visitor who opens /astrology, /numerology, /glossary or
+// /crystals in that language should download the one that page reads.
+const ON_DEMAND_BUNDLE_RE = /^learn-/;
 
 // Starts the locale chunks downloading before the main bundle has parsed.
 //
@@ -77,7 +86,7 @@ function localePreloadPlugin(): Plugin {
         for (const [fileName, output] of Object.entries(ctx.bundle)) {
           if (output.type !== 'chunk' || !output.facadeModuleId) continue;
           const m = LOCALE_BUNDLE_RE.exec(output.facadeModuleId);
-          if (!m || m[1] === 'en') continue;
+          if (!m || m[1] === 'en' || ON_DEMAND_BUNDLE_RE.test(m[2])) continue;
           (byLocale[m[1]] ??= []).push(`${base}${fileName}`);
         }
         if (Object.keys(byLocale).length === 0) return;

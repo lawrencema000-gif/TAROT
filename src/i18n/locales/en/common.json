@@ -1,8 +1,6 @@
 {
   "app": {
-    "name": "Arcana",
-    "tagline": "Know yourself. One ritual a day.",
-    "shortTagline": "Your daily ritual."
+    "tagline": "Know yourself. One ritual a day."
   },
   "nav": {
     "home": "Home",
@@ -14,12 +12,10 @@
     "blog": "Blog",
     "cardMeanings": "Card meanings",
     "signIn": "Sign in",
-    "signOut": "Sign out",
     "settings": "Settings",
     "search": "Search",
     "saved": "Saved",
     "back": "Back",
-    "backToArcana": "← Back to Arcana",
     "backToNews": "Back to news",
     "trophies": "Trophies",
     "news": "News",
@@ -41,17 +37,11 @@
     "continue": "Continue",
     "cancel": "Cancel",
     "delete": "Delete",
-    "confirm": "Confirm",
     "close": "Close",
-    "skip": "Skip",
     "retry": "Try again",
-    "readMore": "Read more",
-    "copy": "Copy",
     "copied": "Copied.",
     "saved": "Saved",
     "shareFailed": "Couldn’t share. Try again.",
-    "restore": "Restore purchases",
-    "manage": "Manage subscription",
     "loading": "Loading…",
     "send": "Send",
     "refresh": "Refresh"
@@ -59,22 +49,8 @@
   "labels": {
     "email": "Email",
     "password": "Password",
-    "displayName": "Display name",
     "language": "Language",
-    "birthDate": "Birth date",
-    "birthTime": "Birth time",
-    "birthPlace": "Birth place",
-    "timezone": "Time zone",
-    "loading": "Loading…",
-    "processing": "Processing…",
-    "today": "Today",
-    "yesterday": "Yesterday",
-    "optional": "Optional",
-    "required": "Required",
-    "searchPlaceholder": "Search…",
-    "yes": "Yes",
-    "no": "No",
-    "maybe": "Maybe"
+    "loading": "Loading…"
   },
   "errors": {
     "generic": "That didn’t work — check your connection and try again.",
@@ -139,14 +115,6 @@
     "invalidValue": "This value isn’t valid."
   },
   "toast": {
-    "savedSuccess": "Saved.",
-    "deletedSuccess": "Deleted.",
-    "copiedSuccess": "Copied to clipboard.",
-    "welcomeBack": "Welcome back.",
-    "signedOut": "Signed out.",
-    "offline": "You’re offline. Some features are unavailable.",
-    "reconnected": "Back online.",
-    "updateAvailable": "A new version is available.",
     "languageChanged": "Language changed."
   },
   "languages": {
@@ -154,12 +122,6 @@
     "ja": "日本語",
     "ko": "한국어",
     "zh": "简体中文"
-  },
-  "time": {
-    "morning": "Morning",
-    "afternoon": "Afternoon",
-    "evening": "Evening",
-    "night": "Night"
   },
   "auth": {
     "profileLoadFailed": "Couldn’t load your profile — refresh the page to try again.",

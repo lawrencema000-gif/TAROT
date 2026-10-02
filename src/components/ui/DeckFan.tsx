@@ -13,7 +13,15 @@ import type { CSSProperties } from 'react';
  * the entrance to its final frame, so the fan simply is there.
  *
  * `back` is the user's chosen card back, or the Arcana default. Every
- * copy is one `<img>` of the same URL, decoded once.
+ * copy is one `<img>` of the same URL, decoded once. A back that is one of
+ * the bundled card images (`/bundled-cards/…/<card>.webp`, 512×768) is
+ * served from its 150px thumbnail at 1× and the 400px rendition at 2×: the
+ * widest card here is 96px, so the full image was 157 KB of pixels nobody
+ * could see. The default back is an SVG and needs no srcset.
+ *
+ * The deck sits on the canvas by itself. A blurred gold disc used to sit
+ * behind it; it was a glow by another name, and HomeHero shows the fan
+ * reads better without it.
  */
 
 export type DeckFanSize = 'sm' | 'md' | 'lg';
@@ -34,8 +42,23 @@ const SIZES: Record<DeckFanSize, { w: number; box: [number, number]; spread: num
 
 const KEYFRAMES = `@keyframes arcana-fan{from{opacity:0;transform:translate(-50%,-50%) translate(0,12px) rotate(0deg) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) translate(var(--fan-x),var(--fan-y)) rotate(var(--fan-r)) scale(1)}}`;
 
+const BUNDLED_RE = /^\/bundled-cards\/(major-arcana|minor-arcana)\/([^/]+\.webp)$/;
+
+/**
+ * The 1× source and the srcset for a card back. Only the bundled card
+ * images have renditions (see src/config/bundledImages.ts); anything else
+ * — the default SVG, a user upload — is used as given.
+ */
+export function deckFanSources(src: string): { src: string; srcSet?: string } {
+  const m = BUNDLED_RE.exec(src);
+  if (!m) return { src };
+  const thumb = `/bundled-cards/thumb/${m[1]}/${m[2]}`;
+  const full = `/bundled-cards/full/${m[1]}/${m[2]}`;
+  return { src: thumb, srcSet: `${thumb} 1x, ${full} 2x` };
+}
+
 export function DeckFan({ back, size = 'md', animate = true, className = '' }: DeckFanProps) {
-  const src = back || '/card-backs/default.svg';
+  const sources = deckFanSources(back || '/card-backs/default.svg');
   const s = SIZES[size];
   const fan = [
     { r: -s.rot, x: -s.spread, y: s.drop },
@@ -45,10 +68,6 @@ export function DeckFan({ back, size = 'md', animate = true, className = '' }: D
   return (
     <div className={`relative mx-auto ${className}`} style={{ width: s.box[0], height: s.box[1] }} aria-hidden>
       <style>{KEYFRAMES}</style>
-      <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/10 blur-3xl"
-        style={{ width: s.box[1] * 1.2, height: s.box[1] * 1.2 }}
-      />
       {fan.map((f, i) => (
         <div
           key={i}
@@ -65,7 +84,16 @@ export function DeckFan({ back, size = 'md', animate = true, className = '' }: D
             } as CSSProperties
           }
         >
-          <img src={src} alt="" decoding="async" className="w-full h-full object-cover pointer-events-none select-none" draggable={false} />
+          <img
+            src={sources.src}
+            srcSet={sources.srcSet}
+            alt=""
+            width={s.w}
+            height={Math.round(s.w * 1.5)}
+            decoding="async"
+            className="w-full h-full object-cover pointer-events-none select-none"
+            draggable={false}
+          />
         </div>
       ))}
     </div>

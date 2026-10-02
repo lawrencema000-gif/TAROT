@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dice6, Feather, Zap } from 'lucide-react';
-import { Card, Button, Chip, Page, ReadingProse, Section, PageHeader } from '../components/ui';
+import { Dice6, Zap } from 'lucide-react';
+import { Card, Button, Chip, Page, ReadingProse, Section, PageHeader, Paper, EyebrowLabel } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { rollDice, type DiceReading } from '../data/diceOracle';
 import { ZODIAC_ICONS, PLANET_ICONS } from '../components/icons';
@@ -76,15 +76,16 @@ export function DicePage() {
     setRolling(false);
   };
 
+  // A pip count is a number: Inter, tabular, never the display serif.
   const renderDie = (value: number, idx: number) => (
-    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center text-3xl font-display text-gold">
+    <div key={idx} className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center font-sans text-display font-semibold tabular-nums text-gold">
       {value}
     </div>
   );
 
   const astroDie = (glyph: ReactNode, label: string) => (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center text-3xl text-gold" style={{ fontFamily: 'serif' }}>
+      <div className="w-16 h-16 bg-mystic-800 border-2 border-gold/40 rounded-control flex items-center justify-center font-sans text-display font-semibold tabular-nums text-gold">
         {glyph}
       </div>
       <span className="text-meta uppercase tracking-wider text-mystic-400">{label}</span>
@@ -101,10 +102,10 @@ export function DicePage() {
         {/* mode toggle */}
         <div className="flex gap-1.5">
           <Chip size="sm" selected={mode === 'astro'} onSelect={() => { setMode('astro'); setReading(null); }}>
-            Astro dice
+            {t('dice.modeAstro', { defaultValue: 'Astro dice' })}
           </Chip>
           <Chip size="sm" selected={mode === 'classic'} onSelect={() => { setMode('classic'); setAstro(null); }}>
-            Classic
+            {t('dice.modeClassic', { defaultValue: 'Classic' })}
           </Chip>
         </div>
 
@@ -128,21 +129,20 @@ export function DicePage() {
             </div>
             <h2 className="heading-display-md text-mystic-100">{astro.planet} in {astro.sign}, House {astro.house}</h2>
           </Card>
-          <Section contentClassName="space-y-3">
-            {interp && (
-              <>
-                <div className="reading-copy">
-                  <p className="reading-lede">{interp.planetInSignText(astro.planet, astro.sign)}</p>
-                  <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
-                </div>
-                {interp.houseMeaning(astro.house) && (
-                  <p className="text-meta text-mystic-400">
-                    House {astro.house} — {interp.houseMeaning(astro.house)!.title}: {interp.houseMeaning(astro.house)!.keywords.join(', ')}.
-                  </p>
-                )}
-              </>
-            )}
-          </Section>
+          {/* The reading is read for meaning, so it sits on paper. */}
+          {interp && (
+            <Paper as="article" className="space-y-4">
+              <div className="reading-copy mx-auto">
+                <p className="reading-lede">{interp.planetInSignText(astro.planet, astro.sign)}</p>
+                <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
+              </div>
+              {interp.houseMeaning(astro.house) && (
+                <p className="reading-meta">
+                  House {astro.house} — {interp.houseMeaning(astro.house)!.title}: {interp.houseMeaning(astro.house)!.keywords.join(', ')}.
+                </p>
+              )}
+            </Paper>
+          )}
           <Button
             variant="outline"
             fullWidth
@@ -174,21 +174,20 @@ export function DicePage() {
             <div className="flex justify-center gap-3 mb-4">
               {reading.rolls.map((v, i) => renderDie(v, i))}
             </div>
-            <p className="text-meta text-mystic-400 tracking-widest uppercase">
+            <p className="text-meta text-mystic-400 tracking-widest uppercase tabular-nums">
               {t('dice.sumLabel', { defaultValue: 'Sum' })} {reading.sum}
             </p>
             <h2 className="heading-display-lg text-mystic-100 mt-2">{reading.title}</h2>
           </Card>
-          <Section>
+          <Paper as="article" className="space-y-6">
             <ReadingProse text={reading.reading} />
-          </Section>
-          <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-            <h3 className="heading-display-md text-mystic-100 mb-3 flex items-center gap-2">
-              <Feather className="w-4 h-4 text-gold" />
-              {t('dice.promptLabel', { defaultValue: 'Hold this question' })}
-            </h3>
-            <p className="reading-quote my-0">{reading.prompt}</p>
-          </Card>
+            <div>
+              <EyebrowLabel tone="ink" align="left">
+                {t('dice.promptLabel', { defaultValue: 'Hold this question' })}
+              </EyebrowLabel>
+              <blockquote className="reading-quote my-0 mt-2">{reading.prompt}</blockquote>
+            </div>
+          </Paper>
         </>
       )}
 

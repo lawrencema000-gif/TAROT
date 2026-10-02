@@ -4,7 +4,7 @@ export const bigFiveQuiz: QuizDefinition = {
   id: 'big-five-v1',
   type: 'big-five',
   title: 'Big Five Personality Assessment',
-  description: 'This assessment maps your personality across the five most scientifically validated dimensions of human personality. Rather than assigning a single type, the Big Five gives you a spectrum for each trait, revealing how you naturally process experiences, relate to others, manage responsibilities, and handle stress. You will receive a real-world interpretation of each trait score, specific strengths and pitfalls, lifestyle suggestions, and a growth lever for meaningful change.',
+  description: 'This assessment maps your personality across the five dimensions of the most widely researched model of personality. Rather than assigning a single type, the Big Five gives you a spectrum for each trait, revealing how you naturally process experiences, relate to others, manage responsibilities, and handle stress. You will receive a real-world interpretation of each trait score, specific strengths and pitfalls, lifestyle suggestions, and a growth lever for meaningful change.',
   questions: [
     { id: 'o1', text: 'I enjoy trying new and different experiences.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'o2', text: 'I have a vivid imagination.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -14,10 +14,10 @@ export const bigFiveQuiz: QuizDefinition = {
     { id: 'o6', text: 'I prefer sticking to what I know rather than exploring new things.', dimension: 'openness', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'o7', text: 'I enjoy thinking about philosophical questions.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'o8', text: 'I get excited by new ideas and possibilities.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'o9', text: 'I find beauty in things that others might overlook.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'o9', text: 'I pay attention to my inner emotional reactions and what they are telling me.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'o10', text: 'I am open to reconsidering my values and beliefs.', dimension: 'openness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
-    { id: 'c1', text: 'I am always prepared and organized.', dimension: 'conscientiousness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'c1', text: 'I plan ahead so that I am rarely caught unprepared.', dimension: 'conscientiousness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'c2', text: 'I pay attention to details.', dimension: 'conscientiousness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'c3', text: 'I often leave tasks unfinished.', dimension: 'conscientiousness', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'c4', text: 'I follow through on my commitments.', dimension: 'conscientiousness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -35,7 +35,7 @@ export const bigFiveQuiz: QuizDefinition = {
     { id: 'e5', text: 'I feel energized after social events.', dimension: 'extraversion', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'e6', text: 'I tend to be quiet in group settings.', dimension: 'extraversion', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'e7', text: 'I like meeting new people.', dimension: 'extraversion', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'e8', text: 'I am talkative and expressive.', dimension: 'extraversion', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'e8', text: 'I am usually the one who keeps a conversation going.', dimension: 'extraversion', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'e9', text: 'I enjoy parties and social gatherings.', dimension: 'extraversion', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'e10', text: 'I have a wide circle of acquaintances.', dimension: 'extraversion', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
 
@@ -43,8 +43,8 @@ export const bigFiveQuiz: QuizDefinition = {
     { id: 'a2', text: 'I trust others easily.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'a3', text: 'I can be cold and distant.', dimension: 'agreeableness', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'a4', text: 'I try to be helpful and considerate of others.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'a5', text: 'I avoid arguments and conflicts.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
-    { id: 'a6', text: 'I sometimes put my needs above others\'.', dimension: 'agreeableness', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
+    { id: 'a5', text: 'In a disagreement I give way rather than push my point.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
+    { id: 'a6', text: 'I look after my own interests before I worry about other people\'s.', dimension: 'agreeableness', options: [{ value: 5, label: 'Strongly Disagree' }, { value: 4, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 2, label: 'Agree' }, { value: 1, label: 'Strongly Agree' }] },
     { id: 'a7', text: 'I am forgiving and understanding.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'a8', text: 'I feel sympathy for those who are less fortunate.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
     { id: 'a9', text: 'I value cooperation over competition.', dimension: 'agreeableness', options: [{ value: 1, label: 'Strongly Disagree' }, { value: 2, label: 'Disagree' }, { value: 3, label: 'Neutral' }, { value: 4, label: 'Agree' }, { value: 5, label: 'Strongly Agree' }] },
@@ -171,12 +171,28 @@ export function calculateBigFive(scores: Record<string, number>): BigFiveResult 
   };
 }
 
+/**
+ * Which copy a trait score earns. The scores are raw percentages of the
+ * Likert span (neutral = 50), not population percentiles, so a neutral
+ * respondent must read as balanced, not as "high": the bands leave a
+ * ten-point middle. Pure so the golden test can hold it.
+ */
+export type BigFiveBand = 'high' | 'low' | 'balanced';
+
+export function bigFiveBand(score: number): BigFiveBand {
+  if (score > 55) return 'high';
+  if (score < 45) return 'low';
+  return 'balanced';
+}
+
 export interface BigFiveDimensionInfo {
   name: string;
   fullName: string;
   description: string;
   highDescription: string;
   lowDescription: string;
+  /** The middle band: neither pole leads. */
+  balancedDescription: string;
   facets: { name: string; description: string }[];
   careers: { high: string[]; low: string[] };
   relationships: { high: string; low: string };
@@ -194,6 +210,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     description: 'Reflects imagination, creativity, and willingness to explore new ideas and experiences.',
     highDescription: 'You are curious, creative, and open to new experiences. You appreciate art, seek out variety, and enjoy exploring abstract concepts and unconventional ideas.',
     lowDescription: 'You prefer familiarity, routine, and practical approaches. You value tradition and tend to be more conventional in your thinking and preferences.',
+    balancedDescription: 'You move between the familiar and the new without strain. You can enjoy an idea for its own sake and still ask what it is for, which makes you a translator between the dreamers and the doers.',
     facets: [
       { name: 'Fantasy', description: 'Vivid imagination and rich inner world' },
       { name: 'Aesthetics', description: 'Appreciation for art and beauty' },
@@ -203,8 +220,8 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       { name: 'Values', description: 'Readiness to reexamine beliefs and values' },
     ],
     careers: {
-      high: ['Artist', 'Writer', 'Scientist', 'Entrepreneur', 'Designer', 'Philosopher'],
-      low: ['Accountant', 'Administrator', 'Banker', 'Police Officer', 'Factory Worker'],
+      high: ['Work that rewards exploring new ideas', 'Roles with room to experiment'],
+      low: ['Work with clear, proven methods', 'Roles that reward consistency'],
     },
     relationships: {
       high: 'You bring creativity and novelty to relationships. You enjoy deep conversations and exploring new experiences together.',
@@ -237,6 +254,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     description: 'Reflects organization, dependability, self-discipline, and goal-directed behavior.',
     highDescription: 'You are organized, reliable, and goal-oriented. You plan ahead, pay attention to details, and follow through on commitments.',
     lowDescription: 'You are flexible, spontaneous, and adaptable. You prefer to go with the flow rather than following strict schedules or plans.',
+    balancedDescription: 'You plan when a plan is needed and improvise when it is not. Deadlines get met without the schedule running your life, and you can let a loose end stay loose for a while.',
     facets: [
       { name: 'Competence', description: 'Belief in your own capability' },
       { name: 'Order', description: 'Organization and tidiness' },
@@ -246,8 +264,8 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       { name: 'Deliberation', description: 'Thinking before acting' },
     ],
     careers: {
-      high: ['Project Manager', 'Surgeon', 'Lawyer', 'Engineer', 'Financial Analyst', 'Military Officer'],
-      low: ['Artist', 'Musician', 'Freelancer', 'Emergency Responder', 'Sales'],
+      high: ['Work with long timelines and follow-through', 'Roles that depend on reliability'],
+      low: ['Work that changes day to day', 'Roles that reward quick adaptation'],
     },
     relationships: {
       high: 'You are dependable and committed. You show love through reliability and follow-through on promises.',
@@ -280,6 +298,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     description: 'Reflects sociability, assertiveness, positive emotions, and energy derived from external stimulation.',
     highDescription: 'You are outgoing, energetic, and thrive in social situations. You enjoy meeting new people and feel energized by social interaction.',
     lowDescription: 'You prefer solitude or small groups. You recharge through quiet time alone and may find extensive socializing draining.',
+    balancedDescription: 'You can take a room or leave it. A full evening with people and a quiet one alone both restore you in their own way, and you read which one you need on the day.',
     facets: [
       { name: 'Warmth', description: 'Friendliness and affection toward others' },
       { name: 'Gregariousness', description: 'Preference for social company' },
@@ -289,8 +308,8 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       { name: 'Positive Emotions', description: 'Tendency to experience positive feelings' },
     ],
     careers: {
-      high: ['Sales', 'Marketing', 'Public Relations', 'Event Planning', 'Teaching', 'Politics'],
-      low: ['Writer', 'Researcher', 'Programmer', 'Analyst', 'Librarian', 'Accountant'],
+      high: ['Work that happens with and around people', 'Roles with a lot of conversation'],
+      low: ['Work with long stretches of focus', 'Roles with room to think alone'],
     },
     relationships: {
       high: 'You bring energy and social connection to relationships. You enjoy shared activities and introducing partners to friends.',
@@ -323,6 +342,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     description: 'Reflects compassion, cooperation, trust, and concern for social harmony.',
     highDescription: 'You are warm, trusting, and cooperative. You prioritize getting along with others and are often seen as kind and considerate.',
     lowDescription: 'You are direct, competitive, and skeptical. You prioritize truth over harmony and may challenge others more readily.',
+    balancedDescription: 'You are warm without being a pushover. You can hold a position in a disagreement and still care how the other person is doing, and you choose which of the two the moment needs.',
     facets: [
       { name: 'Trust', description: 'Belief in others\' honesty and good intentions' },
       { name: 'Straightforwardness', description: 'Sincerity in dealing with others' },
@@ -332,8 +352,8 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       { name: 'Tender-Mindedness', description: 'Sympathy and concern for others' },
     ],
     careers: {
-      high: ['Counselor', 'Nurse', 'Teacher', 'Social Worker', 'Non-profit Manager', 'HR Specialist'],
-      low: ['Lawyer', 'Executive', 'Surgeon', 'Critic', 'Military Leader', 'Entrepreneur'],
+      high: ['Work centred on supporting people', 'Roles that reward cooperation'],
+      low: ['Work that calls for hard decisions', 'Roles that reward direct judgement'],
     },
     relationships: {
       high: 'You create harmony and are supportive and nurturing. You may need to practice asserting your own needs.',
@@ -366,6 +386,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
     description: 'Reflects emotional reactivity, tendency toward negative emotions, and vulnerability to stress.',
     highDescription: 'You experience emotions intensely and may be more prone to stress, anxiety, and mood fluctuations. You are emotionally sensitive.',
     lowDescription: 'You are emotionally stable and resilient. You remain calm under pressure and bounce back quickly from setbacks.',
+    balancedDescription: 'You feel things and recover from them. Stress registers, but it does not stay; you notice a bad day as a bad day rather than as evidence about your life.',
     facets: [
       { name: 'Anxiety', description: 'Tendency to worry and feel apprehensive' },
       { name: 'Angry Hostility', description: 'Tendency to experience anger and frustration' },
@@ -375,8 +396,8 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       { name: 'Vulnerability', description: 'Difficulty coping with stress' },
     ],
     careers: {
-      high: ['Artist', 'Writer', 'Therapist', 'Activist', 'Creative Director'],
-      low: ['Pilot', 'Surgeon', 'Air Traffic Controller', 'Emergency Responder', 'Executive'],
+      high: ['Work that values emotional depth', 'Roles with a steady, supportive pace'],
+      low: ['Work with high pressure and clear stakes', 'Roles that reward composure'],
     },
     relationships: {
       high: 'You are emotionally expressive and deeply connected. You may need support during stressful times.',
@@ -391,7 +412,7 @@ export const bigFiveDescriptions: Record<string, BigFiveDimensionInfo> = {
       low: ['People have called you "unflappable" or "steady" in a crisis', 'You recover quickly from setbacks and rarely dwell on mistakes', 'You sometimes wonder if you should feel more than you do', 'You are the calm one in the room when everything goes wrong'],
     },
     growthLever: {
-      high: 'Your growth edge is emotional regulation, not suppression. You feel deeply and that is a real gift. The practice is not to feel less but to create space between feeling and reacting. Naming your emotions precisely reduces their intensity by up to 50 percent.',
+      high: 'Your growth edge is emotional regulation, not suppression. You feel deeply and that is a real gift. The practice is not to feel less but to create space between feeling and reacting. Naming your emotions precisely helps take the edge off them.',
       low: 'Your growth edge is emotional access. Your stability is genuine but may sometimes mask emotions you have learned to bypass. Periodically checking in with yourself by asking "what am I actually feeling right now?" prevents emotional buildup.',
     },
     lifestyleSuggestion: {

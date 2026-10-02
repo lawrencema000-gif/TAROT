@@ -3,8 +3,7 @@
     "greeting": {
       "morning": "早上好",
       "afternoon": "下午好",
-      "evening": "晚上好",
-      "night": "晚上好"
+      "evening": "晚上好"
     },
     "subtitle": "今日宇宙捎来的讯息",
     "level": "等级 {{n}}",
@@ -12,9 +11,6 @@
     "ritualComplete": "仪式完成",
     "streak": "已连续 {{n}} 天,继续保持。",
     "savedToday": "今日已保存",
-    "savedHighlights": "已保存的亮点",
-    "morningRitual": "早晨仪式",
-    "eveningRitual": "夜晚仪式",
     "savedToHighlights": "已保存到亮点",
     "copiedToClipboard": "已复制到剪贴板",
     "dayStreakLabel": "天连续",
@@ -79,7 +75,6 @@
     "resetPassword": "重置密码",
     "enterEmailForReset": "输入邮箱以接收重置链接",
     "enterEmail": "请输入邮箱地址。",
-    "resetSent": "重置链接已发送,请查收邮件。",
     "resetFailed": "无法发送重置链接，请检查邮箱地址后重试。",
     "sendResetLink": "发送重置链接",
     "forgotPassword": "忘记密码?",
@@ -96,18 +91,13 @@
     "resetSuccessRecoveryHint": "正在退出登录,请使用新密码重新登录。",
     "resetLinkExpiredHint": "重置链接仅一次性有效。如已失效,请从登录页重新申请。",
     "createAccount": "创建账号",
-    "signUpLink": "注册",
-    "emailNotConfirmed": "请先验证邮箱再登录。",
     "verifySentTo": "已向 {{email}} 发送验证链接,请查收邮件。",
     "checkSpam": "如果没有看到邮件，请检查垃圾邮件文件夹。",
     "resetSentTo": "已向 {{email}} 发送重置链接",
     "resetDidntReceive": "没收到邮件？请检查垃圾邮件文件夹或再试一次。",
     "tryAgain": "重试",
     "orDivider": "或",
-    "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。",
-    "bootstrap": {
-      "signInAgain": "重新登录"
-    }
+    "termsNotice": "继续即表示你同意我们的服务条款与隐私政策。"
   },
   "cardMeaning": {
     "yesNo": {
@@ -158,11 +148,6 @@
       "dice": "骰子",
       "celestial": "天体地图"
     },
-    "dailyRemaining": "今日免费牌阵 {{used}} / {{limit}}",
-    "upgradeForUnlimited": "升级解锁无限",
-    "limitReached": "已达每日上限",
-    "limitReachedMsg": "今日免费解读已用完。升级解锁无限次，或明天再来。",
-    "resetsAt": "{{hours}} 小时 {{minutes}} 分后重置",
     "categories": {
       "daily": "每日",
       "love": "爱情",
@@ -171,16 +156,7 @@
       "shadow": "阴影面",
       "celtic": "凯尔特十字"
     },
-    "focusArea": "焦点",
-    "focusPrompt": "你在想些什么？",
-    "draw": "抽牌",
-    "drawAgain": "再抽一次",
-    "saveReading": "保存牌阵",
-    "shareReading": "分享",
-    "readingSaved": "已保存牌阵",
     "interpretation": "解读",
-    "premiumInterpretation": "高级解读",
-    "tryPremium": "体验高级",
     "cards": {
       "past": "过去",
       "present": "现在",
@@ -317,13 +293,8 @@
       "future": "未来",
       "generic": "位置 {{index}}"
     },
-    "focusInterpretation": {
-      "loveRelationships": "爱情与关系",
-      "careerFinance": "事业与财运"
-    },
     "paywall": {
-      "unlimited": "无限次解读",
-      "aiInterpretation": "AI解读"
+      "unlimited": "无限次解读"
     },
     "spreadPositions": {
       "single": [
@@ -381,17 +352,7 @@
     "newEntry": "新条目",
     "entryPlaceholder": "今天心里有什么？",
     "titlePlaceholder": "标题(可选)",
-    "moodLabel": "今天的心情如何?",
-    "tagsLabel": "标签",
-    "tagsPlaceholder": "添加标签(按回车)",
-    "addPrompt": "添加提示语",
-    "linkToReading": "关联牌阵",
-    "linkToCard": "关联卡牌",
     "saveEntry": "保存这条日记",
-    "saved": "已保存。",
-    "deleted": "已删除。",
-    "noEntries": "暂无日记",
-    "noEntriesSub": "把今天打动你的瞬间写下来吧。",
     "wordCount": "{{n}} 字",
     "moods": {
       "joyful": "喜悦",
@@ -405,17 +366,8 @@
       "confused": "困惑",
       "hopeful": "期待"
     },
-    "prompts": {
-      "pick": "选择提示语",
-      "skip": "跳过提示",
-      "picker": "自省提示语"
-    },
     "lock": {
-      "locked": "已锁定",
-      "unlock": "解锁",
-      "set": "设置密码",
-      "enter": "输入密码",
-      "wrong": "密码错误"
+      "locked": "已锁定"
     },
     "tabs": {
       "entries": "条目",
@@ -472,24 +424,8 @@
   },
   "quizzes": {
     "title": "测试",
-    "questions": "题",
-    "takes": "耗时",
-    "minutes": "分钟",
-    "startQuiz": "开始测试",
-    "continueQuiz": "继续",
     "retake": "重新测试",
     "results": "结果",
-    "yourType": "你的类型",
-    "yourResult": "你的结果",
-    "viewResult": "查看结果",
-    "completed": "已完成",
-    "inProgress": "进行中",
-    "notStarted": "未开始",
-    "question": "第 {{n}} / {{total}} 题",
-    "next": "下一题",
-    "previous": "上一题",
-    "submit": "查看结果",
-    "answerPlaceholder": "选择答案",
     "likert": {
       "1": "非常不同意",
       "2": "不同意",
@@ -924,14 +860,6 @@
           "你失衡的预警信号"
         ]
       }
-    },
-    "types": {
-      "mbti": "MBTI",
-      "enneagram": "九型人格",
-      "bigfive": "大五人格",
-      "loveLanguage": "爱的语言",
-      "attachment": "依恋类型",
-      "mood": "心情记录"
     },
     "resultSections": {
       "strengths": "强项",
@@ -1438,30 +1366,13 @@
     "compareLocked": "和朋友比一比"
   },
   "horoscope": {
-    "title": "星座运势",
-    "today": "今天",
     "energyScore": "能量评分",
-    "sections": {
-      "overview": "综合",
-      "love": "爱情",
-      "career": "事业",
-      "wellness": "健康",
-      "affirmation": "今日肯定语",
-      "luckyNumbers": "幸运数字",
-      "luckyColors": "幸运色"
-    },
-    "birthChart": "出生星盘",
-    "compatibility": "配对",
-    "transits": "行运",
-    "completeBirthChart": "完成出生信息以解锁",
-    "enterBirthInfo": "填写出生信息",
     "tabs": {
       "today": "今天",
       "chart": "星盘",
       "forecast": "预报",
       "explore": "探索"
     },
-    "unlockPremium": "解锁高级版",
     "general": "综合",
     "love": "爱情",
     "work": "工作",
@@ -1626,7 +1537,6 @@
     "shareLabel": "分享运势"
   },
   "profile": {
-    "title": "个人资料",
     "birthProfile": "出生信息",
     "birthPlaceOptional": "出生地（可选）",
     "yourGoals": "你的目标",
@@ -1642,14 +1552,7 @@
     "upgradeSub": "全部牌阵、完整出生星盘、无广告",
     "premiumMember": "高级版已开启",
     "premiumSub": "所有牌阵、星盘和解读都已向你开放",
-    "manageSubscription": "管理订阅",
     "editProfile": "编辑资料",
-    "signOut": "退出登录",
-    "signOutConfirm": "要退出登录吗?",
-    "signOutConfirmMsg": "随时可以重新登录。",
-    "deleteAccount": "删除账号",
-    "deleteAccountConfirm": "要删除账号吗?",
-    "deleteAccountConfirmMsg": "这会永久删除你的资料、牌阵和日记。",
     "goals": {
       "love": "爱情",
       "career": "事业",
@@ -1704,24 +1607,18 @@
     "compatInviteTitle": "合盘邀请",
     "compatInviteSub": "分享链接获取联合解读",
     "yourProgress": "你的进度",
-    "saveProfile": "保存我的资料",
     "toasts": {
       "saveFailed": "无法保存你的资料，请检查网络连接后重试。"
     },
     "untitled": "你的资料"
   },
   "achievements": {
-    "title": "成就",
     "noInCategory": "该类别暂无成就。",
     "errorLoading": "加载成就失败:",
-    "novicesSeeker": "新手探寻者",
     "achievementsUnlocked": "已解锁的成就",
     "xpEarned": "获得 {{n}} 经验",
     "recentUnlocks": "最近解锁",
     "all": "全部",
-    "unlocked": "已解锁",
-    "locked": "未解锁",
-    "progress": "{{current}} / {{target}}",
     "categories": {
       "dedication": "坚持",
       "exploration": "探索",
@@ -1757,7 +1654,6 @@
     "comeBackSoon": "塔罗洞察与心灵指引,敬请期待。",
     "articleNotFound": "未找到文章。",
     "readingTime": "阅读约 {{n}} 分钟",
-    "by": "作者:{{author}}",
     "prevPage": "上一页",
     "nextPage": "下一页"
   },
@@ -1869,15 +1765,6 @@
     "askOracleCta": "请为我解读这张牌"
   },
   "admin": {
-    "title": "管理",
-    "subtitle": "管理站点内容与配置",
-    "unauthorized": "你没有管理面板的访问权限。",
-    "tabs": {
-      "blog": "博客",
-      "ads": "广告",
-      "users": "用户",
-      "content": "内容"
-    },
     "verifications": {
       "toasts": {
         "loadFailed": "无法加载审核队列，请点击「刷新」重试。",
@@ -1913,10 +1800,6 @@
       "birth_chart": {},
       "extra_reading": {}
     },
-    "monthly": "月付",
-    "yearly": "年付",
-    "lifetime": "永久",
-    "badge": "高级版",
     "paywall": {
       "heading": "开启每一种解读",
       "subheading": "全部塔罗牌阵、完整出生星盘、伴侣合盘和运势各分页——无广告，也无需消耗月光石。",
@@ -1998,7 +1881,6 @@
         "oneTime": "一次性"
       },
       "badges": {
-        "bestValue": "最超值",
         "foreverAccess": "一次付费",
         "save": "省 {{percent}}%"
       },
@@ -2238,8 +2120,6 @@
       "preferences": "偏好",
       "notifications": "通知",
       "privacy": "隐私",
-      "data": "数据",
-      "about": "关于",
       "support": "支持"
     },
     "menu": {
@@ -2265,9 +2145,6 @@
       "themeChanged": "主题已切换为 {{name}}",
       "updateFailed": "无法更改该设置，请检查网络连接后重试。"
     },
-    "language": "语言",
-    "languageSub": "选择你喜欢的语言",
-    "theme": "主题",
     "themes": {
       "dark": {
         "name": "暗黑",
@@ -2282,30 +2159,8 @@
         "desc": "星空主题"
       }
     },
-    "fontSize": "字号",
-    "fontSizes": {
-      "small": "小",
-      "medium": "中",
-      "large": "大"
-    },
-    "notificationsEnabled": "每日通知",
-    "notificationsSub": "每日仪式提醒",
-    "notificationTime": "通知时间",
-    "tonePreference": "语气",
-    "tones": {
-      "gentle": "温柔",
-      "direct": "直接",
-      "playful": "俏皮"
-    },
-    "clearCache": "清除缓存",
-    "cacheCleared": "缓存已清除",
-    "exportData": "导出我的数据",
-    "privacyPolicy": "隐私政策",
-    "termsOfService": "服务条款",
     "contactSupport": "联系支持",
     "version": "版本 {{v}}",
-    "about": "关于 Arcana",
-    "aboutText": "Arcana 是塔罗、占星、日记与自我发现的每日伙伴。",
     "emailNotChangeable": "电子邮箱无法更改",
     "typeMinChars": "请至少输入 2 个字符进行搜索",
     "saveChanges": "保存更改",
@@ -2360,14 +2215,11 @@
   },
   "search": {
     "placeholder": "搜索卡牌、日记、运势…",
-    "noResults": "没有匹配结果",
-    "noResultsSub": "试试别的关键词",
     "recent": {
       "towerMeaning": "塔牌的含义",
       "loveCompatibilityAries": "白羊座爱情配对",
       "threeCardSpread": "三张牌阵"
     },
-    "suggestions": "推荐",
     "recentSearches": "最近搜索",
     "quickLinks": "快捷入口",
     "quickLink": {
@@ -2375,18 +2227,11 @@
       "journalPrompts": "日记提示",
       "personalityQuiz": "人格测试"
     },
-    "resultsFor": "关于 \"{{query}}\" 的搜索结果将显示在这里",
-    "sections": {
-      "cards": "卡牌",
-      "journal": "日记",
-      "horoscope": "运势",
-      "articles": "文章"
-    }
+    "resultsFor": "关于 \"{{query}}\" 的搜索结果将显示在这里"
   },
   "saved": {
     "title": "已收藏",
     "empty": "还没有收藏项",
-    "emptySub": "点击任意牌阵、卡牌或洞察旁的星标即可收藏。",
     "emptySubAlt": "给牌阵、日记、测试结果点星,就会保存到这里",
     "filters": {
       "all": "全部",
@@ -2758,32 +2603,14 @@
     }
   },
   "pageTitles": {
-    "home": {
-      "title": "今日"
-    },
-    "readings": {
-      "title": "牌阵"
-    },
-    "quizzes": {
-      "title": "测试"
-    },
     "horoscope": {
       "title": "星座运势"
     },
     "achievements": {
       "title": "成就"
     },
-    "journal": {
-      "title": "日记"
-    },
     "profile": {
       "title": "个人资料"
-    },
-    "blog": {
-      "title": "资讯"
-    },
-    "admin": {
-      "title": "管理"
     }
   },
   "dailyInsights": {
@@ -3133,7 +2960,6 @@
     "networkMessage": "我们无法到达宇宙服务器。请检查你的连接，道路畅通时再试。",
     "notFoundTitle": "此路不通",
     "notFoundMessage": "你寻找的页面已消失于虚空。也许星辰心中另有目的地。",
-    "retryContent": "重新加载此内容",
     "contentTitle": "无法加载此{{type}}",
     "contentMessage": "这次没有加载成功。请重新加载再试。",
     "contentRetry": "重新加载{{type}}"
@@ -4147,10 +3973,6 @@
     "another": "另一对",
     "compatibilityLabel": "契合度",
     "mbtiLabel": "MBTI 契合",
-    "astroLabel": "占星契合",
-    "strengthsLabel": "优势",
-    "growthLabel": "成长边缘",
-    "adviceLabel": "建议",
     "yourBirthTime": "你的出生时间（让解读更精准——包含月亮）",
     "partnerBirthTime": "伴侣的出生时间（可选）",
     "computing": "正在计算相位…",
@@ -4311,7 +4133,6 @@
     "mainContent": "主要内容",
     "loading": "加载中…",
     "cancel": "取消",
-    "close": "关闭",
     "back": "返回"
   },
   "moonstones": {
@@ -4321,7 +4142,6 @@
     "alreadyClaimed": "明天再来",
     "claimed": "+{{n}} 月光石 · 连续第 {{d}} 天",
     "claimFailed": "无法领取今日奖励，请检查网络连接后重试。",
-    "topUp": "充值",
     "premiumLabel": "高级版 · 全部解读已解锁",
     "earn": "赚取月光石",
     "costLine": "每次解读消耗 <gold>{{n}} 月光石</gold>",
@@ -4476,11 +4296,6 @@
       "present": "现在",
       "future": "未来"
     },
-    "reversedLabel": "逆位",
-    "meaningLabel": "含义",
-    "journalPrompt": "写作提示",
-    "shareButton": "分享此卜局",
-    "elementLabel": "元素",
     "questionLabel": "你的问题（可选）",
     "questionPlaceholder": "此刻我最需要理解的是什么？",
     "castLabel": "三符文占卜",
@@ -4574,7 +4389,6 @@
     "overall": "整体走向",
     "emptyMonth": "本月行星动向平静。用来休息吧。",
     "disclaimer": "占星是一种象征性的视角，而非预言。行运描述的是原型层面的“天气”——你如何行动，取决于你自己。",
-    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
     "upgradeToPremium": "看看高级版包含什么",
     "orEarnMoonstones": "或用 {{n}} 月光石解锁",
     "balanceShort": "余额：{{n}}",
@@ -4606,9 +4420,6 @@
     "elementsHeading": "四元素与模式平衡",
     "aspectsHeading": "相位——行星间的连线",
     "wheelHeading": "你的星盘轮",
-    "variantNatal": "本命",
-    "variantTransits": "今日行运",
-    "loadingTransits": "正在计算当前位置…",
     "variant": {
       "natal": "本命",
       "transits": "今日行运",
@@ -4628,7 +4439,6 @@
     "orEarnMoonstones": "或使用 {{n}} 月光石解锁",
     "crossAspects": "重点交互相位",
     "disclaimer": "占星是一种象征性的视角，而非预言。你的星盘映照你的气质——如何运用，全由你定。",
-    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
     "upgradeToPremium": "看看高级版包含什么",
     "earnNow": "看广告，赚 {{n}} 月光石"
   },
@@ -4656,7 +4466,6 @@
     "monthLabel": "第 {{n}} 月",
     "reflection": "静心思考这些问题",
     "share": "分享我的原型",
-    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
     "upgradeToPremium": "看看高级版包含什么",
     "orEarnMoonstones": "或用 {{n}} 月光石解锁",
     "balanceShort": "余额：{{n}}",
@@ -5064,23 +4873,6 @@
     "label": "今日任务",
     "markDone": "标记完成"
   },
-  "moonstoneTopUp": {
-    "generic": "购买未完成。请稍后再试。",
-    "packLabel": {
-      "devotee": "信徒包",
-      "generous": "豪华包",
-      "regular": "常规包",
-      "starter": "入门包"
-    },
-    "packNotFound": "该套餐目前不在商店中，请选择其他套餐或稍后再试。",
-    "playStorePurchase": "通过 Google Play 收费,在你的 Google 账号中管理购买。",
-    "popular": "热门",
-    "securePayment": "由 Stripe 提供的安全结账。一次性购买，无订阅。",
-    "stripeFailed": "无法打开结账页面，请检查网络连接后重试。",
-    "subtitle": "解锁解读、给直播主播打赏、预约顾问咨询。",
-    "success": "{{n}} 月光石正在路上 — 几秒钟就到。",
-    "title": "充值月光石"
-  },
   "ziwei": {
     "title": "紫微斗數",
     "birthDate": "出生日期",
@@ -5115,7 +4907,6 @@
   },
   "celestial": {
     "needBirthDate": {
-      "cta": "前往个人资料",
       "secondary": "改为编辑完整资料",
       "title": "请先添加你的出生日期",
       "body": "你的天体地图是从你的出生星盘绘制而来的。请在「个人资料」页添加出生日期（如果知道，也加上出生时间），你的地图就会准备好。"
@@ -5551,7 +5342,6 @@
     }
   },
   "spreadBuilder": {
-    "signIn": "登录以创建牌阵",
     "signInPrompt": "自定义牌阵会保存到你的账号。",
     "signInCta": "登录以创建牌阵",
     "toasts": {

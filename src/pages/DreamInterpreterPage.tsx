@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Sparkles, Moon, AlertTriangle, Palette, Hash, Compass, Globe, Eye, BookOpen, Feather, Share2 } from 'lucide-react';
-import { Card, Button, toast, Page, PageHeader, Section, Disclosure, ReadingProse, Tag } from '../components/ui';
+import { Card, Button, toast, Page, PageHeader, Section, Disclosure, ResultSheet, KeywordRow, EyebrowLabel } from '../components/ui';
 import { useT } from '../i18n/useT';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -30,6 +30,9 @@ import { MoonstoneCostLine } from '../components/moonstones/MoonstoneCostLine';
  *
  * Local fallback uses the existing keyword matcher + the expanded
  * 80-entry dictionary and adapts its output into the same UI shape.
+ *
+ * Both results are read on paper (ResultSheet). The AI one closes with the
+ * `ai` disclaimer — a model wrote it — the dictionary one with `general`.
  */
 
 type Stage = 'input' | 'loading' | 'result';
@@ -55,13 +58,22 @@ interface LocalReading {
 
 type Reading = AiReading | LocalReading;
 
+/** The dream as the sheet's title: the first ~90 characters, cut at a word. */
+function dreamTitle(text: string, max = 90): string {
+  const clean = text.trim().replace(/\s+/g, ' ');
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max);
+  const at = cut.lastIndexOf(' ');
+  return `${cut.slice(0, at > 40 ? at : max)}…`;
+}
+
 export function DreamInterpreterPage() {
   const { t } = useT('app');
   const { profile } = useAuth();
   const [stage, setStage] = useState<Stage>('input');
   const [dreamText, setDreamText] = useState('');
   const [reading, setReading] = useState<Reading | null>(null);
-  const { tryConsume, refund, EarnSheet } = useMoonstoneSpend('dream-interpret');
+  const { tryConsume, refund, EarnSheet, error: gateError } = useMoonstoneSpend('dream-interpret');
 
   const interpret = async () => {
     if (!dreamText.trim() || dreamText.trim().length < 20) {
@@ -105,6 +117,12 @@ export function DreamInterpreterPage() {
       // reading, just one that doesn't justify the 50-Moonstone cost.
       await refund();
       console.warn('[Dream] AI interpretation failed, falling back to local dictionary:', e);
+      toast(
+        t('dream.aiFallback', {
+          defaultValue: 'The interpretation service didn’t answer, so this reading comes from the symbol dictionary instead. No Moonstones were taken.',
+        }),
+        'info',
+      );
     }
 
     const local = interpretDream(dreamText);
@@ -130,14 +148,15 @@ export function DreamInterpreterPage() {
           <p className="reading-copy mb-4">
             {t('dream.intro', {
               defaultValue:
-                "Describe your dream in as much detail as you remember. Don't worry about order or clarity — the mind works in symbols. We'll read it through a Jungian lens and offer you the core theme, the key symbols, and questions to sit with. Dreams don't have single meanings; they have invitations.",
+                'Describe your dream in as much detail as you remember. Don’t worry about order or clarity — the mind works in symbols. We’ll read it through a Jungian lens and offer you the core theme, the key symbols, and questions to sit with. Dreams don’t have single meanings; they have invitations.',
             })}
           </p>
 
-          <label className="block text-ui font-medium text-mystic-300 mb-2">
+          <label htmlFor="dream-text" className="block text-ui font-medium text-mystic-300 mb-2">
             {t('dream.label', { defaultValue: 'Tell me about your dream' })}
           </label>
           <textarea
+            id="dream-text"
             value={dreamText}
             onChange={(e) => setDreamText(e.target.value)}
             rows={8}
@@ -145,7 +164,7 @@ export function DreamInterpreterPage() {
             className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40 disabled:opacity-50"
             placeholder={t('dream.placeholder', {
               defaultValue:
-                "I was standing by a dark ocean and couldn't find my way home. A bird flew overhead carrying something in its beak...",
+                'I was standing by a dark ocean and couldn’t find my way home. A bird flew overhead carrying something in its beak…',
             }) as string}
           />
           <p className="reading-caption mt-2 italic">
@@ -157,6 +176,7 @@ export function DreamInterpreterPage() {
         </Card>
 
         <MoonstoneCostLine />
+        {gateError && <p className="text-meta text-coral" role="alert">{gateError}</p>}
         <Button
           variant="primary"
           size="lg"
@@ -165,7 +185,7 @@ export function DreamInterpreterPage() {
           disabled={stage === 'loading'}
           loading={stage === 'loading'}
         >
-          <Sparkles className="w-5 h-5 mr-2" />
+          {stage !== 'loading' && <Sparkles className="w-5 h-5" aria-hidden />}
           {stage === 'loading'
             ? t('dream.interpreting', { defaultValue: 'Reading the dream…' })
             : t('dream.interpret', { defaultValue: 'Interpret my dream' })}
@@ -179,7 +199,7 @@ export function DreamInterpreterPage() {
     return reading.source === 'ai' ? (
       <AiResultView reading={reading} onReset={reset} dreamText={dreamText} />
     ) : (
-      <LocalResultView reading={reading.reading} onReset={reset} />
+      <LocalResultView reading={reading.reading} onReset={reset} dreamText={dreamText} />
     );
   }
 
@@ -220,7 +240,7 @@ function AiResultView({
     }
   };
 
-  const dreamPreview = dreamText.length > 120 ? `${dreamText.slice(0, 120)}…` : dreamText;
+  const keywords = [reading.emotionalTone, ...reading.archetypes].filter(Boolean);
 
   return (
     <Page spacing="sm">
@@ -231,104 +251,85 @@ function AiResultView({
         backLabel={t('dream.back', { defaultValue: 'Interpret another dream' })}
       />
 
-      {/* Dream quote — shows users the text we read */}
-      <Card padding="md" className="bg-mystic-800/40">
-        <p className="text-meta uppercase tracking-wider text-mystic-400 mb-1">
-          {t('dream.yourDreamLabel', { defaultValue: 'Your dream' })}
-        </p>
-        <p className="text-ui text-mystic-300 italic">"{dreamPreview}"</p>
-      </Card>
+      <ResultSheet
+        headingLevel="h2"
+        glyph={<Moon />}
+        eyebrow={t('dream.yourDreamLabel', { defaultValue: 'Your dream' })}
+        title={dreamTitle(dreamText)}
+        summaryHeading={t('dream.coreThemeLabel', { defaultValue: 'Core theme' })}
+        summary={reading.coreTheme}
+        disclaimer="ai"
+      >
+        <div className="space-y-7">
+          {/* Tone and archetypes as keyword pills: the surface decides their ink. */}
+          {keywords.length > 0 && (
+            <div className="text-center space-y-2">
+              <EyebrowLabel tone="ink">
+                {t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}
+                {reading.archetypes.length > 0 && <> · {t('dream.archetypesLabel', { defaultValue: 'Archetypes at work' })}</>}
+              </EyebrowLabel>
+              <KeywordRow keywords={keywords} />
+            </div>
+          )}
 
-      {/* Core theme */}
-      <Card variant="glow" padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Moon className="w-5 h-5 text-gold" />
-          <h2 className="heading-display-lg text-mystic-100">
-            {t('dream.coreThemeLabel', { defaultValue: 'Core theme' })}
-          </h2>
-        </div>
-        <ReadingProse text={reading.coreTheme} className="mb-3" />
-        <Tag tone="violet" size="md">
-          <span className="uppercase tracking-widest">
-            {t('dream.emotionalToneLabel', { defaultValue: 'Tone' })}
-          </span>
-          <span className="text-mystic-200">{reading.emotionalTone}</span>
-        </Tag>
-      </Card>
+          {reading.symbols.length > 0 && (
+            <section className="space-y-6">
+              <h3 className="heading-display-md heading-strong text-ink">
+                {t('dream.symbolsLabel', { defaultValue: 'Key symbols' })}
+              </h3>
+              {reading.symbols.map((sym, i) => (
+                <div key={i}>
+                  <h4 className="font-display font-semibold text-title text-ink mb-1">{sym.text}</h4>
+                  <p className="reading-copy">{sym.meaning}</p>
+                  <p className="reading-meta mt-3 uppercase tracking-wider">
+                    {t('dream.reflectionLabel', { defaultValue: 'Hold this question' })}
+                  </p>
+                  <blockquote className="reading-quote mt-1">{sym.reflection}</blockquote>
+                </div>
+              ))}
+            </section>
+          )}
 
-      {/* Archetypes */}
-      {reading.archetypes.length > 0 && (
-        <Card padding="lg">
-          <h3 className="heading-display-md text-mystic-100 mb-3">
-            {t('dream.archetypesLabel', { defaultValue: 'Archetypes at work' })}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {reading.archetypes.map((arc) => (
-              <Tag key={arc} tone="blue" size="md">{arc}</Tag>
-            ))}
-          </div>
-        </Card>
-      )}
+          <section className="border-t border-paper-hairline pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4 text-ink-rose" aria-hidden />
+              <h3 className="heading-display-md heading-strong text-ink">
+                {t('dream.shadowPromptLabel', { defaultValue: 'Shadow question' })}
+              </h3>
+            </div>
+            <blockquote className="reading-quote">{reading.shadowPrompt}</blockquote>
+          </section>
 
-      {/* Symbols */}
-      {reading.symbols.length > 0 && (
-        <Section
-          className="pt-2"
-          headingLevel="h3"
-          title={t('dream.symbolsLabel', { defaultValue: 'Key symbols' })}
-          contentClassName="space-y-4"
-        >
-          {reading.symbols.map((sym, i) => (
-            <Card key={i} padding="lg">
-              <h4 className="heading-display-md text-mystic-100 mb-2">{sym.text}</h4>
-              <p className="reading-copy mb-3">{sym.meaning}</p>
-              <div className="pt-3 border-t border-mystic-800/50">
-                <p className="text-meta text-mystic-400 mb-1 uppercase tracking-wider">
-                  {t('dream.reflectionLabel', { defaultValue: 'Hold this question' })}
-                </p>
-                <p className="reading-quote my-0">{sym.reflection}</p>
+          <section>
+            <div className="flex items-center gap-2 mb-2">
+              <Feather className="w-4 h-4 text-ink-gold" aria-hidden />
+              <h3 className="heading-display-md heading-strong text-ink">
+                {t('dream.integrationLabel', { defaultValue: 'Integration practice' })}
+              </h3>
+            </div>
+            <p className="reading-copy">{reading.integrationSuggestion}</p>
+          </section>
+
+          {/* Compensatory move — Jung's principle: dreams compensate for what
+              the waking attitude is missing. */}
+          {reading.compensatoryMove && (
+            <section>
+              <div className="flex items-center gap-2 mb-2">
+                <Eye className="w-4 h-4 text-ink-violet" aria-hidden />
+                <h3 className="heading-display-md heading-strong text-ink">
+                  {t('dream.compensatoryLabel', { defaultValue: 'What your waking self is missing' })}
+                </h3>
               </div>
-            </Card>
-          ))}
-        </Section>
-      )}
-
-      {/* Shadow prompt */}
-      <Card padding="lg" className="bg-gradient-to-br from-cosmic-rose/10 to-mystic-900 border-cosmic-rose/25">
-        <div className="flex items-center gap-2 mb-2">
-          <AlertTriangle className="w-4 h-4 text-cosmic-rose" />
-          <h3 className="heading-display-md text-mystic-100">
-            {t('dream.shadowPromptLabel', { defaultValue: 'Shadow question' })}
-          </h3>
+              <p className="reading-meta italic mb-2">
+                {t('dream.compensatoryHint', {
+                  defaultValue: 'Jung: dreams compensate for the conscious attitude. This is what the dream offers that you don’t already have.',
+                })}
+              </p>
+              <p className="reading-copy">{reading.compensatoryMove}</p>
+            </section>
+          )}
         </div>
-        <p className="reading-quote my-0">{reading.shadowPrompt}</p>
-      </Card>
-
-      {/* Integration suggestion */}
-      <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-        <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
-          <Feather className="w-4 h-4" />
-          {t('dream.integrationLabel', { defaultValue: 'Integration practice' })}
-        </h3>
-        <p className="reading-copy">{reading.integrationSuggestion}</p>
-      </Card>
-
-      {/* Compensatory move — Jung's principle: dreams compensate for what
-          the waking attitude is missing. */}
-      {reading.compensatoryMove && (
-        <Card padding="lg" className="bg-gradient-to-br from-cosmic-violet/5 to-mystic-900 border-cosmic-violet/20">
-          <h3 className="heading-display-md text-mystic-100 mb-2 flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            {t('dream.compensatoryLabel', { defaultValue: 'What your waking self is missing' })}
-          </h3>
-          <p className="text-meta text-mystic-400 mb-2 italic">
-            {t('dream.compensatoryHint', {
-              defaultValue: 'Jung: dreams compensate for the conscious attitude. This is what the dream offers that you don\'t already have.',
-            })}
-          </p>
-          <p className="reading-copy">{reading.compensatoryMove}</p>
-        </Card>
-      )}
+      </ResultSheet>
 
       {/* Subsystem matches: colors, numbers, directions detected in the
           dream text. Renders only if any matched. */}
@@ -341,7 +342,7 @@ function AiResultView({
 
       <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" fullWidth onClick={handleShare}>
-          <Share2 className="w-4 h-4 mr-2" />
+          <Share2 className="w-4 h-4" aria-hidden />
           {t('dream.share', { defaultValue: 'Share this interpretation' })}
         </Button>
         <Button variant="outline" fullWidth onClick={onReset}>
@@ -368,7 +369,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.colors.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Palette className="w-4 h-4 text-cosmic-violetLight" />
+            <Palette className="w-4 h-4 text-cosmic-violet-ink" aria-hidden />
             <h4 className="heading-display-md text-mystic-200">
               {t('dream.colorsLabel', { defaultValue: 'Colours present' }) as string}
             </h4>
@@ -379,7 +380,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
                 <p className="text-ui font-medium text-mystic-100 mb-0.5">{c.color.color}</p>
                 <div className="reading-copy">
                   <p>{c.color.meaning}</p>
-                  <p><span className="text-cosmic-rose font-medium">Shadow:</span> {c.color.shadow}</p>
+                  <p><span className="text-cosmic-rose font-medium">{t('dream.shadowLabel', { defaultValue: 'Shadow:' }) as string}</span> {c.color.shadow}</p>
                 </div>
               </div>
             ))}
@@ -390,7 +391,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.numbers.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Hash className="w-4 h-4 text-gold" />
+            <Hash className="w-4 h-4 text-gold" aria-hidden />
             <h4 className="heading-display-md text-mystic-200">
               {t('dream.numbersLabel', { defaultValue: 'Numbers present' }) as string}
             </h4>
@@ -398,7 +399,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
           <div className="space-y-4">
             {matches.numbers.map((n, i) => (
               <div key={i}>
-                <p className="text-ui font-medium text-mystic-100 mb-0.5">{n.number}</p>
+                <p className="text-ui font-medium text-mystic-100 mb-0.5 tabular-nums">{n.number}</p>
                 <p className="reading-copy">{n.meaning}</p>
               </div>
             ))}
@@ -409,7 +410,7 @@ function DreamSubsystems({ dreamText, t }: { dreamText: string; t: (k: string, o
       {matches.directions.length > 0 && (
         <Card padding="md">
           <div className="flex items-center gap-2 mb-2">
-            <Compass className="w-4 h-4 text-cosmic-blue" />
+            <Compass className="w-4 h-4 text-cosmic-blue-ink" aria-hidden />
             <h4 className="heading-display-md text-mystic-200">
               {t('dream.directionsLabel', { defaultValue: 'Directions of motion' }) as string}
             </h4>
@@ -499,8 +500,8 @@ function DreamResources({ t }: { t: (k: string, o?: Record<string, unknown>) => 
   );
 }
 
-// ─── Local fallback view (unchanged visual from original) ────────
-function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset: () => void }) {
+// ─── Local fallback view — the dictionary reading, on the same paper ─
+function LocalResultView({ reading, onReset, dreamText }: { reading: DreamReading; onReset: () => void; dreamText: string }) {
   const { t } = useT('app');
 
   const handleShare = async () => {
@@ -531,6 +532,16 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
     }
   };
 
+  // The dictionary marks its key phrases with **…**; render them as strong
+  // (ink on paper) rather than injecting markup.
+  const themeParts = reading.coreTheme.split(/\*\*(.+?)\*\*/g);
+  const summary = reading.hasMatch
+    ? undefined
+    : (t('dream.noMatch', {
+        defaultValue:
+          'No immediately common archetypes surfaced in this dream text — but that does not mean it is silent. Often the most personal dreams use symbols unique to your life. Sit with the strongest image from the dream. Ask: what is it the opposite of? What in my life does it rhyme with?',
+      }) as string);
+
   return (
     <Page spacing="sm">
       <PageHeader
@@ -540,67 +551,62 @@ function LocalResultView({ reading, onReset }: { reading: DreamReading; onReset:
         backLabel={t('dream.back', { defaultValue: 'Interpret another dream' })}
       />
 
-      <Card variant="glow" padding="lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Moon className="w-5 h-5 text-gold" />
-          <h2 className="heading-display-lg text-mystic-100">
-            {t('dream.yourDream', { defaultValue: 'What the symbols say' })}
-          </h2>
+      <ResultSheet
+        headingLevel="h2"
+        glyph={<Moon />}
+        eyebrow={t('dream.yourDreamLabel', { defaultValue: 'Your dream' })}
+        title={dreamTitle(dreamText)}
+        summaryHeading={t('dream.yourDream', { defaultValue: 'What the symbols say' })}
+        summary={summary}
+        disclaimer="general"
+      >
+        <div className="space-y-7">
+          {reading.hasMatch && (
+            <section className="text-center">
+              <h3 className="heading-display-md heading-strong text-ink">
+                {t('dream.yourDream', { defaultValue: 'What the symbols say' })}
+              </h3>
+              <p className="reading-lede mx-auto mt-3">
+                {themeParts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))}
+              </p>
+            </section>
+          )}
+
+          {reading.matchedSymbols.length > 0 && (
+            <section className="space-y-6">
+              <h3 className="heading-display-md heading-strong text-ink">
+                {t('dream.symbolsLabel', { defaultValue: 'The symbols' })}
+              </h3>
+              {reading.matchedSymbols.map((match, i) => (
+                <div key={i}>
+                  <h4 className="font-display font-semibold text-title text-ink mb-1 capitalize">{match.keyword}</h4>
+                  <p className="reading-copy">{match.symbol.meaning}</p>
+                  <p className="reading-meta mt-3 uppercase tracking-wider">
+                    {t('dream.reflectionLabel', { defaultValue: 'Hold this question' })}
+                  </p>
+                  <blockquote className="reading-quote mt-1">{match.symbol.reflection}</blockquote>
+                </div>
+              ))}
+            </section>
+          )}
+
+          <section className="border-t border-paper-hairline pt-6">
+            <h3 className="heading-display-md heading-strong text-ink mb-2">
+              {t('dream.practiceLabel', { defaultValue: 'Dream practice' })}
+            </h3>
+            <p className="reading-copy">
+              {t('dream.practiceBody', {
+                defaultValue:
+                  'Keep a notebook by your bed. Record dreams the moment you wake, before they fade. Over time, recurring symbols reveal the language your unconscious uses with you.',
+              })}
+            </p>
+          </section>
         </div>
-        {reading.hasMatch ? (
-          <p
-            className="reading-lede drop-cap"
-            dangerouslySetInnerHTML={{
-              __html: reading.coreTheme.replace(/\*\*(.+?)\*\*/g, '<span class="text-gold font-medium">$1</span>'),
-            }}
-          />
-        ) : (
-          <p className="reading-copy italic">
-            {t('dream.noMatch', {
-              defaultValue:
-                'No immediately common archetypes surfaced in this dream text — but that does not mean it is silent. Often the most personal dreams use symbols unique to your life. Sit with the strongest image from the dream. Ask: what is it the opposite of? What in my life does it rhyme with?',
-            })}
-          </p>
-        )}
-      </Card>
-
-      {reading.matchedSymbols.length > 0 && (
-        <Section
-          className="pt-2"
-          headingLevel="h3"
-          title={t('dream.symbolsLabel', { defaultValue: 'The symbols' })}
-          contentClassName="space-y-4"
-        >
-          {reading.matchedSymbols.map((match, i) => (
-            <Card key={i} padding="lg">
-              <h4 className="heading-display-md text-mystic-100 mb-2 capitalize">{match.keyword}</h4>
-              <p className="reading-copy mb-3">{match.symbol.meaning}</p>
-              <div className="pt-3 border-t border-mystic-800/50">
-                <p className="text-meta text-mystic-400 mb-1 uppercase tracking-wider">
-                  {t('dream.reflectionLabel', { defaultValue: 'Hold this question' })}
-                </p>
-                <p className="reading-quote my-0">{match.symbol.reflection}</p>
-              </div>
-            </Card>
-          ))}
-        </Section>
-      )}
-
-      <Card padding="lg" className="bg-gradient-to-br from-gold/5 to-mystic-900 border-gold/20">
-        <h3 className="heading-display-md text-mystic-100 mb-3">
-          {t('dream.practiceLabel', { defaultValue: 'Dream practice' })}
-        </h3>
-        <p className="reading-copy">
-          {t('dream.practiceBody', {
-            defaultValue:
-              'Keep a notebook by your bed. Record dreams the moment you wake, before they fade. Over time, recurring symbols reveal the language your unconscious uses with you.',
-          })}
-        </p>
-      </Card>
+      </ResultSheet>
 
       <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" fullWidth onClick={handleShare}>
-          <Share2 className="w-4 h-4 mr-2" />
+          <Share2 className="w-4 h-4" aria-hidden />
           {t('dream.share', { defaultValue: 'Share this interpretation' })}
         </Button>
         <Button variant="outline" fullWidth onClick={onReset}>

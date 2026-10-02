@@ -10,7 +10,7 @@ import { CelestialMapIntroLoader } from '../components/celestial/CelestialMapInt
 import { CelestialBirthDataForm } from '../components/celestial/CelestialBirthDataForm';
 import { CelestialCitySearch } from '../components/celestial/CelestialCitySearch';
 import { CelestialPowerPlaces } from '../components/celestial/CelestialPowerPlaces';
-import { CelestialEducationSection, CelestialAnglesSection } from '../components/celestial/CelestialEducationSection';
+import { CelestialAboutDisclosure, CelestialAnglesSection, LifeAreaBlurb } from '../components/celestial/CelestialEducationSection';
 import { FindYourPlace } from '../components/celestial/FindYourPlace';
 import { DestinedPlaceBanner } from '../components/celestial/DestinedPlaceBanner';
 import { PaywallSheet } from '../components/premium/PaywallSheet';
@@ -106,13 +106,6 @@ export function CelestialMapPage() {
     setTappedPoint({ lon: city.lon, lat: city.lat });
     setShowInsightPanel(true);
     mapEngineRef.current?.flyTo([city.lon, city.lat]);
-    requestAnimationFrame(() => {
-      mapSectionRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
-    });
-  }
-
-  function handleLifeAreaCardPick(area: 'love' | 'career' | 'travel' | 'healing' | 'home' | 'growth') {
-    setActiveFilter(area);
     requestAnimationFrame(() => {
       mapSectionRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     });
@@ -345,10 +338,7 @@ export function CelestialMapPage() {
         </motion.div>
       )}
 
-      {/* ── "What this is" + use-case grid (taps set filter) ─── */}
-      <CelestialEducationSection onPickLifeArea={handleLifeAreaCardPick} />
-
-      {/* ── Interactive map section ──────────────────────────── */}
+      {/* ── Interactive map section — the map comes first (R5 p-3) ── */}
       <div ref={mapSectionRef} className="space-y-3 scroll-mt-4">
         {/* Heading for the whole map region. Deliberately NOT a <Section>:
             the content it heads is the map, the filters and the search, which
@@ -393,6 +383,8 @@ export function CelestialMapPage() {
             );
           })}
         </div>
+        {/* One line on the chosen theme — the six tinted cards this replaced. */}
+        {activeFilter !== 'all' && <LifeAreaBlurb area={activeFilter} />}
 
         {/* The map itself */}
         {/* Square at phone width, 4:3 from `sm`. The old `aspect-ratio: 4/3`
@@ -542,6 +534,9 @@ export function CelestialMapPage() {
           onUpgrade={() => setShowPaywall(true)}
         />
       )}
+
+      {/* ── The lesson, for the curious, after the map ─────────── */}
+      <CelestialAboutDisclosure />
 
       {/* ── "How to read the lines" — explainer of AC/DC/MC/IC ── */}
       <CelestialAnglesSection />

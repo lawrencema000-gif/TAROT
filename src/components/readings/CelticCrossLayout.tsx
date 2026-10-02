@@ -2,8 +2,8 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { Info } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import { TarotFace } from '../ui/TarotFace';
 import type { TarotCard } from '../../types';
-import { getBundledCardPath, getBundledThumbPath } from '../../config/bundledImages';
 import { flipHaptics } from '../../utils/haptics';
 
 /*
@@ -43,12 +43,12 @@ interface CelticCrossLayoutProps {
 }
 
 /*
- * Ten slots of 56×84 on a phone: the 150×225 `thumb` variant covers that
- * at 2.7× for 135 KB decoded each, against 1.5 MB for the 512×768 face.
- * Tapping a revealed card opens the full-size art in the sheet.
+ * Ten slots of 56×84 on a phone: TarotFace at `sm` takes the 150×225
+ * `thumb` variant (135 KB decoded each, against 1.5 MB for the 512×768
+ * face) and the quiet plate — rank and suit glyph, or the numeral — since
+ * a name cannot be set at that width. Tapping a revealed card opens the
+ * full-size art in the sheet.
  */
-const faceFor = (card: TarotCard): string | undefined =>
-  getBundledThumbPath(card.id) ?? getBundledCardPath(card.id) ?? card.imageUrl;
 
 export function CelticCrossLayout({
   drawnCards,
@@ -94,7 +94,6 @@ export function CelticCrossLayout({
     const drawn = drawnCards[index];
     if (!drawn) return null;
     const delay = flipDelays.current[index] ?? 0;
-    const face = faceFor(drawn.card);
     const position = getPositionLabel(index);
     return (
       <button
@@ -122,7 +121,7 @@ export function CelticCrossLayout({
           }}
         >
           {/* Back — the Arcana back, the same object the reader drew. */}
-          <div className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850" style={BACKFACE}>
+          <div className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850 border border-gold/30" style={BACKFACE}>
             <img
               src={backSrc}
               alt=""
@@ -133,25 +132,14 @@ export function CelticCrossLayout({
           </div>
 
           {/* Face — mounted from the start and pre-turned, so the image is
-              already decoded when the turn begins. The art frames itself. */}
+              already decoded when the turn begins. The plane carries the
+              reversal, so the face is drawn upright. */}
           <div
-            className="absolute inset-0 rounded-inset overflow-hidden bg-mystic-850"
+            className="absolute inset-0"
             style={{ ...BACKFACE, transform: 'rotateY(180deg)' }}
             aria-hidden={!drawn.revealed}
           >
-            {face ? (
-              <img
-                src={face}
-                alt={drawn.card.name}
-                decoding="async"
-                className="w-full h-full object-cover pointer-events-none select-none"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center p-1 text-center">
-                <p className="text-caption text-mystic-300 line-clamp-3 leading-tight">{drawn.card.name}</p>
-              </div>
-            )}
+            <TarotFace card={drawn.card} size="fill" detail="quiet" reversedTag={false} loading="eager" alt="" />
           </div>
         </div>
         {/* The affordance arrives as the card settles, not with it. */}

@@ -1,5 +1,6 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { callAIText, embedText } from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -51,6 +52,15 @@ interface ChatResponse {
   reply: string;
   persona: Persona;
   memoriesUsed: number;
+  /**
+   * What happened on the memory path, so "no memories yet" is distinguishable
+   * from "the embedder or the vector search is broken" (the retired
+   * text-embedding-004 made recall a silent no-op for months):
+   *   searched      — embedding returned 768 floats and ai_search_memories ran
+   *   embed-failed  — the embedder returned nothing (key, model or dimension)
+   *   search-failed — the pgvector RPC errored (e.g. dimension mismatch)
+   */
+  memoryStatus: "searched" | "embed-failed" | "search-failed";
 }
 
 // Provider chain (OpenAI primary, Gemini fallback) lives in _shared/ai-providers.ts.
@@ -68,11 +78,6 @@ const PERSONA_SYSTEM_PROMPTS: Record<Persona, string> = {
 
   priestess: `You are the Priestess — a feminine, embodied, intuitive voice. You care about the body, the emotional weather, the sacredness of ordinary life. You speak as a wise older sister — warm, present, unhurried. You track not just the question but the person behind it: their tone, their weariness, their joy. You are comfortable naming what you sense is beneath the question. You offer concrete practices as often as you offer wisdom: a breath, a bath, a walk, a journal prompt. 2-4 short paragraphs.`,
 };
-
-function localeName(code: string): string {
-  const normalized = code.toLowerCase().split("-")[0];
-  return ({ ja: "Japanese", ko: "Korean", zh: "Chinese" }[normalized]) || "English";
-}
 
 function buildSystemPrompt(
   persona: Persona,
@@ -92,9 +97,9 @@ function buildSystemPrompt(
     ? `\n\nWhat you remember from previous conversations with this person (most relevant first):\n${memories.map((m, i) => `${i + 1}. ${m}`).join("\n")}\nWeave these in naturally when they are relevant. Never dump them back at the person — reference them the way a human friend would reference a prior conversation.`
     : "";
 
-  const localeLine = userContext?.locale && userContext.locale !== "en"
-    ? `\n\nIMPORTANT: Respond in ${localeName(userContext.locale)}. Keep the voice of the persona, just translate into the user's language naturally.`
-    : "";
+  // Shared per-locale instruction (_shared/locale.ts), always present so
+  // the four languages are handled identically across every AI surface.
+  const localeLine = `\n\n${localeInstruction(userContext?.locale, { keepVoice: true })}`;
 
   const safetyBlock = `\n\nSafety rules:
 - Never give medical, legal, or financial advice. When asked, redirect to a professional and suggest what to think about instead.
@@ -164,7 +169,7 @@ async function maybeSummarize(
     log("memory.summarize.llm_failed");
     return;
   }
-  const embedding = await embedText(summary);
+  const embedding = await embedText(summary, "document");
   if (!embedding) {
     log("memory.summarize.embed_failed");
     return;
@@ -223,8 +228,9 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
 
     // 2. Embed the user message and pull top-k relevant memories in parallel
     //    with the persist above.
-    const embedding = await embedText(lastUserMessage.content);
+    const embedding = await embedText(lastUserMessage.content, "query");
     let memories: string[] = [];
+    let memoryStatus: ChatResponse["memoryStatus"] = "embed-failed";
     if (embedding) {
       const { data, error } = await ctx.supabase.rpc("ai_search_memories", {
         p_user_id: userId,
@@ -233,12 +239,16 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
         p_limit: TOP_K_MEMORIES,
       });
       if (!error && Array.isArray(data)) {
+        memoryStatus = "searched";
         memories = data
           .filter((r: { similarity: number }) => r.similarity >= MEMORY_SIMILARITY_THRESHOLD)
           .map((r: { summary: string }) => r.summary);
       } else if (error) {
+        memoryStatus = "search-failed";
         ctx.log.warn("memory.search_failed", { err: error.message });
       }
+    } else {
+      ctx.log.warn("memory.embed_failed");
     }
 
     await persistUserTurn;
@@ -276,6 +286,6 @@ Deno.serve(handler<ChatRequest, ChatResponse>({
       // Non-fatal.
     }
 
-    return { reply, persona, memoriesUsed: memories.length };
+    return { reply, persona, memoriesUsed: memories.length, memoryStatus };
   },
 }));

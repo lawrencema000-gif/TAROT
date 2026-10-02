@@ -30,105 +30,159 @@ export const PLANET_NAMES: Record<Locale, Record<string, string>> = {
 };
 
 // Aspect brief templates — {transitPlanet} and {natalPlanet} get substituted.
+// Four variants per aspect type; `buildAspectBrief` picks one by planet pair,
+// so three transits of the same type on one day no longer read as the same
+// sentence three times (polish R5 m-5), and a given pair keeps its sentence
+// from day to day.
 export const ASPECT_BRIEFS: Record<Locale, Record<AspectType, string[]>> = {
   en: {
     conjunction: [
       "{transitPlanet} merges with your natal {natalPlanet}, intensifying its themes.",
-      "A powerful fusion of {transitPlanet} energy with your {natalPlanet} placement.",
+      "{transitPlanet} sits right on your natal {natalPlanet} today — whatever that placement rules is turned up.",
+      "{transitPlanet} and your {natalPlanet} speak with one voice. Notice what feels suddenly obvious.",
+      "{transitPlanet} lights your natal {natalPlanet} from inside; let that part of you lead for a day.",
     ],
     opposition: [
-      "{transitPlanet} challenges your natal {natalPlanet}, revealing what needs balancing.",
-      "Tension between {transitPlanet} and your {natalPlanet} creates growth through awareness.",
+      "{transitPlanet} opposes your natal {natalPlanet}, revealing what needs balancing.",
+      "{transitPlanet} stands across from your {natalPlanet} — two true things pulling in different directions.",
+      "Tension between {transitPlanet} and your {natalPlanet}: name both sides before you choose.",
+      "{transitPlanet} holds a mirror up to your {natalPlanet}. Something you project is asking to be owned.",
     ],
     trine: [
       "{transitPlanet} flows harmoniously with your {natalPlanet}, easing progress.",
-      "Natural support from {transitPlanet} to your {natalPlanet} opens doors effortlessly.",
+      "{transitPlanet} trines your natal {natalPlanet}: effort lands, doors open with less pushing.",
+      "Natural support from {transitPlanet} to your {natalPlanet} — a good day to start what you keep postponing.",
+      "{transitPlanet} and your {natalPlanet} are in easy agreement. Use the ease; it does not last.",
     ],
     square: [
-      "{transitPlanet} creates friction with your {natalPlanet}, motivating necessary change.",
-      "Pressure from {transitPlanet} on your {natalPlanet} pushes you to evolve.",
+      "{transitPlanet} squares your {natalPlanet}, motivating necessary change.",
+      "Friction between {transitPlanet} and your {natalPlanet} — irritation that points at something worth fixing.",
+      "{transitPlanet} pushes against your natal {natalPlanet}. Resist the quick reaction; act on the slow one.",
+      "A square from {transitPlanet} to your {natalPlanet}: the pressure is real, and so is the growth it buys.",
     ],
     sextile: [
       "{transitPlanet} offers an opportunity through your {natalPlanet}. Stay alert.",
+      "{transitPlanet} sextiles your {natalPlanet}: a small opening that rewards a small, deliberate step.",
       "A gentle nudge from {transitPlanet} activates your {natalPlanet}'s potential.",
+      "{transitPlanet} and your {natalPlanet} cooperate quietly today. Say yes to the easy invitation.",
     ],
   },
   ja: {
     conjunction: [
       "{transitPlanet}があなたのネイタル{natalPlanet}と重なり、そのテーマを強めます。",
-      "{transitPlanet}のエネルギーとあなたの{natalPlanet}が力強く融合します。",
+      "{transitPlanet}が今日、あなたのネイタル{natalPlanet}の真上にあります。その配置が司る領域が強く意識されます。",
+      "{transitPlanet}と{natalPlanet}が一つの声で語ります。急に明らかになったことに注目してください。",
+      "{transitPlanet}があなたの{natalPlanet}を内側から照らします。今日はその部分に主導権を渡してみましょう。",
     ],
     opposition: [
       "{transitPlanet}があなたのネイタル{natalPlanet}に挑み、バランスが必要な部分を明らかにします。",
-      "{transitPlanet}と{natalPlanet}の緊張が気づきを通じた成長を生みます。",
+      "{transitPlanet}が{natalPlanet}の向かいに立ち、二つの正しさが別の方向へ引き合います。",
+      "{transitPlanet}と{natalPlanet}の緊張。選ぶ前に、両方の側に名前を付けてみましょう。",
+      "{transitPlanet}が{natalPlanet}に鏡を向けています。他人に映していたものを、自分のものとして引き受ける時です。",
     ],
     trine: [
       "{transitPlanet}があなたの{natalPlanet}と調和し、物事がスムーズに進みます。",
-      "{transitPlanet}から{natalPlanet}への自然な後押しが、扉を軽やかに開きます。",
+      "{transitPlanet}がネイタル{natalPlanet}とトラインを結びます。努力が実り、扉は軽く開きます。",
+      "{transitPlanet}から{natalPlanet}への自然な後押し。先延ばしにしていたことを始めるのに良い日です。",
+      "{transitPlanet}と{natalPlanet}が穏やかに同意しています。この追い風は長く続かないので、今使いましょう。",
     ],
     square: [
       "{transitPlanet}が{natalPlanet}に摩擦を生み、必要な変化を促します。",
-      "{transitPlanet}から{natalPlanet}への圧力が、あなたを進化させます。",
+      "{transitPlanet}と{natalPlanet}の摩擦は、直すべき何かを指し示すいら立ちです。",
+      "{transitPlanet}が{natalPlanet}を押しています。即座の反応ではなく、ゆっくり考えた行動を選びましょう。",
+      "{transitPlanet}から{natalPlanet}へのスクエア。圧力は本物で、それが買ってくれる成長も本物です。",
     ],
     sextile: [
       "{transitPlanet}があなたの{natalPlanet}を通してチャンスをもたらします。アンテナを立てましょう。",
+      "{transitPlanet}が{natalPlanet}とセクスタイル。小さな一歩が報われる、小さな開口です。",
       "{transitPlanet}からの優しい後押しが、あなたの{natalPlanet}の可能性を活性化します。",
+      "{transitPlanet}と{natalPlanet}が静かに協力しています。気軽な誘いに「はい」と答えてみましょう。",
     ],
   },
   ko: {
     conjunction: [
       "{transitPlanet}이(가) 당신의 네이탈 {natalPlanet}과(와) 합치며 그 주제를 강화합니다.",
-      "{transitPlanet}의 에너지와 당신의 {natalPlanet} 배치가 강력히 융합됩니다.",
+      "{transitPlanet}이(가) 오늘 당신의 네이탈 {natalPlanet} 바로 위에 있습니다. 그 배치가 다스리는 영역이 또렷해집니다.",
+      "{transitPlanet}과(와) {natalPlanet}이(가) 한목소리로 말합니다. 갑자기 분명해진 것에 주목하세요.",
+      "{transitPlanet}이(가) 당신의 {natalPlanet}을(를) 안에서부터 밝힙니다. 오늘은 그 부분이 앞장서게 두세요.",
     ],
     opposition: [
       "{transitPlanet}이(가) 당신의 네이탈 {natalPlanet}에 도전하며 균형이 필요한 지점을 드러냅니다.",
-      "{transitPlanet}과(와) {natalPlanet} 사이의 긴장이 인식을 통해 성장을 만듭니다.",
+      "{transitPlanet}이(가) {natalPlanet} 맞은편에 서 있습니다. 두 가지 진실이 서로 다른 방향으로 끌어당깁니다.",
+      "{transitPlanet}과(와) {natalPlanet} 사이의 긴장: 선택하기 전에 양쪽 모두에 이름을 붙여 보세요.",
+      "{transitPlanet}이(가) 당신의 {natalPlanet}에 거울을 비춥니다. 남에게 투사했던 것을 내 것으로 받아들일 때입니다.",
     ],
     trine: [
       "{transitPlanet}이(가) 당신의 {natalPlanet}과(와) 조화롭게 흐르며 진전을 쉽게 합니다.",
-      "{transitPlanet}에서 당신의 {natalPlanet}으로 가는 자연스러운 지원이 문을 수월하게 엽니다.",
+      "{transitPlanet}이(가) 네이탈 {natalPlanet}과(와) 트라인을 이룹니다. 노력이 결실을 맺고 문이 가볍게 열립니다.",
+      "{transitPlanet}에서 {natalPlanet}으로 흐르는 자연스러운 지원. 미뤄 온 일을 시작하기 좋은 날입니다.",
+      "{transitPlanet}과(와) {natalPlanet}이(가) 편안하게 뜻을 모읍니다. 이 순풍은 오래가지 않으니 지금 쓰세요.",
     ],
     square: [
       "{transitPlanet}이(가) 당신의 {natalPlanet}에 마찰을 만들어 필요한 변화를 자극합니다.",
-      "{transitPlanet}이(가) 당신의 {natalPlanet}에 가하는 압력이 당신을 진화시킵니다.",
+      "{transitPlanet}과(와) {natalPlanet} 사이의 마찰은 고칠 가치가 있는 무언가를 가리키는 짜증입니다.",
+      "{transitPlanet}이(가) {natalPlanet}을(를) 밀어붙입니다. 즉각적인 반응보다 천천히 생각한 행동을 택하세요.",
+      "{transitPlanet}이(가) {natalPlanet}에 맺는 스퀘어: 압력은 진짜이고, 그것이 사 주는 성장도 진짜입니다.",
     ],
     sextile: [
       "{transitPlanet}이(가) 당신의 {natalPlanet}을(를) 통해 기회를 제공합니다. 깨어 있으세요.",
+      "{transitPlanet}이(가) {natalPlanet}과(와) 섹스타일을 이룹니다. 작고 의도적인 한 걸음이 보답받는 작은 틈입니다.",
       "{transitPlanet}의 부드러운 자극이 당신의 {natalPlanet}의 잠재력을 활성화합니다.",
+      "{transitPlanet}과(와) {natalPlanet}이(가) 조용히 협력합니다. 가벼운 초대에 '네'라고 답해 보세요.",
     ],
   },
   zh: {
     conjunction: [
-      "{transitPlanet}与你的本命{natalPlanet}合相,强化其主题。",
-      "{transitPlanet}的能量与你的{natalPlanet}位置强力融合。",
+      "{transitPlanet}与你的本命{natalPlanet}合相，强化其主题。",
+      "{transitPlanet}今天正落在你的本命{natalPlanet}之上，这个位置所主管的领域被调亮了。",
+      "{transitPlanet}与你的{natalPlanet}同声说话。留意那些突然变得显而易见的事。",
+      "{transitPlanet}从内部点亮你的本命{natalPlanet}，今天让这部分的你来带路。",
     ],
     opposition: [
-      "{transitPlanet}挑战你的本命{natalPlanet},揭示需要平衡之处。",
-      "{transitPlanet}与你的{natalPlanet}之间的张力,通过觉察催生成长。",
+      "{transitPlanet}挑战你的本命{natalPlanet}，揭示需要平衡之处。",
+      "{transitPlanet}站在你的{natalPlanet}对面，两件真实的事往不同方向拉扯。",
+      "{transitPlanet}与{natalPlanet}之间的张力：先把两边都说清楚，再做选择。",
+      "{transitPlanet}向你的{natalPlanet}举起一面镜子。你投射在别人身上的东西，正等着被认领。",
     ],
     trine: [
-      "{transitPlanet}与你的{natalPlanet}和谐流动,让进展变得轻松。",
-      "{transitPlanet}对你的{natalPlanet}的自然支持,让机会之门毫不费力地打开。",
+      "{transitPlanet}与你的{natalPlanet}和谐流动，让进展变得轻松。",
+      "{transitPlanet}与本命{natalPlanet}成三分相：努力落地，门不用太用力就打开了。",
+      "来自{transitPlanet}对{natalPlanet}的自然支持，适合开始那件你一直推迟的事。",
+      "{transitPlanet}与你的{natalPlanet}轻松达成一致。趁着顺风，它不会一直在。",
     ],
     square: [
-      "{transitPlanet}对你的{natalPlanet}造成摩擦,激发必要的改变。",
-      "{transitPlanet}对你的{natalPlanet}的压力,推动你进化。",
+      "{transitPlanet}对你的{natalPlanet}造成摩擦，激发必要的改变。",
+      "{transitPlanet}与{natalPlanet}之间的摩擦，是一种指向值得修正之处的烦躁。",
+      "{transitPlanet}在推挤你的本命{natalPlanet}。别急着反应，按慢下来想清楚的那个去做。",
+      "{transitPlanet}对{natalPlanet}的四分相：压力是真的，它换来的成长也是真的。",
     ],
     sextile: [
       "{transitPlanet}通过你的{natalPlanet}提供一个机会。保持警觉。",
-      "来自{transitPlanet}的温和助力,激活了你{natalPlanet}的潜能。",
+      "{transitPlanet}与{natalPlanet}成六分相：一道小小的缝隙，奖励一小步有意的行动。",
+      "来自{transitPlanet}的温和助力，激活了你{natalPlanet}的潜能。",
+      "{transitPlanet}与你的{natalPlanet}今天安静地合作。对那个轻松的邀请说好。",
     ],
   },
 };
 
-// Compose an aspect brief with localized planet names substituted in.
+// Small stable hash so a planet pair always lands on the same variant.
+function pairHash(input: string): number {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+// Compose an aspect brief with localized planet names substituted in. The
+// variant is chosen by the planet pair, so a day with three conjunctions
+// shows three different sentences and a given pair reads consistently.
 export function buildAspectBrief(
   locale: Locale,
   transitPlanet: string,
   aspect: AspectType,
   natalPlanet: string,
 ): string {
-  const template = (ASPECT_BRIEFS[locale][aspect] || ASPECT_BRIEFS[locale].conjunction)[0];
+  const variants = ASPECT_BRIEFS[locale][aspect] || ASPECT_BRIEFS[locale].conjunction;
+  const template = variants[pairHash(`${transitPlanet}>${natalPlanet}`) % variants.length];
   return template
     .replaceAll("{transitPlanet}", PLANET_NAMES[locale][transitPlanet] ?? transitPlanet)
     .replaceAll("{natalPlanet}", PLANET_NAMES[locale][natalPlanet] ?? natalPlanet);

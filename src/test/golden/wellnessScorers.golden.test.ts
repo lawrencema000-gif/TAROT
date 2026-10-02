@@ -18,14 +18,16 @@ import { scoreLoveTree } from '../../data/loveTree';
 // CORE PHQ-2 ITEMS: lw1 ("felt down or depressed") and lw2 ("little interest
 // or pleasure"). These are exactly the two items of the validated PHQ-2.
 //
-// AGREEMENT-LIKERT -> PHQ-2 FREQUENCY MAP (independently derived from the
-// documented rescale formula  f(v) = round( (v-1)*3 / 4 )  using JS round-
-// half-up; confirmed by hand below):
-//   v=1 -> round(0/4)   = round(0.00) = 0
-//   v=2 -> round(3/4)   = round(0.75) = 1
-//   v=3 -> round(6/4)   = round(1.50) = 2   (half rounds UP -> 2, not 1)
-//   v=4 -> round(9/4)   = round(2.25) = 2   (NOT 3 — the key non-1:1 case)
-//   v=5 -> round(12/4)  = round(3.00) = 3
+// PHQ-2 FREQUENCY SCALE. Phase 7 (R3 §2.28) gave the two core items the
+// instrument's own four-point frequency options instead of an agreement
+// Likert, so the recorded value IS the frequency plus one:
+//   v=1 "Not at all"              -> 0
+//   v=2 "Several days"            -> 1
+//   v=3 "More than half the days" -> 2
+//   v=4 "Nearly every day"        -> 3
+// (The old agreement→frequency rescale — where "Neutral" read as "more than
+// half the days" and all-Neutral screened positive — is gone; the tests
+// below were rewritten for the new scale, with the same clinical cutoff.)
 //
 // VALIDATED CLINICAL CUTOFF (Kroenke, Spitzer & Williams, 2003, "The Patient
 // Health Questionnaire-2"): the two core items each score 0-3, are summed to
@@ -57,62 +59,74 @@ function moodVector(overrides: Record<string, number>): Record<string, number> {
 }
 
 describe('scoreMoodScreener — PHQ-2 cutoff (independent clinical reference)', () => {
-  it('both cores at Likert 3 -> mapped 2+2 = 4 >= 3 -> seek-support', () => {
-    // Derivation: f(3)=2, so 2+2=4. 4 >= 3 cutoff => positive screen.
+  it('both cores "More than half the days" (3) -> 2+2 = 4 >= 3 -> seek-support', () => {
     const r = scoreMoodScreener(moodVector({ lw1: 3, lw2: 3 }));
     expect(r.primary).toBe('seek-support');
+    expect(r.extra?.phq2Total).toBe(4);
   });
 
-  it('both cores at Likert 1 -> 0+0 = 0 -> below cutoff -> low (healthy vector)', () => {
-    // Derivation: f(1)=0, so 0+0=0 < 3 => NOT a positive screen.
+  it('both cores "Not at all" (1) -> 0+0 = 0 -> below cutoff -> low (healthy vector)', () => {
     // To reach the documented 'low' baseline we make the 'low' dimension
     // (lo1..lo3) the strict average-max: lo* = 5 (avg 5.0) while every other
     // dimension averages 1.0. The fallback therefore types 'low'.
     const r = scoreMoodScreener(moodVector({ lw1: 1, lw2: 1, lo1: 5, lo2: 5, lo3: 5 }));
     expect(r.primary).toBe('low');
+    expect(r.extra?.phq2Total).toBe(0);
   });
 
   it('BOUNDARY: core sum == exactly 3 -> seek-support (cutoff is >=3)', () => {
-    // Derivation: lw1=4 -> f=2, lw2=2 -> f=1; total 2+1 = 3. 3 >= 3 => positive.
+    // lw1 "More than half the days" (3) -> 2, lw2 "Several days" (2) -> 1; 2+1 = 3 >= 3 => positive.
     // This is the precise validated PHQ-2 threshold; it MUST trip.
-    const r = scoreMoodScreener(moodVector({ lw1: 4, lw2: 2 }));
+    const r = scoreMoodScreener(moodVector({ lw1: 3, lw2: 2 }));
     expect(r.primary).toBe('seek-support');
   });
 
   it('BOUNDARY: core sum == exactly 2 -> NOT seek-support (just under cutoff)', () => {
-    // Derivation: lw1=2 -> f=1, lw2=2 -> f=1; total 1+1 = 2. 2 < 3 => negative.
-    // Make 'low' the strict max so the fallback resolves there (any non-
-    // 'seek-support' label proves the cutoff did NOT fire).
+    // Both cores "Several days" (2) -> 1+1 = 2 < 3 => negative. Make 'low' the
+    // strict max so the fallback resolves there (any non-'seek-support'
+    // label proves the cutoff did NOT fire).
     const r = scoreMoodScreener(moodVector({ lw1: 2, lw2: 2, lo1: 5, lo2: 5, lo3: 5 }));
     expect(r.primary).not.toBe('seek-support');
     expect(r.primary).toBe('low');
   });
 
-  it('verifies 4 -> 2 (NOT 3): lw1=4, lw2=1 sums to 2 -> NOT seek-support', () => {
-    // Under a NAIVE 1:1-ish map (Likert 4 = "nearly every day" = 3), lw1 would
-    // contribute 3 and 3+0 = 3 would WRONGLY trip the cutoff. Under the real
-    // map f(4)=2, so 2 + f(1)=0 = 2 < 3 => negative. Asserting NOT seek-support
-    // here is what distinguishes the correct 4->2 mapping from a naive 1:1.
-    const r = scoreMoodScreener(moodVector({ lw1: 4, lw2: 1, lo1: 5, lo2: 5, lo3: 5 }));
-    expect(r.primary).not.toBe('seek-support');
-  });
-
-  it('verifies 5 -> 3: lw1=5, lw2=1 sums to 3 -> seek-support', () => {
-    // Derivation: f(5)=3, f(1)=0; total 3+0 = 3 >= 3 => positive. If 5 were
-    // (wrongly) mapped to 2, total would be 2 < 3 and this would fail —
-    // so passing confirms the 5->3 (top-of-scale) mapping.
-    const r = scoreMoodScreener(moodVector({ lw1: 5, lw2: 1 }));
+  it('"Nearly every day" (4) on one core alone -> 3+0 = 3 -> seek-support', () => {
+    const r = scoreMoodScreener(moodVector({ lw1: 4, lw2: 1 }));
     expect(r.primary).toBe('seek-support');
   });
 
-  it('exposes raw per-dimension sums in scores (shape contract)', () => {
-    // Independent sum check: with lw1=3, lw2=3 the 'seek-support' RAW sum is
-    // the un-mapped Likert sum 3+3 = 6 (scores hold raw Likert sums, the PHQ
-    // mapping only governs the cutoff decision).
+  it('"More than half the days" on one core alone -> 2+0 = 2 -> NOT seek-support', () => {
+    const r = scoreMoodScreener(moodVector({ lw1: 3, lw2: 1, lo1: 5, lo2: 5, lo3: 5 }));
+    expect(r.primary).not.toBe('seek-support');
+  });
+
+  it('an old five-point answer replayed from a stored result is clamped: 5 -> 3, never 4', () => {
+    const r = scoreMoodScreener(moodVector({ lw1: 5, lw2: 1 }));
+    expect(r.extra?.phq2Total).toBe(3);
+    expect(r.primary).toBe('seek-support');
+  });
+
+  it('STATED: the indifferent respondent — cores "Several days", every other item Neutral — is moderate, not seek-support', () => {
+    // Cores 2+2 -> 1+1 = 2 < 3, so the average fallback decides: low 3.0,
+    // mild 3.0, moderate 3.0, seek-support 2.0 (raw 2+2 over two items).
+    // Equal means resolve toward the more supportive result, so the
+    // three-way tie lands on moderate. Under the old agreement mapping the
+    // same person (Neutral on the cores too) screened positive.
+    const r = scoreMoodScreener({ lw1: 2, lw2: 2, lw3: 3, lw4: 3, lw5: 3, mi1: 3, mi2: 3, mi3: 3, mi4: 3, lo1: 3, lo2: 3, lo3: 3 });
+    expect(r.primary).toBe('moderate');
+    expect(r.averages.low).toBe(3);
+    expect(r.averages['seek-support']).toBe(2);
+  });
+
+  it('exposes raw per-dimension sums in scores (shape contract) and the Likert means in averages', () => {
+    // With lw1=3, lw2=3 the 'seek-support' RAW sum is 3+3 = 6 (scores hold raw
+    // recorded values; the PHQ mapping only governs the cutoff decision).
     const r = scoreMoodScreener(moodVector({ lw1: 3, lw2: 3 }));
     expect(r.scores['seek-support']).toBe(6);
-    // moderate raw sum = lw3+lw4+lw5 = 1+1+1 = 3.
+    // moderate raw sum = lw3+lw4+lw5 = 1+1+1 = 3; mean 1.
     expect(r.scores.moderate).toBe(3);
+    expect(r.averages.moderate).toBe(1);
+    expect(r.isTie).toBe(false);
   });
 });
 
@@ -167,6 +181,15 @@ describe('calculateMoodCheck — independent arithmetic references', () => {
     const r = calculateMoodCheck({ mood1: 3, mood2: 3, mood3: 3, mood4: 3, mood5: 3 });
     expect(r.moodScore).toBe(60);
     expect(r.overallMood).toBe('Okay');
+  });
+
+  // Phase 7: the chosen need is returned as a key so the screen can read
+  // quizzes.mood.suggestions.<need> instead of matching English text.
+  it('mood5 maps 1..5 onto rest / support / space / action / connection; anything else is balance', () => {
+    expect(calculateMoodCheck({ mood1: 3, mood2: 3, mood3: 3, mood4: 3, mood5: 1 }).need).toBe('rest');
+    expect(calculateMoodCheck({ mood1: 3, mood2: 3, mood3: 3, mood4: 3, mood5: 3 }).need).toBe('space');
+    expect(calculateMoodCheck({ mood1: 3, mood2: 3, mood3: 3, mood4: 3, mood5: 5 }).need).toBe('connection');
+    expect(calculateMoodCheck({ mood1: 3, mood2: 3, mood3: 3, mood4: 3 }).need).toBe('space'); // default needValue 3
   });
 });
 

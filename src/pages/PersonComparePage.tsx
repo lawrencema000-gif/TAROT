@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Heart } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Section, Tabs, HoroscopeWheelIcon, ReadingProse } from '../components/ui';
+import { Card, Button, Page, PageHeader, Section, Tabs, HoroscopeWheelIcon, ReadingProse, Disclosure, Disclaimer, Skeleton } from '../components/ui';
 import { ChartWheel } from '../components/chart/ChartWheel';
 import { AspectGrid } from '../components/charts/AspectGrid';
 import { PlanetGlyph, ZodiacGlyph } from '../components/icons';
@@ -46,6 +46,10 @@ export function PersonComparePage() {
   const [tab, setTab] = useState<CompareTab>('synastry');
   const [relCharts, setRelCharts] = useState<Partial<Record<CompareTab, NatalChart>>>({});
   const [relLoading, setRelLoading] = useState(false);
+  // Aspect lists start at three closed rows (R5 M-12); the essay per aspect
+  // opens on tap.
+  const [showAllCross, setShowAllCross] = useState(false);
+  const [showAllRel, setShowAllRel] = useState(false);
 
   // Relationship-chart tabs (composite / davison / progressed) — fetched
   // lazily from the pure-compute chart-suite endpoint, cached per tab.
@@ -143,15 +147,27 @@ export function PersonComparePage() {
             {relChart.aspects.length > 0 && (
               <Section title={t('people.compare.aspectsInChart', { defaultValue: 'Aspects in this chart' })} headingLevel="h3" contentClassName="space-y-3">
                 <AspectGrid aspects={relChart.aspects} />
-                <div className="space-y-3 pt-1">
-                  {relChart.aspects.slice(0, 5).map((a, i) => (
-                    <div key={i} className="text-ui">
-                      <span className="text-mystic-200">{planetName(a.planet1)} {aspectName(a.type)} {planetName(a.planet2)}</span>
-                      <span className="text-meta text-mystic-400"> · {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
-                      {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
-                    </div>
+                <Card className="px-4 py-1">
+                  {(showAllRel ? relChart.aspects : relChart.aspects.slice(0, 3)).map((a, i) => (
+                    <Disclosure
+                      key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+                      variant="row"
+                      lazy
+                      label={<span className="block truncate text-mystic-100">{planetName(a.planet1)} {aspectName(a.type)} {planetName(a.planet2)}</span>}
+                      meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}
+                      contentClassName="reading-copy"
+                    >
+                      {interp ? <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} /> : <Skeleton height={14} width="80%" />}
+                    </Disclosure>
                   ))}
-                </div>
+                </Card>
+                {relChart.aspects.length > 3 && (
+                  <Button variant="ghost" size="sm" fullWidth onClick={() => setShowAllRel((v) => !v)} aria-expanded={showAllRel}>
+                    {showAllRel
+                      ? t('people.detail.showFewerAspects', { defaultValue: 'Show fewer aspects' })
+                      : t('people.detail.showAllAspects', { defaultValue: 'Show all {{n}} aspects', n: relChart.aspects.length })}
+                  </Button>
+                )}
               </Section>
             )}
           </>
@@ -160,9 +176,11 @@ export function PersonComparePage() {
         )
       ) : (
       <>
-      {/* Harmony score ring */}
+      {/* Harmony score — a number, so Inter, never the display serif. */}
       <Card className="p-6 text-center space-y-2">
-        <div className="text-5xl font-display text-gold">{score}<span className="text-2xl text-mystic-500">/100</span></div>
+        <div className="font-sans text-hero font-semibold tabular-nums text-gold leading-none">
+          {score}<span className="text-title font-medium text-mystic-500">/100</span>
+        </div>
         <p className="text-meta text-mystic-400">
           {t('people.compare.resonance', { defaultValue: 'Overall resonance from {{n}} cross-chart connections', n: aspects.length })}
         </p>
@@ -184,12 +202,15 @@ export function PersonComparePage() {
         headingLevel="h3"
         title={<span className="inline-flex items-center gap-2"><HoroscopeWheelIcon className="w-4 h-4 text-gold" /> {t('people.compare.strongest', { defaultValue: 'Your strongest connections' })}</span>}
       >
-        <div className="space-y-4">
-          {aspects.slice(0, 8).map((a, i) => (
-            <div key={i} className="text-ui">
-              <div className="text-mystic-200 flex items-center gap-1.5 flex-wrap">
-                {isPlanet(a.planet1) && <PlanetGlyph planet={a.planet1} size={16} className="text-gold" />}
-                <span>
+        <Card className="px-4 py-1">
+          {(showAllCross ? aspects : aspects.slice(0, 3)).map((a, i) => (
+            <Disclosure
+              key={`${a.planet1}-${a.planet2}-${a.type}-${i}`}
+              variant="row"
+              lazy
+              icon={isPlanet(a.planet1) ? <PlanetGlyph planet={a.planet1} size={18} className="text-gold" /> : undefined}
+              label={
+                <span className="block truncate text-mystic-100">
                   {t('people.compare.crossRow', {
                     defaultValue: 'Your {{mine}} {{type}} {{name}}’s {{theirs}}',
                     mine: planetName(a.planet1),
@@ -198,18 +219,26 @@ export function PersonComparePage() {
                     theirs: planetName(a.planet2),
                   })}
                 </span>
-                {isPlanet(a.planet2) && <PlanetGlyph planet={a.planet2} size={16} className="text-gold" />}
-                <span className="text-meta text-mystic-400">· {t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>
-              </div>
-              {interp && <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} className="mt-1" />}
-            </div>
+              }
+              meta={<span className="tabular-nums">{t('chartWheel.orb', { defaultValue: 'Orb {{deg}}°', deg: a.orb })}</span>}
+              contentClassName="reading-copy"
+            >
+              {interp ? <ReadingProse text={interp.aspectText(a.planet1, a.planet2, a.type)} lede={false} /> : <Skeleton height={14} width="80%" />}
+            </Disclosure>
           ))}
-        </div>
+        </Card>
+        {aspects.length > 3 && (
+          <Button variant="ghost" size="sm" fullWidth onClick={() => setShowAllCross((v) => !v)} aria-expanded={showAllCross} className="mt-3">
+            {showAllCross
+              ? t('people.detail.showFewerAspects', { defaultValue: 'Show fewer aspects' })
+              : t('people.detail.showAllAspects', { defaultValue: 'Show all {{n}} aspects', n: aspects.length })}
+          </Button>
+        )}
       </Section>
       </>
       )}
 
-      <p className="text-caption text-mystic-500 italic">{t('people.compare.disclaimer', { defaultValue: 'For reflection and entertainment. These charts describe dynamics, not destiny.' })}</p>
+      <Disclaimer kind="astrology" />
     </Page>
   );
 }

@@ -35,8 +35,14 @@
    Radii normalised to the primitives' scale: 12px controls, 16px cards &
    panels, pills where Chip is a pill.
 
-   .tm-cheatsheet-title / .tm-context-title / .tm-reflection-title /
-   .tm-email-title are paired
+   Phase 7: the library tiles (.tm-grid / .tm-card*), the filter pills
+   and the card page's six navy boxes (.tm-meanings / .tm-contexts* /
+   .tm-reflection / .tm-description) are gone — the library is the
+   DeckLibrary component and the meaning text sits on one Paper. What is
+   left here is the breadcrumb, the quick-reference table, the previous /
+   next rail, the related grid, the email capture and the bottom CTA.
+
+   .tm-cheatsheet-title / .tm-email-title are paired
    with .heading-display-md text-mystic-100 in TarotCardMeaningPage.tsx:
    section titles sit in ink like every other section title in the app;
    gold is for eyebrows and verdicts, not headings. That class lives in
@@ -70,161 +76,6 @@
   z-index: 2;
 }
 
-/* ── Hero ── */
-.tm-hero {
-  text-align: center;
-  padding: 40px 0 48px;
-}
-
-/* .tm-hero-badge / -title / -sub removed: the deck index renders its
-   title through PageHeader now; .tm-hero stays as the spacing wrapper. */
-
-/* ── Filters ── */
-.tm-filters {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 40px;
-  padding: 0 10px;
-}
-
-.tm-filter-btn {
-  padding: 8px 20px;
-  border: 1px solid rgb(var(--hairline));
-  border-radius: 12px;
-  background: none;
-  color: var(--tm-ink-400);
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tm-filter-btn:hover {
-  color: var(--tm-ink-100);
-  border-color: var(--tm-ink-600);
-}
-
-.tm-filter-btn.active {
-  color: rgb(var(--gold-primary));
-  border-color: rgba(var(--gold-primary), 0.25);
-  background: rgba(var(--gold-primary), 0.06);
-}
-
-/* ── Section Intro ── */
-.tm-section-intro {
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto 48px;
-}
-
-.tm-section-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--tm-ink-100);
-  margin-bottom: 4px;
-}
-
-.tm-section-subtitle {
-  font-size: 0.78rem;
-  color: rgb(var(--gold-primary));
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 500;
-  margin-bottom: 16px;
-}
-
-.tm-section-divider {
-  width: 40px;
-  height: 1px;
-  background: rgba(var(--gold-primary), 0.2);
-  margin: 0 auto 16px;
-}
-
-.tm-section-desc {
-  font-size: 0.92rem;
-  color: var(--tm-ink-200);
-  line-height: 1.65;
-  max-width: 66ch;
-  margin: 0 auto;
-}
-
-/* ── Card Grid ── */
-.tm-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 60px;
-}
-
-.tm-card {
-  background: rgb(var(--surface-card));
-  border: 1px solid rgb(var(--hairline));
-  border-radius: 16px;
-  padding: 16px 12px 14px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.tm-card:hover {
-  background: rgb(var(--surface-raised));
-  border-color: rgba(var(--gold-primary), 0.15);
-  transform: translateY(-6px);
-}
-
-.tm-card-img-wrap {
-  width: 100%;
-  aspect-ratio: 2/3;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 12px;
-  background: rgb(var(--surface-sunken));
-}
-
-.tm-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.4s;
-}
-
-.tm-card:hover .tm-card-img {
-  transform: scale(1.05);
-}
-
-.tm-card-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: rgba(var(--gold-primary), 0.2);
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-}
-
-.tm-card-name {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--tm-ink-100);
-  margin-bottom: 4px;
-}
-
-.tm-card-keywords {
-  font-size: 0.68rem;
-  color: var(--tm-ink-400);
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-}
-
 /* ── Breadcrumb ── */
 .tm-breadcrumb {
   padding: 24px 0 16px;
@@ -249,188 +100,6 @@
 
 .tm-breadcrumb-current {
   color: var(--tm-ink-100);
-}
-
-/* ── Card Detail Header ── */
-.tm-detail-header {
-  display: flex;
-  gap: 40px;
-  padding: 20px 0 48px;
-  align-items: flex-start;
-}
-
-.tm-detail-img-wrap {
-  width: 240px;
-  flex-shrink: 0;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.tm-detail-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.tm-detail-placeholder {
-  width: 100%;
-  aspect-ratio: 2/3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgb(var(--surface-sunken));
-  font-size: 3rem;
-  color: rgba(var(--gold-primary), 0.15);
-}
-
-.tm-detail-info {
-  flex: 1;
-  padding-top: 8px;
-}
-
-/* .tm-detail-badge / .tm-detail-name removed: the card page renders its
-   title through PageHeader (eyebrow + h1). */
-
-.tm-detail-keywords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.tm-detail-keyword {
-  padding: 4px 14px;
-  border-radius: 999px;
-  background: rgba(var(--gold-primary), 0.06);
-  border: 1px solid rgba(var(--gold-primary), 0.1);
-  font-size: 0.75rem;
-  color: rgb(var(--gold-primary));
-  font-weight: 500;
-}
-
-.tm-detail-desc {
-  font-size: 0.95rem;
-  color: var(--tm-ink-200);
-  line-height: 1.7;
-  max-width: 66ch;
-}
-
-/* ── Meanings ── */
-.tm-meanings {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.tm-meaning-card {
-  background: rgb(var(--surface-card));
-  border: 1px solid rgb(var(--hairline));
-  border-radius: 16px;
-  padding: 28px;
-}
-
-.tm-meaning-card.upright {
-  border-color: rgba(var(--tm-yes), 0.12);
-}
-
-.tm-meaning-card.reversed {
-  border-color: rgba(var(--tm-no), 0.12);
-}
-
-.tm-meaning-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.tm-meaning-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.upright .tm-meaning-icon {
-  background: rgba(var(--tm-yes), 0.1);
-  color: rgb(var(--tm-yes-ink));
-}
-
-.reversed .tm-meaning-icon {
-  background: rgba(var(--tm-no), 0.1);
-  color: rgb(var(--tm-no-ink));
-}
-
-.tm-meaning-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--tm-ink-100);
-}
-
-.tm-meaning-text {
-  font-size: 1.0625rem;
-  color: var(--tm-ink-200);
-  line-height: 1.7;
-  max-width: 66ch;
-}
-
-/* ── Love & Career ── */
-.tm-contexts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.tm-context-card {
-  background: rgb(var(--surface-card));
-  border: 1px solid rgb(var(--hairline));
-  border-radius: 16px;
-  padding: 28px;
-}
-
-/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
-.tm-context-title {
-  margin-bottom: 12px;
-}
-
-.tm-context-text {
-  font-size: 1.0625rem;
-  color: var(--tm-ink-200);
-  line-height: 1.7;
-  max-width: 66ch;
-}
-
-/* ── Reflection ── */
-.tm-reflection {
-  background: rgba(var(--gold-primary), 0.03);
-  border: 1px solid rgba(var(--gold-primary), 0.08);
-  border-radius: 16px;
-  padding: 28px;
-  margin-bottom: 40px;
-}
-
-/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
-.tm-reflection-title {
-  margin-bottom: 12px;
-}
-
-.tm-reflection-text {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.15rem;
-  font-style: italic;
-  color: var(--tm-ink-400);
-  line-height: 1.65;
-  max-width: 66ch;
-  border-left: 2px solid rgba(var(--gold-primary), 0.15);
-  padding-left: 20px;
-  margin: 0;
 }
 
 /* ── Prev/Next Nav ── */
@@ -490,7 +159,7 @@
 
 /* ── Cheat Sheet ── */
 .tm-cheatsheet {
-  margin-top: 24px;
+  margin-top: 0;
   background: rgb(var(--surface-card));
   border: 1px solid rgb(var(--hairline));
   border-radius: 16px;
@@ -498,8 +167,7 @@
 }
 
 .tm-cheatsheet-title {
-  /* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
-  margin-bottom: 14px;
+    margin-bottom: 14px;
 }
 
 .tm-cheatsheet-table {
@@ -536,57 +204,6 @@
 .tm-yesno.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); }
 .tm-yesno.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); }
 
-/* ── Card Description Section ── */
-.tm-description {
-  margin-bottom: 32px;
-  padding: 28px;
-  background: rgb(var(--surface-card));
-  border: 1px solid rgb(var(--hairline));
-  border-radius: 16px;
-}
-
-.tm-section-h2 {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--tm-ink-100);
-  margin-bottom: 12px;
-}
-
-.tm-description-text {
-  font-size: 1.0625rem;
-  color: var(--tm-ink-200);
-  line-height: 1.7;
-  max-width: 66ch;
-}
-
-/* ── Full Context Readings (Love, Career, Yes/No) ── */
-.tm-contexts-full {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.tm-yesno-block {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.tm-yesno-badge {
-  display: inline-block;
-  padding: 6px 20px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 1rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.tm-yesno-badge.yes { background: rgba(var(--tm-yes), 0.15); color: rgb(var(--tm-yes-ink)); border: 1px solid rgba(var(--tm-yes), 0.2); }
-.tm-yesno-badge.no { background: rgba(var(--tm-no), 0.15); color: rgb(var(--tm-no-ink)); border: 1px solid rgba(var(--tm-no), 0.2); }
-.tm-yesno-badge.maybe { background: rgba(var(--gold-primary), 0.15); color: rgb(var(--gold-primary)); border: 1px solid rgba(var(--gold-primary), 0.2); }
 
 /* ── Email Capture ── */
 .tm-email-capture {
@@ -598,7 +215,6 @@
   margin-bottom: 40px;
 }
 
-/* Spacing only — type comes from .heading-display-md text-mystic-100 (see header). */
 .tm-email-title {
   margin-bottom: 8px;
 }
@@ -681,7 +297,7 @@
 }
 
 .tm-related-title {
-  font-family: 'Cormorant Garamond', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
+  font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', Georgia, serif;
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--tm-ink-100);
@@ -689,14 +305,26 @@
   text-align: center;
 }
 
+/* On a phone the related cards are one scrolling rail (a row of 64px faces,
+   ~140px tall) rather than a four-row grid (~640px); the desktop aside
+   keeps the grid (min-width: 1024px, below). The rail bleeds to the
+   shell's 16px gutter so the first and last tiles sit on the screen edge. */
 .tm-related-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -16px;
+  padding: 0 16px 6px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
 }
+.tm-related-grid::-webkit-scrollbar { display: none; }
 
 .tm-related-card {
   display: flex;
+  flex: 0 0 auto;
+  width: 72px;
+  scroll-snap-align: start;
   flex-direction: column;
   align-items: center;
   gap: 6px;
@@ -719,91 +347,31 @@
   cursor: default;
 }
 
-/* 56px (48px on phones) tarot thumbnails: 12px would be a quarter of the
-   card's width and round it into a pill, so these two stay at 6px. */
-.tm-related-img {
-  width: 56px;
-  height: auto;
-  border-radius: 6px;
-}
-
-.tm-related-placeholder {
-  width: 56px;
-  height: 84px;
-  border-radius: 6px;
-  background: rgb(var(--surface-sunken));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  color: rgba(var(--gold-primary), 0.15);
-}
-
 .tm-related-name {
-  font-size: 0.6rem;
+  font-size: 0.75rem; /* the caption role; 0.6rem was below it */
   color: var(--tm-ink-400);
   text-align: center;
   line-height: 1.2;
-  max-width: 70px;
+  max-width: 64px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .tm-related-card.active .tm-related-name { color: rgb(var(--gold-primary)); }
 
+/* The related rail's faces are TarotFace at `sm` (64px); the rail sets the
+   width it wants and the face keeps its 2:3. 56px (48px on phones): a
+   quarter of that in radius would round it into a pill, so the inset role
+   (8px) is right here. */
+.tm-related-face { width: 56px; }
+.tm-related-face > div { width: 100%; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .tm-detail-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .tm-detail-img-wrap {
-    width: 200px;
-  }
-  .tm-detail-keywords {
-    justify-content: center;
-  }
-  .tm-meanings,
-  .tm-contexts,
-  .tm-contexts-full {
-    grid-template-columns: 1fr;
-  }
   .tm-email-form {
     flex-direction: column;
-  }
-  .tm-yesno-block {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .tm-related-grid {
-    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-    gap: 6px;
-  }
-  .tm-related-img { width: 48px; }
-  .tm-cheatsheet { margin-top: 20px; }
-  .tm-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .tm-grid {
-    /* `1fr` is `minmax(auto, 1fr)`, and `auto` floors at min-content — so a
-       track cannot shrink below its widest unbreakable content and the grid
-       pushes past the viewport. At 360px (a very common Android width) this
-       overflowed by 14px and the whole page scrolled sideways; at 390px it
-       happened to fit, which is why it went unnoticed. `minmax(0, 1fr)` lets
-       the track shrink and the content wrap instead. */
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .tm-card {
-    padding: 10px 8px;
-  }
-  .tm-card-name {
-    font-size: 0.8rem;
   }
 }
 
@@ -815,6 +383,7 @@
 @media (min-width: 1024px) {
   aside .tm-card-nav { margin-bottom: 20px; padding: 0 0 16px; border-top: 0; }
   aside .tm-card-nav-btn { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  aside .tm-related-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  aside .tm-related-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; overflow: visible; }
+  aside .tm-related-card { width: auto; }
   aside .tm-related { margin-bottom: 0; }
 }

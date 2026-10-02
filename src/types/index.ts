@@ -159,7 +159,7 @@ export interface QuizQuestion {
 
 export interface QuizDefinition {
   id: string;
-  type: 'mbti' | 'love-language' | 'big-five' | 'enneagram' | 'attachment' | 'court-match' | 'shadow-archetype' | 'element-affinity' | 'ayurveda-dosha' | 'extra-dimensional';
+  type: 'mbti' | 'love-language' | 'big-five' | 'mood-check' | 'enneagram' | 'attachment' | 'court-match' | 'shadow-archetype' | 'element-affinity' | 'ayurveda-dosha' | 'extra-dimensional';
   title: string;
   description: string;
   questions: QuizQuestion[];

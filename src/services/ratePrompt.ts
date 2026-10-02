@@ -1,6 +1,17 @@
 import { supabase } from '../lib/supabase';
+import { getPlatform, isNative } from '../utils/platform';
 
-const POSITIVE_ACTIONS_THRESHOLD = 3;
+/**
+ * When to ask for a store rating (R6 A6).
+ *
+ * Only where a store page exists: the native Android build (Google Play).
+ * The web app and any platform without a listing never see the prompt,
+ * whatever the counters say. And only once the person has shown they use
+ * the product: a seven-day ritual streak or ten positive actions, not
+ * three quizzes on the first evening.
+ */
+const POSITIVE_ACTIONS_THRESHOLD = 10;
+const STREAK_THRESHOLD_DAYS = 7;
 const COOLDOWN_DAYS_LATER = 7;
 const COOLDOWN_DAYS_FEEDBACK = 14;
 
@@ -11,13 +22,19 @@ interface RatePromptState {
   rate_prompt_response: RatePromptResponse | null;
   rate_prompt_count: number;
   positive_actions_count: number;
+  streak: number | null;
 }
 
 class RatePromptService {
+  /** The prompt exists only where a store listing does. */
+  canPrompt(): boolean {
+    return isNative() && getPlatform() === 'android';
+  }
+
   async getState(userId: string): Promise<RatePromptState | null> {
     const { data, error } = await supabase
       .from('profiles')
-      .select('rate_prompt_shown_at, rate_prompt_response, rate_prompt_count, positive_actions_count')
+      .select('rate_prompt_shown_at, rate_prompt_response, rate_prompt_count, positive_actions_count, streak')
       .eq('id', userId)
       .maybeSingle();
 
@@ -35,34 +52,27 @@ class RatePromptService {
     return newCount;
   }
 
+  /** Pure so the gate can be tested without a database. */
+  meetsThreshold(state: Pick<RatePromptState, 'positive_actions_count' | 'streak'>): boolean {
+    return (state.positive_actions_count ?? 0) >= POSITIVE_ACTIONS_THRESHOLD || (state.streak ?? 0) >= STREAK_THRESHOLD_DAYS;
+  }
+
   async shouldShowPrompt(userId: string): Promise<boolean> {
+    if (!this.canPrompt()) return false;
+
     const state = await this.getState(userId);
     if (!state) return false;
 
-    if (state.rate_prompt_response === 'rated') {
-      return false;
-    }
-
-    if (state.positive_actions_count < POSITIVE_ACTIONS_THRESHOLD) {
-      return false;
-    }
+    if (state.rate_prompt_response === 'rated') return false;
+    if (!this.meetsThreshold(state)) return false;
 
     if (state.rate_prompt_shown_at) {
       const lastShown = new Date(state.rate_prompt_shown_at);
-      const now = new Date();
-      const daysSinceShown = Math.floor((now.getTime() - lastShown.getTime()) / (1000 * 60 * 60 * 24));
+      const daysSinceShown = Math.floor((Date.now() - lastShown.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (state.rate_prompt_response === 'later' && daysSinceShown < COOLDOWN_DAYS_LATER) {
-        return false;
-      }
-
-      if (state.rate_prompt_response === 'feedback' && daysSinceShown < COOLDOWN_DAYS_FEEDBACK) {
-        return false;
-      }
-
-      if (!state.rate_prompt_response && daysSinceShown < COOLDOWN_DAYS_LATER) {
-        return false;
-      }
+      if (state.rate_prompt_response === 'later' && daysSinceShown < COOLDOWN_DAYS_LATER) return false;
+      if (state.rate_prompt_response === 'feedback' && daysSinceShown < COOLDOWN_DAYS_FEEDBACK) return false;
+      if (!state.rate_prompt_response && daysSinceShown < COOLDOWN_DAYS_LATER) return false;
     }
 
     return true;

@@ -1,8 +1,6 @@
 {
   "app": {
-    "name": "Arcana",
-    "tagline": "认识自己,每日一份仪式感。",
-    "shortTagline": "你的每日仪式。"
+    "tagline": "认识自己,每日一份仪式感。"
   },
   "nav": {
     "home": "首页",
@@ -14,12 +12,10 @@
     "blog": "博客",
     "cardMeanings": "牌意解读",
     "signIn": "登录",
-    "signOut": "退出登录",
     "settings": "设置",
     "search": "搜索",
     "saved": "已收藏",
     "back": "返回",
-    "backToArcana": "← 返回 Arcana",
     "backToNews": "返回资讯",
     "trophies": "成就",
     "news": "资讯",
@@ -41,17 +37,11 @@
     "continue": "继续",
     "cancel": "取消",
     "delete": "删除",
-    "confirm": "确认",
     "close": "关闭",
-    "skip": "跳过",
     "retry": "重试",
-    "readMore": "阅读更多",
-    "copy": "复制",
     "copied": "已复制。",
     "saved": "已保存",
     "shareFailed": "分享失败，请重试。",
-    "restore": "恢复购买",
-    "manage": "管理订阅",
     "loading": "加载中…",
     "send": "发送",
     "refresh": "刷新"
@@ -59,22 +49,8 @@
   "labels": {
     "email": "邮箱",
     "password": "密码",
-    "displayName": "显示名称",
     "language": "语言",
-    "birthDate": "出生日期",
-    "birthTime": "出生时间",
-    "birthPlace": "出生地",
-    "timezone": "时区",
-    "loading": "加载中…",
-    "processing": "处理中…",
-    "today": "今天",
-    "yesterday": "昨天",
-    "optional": "可选",
-    "required": "必填",
-    "searchPlaceholder": "搜索…",
-    "yes": "是",
-    "no": "否",
-    "maybe": "也许"
+    "loading": "加载中…"
   },
   "errors": {
     "generic": "操作失败，请检查网络连接后重试。",
@@ -139,14 +115,6 @@
     "invalidValue": "此值无效。"
   },
   "toast": {
-    "savedSuccess": "已保存。",
-    "deletedSuccess": "已删除。",
-    "copiedSuccess": "已复制到剪贴板。",
-    "welcomeBack": "欢迎回来。",
-    "signedOut": "已退出登录。",
-    "offline": "你已离线，部分功能不可用。",
-    "reconnected": "已恢复连接。",
-    "updateAvailable": "有新版本可用。",
     "languageChanged": "已切换语言。"
   },
   "languages": {
@@ -154,12 +122,6 @@
     "ja": "日本語",
     "ko": "한국어",
     "zh": "简体中文"
-  },
-  "time": {
-    "morning": "上午",
-    "afternoon": "下午",
-    "evening": "傍晚",
-    "night": "夜晚"
   },
   "auth": {
     "profileLoadFailed": "无法加载个人资料，请刷新页面重试。",

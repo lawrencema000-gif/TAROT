@@ -106,29 +106,61 @@ Deno.serve(
           ? "premium_yearly"
           : "premium_monthly";
 
-      const session = await stripe.checkout.sessions.create({
-        customer_email: profile?.email || ctx.user?.email,
-        client_reference_id: ctx.userId!,
-        line_items: [{ price: priceId, quantity: 1 }],
-        mode: isLifetime ? "payment" : "subscription",
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        metadata: {
-          user_id: ctx.userId!,
-          product_id: resolvedProductId,
-          client_product_id: productId,
-        },
-        subscription_data: isLifetime
-          ? undefined
-          : {
-              metadata: {
-                user_id: ctx.userId!,
-                product_id: resolvedProductId,
+      // A Stripe failure here used to escape as a bare throw → 500 INTERNAL
+      // with nothing in the envelope and only a stack in the logs, which is
+      // how "Start your free trial" could fail silently for weeks (polish
+      // R5 B-3). Stripe's error type/code/param are safe to return: they
+      // name the misconfiguration (an inactive product, a key without
+      // Checkout permission, a live price on a test key) without exposing
+      // anything secret, and the client shows generic copy either way.
+      let session: Stripe.Checkout.Session;
+      try {
+        session = await stripe.checkout.sessions.create({
+          customer_email: profile?.email || ctx.user?.email,
+          client_reference_id: ctx.userId!,
+          line_items: [{ price: priceId, quantity: 1 }],
+          mode: isLifetime ? "payment" : "subscription",
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+          metadata: {
+            user_id: ctx.userId!,
+            product_id: resolvedProductId,
+            client_product_id: productId,
+          },
+          subscription_data: isLifetime
+            ? undefined
+            : {
+                metadata: {
+                  user_id: ctx.userId!,
+                  product_id: resolvedProductId,
+                },
+                ...(trialDays ? { trial_period_days: trialDays } : {}),
               },
-              ...(trialDays ? { trial_period_days: trialDays } : {}),
-            },
-        payment_method_collection: isYearly ? "always" : undefined,
-      });
+          payment_method_collection: isYearly ? "always" : undefined,
+        });
+      } catch (e) {
+        const err = e as { type?: string; code?: string; param?: string; statusCode?: number; message?: string };
+        ctx.log.error("create_checkout_session.stripe_failed", {
+          stripeType: err?.type,
+          stripeCode: err?.code,
+          stripeParam: err?.param,
+          stripeStatus: err?.statusCode,
+          message: String(err?.message ?? e).slice(0, 300),
+          priceId,
+          mode: isLifetime ? "payment" : "subscription",
+        });
+        throw new AppError(
+          "CHECKOUT_FAILED",
+          "Could not start checkout. Please try again in a moment.",
+          502,
+          {
+            stripeType: err?.type ?? null,
+            stripeCode: err?.code ?? null,
+            stripeParam: err?.param ?? null,
+            stripeMessage: String(err?.message ?? "").slice(0, 300) || null,
+          },
+        );
+      }
 
       ctx.log.info("create_checkout_session.created", { sessionId: session.id });
 

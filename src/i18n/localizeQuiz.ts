@@ -1,18 +1,24 @@
-import type { QuizDefinition } from '../types';
+import type { QuizDefinition, QuizQuestion } from '../types';
 import i18n from './config';
 
 /**
  * Localize a quiz definition's title, description, question text, and option
  * labels to the active UI locale.
  *
- * The older quizzes (full MBTI, Big Five, Enneagram, Attachment) only have
- * translations for title/description/Likert labels — their individual
- * question stems currently still render in English because translating
- * ~200 items to 4 locales is a separate content job.
+ * Key paths the renderer reads (the English TS text is always the fallback):
+ *   curated quizzes   quizzes.definitions.<key>.{title,description}
+ *                     quizzes.definitions.<key>.questions.<qid>.text
+ *                     quizzes.definitions.<key>.questions.<qid>.options.<value>
+ *   extra quizzes     extraQuizzes.<key>.{title,description}
+ *                     extraQuizzes.<key>.questions.<qid>.text
+ *                     extraQuizzes.<key>.questions.<qid>.options.<value>
+ *   shared Likert     quizzes.likert.<value>   (every five-point agreement item)
  *
- * Newer quizzes (Quick MBTI, Tarot Court Match) ship with per-question
- * translations under `quizzes.definitions.<id>.questions.<qid>.text` and
- * per-option labels under `quizzes.definitions.<id>.questions.<qid>.options.<value>`.
+ * Likert detection is PER QUESTION, not per quiz: the mood check's bespoke
+ * five-option items ("Exhausted" … "Energized") used to be overwritten with
+ * "Strongly disagree" … because the quiz happened to have five options
+ * everywhere, and the PHQ-2 screener now mixes four-point frequency items
+ * with ten Likert items.
  */
 export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
   const t = (key: string, fallback: string): string => {
@@ -21,17 +27,7 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
     return result === key ? fallback : result;
   };
 
-  const definitionKey = quizDefinitionKey(quiz.id, quiz.type);
-  const extraKey = quiz.type === 'extra-dimensional' ? extraQuizDefinitionKey(quiz.id) : null;
-  const isLikertQuiz = quiz.questions.every((q) => q.options.length === 5);
-
-  // Namespace: curated quizzes use `quizzes.definitions.<key>.*`,
-  // extra-dimensional batch quizzes use `extraQuizzes.<key>.*`.
-  const basePath = extraKey
-    ? `extraQuizzes.${extraKey}`
-    : definitionKey
-      ? `quizzes.definitions.${definitionKey}`
-      : null;
+  const basePath = quizBasePath(quiz);
 
   const title = basePath ? t(`${basePath}.title`, quiz.title) : quiz.title;
   const description = basePath ? t(`${basePath}.description`, quiz.description) : quiz.description;
@@ -41,8 +37,9 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
       ? t(`${basePath}.questions.${q.id}.text`, q.text)
       : q.text;
 
+    const likert = isLikertQuestion(q);
     const options = q.options.map((opt) => {
-      // Per-quiz per-question option translation (forced-choice quizzes)
+      // Per-quiz per-question option translation (forced-choice and bespoke items)
       if (basePath) {
         const perOptionKey = `${basePath}.questions.${q.id}.options.${opt.value}`;
         const translated = i18n.t(perOptionKey, { ns: 'app' });
@@ -50,8 +47,8 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
           return { ...opt, label: translated };
         }
       }
-      // Shared Likert 1–5 labels (applies only to classic Likert quizzes)
-      if (isLikertQuiz && opt.value >= 1 && opt.value <= 5) {
+      // Shared Likert 1–5 labels (only for a real agreement item)
+      if (likert && opt.value >= 1 && opt.value <= 5) {
         return { ...opt, label: t(`quizzes.likert.${opt.value}`, opt.label) };
       }
       return opt;
@@ -68,9 +65,23 @@ export function localizeQuiz(quiz: QuizDefinition): QuizDefinition {
   };
 }
 
-function quizDefinitionKey(id: string, type: string): string | null {
-  // Keys match what exists in app.json quizzes.definitions.* or
-  // (for extra-dimensional quizzes) extraQuizzes.<id>.*
+const LIKERT_LABELS = new Set(['strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree']);
+
+/** Five options whose English labels are the agreement scale, in either keying direction. */
+export function isLikertQuestion(q: QuizQuestion): boolean {
+  return q.options.length === 5 && q.options.every((o) => LIKERT_LABELS.has(o.label.toLowerCase()));
+}
+
+/** `quizzes.definitions.<key>` or `extraQuizzes.<key>` for a quiz, or null when it has no locale block. */
+export function quizBasePath(quiz: Pick<QuizDefinition, 'id' | 'type'>): string | null {
+  const extraKey = quiz.type === 'extra-dimensional' ? extraQuizDefinitionKey(quiz.id) : null;
+  if (extraKey) return `extraQuizzes.${extraKey}`;
+  const definitionKey = quizDefinitionKey(quiz.id, quiz.type);
+  return definitionKey ? `quizzes.definitions.${definitionKey}` : null;
+}
+
+export function quizDefinitionKey(id: string, type: string): string | null {
+  // Keys match what exists in app.json quizzes.definitions.*
   if (id.startsWith('mbti-quick')) return 'mbtiQuick';
   if (id.startsWith('court-match') || type === 'court-match') return 'courtMatch';
   if (id.startsWith('mbti')) return 'mbti';
@@ -79,6 +90,12 @@ function quizDefinitionKey(id: string, type: string): string | null {
   if (id.startsWith('big-five') || type === 'bigfive') return 'bigfive';
   if (id.startsWith('attachment')) return 'attachment';
   if (id.startsWith('mood')) return 'mood';
+  // The JSON blocks for these three are camelCase / hyphenated; they carried
+  // full ja/ko/zh stems that were never shown because this map returned
+  // null for them (R3 F1).
+  if (id.startsWith('shadow-archetype')) return 'shadowArchetype';
+  if (id.startsWith('element-affinity')) return 'elementAffinity';
+  if (id.startsWith('ayurveda')) return 'ayurveda-dosha';
   return null;
 }
 
@@ -87,17 +104,12 @@ function quizDefinitionKey(id: string, type: string): string | null {
  * — they are numerous and batched. Keep them separate from the curated
  * `quizzes.definitions.*` block.
  */
-function extraQuizDefinitionKey(id: string): string | null {
+export function extraQuizDefinitionKey(id: string): string | null {
   if (id.endsWith('-v1') || id.endsWith('-v2')) {
     return id.replace(/-v\d+$/, '');
   }
   return null;
 }
-
-// Local re-export of localizeQuiz that routes extra-dimensional quizzes
-// through the extraQuizzes.* namespace while leaving the curated quizzes
-// using the existing quizzes.definitions.* path untouched.
-// (kept internal — the public localizeQuiz handles both transparently)
 
 /**
  * Return the locale-appropriate `timeEstimate` and `whatYouGet` for a quiz
@@ -115,6 +127,8 @@ export function localizeQuizMetadata<T extends { timeEstimate: string; whatYouGe
     typeKey === 'big-five' ? 'bigfive' :
     typeKey === 'mbti-quick' ? 'mbtiQuick' :
     typeKey === 'court-match' ? 'courtMatch' :
+    typeKey === 'shadow-archetype' ? 'shadowArchetype' :
+    typeKey === 'element-affinity' ? 'elementAffinity' :
     typeKey;
   const timeEstimate = i18n.t(
     `quizzes.definitions.${definitionKey}.timeEstimate`,
@@ -135,12 +149,6 @@ export function localizeQuizMetadata<T extends { timeEstimate: string; whatYouGe
  * locale JSON files instead of the `quizzes.definitions.*` namespace
  * used by the curated 11. Falls back to the EN values from
  * EXTRA_QUIZ_METADATA when the locale entry is missing.
- *
- * The QuizzesPage card currently passes EXTRA_QUIZ_METADATA[id] directly
- * without going through any localize call, which is why JP/KR/ZH users
- * saw English "Your money script", "Where your boundaries are firm…",
- * etc. on the quiz cards even though `title` and `description` were
- * translated.
  */
 export function localizeExtraQuizMetadata<T extends { timeEstimate: string; whatYouGet: readonly string[] }>(
   quizId: string,
@@ -158,4 +166,30 @@ export function localizeExtraQuizMetadata<T extends { timeEstimate: string; what
   );
   const whatYouGet = Array.isArray(whatYouGetRaw) ? (whatYouGetRaw as string[]) : fallback.whatYouGet;
   return { ...fallback, timeEstimate, whatYouGet };
+}
+
+/**
+ * Result copy for the curated dictionaries (mbtiDescriptions,
+ * loveLanguageDescriptions, bigFiveDescriptions, enneagramDescriptions,
+ * attachmentDescriptions, moodDescriptions). Keys live under
+ * `quizzes.resultCopy.<dictionary>.<type>.<field>` — NOT `quizzes.results`,
+ * which is already the string "Results" in every locale — and the TS text
+ * is the defaultValue, so the screen reads before any translation lands.
+ *
+ *   tResultCopy('mbti.INTJ.title', info.title)            → string
+ *   tResultCopy('mbti.INTJ.strengths', info.strengths)    → string[]
+ *
+ * An array fallback asks i18next for an object; anything that is not an
+ * array of strings falls back to the TS value, so a half-translated block
+ * can never hand the renderer an object to `.map` over.
+ */
+export function tResultCopy(path: string, fallback: string): string;
+export function tResultCopy(path: string, fallback: readonly string[]): string[];
+export function tResultCopy(path: string, fallback: string | readonly string[]): string | string[] {
+  const key = `quizzes.resultCopy.${path}`;
+  if (typeof fallback === 'string') {
+    return i18n.t(key, { ns: 'app', defaultValue: fallback });
+  }
+  const raw = i18n.t(key, { ns: 'app', returnObjects: true, defaultValue: fallback as string[] });
+  return Array.isArray(raw) && raw.every((x) => typeof x === 'string') ? (raw as string[]) : [...fallback];
 }

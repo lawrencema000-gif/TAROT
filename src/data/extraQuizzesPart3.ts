@@ -1,15 +1,17 @@
 // Sprint 5 finisher — five final quizzes to push us past the "25+" mark.
 //
 // Same shape as extraQuizzesPart2: each export is
-//   { quiz, dimensions (readonly tuple), info (result dictionary), emoji }.
-// Aggregated into EXTRA_QUIZZES_PART3 and merged in extraQuizzes.ts.
+//   { quiz, dimensions (readonly tuple), info (result dictionary), lowResult? }.
+// Aggregated into EXTRA_QUIZZES_PART3 and merged in extraQuizzes.ts. The
+// quiz's drawn glyph (metadata.icon) is its medallion; there is no emoji.
 //
 // The Anxiety Profile quiz is explicitly non-diagnostic — language is
 // self-reflective and routes higher-severity results to support copy
 // rather than a pseudo-diagnosis. Similar treatment to PHQ-2.
 
 import type { QuizDefinition } from '../types';
-import type { DimensionalResultInfo } from './extraQuizzes';
+import type { DimensionalResult, DimensionalResultInfo } from './extraQuizzes';
+import { TIE_MARGIN, likertMeans, rankDimensions } from './extraQuizzesPart2';
 
 const likert = [
   { value: 1, label: 'Strongly Disagree' },
@@ -18,18 +20,11 @@ const likert = [
   { value: 4, label: 'Agree' },
   { value: 5, label: 'Strongly Agree' },
 ];
-const likertRev = [
-  { value: 5, label: 'Strongly Disagree' },
-  { value: 4, label: 'Disagree' },
-  { value: 3, label: 'Neutral' },
-  { value: 2, label: 'Agree' },
-  { value: 1, label: 'Strongly Agree' },
-];
 
 // ---------------------------------------------------------------
 // 1. Anxiety Profile (NON-DIAGNOSTIC)
 // ---------------------------------------------------------------
-export type AnxietyProfileType = 'somatic' | 'generalized' | 'social' | 'performance';
+export type AnxietyProfileType = 'somatic' | 'generalized' | 'social' | 'performance' | 'low';
 
 export const anxietyProfileQuiz: QuizDefinition = {
   id: 'anxiety-profile-v1',
@@ -44,7 +39,7 @@ export const anxietyProfileQuiz: QuizDefinition = {
     { id: 'a5', text: 'Being observed or judged by others makes me tense.', dimension: 'social', options: likert },
     { id: 'a6', text: 'I avoid social situations more than I would like to.', dimension: 'social', options: likert },
     { id: 'a7', text: 'The pressure of a deadline or performance spikes my anxiety.', dimension: 'performance', options: likert },
-    { id: 'a8', text: 'I notice anxiety when I care about doing something well.', dimension: 'performance', options: likert },
+    { id: 'a8', text: 'My anxiety spikes most when I am about to be evaluated — a test, a review, a performance.', dimension: 'performance', options: likert },
   ],
 };
 
@@ -81,6 +76,14 @@ export const ANXIETY_PROFILE_INFO: Record<AnxietyProfileType, DimensionalResultI
     shadow: ['Burning out from chronic pressure', 'Avoiding visibility because of the cost'],
     affirmation: 'The nerves are proof I care. I channel them — I do not let them drive.',
   },
+  low: {
+    name: 'Low signal today',
+    tagline: 'None of the four patterns is strongly present.',
+    summary: 'None of the four patterns is strongly present right now. Anxiety is a weather system, not a fixed trait, so this is a reading of today rather than of you. If the picture changes, the same four patterns will show you where it has landed.',
+    strengths: ['A regulated baseline to return to', 'Room to notice small shifts early'],
+    shadow: ['Quiet can mean numb rather than calm — check how your body feels', 'A low signal is not a reason to drop the practices that keep it low'],
+    affirmation: 'I notice the weather in me without becoming it.',
+  },
 };
 
 // ---------------------------------------------------------------
@@ -95,7 +98,7 @@ export const leadershipQuiz: QuizDefinition = {
   description: 'How do you lead when you are leading well? Four styles — each has a moment where it is the right one.',
   questions: [
     { id: 'l1', text: 'People follow me because I paint a vivid future they want to be part of.', dimension: 'visionary', options: likert },
-    { id: 'l2', text: 'I would rather describe the mountain than hand out the map.', dimension: 'visionary', options: likert },
+    { id: 'l2', text: 'I would rather paint the destination than hand out the step-by-step map.', dimension: 'visionary', options: likert },
     { id: 'l3', text: 'My job as a leader is to remove obstacles so my team can do their best work.', dimension: 'servant', options: likert },
     { id: 'l4', text: 'I credit my team publicly and absorb blame privately.', dimension: 'servant', options: likert },
     { id: 'l5', text: 'In a crisis, I expect to make the call and have the team follow.', dimension: 'commander', options: likert },
@@ -152,7 +155,7 @@ export const productivityQuiz: QuizDefinition = {
   description: 'What kind of work-rhythm makes you most effective? Four styles with different optimal environments.',
   questions: [
     { id: 'p1', text: 'I do my best work in long, uninterrupted blocks — a full morning, not half an hour.', dimension: 'deep-worker', options: likert },
-    { id: 'p2', text: 'Context-switching costs me more than the switch itself would suggest.', dimension: 'deep-worker', options: likert },
+    { id: 'p2', text: 'Switching between tasks drains me far more than the tasks themselves.', dimension: 'deep-worker', options: likert },
     { id: 'p3', text: 'I work in intense sprints followed by real recovery — not at steady pace.', dimension: 'sprinter', options: likert },
     { id: 'p4', text: 'Deadlines focus me; open-ended time makes me drift.', dimension: 'sprinter', options: likert },
     { id: 'p5', text: 'Most of my output happens through conversations with other people.', dimension: 'connector', options: likert },
@@ -208,8 +211,8 @@ export const relationshipReadinessQuiz: QuizDefinition = {
   title: 'Relationship Readiness',
   description: 'A reflective look at where you are in your readiness for partnership. No wrong answer — just a mirror.',
   questions: [
-    { id: 'r1', text: 'I know what I want in a partner and can name it without apology.', dimension: 'ready', options: likert },
-    { id: 'r2', text: 'I know what I do not want, and I trust myself to walk away when I see it.', dimension: 'ready', options: likert },
+    { id: 'r1', text: 'I can name what I want in a partner without hedging.', dimension: 'ready', options: likert },
+    { id: 'r2', text: 'When I see a dealbreaker, I trust myself to walk away.', dimension: 'ready', options: likert },
     { id: 'r3', text: 'I am still carrying wounds from my last relationship that need tending first.', dimension: 'healing', options: likert },
     { id: 'r4', text: 'When I imagine dating right now, I notice a tired feeling, not an excited one.', dimension: 'healing', options: likert },
     { id: 'r5', text: 'I often feel relieved when a date does not go well — I am off the hook.', dimension: 'avoiding', options: likert },
@@ -268,7 +271,7 @@ export const wellnessTypeQuiz: QuizDefinition = {
     { id: 'w1', text: 'I feel best after a hard workout — sweat, muscle fatigue, heart rate.', dimension: 'athlete', options: likert },
     { id: 'w2', text: 'My body wants to be pushed; rest alone does not regulate me.', dimension: 'athlete', options: likert },
     { id: 'w3', text: 'I regulate through slow, restorative things — baths, tea, acupuncture, massage.', dimension: 'healer', options: likert },
-    { id: 'w4', text: 'Someone else\'s hands on my body (within safe touch) calm me deeply.', dimension: 'healer', options: likert },
+    { id: 'w4', text: 'Skilled, safe touch — a massage, a hand on my back — settles me deeply.', dimension: 'healer', options: likert },
     { id: 'w5', text: 'Meditation, silence, or prayer is where I actually reset.', dimension: 'contemplative', options: likert },
     { id: 'w6', text: 'What I need most in a hard week is solitude, not stimulation.', dimension: 'contemplative', options: likert },
     { id: 'w7', text: 'I am at my best with a mix — movement plus stillness plus social.', dimension: 'balanced', options: likert },
@@ -311,17 +314,33 @@ export const WELLNESS_TYPE_INFO: Record<WellnessType, DimensionalResultInfo> = {
   },
 };
 
+/**
+ * "Balanced" is derived, not a fourth trait: the result is balanced when
+ * the three practices are within half a Likert point of each other OR the
+ * two balance items average 4+; otherwise the leading practice, with a
+ * tie reported when the top two are within TIE_MARGIN.
+ */
+export function scoreWellnessType(answers: Record<string, number>): DimensionalResult<WellnessType> {
+  const dims: WellnessType[] = ['athlete', 'healer', 'contemplative', 'balanced'];
+  const { scores, averages } = likertMeans(wellnessTypeQuiz, answers, dims);
+  const trio: WellnessType[] = ['athlete', 'healer', 'contemplative'];
+  const trioMeans = trio.map((d) => averages[d]);
+  const spread = Math.max(...trioMeans) - Math.min(...trioMeans);
+  if (spread <= 0.5 || averages.balanced >= 4) {
+    return { primary: 'balanced', scores, averages, isTie: false, margin: spread };
+  }
+  const ranked = rankDimensions(averages, trio);
+  return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary };
+}
+void TIE_MARGIN;
+
 // ---------------------------------------------------------------
 // Combined export — mirrors PART2 shape
 // ---------------------------------------------------------------
 export const EXTRA_QUIZZES_PART3 = {
-  'anxiety-profile-v1':       { quiz: anxietyProfileQuiz,       dimensions: ['somatic','generalized','social','performance'] as const,            info: ANXIETY_PROFILE_INFO,       emoji: '🌫️' },
-  'leadership-style-v1':      { quiz: leadershipQuiz,           dimensions: ['visionary','servant','commander','coach'] as const,                  info: LEADERSHIP_INFO,            emoji: '🧭' },
-  'productivity-style-v1':    { quiz: productivityQuiz,         dimensions: ['deep-worker','sprinter','connector','organizer'] as const,            info: PRODUCTIVITY_INFO,          emoji: '⚙️' },
-  'relationship-readiness-v1':{ quiz: relationshipReadinessQuiz,dimensions: ['ready','healing','avoiding','rushing'] as const,                     info: RELATIONSHIP_READINESS_INFO,emoji: '💞' },
-  'wellness-type-v1':         { quiz: wellnessTypeQuiz,         dimensions: ['athlete','healer','contemplative','balanced'] as const,              info: WELLNESS_TYPE_INFO,         emoji: '🌿' },
+  'anxiety-profile-v1':       { quiz: anxietyProfileQuiz,       dimensions: ['somatic','generalized','social','performance'] as const,            info: ANXIETY_PROFILE_INFO as Record<string, DimensionalResultInfo>, lowResult: 'low' },
+  'leadership-style-v1':      { quiz: leadershipQuiz,           dimensions: ['visionary','servant','commander','coach'] as const,                  info: LEADERSHIP_INFO as Record<string, DimensionalResultInfo> },
+  'productivity-style-v1':    { quiz: productivityQuiz,         dimensions: ['deep-worker','sprinter','connector','organizer'] as const,            info: PRODUCTIVITY_INFO as Record<string, DimensionalResultInfo> },
+  'relationship-readiness-v1':{ quiz: relationshipReadinessQuiz,dimensions: ['ready','healing','avoiding','rushing'] as const,                     info: RELATIONSHIP_READINESS_INFO as Record<string, DimensionalResultInfo> },
+  'wellness-type-v1':         { quiz: wellnessTypeQuiz,         dimensions: ['athlete','healer','contemplative','balanced'] as const,              info: WELLNESS_TYPE_INFO as Record<string, DimensionalResultInfo> },
 };
-
-// Silence lint for the two reversed-likert arrays — kept for future
-// balanced-scale questions if we need them.
-void likertRev;

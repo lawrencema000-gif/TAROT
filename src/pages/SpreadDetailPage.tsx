@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Layers, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Layers, Clock, ChevronRight, Play } from 'lucide-react';
 import { TarotCardIcon } from '../components/ui/NavIcons';
 import { Button, Disclosure, EmptyState, Page, PageHeader, Section } from '../components/ui';
-import { getSpreadBySlug, allSpreads as tarotSpreads } from '../data/tarotSpreads';
+import { SpreadGlyph } from '../components/icons/SpreadGlyph';
+import { getSpreadBySlug, getSpreadLayout, allSpreads as tarotSpreads } from '../data/tarotSpreads';
 import { setPageMeta } from '../utils/seo';
 import { addJsonLd, removeJsonLd } from '../utils/seoHelpers';
 import { useT } from '../i18n/useT';
@@ -92,7 +93,21 @@ export function SpreadDetailPage() {
         }
         title={spread.name}
         subtitle={spread.longDescription}
+        icon={<SpreadGlyph layout={getSpreadLayout(spread)} />}
       />
+
+      {/* The catalogue is the product: every spread is castable. The reading
+          flow reads `spreadSlug` from router state and starts at the focus
+          step with this spread's positions (R5 M-10). */}
+      <Button
+        variant="gold"
+        size="lg"
+        fullWidth
+        onClick={() => navigate('/readings', { state: { spreadSlug: spread.slug } })}
+      >
+        <Play className="w-4 h-4" aria-hidden />
+        {t('spreadDetail.readThisSpread', { defaultValue: 'Read this spread' })}
+      </Button>
 
       <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
         <h2 className="heading-display-md text-mystic-100 mb-3"><TarotCardIcon className="w-4 h-4 inline mr-1 text-gold" />Best for</h2>
@@ -115,7 +130,7 @@ export function SpreadDetailPage() {
           {spread.positions.map((p) => (
             <li key={p.position} className="rounded-control border border-mystic-800/60 bg-mystic-900/40 p-4">
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gold/15 border border-gold/30 text-gold text-sm font-display flex items-center justify-center">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gold/15 border border-gold/30 text-gold text-caption font-semibold tabular-nums flex items-center justify-center">
                   {p.position}
                 </span>
                 <div className="flex-1">
@@ -136,7 +151,7 @@ export function SpreadDetailPage() {
       <Section spacing="sm" title="Example questions">
         <ul className="space-y-2">
           {spread.exampleQuestions.map((q, i) => (
-            <li key={i} className="reading-copy italic px-3 py-2 rounded-lg bg-mystic-900/30 border-l-2 border-gold/40">
+            <li key={i} className="reading-copy px-3 py-2 rounded-inset bg-mystic-900/30 border-l-2 border-gold/40">
               "{q}"
             </li>
           ))}
@@ -165,7 +180,7 @@ export function SpreadDetailPage() {
           <div className="grid sm:grid-cols-2 gap-2">
             {related.map((r) => (
               <Link key={r.slug} to={`/spreads/${r.slug}`} className="flex items-center justify-between p-3 rounded-control border border-mystic-800/60 bg-mystic-900/40 hover:border-gold/40 transition-colors no-underline">
-                <span className="text-sm text-mystic-200">{r.name}</span>
+                <span className="text-ui text-mystic-200">{r.name}</span>
                 <ChevronRight className="w-4 h-4 text-mystic-500" />
               </Link>
             ))}

@@ -28,6 +28,17 @@
 import i18n from '../i18n/config';
 import { cssFont, drawLines, drawTracked, measurer, roundRectPath, wrapText } from './canvasText';
 import { sharePng, type ShareOutcome } from './nativeShare';
+// The playing-card face is drawn natively from the same path data the SVG
+// face uses, so the share image is the card the reader saw and not a bitmap
+// of it. Path strings only — no React crosses into the canvas.
+// eslint-disable-next-line boundaries/element-types
+import { SUIT_PATHS, SUIT_GLYPH_BOX } from '../components/cartomancy/SuitGlyph';
+// eslint-disable-next-line boundaries/element-types
+import { COURT_EMBLEM_PATHS, EMBLEM_BOX, type EmblemPaths } from '../components/cartomancy/CourtEmblem';
+// eslint-disable-next-line boundaries/element-types
+import { JOKER_EMBLEM_PATHS, JOKER_INDEX_STAR } from '../components/cartomancy/JokerEmblem';
+import { FACE_H, FACE_W, pipSizeFor, pipsFor } from '../data/cartomancy/pipLayout';
+import type { PlayingRank, PlayingSuit } from '../types/cartomancy';
 
 export type { ShareOutcome } from './nativeShare';
 
@@ -90,7 +101,24 @@ export type ResultShareOpts = BaseShareOpts & {
   bodyLabel?: string;
 };
 
-export type ShareCardOpts = TarotShareOpts | SoulmateShareOpts | QuizShareOpts | QuoteShareOpts | ResultShareOpts;
+/**
+ * A playing card from a cartomancy reading. The face is drawn on the canvas
+ * from `(suit, rank)` — frame, corner index, pips or emblem, title tab — in
+ * the same geometry as `PlayingCardFace`, inverted when reversed.
+ */
+export type CartomancyShareOpts = BaseShareOpts & {
+  variant: 'cartomancy';
+  cardSlug: string;
+  cardName: string;
+  suit: PlayingSuit | 'joker';
+  rank: PlayingRank | 'joker';
+  color: 'red' | 'black';
+  orientation: 'upright' | 'reversed';
+  keyword: string;
+  spreadName?: string;
+};
+
+export type ShareCardOpts = TarotShareOpts | SoulmateShareOpts | QuizShareOpts | QuoteShareOpts | ResultShareOpts | CartomancyShareOpts;
 
 // ── Tokens (tailwind.config.js) ─────────────────────────────────────────
 
@@ -106,6 +134,7 @@ const C = {
   gold: '#d4af37',
   coral: '#e07a5f',
   teal: '#4ecdc4',
+  rose: '#d4848c',     // cosmic-rose: the red suits' ink on the card surface
 } as const;
 
 const DISPLAY = '"Cormorant Garamond", "Noto Serif JP", "Noto Serif KR", "Noto Serif SC", serif';
@@ -528,6 +557,222 @@ async function buildTarot(ctx: CanvasRenderingContext2D, flow: Flow, opts: Tarot
   flow.text(opts.keyword, r.keyword);
 }
 
+// ── The playing-card face, natively ─────────────────────────────────────
+
+const FACE_DISPLAY = '"Cormorant Garamond", Georgia, serif';
+const RANK_LABEL: Record<PlayingRank, string> = {
+  ace: 'A', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10', jack: 'J', queen: 'Q', king: 'K',
+};
+
+/** Fill (and hairline) a path table in the current transform, as EmblemPathsGroup draws it. */
+function drawEmblem(ctx: CanvasRenderingContext2D, paths: EmblemPaths, ink: string): void {
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
+  ctx.lineWidth = 1.6;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const d of paths.shapes) {
+    const p = new Path2D(d);
+    ctx.globalAlpha = 0.15;
+    ctx.fill(p);
+    ctx.globalAlpha = 1;
+    ctx.stroke(p);
+  }
+  for (const d of paths.lines) ctx.stroke(new Path2D(d));
+  for (const [cx, cy, r] of paths.dots) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+/** A suit mark with its top-left corner at (x, y) and side `size`, filled and hairlined. */
+function drawSuitMark(ctx: CanvasRenderingContext2D, suit: PlayingSuit, x: number, y: number, size: number, ink: string, alpha = 1): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(size / SUIT_GLYPH_BOX, size / SUIT_GLYPH_BOX);
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = ink;
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = 1;
+  ctx.lineJoin = 'round';
+  const p = new Path2D(SUIT_PATHS[suit]);
+  ctx.fill(p);
+  ctx.stroke(p);
+  ctx.restore();
+}
+
+/**
+ * The face in `PlayingCardFace`'s 200×300 units, drawn into a box `w`
+ * wide at (x, top). Frame and rank in gold; the suit's own ink for its
+ * marks (rose for Hearts and Diamonds, gold for Clubs and Spades, coral
+ * for the Red Joker); the title tab at the foot. Reversed turns the whole
+ * face and turns the tab back, so the name reads at the top.
+ */
+function drawPlayingFace(ctx: CanvasRenderingContext2D, opts: CartomancyShareOpts, x: number, top: number, w: number): void {
+  if (typeof Path2D === 'undefined') return;
+  const s = w / FACE_W;
+  const h = FACE_H * s;
+  const reversed = opts.orientation === 'reversed';
+  const joker = opts.suit === 'joker' || opts.rank === 'joker';
+  const ink = joker ? (opts.color === 'red' ? C.coral : C.gold) : opts.suit === 'hearts' || opts.suit === 'diamonds' ? C.rose : C.gold;
+
+  ctx.save();
+  // Surface: the card's own ground, with a hairline like every panel.
+  roundRectPath(ctx, x, top, w, h, 14 * s);
+  ctx.fillStyle = C.surface;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = C.hairline;
+  ctx.stroke();
+
+  // Everything else in face units.
+  ctx.translate(x, top);
+  ctx.scale(s, s);
+  if (reversed) {
+    ctx.translate(FACE_W / 2, FACE_H / 2);
+    ctx.rotate(Math.PI);
+    ctx.translate(-FACE_W / 2, -FACE_H / 2);
+  }
+
+  // Double frame with corner marks (CardBack geometry).
+  ctx.strokeStyle = C.gold;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 1.4;
+  roundRectPath(ctx, 8, 8, FACE_W - 16, FACE_H - 16, 10);
+  ctx.stroke();
+  ctx.globalAlpha = 0.7;
+  ctx.lineWidth = 0.9;
+  roundRectPath(ctx, 18, 18, FACE_W - 36, FACE_H - 36, 6);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = 1.2;
+  for (const [cx, cy] of [[26, 26], [FACE_W - 26, 26], [26, FACE_H - 26], [FACE_W - 26, FACE_H - 26]] as const) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Corner index: rank over suit mark at (24, 30).
+  if (joker) {
+    ctx.save();
+    ctx.translate(24 + 9 - 8, 30 + 18 - 15);
+    ctx.fillStyle = ink;
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 1;
+    const star = new Path2D(JOKER_INDEX_STAR);
+    ctx.fill(star);
+    ctx.stroke(star);
+    ctx.restore();
+  } else if (opts.rank !== 'joker' && opts.suit !== 'joker') {
+    ctx.font = cssFont(600, 22, FACE_DISPLAY);
+    ctx.fillStyle = C.gold;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(RANK_LABEL[opts.rank], 24 + 9, 30 + 18);
+    drawSuitMark(ctx, opts.suit, 24 + 9 - 7, 30 + 22, 14, ink);
+  }
+
+  // The field: pips, or the medallion.
+  const pips = !joker && opts.rank !== 'joker' ? pipsFor(opts.rank) : null;
+  if (pips && opts.suit !== 'joker') {
+    const size = pipSizeFor(opts.rank);
+    for (const p of pips) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      if (p.inverted) ctx.rotate(Math.PI);
+      drawSuitMark(ctx, opts.suit, -size / 2, -size / 2, size, ink);
+      ctx.restore();
+    }
+  } else {
+    const cx = FACE_W / 2;
+    const cy = FACE_H / 2;
+    ctx.strokeStyle = C.gold;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 52, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 0.6;
+    ctx.setLineDash([1.5, 3]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, 46, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    if (!joker && opts.suit !== 'joker') drawSuitMark(ctx, opts.suit, cx - 20, cy - 20, 40, ink, 0.22);
+    const emblem = joker ? JOKER_EMBLEM_PATHS : opts.rank === 'jack' || opts.rank === 'queen' || opts.rank === 'king' ? COURT_EMBLEM_PATHS[opts.rank] : null;
+    if (emblem) {
+      const scale = 1.2;
+      ctx.save();
+      ctx.translate(cx - (EMBLEM_BOX * scale) / 2, cy - (EMBLEM_BOX * scale) / 2);
+      ctx.scale(scale, scale);
+      drawEmblem(ctx, emblem, ink);
+      ctx.restore();
+    }
+  }
+
+  // Title tab at the foot (turned back when reversed, so it reads at the top).
+  const label = (joker ? 'JOKER' : opts.cardName).toUpperCase();
+  ctx.font = cssFont(600, 10, BODY);
+  const textW = Math.min(136, ctx.measureText(label).width + label.length * 1.4);
+  const tabW = Math.min(150, Math.max(72, Math.round(textW + 14)));
+  const tabCy = 256 + 10;
+  ctx.save();
+  if (reversed) {
+    ctx.translate(FACE_W / 2, tabCy);
+    ctx.rotate(Math.PI);
+    ctx.translate(-FACE_W / 2, -tabCy);
+  }
+  ctx.strokeStyle = C.gold;
+  ctx.lineWidth = 0.9;
+  ctx.globalAlpha = 0.8;
+  roundRectPath(ctx, FACE_W / 2 - tabW / 2, 256, tabW, 20, 4);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = C.gold;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  drawTracked(ctx, label, FACE_W / 2, tabCy, 1.4);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function buildCartomancy(ctx: CanvasRenderingContext2D, flow: Flow, opts: CartomancyShareOpts, g: Geometry): void {
+  const r = ramp(g);
+  const { w, h } = g.tarotArt;
+  const reversed = opts.orientation === 'reversed';
+
+  const eyebrow = opts.eyebrow ?? opts.spreadName;
+  if (eyebrow) {
+    flow.text(eyebrow, r.eyebrow);
+    flow.gap(r.gap(32));
+  }
+
+  flow.custom(h, (top) => drawPlayingFace(ctx, opts, flow.cx - w / 2, top, w));
+
+  flow.gap(r.gap(40));
+  flow.chip(
+    reversed
+      ? (i18n.t('app:tarot.reversed', { defaultValue: 'Reversed' }) as string)
+      : (i18n.t('app:tarot.upright', { defaultValue: 'Upright' }) as string),
+    r.chipFont,
+    reversed ? C.coral : C.teal,
+    r.chipH,
+  );
+  flow.gap(r.gap(28));
+  flow.text(opts.cardName, { ...r.title, font: cssFont(600, 72 * g.type, DISPLAY), lineHeight: Math.round(82 * g.type) });
+  flow.gap(r.gap(12));
+  flow.text(opts.keyword, r.keyword);
+  if (opts.spreadName && opts.eyebrow) {
+    flow.gap(r.gap(20));
+    flow.text(opts.spreadName, r.subtitle);
+  }
+}
+
 function buildSoulmate(ctx: CanvasRenderingContext2D, flow: Flow, opts: SoulmateShareOpts, g: Geometry): void {
   const r = ramp(g);
   const score = Math.max(0, Math.min(100, Math.round(opts.score)));
@@ -632,6 +877,7 @@ function sampleText(opts: ShareCardOpts): string {
   const parts: (string | undefined)[] = [opts.eyebrow, opts.deepLink, 'ARCANA', BRAND_URL];
   switch (opts.variant) {
     case 'tarot': parts.push(opts.cardName, opts.keyword); break;
+    case 'cartomancy': parts.push(opts.cardName, opts.keyword, opts.spreadName, 'AJQK0123456789'); break;
     case 'soulmate': parts.push(opts.vibe, opts.vibeDescription, opts.partnerName, '0123456789'); break;
     case 'quiz': parts.push(opts.quizName, opts.resultName, opts.affirmation); break;
     case 'quote': parts.push(opts.headline, opts.body); break;
@@ -654,6 +900,7 @@ async function ensureFonts(opts: ShareCardOpts): Promise<void> {
     'italic 400 44px "Cormorant Garamond"',
     '400 40px Inter',
     '500 40px Inter',
+    '600 40px Inter',
   ];
   const loads = Promise.all(wanted.map((f) => document.fonts.load(f, text)));
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, FONT_WAIT_MS));
@@ -684,6 +931,7 @@ export async function generateShareCardImage(opts: ShareCardOpts, _quality?: num
   const flow = new Flow(ctx, g.width / 2, g.width - g.padX * 2);
   switch (opts.variant) {
     case 'tarot': await buildTarot(ctx, flow, opts, g); break;
+    case 'cartomancy': buildCartomancy(ctx, flow, opts, g); break;
     case 'soulmate': buildSoulmate(ctx, flow, opts, g); break;
     case 'quiz': buildQuiz(flow, opts, g); break;
     case 'quote': buildQuote(flow, opts, g); break;

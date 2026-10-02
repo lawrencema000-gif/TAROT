@@ -1,39 +1,45 @@
 /**
  * The deck on the table.
  *
- * The home stage of the reading flow: the daily-draw hero, the six-spread
- * grid, and the way into the browse deck. The overlays (browse Sheet, card
- * detail, watch-ad sheet) belong to the parent, which mounts them in every
- * stage.
+ * The home stage of the reading flow: the daily-draw hero, the spread
+ * picker and the way into the deck library. The overlays (browse Sheet,
+ * card detail, watch-ad sheet) belong to the parent, which mounts them in
+ * every stage.
  *
  * The hero is the Arcana back at the deck's true proportion (2:3), still.
- * It used to float on a four-second loop, and before that it was a pulsing
- * star on a gradient — a picture of magic rather than the object the reader
- * is about to pick up. A card at rest is what invites a hand.
+ * A card at rest is what invites a hand.
  *
- * The spread badges are the Badge primitive in its two tones: gold for a
- * spread that can be tried with an ad, teal for one already unlocked.
+ * The picker is the whole catalogue — forty spreads — as rows under a row
+ * of category chips: a glyph of the spread's shape, its name, one line,
+ * and on the right either a chevron or the one reserved hue for
+ * monetisation (a violet Badge: "Premium", or "Watch an ad" where an ad
+ * can unlock one reading). It used to be a two-column grid of six cards.
  */
-import { Layers, ChevronRight, Grid3X3, Lock, Play } from 'lucide-react';
-import { Card, Badge } from '../../ui';
+import { useState } from 'react';
+import { ChevronRight, Grid3X3, Layers } from 'lucide-react';
+import { Card, Badge, Chip, ListRow, ListRowGroup } from '../../ui';
+import { SpreadGlyph } from '../../icons/SpreadGlyph';
 import { useT } from '../../../i18n/useT';
 import { isNative } from '../../../utils/platform';
+import type { SpreadCategory } from '../../../data/tarotSpreads';
+import type { PickerSpread } from './types';
 
-interface SpreadConfig {
-  id: string;
-  i18n: string;
-  free: boolean;
-  count: number;
-}
+const CATEGORIES: { id: SpreadCategory; key: string; fallback: string }[] = [
+  { id: 'general', key: 'readings.categories.general', fallback: 'General' },
+  { id: 'love', key: 'readings.categories.love', fallback: 'Love' },
+  { id: 'career', key: 'readings.categories.career', fallback: 'Career' },
+  { id: 'daily', key: 'readings.categories.daily', fallback: 'Daily' },
+  { id: 'spiritual', key: 'readings.categories.spiritual', fallback: 'Spiritual' },
+  { id: 'lunar', key: 'readings.categories.lunar', fallback: 'Lunar' },
+  { id: 'decision', key: 'readings.categories.decision', fallback: 'Decision' },
+];
 
 interface TarotHomeViewProps {
-  spreads: readonly SpreadConfig[];
+  spreads: readonly PickerSpread[];
   isPremium: boolean;
   canWatchAd: boolean;
   cardBackUrl: string | null | undefined;
   hasTemporaryAccess: Record<string, boolean>;
-  spreadName: (s: SpreadConfig) => string;
-  spreadDesc: (s: SpreadConfig) => string;
   onStartDraw: () => void;
   onSpreadSelect: (spreadId: string) => void;
   onOpenBrowse: () => void;
@@ -45,14 +51,14 @@ export function TarotHomeView({
   canWatchAd,
   cardBackUrl,
   hasTemporaryAccess,
-  spreadName,
-  spreadDesc,
   onStartDraw,
   onSpreadSelect,
   onOpenBrowse,
 }: TarotHomeViewProps) {
   const { t } = useT('app');
   const backSrc = cardBackUrl || '/card-backs/default.svg';
+  const [category, setCategory] = useState<SpreadCategory | 'all'>('all');
+  const shown = category === 'all' ? spreads : spreads.filter((s) => s.category === category);
 
   return (
     <div className="space-y-6">
@@ -69,44 +75,60 @@ export function TarotHomeView({
         <h2 className="heading-display-md text-mystic-100">{t('readings.dailyDraw.title')}</h2>
       </Card>
 
-      <div>
-        <div className="flex items-center justify-between mb-3">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
           <h3 className="text-ui font-medium text-mystic-200">{t('readings.spreadsSection')}</h3>
-          <Layers className="w-4 h-4 text-mystic-500" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 text-meta text-mystic-500">
+            <Layers className="w-4 h-4" aria-hidden />
+            <span className="tabular-nums">{t('readings.spreadCount', { count: spreads.length, defaultValue: '{{count}} spreads' })}</span>
+          </span>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          {spreads.map((spread) => {
+
+        {/* The category row scrolls; the gutter is the shell's. */}
+        <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 w-max pb-1" role="group" aria-label={t('readings.spreadsSection')}>
+            <Chip
+              size="sm"
+              label={t('readings.categories.all', { defaultValue: 'All' })}
+              selected={category === 'all'}
+              onSelect={() => setCategory('all')}
+            />
+            {CATEGORIES.map((c) => (
+              <Chip
+                key={c.id}
+                size="sm"
+                label={t(c.key, { defaultValue: c.fallback })}
+                selected={category === c.id}
+                onSelect={() => setCategory(c.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <ListRowGroup>
+          {shown.map((spread) => {
             const locked = !spread.free && !isPremium && !hasTemporaryAccess[spread.id];
-            const unlocked = !spread.free && hasTemporaryAccess[spread.id];
+            const unlocked = !spread.free && !isPremium && hasTemporaryAccess[spread.id];
+            const trailing = locked ? (
+              <Badge tone="violet">
+                {isNative() && canWatchAd ? t('readings.status.try') : t('readings.status.premium', { defaultValue: 'Premium' })}
+              </Badge>
+            ) : unlocked ? (
+              <Badge tone="teal">{t('readings.status.unlocked')}</Badge>
+            ) : undefined;
             return (
-              <Card
+              <ListRow
                 key={spread.id}
-                interactive
-                padding="md"
+                icon={<SpreadGlyph layout={spread.layout} className="text-gold" />}
+                label={spread.name}
+                meta={<span className="line-clamp-1">{spread.description}</span>}
+                value={t('readings.cardCount', { count: spread.count, defaultValue: '{{count}} cards' })}
+                trailing={trailing}
                 onClick={() => onSpreadSelect(spread.id)}
-                className="relative"
-              >
-                {locked && (
-                  isNative() && canWatchAd ? (
-                    <Badge tone="gold" className="absolute top-2 right-2">
-                      <Play className="w-3 h-3" aria-hidden />
-                      {t('readings.status.try')}
-                    </Badge>
-                  ) : (
-                    <Lock className="absolute top-2 right-2 w-4 h-4 text-gold" aria-hidden />
-                  )
-                )}
-                {unlocked && (
-                  <Badge tone="teal" className="absolute top-2 right-2">
-                    {t('readings.status.unlocked')}
-                  </Badge>
-                )}
-                <h4 className="text-ui font-medium text-mystic-100">{spreadName(spread)}</h4>
-                <p className="text-meta text-mystic-400 mt-1">{spreadDesc(spread)}</p>
-              </Card>
+              />
             );
           })}
-        </div>
+        </ListRowGroup>
       </div>
 
       <div>

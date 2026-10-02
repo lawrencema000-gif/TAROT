@@ -10,8 +10,9 @@ import { setPageMeta } from '../utils/seo';
 import { isAndroid } from '../utils/platform';
 
 function GoogleIcon({ className }: { className?: string }) {
+  // Google's own four brand colours: the one place a literal is the thing itself.
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -65,6 +66,8 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
     e.preventDefault();
     setLoading(true);
 
+    // signIn hands back the raw Supabase message; this is the one place it
+    // is normalised, so "Invalid login credentials" → the mapped sentence.
     const { error } = await signIn(email, password);
 
     setLoading(false);
@@ -144,19 +147,20 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
       <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
         <div className="w-full max-w-sm">
           <button
+            type="button"
             onClick={() => { setShowVerifyEmail(false); setResendSent(false); }}
-            className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+            className="flex items-center gap-2 min-h-[44px] text-mystic-400 [@media(hover:hover)]:hover:text-mystic-200 mb-8 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden />
             {t('auth.backToSignIn')}
           </button>
 
           <div className="text-center mb-10">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
-              <Mail className="w-10 h-10 text-gold" />
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gold/10 text-gold flex items-center justify-center" aria-hidden>
+              <Mail className="w-10 h-10" />
             </div>
             <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.verifyEmail')}</h1>
-            <p className="text-mystic-400">
+            <p className="text-body text-mystic-400">
               {t('auth.verifySentTo', { email: verifyEmail })}
             </p>
           </div>
@@ -164,7 +168,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
           <div className="space-y-4">
             {resendSent ? (
               <div className="flex items-center justify-center gap-2 text-gold py-3">
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-5 h-5" aria-hidden />
                 <span className="font-medium">{t('auth.verificationSent')}</span>
               </div>
             ) : (
@@ -173,12 +177,11 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
                 fullWidth
                 onClick={handleResendVerification}
                 loading={resendLoading}
-                
               >
                 {t('auth.resendVerification')}
               </Button>
             )}
-            <p className="text-sm text-mystic-500 text-center">
+            <p className="text-meta text-mystic-500 text-center">
               {t('auth.checkSpam')}
             </p>
           </div>
@@ -192,25 +195,26 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
       <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-top safe-bottom">
         <div className="w-full max-w-sm">
           <button
+            type="button"
             onClick={() => { setShowResetPassword(false); setResetSent(false); }}
-            className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 mb-8 transition-colors"
+            className="flex items-center gap-2 min-h-[44px] text-mystic-400 [@media(hover:hover)]:hover:text-mystic-200 mb-8 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden />
             {t('auth.backToSignIn')}
           </button>
 
           <div className="text-center mb-10">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold/20 to-mystic-800 flex items-center justify-center relative">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gold/10 text-gold flex items-center justify-center" aria-hidden>
               {resetSent ? (
-                <CheckCircle className="w-10 h-10 text-gold" />
+                <CheckCircle className="w-10 h-10" />
               ) : (
-                <Mail className="w-10 h-10 text-gold" />
+                <Mail className="w-10 h-10" />
               )}
             </div>
             <h1 className="heading-display-xl text-mystic-100 mb-2">
               {resetSent ? t('auth.checkEmail') : t('auth.resetPassword')}
             </h1>
-            <p className="text-mystic-400">
+            <p className="text-body text-mystic-400">
               {resetSent
                 ? t('auth.resetSentTo', { email: resetEmail })
                 : t('auth.enterEmailForReset')}
@@ -225,7 +229,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
                 onChange={e => setResetEmail(e.target.value)}
                 placeholder={t('onboarding:createAccount.emailPlaceholder')}
                 aria-label={t('common:labels.email')}
-                icon={<Mail className="w-5 h-5" />}
+                icon={<Mail className="w-5 h-5" aria-hidden />}
                 required
               />
               <Button size="lg" type="submit" variant="gold" fullWidth loading={resetLoading} >
@@ -234,7 +238,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             </form>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-mystic-400 text-center">
+              <p className="text-meta text-mystic-400 text-center">
                 {t('auth.resetDidntReceive')}
               </p>
               <Button
@@ -263,7 +267,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             <BrandWordmark size={28} />
           </div>
           <h1 className="heading-display-xl text-mystic-100 mb-2">{t('auth.welcomeBack')}</h1>
-          <p className="text-mystic-400">{t('auth.signInSub')}</p>
+          <p className="text-body text-mystic-400">{t('auth.signInSub')}</p>
           <div className="mt-4 text-gold/60 flex justify-center">
             <SectionDivider tone="gold" />
           </div>
@@ -303,7 +307,7 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               <div className="w-full border-t border-mystic-700/50" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-mystic-900 text-sm text-mystic-500">{t('auth.orDivider')}</span>
+              <span className="px-3 bg-mystic-900 text-meta text-mystic-500">{t('auth.orDivider')}</span>
             </div>
           </div>
         </div>
@@ -315,8 +319,9 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
             onChange={e => setEmail(e.target.value)}
             placeholder={t('onboarding:createAccount.emailPlaceholder')}
             aria-label={t('common:labels.email')}
-            icon={<Mail className="w-5 h-5" />}
+            icon={<Mail className="w-5 h-5" aria-hidden />}
             required
+            autoComplete="email"
           />
 
           <div className="relative">
@@ -326,17 +331,20 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
               onChange={e => setPassword(e.target.value)}
               placeholder={t('common:labels.password')}
               aria-label={t('common:labels.password')}
-              icon={<Lock className="w-5 h-5" />}
+              icon={<Lock className="w-5 h-5" aria-hidden />}
               required
               minLength={6}
+              autoComplete="current-password"
+              className="pr-14"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? t('onboarding:createAccount.hidePassword') : t('onboarding:createAccount.showPassword')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-400 hover:text-mystic-200"
+              aria-pressed={showPassword}
+              className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-400 [@media(hover:hover)]:hover:text-mystic-200"
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? <EyeOff className="w-5 h-5" aria-hidden /> : <Eye className="w-5 h-5" aria-hidden />}
             </button>
           </div>
 
@@ -348,18 +356,17 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
         <button
           type="button"
           onClick={() => { setShowResetPassword(true); setResetEmail(email); }}
-          className="w-full mt-4 min-h-[44px] text-sm text-mystic-400 hover:text-gold transition-colors py-2"
+          className="w-full mt-4 min-h-[44px] text-meta text-mystic-400 [@media(hover:hover)]:hover:text-gold transition-colors py-2"
         >
           {t('auth.forgotPassword')}
         </button>
 
         <div className="mt-8 pt-8 border-t border-mystic-800">
-          <p className="text-center text-mystic-400 mb-4">{t('auth.newToArcana')}</p>
+          <p className="text-center text-body text-mystic-400 mb-4">{t('auth.newToArcana')}</p>
           <Button size="lg"
             variant="outline"
             fullWidth
             onClick={onSwitchToOnboarding}
-            
           >
             {t('auth.createAccount')}
           </Button>
@@ -367,7 +374,8 @@ export function AuthPage({ onSwitchToOnboarding }: AuthPageProps) {
 
         <p className="mt-8 text-caption text-center text-mystic-500">
           {t('auth.termsNotice')}
-          <br />This app is for entertainment purposes only.
+          <br />
+          {t('auth.entertainmentNote', { defaultValue: 'Arcana is for reflection and entertainment only.' })}
         </p>
       </div>
     </div>

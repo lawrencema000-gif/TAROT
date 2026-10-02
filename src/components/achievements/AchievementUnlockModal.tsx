@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { X, Trophy } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
 import type { AchievementWithProgress, AchievementRarity } from '../../services/achievements';
 import { prefersReducedMotion } from '../../utils/motion';
 import { useT } from '../../i18n/useT';
 import { Badge, EyebrowLabel, type Tone } from '../ui';
+import { achievementIcon } from './achievementIcons';
 
 const RARITY_TONE: Record<AchievementRarity, Tone> = {
   common: 'neutral',
@@ -31,16 +31,6 @@ const RARITY_BORDER: Record<AchievementRarity, string> = {
 interface AchievementUnlockModalProps {
   achievement: AchievementWithProgress | null;
   onClose: () => void;
-}
-
-function getIcon(iconName: string): React.ElementType {
-  const pascalCase = iconName
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-
-  const icons = LucideIcons as unknown as Record<string, React.ElementType>;
-  return icons[pascalCase] || LucideIcons.Award;
 }
 
 // The solid gradient fills the CTA; the tint is the same hue at 10–15%
@@ -97,7 +87,7 @@ export function AchievementUnlockModal({ achievement, onClose }: AchievementUnlo
 
   if (!isVisible || !achievement) return null;
 
-  const Icon = getIcon(achievement.icon_name);
+  const Icon = achievementIcon(achievement.icon_name);
   const rarityColor = RARITY_TEXT[achievement.rarity];
   const rarityGradient = RARITY_GRADIENT[achievement.rarity];
   const rarityTint = RARITY_TINT[achievement.rarity];

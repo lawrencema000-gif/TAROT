@@ -121,6 +121,7 @@ export function BrandWordmark({
     <Tag
       className={`inline-flex items-center font-display font-medium ${colorClass} ${className}`}
       style={{ fontSize, lineHeight: 1, letterSpacing: '0.16em' }}
+      role="img"
       aria-label="Arcana"
     >
       <span aria-hidden>ARC</span>

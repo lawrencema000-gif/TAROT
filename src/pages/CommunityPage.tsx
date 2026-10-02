@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus } from 'lucide-react';
-import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, toast } from '../components/ui';
+import { ArrowLeft, MessageCircle, Heart, Eye, Moon as MoonIcon, Flame, Send, MoreVertical, Flag, UserMinus, Check } from 'lucide-react';
+import { Card, Button, Chip, Page, PageHeader, SparkleFourPoint, EyebrowLabel, EmptyState, Tag, toast } from '../components/ui';
 import { ZODIAC_ICONS } from '../components/icons';
 import type { ZodiacSign as AstroSign } from '../types/astrology';
 import { useT } from '../i18n/useT';
@@ -13,6 +13,18 @@ import { publishContent, type ModerationSurface, type ModerationResult } from '.
 import { CrisisBanner } from '../components/community/CrisisBanner';
 
 type CrisisResources = NonNullable<ModerationResult['crisisResources']>;
+
+/**
+ * Whether a moderation result should raise the helplines. The server's
+ * `crisis` flag leads; a self-harm category is treated the same way, because
+ * on 2026-10-02 community-moderate answered "I do not want to be alive
+ * anymore" with crisis:false and categories ["self-harm/intent","self-harm"]
+ * — and the one screen that must never stay silent is this one.
+ */
+function isCrisis(result: ModerationResult): boolean {
+  if (result.crisis) return true;
+  return (result.categories ?? []).some((c) => /self-harm|suicid/i.test(c));
+}
 import type {
   CommunityPost,
   CommunityComment,
@@ -86,6 +98,9 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [view, setView] = useState<View>('feed');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  // True after a feed request failed: the empty state then says so and
+  // offers a retry instead of claiming "No posts here yet".
+  const [feedError, setFeedError] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<CommunityTopic | 'all'>('all');
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
@@ -124,8 +139,10 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     });
     if (res.ok) {
       setPosts(res.data);
+      setFeedError(false);
     } else {
-      toast(t('community.loadFailed', { defaultValue: 'Could not load feed' }), 'error');
+      setFeedError(true);
+      toast(t('community.loadFailed', { defaultValue: 'Couldn’t load the feed — check your connection and try again.' }), 'error');
     }
     setLoading(false);
   }, [selectedTopic, user?.id, isWhisperingWell, t]);
@@ -201,8 +218,10 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     }
   };
 
-  const handleReport = async (post: CommunityPost, reason: ReportReason) => {
-    if (!user) return;
+  // Resolves true when the report landed, so the card can switch its
+  // Report action to a "Reported" state instead of offering it again.
+  const handleReport = async (post: CommunityPost, reason: ReportReason): Promise<boolean> => {
+    if (!user) return false;
     const res = await community.report({
       reporterId: user.id,
       postId: post.id,
@@ -210,9 +229,10 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     });
     if (res.ok) {
       toast(t('community.reported', { defaultValue: 'Report submitted. Thank you.' }), 'success');
-    } else {
-      toast(t('community.reportFailed', { defaultValue: 'Could not submit report' }), 'error');
+      return true;
     }
+    toast(t('community.reportFailed', { defaultValue: 'Couldn’t send the report — check your connection and try again.' }), 'error');
+    return false;
   };
 
   // Composer
@@ -268,16 +288,26 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         }
         action={
           user ? (
+            // Icon-only under `sm`: "Whispering Well" wraps to two lines at
+            // 390 and a labelled button collided with the title's right edge
+            // (R7). The label returns once there is room for both.
             <Button
               variant="primary"
               size="sm"
               onClick={() => setView('composer')}
-              className="text-sm"
+              aria-label={
+                (isWhisperingWell
+                  ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                  : t('community.postButton', { defaultValue: 'Write a post' })) as string
+              }
+              className="min-w-[40px] px-3 sm:px-4"
             >
-              <Send className="w-4 h-4 mr-1" />
-              {isWhisperingWell
-                ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
-                : t('community.postButton', { defaultValue: 'Write a post' })}
+              <Send className="w-4 h-4" aria-hidden />
+              <span className="hidden sm:inline">
+                {isWhisperingWell
+                  ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                  : t('community.postButton', { defaultValue: 'Write a post' })}
+              </span>
             </Button>
           ) : undefined
         }
@@ -332,26 +362,53 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
 
       {!user && (
         <Card padding="md" className="bg-gold/5 border-gold/20">
-          <p className="text-sm text-mystic-300">
+          <p className="text-ui text-mystic-300">
             {t('community.signInToPost', { defaultValue: 'Sign in to post, react, and comment.' })}
           </p>
         </Card>
       )}
 
       {loading && (
-        <div className="text-center py-12 text-mystic-500 text-sm">
+        <div className="text-center py-12 text-mystic-500 text-ui">
           {t('common.loading', { defaultValue: 'Loading…' })}
         </div>
       )}
 
-      {!loading && visiblePosts.length === 0 && (
-        <Card padding="lg" className="text-center">
-          <p className="text-mystic-400 text-sm italic">
-            {isWhisperingWell
+      {/* A failed load is not an empty feed. It says what happened and
+          offers the one action that fixes it (R7: "No posts here yet" over
+          a 400 for every user). */}
+      {!loading && feedError && (
+        <EmptyState
+          icon={<HeaderIcon />}
+          title={t('community.loadFailedTitle', { defaultValue: 'The feed couldn’t load' })}
+          description={t('community.loadFailedBody', { defaultValue: 'Check your connection and try again.' })}
+          action={
+            <Button variant="outline" onClick={() => loadFeed()}>
+              {t('common:actions.retry', { defaultValue: 'Try again' })}
+            </Button>
+          }
+        />
+      )}
+
+      {!loading && !feedError && visiblePosts.length === 0 && (
+        <EmptyState
+          icon={<HeaderIcon />}
+          title={
+            isWhisperingWell
               ? t('community.whisperingWell.empty', { defaultValue: 'The well is quiet. Be the first to whisper.' })
-              : t('community.empty', { defaultValue: 'No posts here yet. Be the first.' })}
-          </p>
-        </Card>
+              : t('community.empty', { defaultValue: 'No posts here yet. Be the first.' })
+          }
+          action={
+            user ? (
+              <Button variant="outline" onClick={() => setView('composer')}>
+                <Send className="w-4 h-4" aria-hidden />
+                {isWhisperingWell
+                  ? t('community.whisperButton', { defaultValue: 'Write a whisper' })
+                  : t('community.postButton', { defaultValue: 'Write a post' })}
+              </Button>
+            ) : undefined
+          }
+        />
       )}
 
       {visiblePosts.map((post) => (
@@ -382,7 +439,7 @@ interface PostCardProps {
   isWhisperingWell: boolean;
   isOwn: boolean;
   onReact: (post: CommunityPost, r: ReactionType) => void;
-  onReport: (post: CommunityPost, reason: ReportReason) => void;
+  onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
   onOpenComments: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -391,6 +448,7 @@ interface PostCardProps {
 function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, onOpenComments, t }: PostCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [reported, setReported] = useState(false);
 
   const displayName = post.isAnonymous
     ? t('community.anonymous', { defaultValue: 'Anonymous' })
@@ -406,34 +464,54 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
           </span>
           <span className="text-mystic-600">·</span>
           <span className="text-mystic-500">{formatRelativeTime(post.createdAt)}</span>
+          {reported && (
+            <Tag tone="neutral" icon={<Check className="w-3 h-3" aria-hidden />}>
+              {t('community.reportedTag', { defaultValue: 'Reported' })}
+            </Tag>
+          )}
         </div>
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="min-w-[44px] min-h-[44px] flex items-center justify-center text-mystic-500 hover:text-mystic-300"
             aria-label={t('community.options', { defaultValue: 'Options' })}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
           >
             <MoreVertical className="w-4 h-4" />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full z-10 bg-mystic-800 border border-mystic-700 rounded-lg min-w-[150px]">
+            <div role="menu" className="absolute right-0 top-full z-10 bg-mystic-800 border border-mystic-700 rounded-control min-w-[160px] overflow-hidden">
               {!isOwn && (
                 <>
-                  <button
-                    onClick={() => { setMenuOpen(false); setReportOpen(true); }}
-                    className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
-                  >
-                    <Flag className="w-3 h-3" /> {t('community.report', { defaultValue: 'Report' })}
-                  </button>
+                  {reported ? (
+                    <div className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-500 flex items-center gap-2">
+                      <Check className="w-3 h-3" aria-hidden /> {t('community.reportedTag', { defaultValue: 'Reported' })}
+                    </div>
+                  ) : (
+                    <button
+                      role="menuitem"
+                      onClick={() => { setMenuOpen(false); setReportOpen(true); }}
+                      className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
+                    >
+                      <Flag className="w-3 h-3" aria-hidden /> {t('community.report', { defaultValue: 'Report' })}
+                    </button>
+                  )}
                   {!post.isAnonymous && (
                     <button
+                      role="menuitem"
                       onClick={() => { setMenuOpen(false); onBlock(post); }}
                       className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-300 hover:bg-mystic-700 flex items-center gap-2"
                     >
-                      <UserMinus className="w-3 h-3" /> {t('community.blockUser', { defaultValue: 'Block user' })}
+                      <UserMinus className="w-3 h-3" aria-hidden /> {t('community.blockUser', { defaultValue: 'Block user' })}
                     </button>
                   )}
                 </>
+              )}
+              {isOwn && (
+                <div className="w-full text-left px-3 py-2 min-h-[44px] text-meta text-mystic-500 flex items-center">
+                  {t('community.yourPost', { defaultValue: 'Your post' })}
+                </div>
               )}
             </div>
           )}
@@ -441,7 +519,7 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
       </div>
 
       {/* Content */}
-      <p className="text-mystic-200 text-sm leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
+      <p className="text-mystic-200 text-body leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
 
       {/* Reactions + comments */}
       <div className="flex items-center justify-between pt-2 border-t border-mystic-800/50">
@@ -476,8 +554,9 @@ function PostCard({ post, isWhisperingWell, isOwn, onReact, onReport, onBlock, o
       {reportOpen && (
         <ReportDialog
           onClose={() => setReportOpen(false)}
-          onSubmit={(reason) => {
-            onReport(post, reason);
+          onSubmit={async (reason) => {
+            const ok = await onReport(post, reason);
+            if (ok) setReported(true);
             setReportOpen(false);
           }}
           t={t}
@@ -538,7 +617,7 @@ function Composer({
       isAnonymous: mode === 'whispering-well' ? true : isAnon,
     });
 
-    if (moderation.crisis) onCrisisDetected(moderation.crisisResources);
+    if (isCrisis(moderation)) onCrisisDetected(moderation.crisisResources);
 
     if (moderation.verdict === 'block') {
       setSubmitting(false);
@@ -581,7 +660,7 @@ function Composer({
       </button>
 
       <Card variant="glow" padding="lg">
-        <h2 className="font-display text-xl text-mystic-100 mb-3">
+        <h2 className="heading-display-md text-mystic-100 mb-3">
           {isWW
             ? t('community.whisperingWell.newWhisper', { defaultValue: 'Whisper into the well' })
             : t('community.newPost', { defaultValue: 'New post' })}
@@ -612,12 +691,12 @@ function Composer({
           onChange={(e) => setContent(e.target.value)}
           rows={6}
           maxLength={2000}
-          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+          className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
           placeholder={isWW
             ? t('community.whisperingWell.placeholder', { defaultValue: 'What needs to be said but has no audience?' }) as string
-            : t('community.placeholder', { defaultValue: 'Share a reading, a thought, a question...' }) as string}
+            : t('community.placeholder', { defaultValue: 'Share a reading, a thought, a question…' }) as string}
         />
-        <p className="text-caption text-mystic-600 text-right mt-1">{content.length} / 2000</p>
+        <p className="text-caption text-mystic-600 text-right mt-1 tabular-nums">{content.length} / 2000</p>
 
         {!isWW && (
           <label className="flex items-center gap-2 mt-4 cursor-pointer">
@@ -634,10 +713,12 @@ function Composer({
         )}
       </Card>
 
-      <Button variant="primary" size="lg" fullWidth onClick={submit} disabled={submitting}>
-        <Send className="w-5 h-5 mr-2" />
+      {/* Dead until there is something to publish: an enabled button that
+          answers with "Write something first" is a control that lies. */}
+      <Button variant="primary" size="lg" fullWidth onClick={submit} disabled={submitting || !content.trim()} loading={submitting}>
+        {!submitting && <Send className="w-5 h-5" aria-hidden />}
         {submitting
-          ? t('community.posting', { defaultValue: 'Posting...' })
+          ? t('community.posting', { defaultValue: 'Posting…' })
           : isWW
             ? t('community.whisperingWell.send', { defaultValue: 'Send whisper' })
             : t('community.publishPost', { defaultValue: 'Publish my post' })}
@@ -654,7 +735,7 @@ interface PostDetailProps {
   post: CommunityPost;
   onBack: () => void;
   onReact: (post: CommunityPost, r: ReactionType) => void;
-  onReport: (post: CommunityPost, reason: ReportReason) => void;
+  onReport: (post: CommunityPost, reason: ReportReason) => Promise<boolean>;
   onBlock: (post: CommunityPost) => void;
   onCrisisDetected: (resources?: CrisisResources) => void;
   surface: ModerationSurface;
@@ -691,7 +772,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       postId: post.id,
       isAnonymous: isAnonComment,
     });
-    if (moderation.crisis) onCrisisDetected(moderation.crisisResources);
+    if (isCrisis(moderation)) onCrisisDetected(moderation.crisisResources);
     if (moderation.verdict === 'block') {
       setSubmitting(false);
       toast(
@@ -745,10 +826,10 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
         {t('community.commentsHeading', { defaultValue: 'Comments' })} ({comments.length})
       </h3>
 
-      {loading && <p className="text-mystic-500 text-sm">{t('common.loading', { defaultValue: 'Loading…' })}</p>}
+      {loading && <p className="text-mystic-500 text-ui">{t('common.loading', { defaultValue: 'Loading…' })}</p>}
 
       {!loading && comments.length === 0 && (
-        <p className="text-mystic-500 text-sm italic">
+        <p className="text-mystic-500 text-ui italic">
           {t('community.noComments', { defaultValue: 'No comments yet. Be the first to respond.' })}
         </p>
       )}
@@ -765,7 +846,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
               <span>·</span>
               <span>{formatRelativeTime(c.createdAt)}</span>
             </div>
-            <p className="text-mystic-200 text-sm whitespace-pre-wrap">{c.content}</p>
+            <p className="text-mystic-200 text-ui whitespace-pre-wrap">{c.content}</p>
           </Card>
         ))}
       </div>
@@ -777,8 +858,8 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
             onChange={(e) => setNewComment(e.target.value)}
             rows={3}
             maxLength={1000}
-            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-sm placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
-            placeholder={t('community.commentPlaceholder', { defaultValue: 'Write a response...' }) as string}
+            className="w-full bg-mystic-800/50 border border-mystic-700/50 rounded-control p-3 text-mystic-100 text-ui placeholder-mystic-600 resize-none focus:outline-none focus:border-gold/40"
+            placeholder={t('community.commentPlaceholder', { defaultValue: 'Write a response…' }) as string}
           />
           <div className="flex items-center justify-between mt-2">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -792,7 +873,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
                 {t('community.commentAnonymously', { defaultValue: 'Comment anonymously' })}
               </span>
             </label>
-            <Button variant="primary" onClick={submitComment} disabled={submitting || !newComment.trim()} className="text-sm">
+            <Button variant="primary" size="sm" onClick={submitComment} disabled={submitting || !newComment.trim()} loading={submitting}>
               {t('community.send', { defaultValue: 'Post my comment' })}
             </Button>
           </div>
@@ -806,28 +887,79 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
 // Report dialog
 // ==================================================================
 
-function ReportDialog({ onClose, onSubmit, t }: { onClose: () => void; onSubmit: (r: ReportReason) => void; t: (key: string, opts?: Record<string, unknown>) => string }) {
+/**
+ * Two taps, not one: pick the reason, then confirm. A single tap on a
+ * reason used to file the report on the spot, so a slip while scrolling the
+ * list was a report nobody meant to make (R7).
+ */
+function ReportDialog({ onClose, onSubmit, t }: { onClose: () => void; onSubmit: (r: ReportReason) => Promise<void>; t: (key: string, opts?: Record<string, unknown>) => string }) {
   const reasons: ReportReason[] = ['spam', 'harassment', 'self-harm', 'explicit', 'misinformation', 'other'];
+  const [reason, setReason] = useState<ReportReason | null>(null);
+  const [sending, setSending] = useState(false);
+  const titleId = 'community-report-title';
   return (
     <div className="fixed inset-0 bg-mystic-950/80 z-50 flex items-end md:items-center justify-center p-4" onClick={onClose}>
-      <Card padding="lg" className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-medium text-mystic-200 mb-3">
+      <Card
+        padding="lg"
+        className="w-full max-w-sm"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <h3 id={titleId} className="heading-display-md text-mystic-100 mb-1">
           {t('community.reportPostTitle', { defaultValue: 'Report post' })}
         </h3>
-        <div className="space-y-1">
-          {reasons.map((r) => (
-            <button
-              key={r}
-              onClick={() => onSubmit(r)}
-              className="w-full text-left px-3 py-2 min-h-[44px] text-sm text-mystic-300 hover:bg-mystic-800 rounded-lg"
-            >
-              {t(`community.reportReasons.${r}`, { defaultValue: r })}
-            </button>
-          ))}
+        <p className="text-meta text-mystic-400 mb-3">
+          {t('community.reportPrompt', { defaultValue: 'Choose a reason, then confirm.' })}
+        </p>
+        <div role="radiogroup" aria-labelledby={titleId} className="space-y-1">
+          {reasons.map((r) => {
+            const active = reason === r;
+            return (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setReason(r)}
+                className={`w-full text-left px-3 py-2 min-h-[44px] text-ui rounded-control flex items-center gap-3 ${
+                  active ? 'bg-gold/10 text-mystic-100' : 'text-mystic-300 hover:bg-mystic-800'
+                }`}
+              >
+                <span
+                  className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center ${active ? 'border-gold' : 'border-mystic-600'}`}
+                  aria-hidden
+                >
+                  {active && <span className="w-2 h-2 rounded-full bg-gold" />}
+                </span>
+                {t(`community.reportReasons.${r}`, { defaultValue: r })}
+              </button>
+            );
+          })}
         </div>
-        <Button variant="outline" fullWidth onClick={onClose} className="mt-3">
-          {t('common.cancel', { defaultValue: 'Cancel' })}
-        </Button>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Button variant="outline" fullWidth onClick={onClose} disabled={sending}>
+            {t('common.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+          <Button
+            variant="primary"
+            fullWidth
+            disabled={!reason || sending}
+            loading={sending}
+            onClick={async () => {
+              if (!reason) return;
+              setSending(true);
+              try {
+                await onSubmit(reason);
+              } finally {
+                setSending(false);
+              }
+            }}
+          >
+            {t('community.reportConfirm', { defaultValue: 'Report' })}
+          </Button>
+        </div>
       </Card>
     </div>
   );

@@ -4,11 +4,21 @@
 // shape so one renderer in QuizzesPage can display all of them. Each quiz
 // exports:
 //   - quiz definition (runs through existing quiz runner)
-//   - calculate() function (sums Likert values per dimension, returns top)
 //   - RESULT_INFO dictionary (per-result name, tagline, summary, strengths,
 //     shadow, affirmation)
 //
-// All translations live under `extraQuizzes.<quizId>.*` in locale files.
+// Scoring is `calculateExtraQuiz(id, answers)` below: the Likert mean per
+// dimension decides the primary, exact and near ties are reported rather
+// than resolved by declaration order, three shadow-flavoured quizzes have a
+// `low` result when nothing is elevated, and quizzes whose categories are
+// derived (boundaries, empath/HSP, self-compassion, wellness, the PHQ-2
+// screener) have dedicated scorers.
+//
+// Locale keys: `extraQuizzes.<key>.{title,description,timeEstimate,whatYouGet}`,
+// `extraQuizzes.<key>.questions.<id>.text`, and
+// `extraQuizzes.<key>.results.<dim>.{name,tagline,summary,strengths,shadow,affirmation}`
+// (localizeQuiz.ts and the quizzes/ result renderer read them; the English
+// below is the defaultValue).
 
 import type { QuizDefinition } from '../types';
 
@@ -27,8 +37,21 @@ export interface DimensionalResultInfo {
 
 export interface DimensionalResult<K extends string = string> {
   primary: K;
-  scores: Record<K, number>;
+  /** Raw Likert sum per scored dimension (what the score bars show). */
+  scores: Record<string, number>;
+  /** Likert mean per scored dimension — the number the primary is decided on. */
+  averages: Record<string, number>;
+  /** Top two means within TIE_MARGIN (0.25 Likert points): the screen names both. */
+  isTie: boolean;
+  /** Top mean minus runner-up mean. */
+  margin: number;
+  /** The runner-up, for the "close call" line. */
+  secondary?: K;
+  /** Dedicated scorers attach facts the renderer reads (self-compassion's weakest component, the PHQ-2 total). */
+  extra?: Record<string, string | number>;
 }
+
+export { TIE_MARGIN, LOW_SIGNAL } from './extraQuizzesPart2';
 
 const likert = [
   { value: 1, label: 'Strongly Disagree' },
@@ -42,40 +65,21 @@ const likert = [
 // Scoring helper — sums Likert values per dimension
 // ---------------------------------------------------------------
 
+/**
+ * Sum per dimension, compare by Likert MEAN (so a dimension with fewer
+ * items is not handicapped), and report the race honestly: `isTie` when the
+ * top two means are within TIE_MARGIN, with the runner-up in `secondary`.
+ * Declared order still decides which of two tied names is `primary`, but
+ * the screen shows both instead of presenting the first as a verdict.
+ */
 export function calculateDimensional<K extends string>(
   quiz: QuizDefinition,
   answers: Record<string, number>,
   dimensions: K[],
 ): DimensionalResult<K> {
-  const scores = Object.fromEntries(dimensions.map((d) => [d, 0])) as Record<K, number>;
-  // Track question count per dimension so dimensions with unequal
-  // question counts (e.g. Jungian Functions: 2 questions for Ni/Ne/Si/Fe
-  // but only 1 each for Se/Ti/Te/Fi) get fairly compared. Without this
-  // normalisation, a 2-question dimension has 2× the scoring ceiling
-  // and can win even when the user identifies more strongly with a
-  // 1-question dimension.
-  const counts = Object.fromEntries(dimensions.map((d) => [d, 0])) as Record<K, number>;
-  for (const q of quiz.questions) {
-    const v = answers[q.id];
-    if (v === undefined || !q.dimension) continue;
-    const dim = q.dimension as K;
-    if (dim in scores) {
-      scores[dim] += v;
-      counts[dim] += 1;
-    }
-  }
-  // Normalise to AVERAGE-per-question (Likert mean) for the comparison.
-  // We keep the raw `scores` shape for downstream UI, but compare via
-  // averages so the primary winner is the one the user agreed most
-  // strongly with regardless of how many questions hit that dimension.
-  const averages = Object.fromEntries(
-    dimensions.map((d) => [d, counts[d] > 0 ? scores[d] / counts[d] : 0]),
-  ) as Record<K, number>;
-  const primary = dimensions.reduce(
-    (top, d) => (averages[d] > averages[top] ? d : top),
-    dimensions[0],
-  );
-  return { primary, scores };
+  const { scores, averages } = likertMeans(quiz, answers, dimensions);
+  const ranked = rankDimensions(averages, dimensions);
+  return { primary: ranked.primary, scores, averages, isTie: ranked.isTie, margin: ranked.margin, secondary: ranked.secondary };
 }
 
 // ---------------------------------------------------------------
@@ -84,7 +88,7 @@ export function calculateDimensional<K extends string>(
 // Three shadow traits: Narcissism, Machiavellianism, Psychopathy.
 // Non-clinical — framed as self-awareness for shadow work.
 
-export type DarkTriadType = 'narcissism' | 'machiavellianism' | 'psychopathy';
+export type DarkTriadType = 'narcissism' | 'machiavellianism' | 'psychopathy' | 'low';
 
 export const darkTriadQuiz: QuizDefinition = {
   id: 'dark-triad-v1',
@@ -94,18 +98,18 @@ export const darkTriadQuiz: QuizDefinition = {
   questions: [
     { id: 'n1', text: 'I tend to feel I deserve special treatment.', dimension: 'narcissism', options: likert },
     { id: 'n2', text: 'I like being the center of attention.', dimension: 'narcissism', options: likert },
-    { id: 'n3', text: 'I find it hard to tolerate criticism.', dimension: 'narcissism', options: likert },
+    { id: 'n3', text: 'I expect to be recognised as exceptional.', dimension: 'narcissism', options: likert },
     { id: 'n4', text: 'I believe I am more talented than most people.', dimension: 'narcissism', options: likert },
     { id: 'n5', text: 'I sometimes think the rules don\'t apply to me.', dimension: 'narcissism', options: likert },
     { id: 'm1', text: 'I use flattery to get what I want from people.', dimension: 'machiavellianism', options: likert },
     { id: 'm2', text: 'I keep my real motives private when dealing with others.', dimension: 'machiavellianism', options: likert },
     { id: 'm3', text: 'I manipulate conversations to land where I want them to.', dimension: 'machiavellianism', options: likert },
-    { id: 'm4', text: 'I consider the long game when dealing with people.', dimension: 'machiavellianism', options: likert },
+    { id: 'm4', text: 'I tell people what they want to hear if it gets me what I need.', dimension: 'machiavellianism', options: likert },
     { id: 'm5', text: 'I believe most people can be bought at some price.', dimension: 'machiavellianism', options: likert },
     { id: 'p1', text: 'I don\'t worry much about other people\'s feelings.', dimension: 'psychopathy', options: likert },
-    { id: 'p2', text: 'I get bored easily with routine or safety.', dimension: 'psychopathy', options: likert },
+    { id: 'p2', text: 'I take risks that most people would call reckless.', dimension: 'psychopathy', options: likert },
     { id: 'p3', text: 'Consequences don\'t hold me back the way they hold others back.', dimension: 'psychopathy', options: likert },
-    { id: 'p4', text: 'I can be cold when someone has been soft.', dimension: 'psychopathy', options: likert },
+    { id: 'p4', text: 'I stay unmoved when someone cries in front of me.', dimension: 'psychopathy', options: likert },
     { id: 'p5', text: 'I find rules of conduct often arbitrary and ignorable.', dimension: 'psychopathy', options: likert },
   ],
 };
@@ -135,6 +139,14 @@ export const DARK_TRIAD_INFO: Record<DarkTriadType, DimensionalResultInfo> = {
     shadow: ['Coldness where connection is asked for', 'Boredom with safety and stability', 'Ignoring consequences that affect others', 'Thrill-seeking at others\' cost'],
     affirmation: 'I have the cold — and I choose when to let warmth back in.',
   },
+  low: {
+    name: 'Low shadow signal',
+    tagline: 'The mirror is quiet today.',
+    summary: 'You endorsed little of any of the three traits, so the mirror is quiet today. That is not a verdict of sainthood: everyone carries some of each, and a low reading can also mean you answered as you would like to be rather than as you are. Come back on a harder day and see what shows.',
+    strengths: ['Low need for admiration', 'Straight dealing', 'Warmth stays switched on'],
+    shadow: ['A quiet mirror can also be a flattering one', 'An edge you under-rate is an edge you never examine'],
+    affirmation: 'I look at my shadow without flinching, even when it is faint.',
+  },
 };
 
 // ---------------------------------------------------------------
@@ -152,13 +164,13 @@ export const discQuiz: QuizDefinition = {
     { id: 'd1', text: 'I move fast and push past obstacles.', dimension: 'dominance', options: likert },
     { id: 'd2', text: 'I like to lead rather than follow.', dimension: 'dominance', options: likert },
     { id: 'd3', text: 'I\'m direct, even blunt, when the stakes are high.', dimension: 'dominance', options: likert },
-    { id: 'd4', text: 'I thrive under pressure and deadlines.', dimension: 'dominance', options: likert },
+    { id: 'd4', text: 'I make decisions quickly and push them through.', dimension: 'dominance', options: likert },
     { id: 'd5', text: 'I\'d rather act now and adjust later.', dimension: 'dominance', options: likert },
     { id: 'i1', text: 'I love being around people and feed off their energy.', dimension: 'influence', options: likert },
     { id: 'i2', text: 'I persuade easily with warmth and enthusiasm.', dimension: 'influence', options: likert },
     { id: 'i3', text: 'I\'m expressive and optimistic.', dimension: 'influence', options: likert },
     { id: 'i4', text: 'I make friends wherever I go.', dimension: 'influence', options: likert },
-    { id: 'i5', text: 'I prefer collaboration over solo work.', dimension: 'influence', options: likert },
+    { id: 'i5', text: 'I would rather win people over than instruct them.', dimension: 'influence', options: likert },
     { id: 's1', text: 'I value stability and long-term relationships.', dimension: 'steadiness', options: likert },
     { id: 's2', text: 'I\'m a patient listener who remembers details about people.', dimension: 'steadiness', options: likert },
     { id: 's3', text: 'I prefer predictable environments.', dimension: 'steadiness', options: likert },
@@ -222,14 +234,14 @@ export const moneyQuiz: QuizDefinition = {
     { id: 'sv1', text: 'I feel most at peace when my savings account is growing.', dimension: 'saver', options: likert },
     { id: 'sv2', text: 'I\'d rather skip a purchase I want than tap into savings.', dimension: 'saver', options: likert },
     { id: 'sv3', text: 'I comparison-shop for small purchases.', dimension: 'saver', options: likert },
-    { id: 'sp1', text: 'I enjoy spending on experiences and quality things.', dimension: 'spender', options: likert },
+    { id: 'sp1', text: 'If something will make today better, I buy it.', dimension: 'spender', options: likert },
     { id: 'sp2', text: 'If I can afford it now, I buy it now.', dimension: 'spender', options: likert },
     { id: 'sp3', text: 'Money is meant to be enjoyed, not hoarded.', dimension: 'spender', options: likert },
     { id: 'av1', text: 'Checking my bank balance makes me anxious.', dimension: 'avoider', options: likert },
     { id: 'av2', text: 'I let bills and statements pile up unopened.', dimension: 'avoider', options: likert },
-    { id: 'av3', text: 'I don\'t know my net worth within $1000.', dimension: 'avoider', options: likert },
+    { id: 'av3', text: 'I could not say, even roughly, how much money I have right now.', dimension: 'avoider', options: likert },
     { id: 'mk1', text: 'I feel conflicted about having more money than others.', dimension: 'monk', options: likert },
-    { id: 'mk2', text: 'I believe wanting a lot of money is spiritually compromised.', dimension: 'monk', options: likert },
+    { id: 'mk2', text: 'I feel uneasy about wanting more money than I need.', dimension: 'monk', options: likert },
     { id: 'mk3', text: 'I underprice my own work.', dimension: 'monk', options: likert },
     { id: 'st1', text: 'I use what I buy to signal what kind of person I am.', dimension: 'status', options: likert },
     { id: 'st2', text: 'How I look to others shapes my spending.', dimension: 'status', options: likert },
@@ -300,7 +312,7 @@ export const boundariesQuiz: QuizDefinition = {
     { id: 'po2', text: 'I find it hard to say no to a request.', dimension: 'porous', options: likert },
     { id: 'po3', text: 'I over-share early in relationships.', dimension: 'porous', options: likert },
     { id: 'po4', text: 'My mood depends heavily on how others feel about me.', dimension: 'porous', options: likert },
-    { id: 'hl1', text: 'I say no without apologising for it.', dimension: 'healthy', options: likert },
+    { id: 'hl1', text: 'I say no when I need to, without a long explanation.', dimension: 'healthy', options: likert },
     { id: 'hl2', text: 'I can support someone without absorbing their distress.', dimension: 'healthy', options: likert },
     { id: 'hl3', text: 'I share personal things at a pace that matches the relationship.', dimension: 'healthy', options: likert },
     { id: 'hl4', text: 'I notice when someone crosses a line and address it.', dimension: 'healthy', options: likert },
@@ -346,11 +358,34 @@ export const BOUNDARIES_INFO: Record<BoundaryType, DimensionalResultInfo> = {
   },
 };
 
+/**
+ * Healthy and situational boundaries are patterns derived from the other
+ * two, not independent traits, and the four "healthy" items are the ones
+ * everyone agrees with — so a max-wins scorer typed almost everyone
+ * healthy. Decision order: situational when it is clearly endorsed (mean
+ * ≥ 3.5) and leads; healthy when neither walls nor porousness are
+ * elevated (both means ≤ 2.5); otherwise whichever of rigid / porous is
+ * higher, flagged as a tie when they are within TIE_MARGIN.
+ */
+export function scoreBoundaries(answers: Record<string, number>): DimensionalResult<BoundaryType> {
+  const dims: BoundaryType[] = ['rigid', 'porous', 'healthy', 'situational'];
+  const { scores, averages: a } = likertMeans(boundariesQuiz, answers, dims);
+  const lead = Math.max(a.rigid, a.porous, a.healthy, a.situational);
+  let primary: BoundaryType;
+  if (a.situational >= 3.5 && a.situational >= lead) primary = 'situational';
+  else if (a.rigid <= 2.5 && a.porous <= 2.5) primary = 'healthy';
+  else primary = a.rigid >= a.porous ? 'rigid' : 'porous';
+  const wallsVsPores = Math.abs(a.rigid - a.porous);
+  const isTie = (primary === 'rigid' || primary === 'porous') && wallsVsPores <= TIE_MARGIN;
+  const secondary = isTie ? (primary === 'rigid' ? 'porous' : 'rigid') : undefined;
+  return { primary, scores, averages: a, isTie, margin: primary === 'rigid' || primary === 'porous' ? wallsVsPores : 0, secondary };
+}
+
 // ---------------------------------------------------------------
 // 5. Burnout Level (Maslach-informed, NOT a diagnostic tool)
 // ---------------------------------------------------------------
 
-export type BurnoutType = 'exhaustion' | 'cynicism' | 'efficacy-loss';
+export type BurnoutType = 'exhaustion' | 'cynicism' | 'efficacy-loss' | 'low';
 
 export const burnoutQuiz: QuizDefinition = {
   id: 'burnout-v1',
@@ -358,18 +393,20 @@ export const burnoutQuiz: QuizDefinition = {
   title: 'Burnout Check',
   description: 'Burnout has three measurable dimensions: exhaustion (drained energy), cynicism (distance from the work), and loss of efficacy (I\'m not effective anymore). Twelve questions give you a read on where you are today. This is not a diagnosis — it\'s a mirror.',
   questions: [
-    { id: 'ex1', text: 'I feel emotionally drained by my work or responsibilities.', dimension: 'exhaustion', options: likert },
-    { id: 'ex2', text: 'I feel tired when I get up in the morning and face another day.', dimension: 'exhaustion', options: likert },
-    { id: 'ex3', text: 'Working all day is really a strain for me.', dimension: 'exhaustion', options: likert },
-    { id: 'ex4', text: 'I feel used up at the end of the day.', dimension: 'exhaustion', options: likert },
-    { id: 'cy1', text: 'I\'ve become less interested in my work since I started.', dimension: 'cynicism', options: likert },
-    { id: 'cy2', text: 'I feel I\'ve become more cynical about what my work contributes.', dimension: 'cynicism', options: likert },
-    { id: 'cy3', text: 'I just want to do my tasks and not be bothered.', dimension: 'cynicism', options: likert },
-    { id: 'cy4', text: 'I doubt the significance of my work.', dimension: 'cynicism', options: likert },
-    { id: 'ef1', text: 'I\'ve accomplished less than I wanted to lately.', dimension: 'efficacy-loss', options: likert },
-    { id: 'ef2', text: 'I feel I\'m not making a real difference.', dimension: 'efficacy-loss', options: likert },
-    { id: 'ef3', text: 'I\'ve lost confidence that I\'m good at what I do.', dimension: 'efficacy-loss', options: likert },
-    { id: 'ef4', text: 'It\'s hard to feel I\'m in control of my work.', dimension: 'efficacy-loss', options: likert },
+    // Original wording, not the Maslach Burnout Inventory (a licensed
+    // instrument); the three dimensions are Maslach's, the items are ours.
+    { id: 'ex1', text: 'My work leaves me emotionally wrung out.', dimension: 'exhaustion', options: likert },
+    { id: 'ex2', text: 'Mornings feel heavy because of what the day holds.', dimension: 'exhaustion', options: likert },
+    { id: 'ex3', text: 'Getting through a full day takes everything I have.', dimension: 'exhaustion', options: likert },
+    { id: 'ex4', text: 'By evening I have nothing left for anything else.', dimension: 'exhaustion', options: likert },
+    { id: 'cy1', text: 'The work I once cared about has stopped mattering to me.', dimension: 'cynicism', options: likert },
+    { id: 'cy2', text: 'I have become more sceptical about whether my work makes any difference.', dimension: 'cynicism', options: likert },
+    { id: 'cy3', text: 'I would rather just get my tasks done and be left alone.', dimension: 'cynicism', options: likert },
+    { id: 'cy4', text: 'I question whether what I do has any real value.', dimension: 'cynicism', options: likert },
+    { id: 'ef1', text: 'I am getting less done than I used to, and it bothers me.', dimension: 'efficacy-loss', options: likert },
+    { id: 'ef2', text: 'It feels like my efforts no longer lead anywhere.', dimension: 'efficacy-loss', options: likert },
+    { id: 'ef3', text: 'I have lost confidence in my ability to do my job well.', dimension: 'efficacy-loss', options: likert },
+    { id: 'ef4', text: 'I feel I have little control over how my work goes.', dimension: 'efficacy-loss', options: likert },
   ],
 };
 
@@ -397,6 +434,14 @@ export const BURNOUT_INFO: Record<BurnoutType, DimensionalResultInfo> = {
     strengths: ['Self-reflection', 'Willingness to question yourself'],
     shadow: ['Imposter spiral', 'Avoiding challenging work because you fear failing', 'Deep loneliness — you don\'t tell anyone you feel this way'],
     affirmation: 'I remember what I\'ve done. I take one win today, real and visible, and I let it count.',
+  },
+  low: {
+    name: 'Running warm, not burnt out',
+    tagline: 'None of the three dimensions is elevated.',
+    summary: 'None of the three dimensions is elevated: you still have energy for the day, the work still means something, and you still trust yourself to do it. Keep the habits that are working — rest, boundaries, a sense of why — because burnout arrives slowly and leaves slowly.',
+    strengths: ['Energy is available', 'The work still matters to you', 'You trust your own competence'],
+    shadow: ['Low today is not low forever — check in again in a month', 'A good reading can tempt you to skip the rest that produced it'],
+    affirmation: 'I protect what is working before anything breaks.',
   },
 };
 
@@ -479,7 +524,7 @@ export const conflictQuiz: QuizDefinition = {
     { id: 'cp3', text: 'I make strong cases and don\'t back down easily.', dimension: 'competing', options: likert },
     { id: 'cl1', text: 'I work to find solutions that meet everyone\'s needs.', dimension: 'collaborating', options: likert },
     { id: 'cl2', text: 'I dig into the real problem behind the surface disagreement.', dimension: 'collaborating', options: likert },
-    { id: 'cl3', text: 'I believe we can both win.', dimension: 'collaborating', options: likert },
+    { id: 'cl3', text: 'I keep talking until we find something that works for both of us.', dimension: 'collaborating', options: likert },
     { id: 'cm1', text: 'I\'m quick to offer a compromise to settle things.', dimension: 'compromising', options: likert },
     { id: 'cm2', text: 'I think meeting halfway is usually fair.', dimension: 'compromising', options: likert },
     { id: 'cm3', text: 'I\'d rather both of us get partial wins than fight for total.', dimension: 'compromising', options: likert },
@@ -545,7 +590,7 @@ export const sleepQuiz: QuizDefinition = {
   id: 'chronotype-v1',
   type: 'extra-dimensional',
   title: 'Sleep Chronotype',
-  description: 'Dr. Michael Breus\' chronotype model identifies four sleep-wake personalities: the Lion (morning), the Bear (daytime), the Wolf (evening), and the Dolphin (restless). Fifteen questions reveal which rhythm is yours — and when your real peak hours are.',
+  description: 'Dr. Michael Breus\' chronotype model identifies four sleep-wake personalities: the Lion (morning), the Bear (daytime), the Wolf (evening), and the Dolphin (restless). Sixteen questions reveal which rhythm is yours — and when your real peak hours are.',
   questions: [
     { id: 'lo1', text: 'I wake up naturally before 6 AM feeling rested.', dimension: 'lion', options: likert },
     { id: 'lo2', text: 'My most productive hours are 6-10 AM.', dimension: 'lion', options: likert },
@@ -558,10 +603,11 @@ export const sleepQuiz: QuizDefinition = {
     { id: 'wo1', text: 'I struggle to wake before 8 AM no matter what time I slept.', dimension: 'wolf', options: likert },
     { id: 'wo2', text: 'My productive window doesn\'t open until afternoon or evening.', dimension: 'wolf', options: likert },
     { id: 'wo3', text: 'I feel most alive late at night, past 10 PM.', dimension: 'wolf', options: likert },
-    { id: 'wo4', text: 'I need caffeine to function in the morning.', dimension: 'wolf', options: likert },
+    { id: 'wo4', text: 'Even after a full night\'s sleep, I am slow and groggy for the first hours of the morning.', dimension: 'wolf', options: likert },
     { id: 'do1', text: 'I wake up multiple times a night even when tired.', dimension: 'dolphin', options: likert },
     { id: 'do2', text: 'I have a sensitive nervous system — light, sound, thoughts wake me.', dimension: 'dolphin', options: likert },
-    { id: 'do3', text: 'I get second winds at 9-11 PM that keep me up too long.', dimension: 'dolphin', options: likert },
+    { id: 'do3', text: 'I feel sleepy early in the evening, then wide awake again around 10 PM.', dimension: 'dolphin', options: likert },
+    { id: 'do4', text: 'I lie awake replaying the day even when I am exhausted.', dimension: 'dolphin', options: likert },
   ],
 };
 
@@ -577,7 +623,7 @@ export const CHRONOTYPE_INFO: Record<ChronoType, DimensionalResultInfo> = {
   bear: {
     name: 'The Bear',
     tagline: 'Solar-rhythm — rises with the sun, peaks midday.',
-    summary: 'You follow the sun. Asleep by 11, up around 7-8, peak focus 10 AM-2 PM, natural dip 3-4 PM, fade by 10 PM. About 55% of people are bears. Industrial society was basically designed for you.',
+    summary: 'You follow the sun. Asleep by 11, up around 7-8, peak focus 10 AM-2 PM, natural dip 3-4 PM, fade by 10 PM. About 55% of people are bears. Most work and school schedules are built around this rhythm.',
     strengths: ['Mainstream-friendly rhythm', 'Easy adaptability', 'Good sleep most nights'],
     shadow: ['The 3-4 PM slump is real — honour it', 'Can drift into night-owl patterns under stress'],
     affirmation: 'My rhythm is steady. I ride the sun, rest when it dips, and sleep when it sets.',
@@ -593,7 +639,7 @@ export const CHRONOTYPE_INFO: Record<ChronoType, DimensionalResultInfo> = {
   dolphin: {
     name: 'The Dolphin',
     tagline: 'Light sleeper, vigilant nervous system.',
-    summary: 'You sleep the way dolphins do — half-awake. Sensitive to light, sound, thoughts. Wake multiple times a night. Often labeled "insomniac". About 10% of people are dolphins. You often have high intelligence + anxiety traits. Routine is medicine.',
+    summary: 'You sleep the way dolphins do — half-awake. Sensitive to light, sound, thoughts. Wake multiple times a night. Often labeled "insomniac". About 10% of people are dolphins. Breus describes dolphins as perceptive, detail-focused and often anxious. Routine is medicine.',
     strengths: ['Creative problem-solving', 'High awareness', 'Strong detail memory'],
     shadow: ['Sleep deprivation', 'Anxiety spiral', 'Wired-but-tired during the day'],
     affirmation: 'My nervous system needs gentle ritual. I build a sleep practice and honour how sensitive I am.',
@@ -614,7 +660,7 @@ export const creativeQuiz: QuizDefinition = {
   questions: [
     { id: 'mk1', text: 'I create with my hands — building, crafting, making tangibles.', dimension: 'maker', options: likert },
     { id: 'mk2', text: 'I think best when I\'m doing, not when I\'m planning.', dimension: 'maker', options: likert },
-    { id: 'mk3', text: 'I\'d rather prototype than plan.', dimension: 'maker', options: likert },
+    { id: 'mk3', text: 'I would rather make a rough version than describe the idea.', dimension: 'maker', options: likert },
     { id: 'dr1', text: 'I imagine worlds and possibilities more easily than concrete things.', dimension: 'dreamer', options: likert },
     { id: 'dr2', text: 'I have a thousand ideas for every one I complete.', dimension: 'dreamer', options: likert },
     { id: 'dr3', text: 'I\'m inspired by visions, not instructions.', dimension: 'dreamer', options: likert },
@@ -625,7 +671,7 @@ export const creativeQuiz: QuizDefinition = {
     { id: 'or2', text: 'I turn chaos into structure.', dimension: 'organiser', options: likert },
     { id: 'or3', text: 'I love the craft of making someone else\'s vision real.', dimension: 'organiser', options: likert },
     { id: 'an1', text: 'I find creativity in patterns — in systems, data, ideas.', dimension: 'analyser', options: likert },
-    { id: 'an2', text: 'I get pleasure from figuring out how something works.', dimension: 'analyser', options: likert },
+    { id: 'an2', text: 'I enjoy taking something apart to see how it works more than using it.', dimension: 'analyser', options: likert },
     { id: 'an3', text: 'My creativity shows up in the elegance of a solution.', dimension: 'analyser', options: likert },
   ],
 };
@@ -686,7 +732,7 @@ export const spiritualQuiz: QuizDefinition = {
   description: 'Five ways of relating to the sacred, across all traditions: the Mystic (direct experience), the Ritualist (ceremony and form), the Seeker (study and questioning), the Servant (devotion through action), the Warrior (spiritual discipline as path). Fifteen questions to locate your home.',
   questions: [
     { id: 'ms1', text: 'I\'ve had experiences that felt directly spiritual — not mediated by tradition.', dimension: 'mystic', options: likert },
-    { id: 'ms2', text: 'I feel closest to the sacred in silence or nature.', dimension: 'mystic', options: likert },
+    { id: 'ms2', text: 'I feel closest to the sacred in silence.', dimension: 'mystic', options: likert },
     { id: 'ms3', text: 'Words feel inadequate for what I mean when I talk about the spiritual.', dimension: 'mystic', options: likert },
     { id: 'rt1', text: 'Ceremony, ritual, and tradition feed me.', dimension: 'ritualist', options: likert },
     { id: 'rt2', text: 'I find the sacred in candles, altars, prayers, repeated forms.', dimension: 'ritualist', options: likert },
@@ -699,7 +745,7 @@ export const spiritualQuiz: QuizDefinition = {
     { id: 'sv3', text: 'Love-in-action is more real to me than belief.', dimension: 'servant', options: likert },
     { id: 'wr1', text: 'Discipline and practice — daily meditation, fasting, training — feels sacred.', dimension: 'warrior', options: likert },
     { id: 'wr2', text: 'I pursue spiritual growth the way others pursue athletic training.', dimension: 'warrior', options: likert },
-    { id: 'wr3', text: 'I\'d rather sit alone for an hour in discipline than read about it.', dimension: 'warrior', options: likert },
+    { id: 'wr3', text: 'An hour of disciplined practice feeds me more than an hour of reading about it.', dimension: 'warrior', options: likert },
   ],
 };
 
@@ -750,11 +796,19 @@ export const SPIRITUAL_INFO: Record<SpiritualType, DimensionalResultInfo> = {
 // Lookup tables (by quiz id) for the generic result renderer
 // ---------------------------------------------------------------
 
-import { EXTRA_QUIZZES_PART2 } from './extraQuizzesPart2';
-import { EXTRA_QUIZZES_PART3 } from './extraQuizzesPart3';
+import {
+  EXTRA_QUIZZES_PART2,
+  TIE_MARGIN,
+  LOW_SIGNAL,
+  likertMeans,
+  rankDimensions,
+  scoreMoodScreener,
+  scoreEmpathHsp,
+  scoreSelfCompassion,
+} from './extraQuizzesPart2';
+import { EXTRA_QUIZZES_PART3, scoreWellnessType } from './extraQuizzesPart3';
+import type { QuizCategory } from './quizzes';
 
-// Used via spread below — safe to flag as "unused" by exhaustive-deps.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const EXTRA_QUIZZES: QuizDefinition[] = [
   darkTriadQuiz,
   discQuiz,
@@ -770,7 +824,40 @@ export const EXTRA_QUIZZES: QuizDefinition[] = [
   ...Object.values(EXTRA_QUIZZES_PART3).map((e) => e.quiz),
 ];
 
-export const EXTRA_QUIZ_METADATA: Record<string, { timeEstimate: string; whatYouGet: string[]; icon: string; color: string }> = {
+export interface ExtraQuizMetadata {
+  timeEstimate: string;
+  whatYouGet: string[];
+  icon: string;
+  color: string;
+  category: QuizCategory;
+}
+
+const CATEGORY: Record<string, QuizCategory> = {
+  'dark-triad-v1': 'personality',
+  'disc-v1': 'personality',
+  'money-personality-v1': 'personality',
+  'boundaries-v1': 'relationships',
+  'burnout-v1': 'wellbeing',
+  'communication-v1': 'relationships',
+  'conflict-v1': 'relationships',
+  'chronotype-v1': 'wellbeing',
+  'creative-type-v1': 'personality',
+  'spiritual-type-v1': 'tarot-spirit',
+  'jungian-functions-v1': 'personality',
+  'love-styles-v1': 'relationships',
+  'parenting-style-v1': 'relationships',
+  'learning-style-v1': 'personality',
+  'empath-hsp-v1': 'wellbeing',
+  'self-compassion-v1': 'wellbeing',
+  'mood-screener-v1': 'wellbeing',
+  'anxiety-profile-v1': 'wellbeing',
+  'leadership-style-v1': 'personality',
+  'productivity-style-v1': 'personality',
+  'relationship-readiness-v1': 'relationships',
+  'wellness-type-v1': 'wellbeing',
+};
+
+const META: Record<string, Omit<ExtraQuizMetadata, 'category'>> = {
   'dark-triad-v1':         { timeEstimate: '4 min', whatYouGet: ['Your dominant shadow trait', 'Healthy and shadow forms of each', 'Integration affirmation'], icon: 'dark-triad', color: 'cosmic-rose' },
   'disc-v1':               { timeEstimate: '5 min', whatYouGet: ['Your workplace D/I/S/C profile', 'Strengths and blind spots', 'How to collaborate with other styles'], icon: 'briefcase', color: 'cosmic-blue' },
   'money-personality-v1':  { timeEstimate: '4 min', whatYouGet: ['Your money script', 'When it serves you and when it doesn\'t', 'Reframe affirmation'], icon: 'dollar-sign', color: 'teal' },
@@ -795,42 +882,86 @@ export const EXTRA_QUIZ_METADATA: Record<string, { timeEstimate: string; whatYou
   'wellness-type-v1':         { timeEstimate: '3 min', whatYouGet: ['How you best restore', 'Which tools work for you', 'How to design your week'],                    icon: 'leaf',         color: 'teal' },
 };
 
-// Dispatch table from quiz id → (calc, info dictionary)
-interface QuizScoringEntry {
+export const EXTRA_QUIZ_METADATA: Record<string, ExtraQuizMetadata> = Object.fromEntries(
+  Object.entries(META).map(([id, m]) => [id, { ...m, category: CATEGORY[id] ?? 'personality' }]),
+);
+
+/**
+ * Per-quiz scoring entry. `dimensions` are the scored dimensions — the
+ * ones the score bars draw. `info` holds a card for every result key, which
+ * may include keys that are not dimensions (`low`, `both`, `neither`,
+ * `balanced`, the self-compassion bands). No emoji: the quiz's drawn glyph
+ * (metadata.icon → QuizIcons) is the medallion.
+ */
+export interface QuizScoringEntry {
   dimensions: readonly string[];
   info: Record<string, DimensionalResultInfo>;
-  emoji: string;
+  /** Returned instead of the top dimension when the highest Likert mean is below LOW_SIGNAL. */
+  lowResult?: string;
+  /** Bar labels for dimensions that are not result keys (self-compassion's six components). */
+  dimensionLabels?: Record<string, string>;
 }
 
 export const EXTRA_QUIZ_SCORING: Record<string, QuizScoringEntry> = {
-  'dark-triad-v1':        { dimensions: ['narcissism', 'machiavellianism', 'psychopathy'], info: DARK_TRIAD_INFO, emoji: '🌑' },
-  'disc-v1':              { dimensions: ['dominance', 'influence', 'steadiness', 'conscientiousness'], info: DISC_INFO, emoji: '📊' },
-  'money-personality-v1': { dimensions: ['saver', 'spender', 'avoider', 'monk', 'status'], info: MONEY_INFO, emoji: '💰' },
-  'boundaries-v1':        { dimensions: ['rigid', 'porous', 'healthy', 'situational'], info: BOUNDARIES_INFO, emoji: '🛡️' },
-  'burnout-v1':           { dimensions: ['exhaustion', 'cynicism', 'efficacy-loss'], info: BURNOUT_INFO, emoji: '🔥' },
-  'communication-v1':     { dimensions: ['passive', 'aggressive', 'passive-aggressive', 'assertive'], info: COMM_INFO, emoji: '💬' },
-  'conflict-v1':          { dimensions: ['competing', 'collaborating', 'compromising', 'avoiding', 'accommodating'], info: CONFLICT_INFO, emoji: '⚔️' },
-  'chronotype-v1':        { dimensions: ['lion', 'bear', 'wolf', 'dolphin'], info: CHRONOTYPE_INFO, emoji: '🌙' },
-  'creative-type-v1':     { dimensions: ['maker', 'dreamer', 'performer', 'organiser', 'analyser'], info: CREATIVE_INFO, emoji: '🎨' },
-  'spiritual-type-v1':    { dimensions: ['mystic', 'ritualist', 'seeker', 'servant', 'warrior'], info: SPIRITUAL_INFO, emoji: '✨' },
+  'dark-triad-v1':        { dimensions: ['narcissism', 'machiavellianism', 'psychopathy'], info: DARK_TRIAD_INFO, lowResult: 'low' },
+  'disc-v1':              { dimensions: ['dominance', 'influence', 'steadiness', 'conscientiousness'], info: DISC_INFO },
+  'money-personality-v1': { dimensions: ['saver', 'spender', 'avoider', 'monk', 'status'], info: MONEY_INFO },
+  'boundaries-v1':        { dimensions: ['rigid', 'porous', 'healthy', 'situational'], info: BOUNDARIES_INFO },
+  'burnout-v1':           { dimensions: ['exhaustion', 'cynicism', 'efficacy-loss'], info: BURNOUT_INFO, lowResult: 'low' },
+  'communication-v1':     { dimensions: ['passive', 'aggressive', 'passive-aggressive', 'assertive'], info: COMM_INFO },
+  'conflict-v1':          { dimensions: ['competing', 'collaborating', 'compromising', 'avoiding', 'accommodating'], info: CONFLICT_INFO },
+  'chronotype-v1':        { dimensions: ['lion', 'bear', 'wolf', 'dolphin'], info: CHRONOTYPE_INFO },
+  'creative-type-v1':     { dimensions: ['maker', 'dreamer', 'performer', 'organiser', 'analyser'], info: CREATIVE_INFO },
+  'spiritual-type-v1':    { dimensions: ['mystic', 'ritualist', 'seeker', 'servant', 'warrior'], info: SPIRITUAL_INFO },
   ...Object.fromEntries(
     Object.entries(EXTRA_QUIZZES_PART2).map(([id, cfg]) => [
       id,
-      { dimensions: cfg.dimensions as unknown as readonly string[], info: cfg.info, emoji: cfg.emoji },
+      {
+        dimensions: cfg.dimensions as unknown as readonly string[],
+        info: cfg.info,
+        lowResult: 'lowResult' in cfg ? cfg.lowResult : undefined,
+        dimensionLabels: 'dimensionLabels' in cfg ? cfg.dimensionLabels : undefined,
+      },
     ]),
   ),
   ...Object.fromEntries(
     Object.entries(EXTRA_QUIZZES_PART3).map(([id, cfg]) => [
       id,
-      { dimensions: cfg.dimensions as unknown as readonly string[], info: cfg.info, emoji: cfg.emoji },
+      {
+        dimensions: cfg.dimensions as unknown as readonly string[],
+        info: cfg.info,
+        lowResult: 'lowResult' in cfg ? cfg.lowResult : undefined,
+      },
     ]),
   ),
+};
+
+/**
+ * Quizzes whose result is not "the dimension with the highest mean": the
+ * PHQ-2 screener (validated cutoff first), empath/HSP (both / neither are
+ * derived), self-compassion (a total, banded), boundaries (healthy and
+ * situational are derived) and wellness (balanced is derived).
+ */
+const DEDICATED_SCORERS: Record<string, (answers: Record<string, number>) => DimensionalResult> = {
+  'mood-screener-v1': scoreMoodScreener,
+  'empath-hsp-v1': scoreEmpathHsp,
+  'self-compassion-v1': scoreSelfCompassion,
+  'boundaries-v1': scoreBoundaries,
+  'wellness-type-v1': scoreWellnessType,
 };
 
 export function calculateExtraQuiz(quizId: string, answers: Record<string, number>): DimensionalResult | null {
   const entry = EXTRA_QUIZ_SCORING[quizId];
   if (!entry) return null;
+  const dedicated = DEDICATED_SCORERS[quizId];
+  if (dedicated) return dedicated(answers);
   const quiz = EXTRA_QUIZZES.find((q) => q.id === quizId);
   if (!quiz) return null;
-  return calculateDimensional(quiz, answers, entry.dimensions as string[]);
+  const result = calculateDimensional(quiz, answers, entry.dimensions as string[]);
+  // A flat or all-low profile is not "strongest around narcissism"; when
+  // nothing is elevated the honest answer is the low card.
+  if (entry.lowResult && result.averages[result.primary] < LOW_SIGNAL) {
+    return { ...result, primary: entry.lowResult, isTie: false, secondary: undefined };
+  }
+  return result;
 }

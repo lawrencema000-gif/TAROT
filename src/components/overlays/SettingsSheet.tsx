@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Bell,
   Moon,
@@ -18,27 +18,21 @@ import {
   Loader2,
   Crown,
   Mail,
-  Calendar,
-  Clock,
-  MapPin,
   ExternalLink,
   ImageIcon,
   Bug,
-  ArrowLeftRight,
-  Search,
 } from 'lucide-react';
 import { Sheet } from '../ui/Sheet';
 import { Button, Input, toast, Card, ListRow, ListRowGroup, Switch, EyebrowLabel, SparkleFourPoint } from '../ui';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase'; // still used for profile read/write + delete_user_account RPC
-import { journalEntries, tarotReadings, quizResults } from '../../dal';
+import { supabase } from '../../lib/supabase'; // still used for storage listings, locale write + delete_user_account RPC
 import { PaywallSheet } from '../premium/PaywallSheet';
 import { SubscriptionSheet } from '../premium/SubscriptionSheet';
 import { DiagnosticsSheet } from '../diagnostics';
 import { useDiagnostics } from '../../context/DiagnosticsContext';
 import { isDevMode } from '../../utils/telemetry';
-import { useGeocode } from '../../hooks/useAstrology';
 import { LanguagePicker } from '../i18n/LanguagePicker';
+import { EditProfileForm } from '../profile/EditProfileForm';
 import { useT } from '../../i18n/useT';
 import { getLocale, type SupportedLocale } from '../../i18n/config';
 import { READING_SCALES, getReadingScale, setReadingScale, type ReadingScaleId } from '../../utils/readingScale';
@@ -49,6 +43,9 @@ type SubSheet = 'main' | 'editProfile' | 'notifications' | 'appearance' | 'langu
  *  starfield background instead of loading an image. Must stay in
  *  sync with the identical constant in App.tsx. */
 const CELESTIAL_BG_URL = 'celestial://animated';
+
+const SUPPORT_EMAIL = 'support@arcana.app';
+const APP_VERSION = '1.0.0';
 
 interface CardBackOption {
   url: string;
@@ -98,6 +95,21 @@ interface SettingItem {
   danger?: boolean;
 }
 
+/** The selected-tile tick, one recipe for every swatch. */
+function SelectedTick() {
+  return (
+    <span className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center" aria-hidden>
+      <Check className="w-3 h-3 text-mystic-950" />
+    </span>
+  );
+}
+
+const SWATCH =
+  'relative overflow-hidden rounded-control border-2 transition-[border-color] duration-fast ease-[cubic-bezier(0.22,0.8,0.25,1)] ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-900 disabled:opacity-50';
+const SWATCH_ON = 'border-gold';
+const SWATCH_OFF = 'border-mystic-700 [@media(hover:hover)]:hover:border-mystic-500';
+
 export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const { t: tI18n } = useT('common');
   // app namespace lookups — used for the settings menu labels. Passed args
@@ -118,49 +130,29 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const [backgrounds, setBackgrounds] = useState<BackgroundOption[]>([]);
   const [loadingBackgrounds, setLoadingBackgrounds] = useState(false);
   const [savingBackground, setSavingBackground] = useState(false);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [readingScale, setReadingScaleState] = useState<ReadingScaleId>(() => getReadingScale());
-  const [isSaving, setIsSaving] = useState(false);
   const [versionTapCount, setVersionTapCount] = useState(0);
-
-  const [editForm, setEditForm] = useState({
-    displayName: '',
-    birthDate: '',
-    birthTime: '',
-    birthPlace: '',
-    birthLat: undefined as number | undefined,
-    birthLon: undefined as number | undefined,
-  });
-  const { results: geoResults, loading: geoLoading, error: geoError, search: geoSearch } = useGeocode();
-  const geoDebounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const [showGeoResults, setShowGeoResults] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setEditForm({
-        displayName: profile.displayName || '',
-        birthDate: profile.birthDate || '',
-        birthTime: profile.birthTime || '',
-        birthPlace: profile.birthPlace || '',
-        birthLat: profile.birthLat,
-        birthLon: profile.birthLon,
-      });
-    }
-  }, [profile]);
 
   useEffect(() => {
     if (!open) {
       setActiveSheet('main');
+      setAssetsLoaded(false);
     }
   }, [open]);
 
+  // The two picker grids live in Appearance, so their storage listings
+  // are fetched when that sheet opens rather than on every Settings open.
   useEffect(() => {
-    if (open) {
+    if (open && activeSheet === 'appearance' && !assetsLoaded) {
+      setAssetsLoaded(true);
       fetchCardBacks();
       fetchBackgrounds();
     }
-  }, [open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, activeSheet, assetsLoaded]);
 
   const fetchCardBacks = async () => {
     setLoadingCardBacks(true);
@@ -210,6 +202,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       if (error) throw error;
     } catch (err) {
       console.error('Failed to save card back:', err);
+      toast(tAppSettings('settings.toasts.updateFailed'), 'error');
     } finally {
       setSavingCardBack(false);
     }
@@ -269,6 +262,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       await refreshProfile();
     } catch (err) {
       console.error('Failed to save background:', err);
+      toast(tAppSettings('settings.toasts.updateFailed'), 'error');
     } finally {
       setSavingBackground(false);
     }
@@ -284,55 +278,24 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     }
   };
 
-  const handleSwitchAccount = async () => {
-    try {
-      await signOut();
-    } catch (e) {
-      console.error('[Settings] Switch account error:', e);
-    } finally {
-      onClose();
-    }
-  };
-
+  /**
+   * One exporter: the server-side `account-export` function, which covers
+   * every table the account owns (community, moonstones, mood entries,
+   * advisor interest…). The client-side partial export it used to fall
+   * back to produced a second, different file with no way to tell which
+   * one you had (R6 A22).
+   */
   const handleExportData = async () => {
     if (!user) return;
     setIsExporting(true);
 
     try {
-      // Prefer the server-side export edge function — covers all tables
-      // (community, moonstones, advisor_interest, etc.). Falls back to
-      // a client-side partial export if the edge function is unavailable.
-      const { data: serverExport, error: fnErr } = await supabase.functions.invoke('account-export', {
-        body: {},
-      });
-
-      let exportData: unknown;
-      if (!fnErr && serverExport) {
-        exportData = serverExport;
-      } else {
-        // Fallback: legacy client-side partial export
-        const [profileRes, journalRes, readingsRes, quizRes] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-          journalEntries.listAllForUser(user.id),
-          tarotReadings.listAllForUser(user.id),
-          quizResults.listAllForUser(user.id),
-        ]);
-
-        const hadError = !!profileRes.error || !journalRes.ok || !readingsRes.ok || !quizRes.ok;
-        if (hadError) {
-          toast(tAppSettings('settings.toasts.exportPartial'), 'error');
-        }
-
-        exportData = {
-          exportedAt: new Date().toISOString(),
-          profile: profileRes.data || null,
-          journalEntries: journalRes.ok ? journalRes.data : [],
-          tarotReadings: readingsRes.ok ? readingsRes.data : [],
-          quizResults: quizRes.ok ? quizRes.data : [],
-        };
+      const { data, error } = await supabase.functions.invoke('account-export', { body: {} });
+      if (error || !data) {
+        throw error ?? new Error('empty export');
       }
 
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -341,8 +304,10 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast(tAppSettings('settings.toasts.exportReady', { defaultValue: 'Your data is ready' }), 'success');
     } catch (err) {
       console.error('Export failed:', err);
+      toast(tAppSettings('settings.toasts.exportFailed', { defaultValue: 'Couldn’t prepare your export — check your connection and try again.' }), 'error');
     } finally {
       setIsExporting(false);
     }
@@ -359,6 +324,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
       if (error) {
         console.error('Delete account RPC failed:', error);
+        toast(tAppSettings('settings.toasts.deleteFailed', { defaultValue: 'Couldn’t delete your account — try again, or contact support.' }), 'error');
         return;
       }
 
@@ -366,6 +332,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       onClose();
     } catch (err) {
       console.error('Delete failed:', err);
+      toast(tAppSettings('settings.toasts.deleteFailed', { defaultValue: 'Couldn’t delete your account — try again, or contact support.' }), 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -376,59 +343,6 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       setShowSubscription(true);
     } else {
       setShowPaywall(true);
-    }
-  };
-
-  const [cityQuery, setCityQuery] = useState('');
-
-  useEffect(() => {
-    if (activeSheet === 'editProfile' && profile) {
-      setCityQuery(profile.birthPlace || '');
-    }
-  }, [activeSheet, profile]);
-
-  const handleCityInput = (value: string) => {
-    setCityQuery(value);
-    setEditForm(f => ({ ...f, birthPlace: value, birthLat: undefined, birthLon: undefined }));
-    setShowGeoResults(true);
-    if (geoDebounceRef.current) clearTimeout(geoDebounceRef.current);
-    if (value.trim().length >= 2) {
-      geoDebounceRef.current = setTimeout(() => { geoSearch(value); }, 400);
-    }
-  };
-
-  const handleSelectGeoResult = (result: { lat: number; lon: number; displayName: string }) => {
-    setCityQuery(result.displayName);
-    setEditForm(f => ({ ...f, birthPlace: result.displayName, birthLat: result.lat, birthLon: result.lon }));
-    setShowGeoResults(false);
-  };
-
-  const handleSaveProfile = async () => {
-    setIsSaving(true);
-    try {
-      const updates: Record<string, unknown> = {
-        displayName: editForm.displayName || undefined,
-        birthDate: editForm.birthDate || undefined,
-        birthTime: editForm.birthTime || undefined,
-        birthPlace: editForm.birthPlace || undefined,
-      };
-      if (editForm.birthLat !== undefined) updates.birthLat = editForm.birthLat;
-      if (editForm.birthLon !== undefined) updates.birthLon = editForm.birthLon;
-
-      const { error } = await updateProfile(updates);
-
-      if (error) {
-        console.error('[Settings] Profile save failed:', error.message);
-        toast(tAppSettings('settings.toasts.profileUpdateFailed', { defaultValue: 'Couldn’t save your profile — check your connection and try again.' }), 'error');
-      } else {
-        toast(tAppSettings('settings.toasts.profileUpdated'), 'success');
-        await refreshProfile();
-        setActiveSheet('main');
-      }
-    } catch {
-      toast(tAppSettings('settings.toasts.profileUpdateFailed'), 'error');
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -448,25 +362,33 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
     }
   };
 
+  const readingSizeLabel = (id: ReadingScaleId) =>
+    tAppSettings(`settings.readingSize.${id}`, {
+      defaultValue: id === 'smaller' ? 'Smaller' : id === 'larger' ? 'Larger' : 'Default',
+    });
+
   const settingGroups: { title: string; items: SettingItem[] }[] = [
     {
       title: tAppSettings('settings.sections.account'),
       items: [
-        { icon: User, label: tAppSettings('settings.menu.editProfile'), value: profile?.displayName || user?.email?.split('@')[0], action: () => setActiveSheet('editProfile') },
+        // The label wins: a long display name (an email prefix on accounts
+        // that never set one) used to push "Edit profile" down to "Edit pro…".
+        { icon: User, label: tAppSettings('settings.menu.editProfile'), value: profile?.displayName && profile.displayName.length <= 18 ? profile.displayName : undefined, action: () => setActiveSheet('editProfile') },
         {
           icon: profile?.isPremium ? Crown : CreditCard,
           label: tAppSettings('settings.menu.subscription'),
           value: profile?.isPremium ? tAppSettings('settings.menu.premium') : tAppSettings('settings.menu.free'),
           action: handleSubscriptionClick,
         },
-        { icon: ArrowLeftRight, label: tAppSettings('settings.menu.switchAccount'), action: handleSwitchAccount },
       ],
     },
     {
       title: tAppSettings('settings.sections.preferences'),
       items: [
         { icon: Bell, label: tAppSettings('settings.sections.notifications'), value: profile?.notificationsEnabled ? tAppSettings('settings.menu.toggleOn') : tAppSettings('settings.menu.toggleOff'), action: () => setActiveSheet('notifications') },
-        { icon: Moon, label: tAppSettings('settings.menu.appearance'), value: profile?.theme || 'Dark', action: () => setActiveSheet('appearance') },
+        // The row's value is the one appearance choice that is a word: the
+        // reading size. The old value was the raw theme id ("dark") (R6 A3).
+        { icon: Moon, label: tAppSettings('settings.menu.appearance'), value: readingSizeLabel(readingScale), action: () => setActiveSheet('appearance') },
         { icon: Globe, label: tI18n('labels.language'), value: tI18n(`languages.${getLocale()}`), action: () => setActiveSheet('language') },
       ],
     },
@@ -501,108 +423,27 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
   const renderBackButton = () => (
     <button
+      type="button"
       onClick={() => setActiveSheet('main')}
-      className="flex items-center gap-2 min-h-[44px] text-mystic-400 hover:text-mystic-200 transition-colors mb-2"
+      className="flex items-center gap-2 min-h-[44px] text-mystic-400 [@media(hover:hover)]:hover:text-mystic-200 transition-colors mb-2"
     >
-      <ChevronLeft className="w-4 h-4" />
-      <span className="text-sm">{tAppSettings('settings.menu.backToSettings')}</span>
+      <ChevronLeft className="w-4 h-4" aria-hidden />
+      <span className="text-meta">{tAppSettings('settings.menu.backToSettings')}</span>
     </button>
+  );
+
+  const savingLine = (
+    <div className="flex items-center justify-center gap-2 mt-3 text-caption text-gold" role="status">
+      <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+      {tAppSettings('settings.saving', { defaultValue: 'Saving…' })}
+    </div>
   );
 
   if (activeSheet === 'editProfile') {
     return (
       <Sheet open={open} onClose={onClose} title={tAppSettings('settings.editProfile.title')}>
         {renderBackButton()}
-        <div className="space-y-5">
-          <Input
-            label={tAppSettings('settings.editProfile.displayName')}
-            value={editForm.displayName}
-            onChange={e => setEditForm(f => ({ ...f, displayName: e.target.value }))}
-            placeholder={tAppSettings('settings.editProfile.displayNamePlaceholder')}
-            icon={<User className="w-4 h-4" />}
-          />
-
-          <Input
-            label={tAppSettings('settings.editProfile.birthDate')}
-            type="date"
-            value={editForm.birthDate}
-            onChange={e => setEditForm(f => ({ ...f, birthDate: e.target.value }))}
-            icon={<Calendar className="w-4 h-4" />}
-          />
-
-          <Input
-            label={tAppSettings('settings.editProfile.birthTime')}
-            type="time"
-            value={editForm.birthTime}
-            onChange={e => setEditForm(f => ({ ...f, birthTime: e.target.value }))}
-            icon={<Clock className="w-4 h-4" />}
-          />
-
-          <div className="p-4 bg-mystic-800/40 rounded-card border border-mystic-700/50 space-y-3">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gold" />
-              <span className="text-sm font-medium text-mystic-200">{tAppSettings('settings.birthCity')}</span>
-              <span className="text-caption text-mystic-500">(optional)</span>
-            </div>
-
-            <div className="relative">
-              <Input
-                value={cityQuery}
-                onChange={e => handleCityInput(e.target.value)}
-                placeholder="Search city or town..."
-                icon={geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-              />
-            </div>
-
-            {editForm.birthLat !== undefined && editForm.birthLon !== undefined && (
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-gold/10 border border-gold/20 rounded-lg">
-                <Check className="w-4 h-4 text-gold flex-shrink-0" />
-                <span className="text-sm text-mystic-200 truncate">{editForm.birthPlace}</span>
-              </div>
-            )}
-
-            {showGeoResults && editForm.birthLat === undefined && geoResults.length > 0 && (
-              <ListRowGroup className="max-h-48 overflow-y-auto">
-                {geoResults.map((r, i) => (
-                  <ListRow
-                    key={i}
-                    size="md"
-                    icon={<MapPin />}
-                    label={r.displayName.split(', ')[0]}
-                    meta={r.displayName.split(', ').slice(1).join(', ') || undefined}
-                    trailing="none"
-                    onClick={() => handleSelectGeoResult(r)}
-                  />
-                ))}
-              </ListRowGroup>
-            )}
-
-            {cityQuery.length > 0 && cityQuery.length < 2 && (
-              <p className="text-caption text-mystic-500">{tAppSettings('settings.typeMinChars')}</p>
-            )}
-
-            {!geoLoading && geoError && editForm.birthLat === undefined && (
-              <p className="text-caption text-gold" role="status">{geoError}</p>
-            )}
-          </div>
-
-          <div className="p-3 bg-mystic-800/50 rounded-lg">
-            <div className="flex items-center gap-2 text-mystic-400">
-              <Mail className="w-4 h-4" />
-              <span className="text-sm">{user?.email}</span>
-            </div>
-            <p className="text-caption text-mystic-500 mt-1">{tAppSettings('settings.emailNotChangeable')}</p>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button variant="ghost" fullWidth onClick={() => setActiveSheet('main')}>
-              {tI18n('actions.cancel')}
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleSaveProfile} loading={isSaving}>
-              {tAppSettings('settings.saveChanges')}
-            </Button>
-          </div>
-        </div>
+        <EditProfileForm onCancel={() => setActiveSheet('main')} onSaved={() => setActiveSheet('main')} />
       </Sheet>
     );
   }
@@ -628,7 +469,9 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           </ListRowGroup>
 
           <p className="text-caption text-mystic-500">
-            When enabled, you'll receive daily reminders to check your horoscope and complete your ritual.
+            {tAppSettings('settings.notificationsNote', {
+              defaultValue: 'When this is on, you get one reminder a day to check your horoscope and complete your ritual.',
+            })}
           </p>
         </div>
       </Sheet>
@@ -636,81 +479,212 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   }
 
   if (activeSheet === 'appearance') {
-    const themes: { id: 'dark' | 'midnight' | 'celestial'; name: string; desc: string }[] = [
-      { id: 'dark',       name: tAppSettings('settings.themes.dark.name'),       desc: tAppSettings('settings.themes.dark.desc') },
-      { id: 'midnight',   name: tAppSettings('settings.themes.midnight.name'),   desc: tAppSettings('settings.themes.midnight.desc') },
-      { id: 'celestial',  name: tAppSettings('settings.themes.celestial.name'),  desc: tAppSettings('settings.themes.celestial.desc') },
-    ];
-
     return (
-      <Sheet open={open} onClose={onClose} title="Appearance">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.menu.appearance')}>
         {renderBackButton()}
-        <div className="space-y-3">
-          {themes.map(theme => (
-            <button
-              key={theme.id}
-              onClick={async () => {
-                await updateProfile({ theme: theme.id });
-                await refreshProfile();
-                toast(tAppSettings('settings.menu.themeChanged', { name: theme.name }), 'success');
-              }}
-              className={`w-full p-4 rounded-control border-2 transition-all text-left ${
-                (profile?.theme || 'dark') === theme.id
-                  ? 'border-gold bg-gold/10'
-                  : 'border-mystic-700 hover:border-mystic-500'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-mystic-200">{theme.name}</p>
-                  <p className="text-sm text-mystic-500">{theme.desc}</p>
-                </div>
-                {(profile?.theme || 'dark') === theme.id && (
-                  <Check className="w-5 h-5 text-gold" />
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+        <div className="space-y-8">
+          {/* Reading size. `--font-scale` had been plumbed through the CSS since
+              the design-system pass and nothing ever set it — in an app whose
+              core activity is reading, there was no way to make the text
+              bigger. Three steps a thumb can hit; the sample line below the
+              control shows the effect live, because a preference you cannot
+              see change is a preference nobody trusts. */}
+          <section>
+            <h3 className="mb-3">
+              <EyebrowLabel align="left">
+                {tAppSettings('settings.readingSize.label', { defaultValue: 'Reading size' })}
+              </EyebrowLabel>
+            </h3>
+            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={tAppSettings('settings.readingSize.label', { defaultValue: 'Reading size' })}>
+              {READING_SCALES.map((scale) => {
+                const selected = readingScale === scale.id;
+                return (
+                  <button
+                    key={scale.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => { setReadingScale(scale.id); setReadingScaleState(scale.id); }}
+                    className={`px-3 py-3 rounded-control border-2 text-ui font-medium transition-[border-color,background-color,color] duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ${
+                      selected
+                        ? 'border-gold bg-gold/10 text-gold'
+                        : 'border-mystic-700 text-mystic-300 [@media(hover:hover)]:hover:border-mystic-500'
+                    }`}
+                  >
+                    {readingSizeLabel(scale.id)}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="reading-copy mt-4">
+              {tAppSettings('settings.readingSize.sample', {
+                defaultValue: 'The Tower, reversed. Not the collapse itself — the moment after, when the dust settles and you can see what was load-bearing.',
+              })}
+            </p>
+          </section>
 
-        {/* Reading size. `--font-scale` had been plumbed through the CSS since
-            the design-system pass and nothing ever set it — in an app whose
-            core activity is reading, there was no way to make the text
-            bigger. Three steps a thumb can hit; the sample line below the
-            control shows the effect live, because a preference you cannot
-            see change is a preference nobody trusts. */}
-        <div className="mt-8">
-          <p className="font-display-eyebrow mb-3">
-            {tAppSettings('settings.readingSize.label', { defaultValue: 'Reading size' })}
-          </p>
-          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={tAppSettings('settings.readingSize.label', { defaultValue: 'Reading size' })}>
-            {READING_SCALES.map((scale) => {
-              const selected = readingScale === scale.id;
-              return (
-                <button
-                  key={scale.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => { setReadingScale(scale.id); setReadingScaleState(scale.id); }}
-                  className={`px-3 py-3 rounded-control border-2 text-ui font-medium transition-colors duration-fast ${
-                    selected
-                      ? 'border-gold bg-gold/10 text-gold'
-                      : 'border-mystic-700 text-mystic-300 hover:border-mystic-500'
-                  }`}
-                >
-                  {tAppSettings(`settings.readingSize.${scale.id}`, {
-                    defaultValue: scale.id === 'smaller' ? 'Smaller' : scale.id === 'larger' ? 'Larger' : 'Default',
+          <section>
+            <h3 className="mb-3">
+              <EyebrowLabel align="left">{tAppSettings('settings.cardBackDesign', { defaultValue: 'Card back' })}</EyebrowLabel>
+            </h3>
+            <Card variant="elevated" padding="md">
+              <p className="text-meta text-mystic-400 mb-4">
+                {tAppSettings('settings.cardBackSub', { defaultValue: 'The back of every card you draw.' })}
+              </p>
+
+              {loadingCardBacks ? (
+                <div className="flex items-center justify-center py-8" role="status" aria-label={tI18n('labels.loading')}>
+                  <Loader2 className="w-6 h-6 text-gold animate-spin" aria-hidden />
+                </div>
+              ) : cardBacks.length === 0 ? (
+                <p className="text-meta text-mystic-500 text-center py-4">
+                  {tAppSettings('settings.noCardBacks', { defaultValue: 'No card back designs yet.' })}
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label={tAppSettings('settings.cardBackDesign', { defaultValue: 'Card back' })}>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={!profile?.card_back_url}
+                    onClick={() => handleSelectCardBack(null)}
+                    disabled={savingCardBack}
+                    className={`${SWATCH} aspect-[2/3] bg-mystic-800 flex items-center justify-center min-h-[120px] ${!profile?.card_back_url ? SWATCH_ON : SWATCH_OFF}`}
+                  >
+                    <span className="text-caption text-mystic-400 text-center px-1">{tAppSettings('settings.defaultLabel')}</span>
+                    {!profile?.card_back_url && <SelectedTick />}
+                  </button>
+
+                  {cardBacks.map((cardBack) => {
+                    const on = profile?.card_back_url === cardBack.url;
+                    return (
+                      <button
+                        key={cardBack.url}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        aria-label={cardBack.name}
+                        onClick={() => handleSelectCardBack(cardBack.url)}
+                        disabled={savingCardBack}
+                        className={`${SWATCH} aspect-[2/3] bg-mystic-800 min-h-[120px] ${on ? SWATCH_ON : SWATCH_OFF}`}
+                      >
+                        <img
+                          src={cardBack.url}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                        />
+                        {on && <SelectedTick />}
+                      </button>
+                    );
                   })}
-                </button>
-              );
-            })}
-          </div>
-          <p className="reading-copy mt-4">
-            {tAppSettings('settings.readingSize.sample', {
-              defaultValue: 'The Tower, reversed. Not the collapse itself — the moment after, when the dust settles and you can see what was load-bearing.',
-            })}
-          </p>
+                </div>
+              )}
+
+              {savingCardBack && savingLine}
+            </Card>
+          </section>
+
+          <section>
+            <h3 className="mb-3">
+              <EyebrowLabel align="left">{tAppSettings('settings.appBackground', { defaultValue: 'Background' })}</EyebrowLabel>
+            </h3>
+            <Card variant="elevated" padding="md">
+              <p className="text-meta text-mystic-400 mb-4">
+                {tAppSettings('settings.backgroundSub', { defaultValue: 'What sits behind every screen.' })}
+              </p>
+
+              {loadingBackgrounds ? (
+                <div className="flex items-center justify-center py-8" role="status" aria-label={tI18n('labels.loading')}>
+                  <Loader2 className="w-6 h-6 text-gold animate-spin" aria-hidden />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label={tAppSettings('settings.appBackground', { defaultValue: 'Background' })}>
+                  {/* Default — the token canvas, no image */}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={!profile?.background_url}
+                    onClick={() => handleSelectBackground(null)}
+                    disabled={savingBackground}
+                    className={`${SWATCH} aspect-video bg-mystic-950 flex items-center justify-center min-h-[88px] ${!profile?.background_url ? SWATCH_ON : SWATCH_OFF}`}
+                  >
+                    <span className="flex flex-col items-center gap-1">
+                      <ImageIcon className="w-5 h-5 text-mystic-400" aria-hidden />
+                      <span className="text-caption text-mystic-400">{tAppSettings('settings.defaultLabel')}</span>
+                    </span>
+                    {!profile?.background_url && <SelectedTick />}
+                  </button>
+
+                  {/* Celestial — animated starfield + rising particles (same
+                      visual as the pre-login landing page). The preview is a
+                      still of that sky: a few dots on the night so the option
+                      reads at a glance; the real animation runs once chosen. */}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={profile?.background_url === CELESTIAL_BG_URL}
+                    onClick={() => handleSelectBackground(CELESTIAL_BG_URL)}
+                    disabled={savingBackground}
+                    className={`${SWATCH} aspect-video bg-mystic-950 min-h-[88px] ${profile?.background_url === CELESTIAL_BG_URL ? SWATCH_ON : SWATCH_OFF}`}
+                    aria-label={tAppSettings('settings.celestialAria', { defaultValue: 'Celestial animated background' })}
+                  >
+                    {[
+                      { l: 18, t: 22, s: 2 },
+                      { l: 74, t: 18, s: 1.5 },
+                      { l: 42, t: 56, s: 1.2 },
+                      { l: 62, t: 72, s: 2 },
+                      { l: 88, t: 48, s: 1.5 },
+                      { l: 28, t: 82, s: 1.2 },
+                      { l: 12, t: 62, s: 1 },
+                      { l: 82, t: 80, s: 1 },
+                    ].map((s, i) => (
+                      <span
+                        key={i}
+                        className="absolute rounded-full bg-gold/70"
+                        style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s }}
+                        aria-hidden
+                      />
+                    ))}
+                    <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 py-1.5 bg-mystic-950/80">
+                      <SparkleFourPoint size={12} className="text-gold" />
+                      <span className="text-caption font-medium text-mystic-100">
+                        {tAppSettings('settings.celestialLabel', { defaultValue: 'Celestial' })}
+                      </span>
+                    </span>
+                    {profile?.background_url === CELESTIAL_BG_URL && <SelectedTick />}
+                  </button>
+
+                  {backgrounds.map((bg) => {
+                    const on = profile?.background_url === bg.url;
+                    return (
+                      <button
+                        key={bg.url}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        aria-label={bg.name}
+                        onClick={() => handleSelectBackground(bg.url)}
+                        disabled={savingBackground}
+                        className={`${SWATCH} aspect-video bg-mystic-800 min-h-[88px] ${on ? SWATCH_ON : SWATCH_OFF}`}
+                      >
+                        <img
+                          src={bg.thumbUrl}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                        />
+                        {on && <SelectedTick />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {savingBackground && savingLine}
+            </Card>
+          </section>
         </div>
       </Sheet>
     );
@@ -740,81 +714,95 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   }
 
   if (activeSheet === 'help') {
+    const faqs = [
+      {
+        q: tAppSettings('settings.faq.accuracyQ'),
+        a: tAppSettings('settings.faq.accuracyA', {
+          defaultValue: 'Readings are for reflection and guidance, not prediction. They help you explore your own thoughts and feelings.',
+        }),
+      },
+      {
+        q: tAppSettings('settings.faq.cancelQ'),
+        a: tAppSettings('settings.faq.cancelA', {
+          defaultValue: 'Yes — cancel any time from your device’s app store subscription settings.',
+        }),
+      },
+      {
+        q: tAppSettings('settings.faq.secureQ'),
+        a: tAppSettings('settings.faq.secureA', {
+          defaultValue: 'Your data is encrypted in transit and at rest, and we never sell or share it.',
+        }),
+      },
+    ];
     return (
       <Sheet open={open} onClose={onClose} title={tAppSettings('settings.helpCenter.title')}>
         {renderBackButton()}
         <div className="space-y-4">
           <ListRowGroup>
             <ListRow
-              href="mailto:support@arcana.app"
+              href={`mailto:${SUPPORT_EMAIL}`}
               icon={<Mail />}
               tone="blue"
               label={tAppSettings('settings.contactSupport')}
-              meta="support@arcana.app"
+              meta={SUPPORT_EMAIL}
               trailing={<ExternalLink className="w-4 h-4 shrink-0 text-mystic-500" aria-hidden />}
             />
           </ListRowGroup>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-mystic-300">{tAppSettings('settings.frequentlyAskedQuestions')}</h3>
-
-            <div className="p-4 bg-mystic-800/30 rounded-card">
-              <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.accuracyQ')}</p>
-              <p className="text-sm text-mystic-500 mt-2">
-                Tarot readings are meant for reflection and guidance, not prediction. They help you explore your thoughts and feelings.
-              </p>
-            </div>
-
-            <div className="p-4 bg-mystic-800/30 rounded-card">
-              <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.cancelQ')}</p>
-              <p className="text-sm text-mystic-500 mt-2">
-                Yes, you can cancel anytime from your device's app store subscription settings.
-              </p>
-            </div>
-
-            <div className="p-4 bg-mystic-800/30 rounded-card">
-              <p className="text-sm font-medium text-mystic-200">{tAppSettings('settings.faq.secureQ')}</p>
-              <p className="text-sm text-mystic-500 mt-2">
-                Yes, all your data is encrypted and stored securely. We never share or sell your information.
-              </p>
-            </div>
-          </div>
+          <section className="space-y-3">
+            <h3>
+              <EyebrowLabel align="left">{tAppSettings('settings.frequentlyAskedQuestions')}</EyebrowLabel>
+            </h3>
+            {faqs.map((faq) => (
+              <Card key={faq.q} padding="md">
+                <p className="text-ui font-medium text-mystic-100">{faq.q}</p>
+                <p className="text-meta text-mystic-400 mt-2 leading-relaxed">{faq.a}</p>
+              </Card>
+            ))}
+          </section>
         </div>
       </Sheet>
     );
   }
 
   if (activeSheet === 'terms') {
+    const notAdvice = [
+      tAppSettings('settings.terms.notAdvice.medical', { defaultValue: 'Medical or mental-health diagnosis' }),
+      tAppSettings('settings.terms.notAdvice.financial', { defaultValue: 'Financial or investment advice' }),
+      tAppSettings('settings.terms.notAdvice.legal', { defaultValue: 'Legal counsel or guidance' }),
+      tAppSettings('settings.terms.notAdvice.coaching', { defaultValue: 'Relationship or life coaching' }),
+    ];
     return (
-      <Sheet open={open} onClose={onClose} title="Terms of Service">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.menu.termsOfService')}>
         {renderBackButton()}
-        <div className="space-y-4 text-sm text-mystic-300">
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-2">{tAppSettings('settings.legal.entertainmentDisclaimer', { defaultValue: 'Entertainment disclaimer' })}</h4>
-            <p>
-              Arcana is designed for entertainment and self-reflection purposes only. All readings, horoscopes, and personality assessments should not be considered professional advice.
+        <div className="space-y-4">
+          <Card padding="md">
+            <h4 className="text-ui font-medium text-gold mb-2">{tAppSettings('settings.legal.entertainmentDisclaimer', { defaultValue: 'Entertainment disclaimer' })}</h4>
+            <p className="text-meta text-mystic-300 leading-relaxed">
+              {tAppSettings('settings.terms.entertainmentBody', {
+                defaultValue: 'Arcana is designed for entertainment and self-reflection. Readings, horoscopes and personality assessments are not professional advice.',
+              })}
             </p>
-          </div>
+          </Card>
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.acceptanceOfTerms', { defaultValue: 'Acceptance of terms' })}</h4>
-            <p>
-              By using this app, you agree to use it responsibly and acknowledge that all content is for entertainment purposes only.
+          <Card padding="md">
+            <h4 className="text-ui font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.acceptanceOfTerms', { defaultValue: 'Acceptance of terms' })}</h4>
+            <p className="text-meta text-mystic-300 leading-relaxed">
+              {tAppSettings('settings.terms.acceptanceBody', {
+                defaultValue: 'By using this app you agree to use it responsibly and acknowledge that all content is for entertainment.',
+              })}
             </p>
-          </div>
+          </Card>
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.notProfessionalAdvice', { defaultValue: 'Not professional advice' })}</h4>
-            <ul className="space-y-2 text-mystic-400">
-              <li>- Medical or mental health diagnosis</li>
-              <li>- Financial or investment advice</li>
-              <li>- Legal counsel or guidance</li>
-              <li>- Relationship or life coaching</li>
+          <Card padding="md">
+            <h4 className="text-ui font-medium text-mystic-100 mb-2">{tAppSettings('settings.legal.notProfessionalAdvice', { defaultValue: 'Not professional advice' })}</h4>
+            <ul className="space-y-2 text-meta text-mystic-400 list-disc pl-5">
+              {notAdvice.map((line) => <li key={line}>{line}</li>)}
             </ul>
-          </div>
+          </Card>
 
           <Button variant="outline" fullWidth onClick={() => setActiveSheet('main')}>
-            I Understand
+            {tAppSettings('settings.terms.acknowledge', { defaultValue: 'I understand' })}
           </Button>
         </div>
       </Sheet>
@@ -822,119 +810,95 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   }
 
   if (activeSheet === 'privacy') {
+    const P = 'settings.privacy';
+    const section = (key: string, titleDefault: string, body: { key: string; lead?: string; text: string }[]) => (
+      <Card padding="md" key={key}>
+        <h4 className="text-ui font-medium text-gold mb-3">{tAppSettings(`${P}.${key}.title`, { defaultValue: titleDefault })}</h4>
+        <ul className="space-y-2 text-meta text-mystic-400 leading-relaxed list-disc pl-5">
+          {body.map((item) => (
+            <li key={item.key}>
+              {item.lead && (
+                <strong className="text-mystic-300 font-medium">
+                  {tAppSettings(`${P}.${key}.${item.key}Lead`, { defaultValue: item.lead })}{' '}
+                </strong>
+              )}
+              {tAppSettings(`${P}.${key}.${item.key}`, { defaultValue: item.text })}
+            </li>
+          ))}
+        </ul>
+      </Card>
+    );
+
     return (
-      <Sheet open={open} onClose={onClose} title="Privacy Policy">
+      <Sheet open={open} onClose={onClose} title={tAppSettings('settings.menu.privacyPolicy')}>
         {renderBackButton()}
-        <div className="space-y-4 text-sm text-mystic-300">
-          <p>
-            This Privacy Policy explains how Arcana ("we", "us", "our") collects, uses, and shares information when you use our mobile application ("App").
+        <div className="space-y-4">
+          <p className="text-meta text-mystic-300 leading-relaxed">
+            {tAppSettings(`${P}.intro`, {
+              defaultValue: 'This policy explains how Arcana (“we”, “us”, “our”) collects, uses and shares information when you use the app.',
+            })}
           </p>
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Information we collect</h4>
-            <ul className="space-y-2 text-mystic-400">
-              <li>
-                <strong className="text-mystic-300">Account information (if you create an account):</strong> email address and basic profile details you provide.
-              </li>
-              <li>
-                <strong className="text-mystic-300">App content you provide:</strong> journals, notes, preferences, and other content you enter into the App.
-              </li>
-              <li>
-                <strong className="text-mystic-300">Purchase and subscription information:</strong> we use RevenueCat to manage in-app purchases and subscriptions. RevenueCat and the relevant app store may process purchase-related data (for example, subscription status, receipts, and transaction identifiers).
-              </li>
-              <li>
-                <strong className="text-mystic-300">Advertising data:</strong> the App displays ads. Advertising partners may collect device identifiers (such as the Advertising ID), IP address, coarse location (approximate), and ad interaction events to provide and measure ads.
-              </li>
-              <li>
-                <strong className="text-mystic-300">Device and usage information:</strong> basic technical information such as device model, OS version, language, and app events (for performance and troubleshooting).
-              </li>
-            </ul>
-          </div>
+          {section('collect', 'Information we collect', [
+            { key: 'account', lead: 'Account information:', text: 'your email address and the profile details you choose to provide.' },
+            { key: 'content', lead: 'Content you create:', text: 'journal entries, mood logs, notes, preferences and anything else you enter into the app.' },
+            { key: 'purchases', lead: 'Purchases and subscriptions:', text: 'RevenueCat and the app store process purchase data such as subscription status, receipts and transaction identifiers.' },
+            { key: 'ads', lead: 'Advertising data:', text: 'advertising partners may collect device identifiers (such as the Advertising ID), IP address, approximate location and ad interaction events to provide and measure ads.' },
+            { key: 'device', lead: 'Device and usage information:', text: 'device model, OS version, language and app events, for performance and troubleshooting.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">How we use information</h4>
-            <ul className="space-y-2 text-mystic-400">
-              <li>• Provide and operate the App and its features</li>
-              <li>• Sync or store your data (when enabled)</li>
-              <li>• Process purchases and manage subscriptions</li>
-              <li>• Show ads and measure ad performance</li>
-              <li>• Improve performance, fix bugs, and provide support</li>
-              <li>• Comply with legal obligations</li>
-            </ul>
-          </div>
+          {section('use', 'How we use information', [
+            { key: 'operate', text: 'To provide and operate the app and its features.' },
+            { key: 'sync', text: 'To sync and store your data across your devices.' },
+            { key: 'purchases', text: 'To process purchases and manage subscriptions.' },
+            { key: 'ads', text: 'To show ads and measure their performance.' },
+            { key: 'improve', text: 'To improve performance, fix bugs and provide support.' },
+            { key: 'legal', text: 'To comply with legal obligations.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Third-party services</h4>
-            <p className="text-mystic-400 mb-2">
-              The App may use third-party services to operate core functionality, including:
-            </p>
-            <ul className="space-y-2 text-mystic-400">
-              <li>• <strong className="text-mystic-300">RevenueCat</strong> (subscriptions and purchase management)</li>
-              <li>• <strong className="text-mystic-300">Advertising partners</strong> (to display ads and measure performance)</li>
-              <li>• <strong className="text-mystic-300">Backend/database provider</strong> (to store or sync your app data when enabled)</li>
-            </ul>
-            <p className="text-mystic-400 mt-2">
-              These third parties may process information as described above and under their own privacy policies.
-            </p>
-          </div>
+          {section('third', 'Third-party services', [
+            { key: 'revenuecat', lead: 'RevenueCat:', text: 'subscriptions and purchase management.' },
+            { key: 'ads', lead: 'Advertising partners:', text: 'to display ads and measure performance.' },
+            { key: 'backend', lead: 'Backend and database provider:', text: 'to store and sync your app data.' },
+            { key: 'policies', text: 'These providers process information under their own privacy policies.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Sharing of information</h4>
-            <p className="text-mystic-400 mb-2">
-              We do not sell your personal information. We may share information:
-            </p>
-            <ul className="space-y-2 text-mystic-400">
-              <li>• With service providers (for example, ads and subscriptions) to operate the App</li>
-              <li>• If required by law, legal process, or to protect rights and safety</li>
-              <li>• In connection with a business transfer (merger, acquisition, or sale of assets)</li>
-            </ul>
-          </div>
+          {section('sharing', 'Sharing of information', [
+            { key: 'nosale', text: 'We do not sell your personal information.' },
+            { key: 'providers', text: 'We may share information with service providers (for example, ads and subscriptions) to operate the app.' },
+            { key: 'law', text: 'We may share information if required by law, legal process, or to protect rights and safety.' },
+            { key: 'transfer', text: 'We may share information in connection with a business transfer (merger, acquisition or sale of assets).' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Data retention</h4>
-            <p className="text-mystic-400">
-              We retain information for as long as needed to provide the App and for legitimate business purposes (such as compliance and dispute resolution). You may request deletion where applicable.
-            </p>
-          </div>
+          {section('retention', 'Data retention', [
+            { key: 'body', text: 'We keep information for as long as needed to provide the app and for legitimate business purposes such as compliance and dispute resolution. You can delete your account, and everything in it, from Settings.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Security</h4>
-            <p className="text-mystic-400">
-              We use reasonable administrative, technical, and organizational safeguards to protect information. No method of transmission or storage is 100% secure.
-            </p>
-          </div>
+          {section('security', 'Security', [
+            { key: 'body', text: 'We use reasonable administrative, technical and organisational safeguards to protect information. No method of transmission or storage is completely secure.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Children's privacy</h4>
-            <p className="text-mystic-400">
-              The App is not intended for children under 13 (or the age required by local law). We do not knowingly collect personal information from children.
-            </p>
-          </div>
+          {section('children', 'Children’s privacy', [
+            { key: 'body', text: 'The app is not intended for children under 13 (or the age required by local law). We do not knowingly collect personal information from children.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Your choices</h4>
-            <ul className="space-y-2 text-mystic-400">
-              <li>
-                <strong className="text-mystic-300">Advertising:</strong> you can limit ad tracking from your device settings (availability varies by device/OS).
-              </li>
-              <li>
-                <strong className="text-mystic-300">Account/data deletion:</strong> contact us to request deletion (where applicable).
-              </li>
-            </ul>
-          </div>
+          {section('choices', 'Your choices', [
+            { key: 'ads', lead: 'Advertising:', text: 'you can limit ad tracking from your device settings (availability varies by device and OS).' },
+            { key: 'deletion', lead: 'Account and data deletion:', text: 'delete your account from Settings, or contact us to request deletion.' },
+          ])}
 
-          <div className="p-4 bg-mystic-800/30 rounded-card">
-            <h4 className="font-medium text-gold mb-3">Contact</h4>
-            <p className="text-mystic-400 mb-2">
-              If you have questions or requests, contact:
+          <Card padding="md">
+            <h4 className="text-ui font-medium text-gold mb-2">{tAppSettings(`${P}.contact.title`, { defaultValue: 'Contact' })}</h4>
+            <p className="text-meta text-mystic-400 mb-2">
+              {tAppSettings(`${P}.contact.body`, { defaultValue: 'If you have questions or requests, contact:' })}
             </p>
             <a
-              href="mailto:lawrence.ma000@gmail.com"
-              className="text-cosmic-blue hover:text-cosmic-blue/80 transition-colors"
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="text-ui text-cosmic-blue-ink underline underline-offset-2 [@media(hover:hover)]:hover:text-mystic-100 transition-colors inline-flex min-h-[44px] items-center"
             >
-              lawrence.ma000@gmail.com
+              {SUPPORT_EMAIL}
             </a>
-          </div>
+          </Card>
 
           <Button variant="outline" fullWidth onClick={() => setActiveSheet('main')}>
             {tAppSettings('settings.menu.backToSettings')}
@@ -950,16 +914,16 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         {renderBackButton()}
         <div className="space-y-6">
           <div className="flex items-start gap-4 p-4 bg-coral/10 border border-coral/25 rounded-card">
-            <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-0.5" aria-hidden />
             <div>
-              <h3 className="font-medium text-coral mb-1">{tAppSettings('settings.actionCannotBeUndone')}</h3>
-              <p className="text-sm text-mystic-300">
+              <h3 className="text-ui font-medium text-coral mb-1">{tAppSettings('settings.actionCannotBeUndone')}</h3>
+              <p className="text-meta text-mystic-300 leading-relaxed">
                 {tAppSettings('settings.deleteAccount.dataWarning')}
               </p>
             </div>
           </div>
 
-          <p className="text-sm text-mystic-400">
+          <p className="text-meta text-mystic-400">
             {tAppSettings('settings.deleteAccount.exportRecommendation')}
           </p>
 
@@ -969,18 +933,20 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               fullWidth
               onClick={handleExportData}
               disabled={isExporting}
+              loading={isExporting}
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4" aria-hidden />
               {isExporting ? tAppSettings('settings.deleteAccount.exporting') : tAppSettings('settings.deleteAccount.exportFirst')}
             </Button>
 
             <div className="space-y-2">
-              <label className="block">
+              <label htmlFor="settings-delete-confirm" className="block">
                 <EyebrowLabel align="left">
                   {tAppSettings('settings.deleteAccount.typeToConfirm', { defaultValue: 'Type DELETE to confirm' })}
                 </EyebrowLabel>
               </label>
               <Input
+                id="settings-delete-confirm"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                 placeholder="DELETE"
@@ -989,12 +955,13 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             </div>
 
             <Button
+              variant="destructive"
               fullWidth
               onClick={handleDeleteAccount}
               disabled={isDeleting || deleteConfirmText.trim() !== 'DELETE'}
-              className="bg-coral hover:bg-coral/90 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              loading={isDeleting}
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" aria-hidden />
               {isDeleting ? tAppSettings('settings.deleteAccount.deleting') : tAppSettings('settings.deleteAccount.deleteMyAccount')}
             </Button>
 
@@ -1040,257 +1007,24 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           </div>
         ))}
 
-        <div>
-          <h3 className="mb-3">
-            <EyebrowLabel align="left">Card Back Design</EyebrowLabel>
-          </h3>
-          <Card variant="elevated" padding="md">
-            <p className="text-meta text-mystic-400 mb-4">
-              Choose the design for the back of your tarot cards
-            </p>
-
-            {loadingCardBacks ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-gold animate-spin" />
-              </div>
-            ) : cardBacks.length === 0 ? (
-              <p className="text-sm text-mystic-500 text-center py-4">
-                No card back designs available yet
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <button
-                  onClick={() => handleSelectCardBack(null)}
-                  disabled={savingCardBack}
-                  className={`
-                    relative aspect-[2/3] rounded-control border-2 transition-all overflow-hidden
-                    bg-gradient-to-br from-mystic-800 to-mystic-900
-                    flex items-center justify-center min-h-[120px]
-                    ${!profile?.card_back_url
-                      ? 'border-gold'
-                      : 'border-mystic-700 hover:border-mystic-500'
-                    }
-                    disabled:opacity-50
-                  `}
-                >
-                  <span className="text-caption text-mystic-400 text-center px-1">{tAppSettings('settings.defaultLabel')}</span>
-                  {!profile?.card_back_url && (
-                    <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-mystic-900" />
-                    </div>
-                  )}
-                </button>
-
-                {cardBacks.map((cardBack, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSelectCardBack(cardBack.url)}
-                    disabled={savingCardBack}
-                    className={`
-                      relative aspect-[2/3] rounded-control border-2 transition-all overflow-hidden min-h-[120px]
-                      ${profile?.card_back_url === cardBack.url
-                        ? 'border-gold'
-                        : 'border-mystic-700 hover:border-mystic-500'
-                      }
-                      disabled:opacity-50
-                    `}
-                  >
-                    <img
-                      src={cardBack.url}
-                      alt={cardBack.name}
-                      className="w-full h-full object-cover"
-                    />
-                    {profile?.card_back_url === cardBack.url && (
-                      <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 text-mystic-900" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {savingCardBack && (
-              <div className="flex items-center justify-center gap-2 mt-3 text-caption text-gold" role="status">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </div>
-            )}
-          </Card>
-        </div>
-
-        <div>
-          <h3 className="mb-3">
-            <EyebrowLabel align="left">App Background</EyebrowLabel>
-          </h3>
-          <Card variant="elevated" padding="md">
-            <p className="text-meta text-mystic-400 mb-4">
-              Choose a custom background for the app
-            </p>
-
-            {loadingBackgrounds ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-gold animate-spin" />
-              </div>
-            ) : backgrounds.length === 0 ? (
-              <p className="text-sm text-mystic-500 text-center py-4">
-                No backgrounds available yet
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Default — no background image */}
-                <button
-                  onClick={() => handleSelectBackground(null)}
-                  disabled={savingBackground}
-                  className={`
-                    relative aspect-video rounded-control border-2 transition-all overflow-hidden
-                    bg-gradient-to-br from-mystic-800 to-mystic-900
-                    flex items-center justify-center min-h-[100px]
-                    ${!profile?.background_url
-                      ? 'border-gold'
-                      : 'border-mystic-700 hover:border-mystic-500'
-                    }
-                    disabled:opacity-50
-                  `}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <ImageIcon className="w-5 h-5 text-mystic-400" />
-                    <span className="text-caption text-mystic-400">{tAppSettings('settings.defaultLabel')}</span>
-                  </div>
-                  {!profile?.background_url && (
-                    <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-mystic-900" />
-                    </div>
-                  )}
-                </button>
-
-                {/* Celestial — animated starfield + rising particles (same
-                    visual as the pre-login landing page). Lives in the
-                    grid alongside the image-based backgrounds. Preview
-                    shows a static gradient + a handful of dots so users
-                    recognize the option at a glance; the real animation
-                    kicks in once selected. */}
-                <button
-                  onClick={() => handleSelectBackground(CELESTIAL_BG_URL)}
-                  disabled={savingBackground}
-                  className={`
-                    relative aspect-video rounded-control border-2 transition-all overflow-hidden min-h-[100px]
-                    ${profile?.background_url === CELESTIAL_BG_URL
-                      ? 'border-gold'
-                      : 'border-mystic-700 hover:border-mystic-500'
-                    }
-                    disabled:opacity-50
-                  `}
-                  aria-label="Celestial animated background"
-                >
-                  {/* Preview base — same gradient the real background uses */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        'radial-gradient(ellipse at 50% 0%, rgba(212, 168, 83, 0.18) 0%, transparent 50%),' +
-                        'radial-gradient(ellipse at 30% 80%, rgba(142, 110, 181, 0.18) 0%, transparent 55%),' +
-                        'linear-gradient(180deg, #040407 0%, #08081a 55%, #040407 100%)',
-                    }}
-                  />
-                  {/* A few preview stars so the card reads as "starfield"
-                      even before it's selected. Real animation runs app-wide
-                      once you pick it. */}
-                  {[
-                    { l: 18, t: 22, s: 1.6, b: false },
-                    { l: 74, t: 18, s: 1.2, b: true },
-                    { l: 42, t: 56, s: 1.0, b: false },
-                    { l: 62, t: 72, s: 1.8, b: true },
-                    { l: 88, t: 48, s: 1.2, b: false },
-                    { l: 28, t: 82, s: 1.0, b: true },
-                    { l: 12, t: 62, s: 0.8, b: false },
-                    { l: 82, t: 80, s: 0.8, b: false },
-                  ].map((s, i) => (
-                    <span
-                      key={i}
-                      className={`celestial-star ${s.b ? 'celestial-star-bright' : ''}`}
-                      style={{
-                        left: `${s.l}%`,
-                        top: `${s.t}%`,
-                        width: s.s,
-                        height: s.s,
-                        animationDuration: `${2 + (i % 5)}s`,
-                        animationDelay: `${(i * 0.3) % 4}s`,
-                      }}
-                    />
-                  ))}
-                  {/* Label */}
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 py-1.5 bg-gradient-to-t from-mystic-950/80 to-transparent">
-                    <SparkleFourPoint size={12} className="text-gold" />
-                    <span className="text-caption font-medium text-mystic-100">
-                      {tAppSettings('settings.celestialLabel', { defaultValue: 'Celestial' })}
-                    </span>
-                  </div>
-                  {profile?.background_url === CELESTIAL_BG_URL && (
-                    <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-mystic-900" />
-                    </div>
-                  )}
-                </button>
-
-                {backgrounds.map((bg, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSelectBackground(bg.url)}
-                    disabled={savingBackground}
-                    className={`
-                      relative aspect-video rounded-control border-2 transition-all overflow-hidden min-h-[100px]
-                      ${profile?.background_url === bg.url
-                        ? 'border-gold'
-                        : 'border-mystic-700 hover:border-mystic-500'
-                      }
-                      disabled:opacity-50
-                    `}
-                  >
-                    <img
-                      src={bg.thumbUrl}
-                      alt={bg.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                    />
-                    {profile?.background_url === bg.url && (
-                      <div className="absolute top-1 right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 text-mystic-900" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {savingBackground && (
-              <div className="flex items-center justify-center gap-2 mt-3 text-caption text-gold" role="status">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </div>
-            )}
-          </Card>
-        </div>
-
         <Card variant="elevated" padding="md">
           <div className="flex items-start gap-3">
-            <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" />
+            <Info className="w-4 h-4 text-mystic-500 flex-shrink-0 mt-0.5" aria-hidden />
             <div>
-              <h4 className="text-sm font-medium text-mystic-300 mb-1">{tAppSettings('settings.disclaimerHeader')}</h4>
-              <p className="text-caption text-mystic-500">
-                This app is for reflection and entertainment. It does not provide medical, legal, or financial advice.
+              <h4 className="text-ui font-medium text-mystic-300 mb-1">{tAppSettings('settings.disclaimerHeader')}</h4>
+              <p className="text-caption text-mystic-500 leading-relaxed">
+                {tAppSettings('settings.disclaimerText', {
+                  defaultValue: 'Arcana is for reflection and entertainment. It does not give medical, legal or financial advice.',
+                })}
               </p>
+              <p className="text-caption text-mystic-500 mt-1">{tAppSettings('settings.disclaimerBody')}</p>
             </div>
           </div>
         </Card>
 
-        <div className="text-caption text-mystic-600 space-y-1">
-          <p>{tAppSettings('settings.disclaimerBody')}</p>
-        </div>
-
         <div className="pt-4 border-t border-mystic-800">
           <button
+            type="button"
             onClick={() => {
               setVersionTapCount(prev => {
                 const next = prev + 1;
@@ -1300,11 +1034,11 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 return next;
               });
             }}
-            className="w-full min-h-[44px] text-center text-caption text-mystic-600 hover:text-mystic-500 transition-colors"
+            className="w-full min-h-[44px] text-center text-caption text-mystic-500 [@media(hover:hover)]:hover:text-mystic-400 transition-colors tabular-nums"
           >
-            Arcana v1.0.0
+            {tAppSettings('settings.version', { v: APP_VERSION })}
             {versionTapCount >= 5 && !isDevMode() && (
-              <span className="ml-1 text-gold">(Dev)</span>
+              <span className="ml-1 text-gold">{tAppSettings('settings.devTag', { defaultValue: '(Dev)' })}</span>
             )}
           </button>
         </div>

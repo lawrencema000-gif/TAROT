@@ -209,6 +209,11 @@ function SectionHeader({ tag, heading, sub }: { tag: string; heading: string; su
 // The page's one ambient animation. Decorative: the cards are shown again
 // below in the demo and the faces carry no information here, so the whole
 // row is hidden from assistive technology rather than announcing 44 images.
+//
+// Each tile is 95×150 (120×190 from 640px), so the 512×768 card image was
+// 157 KB of pixels per visitor nobody could see. The 150px thumbnail serves
+// 1× and the 400px rendition 2×; the intrinsic size keeps the row from
+// shifting while they arrive.
 function CardMarquee({ cards }: { cards: string[] }) {
   const doubled = [...cards, ...cards];
   return (
@@ -216,7 +221,17 @@ function CardMarquee({ cards }: { cards: string[] }) {
       <div className="lp-marquee-track">
         {doubled.map((card, i) => (
           <div key={`${card}-${i}`} className="lp-marquee-card">
-            <img src={`/bundled-cards/major-arcana/${card}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
+            <img
+              src={`/bundled-cards/thumb/major-arcana/${card}.webp`}
+              srcSet={`/bundled-cards/thumb/major-arcana/${card}.webp 150w, /bundled-cards/full/major-arcana/${card}.webp 400w`}
+              sizes="(min-width: 640px) 120px, 95px"
+              width={150}
+              height={225}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
           </div>
         ))}
       </div>

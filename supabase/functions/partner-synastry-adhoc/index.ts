@@ -298,10 +298,14 @@ function elementalBlend(me: Position[], partner: Position[]): { fire: number; ea
 // ─── Handler ──────────────────────────────────────────────────────
 Deno.serve(handler<Req, Resp>({
   fn: "partner-synastry-adhoc",
-  auth: "optional",
+  // Required: the page always has a session, and an anonymous caller used
+  // to get the full computation free with no ceiling (R2 audit §5).
+  auth: "required",
   methods: ["POST"],
   rateLimit: { max: 20, windowMs: 60_000 },
-  ai: true,
+  // Deterministic astronomy, no model call: not under the AI killswitch or
+  // the AI daily ceiling. The 50-Moonstone price is a product decision kept
+  // as-is (owner item in the Phase 7 report).
   spend: { actionKey: "partner-compat", cost: 50 },
   requestSchema: RequestSchema,
   run: (_ctx, body) => {

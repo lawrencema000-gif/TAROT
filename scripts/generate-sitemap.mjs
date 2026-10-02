@@ -2,6 +2,8 @@
  * Generate sitemap.xml with all public URLs:
  *   - Static pages (/, /blog, /horoscope, /tarot-meanings, privacy)
  *   - 78 tarot card meaning pages (/tarot-meanings/<slug>)
+ *   - the learn library (astrology, numerology, crystals, glossary, spreads)
+ *   - cartomancy: /cartomancy, /cartomancy/cards + 54 cards, /cartomancy/guide + 12 lessons
  *   - Published blog posts from Supabase
  *
  * Run: node scripts/generate-sitemap.mjs
@@ -10,6 +12,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { writeFileSync, readFileSync } from 'fs';
 import { resolve } from 'path';
+import { loadContentData } from './seo-body.mjs';
 
 // Load env vars from .env file
 try { const env = readFileSync('.env', 'utf8'); env.split('\n').forEach(line => { const [k, ...v] = line.split('='); if (k && !k.startsWith('#')) process.env[k.trim()] = v.join('=').trim(); }); } catch { /* .env may not exist in CI */ }
@@ -70,8 +73,27 @@ async function fetchBlogPosts() {
   }
 }
 
+/**
+ * Cartomancy (src/data/cartomancy): the slugs are data (`PlayingCard.slug`,
+ * `CartoLesson.slug`), so they are read from the same esbuild bundle the
+ * prerender uses rather than typed here. If the bundle fails the sitemap
+ * still writes without them, and says so.
+ */
+async function loadCartomancy() {
+  try {
+    const data = await loadContentData();
+    const cards = data.PLAYING_CARDS_ALL || [];
+    const lessons = (data.CARTO_LESSONS || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+    return { cards, lessons };
+  } catch (err) {
+    console.warn(`Cartomancy data unavailable (non-fatal): ${err.message}`);
+    return { cards: [], lessons: [] };
+  }
+}
+
 async function generate() {
   const posts = await fetchBlogPosts();
+  const carto = await loadCartomancy();
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -191,6 +213,21 @@ async function generate() {
     });
   }
 
+  // Cartomancy: hub, card library, 54 cards, guide, 12 lessons
+  if (carto.cards.length) {
+    urls.push({ loc: `${siteUrl}/cartomancy`, changefreq: 'monthly', priority: '0.9', lastmod: today });
+    urls.push({ loc: `${siteUrl}/cartomancy/cards`, changefreq: 'monthly', priority: '0.8', lastmod: today });
+    for (const card of carto.cards) {
+      urls.push({ loc: `${siteUrl}/cartomancy/cards/${card.slug}`, changefreq: 'monthly', priority: '0.7', lastmod: today });
+    }
+  }
+  if (carto.lessons.length) {
+    urls.push({ loc: `${siteUrl}/cartomancy/guide`, changefreq: 'monthly', priority: '0.8', lastmod: today });
+    for (const lesson of carto.lessons) {
+      urls.push({ loc: `${siteUrl}/cartomancy/guide/${lesson.slug}`, changefreq: 'monthly', priority: '0.7', lastmod: today });
+    }
+  }
+
   // 78 tarot card meaning pages
   for (const name of ALL_CARDS) {
     urls.push({
@@ -212,15 +249,15 @@ async function generate() {
     });
   }
 
-  // Netlify serves the prerendered `x/index.html` files at the TRAILING-SLASH
-  // URL and 301-redirects the no-slash form. List the slash form so every
-  // sitemap URL is a direct 200 that matches the page's canonical (files like
-  // privacy-policy.html and the root keep their exact form).
-  const slashLoc = (u) => {
-    if (u.endsWith('/')) return u;
+  // One canonical form: slashless, the form every in-app link uses. The
+  // prerender writes both `x/index.html` and `x.html`, so `/x` is a direct
+  // 200 (no 301 to `/x/` any more) and is what the page's canonical names.
+  // Files (privacy-policy.html) and the root keep their exact form.
+  const canonicalLoc = (u) => {
+    if (u === `${siteUrl}/`) return u;
     const lastSeg = u.split('?')[0].split('/').pop();
     if (lastSeg.includes('.')) return u; // a file, e.g. privacy-policy.html
-    return `${u}/`;
+    return u.replace(/\/+$/, '');
   };
 
   // NOTE: hreflang alternates removed deliberately. They advertised
@@ -232,7 +269,7 @@ async function generate() {
   // URL per page with no fake alternates is the correct shape here.
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => { const loc = slashLoc(u.loc); return `  <url>
+${urls.map(u => { const loc = canonicalLoc(u.loc); return `  <url>
     <loc>${loc}</loc>
     ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}
     <changefreq>${u.changefreq}</changefreq>
@@ -249,7 +286,7 @@ ${urls.map(u => { const loc = slashLoc(u.loc); return `  <url>
 
   console.log(
     `Sitemap generated with ${urls.length} URLs ` +
-    `(${ALL_CARDS.length} tarot cards, ${posts?.length || 0} blog posts)`
+    `(${ALL_CARDS.length} tarot cards, ${carto.cards.length} playing cards, ${carto.lessons.length} lessons, ${posts?.length || 0} blog posts)`
   );
 
   // Refresh llms.txt with the latest blog post list. Keeps AI crawlers

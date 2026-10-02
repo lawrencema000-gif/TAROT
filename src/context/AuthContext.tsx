@@ -939,7 +939,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       endSpan(span, 'failure', { errorCode: normalized.code });
       setCorrelationId(null);
-      return { error: new Error(normalized.message) };
+      // The RAW Supabase message, not the normalised one. AuthPage runs
+      // getAuthErrorMessage on what comes back, and a message that has
+      // already been mapped ("Email or password is incorrect.") matches no
+      // pattern, so the generic fallback won every time (R6 A7). Normalise
+      // once, in the page.
+      return { error: new Error(error.message) };
     }
 
     logInfo('auth.signIn.success', 'Sign in successful');

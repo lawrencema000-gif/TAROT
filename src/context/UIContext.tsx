@@ -49,6 +49,7 @@ const TAB_PARENTS: ReadonlyArray<readonly [prefix: string, tab: Tab]> = [
   ['/spreads', 'readings'],
   ['/tarot-meanings', 'readings'],
   ['/pick-a-card', 'readings'],
+  ['/cartomancy', 'readings'],
 ];
 
 /**

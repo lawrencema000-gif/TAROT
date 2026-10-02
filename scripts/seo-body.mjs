@@ -56,6 +56,7 @@ export async function loadContentData() {
     export { numerologyEntries } from './src/data/numerologyLearn.ts';
     export { tarotSpreads } from './src/data/tarotSpreads.ts';
     export { majorArcanaSpreads } from './src/data/majorArcanaSpreads.ts';
+    export { PLAYING_CARDS_ALL, CARTO_LESSONS, CARTO_SPREADS } from './src/data/cartomancy/index.ts';
   `;
   const result = await build({
     stdin: { contents: entry, resolveDir: process.cwd(), sourcefile: 'seo-entry.ts', loader: 'ts' },
@@ -173,6 +174,42 @@ export function blogPostBody(post) {
   ].join('');
 }
 
+// ── cartomancy: the playing deck, its lessons ────────────────────────────
+// Data from src/data/cartomancy (PLAYING_CARDS_ALL — 52 cards + 2 Jokers,
+// CARTO_LESSONS — the 12-lesson guide). Slugs are `PlayingCard.slug` and
+// `CartoLesson.slug`, never derived from a name.
+
+export function cartomancyCardBody(card) {
+  const combos = (card.combinations || [])
+    .map((c) => `<li><strong>${esc(titleCase(c.with))}</strong> — ${esc(c.meaning)}</li>`)
+    .join('');
+  return [
+    `<h1>${esc(card.name)} Meaning in Cartomancy</h1>`,
+    card.keywords && card.keywords.length ? `<p class="seo-kw">${esc(card.keywords.join(' · '))}</p>` : '',
+    p(card.quickMeaning),
+    section('Upright Meaning', card.meaningUpright),
+    section('Reversed Meaning', card.meaningReversed),
+    section('Love & Relationships', card.loveMeaning),
+    section('Career & Money', card.careerMeaning),
+    section('Advice', card.adviceMeaning),
+    section('Timing', card.timing),
+    section('As a Person', card.asPerson),
+    combos ? `${h2('Card Combinations')}<ul>${combos}</ul>` : '',
+    section('Reflection', card.reflectionPrompt),
+  ].join('');
+}
+
+export function cartomancyLessonBody(lesson) {
+  return [
+    `<h1>${esc(lesson.title)}</h1>`,
+    lesson.eyebrow ? `<p class="seo-kw">${esc(lesson.eyebrow)} of 12 — the Arcana cartomancy guide</p>` : '',
+    p(lesson.lede),
+    lesson.points && lesson.points.length ? `${h2('Key points')}${list(lesson.points)}` : '',
+    ...(lesson.body || []).map((para) => p(para)),
+    section('Practice', lesson.practice),
+  ].join('');
+}
+
 // ── hub pages: crawlable link lists ──────────────────────────────────────
 
 export function hubBody(title, intro, links) {
@@ -180,31 +217,65 @@ export function hubBody(title, intro, links) {
 }
 
 export function tarotHubLinks(deck) {
-  return deck.map((c) => ({ href: `${SITE}/tarot-meanings/${slugify(c.name)}/`, label: c.name }));
+  return deck.map((c) => ({ href: `${SITE}/tarot-meanings/${slugify(c.name)}`, label: c.name }));
 }
 export function astroHubLinks(entries) {
-  return entries.map((e) => ({ href: `${SITE}/astrology/${e.slug}/`, label: e.name }));
+  return entries.map((e) => ({ href: `${SITE}/astrology/${e.slug}`, label: e.name }));
 }
 export function crystalHubLinks(entries) {
-  return entries.map((e) => ({ href: `${SITE}/crystals/${e.slug}/`, label: e.name }));
+  return entries.map((e) => ({ href: `${SITE}/crystals/${e.slug}`, label: e.name }));
 }
 export function glossaryHubLinks(entries) {
-  return entries.map((e) => ({ href: `${SITE}/glossary/${e.slug}/`, label: e.term }));
+  return entries.map((e) => ({ href: `${SITE}/glossary/${e.slug}`, label: e.term }));
 }
 export function numerologyHubLinks(entries) {
-  return entries.map((e) => ({ href: `${SITE}/numerology/${e.slug}/`, label: `Number ${e.number}` }));
+  return entries.map((e) => ({ href: `${SITE}/numerology/${e.slug}`, label: `Number ${e.number}` }));
 }
 export function spreadHubLinks(slugs, spreadMap) {
-  return slugs.map((s) => ({ href: `${SITE}/spreads/${s}/`, label: (spreadMap[s] && spreadMap[s].name) || titleCase(s) }));
+  return slugs.map((s) => ({ href: `${SITE}/spreads/${s}`, label: (spreadMap[s] && spreadMap[s].name) || titleCase(s) }));
 }
 export function blogHubLinks(posts) {
-  return posts.map((post) => ({ href: `${SITE}/blog/${post.slug}/`, label: post.title }));
+  return posts.map((post) => ({ href: `${SITE}/blog/${post.slug}`, label: post.title }));
+}
+export function cartomancyCardLinks(cards) {
+  return cards.map((c) => ({ href: `${SITE}/cartomancy/cards/${c.slug}`, label: c.name }));
+}
+export function cartomancyLessonLinks(lessons) {
+  return lessons.map((l) => ({ href: `${SITE}/cartomancy/guide/${l.slug}`, label: `${l.eyebrow ? `${l.eyebrow}: ` : ''}${l.title}` }));
 }
 
 /** Wrap article/nav HTML in the prerender container that React later replaces. */
 export function wrapBody(inner) {
   return `<div class="seo-prerender"><main><article>${inner}</article></main></div>`;
 }
+
+/**
+ * The landing hero, as static HTML for `/`.
+ *
+ * Lighthouse put the landing's LCP on the hero paragraph with a 3.1 s
+ * "element render delay": the page was `<div id="root"></div>` until the
+ * entry chunk had downloaded, parsed and rendered. The hubs already
+ * prerender a body; this does the same for the one page every cold visitor
+ * sees — the eyebrow, the two-line headline, the lede and the primary CTA,
+ * in English (the shells are English-only), with the same type the live
+ * hero uses so hydration repaints the same picture in place. `strings` is
+ * the `hero` object of src/i18n/locales/en/landing.json.
+ */
+export function landingHeroBody(strings) {
+  const h = strings || {};
+  return (
+    `<div class="seo-prerender seo-landing"><main><section class="seo-hero">` +
+    `<p class="seo-eyebrow">${esc(h.badge)}</p>` +
+    `<h1>${esc(h.headlineTop)}<br><span class="seo-gold">${esc(h.headlineBottom)}</span></h1>` +
+    `<p class="seo-lede">${esc(h.sub)}</p>` +
+    `<a class="seo-cta" href="/signup">${esc(h.cta)}</a>` +
+    `<p class="seo-note">${esc(h.note)}</p>` +
+    `</section></main></div>`
+  );
+}
+
+/** Inline styling for the prerendered landing hero: the live hero's measure, type and inks, no motion. */
+export const LANDING_STYLE = `<style>.seo-landing{min-height:70vh;display:flex;justify-content:center;padding:112px 16px 64px;color:#e8e6f0;font-family:Inter,'Inter Fallback',system-ui,sans-serif;-webkit-font-smoothing:antialiased}.seo-hero{width:100%;max-width:640px;text-align:center}.seo-eyebrow{margin:0 0 12px;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:#d4af37}.seo-landing h1{margin:12px 0 16px;font-family:'Cormorant Garamond','Cormorant Fallback','Cormorant Fallback Android',Georgia,serif;font-weight:500;font-size:clamp(2.25rem,5.5vw,3.25rem);line-height:1.08;letter-spacing:-.005em}.seo-gold{color:#d4af37}.seo-lede{margin:0 auto;max-width:28rem;font-size:1.1875rem;line-height:1.55;color:#c9c4d8}.seo-cta{display:inline-block;margin-top:28px;padding:14px 24px;border-radius:12px;background:#d4af37;color:#07070f;font-weight:600;font-size:.9375rem;text-decoration:none}.seo-note{margin:12px 0 0;font-size:.75rem;color:#7d7a99}</style>`;
 
 /** Minimal inline styling so the pre-hydration content isn't unstyled flash. */
 export const SEO_STYLE = `<style>.seo-prerender{max-width:760px;margin:0 auto;padding:88px 22px 64px;color:#c9c4d8;font-family:Georgia,'Times New Roman',serif;line-height:1.7}.seo-prerender h1{color:#e9c877;font-size:1.9rem;margin:0 0 14px}.seo-prerender h2{color:#d8d2e6;font-size:1.15rem;margin:26px 0 8px}.seo-prerender p{margin:0 0 14px}.seo-prerender .seo-kw{color:#8f88a8;font-style:italic}.seo-prerender ul,.seo-prerender ol{margin:0 0 16px;padding-left:22px}.seo-prerender .seo-links{columns:2;column-gap:28px}.seo-prerender a{color:#9fb6e0;text-decoration:none}</style>`;

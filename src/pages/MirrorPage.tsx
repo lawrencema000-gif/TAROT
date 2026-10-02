@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Aperture, TrendingUp, Layers, Hash, RotateCcw, Flame, Calendar } from 'lucide-react';
-import { PageHeader, Page, Tabs, Progress, EyebrowLabel } from '../components/ui';
+import { PageHeader, Page, Tabs, EyebrowLabel, Card, Section, EmptyState, Tag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { getMirrorStats, type MirrorPeriod, type MirrorStats } from '../services/mirror';
 import { setPageMeta } from '../utils/seo';
 import { useT } from '../i18n/useT';
+import { getLocale } from '../i18n/config';
 
 const PERIODS: { id: MirrorPeriod; label: string }[] = [
   { id: 'week', label: 'Last 7 days' },
@@ -12,9 +13,20 @@ const PERIODS: { id: MirrorPeriod; label: string }[] = [
   { id: 'all', label: 'All time' },
 ];
 
+/** Five muted hues for the two bar charts (design cues §6.7). */
+const BAR_HUES = ['bg-cosmic-violet', 'bg-coral-dark', 'bg-cosmic-blue', 'bg-gold-dark', 'bg-teal-dark'];
+
+const SUIT_DEFAULT: Record<string, string> = {
+  Wands: 'Wands',
+  Cups: 'Cups',
+  Swords: 'Swords',
+  Pentacles: 'Pentacles',
+};
+
 export function MirrorPage() {
   const { user } = useAuth();
   const { t } = useT('app');
+  const fmt = useMemo(() => new Intl.NumberFormat(getLocale()), []);
   const [period, setPeriod] = useState<MirrorPeriod>('month');
   const [stats, setStats] = useState<MirrorStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,10 +45,12 @@ export function MirrorPage() {
     return () => { cancelled = true; };
   }, [user, period]);
 
+  const suitName = (suit: string) => t(`mirror.suits.${suit.toLowerCase()}`, { defaultValue: SUIT_DEFAULT[suit] ?? suit });
+
   if (!user) {
     return (
       <Page className="py-10 text-center">
-        <p className="text-mystic-300">{t('mirror.signIn', { defaultValue: 'Sign in to see your Mirror.' })}</p>
+        <p className="text-body text-mystic-300">{t('mirror.signIn', { defaultValue: 'Sign in to see your mirror.' })}</p>
       </Page>
     );
   }
@@ -59,19 +73,20 @@ export function MirrorPage() {
       />
 
       {loading || !stats ? (
-        <div className="text-center py-16 text-mystic-500">{t('mirror.loading', { defaultValue: 'Reading the mirror…' })}</div>
+        <div className="text-center py-16 text-meta text-mystic-500" role="status">{t('mirror.loading', { defaultValue: 'Reading the mirror…' })}</div>
       ) : stats.totalReadings === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-mystic-300 mb-2">{t('mirror.emptyTitle', { defaultValue: 'No readings in this period yet.' })}</p>
-          <p className="text-sm text-mystic-500">{t('mirror.emptyBody', { defaultValue: 'Pull a card today and your patterns will start to surface here.' })}</p>
-        </div>
+        <EmptyState
+          icon={<Aperture />}
+          title={t('mirror.emptyTitle', { defaultValue: 'No readings in this period yet.' })}
+          description={t('mirror.emptyBody', { defaultValue: 'Pull a card today and your patterns will start to surface here.' })}
+        />
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatCard icon={Calendar} label={t('mirror.stats.readings', { defaultValue: 'Readings' })} value={String(stats.totalReadings)} />
-            <StatCard icon={Layers} label={t('mirror.stats.cardsDrawn', { defaultValue: 'Cards drawn' })} value={String(stats.totalCardsDrawn)} />
+            <StatCard icon={Calendar} label={t('mirror.stats.readings', { defaultValue: 'Readings' })} value={fmt.format(stats.totalReadings)} />
+            <StatCard icon={Layers} label={t('mirror.stats.cardsDrawn', { defaultValue: 'Cards drawn' })} value={fmt.format(stats.totalCardsDrawn)} />
             <StatCard icon={RotateCcw} label={t('mirror.stats.reversals', { defaultValue: 'Reversals' })} value={`${stats.reversalPercent}%`} />
-            <StatCard icon={Flame} label={t('mirror.stats.streak', { defaultValue: 'Streak' })} value={`${stats.streakDays}d`} />
+            <StatCard icon={Flame} label={t('mirror.stats.streak', { defaultValue: 'Streak' })} value={fmt.format(stats.streakDays)} />
           </div>
 
           {stats.mostDrawnCard && (
@@ -79,7 +94,7 @@ export function MirrorPage() {
               icon={TrendingUp}
               label={t('mirror.highlights.cardNow', { defaultValue: 'Your card right now' })}
               value={stats.mostDrawnCard.name}
-              caption={`${stats.mostDrawnCard.count} appearance${stats.mostDrawnCard.count > 1 ? 's' : ''}`}
+              caption={t('mirror.captions.appearances', { defaultValue: '{{n}} appearances', n: fmt.format(stats.mostDrawnCard.count) })}
             />
           )}
 
@@ -88,8 +103,8 @@ export function MirrorPage() {
               <Highlight
                 icon={Layers}
                 label={t('mirror.highlights.dominantSuit', { defaultValue: 'Dominant suit' })}
-                value={stats.mostDrawnSuit.suit}
-                caption={`${stats.mostDrawnSuit.count} cards from this suit`}
+                value={suitName(stats.mostDrawnSuit.suit)}
+                caption={t('mirror.captions.fromSuit', { defaultValue: '{{n}} cards from this suit', n: fmt.format(stats.mostDrawnSuit.count) })}
               />
             )}
             {stats.mostDrawnNumber && (
@@ -97,36 +112,65 @@ export function MirrorPage() {
                 icon={Hash}
                 label={t('mirror.highlights.recurringNumber', { defaultValue: 'Recurring number' })}
                 value={stats.mostDrawnNumber.value}
-                caption={`${stats.mostDrawnNumber.count} occurrence${stats.mostDrawnNumber.count > 1 ? 's' : ''}`}
+                caption={t('mirror.captions.occurrences', { defaultValue: '{{n}} occurrences', n: fmt.format(stats.mostDrawnNumber.count) })}
               />
             )}
           </div>
 
           {stats.topCards.length > 1 && (
-            <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
-              <h2 className="text-sm font-medium text-mystic-300 mb-3">{t('mirror.sections.topCards', { defaultValue: 'Top 5 cards' })}</h2>
-              <ul className="space-y-2">
-                {stats.topCards.map((c, i) => (
-                  <li key={c.name} className="flex items-center gap-3 text-sm">
-                    <span className="w-6 h-6 rounded-full bg-mystic-800 text-mystic-400 text-caption flex items-center justify-center">{i + 1}</span>
-                    <span className="flex-1 text-mystic-200">{c.name}</span>
-                    <span className="text-mystic-500 tabular-nums">×{c.count}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <Section headingLevel="h2" title={t('mirror.sections.topCards', { defaultValue: 'Common cards' })}>
+              <Card padding="md">
+                <ol className="space-y-3">
+                  {stats.topCards.map((c, i) => {
+                    const max = stats.topCards[0].count || 1;
+                    const pct = Math.round((c.count / max) * 100);
+                    return (
+                      <li key={c.name}>
+                        <div className="flex items-center justify-between gap-3 mb-1.5">
+                          <span className="flex items-center gap-2 min-w-0">
+                            <Tag tone="neutral" className="tabular-nums shrink-0">{i + 1}</Tag>
+                            <span className="text-ui text-mystic-200 truncate">{c.name}</span>
+                          </span>
+                          <span className="text-meta text-mystic-400 tabular-nums shrink-0">
+                            {t('mirror.captions.times', { defaultValue: '{{n}}×', n: fmt.format(c.count) })}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-mystic-800 overflow-hidden" role="presentation">
+                          <div className={`h-full rounded-full ${BAR_HUES[i % BAR_HUES.length]}`} style={{ width: `${Math.max(4, pct)}%` }} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </Card>
+            </Section>
           )}
 
-          <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
-            <h2 className="text-sm font-medium text-mystic-300 mb-3">{t('mirror.sections.suitBalance', { defaultValue: 'Suit balance (Minor Arcana)' })}</h2>
-            <SuitBars breakdown={stats.suitBreakdown} />
-          </section>
+          <Section
+            headingLevel="h2"
+            title={t('mirror.sections.suitBalance', { defaultValue: 'Common suits' })}
+            description={t('mirror.sections.suitBalanceNote', { defaultValue: 'Minor Arcana only.' })}
+          >
+            <Card padding="md">
+              <SuitBars breakdown={stats.suitBreakdown} suitName={suitName} fmt={fmt} />
+            </Card>
+          </Section>
 
-          <section className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4">
-            <h2 className="text-sm font-medium text-mystic-300 mb-2">{t('mirror.sections.majorMinor', { defaultValue: 'Major vs Minor' })}</h2>
-            <p className="text-caption text-mystic-500 mb-3">{t('mirror.sections.majorMinorNote', { defaultValue: 'Major Arcana = life themes; Minor = day-to-day energies.' })}</p>
-            <ArcanaBar major={stats.arcanaBreakdown.major} minor={stats.arcanaBreakdown.minor} />
-          </section>
+          <Section
+            headingLevel="h2"
+            title={t('mirror.sections.majorMinor', { defaultValue: 'Major and Minor' })}
+            description={t('mirror.sections.majorMinorNote', { defaultValue: 'Major Arcana are life themes; Minor are day-to-day energies.' })}
+          >
+            <Card padding="md">
+              <ArcanaBar
+                major={stats.arcanaBreakdown.major}
+                minor={stats.arcanaBreakdown.minor}
+                majorLabel={t('mirror.major', { defaultValue: 'Major' })}
+                minorLabel={t('mirror.minor', { defaultValue: 'Minor' })}
+                fmt={fmt}
+              />
+            </Card>
+          </Section>
         </div>
       )}
     </Page>
@@ -135,57 +179,87 @@ export function MirrorPage() {
 
 function StatCard({ icon: Icon, label, value }: { icon: typeof Calendar; label: string; value: string }) {
   return (
-    <div className="rounded-card border border-mystic-800/60 bg-mystic-900/40 p-3 text-center">
-      <Icon className="w-4 h-4 text-gold mx-auto mb-1" />
-      <div className="text-xl font-display text-mystic-100">{value}</div>
+    <Card padding="sm" className="text-center">
+      <Icon className="w-4 h-4 text-gold mx-auto mb-1" aria-hidden />
+      <div className="text-title font-semibold tabular-nums text-mystic-100">{value}</div>
       <EyebrowLabel className="block !text-mystic-500">{label}</EyebrowLabel>
-    </div>
+    </Card>
   );
 }
 
 function Highlight({ icon: Icon, label, value, caption }: { icon: typeof Calendar; label: string; value: string; caption: string }) {
   return (
-    <div className="rounded-card border border-gold/30 bg-gradient-to-br from-gold/10 via-mystic-900/40 to-mystic-900/40 p-4">
+    <Card variant="accent" padding="md">
       <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-gold" />
+        <Icon className="w-4 h-4 text-gold" aria-hidden />
         <EyebrowLabel>{label}</EyebrowLabel>
       </div>
-      <div className="font-display text-xl text-mystic-100">{value}</div>
-      <div className="text-meta text-mystic-500 mt-0.5">{caption}</div>
-    </div>
+      <div className="heading-display-md heading-strong text-mystic-100">{value}</div>
+      <div className="text-meta text-mystic-500 mt-0.5 tabular-nums">{caption}</div>
+    </Card>
   );
 }
 
-function SuitBars({ breakdown }: { breakdown: Record<string, number> }) {
+function SuitBars({
+  breakdown,
+  suitName,
+  fmt,
+}: {
+  breakdown: Record<string, number>;
+  suitName: (suit: string) => string;
+  fmt: Intl.NumberFormat;
+}) {
   const total = Object.values(breakdown).reduce((s, n) => s + n, 0) || 1;
   return (
-    <div className="space-y-2">
-      {Object.entries(breakdown).map(([suit, count]) => {
+    <ul className="space-y-3">
+      {Object.entries(breakdown).map(([suit, count], i) => {
         const pct = Math.round((count / total) * 100);
         return (
-          <div key={suit} className="flex items-center gap-2 text-meta">
-            <span className="w-16 text-mystic-400">{suit}</span>
-            <Progress value={pct} size="md" tone="gold" label={suit} className="flex-1" />
-            <span className="w-10 text-right text-mystic-500 tabular-nums">{pct}%</span>
-          </div>
+          <li key={suit}>
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <span className="text-ui text-mystic-200">{suitName(suit)}</span>
+              <span className="text-meta text-mystic-400 tabular-nums">{fmt.format(count)} · {pct}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-mystic-800 overflow-hidden" role="presentation">
+              <div className={`h-full rounded-full ${BAR_HUES[i % BAR_HUES.length]}`} style={{ width: `${Math.max(count ? 4 : 0, pct)}%` }} />
+            </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 
-function ArcanaBar({ major, minor }: { major: number; minor: number }) {
+function ArcanaBar({
+  major,
+  minor,
+  majorLabel,
+  minorLabel,
+  fmt,
+}: {
+  major: number;
+  minor: number;
+  majorLabel: string;
+  minorLabel: string;
+  fmt: Intl.NumberFormat;
+}) {
   const total = major + minor || 1;
   const majorPct = Math.round((major / total) * 100);
   return (
-    <div className="space-y-1">
-      <div className="h-2 bg-mystic-800 rounded-full overflow-hidden flex">
-        <div className="bg-gold h-full transition-[width] duration-deliberate ease-out" style={{ width: `${majorPct}%` }} />
+    <div className="space-y-2">
+      <div className="h-2 bg-mystic-800 rounded-full overflow-hidden flex" role="presentation">
+        <div className="bg-gold-dark h-full transition-[width] duration-deliberate ease-out" style={{ width: `${majorPct}%` }} />
         <div className="bg-cosmic-blue h-full flex-1" />
       </div>
-      <div className="flex justify-between text-meta text-mystic-500">
-        <span><span className="text-gold">●</span> Major {major}</span>
-        <span><span className="text-cosmic-blue">●</span> Minor {minor}</span>
+      <div className="flex justify-between text-meta text-mystic-400 tabular-nums">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-gold-dark" aria-hidden />
+          {majorLabel} {fmt.format(major)}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-cosmic-blue" aria-hidden />
+          {minorLabel} {fmt.format(minor)}
+        </span>
       </div>
     </div>
   );

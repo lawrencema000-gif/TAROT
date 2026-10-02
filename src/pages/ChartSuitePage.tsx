@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Loader2, ChevronRight, Clock } from 'lucide-react';
-import { Card, Button, Page, PageHeader, Section, EmptyState, Tag } from '../components/ui';
+import { Loader2, Clock } from 'lucide-react';
+import { Card, Button, Page, PageHeader, Section, EmptyState, Tag, ListRow, ListRowGroup } from '../components/ui';
 import { HoroscopeWheelIcon } from '../components/ui/NavIcons';
 import { ChartWheel } from '../components/chart/ChartWheel';
 import { ElementBalance } from '../components/charts/ElementBalance';
@@ -19,14 +19,14 @@ type Interp = typeof import('../data/interpretations');
 
 /** Types living on other surfaces — hub cards link out. Routes match App.tsx. */
 const LINKED: Record<string, { route: string; noteKey: string; note: string }> = {
-  ziwei: { route: '/ziwei', noteKey: 'chartSuite.linked.ziwei', note: 'Chinese emperor-star system' },
-  transits: { route: '/reports/natal-chart', noteKey: 'chartSuite.linked.natalReport', note: 'In your natal report' },
-  'solar-return': { route: '/reports/year-ahead', noteKey: 'chartSuite.linked.yearAhead', note: 'In your year-ahead report' },
-  progressions: { route: '/reports/natal-chart', noteKey: 'chartSuite.linked.natalReport', note: 'In your natal report' },
-  synastry: { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
-  composite: { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
-  davison: { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
-  'progressed-composite': { route: '/people', noteKey: 'chartSuite.linked.people', note: 'Compare in People' },
+  ziwei: { route: '/ziwei', noteKey: 'chartSuite.opensIn.ziwei', note: 'Opens in Zi Wei →' },
+  transits: { route: '/reports/natal-chart', noteKey: 'chartSuite.opensIn.natalReport', note: 'Opens in your natal report →' },
+  'solar-return': { route: '/reports/year-ahead', noteKey: 'chartSuite.opensIn.yearAhead', note: 'Opens in your year-ahead report →' },
+  progressions: { route: '/reports/natal-chart', noteKey: 'chartSuite.opensIn.natalReport', note: 'Opens in your natal report →' },
+  synastry: { route: '/people', noteKey: 'chartSuite.opensIn.people', note: 'Opens in People →' },
+  composite: { route: '/people', noteKey: 'chartSuite.opensIn.people', note: 'Opens in People →' },
+  davison: { route: '/people', noteKey: 'chartSuite.opensIn.people', note: 'Opens in People →' },
+  'progressed-composite': { route: '/people', noteKey: 'chartSuite.opensIn.people', note: 'Opens in People →' },
 };
 
 interface SuiteResp {
@@ -117,26 +117,32 @@ export function ChartSuitePage() {
           subtitle={t('chartSuite.subtitle', { defaultValue: 'Thirteen ways to read a moment — from the chart you were born with to the sky above you right now.' })}
           divider
         />
-        <div className="grid gap-3">
+        {/* One line per chart: the name, its one-line tagline, and — for the
+            types that live on another surface — where the row goes, as
+            quiet meta rather than a gold badge (R5 p-7). The description
+            and "when to read" wait on the detail view. */}
+        <ListRowGroup>
           {CHART_TYPES.map((c) => {
             const linked = LINKED[c.key];
             return (
-              <button key={c.key}
+              <ListRow
+                key={c.key}
+                label={c.name}
+                meta={
+                  linked ? (
+                    <>
+                      <span className="block truncate">{c.tagline}</span>
+                      <span className="block text-mystic-500">{t(linked.noteKey, { defaultValue: linked.note })}</span>
+                    </>
+                  ) : (
+                    <span className="block truncate">{c.tagline}</span>
+                  )
+                }
                 onClick={() => (linked ? navigate(linked.route) : setParams({ type: c.key }))}
-                className="w-full text-left rounded-card border border-mystic-800/60 bg-mystic-900/40 p-4 hover:border-gold/30 transition-colors active:scale-[0.99]">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-medium text-mystic-100">{c.name}</div>
-                    <div className="text-meta text-gold/80 mt-0.5">{c.tagline}</div>
-                    <div className="text-ui text-mystic-400 mt-1 line-clamp-2">{c.description}</div>
-                    {linked && <div className="font-display-eyebrow text-mystic-500 mt-1.5">{t(linked.noteKey, { defaultValue: linked.note })} →</div>}
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-mystic-600 flex-shrink-0" />
-                </div>
-              </button>
+              />
             );
           })}
-        </div>
+        </ListRowGroup>
       </Page>
     );
   }
@@ -279,7 +285,7 @@ export function ChartSuitePage() {
                       : `${planetName(p.planet)} · ${p.sign}`}
                   </span>
                   {isZodiacSign(p.sign) && <ZodiacGlyph sign={p.sign} size={16} className="text-mystic-400" />}
-                  <span className="text-meta text-mystic-400 ml-auto">
+                  <span className="text-meta text-mystic-400 ml-auto tabular-nums">
                     {p.degree.toFixed(1)}°{p.retrograde ? <span className="text-coral"> ℞</span> : ''}
                   </span>
                 </div>

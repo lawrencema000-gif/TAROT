@@ -1,6 +1,7 @@
 import { AppError, handler } from "../_shared/handler.ts";
 import { aiCacheGet, aiCacheStore, aiCacheKey } from "../_shared/ai-gate.ts";
-import { callAIJson } from "../_shared/ai-providers.ts";
+import { AI_CHAIN_TAG, callAIJson } from "../_shared/ai-providers.ts";
+import { localeInstruction } from "../_shared/locale.ts";
 import { z } from "npm:zod@3.24.1";
 
 /**
@@ -43,12 +44,7 @@ interface Resp {
 }
 
 // Tag used for cache key versioning. Provider chain in _shared/ai-providers.ts.
-const CACHE_MODEL_TAG = "openai-gpt-5-or-gemini-2.5-flash";
-
-function localeName(code: string): string {
-  const normalized = code.toLowerCase().split("-")[0];
-  return ({ ja: "Japanese", ko: "Korean", zh: "Chinese" } as Record<string, string>)[normalized] || "English";
-}
+const CACHE_MODEL_TAG = `${AI_CHAIN_TAG}-mood-v2`;
 
 const SYSTEM = `You are a warm, grounded emotional companion — like a wise older sibling or a seasoned therapist friend. The user has logged their mood daily for the past week or two. Their log is below.
 
@@ -68,9 +64,9 @@ Rules:
 - Output MUST be valid JSON: { "letter": string, "dominantTheme": string (1 short phrase), "careSuggestion": string (1 sentence) }`;
 
 async function callAI(entries: Req["entries"], context: Req["userContext"]): Promise<Resp> {
-  const localeLine = context?.locale && context.locale !== "en"
-    ? `\n\nIMPORTANT: Respond in ${localeName(context.locale)}. Keep the warm/grounded voice.`
-    : "";
+  // Shared per-locale instruction (_shared/locale.ts) closes the system
+  // prompt; JSON keys stay English, values follow the user's language.
+  const system = `${SYSTEM}\n\n${localeInstruction(context?.locale, { jsonKeys: true, keepVoice: true })}`;
 
   const nameLine = context?.displayName
     ? `\n\nThe person's name is ${context.displayName}. You don't need to use it; just know they're a real person.`
@@ -85,10 +81,10 @@ async function callAI(entries: Req["entries"], context: Req["userContext"]): Pro
     })
     .join('\n');
 
-  const userPrompt = `${nameLine}${localeLine}\n\nMood log (most recent last):\n${entryLines}\n\nReply with ONLY the JSON object.`;
+  const userPrompt = `${nameLine}\n\nMood log (most recent last):\n${entryLines}\n\nReply with ONLY the JSON object.`;
 
   const parsed = await callAIJson<Resp>({
-    system: SYSTEM,
+    system,
     userPrompt,
     temperature: 0.75,
     maxOutputTokens: 700,
@@ -103,7 +99,9 @@ async function callAI(entries: Req["entries"], context: Req["userContext"]): Pro
 
 Deno.serve(handler<Req, Resp>({
   fn: "ai-mood-letter",
-  auth: "optional",
+  // Required: the page always has a session, and an anonymous caller used
+  // to run the full model free, outside the ceiling and the spend (R2 §5).
+  auth: "required",
   methods: ["POST"],
   rateLimit: { max: 5, windowMs: 60_000 },
   ai: true,

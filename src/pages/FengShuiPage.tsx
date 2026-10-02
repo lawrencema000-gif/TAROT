@@ -29,6 +29,7 @@ import {
 import { ROOM_GUIDANCE, type Room } from '../data/fengShuiRooms';
 import { FENG_SHUI_PROBLEMS } from '../data/fengShuiProblems';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { tArray } from '../utils/tArray';
 
 type Stage = 'rate' | 'result';
 
@@ -193,10 +194,7 @@ export function FengShuiPage() {
     const focusName = t(`fengshui.areas.${reading.focusArea}.name`, { defaultValue: focusInfo.name }) as string;
     const strongName = t(`fengshui.areas.${reading.strongestArea}.name`, { defaultValue: strongInfo.name }) as string;
     const focusMeaning = t(`fengshui.areas.${reading.focusArea}.meaning`, { defaultValue: focusInfo.meaning }) as string;
-    const adjustments = t(`fengshui.areas.${reading.focusArea}.adjustments`, {
-      returnObjects: true,
-      defaultValue: focusInfo.adjustments,
-    }) as string[];
+    const adjustments = tArray(t, `fengshui.areas.${reading.focusArea}.adjustments`, focusInfo.adjustments);
 
     const handleShare = async () => {
       try {

@@ -101,6 +101,11 @@ function mapComment(row: Record<string, unknown>): CommunityComment {
 
 // ------------------------------------------------------------------
 // Feed fetching
+//
+// The author embed names its foreign key: community_posts.user_id also
+// references auth.users, which PostgREST cannot see, so a bare
+// `profiles:user_id` was PGRST200 on every feed load. The constraints come
+// from migration 20261003000002.
 // ------------------------------------------------------------------
 
 export interface FetchFeedOpts {
@@ -119,7 +124,7 @@ export async function fetchFeed(opts: FetchFeedOpts = {}): Promise<Result<Commun
       id, user_id, topic, content, is_anonymous,
       reaction_count, comment_count, is_hidden,
       created_at, updated_at,
-      profiles:user_id (display_name, avatar_seed)
+      profiles!community_posts_user_id_profiles_fkey (display_name, avatar_seed)
     `)
     .eq('is_hidden', false)
     .order('created_at', { ascending: false })
@@ -189,7 +194,7 @@ export async function createPost(input: CreatePostInput): Promise<Result<Communi
       id, user_id, topic, content, is_anonymous,
       reaction_count, comment_count, is_hidden,
       created_at, updated_at,
-      profiles:user_id (display_name, avatar_seed)
+      profiles!community_posts_user_id_profiles_fkey (display_name, avatar_seed)
     `)
     .single();
 
@@ -219,7 +224,7 @@ export async function fetchComments(postId: string): Promise<Result<CommunityCom
     .select(`
       id, post_id, user_id, parent_id, content,
       is_anonymous, is_hidden, created_at,
-      profiles:user_id (display_name, avatar_seed)
+      profiles!community_comments_user_id_profiles_fkey (display_name, avatar_seed)
     `)
     .eq('post_id', postId)
     .eq('is_hidden', false)
@@ -260,7 +265,7 @@ export async function createComment(input: CreateCommentInput): Promise<Result<C
     .select(`
       id, post_id, user_id, parent_id, content,
       is_anonymous, is_hidden, created_at,
-      profiles:user_id (display_name, avatar_seed)
+      profiles!community_comments_user_id_profiles_fkey (display_name, avatar_seed)
     `)
     .single();
 

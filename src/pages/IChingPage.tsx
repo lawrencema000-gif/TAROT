@@ -11,6 +11,7 @@ import {
   type CastResult,
 } from '../data/ichingHexagrams';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { tArray } from '../utils/tArray';
 
 type Stage = 'intro' | 'casting' | 'result';
 
@@ -188,14 +189,8 @@ export function IChingPage() {
     const localizedJournal = t(`${hexagramKey}.journalPrompt`, {
       defaultValue: primary.journalPrompt,
     }) as string;
-    const strengths = t(`${hexagramKey}.strengths`, {
-      returnObjects: true,
-      defaultValue: primary.strengths,
-    }) as string[];
-    const cautions = t(`${hexagramKey}.cautions`, {
-      returnObjects: true,
-      defaultValue: primary.cautions,
-    }) as string[];
+    const strengths = tArray(t, `${hexagramKey}.strengths`, primary.strengths);
+    const cautions = tArray(t, `${hexagramKey}.cautions`, primary.cautions);
 
     const handleShare = async () => {
       try {

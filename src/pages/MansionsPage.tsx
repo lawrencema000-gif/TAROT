@@ -23,7 +23,9 @@ import { setPageMeta } from '../utils/seo';
  */
 export function MansionsPage() {
   const navigate = useNavigate();
-  const { t } = useT();
+  // The mansions.* strings live in app.json; the common namespace this page
+  // used to read left every label English in ja/ko/zh.
+  const { t } = useT(['app', 'common']);
   const { profile } = useAuth();
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   // The 值日 cycle turns at midnight, so only the date matters here. We still

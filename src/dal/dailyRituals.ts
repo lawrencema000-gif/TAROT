@@ -87,14 +87,21 @@ export interface DailyRitualUpsert {
 }
 
 export async function upsert(ritual: DailyRitualUpsert): Promise<Result<void>> {
-  const { error } = await supabase.from('daily_rituals').upsert({
-    user_id: ritual.userId,
-    date: ritual.date,
-    horoscope_viewed: ritual.horoscopeViewed,
-    tarot_viewed: ritual.tarotViewed,
-    prompt_viewed: ritual.promptViewed,
-    completed: ritual.completed,
-  });
+  // One row per (user, date): daily_rituals_user_id_date_key. Without
+  // onConflict PostgREST merged on the primary key, which is a fresh uuid on
+  // every call, so every write after the day's first was a 409 (23505) and
+  // only the first ritual part ever persisted.
+  const { error } = await supabase.from('daily_rituals').upsert(
+    {
+      user_id: ritual.userId,
+      date: ritual.date,
+      horoscope_viewed: ritual.horoscopeViewed,
+      tarot_viewed: ritual.tarotViewed,
+      prompt_viewed: ritual.promptViewed,
+      completed: ritual.completed,
+    },
+    { onConflict: 'user_id,date' },
+  );
   if (error) {
     captureException('dal.dailyRituals.upsert', error, { userId: ritual.userId, date: ritual.date });
     return { ok: false, error: error.message };

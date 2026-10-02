@@ -18,6 +18,9 @@ const ALLOWED_ORIGINS = [
 // don't get `Access-Control-Allow-Origin: http://localhost:5173` back.
 const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
   /^https:\/\/[a-z0-9-]+--arcana-ritual-app\.netlify\.app$/i,
+  // Any local dev server port (Vite picks 5173 by default, the Phase 7 QA
+  // server ran on 5199). A browser never sends a forged localhost Origin.
+  /^http:\/\/(localhost|127\.0\.0\.1):\d+$/,
 ];
 
 function isAllowedOrigin(origin: string): boolean {

@@ -132,7 +132,7 @@ export function DicePage() {
             {interp && (
               <>
                 <div className="reading-copy">
-                  <p className="reading-lede drop-cap">{interp.planetInSignText(astro.planet, astro.sign)}</p>
+                  <p className="reading-lede">{interp.planetInSignText(astro.planet, astro.sign)}</p>
                   <p>{interp.planetInHouseText(astro.planet, astro.house)}</p>
                 </div>
                 {interp.houseMeaning(astro.house) && (
@@ -143,7 +143,24 @@ export function DicePage() {
               </>
             )}
           </Section>
-          <Button variant="outline" fullWidth onClick={() => navigate('/quick-reading')}>
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() =>
+              // The quick reading lives at /ai/quick; the roll rides along as
+              // the question so the Oracle opens with it already written.
+              navigate('/ai/quick', {
+                state: {
+                  question: t('dice.oracleQuestion', {
+                    defaultValue: 'The astro dice gave me {{planet}} in {{sign}} in House {{house}}. What is this pointing to for me right now?',
+                    planet: astro.planet,
+                    sign: astro.sign,
+                    house: astro.house,
+                  }),
+                },
+              })
+            }
+          >
             <Zap className="w-4 h-4 mr-2" />
             {t('dice.askOracle', { defaultValue: 'Ask the Oracle about this' })}
           </Button>

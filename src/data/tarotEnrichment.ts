@@ -25,6 +25,10 @@ export interface TarotEnrichment {
   reinforcingReason: string;
   opposingCards: string[];
   opposingReason: string;
+  // Affirmation — the card's own voice: first person, present tense,
+  // one line of twelve words or fewer, specific to the card. Rendered
+  // by AffirmationPanel under the keyword row.
+  affirmation: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -33,6 +37,7 @@ export interface TarotEnrichment {
 
 export const majorEnrichment: Record<number, TarotEnrichment> = {
   0: {
+    affirmation: 'I step forward before I feel ready.',
     element: 'Air',
     planet: 'Uranus',
     hebrewLetter: 'Aleph',
@@ -45,6 +50,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These cards block the leap with caution, isolation, attachment, or sudden collapse instead of free movement.',
   },
   1: {
+    affirmation: 'I have every tool I need to begin.',
     element: 'Air',
     planet: 'Mercury',
     hebrewLetter: 'Beth',
@@ -57,6 +63,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These dilute clarity with deception, illusion, scarcity, or stalled action — the opposite of the Magician\'s decisive power.',
   },
   2: {
+    affirmation: 'I trust what I know without being told.',
     element: 'Water',
     planet: 'Moon',
     hebrewLetter: 'Gimel',
@@ -69,6 +76,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These demand outward action, visibility, and immediate momentum — the opposite of the Priestess\'s veiled stillness.',
   },
   3: {
+    affirmation: 'I nurture what I want to see grow.',
     element: 'Earth',
     planet: 'Venus',
     hebrewLetter: 'Daleth',
@@ -81,6 +89,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These signal scarcity, rupture, withdrawal, or apathy — antithetical to the Empress\'s lush, life-giving fullness.',
   },
   4: {
+    affirmation: 'I build structure that holds me steady.',
     element: 'Fire',
     zodiac: 'Aries',
     hebrewLetter: 'Heh',
@@ -93,6 +102,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These dismantle the plan with chaos, fantasy, recklessness, or sudden collapse of the established order.',
   },
   5: {
+    affirmation: 'I learn from what has lasted.',
     element: 'Earth',
     zodiac: 'Taurus',
     hebrewLetter: 'Vav',
@@ -105,6 +115,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These break with the establishment through rebellion, unconventional choices, or quietly subverting the rules.',
   },
   6: {
+    affirmation: 'I choose with my whole heart.',
     element: 'Air',
     zodiac: 'Gemini',
     hebrewLetter: 'Zayin',
@@ -117,6 +128,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These corrupt the union with bondage, heartbreak, regret, or exclusion — distortions of true partnership.',
   },
   7: {
+    affirmation: 'I hold the reins and keep moving.',
     element: 'Water',
     zodiac: 'Cancer',
     hebrewLetter: 'Cheth',
@@ -129,6 +141,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These stall the chariot through suspension, paralysis, retreat, or sabotage — the opposite of focused victory.',
   },
   8: {
+    affirmation: 'I meet what is fierce with a gentle hand.',
     element: 'Fire',
     zodiac: 'Leo',
     hebrewLetter: 'Teth',
@@ -141,6 +154,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These collapse strength into bondage, conflict, helplessness, or defeat — failures of inner mastery.',
   },
   9: {
+    affirmation: 'I turn inward and find my own light.',
     element: 'Earth',
     zodiac: 'Virgo',
     hebrewLetter: 'Yod',
@@ -153,6 +167,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These pull outward into community, celebration, and bright social life — the opposite of solitary retreat.',
   },
   10: {
+    affirmation: 'I move with the turn, not against it.',
     element: 'Fire',
     planet: 'Jupiter',
     hebrewLetter: 'Kaph',
@@ -165,6 +180,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These bring the wheel down — sudden ruin, loss, scarcity, or grief instead of upward turning fortune.',
   },
   11: {
+    affirmation: 'I weigh the truth and act on it.',
     element: 'Air',
     zodiac: 'Libra',
     hebrewLetter: 'Lamed',
@@ -177,6 +193,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These distort justice with deceit, exploitation, unfairness, or hollow victory at another\'s expense.',
   },
   12: {
+    affirmation: 'I let go and see things anew.',
     element: 'Water',
     planet: 'Neptune',
     hebrewLetter: 'Mem',
@@ -189,6 +206,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These demand acceleration and resolution — the opposite of voluntary suspension and patient waiting.',
   },
   13: {
+    affirmation: 'I release what has ended to make room.',
     element: 'Water',
     zodiac: 'Scorpio',
     hebrewLetter: 'Nun',
@@ -201,6 +219,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These celebrate continuity, fulfillment, and stable joy — the opposite of forced ending and shedding.',
   },
   14: {
+    affirmation: 'I blend my extremes into balance.',
     element: 'Fire',
     zodiac: 'Sagittarius',
     hebrewLetter: 'Samekh',
@@ -213,6 +232,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These shatter equilibrium with chaos, conflict, scattered illusion, or impulsive haste.',
   },
   15: {
+    affirmation: 'I see my chains and loosen them.',
     element: 'Earth',
     zodiac: 'Capricorn',
     hebrewLetter: 'Ayin',
@@ -225,6 +245,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These free the soul through hope, conscious union, fulfillment, or moving on to clearer waters.',
   },
   16: {
+    affirmation: 'I let what is false fall away.',
     element: 'Fire',
     planet: 'Mars',
     hebrewLetter: 'Peh',
@@ -237,6 +258,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These represent stability, sanctuary, and lasting completion — the opposite of catastrophic upheaval.',
   },
   17: {
+    affirmation: 'I keep faith in what is still coming.',
     element: 'Air',
     zodiac: 'Aquarius',
     hebrewLetter: 'Tzaddi',
@@ -249,6 +271,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These eclipse hope with disaster, despair, anxiety, or the weight of bondage.',
   },
   18: {
+    affirmation: 'I walk through uncertainty with open eyes.',
     element: 'Water',
     zodiac: 'Pisces',
     hebrewLetter: 'Qoph',
@@ -261,6 +284,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These bring clarity, fact, verdict, or naked truth — the opposite of moonlit ambiguity.',
   },
   19: {
+    affirmation: 'I let myself be seen in full light.',
     element: 'Fire',
     planet: 'Sun',
     hebrewLetter: 'Resh',
@@ -273,6 +297,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These eclipse the sun with confusion, grief, defeat, or sudden ruin.',
   },
   20: {
+    affirmation: 'I answer the call to become more.',
     element: 'Spirit',
     planet: 'Pluto',
     hebrewLetter: 'Shin',
@@ -285,6 +310,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
     opposingReason: 'These muffle the call with denial, apathy, suspension, or the pain of spiritual exclusion.',
   },
   21: {
+    affirmation: 'I honour how far I have come.',
     element: 'Earth',
     planet: 'Saturn',
     hebrewLetter: 'Tav',
@@ -305,6 +331,7 @@ export const majorEnrichment: Record<number, TarotEnrichment> = {
 export const minorEnrichment: Record<string, TarotEnrichment> = {
   // ---------------- WANDS — Fire ----------------
   'ace-of-wands': {
+    affirmation: 'I act on the spark the moment it arrives.',
     element: 'Fire',
     yesNo: 'Yes',
     yesNoReason: 'The Ace of Wands is pure creative spark and inspired beginning — a clear, energetic yes to action.',
@@ -315,6 +342,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These extinguish the spark with apathy, paralysis, suspension, or material lack.',
   },
   'two-of-wands': {
+    affirmation: 'I look beyond what I already know.',
     element: 'Fire',
     decan: 'Mars in Aries (1st decan of Aries)',
     yesNo: 'Yes',
@@ -326,6 +354,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These freeze the planner with paralysis, indecision, withdrawal, or scarcity thinking.',
   },
   'three-of-wands': {
+    affirmation: 'I trust the work I have set in motion.',
     element: 'Fire',
     decan: 'Sun in Aries (2nd decan of Aries)',
     yesNo: 'Yes',
@@ -337,6 +366,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These delay or block expansion through scarcity, restriction, withdrawal, or stalled progress.',
   },
   'four-of-wands': {
+    affirmation: 'I celebrate what I have built with others.',
     element: 'Fire',
     decan: 'Venus in Aries (3rd decan of Aries)',
     yesNo: 'Yes',
@@ -348,6 +378,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These break the gathering with exclusion, sudden upheaval, heartbreak, or forced departure.',
   },
   'five-of-wands': {
+    affirmation: 'I meet friction with curiosity, not fear.',
     element: 'Fire',
     decan: 'Saturn in Leo (1st decan of Leo)',
     yesNo: 'Maybe',
@@ -359,6 +390,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These resolve discord through unity, friendship, victory, or balanced harmony.',
   },
   'six-of-wands': {
+    affirmation: 'I accept recognition for what I have earned.',
     element: 'Fire',
     decan: 'Jupiter in Leo (2nd decan of Leo)',
     yesNo: 'Yes',
@@ -370,6 +402,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These deny the win with defeat, exclusion, sudden ruin, or feeling unable to claim one\'s place.',
   },
   'seven-of-wands': {
+    affirmation: 'I hold my ground when it matters.',
     element: 'Fire',
     decan: 'Mars in Leo (3rd decan of Leo)',
     yesNo: 'Maybe',
@@ -381,6 +414,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These surrender the high ground through retreat, suspension, paralysis, or apathy.',
   },
   'eight-of-wands': {
+    affirmation: 'I move quickly while the way is clear.',
     element: 'Fire',
     decan: 'Mercury in Sagittarius (1st decan of Sagittarius)',
     yesNo: 'Yes',
@@ -392,6 +426,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These halt motion with suspension, rest, slow ripening, or stalled decisions.',
   },
   'nine-of-wands': {
+    affirmation: 'I have the strength for one more round.',
     element: 'Fire',
     decan: 'Moon in Sagittarius (2nd decan of Sagittarius)',
     yesNo: 'Maybe',
@@ -403,6 +438,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These offer ease, joy, gentle hope, or innocent play — the opposite of weary, watchful defense.',
   },
   'ten-of-wands': {
+    affirmation: 'I set down what is not mine to carry.',
     element: 'Fire',
     decan: 'Saturn in Sagittarius (3rd decan of Sagittarius)',
     yesNo: 'No',
@@ -414,6 +450,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These lighten the load with celebration, joy, shared festivity, or innocent ease.',
   },
   'page-of-wands': {
+    affirmation: 'I follow my enthusiasm wherever it leads.',
     element: 'Fire',
     yesNo: 'Yes',
     yesNoReason: 'The Page of Wands is curious, eager, and full of fresh enthusiasm. The answer is a youthful, optimistic yes.',
@@ -424,6 +461,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These prefer withdrawal, rest, or guarded caution over youthful, outward enthusiasm.',
   },
   'knight-of-wands': {
+    affirmation: 'I act boldly and learn as I go.',
     element: 'Fire',
     zodiac: 'Sagittarius',
     yesNo: 'Yes',
@@ -435,6 +473,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These slow or steady the rider with rest, suspension, indecision, or grounded patience.',
   },
   'queen-of-wands': {
+    affirmation: 'I lead with warmth and confidence.',
     element: 'Fire',
     zodiac: 'Aries',
     yesNo: 'Yes',
@@ -446,6 +485,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These dim the queen\'s radiance with withdrawal, paralysis, or self-imposed lack.',
   },
   'king-of-wands': {
+    affirmation: 'I turn my vision into something others can follow.',
     element: 'Fire',
     zodiac: 'Leo',
     yesNo: 'Yes',
@@ -459,6 +499,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
 
   // ---------------- CUPS — Water ----------------
   'ace-of-cups': {
+    affirmation: 'I open my heart to what is offered.',
     element: 'Water',
     yesNo: 'Yes',
     yesNoReason: 'The Ace of Cups is the overflowing chalice of love and emotional renewal. A heartfelt, abundant yes.',
@@ -469,6 +510,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These close the heart through grief, heartbreak, apathy, or emotional withdrawal.',
   },
   'two-of-cups': {
+    affirmation: 'I meet others as an equal.',
     element: 'Water',
     decan: 'Venus in Cancer (1st decan of Cancer)',
     yesNo: 'Yes',
@@ -480,6 +522,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These distort or break union through heartbreak, sorrow, bondage, or hollow conflict.',
   },
   'three-of-cups': {
+    affirmation: 'I share my joy with the people I love.',
     element: 'Water',
     decan: 'Mercury in Cancer (2nd decan of Cancer)',
     yesNo: 'Yes',
@@ -491,6 +534,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These pull away from celebration through grief, betrayal, solitude, or emotional departure.',
   },
   'four-of-cups': {
+    affirmation: 'I notice the gift in front of me.',
     element: 'Water',
     decan: 'Moon in Cancer (3rd decan of Cancer)',
     yesNo: 'No',
@@ -502,6 +546,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These rouse the spirit toward joy, gratitude, fresh emotional offerings, and active engagement.',
   },
   'five-of-cups': {
+    affirmation: 'I grieve what is lost and look up.',
     element: 'Water',
     decan: 'Mars in Scorpio (1st decan of Scorpio)',
     yesNo: 'No',
@@ -513,6 +558,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These lift sorrow with joy, fulfillment, hope, or shared celebration.',
   },
   'six-of-cups': {
+    affirmation: 'I welcome the kindness of my past.',
     element: 'Water',
     decan: 'Sun in Scorpio (2nd decan of Scorpio)',
     yesNo: 'Yes',
@@ -524,6 +570,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These break the nostalgic circle through grief, departure, sudden upheaval, or heartbreak.',
   },
   'seven-of-cups': {
+    affirmation: 'I choose one dream and give it form.',
     element: 'Water',
     decan: 'Venus in Scorpio (3rd decan of Scorpio)',
     yesNo: 'Maybe',
@@ -535,6 +582,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These cut through fantasy with focused will, sober verdict, decisive action, or radiant clarity.',
   },
   'eight-of-cups': {
+    affirmation: 'I leave what no longer feeds me.',
     element: 'Water',
     decan: 'Saturn in Pisces (1st decan of Pisces)',
     yesNo: 'No',
@@ -546,6 +594,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These call for staying — celebration, sanctuary, joy, and the fulfillment of partnership.',
   },
   'nine-of-cups': {
+    affirmation: 'I savour the good I have made.',
     element: 'Water',
     decan: 'Jupiter in Pisces (2nd decan of Pisces)',
     yesNo: 'Yes',
@@ -557,6 +606,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These deny the wish through grief, lack, heartbreak, or sudden ruin.',
   },
   'ten-of-cups': {
+    affirmation: 'I belong, and I let that be enough.',
     element: 'Water',
     decan: 'Mars in Pisces (3rd decan of Pisces)',
     yesNo: 'Yes',
@@ -568,6 +618,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These rupture the family arch through grief, sudden break, heartbreak, or chosen departure.',
   },
   'page-of-cups': {
+    affirmation: 'I stay open to surprising feelings.',
     element: 'Water',
     yesNo: 'Yes',
     yesNoReason: 'The Page of Cups brings sweet emotional news and creative inspiration. A gentle, hopeful yes.',
@@ -578,6 +629,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These guard the heart with grief, departure, miserliness, or unhealthy attachment.',
   },
   'knight-of-cups': {
+    affirmation: 'I offer my heart with grace.',
     element: 'Water',
     zodiac: 'Pisces',
     yesNo: 'Yes',
@@ -589,6 +641,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These betray the heart through grief, harsh haste, deceit, or apathetic refusal.',
   },
   'queen-of-cups': {
+    affirmation: 'I feel deeply and stay steady.',
     element: 'Water',
     zodiac: 'Cancer',
     yesNo: 'Yes',
@@ -600,6 +653,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These contradict empathy with cruelty, lack of nurture, cold logic, or hollow victory.',
   },
   'king-of-cups': {
+    affirmation: 'I hold my emotions with calm authority.',
     element: 'Water',
     zodiac: 'Scorpio',
     yesNo: 'Yes',
@@ -613,6 +667,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
 
   // ---------------- SWORDS — Air ----------------
   'ace-of-swords': {
+    affirmation: 'I cut through to what is true.',
     element: 'Air',
     yesNo: 'Yes',
     yesNoReason: 'The Ace of Swords is the breakthrough of clear truth. Yes — but with a sharp, cutting clarity.',
@@ -623,6 +678,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These obscure clarity with confusion, fantasy, indecision, or deceit.',
   },
   'two-of-swords': {
+    affirmation: 'I lift the blindfold and decide.',
     element: 'Air',
     decan: 'Moon in Libra (1st decan of Libra)',
     yesNo: 'Maybe',
@@ -634,6 +690,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These end the impasse with verdict, breakthrough, swift action, or focused will.',
   },
   'three-of-swords': {
+    affirmation: 'I let the hurt be felt so it can heal.',
     element: 'Air',
     decan: 'Saturn in Libra (2nd decan of Libra)',
     yesNo: 'No',
@@ -645,6 +702,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These mend the heart with union, joy, fulfillment, and gentle hope.',
   },
   'four-of-swords': {
+    affirmation: 'I rest so that I can think clearly.',
     element: 'Air',
     decan: 'Jupiter in Libra (3rd decan of Libra)',
     yesNo: 'No',
@@ -656,6 +714,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These demand action, motion, and forward charge — the opposite of stillness and restorative pause.',
   },
   'five-of-swords': {
+    affirmation: 'I choose a win I can live with.',
     element: 'Air',
     decan: 'Venus in Aquarius (1st decan of Aquarius)',
     yesNo: 'No',
@@ -667,6 +726,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These restore harmony through union, fair verdict, peaceful passage, or balanced moderation.',
   },
   'six-of-swords': {
+    affirmation: 'I move toward calmer water.',
     element: 'Air',
     decan: 'Mercury in Aquarius (2nd decan of Aquarius)',
     yesNo: 'Yes',
@@ -678,6 +738,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These keep one stuck through scarcity, bondage, paralysis, or grasping refusal to move.',
   },
   'seven-of-swords': {
+    affirmation: 'I act in the open, with honesty.',
     element: 'Air',
     decan: 'Moon in Aquarius (3rd decan of Aquarius)',
     yesNo: 'No',
@@ -689,6 +750,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These insist on truth, integrity, and full accountability — the opposite of stealth and deceit.',
   },
   'eight-of-swords': {
+    affirmation: 'I loosen the thoughts that bind me.',
     element: 'Air',
     decan: 'Jupiter in Gemini (1st decan of Gemini)',
     yesNo: 'No',
@@ -700,6 +762,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These free the captive through hope, passage, radiant clarity, and the open horizon.',
   },
   'nine-of-swords': {
+    affirmation: 'I face my fears in daylight.',
     element: 'Air',
     decan: 'Mars in Gemini (2nd decan of Gemini)',
     yesNo: 'No',
@@ -711,6 +774,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These bring rest, hope, peaceful sleep, and the innocent ease that quiets the worried mind.',
   },
   'ten-of-swords': {
+    affirmation: 'I accept the ending and begin again.',
     element: 'Air',
     decan: 'Sun in Gemini (3rd decan of Gemini)',
     yesNo: 'No',
@@ -722,6 +786,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These herald rebirth, awakening, completion, and renewed hope after the worst has passed.',
   },
   'page-of-swords': {
+    affirmation: 'I stay curious and ask the real question.',
     element: 'Air',
     yesNo: 'Maybe',
     yesNoReason: 'The Page of Swords is curious and inquisitive but inexperienced. The answer needs more investigation.',
@@ -732,6 +797,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These prefer quiet contemplation, rest, or inward knowing over restless inquiry.',
   },
   'knight-of-swords': {
+    affirmation: 'I speak my truth with precision.',
     element: 'Air',
     zodiac: 'Gemini',
     yesNo: 'Yes',
@@ -743,6 +809,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These slow the rider with contemplation, rest, suspension, or grounded patience.',
   },
   'queen-of-swords': {
+    affirmation: 'I see clearly and say what I see.',
     element: 'Air',
     zodiac: 'Libra',
     yesNo: 'Maybe',
@@ -754,6 +821,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These soften or seduce the queen\'s clarity with sensuality, emotion, bondage, or fantasy.',
   },
   'king-of-swords': {
+    affirmation: 'I decide with clear and fair judgement.',
     element: 'Air',
     zodiac: 'Aquarius',
     yesNo: 'Maybe',
@@ -767,6 +835,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
 
   // ---------------- PENTACLES — Earth ----------------
   'ace-of-pentacles': {
+    affirmation: 'I take the opportunity in front of me.',
     element: 'Earth',
     yesNo: 'Yes',
     yesNoReason: 'The Ace of Pentacles is the seed of prosperity — a tangible new beginning. Yes, with grounded support.',
@@ -777,6 +846,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These deny material grounding through scarcity, sudden ruin, apathy, or chosen departure.',
   },
   'two-of-pentacles': {
+    affirmation: 'I keep my balance as things shift.',
     element: 'Earth',
     decan: 'Jupiter in Capricorn (1st decan of Capricorn)',
     yesNo: 'Maybe',
@@ -788,6 +858,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These collapse the juggler\'s rhythm through upheaval, lack, overwhelm, or rigid hoarding.',
   },
   'three-of-pentacles': {
+    affirmation: 'I do good work alongside others.',
     element: 'Earth',
     decan: 'Mars in Capricorn (2nd decan of Capricorn)',
     yesNo: 'Yes',
@@ -799,6 +870,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These dissolve the working team through scarcity, conflict, departure, or sudden collapse.',
   },
   'four-of-pentacles': {
+    affirmation: 'I hold what matters and loosen the rest.',
     element: 'Earth',
     decan: 'Sun in Capricorn (3rd decan of Capricorn)',
     yesNo: 'Maybe',
@@ -810,6 +882,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These break grasp through impulse, sudden upheaval, generous flow, or forced release.',
   },
   'five-of-pentacles': {
+    affirmation: 'I ask for help when I need it.',
     element: 'Earth',
     decan: 'Mercury in Taurus (1st decan of Taurus)',
     yesNo: 'No',
@@ -821,6 +894,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These restore abundance, generosity, hope, and the warmth of belonging.',
   },
   'six-of-pentacles': {
+    affirmation: 'I give and receive in fair measure.',
     element: 'Earth',
     decan: 'Moon in Taurus (2nd decan of Taurus)',
     yesNo: 'Yes',
@@ -832,6 +906,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These block fair flow through scarcity, hoarding, exploitation, or theft.',
   },
   'seven-of-pentacles': {
+    affirmation: 'I let my patience do its work.',
     element: 'Earth',
     decan: 'Saturn in Taurus (3rd decan of Taurus)',
     yesNo: 'Maybe',
@@ -843,6 +918,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These demand speed and instant results — the opposite of patient agricultural ripening.',
   },
   'eight-of-pentacles': {
+    affirmation: 'I grow more skilled with every attempt.',
     element: 'Earth',
     decan: 'Sun in Virgo (1st decan of Virgo)',
     yesNo: 'Yes',
@@ -854,6 +930,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These distract from craft with impulse, fantasy, apathy, or material lack that breaks concentration.',
   },
   'nine-of-pentacles': {
+    affirmation: 'I enjoy what my effort has built.',
     element: 'Earth',
     decan: 'Venus in Virgo (2nd decan of Virgo)',
     yesNo: 'Yes',
@@ -865,6 +942,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These deny self-earned abundance through lack, bondage, dissatisfaction, or grief.',
   },
   'ten-of-pentacles': {
+    affirmation: 'I build something that will outlast me.',
     element: 'Earth',
     decan: 'Mercury in Virgo (3rd decan of Virgo)',
     yesNo: 'Yes',
@@ -876,6 +954,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These dissolve legacy through ruin, scarcity, forced ending, or chosen departure.',
   },
   'page-of-pentacles': {
+    affirmation: 'I learn by doing, one step at a time.',
     element: 'Earth',
     yesNo: 'Yes',
     yesNoReason: 'The Page of Pentacles is studious and earnest — yes, with patient learning and steady effort.',
@@ -886,6 +965,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These scatter focus through impulse, haste, fantasy, or restless conflict.',
   },
   'knight-of-pentacles': {
+    affirmation: 'I keep going, steadily and without fuss.',
     element: 'Earth',
     zodiac: 'Virgo',
     yesNo: 'Yes',
@@ -897,6 +977,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These accelerate or shatter the steady pace through haste, impulse, swiftness, or sudden upheaval.',
   },
   'queen-of-pentacles': {
+    affirmation: 'I care for what I have with generous hands.',
     element: 'Earth',
     zodiac: 'Capricorn',
     yesNo: 'Yes',
@@ -908,6 +989,7 @@ export const minorEnrichment: Record<string, TarotEnrichment> = {
     opposingReason: 'These contradict nurturing abundance with scarcity, bondage, harshness, or miserly hoarding.',
   },
   'king-of-pentacles': {
+    affirmation: 'I steward my resources with wisdom.',
     element: 'Earth',
     zodiac: 'Taurus',
     yesNo: 'Yes',

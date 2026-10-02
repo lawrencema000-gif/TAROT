@@ -101,8 +101,12 @@ export function ListRow({
         <span className={`block truncate text-ui font-medium ${danger ? 'text-coral' : 'text-mystic-100'}`}>{label}</span>
         {meta && <span className="block text-meta text-mystic-400 line-clamp-2">{meta}</span>}
       </span>
+      {/* The label wins. A long value (an email's local part, a long plan
+          name) used to be `shrink-0` and pushed the label down to "Edit …";
+          now the value is capped at 45% of the row and truncates instead
+          (R5 m-8, R6 A20). */}
       {value !== undefined && value !== null && (
-        <span className="shrink-0 text-meta text-mystic-400">{value}</span>
+        <span className="shrink-0 max-w-[45%] truncate text-meta text-mystic-400">{value}</span>
       )}
       {trailingNode}
       {showChevron && <ChevronRight className="w-5 h-5 shrink-0 text-mystic-500" aria-hidden />}

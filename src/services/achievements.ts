@@ -192,16 +192,26 @@ export async function markAchievementNotified(
   }
 }
 
+/**
+ * Report an activity to the server, which decides what it means for each
+ * badge (migration 20261003000004): counters count (one per call for a user
+ * session), level / XP / streak / rank badges compare against the profile,
+ * and set badges — spread_types_used, quiz_types_complete — need `value`
+ * (the spread type, the quiz type) to make progress. Per-card badges need the
+ * card name as `value`. Only badges unlocked by this call come back.
+ */
 export async function checkAchievementProgress(
   userId: string,
   activityType: string,
-  increment: number = 1
+  increment: number = 1,
+  value?: string
 ): Promise<UnlockedAchievement[]> {
   try {
     const { data, error } = await supabase.rpc('check_achievement_progress', {
       p_user_id: userId,
       p_activity_type: activityType,
       p_increment: increment,
+      p_value: value ?? null,
     });
 
     if (error) {
@@ -258,80 +268,16 @@ export async function checkLevelMilestones(
   }
 }
 
-export async function unlockAchievement(
-  userId: string,
-  achievementId: string
-): Promise<{ success: boolean; xp_awarded: number; achievement_name: string; rarity: AchievementRarity } | null> {
-  try {
-    const { data, error } = await supabase.rpc('unlock_achievement', {
-      p_user_id: userId,
-      p_achievement_id: achievementId,
-    });
-
-    if (error) {
-      console.error('Error unlocking achievement:', error);
-      return null;
-    }
-
-    const row = data?.[0] || null;
-    if (row?.success) announceUnlock();
-    return row;
-  } catch (error) {
-    console.error('Failed to unlock achievement:', error);
-    return null;
-  }
-}
-
-// Card-specific achievement tracking
-const CARD_ACHIEVEMENTS: Record<string, { name: string; target: number }> = {
-  'The Chariot': { name: 'Lucky Seven', target: 7 },
-  'The Tower': { name: 'Tower Moment', target: 1 },
-  'The Fool': { name: 'Fools Journey', target: 3 },
-};
-
+/**
+ * A drawn card is reported as a `specific_card_drawn` event with the card
+ * name; the server counts it only against badges whose unlock_condition
+ * names that card (The Chariot, The Tower, The Fool in the seed). This used
+ * to write user_achievements directly from the client — a write any user
+ * could point at any badge — and that privilege is revoked (20261003000003).
+ */
 export async function checkSpecificCardAchievement(userId: string, cardName: string): Promise<void> {
-  const mapping = CARD_ACHIEVEMENTS[cardName];
-  if (!mapping) return;
-  try {
-    const { data: achievement } = await supabase
-      .from('achievements')
-      .select('id')
-      .eq('name', mapping.name)
-      .maybeSingle();
-
-    if (!achievement) {
-      // Fallback: try via activity_type
-      await checkAchievementProgress(userId, 'specific_card_drawn');
-      return;
-    }
-
-    const { data: userAch } = await supabase
-      .from('user_achievements')
-      .select('progress, unlocked_at')
-      .eq('user_id', userId)
-      .eq('achievement_id', achievement.id)
-      .maybeSingle();
-
-    if (userAch?.unlocked_at) return; // Already unlocked
-
-    const newProgress = (userAch?.progress || 0) + 1;
-    const nowUnlocked = newProgress >= mapping.target;
-
-    if (userAch) {
-      await supabase
-        .from('user_achievements')
-        .update({ progress: newProgress, unlocked_at: nowUnlocked ? new Date().toISOString() : null })
-        .eq('user_id', userId)
-        .eq('achievement_id', achievement.id);
-    } else {
-      await supabase
-        .from('user_achievements')
-        .insert({ user_id: userId, achievement_id: achievement.id, progress: newProgress, target: mapping.target, unlocked_at: nowUnlocked ? new Date().toISOString() : null });
-    }
-    if (nowUnlocked) announceUnlock();
-  } catch (e) {
-    console.error('Failed to check specific card achievement:', e);
-  }
+  if (!cardName) return;
+  await checkAchievementProgress(userId, 'specific_card_drawn', 1, cardName);
 }
 
 export async function getAchievementStats(userId: string): Promise<AchievementStats | null> {
@@ -363,35 +309,6 @@ export async function initializeUserAchievements(userId: string): Promise<void> 
     }
   } catch (error) {
     console.error('Failed to initialize user achievements:', error);
-  }
-}
-
-export async function updateAchievementProgress(
-  userId: string,
-  achievementId: string,
-  progress: number
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('user_achievements')
-      .upsert({
-        user_id: userId,
-        achievement_id: achievementId,
-        progress,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'user_id,achievement_id',
-      });
-
-    if (error) {
-      console.error('Error updating achievement progress:', error);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Failed to update achievement progress:', error);
-    return false;
   }
 }
 

@@ -22,6 +22,7 @@ import { getZodiacSign, zodiacData, getCompatibility } from '../../utils/zodiac'
 import type { ZodiacSign } from '../../types';
 import { useT } from '../../i18n/useT';
 import { localizeSignName } from '../../i18n/localizeNames';
+import { tArray } from '../../utils/tArray';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 
 type CompatibilityMode = 'love' | 'friendship' | 'work';
@@ -150,7 +151,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
       else frictionPoints.push(t('compatibility.frictionPool.workApproach'));
     }
 
-    const advices = t('compatibility.advice', { returnObjects: true }) as string[];
+    const advices = tArray(t, 'compatibility.advice', []);
 
     const calculateDimensions = () => {
       const base = score / 100;
@@ -174,7 +175,7 @@ export function CompatibilitySection({ onShowPaywall }: CompatibilitySectionProp
       connectionStyle,
       strengths,
       frictionPoints,
-      advice: advices[Math.floor(Math.random() * advices.length)],
+      advice: advices.length > 0 ? advices[Math.floor(Math.random() * advices.length)] : '',
       dimensions: calculateDimensions(),
       celebrityExample: getCelebrityExample(),
     });

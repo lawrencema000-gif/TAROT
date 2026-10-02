@@ -395,12 +395,15 @@ export function CelestialMapPage() {
         </div>
 
         {/* The map itself */}
+        {/* Square at phone width, 4:3 from `sm`. The old `aspect-ratio: 4/3`
+            + `min-height: 360px` pair let CSS transfer the minimum height
+            into a 480px minimum WIDTH, so the map overflowed a 390px screen
+            and the whole page scrolled sideways. */}
         <motion.div
           initial={{ opacity: 0, scale: 0.985 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-          className="rounded-card overflow-hidden hairline-gold-soft"
-          style={{ aspectRatio: '4 / 3', minHeight: 360 }}
+          className="w-full max-w-full aspect-square sm:aspect-[4/3] rounded-card overflow-hidden hairline-gold-soft"
         >
           {filteredLines && (
             <CelestialMapView

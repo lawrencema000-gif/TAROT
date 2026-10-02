@@ -26,7 +26,7 @@ import { useGeocode } from '../hooks/useAstrology';
 import { supabase } from '../lib/supabase';
 import { getAttribution, clearAttribution } from '../utils/attribution';
 import { useT } from '../i18n/useT';
-import type { Goal, TonePreference } from '../types';
+import type { Goal, TonePreference, UserProfile } from '../types';
 
 // Value-based goal options — labels read from app.profile.goals.* at render time.
 const goalValues: Goal[] = ['love', 'career', 'confidence', 'healing', 'focus', 'purpose', 'stress'];
@@ -43,56 +43,53 @@ interface OAuthOnboardingPageProps {
   onComplete: () => void;
 }
 
-async function assignRandomVisuals(userId: string) {
-  try {
-    const backgrounds: string[] = [];
-    const { data: bgFolders } = await supabase.storage.from('backgrounds').list('', { limit: 100 });
-    if (bgFolders) {
-      for (const folder of bgFolders) {
-        if (folder.id) continue;
-        const { data: files } = await supabase.storage.from('backgrounds').list(folder.name, { limit: 100 });
-        if (files) {
-          for (const file of files) {
-            if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) {
-              const { data: urlData } = supabase.storage.from('backgrounds').getPublicUrl(`${folder.name}/${file.name}`);
-              if (urlData?.publicUrl) backgrounds.push(urlData.publicUrl);
-            }
-          }
-        }
-      }
-    }
+// New accounts used to be handed a random painted background and card back
+// from Storage here. Every screen then sat on art it had not chosen, and the
+// audits counted the contrast it cost on each. A new account now opens on
+// the token canvas and the default back; the painted sets remain a choice
+// in Settings → Appearance, where the pickers write the same two columns.
 
-    const cardBacks: string[] = [];
-    const { data: cbFolders } = await supabase.storage.from('card-backs').list('', { limit: 100 });
-    if (cbFolders) {
-      for (const folder of cbFolders) {
-        if (folder.id) continue;
-        const { data: files } = await supabase.storage.from('card-backs').list(folder.name, { limit: 100 });
-        if (files) {
-          for (const file of files) {
-            if (/\.(png|jpg|jpeg|webp)$/i.test(file.name)) {
-              const { data: urlData } = supabase.storage.from('card-backs').getPublicUrl(`${folder.name}/${file.name}`);
-              if (urlData?.publicUrl) cardBacks.push(urlData.publicUrl);
-            }
-          }
-        }
-      }
-    }
+type OnboardingData = {
+  goals: Goal[];
+  birthDate: string;
+  birthTime: string;
+  birthPlace: string;
+  birthLat: number | undefined;
+  birthLon: number | undefined;
+  tonePreference: TonePreference;
+  notificationsEnabled: boolean;
+  notificationTime: string;
+};
 
-    const updates: Record<string, string> = {};
-    if (backgrounds.length > 0) {
-      updates.background_url = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-    }
-    if (cardBacks.length > 0) {
-      updates.card_back_url = cardBacks[Math.floor(Math.random() * cardBacks.length)];
-    }
+/**
+ * What the profile already holds. `handleComplete` writes everything before
+ * the reveal step, so a reload before "Begin" used to restart at step 0 with
+ * every field blank; the fields come back from the row instead.
+ */
+function seedFromProfile(profile: UserProfile | null | undefined): OnboardingData {
+  return {
+    goals: Array.isArray(profile?.goals) ? profile.goals : [],
+    birthDate: profile?.birthDate ?? '',
+    birthTime: profile?.birthTime ?? '',
+    birthPlace: profile?.birthPlace ?? '',
+    birthLat: typeof profile?.birthLat === 'number' ? profile.birthLat : undefined,
+    birthLon: typeof profile?.birthLon === 'number' ? profile.birthLon : undefined,
+    tonePreference: profile?.tonePreference ?? 'gentle',
+    notificationsEnabled: profile?.notificationsEnabled ?? true,
+    notificationTime: profile?.notificationTime || '09:00',
+  };
+}
 
-    if (Object.keys(updates).length > 0) {
-      await supabase.from('profiles').update(updates).eq('id', userId);
-    }
-  } catch (err) {
-    console.error('Failed to assign random visuals:', err);
-  }
+/**
+ * The first step still missing an answer. Goals and the birth date are the
+ * two required answers; tone and reminders always hold a value, so once both
+ * required ones are on the row the stepper resumes at the last collecting
+ * step, one tap from "Begin".
+ */
+function firstIncompleteStep(data: OnboardingData): number {
+  if (data.goals.length === 0) return 0;
+  if (!data.birthDate) return 1;
+  return 3;
 }
 
 export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
@@ -108,25 +105,15 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     description: t(`oauth.tone.${value}.desc`),
   }));
   const { user, profile, updateProfile } = useAuth();
-  const [step, setStep] = useState(0);
+  const [data, setData] = useState<OnboardingData>(() => seedFromProfile(profile));
+  const [step, setStep] = useState(() => firstIncompleteStep(seedFromProfile(profile)));
   const [loading, setLoading] = useState(false);
   const [birthDateError, setBirthDateError] = useState('');
   const { results: geoResults, loading: geoLoading, search: geoSearch } = useGeocode();
   const [showGeoResults, setShowGeoResults] = useState(false);
   const geoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Visuals + attribution run while the reveal is on screen; Begin awaits them.
+  // Attribution runs while the reveal is on screen; Begin awaits it.
   const pendingRef = useRef<Promise<void> | null>(null);
-  const [data, setData] = useState({
-    goals: [] as Goal[],
-    birthDate: '',
-    birthTime: '',
-    birthPlace: '',
-    birthLat: undefined as number | undefined,
-    birthLon: undefined as number | undefined,
-    tonePreference: 'gentle' as TonePreference,
-    notificationsEnabled: true,
-    notificationTime: '09:00',
-  });
 
   const totalSteps = 4;
 
@@ -201,8 +188,6 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
     if (user) {
       const uid = user.id;
       pendingRef.current = (async () => {
-        await assignRandomVisuals(uid);
-
         // Persist ad attribution (UTM from landing) — only on first complete
         const attr = getAttribution();
         if (attr) {
@@ -226,9 +211,8 @@ export function OAuthOnboardingPage({ onComplete }: OAuthOnboardingPageProps) {
   const finish = async () => {
     setLoading(true);
     if (pendingRef.current) await pendingRef.current;
-    // Sealing the profile last means the upsert's returned row also carries
-    // the card back and background assignRandomVisuals just wrote, so Home
-    // opens on the assigned back rather than the default.
+    // Sealing the profile last: App.tsx renders this page only while the
+    // flag is false, so the write that flips it is the one that lets go.
     const { error } = await updateProfile({ onboardingComplete: true });
     if (error) {
       toast(t('oauth.toast.saveFailed'), 'error');

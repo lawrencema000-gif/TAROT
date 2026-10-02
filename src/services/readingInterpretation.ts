@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { TarotCard, ZodiacSign, Goal } from '../types';
 import { getLocale } from '../i18n/config';
 import i18n from '../i18n/config';
+import { tArray } from '../utils/tArray';
 
 export interface ReadingCard {
   id: number;
@@ -176,12 +177,8 @@ function spreadPositionsI18nKey(spreadType: string): string {
 export function getSpreadPositions(spreadType: string): string[] {
   const fallback = spreadPositions[spreadType] || spreadPositions.single;
   const key = spreadPositionsI18nKey(spreadType);
-  const v = i18n.t(`readings.spreadPositions.${key}`, {
-    ns: 'app',
-    returnObjects: true,
-    defaultValue: fallback,
-  });
-  return Array.isArray(v) && v.length > 0 ? (v as string[]) : fallback;
+  const v = tArray((k, o) => i18n.t(k, o), `readings.spreadPositions.${key}`, fallback, { ns: 'app' });
+  return v.length > 0 ? v : fallback;
 }
 
 export function getSpreadCardCount(spreadType: string): number {

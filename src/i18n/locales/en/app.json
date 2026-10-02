@@ -4287,7 +4287,8 @@
       "premiumTitle": "Get Premium",
       "premiumSub": "No Moonstones to spend, no ads, every spread and chart",
       "notNow": "Not now"
-    }
+    },
+    "gateCheckFailed": "Couldn’t check your balance — try again."
   },
   "askOracle": {
     "cta": "Ask the Oracle about this",
@@ -4464,7 +4465,8 @@
     "rollAgain": "Roll again",
     "rolling": "Rolling…",
     "astroIntro": "The astrologer’s dice — three fall at once: a planet for WHAT, a sign for HOW, a house for WHERE in your life. Hold a question, then roll.",
-    "askOracle": "Ask the Oracle about this"
+    "askOracle": "Ask the Oracle about this",
+    "oracleQuestion": "The astro dice gave me {{planet}} in {{sign}} in House {{house}}. What is this pointing to for me right now?"
   },
   "crisis": {
     "title": "You are not alone",
@@ -4677,7 +4679,9 @@
       "zodiac": "Zodiac",
       "element": "Element"
     },
-    "shareLink": "Share my invite link"
+    "shareLink": "Share my invite link",
+    "notFoundTitle": "This invite isn’t here",
+    "backHome": "Back to Home"
   },
   "advisorBooking": {
     "back": "Back",
@@ -5384,5 +5388,11 @@
       "tarotCourt": "Tarot court card match",
       "cosmicProfile": "Cosmic profile"
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "heading": "This page doesn’t exist",
+    "body": "The link may be mistyped, or the page has moved. Nothing you have saved is affected.",
+    "backHome": "Back to Home"
   }
 }

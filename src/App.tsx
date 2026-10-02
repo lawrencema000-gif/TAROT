@@ -38,6 +38,9 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { OAuthOnboardingPage } from './pages/OAuthOnboardingPage';
 import { AuthPage } from './pages/AuthPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+// Eager: the screen behind an unknown path must never itself depend on a
+// chunk that a stale deploy might have removed.
+import { NotFoundPage } from './pages/NotFoundPage';
 // The marketing landing is a web-only cold-visitor screen; it and its
 // stylesheet load only when a signed-out browser lands on /.
 const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -63,6 +66,7 @@ const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(m => ({ defa
 const TarotMeaningsPage = lazy(() => import('./pages/TarotMeaningsPage').then(m => ({ default: m.TarotMeaningsPage })));
 const TarotCardMeaningPage = lazy(() => import('./pages/TarotCardMeaningPage').then(m => ({ default: m.TarotCardMeaningPage })));
 const IChingPage = lazy(() => import('./pages/IChingPage').then(m => ({ default: m.IChingPage })));
+const MoodDiaryPage = lazy(() => import('./pages/MoodDiaryPage').then(m => ({ default: m.MoodDiaryPage })));
 const CommunityPage = lazy(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
 const AiCompanionPage = lazy(() => import('./pages/AiCompanionPage').then(m => ({ default: m.AiCompanionPage })));
 const AdvisorsPage = lazy(() => import('./pages/AdvisorsPage').then(m => ({ default: m.AdvisorsPage })));
@@ -208,6 +212,11 @@ function AppContent() {
   // production — but the route was never gated on it, so the preview has been
   // reachable by URL the whole time. Same shape as the advisors gap above.
   const sandboxEnabled = useFeatureFlag('sandbox');
+  // ReadingsPage gates the I Ching TAB on this flag; the /iching route was
+  // unconditional, so the screen was reachable by URL with the flag off.
+  // Live rooms are at 0% and the page says "soon" throughout — same gap.
+  const ichingEnabled = useFeatureFlag('iching');
+  const liveRoomsEnabled = useFeatureFlag('live-rooms');
   const { user, profile, loading, isAdmin, refreshProfile, isProcessingOAuth, cancelOAuth, passwordRecoveryMode } = useAuth();
   const { activeTab, setActiveTab, activeOverlay, openOverlay, closeOverlay } = useUI();
   const location = useLocation();
@@ -461,6 +470,7 @@ function AppContent() {
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="/reading/:token" element={<SharedReadingPage />} />
                 {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
           </main>
@@ -588,7 +598,19 @@ function AppContent() {
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:slug" element={<BlogPostPage />} />
                   <Route path="/admin" element={<AdminPage />} />
-                  <Route path="/iching" element={<IChingPage />} />
+                  <Route path="/iching" element={ichingEnabled ? <IChingPage /> : <Navigate to="/" replace />} />
+                  <Route path="/mood-diary" element={<MoodDiaryPage />} />
+                  {/* The learn library. These were only in the public table, so
+                      a member following a footer link or "Back to glossary"
+                      bounced to Home. */}
+                  <Route path="/tarot-meanings" element={<TarotMeaningsPage />} />
+                  <Route path="/tarot-meanings/:slug" element={<TarotCardMeaningPage />} />
+                  <Route path="/glossary" element={<GlossaryPage />} />
+                  <Route path="/glossary/:slug" element={<GlossaryEntryPage />} />
+                  <Route path="/numerology" element={<NumerologyLearnPage />} />
+                  <Route path="/numerology/:slug" element={<NumerologyEntryPage />} />
+                  <Route path="/crystals" element={<CrystalsPage />} />
+                  <Route path="/crystals/:slug" element={<CrystalEntryPage />} />
                   <Route path="/community" element={<CommunityPage mode="normal" />} />
                   <Route path="/whispering-well" element={<CommunityPage mode="whispering-well" />} />
                   <Route path="/companion" element={<AiCompanionPage />} />
@@ -603,8 +625,8 @@ function AppContent() {
                   <Route path="/advisors/session/:id" element={advisorsEnabled ? <AdvisorSessionPage /> : <Navigate to="/" replace />} />
                   <Route path="/ai/quick" element={<QuickReadingPage />} />
                   <Route path="/ai/tarot" element={<TarotCompanionPage />} />
-                  <Route path="/live-rooms" element={<LiveRoomsPage />} />
-                  <Route path="/live-rooms/:id" element={<LiveRoomPage />} />
+                  <Route path="/live-rooms" element={liveRoomsEnabled ? <LiveRoomsPage /> : <Navigate to="/" replace />} />
+                  <Route path="/live-rooms/:id" element={liveRoomsEnabled ? <LiveRoomPage /> : <Navigate to="/" replace />} />
                   <Route path="/advisors/verify" element={advisorsEnabled ? <AdvisorVerifyPage /> : <Navigate to="/" replace />} />
                   <Route path="/sandbox" element={sandboxEnabled ? <SandboxPage /> : <Navigate to="/" replace />} />
                   <Route path="/advisors/dashboard" element={advisorsEnabled ? <AdvisorDashboardPage /> : <Navigate to="/" replace />} />
@@ -630,7 +652,10 @@ function AppContent() {
                   <Route path="/journey" element={<FoolsJourneyPage />} />
                   <Route path="/unsubscribe" element={<UnsubscribePage />} />
                   {isDev && <Route path="/dev/redesign-showcase" element={<RedesignShowcasePage />} />}
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* Legacy: the Dice Oracle linked here before the AI hub moved
+                      under /ai; an installed shortcut or a bookmark may still. */}
+                  <Route path="/quick-reading" element={<Navigate to="/ai/quick" replace />} />
+                  <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </motion.div>
             </AnimatePresence>

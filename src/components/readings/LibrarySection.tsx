@@ -17,6 +17,7 @@ import { savedHighlights as savedHighlightsDalRef, tarotReadings as tarotReading
 import { localizeCardNameSync, prefetchCardNameIndex } from '../../i18n/localizeCard';
 import { localizeSignName } from '../../i18n/localizeNames';
 import { getLocale } from '../../i18n/config';
+import { tArray } from '../../utils/tArray';
 import type { ZodiacSign as ZodiacSignPC } from '../../types/astrology';
 
 type LibraryTab = 'saved' | 'guides' | 'ai-readings';
@@ -88,10 +89,7 @@ export function LibrarySection() {
   const guides: Guide[] = GUIDE_IDS.map((id) => {
     const title = t(`library.guides.${id}.title`, { defaultValue: id });
     const description = t(`library.guides.${id}.description`, { defaultValue: '' });
-    const rawSections = t(`library.guides.${id}.sections`, { returnObjects: true, defaultValue: [] });
-    const sections: GuideSection[] = Array.isArray(rawSections)
-      ? (rawSections as GuideSection[])
-      : [];
+    const sections = tArray<GuideSection>(t, `library.guides.${id}.sections`, []);
     return { id, title, description, sections };
   });
   const [selectedReading, setSelectedReading] = useState<PremiumReading | null>(null);

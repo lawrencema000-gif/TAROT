@@ -13,9 +13,11 @@ import {
   TarotCardIcon,
   ListRow,
   ListRowGroup,
+  Sheet,
 } from '../components/ui';
 import { localizeSeekerRank } from '../i18n/localizeRank';
 import { TarotFlipCard, HoroscopeCard, PromptCard } from '../components/ritual';
+import { TarotCardDetail } from '../components/readings/TarotCardDetail';
 import { DailyMissionCard } from '../components/ritual/DailyMissionCard';
 import { DailyCosmicScore } from '../components/ritual/DailyCosmicScore';
 import { DailyMansionCard } from '../components/ritual/DailyMansionCard';
@@ -80,6 +82,7 @@ export function HomePage() {
     completed: false,
   });
   const [drawnTarot, setDrawnTarot] = useState<{ card: TarotCard; reversed: boolean } | null>(null);
+  const [showCardDetail, setShowCardDetail] = useState(false);
   const [tarotSaved, setTarotSaved] = useState(false);
   const [savedToday, setSavedToday] = useState<SavedHighlight[]>([]);
   const [isFirstTime, setIsFirstTime] = useState(false);
@@ -127,9 +130,22 @@ export function HomePage() {
       ]);
 
       if (ritualResult.ok && ritualResult.data) {
-        const state = ritualResult.data;
+        // OR each flag with what this device already saw done. The server
+        // row is the record, but a write that was rejected or has not landed
+        // yet must never un-tick a part the user just finished: the hero used
+        // to snap back to "1 of 3 parts done" on every return to Home.
+        const server = ritualResult.data;
+        const horoscopeViewed = server.horoscopeViewed || !!cached?.horoscopeViewed;
+        const tarotViewed = server.tarotViewed || !!cached?.tarotViewed;
+        const promptViewed = server.promptViewed || !!cached?.promptViewed;
+        const state: RitualState = {
+          horoscopeViewed,
+          tarotViewed,
+          promptViewed,
+          completed: server.completed || !!cached?.completed || (horoscopeViewed && tarotViewed && promptViewed),
+        };
         setRitualState(state);
-        setRitualStarted(state.horoscopeViewed || state.tarotViewed || state.promptViewed);
+        setRitualStarted(horoscopeViewed || tarotViewed || promptViewed);
         cacheDailyRitual(user.id, { ...state, date: today });
       }
 
@@ -267,7 +283,9 @@ export function HomePage() {
 
   const handleReadHoroscope = () => {
     updateRitualProgress('horoscopeViewed');
-    setActiveTab('readings');
+    // The card says "Read": open the horoscope, not the Readings tab's
+    // default tarot panel. ReadingsPage reads `state.tab` for its first tab.
+    navigate('/readings', { state: { tab: 'horoscope' } });
   };
 
   const handleTarotSave = async () => {
@@ -326,7 +344,8 @@ export function HomePage() {
 
   const handleTarotMeaning = () => {
     updateRitualProgress('tarotViewed');
-    setActiveTab('readings');
+    // "Meaning" opens this card, here — not the deck on the Readings tab.
+    setShowCardDetail(true);
   };
 
   const handleWritePrompt = () => {
@@ -552,6 +571,20 @@ export function HomePage() {
         today={today}
         justCompleted={celebrationReason === 'complete'}
       />
+
+      <Sheet
+        open={showCardDetail && !!drawnTarot}
+        onClose={() => setShowCardDetail(false)}
+        title={drawnTarot?.card.name}
+      >
+        {drawnTarot && (
+          <TarotCardDetail
+            card={drawnTarot.card}
+            reversed={drawnTarot.reversed}
+            onClose={() => setShowCardDetail(false)}
+          />
+        )}
+      </Sheet>
     </Page>
   );
 }

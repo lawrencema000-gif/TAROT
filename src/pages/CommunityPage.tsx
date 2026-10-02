@@ -9,8 +9,10 @@ import { community } from '../dal';
 import { SIGN_ZONES, type SignZone } from '../dal/community';
 import { getZodiacSign } from '../utils/zodiac';
 import { awardXP } from '../services/levelSystem';
-import { publishContent, type ModerationSurface } from '../services/moderation';
+import { publishContent, type ModerationSurface, type ModerationResult } from '../services/moderation';
 import { CrisisBanner } from '../components/community/CrisisBanner';
+
+type CrisisResources = NonNullable<ModerationResult['crisisResources']>;
 import type {
   CommunityPost,
   CommunityComment,
@@ -88,6 +90,11 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [crisisBannerOpen, setCrisisBannerOpen] = useState(false);
+  const [crisisResources, setCrisisResources] = useState<CrisisResources | undefined>(undefined);
+  const openCrisisBanner = useCallback((resources?: CrisisResources) => {
+    setCrisisResources(resources);
+    setCrisisBannerOpen(true);
+  }, []);
 
   const isWhisperingWell = mode === 'whispering-well';
 
@@ -103,7 +110,10 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
     [mySign],
   );
 
-  // Load feed
+  // Load feed. Blocked authors are filtered at render (visiblePosts), not
+  // here: with blockedIds in this callback's deps the feed fetched once on
+  // mount and again when the blocks resolved, and a failing feed toasted
+  // twice for it.
   const loadFeed = useCallback(async () => {
     setLoading(true);
     const topic = isWhisperingWell ? 'whispering-well' as const : (selectedTopic === 'all' ? undefined : selectedTopic);
@@ -113,17 +123,33 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
       currentUserId: user?.id,
     });
     if (res.ok) {
-      const filtered = res.data.filter((p) => !blockedIds.has(p.userId));
-      setPosts(filtered);
+      setPosts(res.data);
     } else {
       toast(t('community.loadFailed', { defaultValue: 'Could not load feed' }), 'error');
     }
     setLoading(false);
-  }, [selectedTopic, user?.id, blockedIds, isWhisperingWell, t]);
+  }, [selectedTopic, user?.id, isWhisperingWell, t]);
 
   useEffect(() => {
     loadFeed();
   }, [loadFeed]);
+
+  const visiblePosts = useMemo(
+    () => posts.filter((p) => !blockedIds.has(p.userId)),
+    [posts, blockedIds],
+  );
+
+  // One banner for the whole page, whichever view is showing. It used to be
+  // mounted inside the composer branch, and `onSuccess` swapped that branch
+  // for the feed in the same tick — so a flagged post showed "Posted" and the
+  // helplines never appeared.
+  const crisisBanner = (
+    <CrisisBanner
+      open={crisisBannerOpen}
+      onClose={() => setCrisisBannerOpen(false)}
+      resources={crisisResources}
+    />
+  );
 
   // Load user's blocks once
   useEffect(() => {
@@ -201,9 +227,9 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
             setView('feed');
             loadFeed();
           }}
-          onCrisisDetected={() => setCrisisBannerOpen(true)}
+          onCrisisDetected={openCrisisBanner}
         />
-        <CrisisBanner open={crisisBannerOpen} onClose={() => setCrisisBannerOpen(false)} />
+        {crisisBanner}
       </>
     );
   }
@@ -218,10 +244,10 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
           onReact={handleReact}
           onReport={handleReport}
           onBlock={handleBlock}
-          onCrisisDetected={() => setCrisisBannerOpen(true)}
+          onCrisisDetected={openCrisisBanner}
           surface={isWhisperingWell ? 'whispering-well' : 'comment'}
         />
-        <CrisisBanner open={crisisBannerOpen} onClose={() => setCrisisBannerOpen(false)} />
+        {crisisBanner}
       </>
     );
   }
@@ -231,6 +257,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
   const HeaderIcon = headerIcon;
 
   return (
+    <>
     <Page spacing="sm" className={isWhisperingWell ? 'text-mystic-200' : ''}>
       <PageHeader
         icon={<HeaderIcon />}
@@ -317,7 +344,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         </div>
       )}
 
-      {!loading && posts.length === 0 && (
+      {!loading && visiblePosts.length === 0 && (
         <Card padding="lg" className="text-center">
           <p className="text-mystic-400 text-sm italic">
             {isWhisperingWell
@@ -327,7 +354,7 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         </Card>
       )}
 
-      {posts.map((post) => (
+      {visiblePosts.map((post) => (
         <PostCard
           key={post.id}
           post={post}
@@ -341,6 +368,8 @@ export function CommunityPage({ mode = 'normal' }: CommunityPageProps) {
         />
       ))}
     </Page>
+    {crisisBanner}
+    </>
   );
 }
 
@@ -473,7 +502,7 @@ function Composer({
   topic: CommunityTopic;
   onBack: () => void;
   onSuccess: () => void;
-  onCrisisDetected: () => void;
+  onCrisisDetected: (resources?: CrisisResources) => void;
 }) {
   const { t } = useT('app');
   const { user } = useAuth();
@@ -509,7 +538,7 @@ function Composer({
       isAnonymous: mode === 'whispering-well' ? true : isAnon,
     });
 
-    if (moderation.crisis) onCrisisDetected();
+    if (moderation.crisis) onCrisisDetected(moderation.crisisResources);
 
     if (moderation.verdict === 'block') {
       setSubmitting(false);
@@ -627,7 +656,7 @@ interface PostDetailProps {
   onReact: (post: CommunityPost, r: ReactionType) => void;
   onReport: (post: CommunityPost, reason: ReportReason) => void;
   onBlock: (post: CommunityPost) => void;
-  onCrisisDetected: () => void;
+  onCrisisDetected: (resources?: CrisisResources) => void;
   surface: ModerationSurface;
 }
 
@@ -662,7 +691,7 @@ function PostDetail({ post, onBack, onReact, onReport, onBlock, onCrisisDetected
       postId: post.id,
       isAnonymous: isAnonComment,
     });
-    if (moderation.crisis) onCrisisDetected();
+    if (moderation.crisis) onCrisisDetected(moderation.crisisResources);
     if (moderation.verdict === 'block') {
       setSubmitting(false);
       toast(

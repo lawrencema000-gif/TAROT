@@ -30,6 +30,20 @@ const DiceSection = lazy(() => import('./DicePage').then(m => ({ default: m.Dice
 
 type ReadingTab = 'tarot' | 'horoscope' | 'compatibility' | 'iching' | 'human-design' | 'bazi' | 'dream' | 'mood' | 'partner' | 'fengshui' | 'runes' | 'dice' | 'celestial' | 'library';
 
+/**
+ * Tabs another screen may open directly via `navigate('/readings', { state:
+ * { tab } })` — Home's ritual card asks for the horoscope. Premium tabs are
+ * not here: landing on one would skip the paywall the tab strip shows.
+ */
+const LINKABLE_TABS: ReadonlySet<string> = new Set<ReadingTab>([
+  'tarot', 'horoscope', 'compatibility', 'iching', 'mood', 'fengshui', 'runes', 'dice', 'library',
+]);
+
+function initialTab(state: unknown): ReadingTab {
+  const wanted = (state as { tab?: unknown } | null)?.tab;
+  return typeof wanted === 'string' && LINKABLE_TABS.has(wanted) ? (wanted as ReadingTab) : 'tarot';
+}
+
 /** Lucide icons and the app's own SVG glyphs both satisfy this. */
 type TabIcon = ComponentType<{ className?: string }>;
 
@@ -46,18 +60,20 @@ export function ReadingsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const isPremium = !!profile?.isPremium;
-  const [activeTab, setActiveTab] = useState<ReadingTab>('tarot');
+  const [activeTab, setActiveTab] = useState<ReadingTab>(() => initialTab(location.state));
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState('');
 
-  // A custom spread handed off from the builder via router state. Captured
-  // once at mount (lazy initializer) and then the history state is cleared
-  // so a tab switch or refresh doesn't re-launch the same custom reading.
+  // A custom spread handed off from the builder via router state, or a tab
+  // asked for by another screen. Both are captured once at mount (lazy
+  // initializers) and then the history state is cleared so a tab switch or
+  // refresh doesn't re-launch the same custom reading.
   const [customSpread] = useState<CustomSpreadInput | undefined>(
     () => (location.state as { customSpread?: CustomSpreadInput } | null)?.customSpread,
   );
   useEffect(() => {
-    if ((location.state as { customSpread?: CustomSpreadInput } | null)?.customSpread) {
+    const state = location.state as { customSpread?: CustomSpreadInput; tab?: unknown } | null;
+    if (state?.customSpread || state?.tab !== undefined) {
       navigate('.', { replace: true, state: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

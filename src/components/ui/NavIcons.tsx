@@ -13,6 +13,9 @@ import { memo, type SVGProps } from 'react';
  *                         with a small center dot. Replaces the generic
  *                         Star icon for the Horoscope tab — reads as
  *                         "natal chart wheel" at first glance.
+ *   PlayingCardIcon     — the same card outline with a small spade and an
+ *                         index dot in the corner: the cartomancy deck,
+ *                         next to the tarot card in a nav row or a tab.
  */
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, 'viewBox' | 'fill'>;
@@ -41,6 +44,36 @@ export const TarotCardIcon = memo(function TarotCardIcon({
       <path d="M 12 8 C 12 10, 12 10, 14.5 11 C 12 12, 12 12, 12 14.5 C 12 12, 12 12, 9.5 11 C 12 10, 12 10, 12 8 Z" fill="currentColor" stroke="none" />
       {/* Subtle horizontal accent line below sparkle */}
       <line x1={9} y1={17} x2={15} y2={17} strokeOpacity={0.5} />
+    </svg>
+  );
+});
+
+export const PlayingCardIcon = memo(function PlayingCardIcon({
+  className = '',
+  ...rest
+}: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+      {...rest}
+    >
+      {/* The TarotCardIcon outline, so the two decks read as siblings */}
+      <rect x={6} y={3} width={12} height={18} rx={1.6} ry={1.6} />
+      {/* Index dot — where the rank sits on a real card */}
+      <circle cx={8.7} cy={5.9} r={0.9} fill="currentColor" stroke="none" />
+      {/* Spade: two lobes, a point, a short stem */}
+      <path
+        d="M 12 8.6 C 10.4 10.4, 8.9 11.5, 8.9 13 A 1.65 1.65 0 0 0 11.6 14.1 C 11.45 15, 11.1 15.65, 10.6 16.1 H 13.4 C 12.9 15.65, 12.55 15, 12.4 14.1 A 1.65 1.65 0 0 0 15.1 13 C 15.1 11.5, 13.6 10.4, 12 8.6 Z"
+        fill="currentColor"
+        stroke="none"
+      />
     </svg>
   );
 });

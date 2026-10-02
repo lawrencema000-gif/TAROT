@@ -672,6 +672,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+    // Re-arm on every run: the cleanup below sets this false, and React's
+    // StrictMode runs effect → cleanup → effect in development. Without this
+    // the second run inherits `false`, fetchProfile() bails at its stale-write
+    // guard forever and the app sits on "Loading your profile…".
+    mountedRef.current = true;
     let appUrlListener: { remove: () => void } | null = null;
     let mounted = true;
     let launchUrlHandled = false;
@@ -780,6 +785,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (mounted) {
+          // The stale-write guard must know the bootstrap user before the
+          // fetch resolves; onAuthStateChange sets it too, but on a cold load
+          // the profile can come back first.
+          activeUserIdRef.current = session?.user?.id ?? null;
           setSession(session);
           setUser(session?.user ?? null);
           if (session?.user) {

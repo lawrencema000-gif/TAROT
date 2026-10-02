@@ -207,6 +207,22 @@
   --surface-raised: 31, 31, 58;    /* mystic.800 #1f1f3a — input, chip */
   --hairline: 44, 44, 76;          /* mystic.700 #2c2c4c — border */
 
+  /* paper — the reading surface (Phase 7). Hex twins: `paper` / `ink` in
+     tailwind.config.js. Only Paper.tsx paints bg-paper; the .paper-prose
+     scope below reads these to remap the body tier onto the sheet. */
+  --paper: 244, 238, 225;          /* paper.DEFAULT  #f4eee1 — the sheet */
+  --paper-2: 234, 226, 207;        /* paper.2        #eae2cf — inset panel */
+  --paper-hairline: 216, 207, 184; /* paper.hairline #d8cfb8 — border on paper */
+  --ink: 21, 21, 42;               /* ink.DEFAULT    #15152a — 15.5:1 on paper */
+  --ink-2: 59, 59, 86;             /* ink.2          #3b3b56 — body copy, 9.3:1 */
+  --ink-muted: 95, 95, 122;        /* ink.muted      #5f5f7a — meta, 5.3:1 */
+  --ink-gold: 122, 95, 20;         /* ink.gold       #7a5f14 — the only gold allowed as text on paper, 5.2:1 */
+  --ink-teal: 23, 111, 105;        /* ink.teal       #176f69 */
+  --ink-coral: 163, 63, 38;        /* ink.coral      #a33f26 */
+  --ink-violet: 91, 63, 134;       /* ink.violet     #5b3f86 */
+  --ink-blue: 47, 90, 140;         /* ink.blue       #2f5a8c */
+  --ink-rose: 154, 74, 85;         /* ink.rose       #9a4a55 */
+
   /* Keyboard focus ring. gold-light rather than gold: 14.0:1 on the canvas
      and 12.4:1 on a Card, and it stays visible when the ring lands beside
      a gold-filled button, which plain gold does not. */
@@ -681,9 +697,11 @@
     color: rgb(var(--gold-primary));
   }
 
-  /* Drop cap — first letter of a paragraph rendered as an ornate
-     serif initial, in the style of illuminated manuscripts. Apply
-     `.drop-cap` to a wrapping <p>. */
+  /* Drop cap — first letter of a paragraph rendered as a serif initial.
+     Apply `.drop-cap` to a wrapping <p>. ReadingProse no longer applies
+     it (Phase 7: the gold glow under an initial was the tell); the class
+     stays for the one or two editorial pages that opt in, without the
+     text-shadow. */
   .drop-cap::first-letter {
     font-family: 'Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', Georgia, serif;
     font-weight: 600;
@@ -693,7 +711,6 @@
     margin: 0.12em 0.12em 0 0;
     padding: 0.04em 0.08em 0 0;
     color: rgb(var(--gold-primary));
-    text-shadow: 0 0 12px rgba(var(--gold-primary), 0.25);
   }
 
   /* Gold-foil gradient text — used sparingly for statement labels
@@ -771,6 +788,17 @@
     font-size: clamp(1.125rem, 2.4vw, 1.375rem);
     letter-spacing: 0.005em;
     line-height: 1.2;
+  }
+  /* Bold display — a modifier, not a size. Cormorant 600 is self-hosted
+     (the @font-face block above) and no heading used it; the serif at a
+     light weight was the one thing the type still had in common with the
+     generated register. Pair with a heading-display-* class on: the result
+     question title, "Reading summary", card names on detail and meaning
+     pages, lesson concepts, library and journal screen titles. Not on the
+     Home greeting or PageHeader defaults. */
+  .heading-strong {
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   /* ── Redesign 2026 — the body tier ─────────────────────────────
@@ -888,6 +916,63 @@
   .prose-reading pre { overflow-x: auto; padding: 1rem; border-radius: 0.75rem; @apply bg-mystic-900; }
   .prose-reading pre code { padding: 0; background: none; }
   .prose-reading hr { margin: 2em 0; @apply border-0 border-t border-mystic-700; }
+
+  /* ── Phase 7 — paper ───────────────────────────────────────────
+     The reading surface. Paper.tsx applies this scope (and AffirmationPanel
+     on its paper surface); nothing else may paint bg-paper — the tokens
+     gate holds it to that file. The scope remaps the body tier, the
+     headings and the eyebrow onto the ink roles, so a ReadingProse or an
+     EyebrowLabel written for the canvas reads correctly when it lands on
+     the sheet. Descendant selectors (0,2,0) beat the single-class
+     utilities the primitives carry (0,1,0).
+
+     gold #d4af37 is 1.82:1 on paper and may never be text here. The
+     `.text-gold*` rules at the end are the safety net: any stray text-gold
+     inside paper becomes ink-gold (5.2:1). Gold FILLS with mystic-950 text
+     (the Button) are untouched. The Disclaimer that closes a sheet is a
+     sibling of Paper, not a child, so its dark block is never remapped. */
+  .paper-prose { color: rgb(var(--ink)); }
+  .paper-prose h1, .paper-prose h2, .paper-prose h3, .paper-prose h4 { color: rgb(var(--ink)); }
+  .paper-prose strong, .paper-prose b { color: rgb(var(--ink)); }
+  .paper-prose a {
+    color: rgb(var(--ink-gold));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .paper-prose blockquote,
+  .paper-prose .reading-quote {
+    color: rgb(var(--ink));
+    border-left-color: rgb(var(--ink-gold));
+  }
+  .paper-prose .reading-lede { color: rgb(var(--ink)); }
+  .paper-prose .reading-copy { color: rgb(var(--ink-2)); }
+  .paper-prose .reading-meta,
+  .paper-prose .reading-caption { color: rgb(var(--ink-muted)); }
+  .paper-prose .font-display-eyebrow { color: rgb(var(--ink-2)); }
+  /* Rendered markdown (blog, learn entries) on paper. */
+  .paper-prose .prose-reading { color: rgb(var(--ink-2)); }
+  .paper-prose .prose-reading > p:first-of-type,
+  .paper-prose .prose-reading > :where(article, section, div) > p:first-of-type { color: rgb(var(--ink)); }
+  .paper-prose .prose-reading h1, .paper-prose .prose-reading h2, .paper-prose .prose-reading h3,
+  .paper-prose .prose-reading strong, .paper-prose .prose-reading blockquote { color: rgb(var(--ink)); }
+  .paper-prose .prose-reading a { color: rgb(var(--ink-gold)); }
+  .paper-prose .prose-reading blockquote { border-left-color: rgb(var(--ink-gold)); }
+  .paper-prose .prose-reading code { background: rgb(var(--paper-2)); color: rgb(var(--ink)); }
+  .paper-prose .prose-reading pre { background: rgb(var(--paper-2)); }
+  .paper-prose .prose-reading hr { border-color: rgb(var(--paper-hairline)); }
+  /* Safety net — see above. */
+  .paper-prose .text-gold,
+  .paper-prose .text-gold-light,
+  .paper-prose .text-gold-dark { color: rgb(var(--ink-gold)) !important; }
+  /* The keyword pill (Tag variant="keyword") flips from a gold tint to a
+     filled ink-gold pill with paper text (5.2:1). !important so it wins
+     over the text-gold net above at equal specificity; it is declared
+     after it on purpose. */
+  .paper-prose .keyword-pill {
+    background-color: rgb(var(--ink-gold));
+    color: rgb(var(--paper)) !important;
+  }
 
   /* ── Redesign 2026 — hairline borders ─────────────────────────
      Softer alternative to the existing border-glow utility. Uses

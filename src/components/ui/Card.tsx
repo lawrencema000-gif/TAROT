@@ -1,4 +1,4 @@
-import { HTMLAttributes, forwardRef } from 'react';
+import { HTMLAttributes, KeyboardEvent, MouseEvent, forwardRef } from 'react';
 
 // `ornate` and `glow` are legacy names kept in the union only so the pages
 // that still spell them typecheck while they are migrated; both render as
@@ -20,6 +20,13 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
    */
   variant?: CardVariant;
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  /**
+   * The card is a target. With `onClick` it also becomes one for keyboards
+   * and screen readers: role="button", tabIndex 0, Enter/Space → onClick,
+   * a focus ring. It stays a div so a card may hold a nested button or
+   * link (a real <button> cannot). (R6 A4: quiz cards, journal entries and
+   * templates could not be opened without a pointer.)
+   */
   interactive?: boolean;
 }
 
@@ -98,6 +105,32 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
             '[@media(hover:hover)]:[&:hover:not(:active)]:-translate-y-0.5 ' +
             'motion-safe:active:scale-[0.98]'
         : '';
+    // A card that acts is a button to the keyboard. The ring is stated
+    // explicitly (motion may never be what hides focus) and is not part of
+    // any transition. Enter/Space fire onClick only when the card itself is
+    // focused: a nested <button> handles its own keys and the keydown
+    // bubbles up through here, so without the target check one Enter would
+    // fire twice.
+    const { onClick, onKeyDown } = props;
+    const acts = Boolean(interactive && onClick);
+    const buttonProps = acts
+      ? {
+          role: 'button' as const,
+          tabIndex: 0,
+          onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+            onKeyDown?.(e);
+            if (e.defaultPrevented || e.target !== e.currentTarget) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick?.(e as unknown as MouseEvent<HTMLDivElement>);
+            }
+          },
+        }
+      : {};
+    const focusClass = acts
+      ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 ' +
+        'focus-visible:ring-offset-2 focus-visible:ring-offset-mystic-950'
+      : '';
     // No blur: every fill here is opaque, so a blur had nothing to blur and
     // cost a compositing layer per card for it.
     return (
@@ -108,9 +141,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           ${variantStyles[variant]}
           ${paddingStyles[padding]}
           ${interactiveClass}
+          ${focusClass}
           ${className}
         `}
         {...props}
+        {...buttonProps}
       >
         {children}
       </div>

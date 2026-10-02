@@ -8,8 +8,9 @@ import { supabase } from '../lib/supabase';
  *
  * **Business-model refactor 2026-04-25** — rewarded ads no longer grant
  * single-use feature unlocks. Each completed ad credits a flat
- * +50 Moonstones (the universal unlock currency) via the SECURITY
- * DEFINER RPC `moonstone_credit_for_ad`. Moonstones can then be spent
+ * +50 Moonstones (the universal unlock currency) through the `ad-reward`
+ * edge function, which runs the credit as the service role with the
+ * amount and the daily/interval caps fixed server-side. Moonstones can then be spent
  * on any report/unlock surface OR users can subscribe to Premium
  * (which unlocks everything).
  *
@@ -99,20 +100,21 @@ class RewardedAdsService {
     });
 
     AdMob.addListener(RewardAdPluginEvents.Rewarded, async () => {
-      // Ad reward fired. Credit +50 Moonstones via the RPC. Idempotent
-      // per ad_event_id on the server side — a double-fire can't double
-      // credit.
+      // Ad reward fired. Credit +50 Moonstones through the ad-reward edge
+      // function (service role, amount fixed server-side, 6 credits per UTC
+      // day, 20 s apart, idempotent per ad_event_id — a double-fire can't
+      // double credit). The old direct RPC accepted any id and amount from
+      // any client and is service-role only now (migration 20261003000005).
       let persisted = false;
       let newBalance = 0;
       if (this.pending && this.currentUserId) {
         try {
-          const { data, error } = await supabase.rpc('moonstone_credit_for_ad', {
-            p_ad_event_id: this.pending.adEventId,
-            p_amount: MOONSTONES_PER_AD,
+          const { data, error } = await supabase.functions.invoke('ad-reward', {
+            body: { adEventId: this.pending.adEventId },
           });
           if (!error) {
-            const row = Array.isArray(data) ? data[0] : data;
-            newBalance = (row?.new_balance as number) ?? 0;
+            const payload = (data as { data?: { newBalance?: number } } | null)?.data;
+            newBalance = payload?.newBalance ?? 0;
             persisted = true;
             this.pending.onCredited?.(newBalance);
             // Broadcast for the home widget + any open balance display.

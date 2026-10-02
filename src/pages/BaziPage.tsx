@@ -20,6 +20,7 @@ import {
 import { computeBaziDeep, type Gender as BaziGender } from '../data/baziDeep';
 import { LuckPillarTimeline } from '../components/charts/LuckPillarTimeline';
 import { renderShareCard, shareOrDownload } from '../utils/shareableResultCard';
+import { tArray } from '../utils/tArray';
 import { BaziAIReadingPanel } from '../components/bazi/BaziAIReading';
 import { determineStructure, STRUCTURE_MEANINGS, STRUCTURE_INTRO } from '../data/baziStructure';
 
@@ -161,14 +162,8 @@ export function BaziPage() {
     const name = localized('name', dayMasterInfo.name);
     const archetype = localized('archetype', dayMasterInfo.archetype);
     const summary = localized('summary', dayMasterInfo.summary);
-    const strengths = t(`bazi.dayMasters.${key}.strengths`, {
-      returnObjects: true,
-      defaultValue: dayMasterInfo.strengths,
-    }) as string[];
-    const challenges = t(`bazi.dayMasters.${key}.challenges`, {
-      returnObjects: true,
-      defaultValue: dayMasterInfo.challenges,
-    }) as string[];
+    const strengths = tArray(t, `bazi.dayMasters.${key}.strengths`, dayMasterInfo.strengths);
+    const challenges = tArray(t, `bazi.dayMasters.${key}.challenges`, dayMasterInfo.challenges);
     const thriving = localized('thriving', dayMasterInfo.thriving);
     const struggling = localized('struggling', dayMasterInfo.struggling);
     const affirmation = localized('affirmation', dayMasterInfo.affirmation);

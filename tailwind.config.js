@@ -71,6 +71,39 @@ export default {
           'blue-ink': '#779eca',
           'violet-ink': '#a58bc4',
 },
+        // ── Paper (Phase 7) — the reading surface ──
+        //
+        // Anything a user reads for meaning sits on paper: a reading result,
+        // a card's meaning, a lesson, a blog body. One region per screen,
+        // directly on the canvas, never inside a Card; applied only through
+        // src/components/ui/Paper.tsx (the tokens gate holds `bg-paper` to
+        // that file). Chrome, Home, the reading table, sheets, inputs and
+        // lists stay on the mystic ladder.
+        //
+        // RGB twins live in src/index.css :root (--paper, --ink…) so the
+        // .paper-prose scope can remap the body tier without new utilities.
+        paper: {
+          DEFAULT: '#f4eee1',  // the sheet
+          2: '#eae2cf',        // inset panel on the sheet (1.12:1 — pair with hairline)
+          hairline: '#d8cfb8', // border on paper
+        },
+        // Ink on paper. Every value below is ≥4.5:1 on paper AND paper-2:
+        // ink 15.5 / 13.9, ink-2 9.3 / 8.4, ink-muted 5.3 / 4.8, ink-gold
+        // 5.2 / 4.7, ink-teal 5.2, ink-coral 5.5, ink-violet 7.3, ink-blue
+        // 6.1, ink-rose 5.2. `gold` #d4af37 is 1.82:1 on paper and
+        // `gold-dark` 2.45:1: neither may ever be text on paper. Gold FILLS
+        // with mystic-950 text (the Button) are fine there (9.5:1).
+        ink: {
+          DEFAULT: '#15152a',
+          2: '#3b3b56',
+          muted: '#5f5f7a',
+          gold: '#7a5f14',
+          teal: '#176f69',
+          coral: '#a33f26',
+          violet: '#5b3f86',
+          blue: '#2f5a8c',
+          rose: '#9a4a55',
+        },
       },
       fontFamily: {
         display: ['Cormorant Garamond', 'Cormorant Fallback', 'Cormorant Fallback Android', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', 'Georgia', 'serif'],

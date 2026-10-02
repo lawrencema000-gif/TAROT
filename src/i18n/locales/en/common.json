@@ -172,5 +172,23 @@
   },
   "sheet": {
     "panel": "Panel"
+  },
+  "disclaimer": {
+    "label": "Disclaimer",
+    "lead": {
+      "tarot": "Tarot can’t answer everything.",
+      "astrology": "Astrology is a lens, not a forecast.",
+      "quiz": "A quiz is a mirror, not a verdict.",
+      "ai": "This reading was written by a model.",
+      "cartomancy": "The cards suggest; they don’t decide.",
+      "general": "For reflection, not advice."
+    },
+    "body": "Arcana’s readings are for reflection and entertainment. They are not medical, legal, financial or psychological advice."
+  },
+  "affirmation": {
+    "label": "Affirmation"
+  },
+  "resultSheet": {
+    "summaryHeading": "Reading summary"
   }
 }

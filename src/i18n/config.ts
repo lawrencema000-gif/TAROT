@@ -195,7 +195,15 @@ const initPromise = i18n
     saveMissing: import.meta.env.DEV,
     saveMissingTo: 'current',
     updateMissing: false,
-    missingKeyHandler: undefined,
+    // A handler, so the default connector path never runs. Without one,
+    // saveMissing also wrote each `defaultValue` into the resource store —
+    // and an array defaultValue came back on the next read as an object
+    // keyed "0", "1", …, so every `returnObjects` list `.map`ped on the
+    // second render threw inside the I Ching, Feng Shui and quiz results.
+    // The store stays as the locale files shipped it; the event still fires.
+    missingKeyHandler: () => {
+      /* log only: see the 'missingKey' listener below */
+    },
   });
 
 /**

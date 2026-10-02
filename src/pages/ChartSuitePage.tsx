@@ -89,12 +89,23 @@ export function ChartSuitePage() {
     import('../data/interpretations').then(setInterp);
   }, [profile, t]);
 
+  // A linked type lives on another surface. The library row navigates there
+  // on tap; a deep link (`/charts?type=transits`) used to render the intro
+  // paragraph over nothing, since the endpoint rejects these keys.
+  const linkedRoute = selectedKey ? LINKED[selectedKey]?.route : undefined;
+  useEffect(() => {
+    if (linkedRoute) navigate(linkedRoute, { replace: true });
+  }, [linkedRoute, navigate]);
+
   useEffect(() => {
     if (!selected) return;
     if (LINKED[selected.key]) return;
     if (!hasBirth && selected.key !== 'sky-now') return;
     load(selected.key === 'firdaria' ? 'firdaria' : selected.key);
   }, [selected?.key, hasBirth, load, selected]);
+
+  // Nothing to paint while the redirect above lands.
+  if (linkedRoute) return null;
 
   // ── hub grid ──
   if (!selected) {

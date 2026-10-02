@@ -227,17 +227,53 @@ export interface TagProps {
   tone?: Tone;
   size?: 'sm' | 'md';
   icon?: ReactNode;
+  /**
+   * `keyword` — the tracked-caps pill under a card: OPPORTUNITY · PROSPERITY.
+   * One size (h-7), one recipe; `tone` and `size` are ignored. On the canvas
+   * it is a gold tint with gold-light text; inside `.paper-prose` (a Paper)
+   * the `.keyword-pill` class flips it to an ink-gold fill with paper text
+   * (5.2:1) — the surface decides, not the caller, so a card detail that
+   * moves onto paper needs no prop change. Use KeywordRow for the set.
+   */
+  variant?: 'default' | 'keyword';
   className?: string;
 }
 
+const KEYWORD_PILL =
+  'keyword-pill inline-flex items-center rounded-full px-3 h-7 text-caption font-semibold uppercase tracking-[0.12em] bg-gold/15 text-gold-light';
+
 /** A read-only label: keyword, element, sign, category. Tinted, borderless, a span. */
-export function Tag({ children, tone = 'neutral', size = 'sm', icon, className = '' }: TagProps) {
+export function Tag({ children, tone = 'neutral', size = 'sm', icon, variant = 'default', className = '' }: TagProps) {
+  if (variant === 'keyword') {
+    return <span className={`${KEYWORD_PILL} ${className}`.trim()}>{children}</span>;
+  }
   const sz = size === 'sm' ? 'px-2 py-0.5 text-caption gap-1' : 'px-2.5 py-1 text-meta gap-1.5';
   return (
     <span className={`inline-flex items-center rounded-full font-medium ${sz} ${TINT[tone]} ${className}`.trim()}>
       {icon}
       {children}
     </span>
+  );
+}
+
+export interface KeywordRowProps {
+  /** The card's keywords — tarotDeck.ts carries four per card; show all four. */
+  keywords: string[];
+  className?: string;
+}
+
+/**
+ * The row of keyword pills under a card heading or a drawn card: centred,
+ * wrapping, 8px apart. Reads on the canvas and on paper (see Tag
+ * variant="keyword"). Not for tappable filters — that is ChipGroup.
+ */
+export function KeywordRow({ keywords, className = '' }: KeywordRowProps) {
+  return (
+    <div className={`flex flex-wrap justify-center gap-2 ${className}`.trim()}>
+      {keywords.map((k) => (
+        <Tag key={k} variant="keyword">{k}</Tag>
+      ))}
+    </div>
   );
 }
 
@@ -249,7 +285,13 @@ export interface BadgeProps {
   className?: string;
 }
 
-/** A status: LIVE, PREMIUM, RARE, NEW. Uppercase, tracked, tiny. */
+/**
+ * A status: LIVE, PREMIUM, RARE, NEW. Uppercase, tracked, tiny.
+ *
+ * Monetisation — Premium, Try, Unlocked, a credit count — is `tone="violet"`
+ * (cosmic-violet-ink, 5.0:1 on a card): one reserved hue so gold can go
+ * back to meaning CTA, eyebrow and active. Everything else keeps gold.
+ */
 export function Badge({ children, tone = 'gold', pulse = false, className = '' }: BadgeProps) {
   return (
     <span

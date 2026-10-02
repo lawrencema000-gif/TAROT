@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Arcana",
   "short_name": "Arcana",
   "description": "Know yourself. One ritual a day. A calming daily practice with astrology, tarot, and reflective journaling.",
@@ -15,80 +16,100 @@
       "src": "/icons/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
       "src": "/screenshots/home.png",
-      "sizes": "1080x1920",
+      "sizes": "780x1688",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Arcana on a phone: one ritual a day"
+    },
+    {
+      "src": "/screenshots/home-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Arcana on a desktop browser"
     }
   ],
   "shortcuts": [
     {
-      "name": "Daily Ritual",
+      "name": "Today’s ritual",
       "short_name": "Ritual",
-      "description": "Start your daily cosmic ritual",
-      "url": "/?tab=home",
-      "icons": [{ "src": "/icons/shortcut-ritual.png", "sizes": "96x96" }]
+      "description": "Open today’s ritual",
+      "url": "/",
+      "icons": [{ "src": "/icons/shortcut-ritual.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Tarot Reading",
-      "short_name": "Tarot",
-      "description": "Draw your tarot cards",
-      "url": "/?tab=readings",
-      "icons": [{ "src": "/icons/shortcut-tarot.png", "sizes": "96x96" }]
+      "name": "Readings",
+      "short_name": "Readings",
+      "description": "Draw your cards",
+      "url": "/readings",
+      "icons": [{ "src": "/icons/shortcut-tarot.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Journal",
       "short_name": "Journal",
       "description": "Write in your journal",
-      "url": "/?tab=journal",
-      "icons": [{ "src": "/icons/shortcut-journal.png", "sizes": "96x96" }]
+      "url": "/journal",
+      "icons": [{ "src": "/icons/shortcut-journal.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

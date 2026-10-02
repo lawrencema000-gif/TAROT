@@ -16,3 +16,14 @@ export const CARD_COUNT = 78;
 export const SPREAD_COUNT = 40;
 export const QUIZ_COUNT = 10;
 export const SIGN_COUNT = 12;
+
+/**
+ * The playing deck (src/data/cartomancy) is counted apart from the tarot
+ * figures above: its spreads stay out of `allSpreads`, so SPREAD_COUNT is
+ * untouched, and the two Jokers are optional in a reading, so the card
+ * count a page quotes is 52. counts.test.ts holds each to its array.
+ */
+export const CARTO_CARD_COUNT = 52;
+export const CARTO_JOKER_COUNT = 2;
+export const CARTO_SPREAD_COUNT = 9;
+export const CARTO_LESSON_COUNT = 12;

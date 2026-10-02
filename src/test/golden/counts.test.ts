@@ -1,10 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CARD_COUNT, SPREAD_COUNT, QUIZ_COUNT, SIGN_COUNT } from '../../data/counts';
+import {
+  CARD_COUNT,
+  SPREAD_COUNT,
+  QUIZ_COUNT,
+  SIGN_COUNT,
+  CARTO_CARD_COUNT,
+  CARTO_JOKER_COUNT,
+  CARTO_SPREAD_COUNT,
+  CARTO_LESSON_COUNT,
+} from '../../data/counts';
 import { fullDeck } from '../../data/tarotDeck';
 import { allSpreads, tarotSpreads } from '../../data/tarotSpreads';
 import { majorArcanaSpreads } from '../../data/majorArcanaSpreads';
+import { PLAYING_DECK, PLAYING_JOKERS } from '../../data/cartomancy/deck';
+import { CARTO_SPREADS } from '../../data/cartomancy/spreads';
+import { CARTO_LESSONS } from '../../data/cartomancy/lessons';
 import { ZODIAC_SIGNS } from '../../types/astrology';
 
 /**
@@ -81,6 +93,18 @@ describe('the landing page counts what the data holds', () => {
 
   it('signs: the zodiac', () => {
     expect(SIGN_COUNT).toBe(ZODIAC_SIGNS.length);
+  });
+
+  it('playing cards: 52 in the deck, 2 jokers, 9 spreads, 12 lessons', () => {
+    expect(CARTO_CARD_COUNT).toBe(PLAYING_DECK.length);
+    expect(CARTO_JOKER_COUNT).toBe(PLAYING_JOKERS.length);
+    expect(CARTO_SPREAD_COUNT).toBe(CARTO_SPREADS.length);
+    expect(CARTO_LESSON_COUNT).toBe(CARTO_LESSONS.length);
+  });
+
+  it('playing-card spreads stay out of allSpreads, so SPREAD_COUNT is untouched', () => {
+    expect(allSpreads.some((spread) => spread.slug.startsWith('carto-'))).toBe(false);
+    expect(CARTO_SPREADS.every((spread) => spread.slug.startsWith('carto-'))).toBe(true);
   });
 
   it('the landing page reads the figures from counts.ts, not from literals', () => {

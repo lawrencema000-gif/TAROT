@@ -23,7 +23,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { getGateStatus, ACTION_COST } from '../dal/moonstoneSpend';
+import { useT } from '../i18n/useT';
 import { EarnMoonstonesSheet, type EarnSheetReason } from '../components/moonstones/EarnMoonstonesSheet';
+// The gate-check failure is surfaced from here so every caller gets the same
+// honest message; same pattern as services/levelSystem.ts.
+// eslint-disable-next-line boundaries/element-types
+import { toast } from '../components/ui';
 
 interface UseMoonstoneSpendOptions {
   cost?: number;
@@ -31,10 +36,13 @@ interface UseMoonstoneSpendOptions {
 
 export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOptions = {}) {
   const cost = opts.cost ?? ACTION_COST;
+  const { t } = useT('app');
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<EarnSheetReason>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const [resetAt, setResetAt] = useState<string | null>(null);
+  /** Set when the gate itself could not be checked (RPC error); null otherwise. */
+  const [error, setError] = useState<string | null>(null);
 
   const tryConsume = useCallback(async (): Promise<boolean> => {
     // Read-only gate check — does NOT debit. The edge function does the real
@@ -43,12 +51,20 @@ export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOpti
     // rejected for insufficient balance.
     const res = await getGateStatus(actionKey, cost);
     if (!res.ok) {
-      setReason('insufficient');
+      // The gate could not be checked. That is not a shortfall: never tell
+      // the user they are out of Moonstones because an RPC failed (for
+      // months a 42702 in action_gate_status read as "You need 50 Moonstones"
+      // to every free user holding 100).
+      const message = t('moonstones.gateCheckFailed', {
+        defaultValue: 'Couldn’t check your balance — try again.',
+      });
+      setError(message);
       setBalance(null);
       setResetAt(null);
-      setOpen(true);
+      toast(message, 'error');
       return false;
     }
+    setError(null);
     if (res.data.allowed) {
       if (res.data.balance !== null) setBalance(res.data.balance);
       return true;
@@ -64,7 +80,7 @@ export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOpti
     }
     setOpen(true);
     return false;
-  }, [actionKey, cost]);
+  }, [actionKey, cost, t]);
 
   const refund = useCallback(async (): Promise<void> => {
     // No-op. Refunds are now server-authoritative: the AI edge function
@@ -95,5 +111,5 @@ export function useMoonstoneSpend(actionKey: string, opts: UseMoonstoneSpendOpti
     [open, closeSheet, reason, balance, resetAt, cost],
   );
 
-  return { tryConsume, refund, EarnSheet, balance };
+  return { tryConsume, refund, EarnSheet, balance, error };
 }

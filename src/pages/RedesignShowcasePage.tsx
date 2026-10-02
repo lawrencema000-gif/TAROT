@@ -25,7 +25,20 @@ import {
   CardBack,
   ListRow,
   ListRowGroup,
+  Tag,
+  Badge,
+  KeywordRow,
+  StarDivider,
+  Paper,
+  ResultSheet,
+  AffirmationPanel,
+  Disclaimer,
+  PlayingCardIcon,
+  ReadingProse,
+  toast,
 } from '../components/ui';
+import { SpreadGlyph, SPREAD_LAYOUTS, SUIT_GLYPHS, PentacleGlyph, type SpreadGlyphId } from '../components/icons';
+import { minorEnrichment } from '../data/tarotEnrichment';
 import { HomeHero } from '../components/home/HomeHero';
 import { StreakConstellation, type ConstellationNight } from '../components/celebration/StreakConstellation';
 import { MoonPhaseGlyph } from '../components/icons/MoonPhaseGlyph';
@@ -91,6 +104,133 @@ export function RedesignShowcasePage() {
           gold stays the brand CTA color.
         </HeroSubtitle>
       </header>
+
+      {/* Phase 7: the reading surface */}
+      <section className="space-y-8" data-showcase="phase7">
+        <EyebrowLabel rules>Phase 7 · Reading surface</EyebrowLabel>
+
+        <div className="space-y-2" data-showcase="p7-resultsheet">
+          <p className="text-mystic-400 text-meta">
+            ResultSheet — glyph, eyebrow, title, three stars, summary, body, Disclaimer — on Paper
+          </p>
+          <ResultSheet
+            glyph={<PentacleGlyph />}
+            eyebrow="Your question"
+            title="How will my day go?"
+            summary="A steady, grounded day: the Ace of Pentacles puts something real in your hands. Take the practical step you have been circling and let the rest follow from it."
+            disclaimer="tarot"
+          >
+            <div className="space-y-6">
+              <div className="space-y-3 text-center">
+                <Tag>Position 1 · The heart of it</Tag>
+                <h3 className="heading-display-md heading-strong">Ace of Pentacles</h3>
+                <KeywordRow keywords={['Opportunity', 'Prosperity', 'New venture', 'Manifestation']} />
+              </div>
+              <ReadingProse
+                lede={false}
+                text={
+                  'The Ace of Pentacles is a seed in an open hand. Whatever you have been weighing — a job, a move, a habit — this card says the ground will hold if you plant it now.\n\nKeep the scale small today. One concrete action, finished, is worth more than a plan for ten. Notice what feels solid under your feet and build from there.'
+                }
+              />
+              <AffirmationPanel text={minorEnrichment['ace-of-pentacles'].affirmation} />
+              <p className="reading-meta flex flex-wrap justify-center gap-x-4 gap-y-1 text-center">
+                <span data-probe="ink-muted" className="text-ink-muted">ink-muted</span>
+                <span data-probe="ink-teal" className="text-ink-teal">Upright · ink-teal</span>
+                <span data-probe="ink-coral" className="text-ink-coral">ink-coral</span>
+                <span data-probe="ink-violet" className="text-ink-violet">ink-violet</span>
+                <span data-probe="ink-blue" className="text-ink-blue">ink-blue</span>
+                <span data-probe="ink-rose" className="text-ink-rose">ink-rose</span>
+                <span data-probe="stray-gold" className="text-gold">stray text-gold becomes ink-gold</span>
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Button variant="gold">Save reading</Button>
+                <Button variant="secondary">Share</Button>
+              </div>
+            </div>
+          </ResultSheet>
+        </div>
+
+        <div className="space-y-3" data-showcase="p7-keywords">
+          <p className="text-mystic-400 text-meta">KeywordRow — the canvas tint, and the ink-gold fill it becomes inside Paper</p>
+          <KeywordRow keywords={['Opportunity', 'Prosperity', 'New venture', 'Manifestation']} />
+          <Paper className="space-y-4">
+            <h3 className="heading-display-lg heading-strong text-center">Ace of Pentacles</h3>
+            <KeywordRow keywords={['Opportunity', 'Prosperity', 'New venture', 'Manifestation']} />
+            <StarDivider />
+            <p className="reading-copy mx-auto text-center">
+              heading-strong is Cormorant 600 at −0.01em. The three stars are the one ornament a result gets, and
+              inside Paper they take ink-gold without being told.
+            </p>
+          </Paper>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-mystic-400 text-meta">StarDivider on the canvas · the regular display weight beside heading-strong</p>
+          <h3 className="heading-display-lg text-mystic-100 text-center">Reading summary</h3>
+          <StarDivider />
+          <h3 className="heading-display-lg heading-strong text-mystic-100 text-center">Reading summary</h3>
+        </div>
+
+        <div className="space-y-4" data-showcase="p7-glyphs">
+          <p className="text-mystic-400 text-meta">SpreadGlyph — the six castable spreads, canvas tile and paper tile</p>
+          <div className="flex flex-wrap gap-4">
+            {(Object.keys(SPREAD_LAYOUTS) as SpreadGlyphId[]).map((id) => (
+              <div key={id} className="flex flex-col items-center gap-1.5">
+                <SpreadGlyph layout={SPREAD_LAYOUTS[id]} tile="canvas" />
+                <span className="text-caption text-mystic-400">{id}</span>
+              </div>
+            ))}
+          </div>
+          <Paper className="!py-4">
+            <div className="flex flex-wrap justify-center gap-4">
+              {(Object.keys(SPREAD_LAYOUTS) as SpreadGlyphId[]).map((id) => (
+                <SpreadGlyph key={id} layout={SPREAD_LAYOUTS[id]} tile="paper" />
+              ))}
+            </div>
+          </Paper>
+          <p className="text-mystic-400 text-meta">SuitGlyphs at 20 and 28 · PlayingCardIcon beside TarotCardIcon</p>
+          <div className="flex flex-wrap items-center gap-5 text-gold">
+            {Object.entries(SUIT_GLYPHS).map(([k, G]) => (
+              <G key={k} role="img" aria-label={k} />
+            ))}
+            <span className="w-px h-6 bg-mystic-700" aria-hidden />
+            {Object.entries(SUIT_GLYPHS).map(([k, G]) => (
+              <G key={`${k}-lg`} className="w-7 h-7" />
+            ))}
+            <span className="w-px h-6 bg-mystic-700" aria-hidden />
+            <TarotCardIcon className="w-6 h-6 text-mystic-300" />
+            <PlayingCardIcon className="w-6 h-6 text-mystic-300" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="violet">Premium</Badge>
+            <Badge tone="violet">Try</Badge>
+            <Badge tone="gold">New</Badge>
+            <span className="text-caption text-mystic-400">Badge tone=&quot;violet&quot; is the one monetisation hue</span>
+          </div>
+        </div>
+
+        <div className="space-y-3" data-showcase="p7-disclaimers">
+          <p className="text-mystic-400 text-meta">Disclaimer — one per kind</p>
+          {(['tarot', 'astrology', 'quiz', 'ai', 'cartomancy', 'general'] as const).map((k) => (
+            <Disclaimer key={k} kind={k} />
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-mystic-400 text-meta">Toast — the same message three times shows once</p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="secondary" data-testid="p7-toast-same" onClick={() => toast('Saved · +15 XP', 'success')}>
+              Fire the same toast
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => toast('Could not load the feed', 'error', { label: 'Try again', onClick: () => toast('Retrying', 'info') })}
+            >
+              Error with an action
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Phase 5: signature moments */}
       <section className="space-y-6" data-showcase="phase5">

@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Sparkles, Brain, BookOpen, User, Shield, Newspaper, Trophy, MoreHorizontal, X, ShoppingBag, MessageCircle, Moon, Users, Grid3x3, Orbit, CalendarCheck, Star } from 'lucide-react';
 import { TarotCardIcon, HoroscopeWheelIcon } from '../ui/NavIcons';
 import { useT } from '../../i18n/useT';
 import { useFeatureFlag } from '../../context/FeatureFlagContext';
+import { isMoreGroupRoute } from '../../context/UIContext';
 import type { Tab } from '../../types';
 
 interface BottomNavProps {
-  activeTab: Tab;
+  /** The lit tab. Null on a route page that belongs to no tab: nothing lights. */
+  activeTab: Tab | null;
   onTabChange: (tab: Tab) => void;
   isAdmin?: boolean;
 }
@@ -47,6 +49,7 @@ const adminTab: TabDef = { id: 'admin', labelKey: 'nav.admin', icon: Shield };
 export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNavProps) {
   const { t } = useT();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   const communityEnabled = useFeatureFlag('community');
   const whisperingWellEnabled = useFeatureFlag('whispering-well');
@@ -86,7 +89,9 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
   moreItems.push(shopItem);
 
   const moreTabIds = moreItems.filter((item): item is TabDef => !isExternal(item) && !isRoute(item)).map(t => t.id);
-  const isMoreActive = moreTabIds.includes(activeTab as Tab);
+  // More lights for its own tabs and for every route page the menu leads to
+  // (People, Charts, the social rooms…), flag on or off.
+  const isMoreActive = (activeTab !== null && moreTabIds.includes(activeTab)) || isMoreGroupRoute(pathname);
 
   const handleMoreItemClick = (tab: Tab) => {
     onTabChange(tab);
@@ -125,7 +130,9 @@ export function BottomNav({ activeTab, onTabChange, isAdmin = false }: BottomNav
                   const Icon = item.icon;
                   const external = isExternal(item);
                   const routed = isRoute(item);
-                  const isActive = !external && !routed && activeTab === item.id;
+                  const isActive = routed
+                    ? pathname === item.route || pathname.startsWith(`${item.route}/`)
+                    : !external && activeTab === item.id;
                   const baseClass = `
                         flex flex-col items-center gap-2 py-4 px-2 rounded-control
                         transition-all duration-base touch-manipulation active:scale-95

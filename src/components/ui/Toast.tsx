@@ -56,7 +56,7 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
     <div className="flex items-center gap-3 bg-mystic-800 border border-mystic-600/50 rounded-control px-4 py-3">
       <Icon className={`w-5 h-5 flex-shrink-0 ${colors[type]}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-mystic-100">{message}</p>
+        <p className="text-ui text-mystic-100">{message}</p>
         {action && (
           <button
             onClick={handleAction}
@@ -94,7 +94,21 @@ function ToastItem({ id, message, type, action, onDismiss }: ToastProps) {
 
 let toastId = 0;
 const listeners = new Set<(toast: Toast) => void>();
+const dismissListeners = new Set<(filter: DismissFilter) => void>();
 
+type DismissFilter = { type?: ToastType } | undefined;
+
+/**
+ * Show a toast. `action` is optional and gives the toast a trailing
+ * button ("Retry", "Undo") and a longer life (6 s instead of 4).
+ *
+ * Identical messages are collapsed: while a toast with the same text and
+ * type is on screen, another call with the same pair does nothing. Three
+ * callers used to produce three identical error toasts from one failure
+ * (an effect that re-ran, doubled by StrictMode — R7 "Three identical
+ * error toasts"); the fix belongs in the caller too, but the stack should
+ * never show the same sentence twice.
+ */
 export function toast(message: string, type: ToastType = 'info', action?: ToastAction) {
   const newToast: Toast = {
     id: String(++toastId),
@@ -103,6 +117,16 @@ export function toast(message: string, type: ToastType = 'info', action?: ToastA
     action,
   };
   listeners.forEach(listener => listener(newToast));
+}
+
+/**
+ * Dismiss every visible toast, or every toast of one type
+ * (`dismissToasts({ type: 'error' })`). For the moment a screen succeeds
+ * at the thing an earlier toast said had failed (R6 A23: a stale coach
+ * error still showing under "Entry saved").
+ */
+export function dismissToasts(filter?: DismissFilter) {
+  dismissListeners.forEach(listener => listener(filter));
 }
 
 /**
@@ -132,10 +156,21 @@ export function ToastContainer() {
 
   useEffect(() => {
     const listener = (toast: Toast) => {
-      setToasts(prev => [...prev, toast].slice(-MAX_VISIBLE));
+      setToasts(prev => {
+        // Dedupe: the same sentence, in the same tone, is already up.
+        if (prev.some(t => t.message === toast.message && t.type === toast.type)) return prev;
+        return [...prev, toast].slice(-MAX_VISIBLE);
+      });
+    };
+    const dismisser = (filter: DismissFilter) => {
+      setToasts(prev => (filter?.type ? prev.filter(t => t.type !== filter.type) : []));
     };
     listeners.add(listener);
-    return () => { listeners.delete(listener); };
+    dismissListeners.add(dismisser);
+    return () => {
+      listeners.delete(listener);
+      dismissListeners.delete(dismisser);
+    };
   }, []);
 
   const dismiss = (id: string) => {

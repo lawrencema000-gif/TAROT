@@ -20,7 +20,9 @@ import { setPageMeta } from '../utils/seo';
  */
 export function ZiweiPage() {
   const navigate = useNavigate();
-  const { t } = useT();
+  // The ziwei.* strings live in app.json; the common namespace this page
+  // used to read left every label English in ja/ko/zh.
+  const { t } = useT(['app', 'common']);
   const { profile } = useAuth();
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '');
   const [birthTime, setBirthTime] = useState(profile?.birthTime ?? '');

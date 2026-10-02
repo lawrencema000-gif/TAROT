@@ -1,9 +1,17 @@
 import { AlertTriangle, Phone, MessageSquare, Globe, X } from 'lucide-react';
 import { useT } from '../../i18n/useT';
+import type { ModerationResult } from '../../services/moderation';
 
 interface CrisisBannerProps {
   open: boolean;
   onClose: () => void;
+  /**
+   * What the moderation call returned alongside `crisis: true`. The locale
+   * copy still leads (ja/ko/zh carry their own national lines); these fill
+   * the gaps where a locale has none, and the international link, so no
+   * number is hard-coded here.
+   */
+  resources?: ModerationResult['crisisResources'];
 }
 
 /**
@@ -19,9 +27,17 @@ interface CrisisBannerProps {
  * for US/UK/CA/IE, and ja/ko/zh carry their own national lines.
  * findahelpline.com covers the rest of the world.
  */
-export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
+export function CrisisBanner({ open, onClose, resources }: CrisisBannerProps) {
   const { t } = useT('app');
   if (!open) return null;
+  const phoneTitle = resources?.us.name ?? '988 Suicide & Crisis Lifeline';
+  const phoneNumber = resources?.us.number ?? '988';
+  const textTitle = resources?.textLine.name ?? 'Crisis Text Line';
+  const textBody = resources?.textLine.instructions ?? 'Text HOME to 741741 · US/UK/CA/IE';
+  const internationalUrl = resources?.international && /^https:\/\//.test(resources.international)
+    ? resources.international
+    : 'https://findahelpline.com';
+  const internationalHost = internationalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60">
       <div className="bg-mystic-950 border border-coral/40 rounded-card max-w-md w-full p-5 relative">
@@ -55,14 +71,14 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
             <Phone className="w-4 h-4 text-gold flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
-                {t('crisis.phone.title', { defaultValue: '988 Suicide & Crisis Lifeline' })}
+                {t('crisis.phone.title', { defaultValue: phoneTitle })}
               </p>
               <p className="text-meta text-mystic-400 truncate">
-                {t('crisis.phone.body', { defaultValue: 'Call or text 988 · 24/7 · US' })}
+                {t('crisis.phone.body', { defaultValue: `Call or text ${phoneNumber} · 24/7 · US` })}
               </p>
             </div>
             <a
-              href={`tel:${t('crisis.phone.number', { defaultValue: '988' })}`}
+              href={`tel:${t('crisis.phone.number', { defaultValue: phoneNumber })}`}
               className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-gold/15 text-gold rounded-lg text-meta font-medium hover:bg-gold/25 transition-colors"
             >
               {t('crisis.phone.cta', { defaultValue: 'Call' })}
@@ -73,10 +89,10 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
             {t('crisis.text.scheme', { defaultValue: 'sms' }) === 'sms' ? <MessageSquare className="w-4 h-4 text-cosmic-blue flex-shrink-0" /> : <Phone className="w-4 h-4 text-cosmic-blue flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-mystic-100 font-medium">
-                {t('crisis.text.title', { defaultValue: 'Crisis Text Line' })}
+                {t('crisis.text.title', { defaultValue: textTitle })}
               </p>
               <p className="text-meta text-mystic-400 truncate">
-                {t('crisis.text.body', { defaultValue: 'Text HOME to 741741 · US/UK/CA/IE' })}
+                {t('crisis.text.body', { defaultValue: textBody })}
               </p>
             </div>
             <a
@@ -88,7 +104,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
           </div>
 
           <a
-            href="https://findahelpline.com"
+            href={internationalUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-3 bg-mystic-900/60 border border-mystic-800/80 rounded-control hover:border-mystic-700 transition-colors"
@@ -99,7 +115,7 @@ export function CrisisBanner({ open, onClose }: CrisisBannerProps) {
                 {t('crisis.international.title', { defaultValue: 'International helplines' })}
               </p>
               <p className="text-meta text-mystic-400 truncate">
-                findahelpline.com
+                {internationalHost}
               </p>
             </div>
           </a>

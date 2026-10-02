@@ -677,9 +677,9 @@ export function CelestialMapView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4 }}
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+            className="absolute bottom-3 inset-x-3 z-20 flex justify-center pointer-events-none"
           >
-            <Tag tone="neutral" size="md" className="whitespace-nowrap">
+            <Tag tone="neutral" size="md" className="max-w-full text-center">
               Drag to pan · Pinch to zoom · Tap a place for insight
             </Tag>
           </motion.div>
